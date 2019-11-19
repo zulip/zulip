@@ -13,6 +13,8 @@ v1_api_and_json_patterns = [
         {'POST': 'zilencer.views.register_remote_push_device'}),
     url('^remotes/push/unregister$', rest_dispatch,
         {'POST': 'zilencer.views.unregister_remote_push_device'}),
+    url('^remotes/push/unregister/all$', rest_dispatch,
+        {'POST': 'zilencer.views.unregister_all_remote_push_devices'}),
     url('^remotes/push/notify$', rest_dispatch,
         {'POST': 'zilencer.views.remote_server_notify_push'}),
 

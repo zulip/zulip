@@ -35,7 +35,11 @@ from zerver.models import (
     Stream,
     Subscription,
 )
-from zerver.lib.actions import do_delete_messages, do_mark_stream_messages_as_read
+from zerver.lib.actions import (
+    do_delete_messages,
+    do_mark_stream_messages_as_read,
+    do_regenerate_api_key,
+)
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.push_notifications import (
     absolute_avatar_url,
@@ -223,6 +227,24 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result = self.api_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, 'Empty or invalid length token')
 
+    def test_remote_push_unregister_all(self) -> None:
+        payload = self.get_generic_payload('register')
+
+        # Verify correct results are success
+        result = self.api_post(self.server_uuid,
+                               '/api/v1/remotes/push/register', payload)
+        self.assert_json_success(result)
+
+        remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
+        self.assertEqual(len(remote_tokens), 1)
+        result = self.api_post(self.server_uuid,
+                               '/api/v1/remotes/push/unregister/all',
+                               dict(user_id=10))
+        self.assert_json_success(result)
+
+        remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
+        self.assertEqual(len(remote_tokens), 0)
+
     def test_invalid_apns_token(self) -> None:
         endpoints = [
             ('/api/v1/remotes/push/register', 'apple-token'),
@@ -304,6 +326,21 @@ class PushBouncerNotificationTest(BouncerTestCase):
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
                                                                server=server))
             self.assertEqual(len(tokens), 0)
+
+        # Re-add copies of those tokens
+        for endpoint, token, kind in endpoints:
+            result = self.client_post(endpoint, {'token': token},
+                                      subdomain="zulip")
+            self.assert_json_success(result)
+        tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id,
+                                                           server=server))
+        self.assertEqual(len(tokens), 2)
+
+        # Remove it using the bouncer after an API key change
+        do_regenerate_api_key(user, user)
+        tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id,
+                                                           server=server))
+        self.assertEqual(len(tokens), 0)
 
 class AnalyticsBouncerTest(BouncerTestCase):
     TIME_ZERO = datetime.datetime(1988, 3, 14).replace(tzinfo=timezone_utc)

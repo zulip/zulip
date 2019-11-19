@@ -3205,6 +3205,10 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
                                  )),
                    bot_owner_user_ids(user_profile))
 
+    event = {'type': 'clear_push_device_tokens',
+             'user_profile_id': user_profile.id}
+    queue_json_publish("deferred_work", event)
+
 def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str) -> None:
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1

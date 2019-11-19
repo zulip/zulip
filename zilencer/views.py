@@ -120,6 +120,16 @@ def unregister_remote_push_device(request: HttpRequest, entity: Union[UserProfil
     return json_success()
 
 @has_request_variables
+def unregister_all_remote_push_devices(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
+                                       user_id: int=REQ(validator=check_int)) -> HttpResponse:
+    validate_entity(entity)
+    server = cast(RemoteZulipServer, entity)
+
+    RemotePushDeviceToken.objects.filter(user_id=user_id,
+                                         server=server).delete()
+    return json_success()
+
+@has_request_variables
 def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                               payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     validate_entity(entity)

@@ -24,7 +24,7 @@ from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification, \
-    initialize_push_notifications
+    initialize_push_notifications, clear_push_device_tokens
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
     internal_send_message, \
@@ -593,3 +593,5 @@ class DeferredWorker(QueueProcessingWorker):
                 (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
                                                                require_active=False)
                 do_mark_stream_messages_as_read(user_profile, client, stream)
+        elif event['type'] == 'clear_push_device_tokens':
+            clear_push_device_tokens(event["user_profile_id"])
