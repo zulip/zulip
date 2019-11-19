@@ -420,6 +420,18 @@ def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: in
     except PushDeviceToken.DoesNotExist:
         raise JsonableError(_("Token does not exist"))
 
+def clear_push_device_tokens(user_profile_id: int) -> None:
+    # Deletes all of a user's PushDeviceTokens.
+    if uses_notification_bouncer():
+        post_data = {
+            'server_uuid': settings.ZULIP_ORG_ID,
+            'user_id': user_profile_id,
+        }
+        send_to_push_bouncer("POST", "push/unregister/all", post_data)
+        return
+
+    PushDeviceToken.objects.filter(user_id=user_profile_id).delete()
+
 #
 # Push notifications in general
 #
