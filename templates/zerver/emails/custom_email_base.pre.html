@@ -1,0 +1,12 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/email_logo.png" alt="{{ _('Zulip logo') }}"/>
+{% endblock %}
+
+{% block content %}
+
+{# Note: The below code is substituted by `manage.py send_custom_email` #}
+{{ rendered_input }}
+
+{% endblock %}
