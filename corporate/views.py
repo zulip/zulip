@@ -129,7 +129,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     signed_seat_count, salt = sign_string(str(seat_count))
     context = {
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
-        'email': user.email,
+        'email': user.delivery_email,
         'seat_count': seat_count,
         'signed_seat_count': signed_seat_count,
         'salt': salt,
