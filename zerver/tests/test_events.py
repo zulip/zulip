@@ -2008,7 +2008,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        self.do_test(lambda: do_remove_realm_filter(self.user_profile.realm, "#(?P<id>[123])"))
+        events = self.do_test(lambda: do_remove_realm_filter(self.user_profile.realm, "#(?P<id>[123])"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
