@@ -122,82 +122,6 @@ exports.get_deletability = function (message) {
     return false;
 };
 
-// Returns true if the edit task should end.
-exports.save = function (row, from_topic_edited_only) {
-    var msg_list = current_msg_list;
-    var message_id;
-
-    if (row.hasClass('recipient_row')) {
-        message_id = rows.id_for_recipient_row(row);
-    } else {
-        message_id = rows.id(row);
-    }
-    var message = current_msg_list.get(message_id);
-    var changed = false;
-
-    var new_content = row.find(".message_edit_content").val();
-    var topic_changed = false;
-    var new_topic;
-    var old_topic = util.get_message_topic(message);
-
-    if (message.type === "stream") {
-        if (from_topic_edited_only) {
-            new_topic = row.find(".inline_topic_edit").val();
-        } else {
-            new_topic = row.find(".message_edit_topic").val();
-        }
-        topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
-    }
-    // Editing a not-yet-acked message (because the original send attempt failed)
-    // just results in the in-memory message being changed
-    if (message.locally_echoed) {
-        if (new_content !== message.raw_content || topic_changed) {
-            echo.edit_locally(message, {
-                raw_content: new_content,
-                new_topic: new_topic,
-            });
-            row = current_msg_list.get_row(message_id);
-        }
-        exports.end(row);
-        return;
-    }
-
-    var request = {message_id: message.id};
-    if (topic_changed) {
-        util.set_message_topic(request, new_topic);
-        if (feature_flags.propagate_topic_edits) {
-            var selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
-            request.propagate_mode = selected_topic_propagation;
-        }
-        changed = true;
-    }
-
-    if (new_content !== message.raw_content && !from_topic_edited_only) {
-        request.content = new_content;
-        changed = true;
-    }
-    if (!changed) {
-        // If they didn't change anything, just cancel it.
-        exports.end(row);
-        return;
-    }
-    channel.patch({
-        url: '/json/messages/' + message.id,
-        data: request,
-        success: function () {
-            var spinner = row.find(".topic_edit_spinner");
-            loading.destroy_indicator(spinner);
-        },
-        error: function (xhr) {
-            if (msg_list === current_msg_list) {
-                var message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
-                row.find(".edit_error").text(message).show();
-            }
-        },
-    });
-    // The message will automatically get replaced via message_list.update_message.
-};
-
 exports.update_message_topic_editing_pencil = function () {
     if (page_params.realm_allow_message_editing) {
         $(".on_hover_topic_edit, .always_visible_topic_edit").show();
@@ -524,6 +448,81 @@ exports.end = function (row) {
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
     row.find(".message_edit").blur();
+};
+
+exports.save = function (row, from_topic_edited_only) {
+    var msg_list = current_msg_list;
+    var message_id;
+
+    if (row.hasClass('recipient_row')) {
+        message_id = rows.id_for_recipient_row(row);
+    } else {
+        message_id = rows.id(row);
+    }
+    var message = current_msg_list.get(message_id);
+    var changed = false;
+
+    var new_content = row.find(".message_edit_content").val();
+    var topic_changed = false;
+    var new_topic;
+    var old_topic = util.get_message_topic(message);
+
+    if (message.type === "stream") {
+        if (from_topic_edited_only) {
+            new_topic = row.find(".inline_topic_edit").val();
+        } else {
+            new_topic = row.find(".message_edit_topic").val();
+        }
+        topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
+    }
+    // Editing a not-yet-acked message (because the original send attempt failed)
+    // just results in the in-memory message being changed
+    if (message.locally_echoed) {
+        if (new_content !== message.raw_content || topic_changed) {
+            echo.edit_locally(message, {
+                raw_content: new_content,
+                new_topic: new_topic,
+            });
+            row = current_msg_list.get_row(message_id);
+        }
+        exports.end(row);
+        return;
+    }
+
+    var request = {message_id: message.id};
+    if (topic_changed) {
+        util.set_message_topic(request, new_topic);
+        if (feature_flags.propagate_topic_edits) {
+            var selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
+            request.propagate_mode = selected_topic_propagation;
+        }
+        changed = true;
+    }
+
+    if (new_content !== message.raw_content && !from_topic_edited_only) {
+        request.content = new_content;
+        changed = true;
+    }
+    if (!changed) {
+        // If they didn't change anything, just cancel it.
+        exports.end(row);
+        return;
+    }
+    channel.patch({
+        url: '/json/messages/' + message.id,
+        data: request,
+        success: function () {
+            var spinner = row.find(".topic_edit_spinner");
+            loading.destroy_indicator(spinner);
+        },
+        error: function (xhr) {
+            if (msg_list === current_msg_list) {
+                var message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
+                row.find(".edit_error").text(message).show();
+            }
+        },
+    });
+    // The message will automatically get replaced via message_list.update_message.
 };
 
 exports.maybe_show_edit = function (row, id) {
