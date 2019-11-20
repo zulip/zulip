@@ -300,7 +300,7 @@ run_test('huddle_fraction_present', () => {
 
     assert.equal(
         buddy_data.huddle_fraction_present(huddle),
-        false);
+        undefined);
 });
 
 presence.presence_info = {};
