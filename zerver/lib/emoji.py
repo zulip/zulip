@@ -11,7 +11,16 @@ from zerver.lib.upload import upload_backend
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 
-with open(static_path("generated/emoji/emoji_codes.json")) as fp:
+emoji_codes_path = static_path("generated/emoji/emoji_codes.json")
+if not os.path.exists(emoji_codes_path):  # nocoverage
+    # During the collectstatic step of build-release-tarball,
+    # prod-static/serve/generated/emoji won't exist yet.
+    emoji_codes_path = os.path.join(
+        os.path.dirname(__file__),
+        "../../static/generated/emoji/emoji_codes.json"
+    )
+
+with open(emoji_codes_path) as fp:
     emoji_codes = ujson.load(fp)
 
 name_to_codepoint = emoji_codes["name_to_codepoint"]
