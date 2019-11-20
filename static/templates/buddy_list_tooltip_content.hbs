@@ -1,31 +1,9 @@
 <div class="buddy_list_tooltip_content">
-    {{#if is_group}}
-        <span class="tooltip_inner_content">{{recipients}}</span>
-    {{else}}
-        {{#if is_bot}}
-            <span class="tooltip_inner_content">{{name}}<br />{{#if bot_owner_exists}}Owner: {{bot_owner_name}}{{/if}}</span>
-        {{else}}
-            {{#if status_text}}
-                {{#if is_away}}
-                    <span class="tooltip_inner_content">{{name}}<br />{{status_text}}<br />Last active: Today</span>
-                {{else}}
-                    {{#if online_now}}
-                    <span class="tooltip_inner_content">{{name}}<br />{{status_text}}<br />{{last_seen}}</span>
-                    {{else}}
-                    <span class="tooltip_inner_content">{{name}}<br />{{status_text}}<br />Last active: {{last_seen}}</span>
-                    {{/if}}
-                {{/if}}
-            {{else}}
-                {{#if is_away}}
-                    <span class="tooltip_inner_content">{{name}}<br />Last active: Today</span>
-                {{else}}
-                    {{#if online_now}}
-                    <span class="tooltip_inner_content">{{name}}<br />{{last_seen}}</span>
-                    {{else}}
-                    <span class="tooltip_inner_content">{{name}}<br />Last active: {{last_seen}}</span>
-                    {{/if}}
-                {{/if}}
-            {{/if}}
-        {{/if}}
+    <span class="tooltip_inner_content">{{first_line}}</span>
+    {{#if second_line}}
+    <br /><span class="tooltip_inner_content">{{second_line}}</span>
+    {{/if}}
+    {{#if third_line}}
+    <br /><span class="tooltip_inner_content">{{third_line}}</span>
     {{/if}}
 </div>

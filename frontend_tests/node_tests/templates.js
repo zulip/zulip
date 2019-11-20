@@ -1600,11 +1600,9 @@ run_test('user_presence_rows', () => {
 
 run_test('buddy_list_tooltip_content', () => {
     const args = {
-        status_text: 'out to lunch',
-        last_seen: 'Active now',
-        is_away: false,
-        name: 'Iago',
-        online_now: true,
+        first_line: 'Iago',
+        second_line: 'out to lunch',
+        third_line: 'Active now',
     };
 
     const html = render('buddy_list_tooltip_content', args);

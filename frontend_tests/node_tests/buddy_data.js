@@ -131,34 +131,28 @@ run_test('title_data', () => {
     let is_group = true;
     const user_ids_string = "9999,1000";
     let expected_group_data = {
-        is_group: is_group,
-        recipients: "Human Selma, Old User",
-        is_bot: false,
+        first_line: 'Human Selma, Old User',
+        second_line: '',
+        third_line: '',
     };
     assert.deepEqual(buddy_data.get_title_data(user_ids_string, is_group), expected_group_data);
 
     is_group = '';
 
     // Bots with owners.
-    let bot_owner_exists = true;
     expected_group_data = {
-        is_group: '',
-        name: 'Blue Herring Bot',
-        is_bot: true,
-        bot_owner_exists: bot_owner_exists,
-        bot_owner_name: 'Human Myself',
+        first_line: 'Blue Herring Bot',
+        second_line: 'translated: Owner: Human Myself',
+        third_line: '',
     };
     assert.deepEqual(buddy_data.get_title_data(bot_with_owner.user_id, is_group),
                      expected_group_data);
 
     // Bots without owners.
-    bot_owner_exists = false;
     expected_group_data = {
-        is_group: '',
-        name: 'Red Herring Bot',
-        is_bot: true,
-        bot_owner_exists: bot_owner_exists,
-        bot_owner_name: undefined,
+        first_line: 'Red Herring Bot',
+        second_line: '',
+        third_line: '',
     };
     assert.deepEqual(buddy_data.get_title_data(bot.user_id, is_group), expected_group_data);
 
@@ -169,24 +163,17 @@ run_test('title_data', () => {
     });
 
     let expected_data = {
-        is_group: is_group,
-        status_text: 'out to lunch',
-        last_seen: 'translated: Active now',
-        is_away: false,
-        name: 'Human Myself',
-        online_now: true,
-        is_bot: false,
+        first_line: 'Human Myself',
+        second_line: 'out to lunch',
+        third_line: 'translated: Active now',
+
     };
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
     expected_data = {
-        is_group: is_group,
-        status_text: undefined,
-        last_seen: 'translated: More than 2 weeks ago',
-        is_away: false,
-        name: 'Old User',
-        online_now: false,
-        is_bot: false,
+        first_line: 'Old User',
+        second_line: 'translated: Last active: translated: More than 2 weeks ago',
+        third_line: '',
     };
     assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
 });
