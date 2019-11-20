@@ -9,14 +9,13 @@ in bursts.
 
 **Highlights:**
 
-- Removed support for EOL Ubuntu Trusty.  This enables a number of
-  improvements that had previously been blocked because they weren't
-  worth shipping our own upgraded versions of dependencies.
+- Removed support for EOL Ubuntu Trusty.
+- Added support for Debian buster.
+- Added support for SAML authentication.
 - Significantly improved the email->Zulip gateway, and added [nice
   setup documentation](../production/email-gateway.md).  It now
   should be possible to subscribe a Zulip stream to an email list and
   have a good experience.
-- Added production support for Debian buster.
 - Removed our dependency on `tsearch_extras`, making it possible to
   run a production Zulip server against any postgres database
   (including those one cannot add extensions to like Amazon RDS).
@@ -107,9 +106,9 @@ downtime, and then upgrade to the new release.
 - Added direct download links for Android APKs to our /apps page.
 - Added a responsive design for our /integrations/ pages.
 - Added typeahead for slash commands.
-- Added more expansive moderation settings for who can create streams
-  or invite other users to join streams.
-- Added new Bitbucket Server, Buildbot, and Redmine integrations.
+- Added more expansive moderation settings for who can create streams,
+  edit user groups, or invite other users to join streams.
+- Added new Bitbucket Server, Buildbot, Harbor, Gitea and Redmine integrations.
 - Added proper open graph tags for linking to a Zulip organization.
 - Added organization setting to disable users uploading new avatars
   (for use with LDAP synchronization).
@@ -161,7 +160,7 @@ downtime, and then upgrade to the new release.
 - Fixed email gateway issues with non-latin characters in stream names.
 - Fixed endless re-synchronization of LDAP user avatars (which
   could cause user-visible performance issues for desktop/web clients).
-- Fixed a number of other bugs with advanced LDAP data synchronization.
+- Fixed all known bugs with advanced LDAP data synchronization.
 - Fixed numbered list handling of blank lines between blocks.
 - Fixed performance issues that made users soft-deactivated for over a
   year unable to return to the app.
@@ -203,6 +202,7 @@ downtime, and then upgrade to the new release.
 - Renamed the system bot Zulip realm to "zulipinternal" (was "zulip").
 - Switched our scrollbars to use simplebar, fixing many subtle
   scrollbar-related bugs in the process.
+- Enabled webpack code splitting and deduplication.
 - Started migrating our frontend codebase to TypeScript.
 
 ### 2.0.6 -- 2019-09-23
