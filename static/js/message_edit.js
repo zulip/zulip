@@ -152,7 +152,10 @@ exports.save = function (row, from_topic_edited_only) {
     // just results in the in-memory message being changed
     if (message.locally_echoed) {
         if (new_content !== message.raw_content || topic_changed) {
-            echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
+            echo.edit_locally(message, {
+                raw_content: new_content,
+                new_topic: new_topic,
+            });
             row = current_msg_list.get_row(message_id);
         }
         exports.end(row);
