@@ -134,10 +134,12 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
     return insert_local_message(message_request, next_local_id);
 };
 
-exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
+exports.edit_locally = function edit_locally(message, request) {
+    const raw_content = request.raw_content;
     const message_content_edited = raw_content !== undefined && message.raw_content !== raw_content;
 
-    if (new_topic !== undefined) {
+    if (request.new_topic !== undefined) {
+        const new_topic = request.new_topic;
         topic_data.remove_message({
             stream_id: message.stream_id,
             topic_name: util.get_message_topic(message),
