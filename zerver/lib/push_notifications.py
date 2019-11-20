@@ -225,7 +225,7 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     Including unrecognized options is an error.
 
     For details on options' semantics, see this GCM upstream doc:
-      https://developers.google.com/cloud-messaging/http-server-ref
+      https://firebase.google.com/docs/cloud-messaging/http-server-ref
 
     Returns `priority`.
     """
@@ -255,7 +255,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
     """
     Send a GCM message to the given devices.
 
-    See https://developers.google.com/cloud-messaging/http-server-ref
+    See https://firebase.google.com/docs/cloud-messaging/http-server-ref
     for the GCM upstream API which this talks to.
 
     data: The JSON object (decoded) to send as the 'data' parameter of
@@ -271,7 +271,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
     reg_ids = [device.token for device in devices]
     priority = parse_gcm_options(options, data)
     try:
-        # See https://developers.google.com/cloud-messaging/http-server-ref .
+        # See https://firebase.google.com/docs/cloud-messaging/http-server-ref .
         # Two kwargs `retries` and `session` get eaten by `json_request`;
         # the rest pass through to the GCM server.
         res = gcm_client.json_request(registration_ids=reg_ids,
