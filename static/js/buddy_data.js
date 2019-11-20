@@ -197,52 +197,72 @@ exports.info_for = function (user_id) {
     };
 };
 
+function get_last_seen(active_status, last_seen) {
+    if (active_status === 'active') {
+        return last_seen;
+    }
+
+    var last_seen_text = i18n.t('Last active: __last_seen__', {last_seen: last_seen});
+    return last_seen_text;
+}
+
 exports.get_title_data = function (user_ids_string, is_group) {
     if (is_group === true) {
         // For groups, just return a string with recipient names.
         return {
-            is_group: is_group,
-            recipients: people.get_recipients(user_ids_string),
-            is_bot: false,
+            first_line: people.get_recipients(user_ids_string),
+            second_line: '',
+            third_line: '',
         };
     }
 
     // Since it's not a group, user_ids_string is a single user ID.
     const user_id = user_ids_string;
     const person = people.get_person_from_user_id(user_id);
-    let bot_owner_exists = false;
 
     if (person.is_bot) {
+        // Bot has an owner.
         if (person.bot_owner_id !== null) {
-            // Only show bot-owner name if it exists, otherwise just show bot name.
-            bot_owner_exists = true;
             person.bot_owner_full_name = people.get_person_from_user_id(
                 person.bot_owner_id).full_name;
+
+            var bot_owner_name = i18n.t('Owner: __name__', {name: person.bot_owner_full_name});
+
+            return {
+                first_line: person.full_name,
+                second_line: bot_owner_name,
+                third_line: '',
+            };
         }
 
+        // Bot does not have an owner.
         return {
-            is_group: '',
-            name: person.full_name,
-            is_bot: true,
-            bot_owner_exists: bot_owner_exists,
-            bot_owner_name: person.bot_owner_full_name,
+            first_line: person.full_name,
+            second_line: '',
+            third_line: '',
         };
+
     }
 
     // For buddy list and individual PMS.  Since is_group=False, it's
     // a single, human, user.
     const active_status = presence.get_status(user_id);
     const last_seen = exports.user_last_seen_time_status(user_id);
-    const online_now = active_status === 'active';
 
+    // Users has a status.
+    if (user_status.get_status_text(user_id)) {
+        return {
+            first_line: person.full_name,
+            second_line: user_status.get_status_text(user_id),
+            third_line: get_last_seen(active_status, last_seen),
+        };
+    }
+
+    // Users does not have a status.
     return {
-        is_group: '',
-        status_text: user_status.get_status_text(user_id),
-        last_seen: last_seen,
-        is_away: user_status.is_away(user_id),
-        name: person.full_name,
-        online_now: online_now,
-        is_bot: false,
+        first_line: person.full_name,
+        second_line: get_last_seen(active_status, last_seen),
+        third_line: '',
     };
 };
 
