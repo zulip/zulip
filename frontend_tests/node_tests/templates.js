@@ -536,7 +536,7 @@ run_test('compose_announce', () => {
     const button = $(html).find("button").first();
     assert.equal(button.text(), "translated: Yes, send");
     const error_msg = $(html).find('span.compose-announce-msg').text().trim();
-    assert.equal(error_msg, "translated:         This stream is reserved for announcements.\n        \n        Are you sure you want to message all 101 people in this stream?");
+    assert.equal(error_msg, "translated: This stream is reserved for announcements.  Are you sure you want to message all 101 people in this stream?");
 });
 
 run_test('compose_not_subscribed', () => {
