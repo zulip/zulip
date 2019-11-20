@@ -336,7 +336,7 @@ exports.huddle_fraction_present = function (huddle) {
     } else if (num_present !== 0) {
         return 0.5;
     }
-    return false;
+    return;
 };
 
 window.buddy_data = exports;
