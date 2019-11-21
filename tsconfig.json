@@ -33,6 +33,16 @@
         "noFallthroughCasesInSwitch": true,
     },
     "exclude": [
+        /* Type stubs are not part of the top-level project. */
         "static/js/types",
+
+        /* Skip walking large generated directories. */
+        "docs/_build",
+        "static/webpack-bundles",
+        "var",
+        "zulip-py3-venv",
+
+        /* Even though allowJs defaults to false, typescript-eslint forces it to true. */
+        "**/*.js",
     ],
 }
