@@ -996,6 +996,38 @@ class SocialAuthBase(ZulipTestCase):
             self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                            skip_registration_form=self.BACKEND_CLASS.full_name_validated)
 
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_with_ldap_auth_registration_from_confirmation(self) -> None:
+        """
+        This test checks that in configurations that use the ldap authentication backend
+        and a social backend, it is possible to create non-ldap users via the social backend.
+        """
+        self.init_default_ldap_database()
+        email = self.nonreg_email("alice")
+        name = "Alice Social"
+        realm = get_realm("zulip")
+        subdomain = "zulip"
+        ldap_user_attr_map = {'full_name': 'cn'}
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        backend_path = 'zproject.backends.{}'.format(self.BACKEND_CLASS.__name__)
+        with self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_EMAIL_ATTR='mail',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTHENTICATION_BACKENDS=(backend_path,
+                                         'zproject.backends.ZulipLDAPAuthBackend',
+                                         'zproject.backends.ZulipDummyBackend')
+        ):
+            account_data_dict = self.get_account_data_dict(email=email, name=name)
+            result = self.social_auth_test(account_data_dict,
+                                           expect_choose_email_screen=True,
+                                           subdomain=subdomain, is_signup='1')
+            # Full name should get populated as provided by the social backend, because
+            # this user isn't in the ldap dictionary:
+            self.stage_two_of_registration(result, realm, subdomain, email, name, name,
+                                           skip_registration_form=self.BACKEND_CLASS.full_name_validated)
+
     def test_social_auth_complete(self) -> None:
         with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
                         side_effect=AuthFailed('Not found')):

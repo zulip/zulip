@@ -35,7 +35,7 @@ from zerver.views.auth import create_preregistration_user, redirect_and_log_into
 
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, \
     ZulipLDAPExceptionNoMatchingLDAPUser, email_auth_enabled, ZulipLDAPAuthBackend, \
-    email_belongs_to_ldap
+    email_belongs_to_ldap, any_social_backend_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
     validate_key, create_confirmation_link, get_object_from_key, \
@@ -280,24 +280,20 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                         prereg_user=prereg_user,
                                         return_data=return_data)
             if user_profile is None:
-                can_use_different_backend = email_auth_enabled(realm)
+                can_use_different_backend = email_auth_enabled(realm) or any_social_backend_enabled(realm)
                 if settings.LDAP_APPEND_DOMAIN:
                     # In LDAP_APPEND_DOMAIN configurations, we don't allow making a non-ldap account
                     # if the email matches the ldap domain.
                     can_use_different_backend = can_use_different_backend and (
                         not email_belongs_to_ldap(realm, email))
                 if return_data.get("no_matching_ldap_user") and can_use_different_backend:
-                    # If both the LDAP and Email auth backends are
+                    # If both the LDAP and Email or Social auth backends are
                     # enabled, and there's no matching user in the LDAP
                     # directory then the intent is to create a user in the
                     # realm with their email outside the LDAP organization
                     # (with e.g. a password stored in the Zulip database,
                     # not LDAP).  So we fall through and create the new
                     # account.
-                    #
-                    # It's likely that we can extend this block to the
-                    # Google and GitHub auth backends with no code changes
-                    # other than here.
                     pass
                 else:
                     # TODO: This probably isn't going to give a
