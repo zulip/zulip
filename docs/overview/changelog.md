@@ -205,6 +205,11 @@ downtime, and then upgrade to the new release.
 - Enabled webpack code splitting and deduplication.
 - Started migrating our frontend codebase to TypeScript.
 
+### 2.0.7 -- 2019-11-21
+
+- CVE-2019-18933: Fix insecure account creation via social authentication.
+- Added backend enforcement of zxcvbn password strength checks.
+
 ### 2.0.6 -- 2019-09-23
 
 - Updated signing keys for the PGroonga repository for Debian Stretch.
