@@ -18,12 +18,12 @@ run_test('insert_recent_private_message', () => {
     pmc.recent.insert('2', 2001);
     pmc.recent.insert('1', 3001);
 
-    // try to backdate user1's timestamp
+    // try to backdate user1's latest message
     pmc.recent.insert('1', 555);
 
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: '1', timestamp: 3001},
-        {user_ids_string: '2', timestamp: 2001},
+        {user_ids_string: '1', max_message_id: 3001},
+        {user_ids_string: '2', max_message_id: 2001},
     ]);
 
     assert.deepEqual(pmc.recent.get_strings(), ['1', '2']);

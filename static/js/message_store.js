@@ -56,7 +56,7 @@ exports.process_message_for_recent_private_messages = function (message) {
 
     const user_ids_string = user_ids.join(',');
 
-    pm_conversations.recent.insert(user_ids_string, message.timestamp);
+    pm_conversations.recent.insert(user_ids_string, message.id);
 };
 
 exports.set_message_booleans = function (message) {
