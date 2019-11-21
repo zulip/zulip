@@ -17,6 +17,7 @@ const render_compose_private_stream_alert = require("../templates/compose_privat
 let user_acknowledged_all_everyone;
 let user_acknowledged_announce;
 let wildcard_mention;
+let uppy;
 
 exports.all_everyone_warn_threshold = 15;
 exports.announce_warn_threshold = 60;
@@ -146,11 +147,7 @@ function update_fade() {
 
 exports.abort_xhr = function () {
     $("#compose-send-button").prop("disabled", false);
-    const xhr = $("#compose").data("filedrop_xhr");
-    if (xhr !== undefined) {
-        xhr.abort();
-        $("#compose").removeData("filedrop_xhr");
-    }
+    uppy.cancelAll();
 };
 
 exports.empty_topic_placeholder = function () {
@@ -1090,11 +1087,9 @@ exports.initialize = function () {
         exports.clear_preview_area();
     });
 
-    $("#compose").filedrop(
-        upload.options({
-            mode: 'compose',
-        })
-    );
+    uppy = upload.setup_upload({
+        mode: "compose",
+    });
 
     $("#compose-textarea").focus(function () {
         const opts = {

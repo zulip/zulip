@@ -162,7 +162,7 @@ page_params.starred_messages = [];
 page_params.presences = [];
 
 $('#tab_bar').append = () => {};
-$('#compose').filedrop = () => {};
+upload.setup_upload = () => {};
 
 server_events.home_view_loaded = () => true;
 

@@ -316,8 +316,7 @@ exports.paste_handler = function (event) {
             const mdImageRegex = /^!\[.*\]\(.*\)$/;
             if (text.match(mdImageRegex)) {
                 // This block catches cases where we are pasting an
-                // image into Zulip, which should be handled by the
-                // jQuery filedrop library, not this code path.
+                // image into Zulip, which is handled by upload.js.
                 return;
             }
             event.preventDefault();
