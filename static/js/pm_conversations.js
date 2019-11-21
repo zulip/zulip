@@ -19,6 +19,12 @@ exports.recent = (function () {
     const recent_private_messages = [];
 
     self.insert = function (user_ids_string, message_id) {
+        if (user_ids_string === '') {
+            // The API uses '' for self-PMs; convert it to the string
+            // containing the current user's ID, which is the format
+            // the webapp expects.
+            user_ids_string = people.my_current_user_id().toString();
+        }
         let conversation = recent_message_ids.get(user_ids_string);
 
         if (conversation === undefined) {
@@ -34,7 +40,12 @@ exports.recent = (function () {
             recent_private_messages.unshift(conversation);
         } else {
             if (conversation.max_message_id >= message_id) {
-                return; // don't backdate our conversation
+                // don't backdate our conversation.  This is the
+                // common code path after initialization when
+                // processing old messages, since we'll already have
+                // the latest message_id for the conversation from
+                // initialization.
+                return;
             }
 
             // update our latest message_id
@@ -56,6 +67,14 @@ exports.recent = (function () {
         // returns array of structs with user_ids_string and
         // message_id
         return _.pluck(recent_private_messages, 'user_ids_string');
+    };
+
+    self.initialize = function () {
+        _.each(page_params.recent_private_conversations, function (conversation) {
+            const user_ids_string = conversation.user_ids.join(",");
+            self.insert(user_ids_string, conversation.max_message_id);
+        });
+        delete page_params.recent_private_messages;
     };
 
     return self;

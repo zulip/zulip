@@ -301,6 +301,7 @@ exports.initialize_everything = function () {
     stream_color.initialize();
     stream_edit.initialize();
     stream_data.initialize();
+    pm_conversations.recent.initialize();
     muting.initialize();
     subs.initialize();
     stream_list.initialize();
