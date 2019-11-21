@@ -812,65 +812,6 @@ run_test('finish', () => {
     }());
 });
 
-run_test('abort_xhr', () => {
-    $("#compose-send-button").attr('disabled', 'disabled');
-    let compose_removedata_checked = false;
-    $('#compose').removeData = function (sel) {
-        assert.equal(sel, 'filedrop_xhr');
-        compose_removedata_checked = true;
-    };
-    let xhr_abort_checked = false;
-    $("#compose").data = function (sel) {
-        assert.equal(sel, 'filedrop_xhr');
-        return {
-            abort: function () {
-                xhr_abort_checked = true;
-            },
-        };
-    };
-    compose.abort_xhr();
-    assert.equal($("#compose-send-button").attr(), undefined);
-    assert(xhr_abort_checked);
-    assert(compose_removedata_checked);
-});
-
-function verify_filedrop_payload(payload) {
-    assert.equal(payload.url, '/json/user_uploads');
-    assert.equal(payload.fallback_id, 'file_input');
-    assert.equal(payload.paramname, 'file');
-    assert.equal(payload.max_file_upload_size, 512);
-    assert.equal(payload.data.csrfmiddlewaretoken, 'fake-csrf-token');
-    assert.deepEqual(payload.raw_droppable, ['text/uri-list', 'text/plain']);
-    assert.equal(typeof payload.drop, 'function');
-    assert.equal(typeof payload.progressUpdated, 'function');
-    assert.equal(typeof payload.error, 'function');
-    assert.equal(typeof payload.uploadFinished, 'function');
-    assert.equal(typeof payload.rawDrop, 'function');
-}
-
-function test_raw_file_drop(raw_drop_func) {
-    compose_state.set_message_type(false);
-    let compose_actions_start_checked = false;
-    global.compose_actions = {
-        start: function (msg_type) {
-            assert.equal(msg_type, 'stream');
-            compose_actions_start_checked = true;
-        },
-    };
-    $("#compose-textarea").val('Old content ');
-    let compose_ui_autosize_textarea_checked = false;
-    compose_ui.autosize_textarea = function () {
-        compose_ui_autosize_textarea_checked = true;
-    };
-
-    // Call the method here!
-    raw_drop_func('new contents');
-
-    assert(compose_actions_start_checked);
-    assert.equal($("#compose-textarea").val(), 'Old content new contents');
-    assert(compose_ui_autosize_textarea_checked);
-}
-
 run_test('warn_if_private_stream_is_linked', () => {
     stream_data.add_sub({
         name: compose_state.stream_name(),
@@ -954,13 +895,18 @@ run_test('initialize', () => {
     global.document = 'document-stub';
     global.csrf_token = 'fake-csrf-token';
 
-    let filedrop_in_compose_checked = false;
     page_params.max_file_upload_size = 512;
-    $("#compose").filedrop = function (payload) {
-        verify_filedrop_payload(payload);
-        test_raw_file_drop(payload.rawDrop);
 
-        filedrop_in_compose_checked = true;
+    let setup_upload_called = false;
+    let uppy_cancel_all_called = false;
+    upload.setup_upload = function (config) {
+        assert.equal(config.mode, "compose");
+        setup_upload_called = true;
+        return {
+            cancelAll: () => {
+                uppy_cancel_all_called = true;
+            },
+        };
     };
 
     compose.initialize();
@@ -968,14 +914,11 @@ run_test('initialize', () => {
     assert(resize_watch_manual_resize_checked);
     assert(xmlhttprequest_checked);
     assert(!$("#compose #attach_files").hasClass("notdisplayed"));
-    assert(filedrop_in_compose_checked);
+    assert(setup_upload_called);
 
     function reset_jquery() {
         // Avoid leaks.
         set_global('$', global.make_zjquery());
-
-        // Bypass filedrop (we already tested it above).
-        $("#compose").filedrop = noop;
     }
 
     let compose_actions_start_checked;
@@ -1012,6 +955,18 @@ run_test('initialize', () => {
         compose.initialize();
 
         assert(compose_actions_start_checked);
+    }());
+
+    (function test_abort_xhr() {
+        $("#compose-send-button").attr('disabled', 'disabled');
+
+        reset_jquery();
+        compose.initialize();
+
+        compose.abort_xhr();
+
+        assert.equal($("#compose-send-button").attr(), undefined);
+        assert(uppy_cancel_all_called);
     }());
 });
 

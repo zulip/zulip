@@ -18,3 +18,5 @@ import "font-awesome/css/font-awesome.css";
 import "../../assets/icons/zulip-icons.font.js";
 import "source-sans-pro/source-sans-pro.css";
 import "../../styles/pygments.scss";
+import "@uppy/core/dist/style.css";
+import "@uppy/progress-bar/dist/style.css";

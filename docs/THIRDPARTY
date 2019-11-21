@@ -107,10 +107,6 @@ Files: static/generated/emoji/images/emoji/unicode/*
 Copyright: Google, Inc.
 License: Apache-2.0
 
-Files: static/third/jquery-filedrop/jquery.filedrop.js
-Copyright: Resopollution
-License: Expat
-
 Files: static/third/jquery-idle/jquery.idle.js
 Copyright: 2011-2013 Henrique Boaventura
 License: Expat

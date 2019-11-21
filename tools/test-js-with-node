@@ -154,7 +154,6 @@ EXEMPT_FILES = {
     'static/js/ui_util.js',
     'static/js/unread_ops.js',
     'static/js/unread_ui.js',
-    'static/js/upload.js',
     'static/js/upload_widget.js',
     'static/js/user_status_ui.js',
     'static/js/zcommand.js',
