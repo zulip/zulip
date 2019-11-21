@@ -212,13 +212,18 @@ run_test('start', () => {
 
     // Cancel compose.
     let pill_cleared;
-
     compose_pm_pill.clear = function () {
         pill_cleared = true;
     };
 
+    let abort_xhr_called = false;
+    compose.abort_xhr = () => {
+        abort_xhr_called = true;
+    };
+
     assert_hidden('#compose_controls');
     cancel();
+    assert(abort_xhr_called);
     assert(pill_cleared);
     assert_visible('#compose_controls');
     assert_hidden('#private-message');
