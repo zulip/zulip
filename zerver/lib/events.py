@@ -145,10 +145,6 @@ def always_want(msg_type: str) -> bool:
     info for every event type.  Defining this at module
     level makes it easier to mock.
     '''
-    if settings.PRODUCTION and msg_type == "recent_private_conversations":  # nocoverage
-        # Temporary: Don't include recent_private_conversations in production
-        # by default while the feature is still experimental.
-        return False
     return True
 
 # Fetch initial data.  When event_types is not specified, clients want
