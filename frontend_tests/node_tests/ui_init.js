@@ -103,6 +103,7 @@ zrequire('search');
 zrequire('tutorial');
 zrequire('notifications');
 zrequire('pointer');
+zrequire('pm_conversations');
 zrequire('compose_fade');
 zrequire('pm_list');
 zrequire('list_cursor');
@@ -140,6 +141,7 @@ page_params.unsubscribed = [];
 page_params.never_subscribed = [];
 page_params.realm_notifications_stream_id = -1;
 page_params.unread_msgs = {};
+page_params.recent_private_conversations = [];
 
 $('#tab_bar').append = () => {};
 $('#compose').filedrop = () => {};
