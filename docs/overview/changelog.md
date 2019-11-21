@@ -7,6 +7,11 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.0.7 -- 2019-11-21
+
+- CVE-2019-18933: Fix insecure account creation via social authentication.
+- Added backend enforcement of zxcvbn password strength checks.
+
 ### 2.0.6 -- 2019-09-23
 
 - Updated signing keys for the PGroonga repository for Debian Stretch.
