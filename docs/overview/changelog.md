@@ -2,7 +2,7 @@
 
 All notable changes to the Zulip server are documented in this file.
 
-### Unreleased
+### 2.1.0-rc1 -- 2019-11-22
 
 This section lists notable unreleased changes; it is generally updated
 in bursts.
@@ -42,8 +42,9 @@ in bursts.
   readable style.
 - We merged significant preparatory work for supporting RHEL/CentOS in
   production.  We're now interested in beta testers for this feature.
-- Added [new documentation](../production/upgrade-or-modify.html#modifying-zulip) on
-  maintaining a fork of Zulip.
+- Reorganized Zulip's documentation for sysadmins, and added [new
+  documentation](../production/upgrade-or-modify.html#modifying-zulip)
+  on maintaining a fork of Zulip.
 - Added new `streams:public` search operator that searches the public
   history of all streams in the organization (even before you joined).
 - Added support for sending email and mobile push notifications for
@@ -120,6 +121,13 @@ downtime, and then upgrade to the new release.
 - Added webapp support for upcoming desktop app features: inline reply
   from notifications, and detecting user presence from OS APIs.
 - Added markdown support for headings, implemented using `# heading`.
+- Added local echo when editing messages for a more responsive experience.
+- Fixed issues with positioning and marking messages as read when
+  doing a search where some results are unread messages.
+- The private messages widget shows much deeper history of private
+  message conversations in a scrollable widget (1K PMs of history).
+- When there are dozens of unread topics, topic lists in the left
+  sidebar now show at most 8 topics, with the rest behind "more topics".
 - New users now see their most recent 20 messages as unread, to
   provide a better onboarding experience.
 - Redesigned the in-app "keyboard shortcuts" popover to be more usable.
@@ -150,7 +158,8 @@ downtime, and then upgrade to the new release.
   can (this preserves the pre-existing security model).
 - User full names now must use characters valid in an email from line.
 - Settings pages that normal users cannot modify are now hidden by default.
-- Replaced title attributes with nice tooltips in the message feed.
+- Replaced title attributes with nice tooltips in the message feed and
+  buddy list.
 - Fixed incorrect caching settings for the Zulip API, which could result
   in browers appearing to display old content or remark messages unread.
 - Fixed buggy handling of LaTeX in quote-and-reply.
