@@ -1338,13 +1338,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             sender_id=message['message'].sender_id,
             stream_topic=stream_topic,
             possibly_mentioned_user_ids=mention_data.get_user_ids(),
-            # TODO: We should improve the `mention_data` logic to
-            # populate the possible_wildcard_mention field based on
-            # whether wildcard mention syntax actually appears in the
-            # message, to avoid wasting resources computing
-            # wildcard_mention_user_ids for messages that could
-            # not possibly contain a wildcard mention.
-            possible_wildcard_mention=True,
+            possible_wildcard_mention=mention_data.message_has_wildcards(),
         )
 
         message['active_user_ids'] = info['active_user_ids']
