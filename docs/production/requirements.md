@@ -135,73 +135,88 @@ Zulip in production](../production/install.md).
 
 ## Scalability
 
-This section attempts to address the considerations involved with
-running Zulip with larger teams (especially >1000 users).
+This section details some basic guidelines on for running a Zulip
+server for larger organizations (especially >1000 users or 500+ daily
+active users).  Zulip's resource needs depend roughly on 3 parameters:
+daily active users (e.g. number of employees if everyone's an
+employee), total user accounts (can be much larger), and message
+volume.
 
-* For an organization with 100+ users, it's important to have more
-  than 4GB of RAM on the system.  Zulip will install on a system with
-  2GB of RAM, but with less than 3.5GB of RAM, it will run its
-  [queue processors](../subsystems/queuing.md) multithreaded to conserve memory;
-  this creates a significant performance bottleneck.
+In the following, we discuss a configuration with at most two types of
+servers: application servers (running Django, Tornado, RabbitMQ,
+Redis, Memcached, etc.) and database servers.  Of the application
+server services, Django dominates the resource requirements.  One can
+run every service on its own system (as
+[docker-zulip](https://github.com/zulip/docker-zulip) does) but for
+most use cases, there's little scalability benefit to doing so.  See
+[deployment options](../production/deployment.md) for details on
+installing Zulip with a dedicated database server.
 
-* [chat.zulip.org](../contributing/chat-zulip-org.md), with thousands of user
-  accounts and thousands of messages sent every week, has 8GB of RAM,
-  4 cores, and 80GB of disk.  The CPUs are essentially always idle,
-  but the 8GB of RAM is important.
+* **Dedicated database**.  For installations with hundreds of daily
+  active users, we recommend using a [remote postgres
+  database](postgres.md), but it's not required.
 
-* We recommend using a [remote postgres
-  database](postgres.md) for isolation, though it is
-  not required.  In the following, we discuss a relatively simple
-  configuration with two types of servers: application servers
-  (running Django, Tornado, RabbitMQ, Redis, Memcached, etc.) and
-  database servers.
+* **RAM:**  We recommended more RAM for larger installations:
+    * With 25+ daily active users, 4GB of RAM (Under that, Zulip runs
+      its queue processors in a special low-resource mode).
+    * With 100+ daily active users, 8GB of RAM.
+    * With 400+ daily active users, 16GB of RAM for the Zulip
+      application server, plus 16GB for the database.
+    * With 2000+ daily active users 32GB of RAM, plus 32GB for the
+      database.
+    * Roughly linear scaling beyond that.
 
-* You can scale to a pretty large installation (O(~1000) concurrently
-  active users using it to chat all day) with just a single reasonably
-  large application server (e.g. AWS c3.2xlarge with 8 cores and 16GB
-  of RAM) sitting mostly idle (<10% CPU used and only 4GB of the 16GB
-  RAM actively in use).  You can probably get away with half that
-  (e.g. c3.xlarge), but ~8GB of RAM is highly recommended at scale.
-  Beyond a 1000 active users, you will eventually want to increase the
-  memory cap in `memcached.conf` from the default 512MB to avoid high
-  rates of memcached misses.
+* **CPU:**  The Zulip application server's CPU usage is heavily
+  optimized due to extensive work on optimizing the performance of
+  requests for latency reasons.  Because most servers with sufficient
+  RAM have sufficient CPU resources, CPU requirements are rarely an
+  issue.  For larger installations with a dedicated database, we
+  recommend high-CPU instances for the application server and a
+  database-optimized (usually low CPU, high memory) instance for the
+  database.
 
-* For the database server, we highly recommend SSD disks, and RAM is
-  the primary resource limitation.  We have not aggressively tested
-  for the minimum resources required, but 8 cores with 30GB of RAM
-  (e.g. AWS's m3.2xlarge) should suffice; you may be able to get away
-  with less especially on the CPU side.  The database load per user is
-  pretty optimized as long as `memcached` is working correctly.  This
-  has not been tested, but from extrapolating the load profile, it
-  should be possible to scale a Zulip installation to 10,000s of
-  active users using a single large database server without doing
-  anything complicated like sharding the database.
+* **Disk for application server:** We recommend using [the S3 file
+  uploads backend][s3-uploads] to store uploaded files at scale.  With
+  that configuration, we recommend 50GB of disk for the OS, Zulip
+  software, logs and scratch/free space.
 
-* For reasonably high availability, it's easy to run a hot spare
-  application server and a hot spare database (using Postgres
-  streaming replication; see the section on configuring this).  Be
-  sure to check out the section on backups if you're hoping to run a
-  spare application server; in particular you probably want to use the
-  S3 backend for storing user-uploaded files and avatars and will want
-  to make sure secrets are available on the hot spare.
+* **Disk for database:** SSD disk is highly recommended.  For
+  installations where most messages have <100 recipients, 10GB per 1M
+  messages of history is sufficient plus 1GB per 1000 users is
+  sufficient.  If most messages are to public streams with 10K+ users
+  subscribed (like on chat.zulip.org), add 20GB per (1000 user
+  accounts) per (1M messages to public streams).
+
+* **Example:**  When the
+  [chat.zulip.org](../contributing/chat-zulip-org.md) community server
+  has 12K user accounts (~300 hundred daily actives) and 800K messages
+  of history (400K to public streams), it had 16GB of RAM, 4 cores, and
+  its database was using 100GB of disk.  It is a default
+  configuration single-server installation.  The CPUs are essentially
+  always idle.
+
+* **Disaster recovery:** One can easily run a hot spare application
+  server and a hot spare database (using [Postgres streaming
+  replication][streaming-replication]).  Make sure the hot spare
+  application server has copies of `/etc/zulip` and you're either
+  syncing `LOCAL_UPLOADS_DIR` or using the [S3 file uploads
+  backend][s3-uploads].
+
+* **Sharding:** Zulip releases do not fully support dividing Tornado
+  traffic for a single Zulip realm/organization between multiple
+  application servers, which is why we recommend a hot spare over
+  load-balancing.  We don't have an easily deployed configuration for
+  load-balancing Tornado within a single organization, and as a result
+  can't currently offer this model outside of enterprise support
+  contracts.
 
 * Zulip 2.0 and later supports running multiple Tornado servers
   sharded by realm/organization, which is how we scale Zulip Cloud.
+  Contact us for help implementing the sharding policy.
 
-* However, Zulip does not yet support dividing traffic for a single
-  Zulip realm between multiple application servers.  There are two
-  issues: you need to share the memcached/Redis/RabbitMQ instance
-  (these should can be moved to a network service shared by multiple
-  servers with a bit of configuration) and the Tornado event system
-  for pushing to browsers currently has no mechanism for multiple
-  frontend servers (or event processes) talking to each other.  One
-  can probably get a factor of 10 in a single server's scalability by
-  [supporting multiple tornado processes on a single server](https://github.com/zulip/zulip/issues/372),
-  which is also likely the first part of any project to support
-  exchanging events amongst multiple servers.  The work for changing
-  this is pretty far along, though, and thus while not generally
-  available yet, we can set it up for users with an enterprise support
-  contract.
+Scalability is an area of active development, so if you're unsure
+whether Zulip is a fit for your organization or need further advice
+[contact Zulip support](mailto:support@zulipchat.com).
 
-Questions, concerns, and bug reports about this area of Zulip are very
-welcome!  This is an area we are hoping to improve.
+[s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
+[streaming-replication]: ../production/export-and-import.html#postgres-streaming-replication
