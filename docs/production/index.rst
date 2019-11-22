@@ -8,9 +8,9 @@ Zulip in Production
    requirements
    Installing a production server <install>
    troubleshooting
+   management-commands
    settings
    mobile-push-notifications
-   maintain-secure-upgrade
    upgrade-or-modify
    security-model
    authentication-methods
