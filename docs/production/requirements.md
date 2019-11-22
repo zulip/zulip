@@ -1,4 +1,4 @@
-# Requirements
+# Requirements and Scalability
 
 To run a Zulip server, you will need:
 * A dedicated machine or VM
@@ -60,7 +60,7 @@ https://help.ubuntu.com/community/Repositories/Ubuntu
   for organizations with a hundreds of users (active or no).
 
   See our
-  [documentation on scalability](../production/maintain-secure-upgrade.html#scalability)
+  [documentation on scalability](#scalability)
   for advice on hardware requirements for larger organizations.
 
 * Disk space: You'll need at least 10GB of free disk space for a
@@ -132,3 +132,76 @@ Once you have met these requirements, see [full instructions for installing
 Zulip in production](../production/install.md).
 
 [trusty-eol]: https://wiki.ubuntu.com/Releases
+
+## Scalability
+
+This section attempts to address the considerations involved with
+running Zulip with larger teams (especially >1000 users).
+
+* For an organization with 100+ users, it's important to have more
+  than 4GB of RAM on the system.  Zulip will install on a system with
+  2GB of RAM, but with less than 3.5GB of RAM, it will run its
+  [queue processors](../subsystems/queuing.md) multithreaded to conserve memory;
+  this creates a significant performance bottleneck.
+
+* [chat.zulip.org](../contributing/chat-zulip-org.md), with thousands of user
+  accounts and thousands of messages sent every week, has 8GB of RAM,
+  4 cores, and 80GB of disk.  The CPUs are essentially always idle,
+  but the 8GB of RAM is important.
+
+* We recommend using a [remote postgres
+  database](postgres.md) for isolation, though it is
+  not required.  In the following, we discuss a relatively simple
+  configuration with two types of servers: application servers
+  (running Django, Tornado, RabbitMQ, Redis, Memcached, etc.) and
+  database servers.
+
+* You can scale to a pretty large installation (O(~1000) concurrently
+  active users using it to chat all day) with just a single reasonably
+  large application server (e.g. AWS c3.2xlarge with 8 cores and 16GB
+  of RAM) sitting mostly idle (<10% CPU used and only 4GB of the 16GB
+  RAM actively in use).  You can probably get away with half that
+  (e.g. c3.xlarge), but ~8GB of RAM is highly recommended at scale.
+  Beyond a 1000 active users, you will eventually want to increase the
+  memory cap in `memcached.conf` from the default 512MB to avoid high
+  rates of memcached misses.
+
+* For the database server, we highly recommend SSD disks, and RAM is
+  the primary resource limitation.  We have not aggressively tested
+  for the minimum resources required, but 8 cores with 30GB of RAM
+  (e.g. AWS's m3.2xlarge) should suffice; you may be able to get away
+  with less especially on the CPU side.  The database load per user is
+  pretty optimized as long as `memcached` is working correctly.  This
+  has not been tested, but from extrapolating the load profile, it
+  should be possible to scale a Zulip installation to 10,000s of
+  active users using a single large database server without doing
+  anything complicated like sharding the database.
+
+* For reasonably high availability, it's easy to run a hot spare
+  application server and a hot spare database (using Postgres
+  streaming replication; see the section on configuring this).  Be
+  sure to check out the section on backups if you're hoping to run a
+  spare application server; in particular you probably want to use the
+  S3 backend for storing user-uploaded files and avatars and will want
+  to make sure secrets are available on the hot spare.
+
+* Zulip 2.0 and later supports running multiple Tornado servers
+  sharded by realm/organization, which is how we scale Zulip Cloud.
+
+* However, Zulip does not yet support dividing traffic for a single
+  Zulip realm between multiple application servers.  There are two
+  issues: you need to share the memcached/Redis/RabbitMQ instance
+  (these should can be moved to a network service shared by multiple
+  servers with a bit of configuration) and the Tornado event system
+  for pushing to browsers currently has no mechanism for multiple
+  frontend servers (or event processes) talking to each other.  One
+  can probably get a factor of 10 in a single server's scalability by
+  [supporting multiple tornado processes on a single server](https://github.com/zulip/zulip/issues/372),
+  which is also likely the first part of any project to support
+  exchanging events amongst multiple servers.  The work for changing
+  this is pretty far along, though, and thus while not generally
+  available yet, we can set it up for users with an enterprise support
+  contract.
+
+Questions, concerns, and bug reports about this area of Zulip are very
+welcome!  This is an area we are hoping to improve.

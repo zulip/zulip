@@ -80,7 +80,7 @@ the Zulip documentation on
 [making a user an administrator from the terminal][grant-admin-access]
 to mark the appropriate users as administrators.
 
-[grant-admin-access]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#grant-administrator-access)
+[grant-admin-access]: https://zulip.readthedocs.io/en/latest/production/management-commands.html#grant-administrator-access)
 [gitter-api-user-data]: https://developer.gitter.im/docs/user-resource
 
 ## Caveats
