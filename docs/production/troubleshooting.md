@@ -1,4 +1,4 @@
-# Troubleshooting
+# Troubleshooting and monitoring
 
 Zulip uses [Supervisor](http://supervisord.org/index.html) to monitor
 and control its many Python services. Read the next section, [Using
@@ -129,3 +129,65 @@ problems and how to resolve them:
   not have the correct HTTP Host header, Django rejects it and logs the
   attempt. For more on this issue, see the [Django release notes on Host header
   poisoning](https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning)
+
+## Monitoring
+
+The complete Nagios configuration (sans secret keys) used to
+monitor zulip.com is available under `puppet/zulip_ops` in the
+Zulip Git repository (those files are not installed in the release
+tarballs).
+
+The Nagios plugins used by that configuration are installed
+automatically by the Zulip installation process in subdirectories
+under `/usr/lib/nagios/plugins/`.  The following is a summary of the
+various Nagios plugins included with Zulip and what they check:
+
+Application server and queue worker monitoring:
+
+* `check_send_receive_time` (sends a test message through the system
+  between two bot users to check that end-to-end message sending works)
+
+* `check_rabbitmq_consumers` and `check_rabbitmq_queues` (checks for
+  rabbitmq being down or the queue workers being behind)
+
+* `check_queue_worker_errors` (checks for errors reported by the queue
+  workers)
+
+* `check_worker_memory` (monitors for memory leaks in queue workers)
+
+* `check_email_deliverer_backlog` and `check_email_deliverer_process`
+  (monitors for whether scheduled outgoing emails are being sent)
+
+Database monitoring:
+
+* `check_postgres_replication_lag` (checks streaming replication is up
+  to date).
+
+* `check_postgres` (checks the health of the postgres database)
+
+* `check_postgres_backup` (checks backups are up to date; see above)
+
+* `check_fts_update_log` (monitors for whether full-text search updates
+  are being processed)
+
+Standard server monitoring:
+
+* `check_website_response.sh` (standard HTTP check)
+
+* `check_debian_packages` (checks apt repository is up to date)
+
+**Note**: While most commands require no special permissions,
+  `check_email_deliverer_backlog`, requires the `nagios` user to be in
+  the `zulip` group, in order to access `SECRET_KEY` and thus run
+  Zulip management commands.
+
+If you're using these plugins, bug reports and pull requests to make
+it easier to monitor Zulip and maintain it in production are
+encouraged!
+
+## Memory leak mitigation
+
+As a measure to mitigate the impact of potential memory leaks in one
+of the Zulip daemons, the service automatically restarts itself
+every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
+precise configuration.

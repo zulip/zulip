@@ -383,7 +383,7 @@ delete the test import data from your Zulip server before doing a
 final import.  You can **permanently delete** all data from a Zulip
 organization using the following procedure:
 
-* Start a [Zulip management shell](../production/maintain-secure-upgrade.html#manage-py-shell)
+* Start a [Zulip management shell](../production/management-commands.html#manage-py-shell)
 * In the management shell, run the following commands, replacing `""`
   with the subdomain if [you are hosting the organization on a
   subdomain](../production/multiple-organizations.md):
