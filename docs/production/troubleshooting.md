@@ -52,7 +52,6 @@ zulip-senders:zulip-events-message_sender-2                     RUNNING   pid 22
 zulip-senders:zulip-events-message_sender-3                     RUNNING   pid 2212, uptime 1:13:11
 zulip-senders:zulip-events-message_sender-4                     RUNNING   pid 2208, uptime 1:13:11
 zulip-tornado                                                   RUNNING   pid 2193, uptime 1:13:11
-zulip-workers:zulip-deliver-enqueued-emails                     STARTING
 zulip-workers:zulip-events-confirmation-emails                  RUNNING   pid 2199, uptime 1:13:11
 zulip-workers:zulip-events-digest_emails                        RUNNING   pid 2205, uptime 1:13:11
 zulip-workers:zulip-events-email_mirror                         RUNNING   pid 2203, uptime 1:13:11
@@ -66,6 +65,15 @@ zulip-workers:zulip-events-user-activity                        RUNNING   pid 21
 zulip-workers:zulip-events-user-activity-interval               RUNNING   pid 2196, uptime 1:13:11
 zulip-workers:zulip-events-user-presence                        RUNNING   pid 2195, uptime 1:13:11
 ```
+
+If you see any services showing a status other than `RUNNING`, or you
+see an uptime under 5 seconds (which indicates it's crashing
+immediately after startup and repeatedly restarting), that service
+isn't running.  If you don't see relevant logs in
+`/var/log/zulip/errors.log`, check the log file declared via
+`stdout_logfile` for that service's entry in
+`/etc/supervisor/conf.d/zulip.conf` for details.  Logs only make it to
+`/var/log/zulip/errors.log` once a service has started fully.
 
 ### Restarting services with `supervisorctl restart all`
 
@@ -132,8 +140,35 @@ problems and how to resolve them:
 
 ## Monitoring
 
+Chat is mission-critical to many organizations.  This section contains
+advice on monitoring your Zulip server to minimize downtime.
+
+First, we should highlight that Zulip sends Django error emails to
+`ZULIP_ADMINISTRATOR` for any backend exceptions.  A properly
+functioning Zulip server shouldn't send any such emails, so it's worth
+reporting/investigating any that you do see.
+
+Beyond that, the most important monitoring for a Zulip server is
+standard stuff:
+
+* Basic host health monitoring for issues running out of disk space,
+  especially for the database and where uploads are stored.
+* Service uptime and standard monitoring for the [services Zulip
+  depends on](#troubleshooting-services).  Most monitoring software
+  has standard plugins for `nginx`, `postgres`.
+* `supervisorctl status` showing all services `RUNNING`.
+* Checking for processes being OOM killed.
+
+Beyond that, Zulip ships a few application-specific end-to-end health
+checks.  The Nagios plugins `check_send_receive_time`,
+`check_rabbitmq_queues`, and `check_rabbitmq_consumers` are generally
+sufficient to point to the cause of any Zulip production issue.  See
+the next section for details.
+
+### Nagios configuration
+
 The complete Nagios configuration (sans secret keys) used to
-monitor zulip.com is available under `puppet/zulip_ops` in the
+monitor zulipchat.com is available under `puppet/zulip_ops` in the
 Zulip Git repository (those files are not installed in the release
 tarballs).
 
