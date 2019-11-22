@@ -38,4 +38,5 @@ No download required!
 
 {end_tabs}
 
-See also the [unofficial client libraries](#client-libraries) for many languages.
+See also [user-contributed client libraries](/api/client-libraries)
+for many other languages.
