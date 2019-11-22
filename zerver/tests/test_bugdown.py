@@ -242,6 +242,11 @@ class BugdownMiscTest(ZulipTestCase):
         assert(user is not None)
         self.assertEqual(user['email'], hamlet.email)
 
+        self.assertFalse(mention_data.message_has_wildcards())
+        content = '@**King Hamlet** @**Cordelia lear** @**all**'
+        mention_data = bugdown.MentionData(realm.id, content)
+        self.assertTrue(mention_data.message_has_wildcards())
+
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
             with mock.patch('logging.error') as mock_logger:
@@ -1344,17 +1349,17 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_ids, set())
 
     def test_possible_mentions(self) -> None:
-        def assert_mentions(content: str, names: Set[str]) -> None:
-            self.assertEqual(possible_mentions(content), names)
+        def assert_mentions(content: str, names: Set[str], has_wildcards: Optional[bool]=False) -> None:
+            self.assertEqual(possible_mentions(content), (names, has_wildcards))
 
         assert_mentions('', set())
         assert_mentions('boring', set())
-        assert_mentions('@**all**', set())
+        assert_mentions('@**all**', set(), True)
         assert_mentions('smush@**steve**smush', set())
 
         assert_mentions(
             'Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**',
-            {'King Hamlet', 'Cordelia Lear', 'Foo van Barson|1234'}
+            {'King Hamlet', 'Cordelia Lear', 'Foo van Barson|1234'}, True
         )
 
     def test_mention_multiple(self) -> None:

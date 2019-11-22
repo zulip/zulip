@@ -2114,7 +2114,7 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
 
 class MentionData:
     def __init__(self, realm_id: int, content: str) -> None:
-        mention_texts = possible_mentions(content)
+        mention_texts, has_wildcards = possible_mentions(content)
         possible_mentions_info = get_possible_mentions_info(realm_id, mention_texts)
         self.full_name_info = {
             row['full_name'].lower(): row
@@ -2125,6 +2125,10 @@ class MentionData:
             for row in possible_mentions_info
         }
         self.init_user_group_data(realm_id=realm_id, content=content)
+        self.has_wildcards = has_wildcards
+
+    def message_has_wildcards(self) -> bool:
+        return self.has_wildcards
 
     def init_user_group_data(self,
                              realm_id: int,
