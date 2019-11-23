@@ -1044,11 +1044,11 @@ class EventsRegisterTest(ZulipTestCase):
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
         do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
-        prereg_users = PreregistrationUser.objects.get(email="foo@zulip.com")
+        prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
 
         events = self.do_test(
             lambda: do_create_user('foo@zulip.com', 'password', self.user_profile.realm,
-                                   'full name', 'short name', prereg_user=prereg_users),
+                                   'full name', 'short name', prereg_user=prereg_user),
             state_change_expected=True,
             num_events=5,
         )
