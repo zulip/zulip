@@ -74,6 +74,17 @@ lose the setting and need to re-enable it.
       replaced with `SOCIAL_AUTH_GOOGLE_KEY`.
     * In `/etc/zulip/settings.py`, `GoogleMobileOauth2Backend` should
       be replaced with called `GoogleAuthBackend`.
+- The LDAP system adds two additional settings, which are obligatory to set up
+  for configurations that aren't using `LDAP_APPEND_DOMAIN`. Those are
+  `AUTH_LDAP_REVERSE_EMAIL_SEARCH` and `AUTH_LDAP_USERNAME_ATTR`. See the
+  [LDAP configuration instructions](../production/authentication-methods.html#ldap-including-active-directory)
+  for details. The most important excerpt from the linked documentation:
+    * Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find an
+      LDAP user given their email address.  Generally, this will be
+      `AUTH_LDAP_USER_SEARCH` in configuration (A) or a search by
+      `LDAP_EMAIL_ATTR` in configuration (C).
+    * Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP attribute
+   for the user's LDAP username in that search result.
 - The Zulip web and desktop apps have been converted to directly count
   all unread messages, replacing an old system that just counted the
   (recent) messages fully fetched by the webapp.  This one-time
