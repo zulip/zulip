@@ -180,7 +180,7 @@ run_test('basic_chars', () => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped('abfhlmotyz');
-    assert_unmapped('BEFHILNOQTUWXYZ');
+    assert_unmapped('BEFHILNOQUWXYZ');
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
@@ -236,7 +236,7 @@ run_test('basic_chars', () => {
 
     overlays.streams_open = return_true;
     overlays.is_active = return_true;
-    assert_mapping('S', 'subs.keyboard_sub');
+    assert_mapping('T', 'subs.keyboard_sub');
     assert_mapping('V', 'subs.view_stream');
     overlays.streams_open = return_false;
     test_normal_typing();
@@ -289,7 +289,7 @@ run_test('basic_chars', () => {
     assert_mapping('k', 'navigate.up');
     assert_mapping('K', 'navigate.page_up');
     assert_mapping('s', 'narrow.by_recipient');
-    assert_mapping('S', 'narrow.by_topic');
+    assert_mapping('T', 'narrow.by_topic');
     assert_mapping('u', 'popovers.show_sender_info');
     assert_mapping('i', 'popovers.open_message_menu');
     assert_mapping(':', 'reactions.open_reactions_popover', true);

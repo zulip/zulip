@@ -56,11 +56,11 @@ const keydown_cmd_or_ctrl_mappings = {
 };
 
 
-var keydown_ctrl_and_shift_mappings = {
+const keydown_ctrl_and_shift_mappings = {
     83: {name: 'create_stream', message_view_only: false}, // 's'
 };
 
-var keydown_either_mappings = {
+const keydown_either_mappings = {
     // these can be triggered by key or shift + key
     // Note that codes for letters are still case sensitive!
     //
@@ -95,7 +95,7 @@ const keypress_mappings = {
     77: {name: 'toggle_mute', message_view_only: true}, // 'M'
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
-    83: {name: 'narrow_by_topic', message_view_only: true}, //'S'
+    84: {name: 'narrow_by_topic', message_view_only: true}, // 'T'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: true}, // 'd'
