@@ -31,7 +31,13 @@
         {{#if ../can_modify}}
         <span class="owner">{{bot_owner_delivery_email}}</span>
         {{else}}
-        <span class="owner">{{bot_owner_full_name}}</span>
+        <span class="owner">
+            {{#if no_owner }}
+            {{bot_owner_full_name}}
+            {{else}}
+            <a data-owner-id="{{bot_owner_id}}" href="#" class="view_user_profile">{{bot_owner_full_name}}</a>
+            {{/if}}
+        </span>
         {{/if}}
     </td>
     <td>
