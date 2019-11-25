@@ -134,16 +134,11 @@ function populate_users(realm_people_data) {
             // Convert bot type id to string for viewing to the users.
             user.bot_type = settings_bots.type_id_to_string(user.bot_type);
 
-            // TODO: This is a messy way to handle bot owners.
-            // Ideally, we'd send the user ID to the template, render
-            // owner names as a link, and have that link take the
-            // browser to that user's profile.  But showing the user's
-            // full name is simpler and doesn't look broken, so we do
-            // that for now.
             if (user.bot_owner_id !== null) {
                 user.bot_owner_full_name = people.get_person_from_user_id(
                     user.bot_owner_id).full_name;
             } else {
+                user.no_owner = true;
                 user.bot_owner_full_name = i18n.t("No owner");
             }
             bots.push(user);
@@ -433,6 +428,14 @@ exports.on_load_success = function (realm_people_data) {
         };
 
         settings_ui.do_settings_change(channel.post, url, data, status, opts);
+    });
+
+    $('.admin_bot_table').on('click', '.user_row .view_user_profile', function (e) {
+        const owner_id = $(e.target).attr('data-owner-id');
+        const owner = people.get_person_from_user_id(owner_id);
+        popovers.show_user_profile(owner);
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
