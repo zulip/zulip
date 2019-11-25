@@ -83,6 +83,7 @@ const keypress_mappings = {
     64: {name: 'compose_reply_with_mention', message_view_only: true}, // '@'
     65: {name: 'A_deprecated', message_view_only: true}, // 'A'
     67: {name: 'C_deprecated', message_view_only: true}, // 'C'
+    68: {name: 'open_last_draft', message_view_only: true}, //'D'
     71: {name: 'G_end', message_view_only: true}, // 'G'
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
     75: {name: 'vim_page_up', message_view_only: true}, // 'K'
@@ -636,6 +637,9 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'compose_private_message':
         compose_actions.start('private', {trigger: "compose_hotkey"});
+        return true;
+    case 'open_last_draft':
+        drafts.restore_last_draft();
         return true;
     case 'narrow_private':
         return do_narrow_action(function (target, opts) {

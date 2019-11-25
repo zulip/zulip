@@ -172,7 +172,9 @@ exports.restore_draft = function (draft_id) {
         }
     }
 
-    overlays.close_overlay("drafts");
+    if (overlays.drafts_open()) {
+        overlays.close_overlay("drafts");
+    }
     compose_fade.clear_compose();
     compose.clear_preview_area();
 
@@ -182,6 +184,15 @@ exports.restore_draft = function (draft_id) {
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea();
     $("#compose-textarea").data("draft-id", draft_id);
+};
+
+exports.restore_last_draft = function () {
+    const draft_arrow = draft_model.get();
+    const draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
+    if (draft_id_arrow.length) {
+        const first_draft = draft_id_arrow[draft_id_arrow.length - 1];
+        exports.restore_draft(first_draft);
+    }
 };
 
 const DRAFT_LIFETIME = 30;

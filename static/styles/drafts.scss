@@ -52,6 +52,15 @@
         }
     }
 
+    .drafts-footer {
+        position: relative;
+        bottom: 0;
+        width: 100%;
+        padding-top: 5px;
+        padding-bottom: 10px;
+        border-top: 1px solid hsl(0, 0%, 87%);
+        text-align: center;
+    }
     .drafts-list {
         padding: 10px 0;
         overflow: auto;

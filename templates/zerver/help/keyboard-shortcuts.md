@@ -138,6 +138,7 @@ title="thumbs up"/>**: `+`
 ## Drafts
 
 * **Toggle drafts view**: `d`
+* **Edit last draft**: `D`
 
 ### Within the drafts view
 
