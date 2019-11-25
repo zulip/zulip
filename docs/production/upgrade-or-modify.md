@@ -147,7 +147,7 @@ the version corresponding to the `restart-server` path you call.
 .. warning::
     If you have modified configuration files installed by
     Zulip (e.g. the nginx configuration), the Zulip upgrade process will
-    overwrite your configuration when it does the `puppet apply`.
+    overwrite your configuration when it does the ``puppet apply``.
 ```
 
 You can test whether this will happen assuming no upstream changes to
@@ -538,11 +538,14 @@ business.
 
 #### Disabling unattended upgrades
 
-**Important**: We recommend that you
-[disable Ubuntu's unattended-upgrades][disable-unattended-upgrades],
-and instead install apt upgrades manually.  With unattended upgrades
-enabled, the moment a new Postgres release is published, your Zulip
-server will have its postgres server upgraded (and thus restarted).
+```eval_rst
+.. important::
+    We recommend that you `disable Ubuntu's unattended-upgrades
+    <https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/>`_
+    and instead install apt upgrades manually.  With unattended upgrades
+    enabled, the moment a new Postgres release is published, your Zulip
+    server will have its postgres server upgraded (and thus restarted).
+```
 
 When one of the services Zulip depends on (postgres, memcached, redis,
 rabbitmq) is restarted, that services will disconnect everything using
@@ -556,8 +559,6 @@ upgraded and then restarted key Zulip dependencies.
 Instead, we recommend installing updates for these services manually,
 and then restarting the Zulip server with
 `/home/zulip/deployments/current/scripts/restart-server` afterwards.
-
-[disable-unattended-upgrades]: https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/
 
 ## Contributing patches
 
