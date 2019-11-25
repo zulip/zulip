@@ -145,6 +145,8 @@ exports.maybe_show_deprecation_notice = function (key) {
     const isCmdOrCtrl = common.has_mac_keyboard() ? "Cmd" : "Ctrl";
     if (key === 'C') {
         message = exports.get_hotkey_deprecation_notice('C', 'x');
+    } else if (key === 'A') {
+        message = i18n.t('Hotkey \'A\' has been withdrawn from use.');
     } else if (key === '*') {
         message = exports.get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
     } else {
