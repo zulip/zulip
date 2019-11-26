@@ -80,10 +80,6 @@ Jump to:
 
 #### macOS
 
-0. If you are running MacOS High Sierra, make sure you are not running
-   a version with a
-   [buggy NFS implementation](#importerror-no-module-named-on-macos-during-vagrant-provisioning).
-   Versions 10.13.2 and above have the bug fixed.
 1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [VirtualBox][vbox-dl] (latest).
 
@@ -845,80 +841,6 @@ It is okay to proceed and start the Zulip server.
 #### VT-X unavailability error
 
 Users who are unable to do "vagrant up" due to a VT-X unavailability error need to disable "Hyper-V" to get it to work.
-
-#### Mounting NFS fails on macOS Mojave
-
-If you see following error (or similar) when you run `vagrant up` on
-macOS Mojave:
-
- ```
-==> default: Configuring and enabling network interfaces...
-==> default: Exporting NFS shared folders...
-==> default: Preparing to edit /etc/exports. Administrator privileges will be required...
-Password:
-tee: /etc/exports: Operation not permitted
-tee: /etc/exports: Operation not permitted
-tee: /etc/exports: Operation not permitted
-The nfsd service does not appear to be running.
-Starting the nfsd service
-==> default: Mounting NFS shared folders...
-The following SSH command responded with a non-zero exit status.
-Vagrant assumes that this means the command failed!
- mount -o vers=3,udp 172.28.128.1:<zulip_path> /srv/zulip
- Stdout from the command:
- Stderr from the command:
- mount.nfs: mount to NFS server '172.28.128.1:<zulip_path>' failed: RPC Error: Unable to receive
-```
-
-This is usually because the Terminal instance you're using does not
-have "Full Disk Access" to edit /etc/exports. This privilege can be
-added here: `System Preferences`/`Security & Privacy`/`Full Disk
-Access`.
-
-#### ImportError: No module named '...' on MacOS during Vagrant provisioning
-
-If you see following error (or similar) when you try to provision
-Vagrant environment by `vagrant provision` (or during first run
-`vagrant up`):
-
-```
-    default: ImportError: No module named 'zerver.lib.emoji'
-    default: Error running a subcommand of ./lib/provision.py: tools/do-destroy-rebuild-database
-    default: Actual error output for the subcommand is just above this.
-    default: Traceback (most recent call last):
-    default:   File "./lib/provision.py", line 413, in <module>
-    default:     sys.exit(main(options))
-    default:   File "./lib/provision.py", line 349, in main
-    default:     run(["tools/do-destroy-rebuild-database"])
-    default:   File "/srv/zulip/scripts/lib/zulip_tools.py", line 163, in run
-    default:     subprocess.check_call(args, **kwargs)
-    default:   File "/usr/lib/python3.4/subprocess.py", line 561, in check_call
-    default:     raise CalledProcessError(retcode, cmd)
-    default: subprocess.CalledProcessError: Command '['tools/do-destroy-rebuild-database']' returned non-zero exit status 1
-    default:
-    default: Provisioning failed!
-    default: * Look at the traceback(s) above to find more about the errors.
-    default: * Resolve the errors or get help on chat.
-    default: * If you can fix this yourself, you can re-run tools/provision at any time.
-    default: * Logs are here: zulip/var/log/provision.log
-    default:
-The SSH command responded with a non-zero exit status. Vagrant
-assumes that this means the command failed. The output for this command
-should be in the log above. Please read the output to determine what
-went wrong.
-```
-
-This error is caused by a bug in the MacOS NFS file syncing
-implementation (Zulip uses Vagrant's NFS feature for syncing files on
-MacOS).  In early versions of MacOS High Sierra, files present in the
-directory on the host machine would appear to not be present in the
-Vagrant guest (e.g. in the exception above, `zerver/lib/emoji.py` is
-missing).  This bug is fixed in MacOS High Sierra 10.13.2 and above,
-so the fix is to upgrade to a version of MacOS with a working NFS
-implementation.
-
-You can read more about this
-[here](https://github.com/hashicorp/vagrant/issues/8788).
 
 ### Specifying an Ubuntu mirror
 
