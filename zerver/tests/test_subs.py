@@ -1611,6 +1611,28 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assert_json_error(
             result, "value key is missing from subscription_data[0]")
 
+    def test_set_stream_wildcard_mentions_notify(self) -> None:
+        """
+        A POST request to /api/v1/users/me/subscriptions/properties with wildcard_mentions_notify
+        sets the property.
+        """
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
+        self.login(test_email)
+
+        subs = gather_subscriptions(test_user)[0]
+        sub = subs[0]
+        result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
+                               {"subscription_data": ujson.dumps([{"property": "wildcard_mentions_notify",
+                                                                   "stream_id": sub["stream_id"],
+                                                                   "value": True}])})
+
+        self.assert_json_success(result)
+
+        updated_sub = get_subscription(sub['name'], test_user)
+        self.assertIsNotNone(updated_sub)
+        self.assertEqual(updated_sub.wildcard_mentions_notify, True)
+
     def test_set_pin_to_top(self) -> None:
         """
         A POST request to /api/v1/users/me/subscriptions/properties with stream_id and
@@ -1751,6 +1773,15 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                                    "stream_id": subs[0]["stream_id"]}])})
         self.assert_json_error(result,
                                '%s is not a boolean' % (property_name,))
+
+        property_name = "wildcard_mentions_notify"
+        result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
+                               {"subscription_data": ujson.dumps([{"property": property_name,
+                                                                   "value": "bad",
+                                                                   "stream_id": subs[0]["stream_id"]}])})
+
+        self.assert_json_error(result,
+                               "%s is not a boolean" % (property_name,))
 
         property_name = "color"
         result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",

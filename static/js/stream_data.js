@@ -293,6 +293,9 @@ exports.receives_notifications = function (stream_name, notification_name) {
     if (sub[notification_name] !== null) {
         return sub[notification_name];
     }
+    if (notification_name === 'wildcard_mentions_notify') {
+        return page_params[notification_name];
+    }
     return page_params["enable_stream_" + notification_name];
 };
 
@@ -301,6 +304,7 @@ const stream_notification_settings = [
     "audible_notifications",
     "push_notifications",
     "email_notifications",
+    "wildcard_mentions_notify",
 ];
 
 exports.update_calculated_fields = function (sub) {

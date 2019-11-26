@@ -50,6 +50,9 @@ exports.update_property = function (stream_id, property, value, other_values) {
             history_public_to_subscribers: other_values.history_public_to_subscribers,
         });
         break;
+    case 'wildcard_mentions_notify':
+        update_stream_setting(sub, value, property);
+        break;
     case 'is_announcement_only':
         subs.update_stream_announcement_only(sub, value);
         break;

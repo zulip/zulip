@@ -365,6 +365,30 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         user_profile.wildcard_mentions_notify = True
         user_profile.save()
 
+        # If wildcard_mentions_notify=True for a stream and False for a user, we treat the user
+        # as mentioned for that stream.
+        user_profile.wildcard_mentions_notify = False
+        sub.wildcard_mentions_notify = True
+        user_profile.save()
+        sub.save()
+        client_descriptor = allocate_event_queue()
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+                                          content="@**all** what's up?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_list = mock_enqueue.call_args_list[0][0]
+
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, True, False,
+                                         False, "Denmark", False, True,
+                                         {'email_notified': True, 'push_notified': True}))
+        destroy_event_queue(client_descriptor.event_queue.id)
+        user_profile.wildcard_mentions_notify = True
+        sub.wildcard_mentions_notify = None
+        user_profile.save()
+        sub.save()
+
         # Test the hook with a stream message with stream_push_notify
         change_subscription_properties(user_profile, stream, sub, {'push_notifications': True})
         client_descriptor = allocate_event_queue()
