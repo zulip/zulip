@@ -51,7 +51,7 @@ a proxy to access the internet.)
 - **Ubuntu LTS**: 18.04 or 16.04 64-bit
   - or **Debian**: 9.0 "stretch" 64-bit
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
-  virtualization enabled (VT-X or AMD-V), administrator access.
+  virtualization enabled (VT-x or AMD-V), administrator access.
 
 Other Linux distributions work great too, but we don't maintain
 documentation for installing Vagrant and Docker on those systems, so
@@ -161,7 +161,7 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 If you do, make sure to **install default required packages** along with
 **git**, **curl**, **openssh**, and **rsync** binaries.)
 
-Also, you must have hardware virtualization enabled (VT-X or AMD-V) in your
+Also, you must have hardware virtualization enabled (VT-x or AMD-V) in your
 computer's BIOS.
 
 #### Running Git BASH as an administrator
@@ -672,6 +672,13 @@ some of the solutions mentioned
 [windows-uac]: https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
 [disable-uac]: https://stackoverflow.com/questions/15320550/why-is-secreatesymboliclinkprivilege-ignored-on-windows-8
 
+If you ran Git BASH as administrator but you already had VirtualBox
+running, you might still get this error because VirtualBox is not
+running as administrator.  In that case: close the Zulip VM with
+`vagrant halt`; close any other VirtualBox VMs that may be running;
+exit VirtualBox; and try again with `vagrant up --provision` from a
+Git BASH running as administrator.
+
 Second, VirtualBox does not enable symbolic links by default. Vagrant
 starting with version 1.6.0 enables symbolic links for VirtualBox shared
 folder.
@@ -838,9 +845,56 @@ Done in 23.50s.
 These are warnings produced by spammy third party JavaScript packages.
 It is okay to proceed and start the Zulip server.
 
-#### VT-X unavailability error
+#### VBoxManage errors related to VT-x or WHvSetupPartition
 
-Users who are unable to do "vagrant up" due to a VT-X unavailability error need to disable "Hyper-V" to get it to work.
+```
+There was an error while executing `VBoxManage`, a CLI used by Vagrant
+for controlling VirtualBox. The command and stderr is shown below.
+
+Command: ["startvm", "8924a681-b4e4-4b7a-96f2-4cb11619f123", "--type", "headless"]
+
+Stderr: VBoxManage.exe: error: (VERR_NEM_MISSING_KERNEL_API).
+VBoxManage.exe: error: VT-x is not available (VERR_VMX_NO_VMX)
+VBoxManage.exe: error: Details: code E_FAIL (0x80004005), component ConsoleWrap, interface IConsole
+```
+
+or
+
+```
+Stderr: VBoxManage.exe: error: Call to WHvSetupPartition failed: ERROR_SUCCESS (Last=0xc000000d/87) (VERR_NEM_VM_CREATE_FAILED)
+VBoxManage.exe: error: Details: code E_FAIL (0x80004005), component ConsoleWrap, interface IConsole
+```
+
+First, ensure that hardware virtualization support (VT-x or AMD-V) is
+enabled in your BIOS.
+
+If the error persists, you may have run into an incompatibility
+between VirtualBox and Hyper-V on Windows.  To disable Hyper-V, open
+command prompt as administrator, run `bcdedit /set
+hypervisorlaunchtype off`, and reboot.  If you need to enable it
+later, run `bcdedit /deletevalue hypervisorlaunchtype`, and reboot.
+
+#### OSError: [Errno 26] Text file busy
+
+```
+default: Traceback (most recent call last):
+…
+default:   File "/srv/zulip-py3-venv/lib/python3.6/shutil.py", line 426, in _rmtree_safe_fd
+default:     os.rmdir(name, dir_fd=topfd)
+default: OSError: [Errno 26] Text file busy: 'baremetrics'
+```
+
+This error is caused by a
+[bug](https://www.virtualbox.org/ticket/19004) in recent versions of
+the VirtualBox Guest Additions for Linux on Windows hosts.  It has not
+been fixed upstream as of this writing, but you may be able to work
+around it by removing the plugin that upgrades Guest Additions:
+
+```
+vagrant destroy
+vagrant plugin uninstall vagrant-vbguest
+vagrant up --provider=virtualbox
+```
 
 ### Specifying an Ubuntu mirror
 
