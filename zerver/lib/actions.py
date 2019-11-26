@@ -2778,6 +2778,7 @@ def notify_subscriptions_added(user_profile: UserProfile,
                     audible_notifications=subscription.audible_notifications,
                     push_notifications=subscription.push_notifications,
                     email_notifications=subscription.email_notifications,
+                    wildcard_mentions_notify=subscription.wildcard_mentions_notify,
                     description=stream.description,
                     rendered_description=stream.rendered_description,
                     pin_to_top=subscription.pin_to_top,
@@ -4731,7 +4732,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
         "recipient_id", "is_muted", "color", "desktop_notifications",
         "audible_notifications", "push_notifications", "email_notifications",
-        "active", "pin_to_top"
+        "wildcard_mentions_notify", "active", "pin_to_top"
     ).order_by("recipient_id")
 
     sub_dicts = list(sub_dicts)
@@ -4817,6 +4818,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                        'audible_notifications': sub["audible_notifications"],
                        'push_notifications': sub["push_notifications"],
                        'email_notifications': sub["email_notifications"],
+                       'wildcard_mentions_notify': sub["wildcard_mentions_notify"],
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'first_message_id': stream["first_message_id"],
