@@ -1033,11 +1033,9 @@ def get_recent_conversations_recipient_id(user_profile: UserProfile,
     get_recent_private_conversations would have used to record that
     message in its data structure.
     """
-    my_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL,
-                                            type_id=user_profile.id).id
+    my_recipient_id = user_profile.id
     if recipient_id == my_recipient_id:
-        return Recipient.objects.get(type=Recipient.PERSONAL,
-                                     type_id=sender_id).id
+        return UserProfile.objects.values_list('recipient_id', flat=True).get(id=sender_id)
     return recipient_id
 
 def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dict[str, Any]]:
@@ -1071,8 +1069,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
     RECENT_CONVERSATIONS_LIMIT = 1000
 
     recipient_map = {}
-    my_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL,
-                                            type_id=user_profile.id).id
+    my_recipient_id = user_profile.recipient_id
 
     query = '''
     SELECT
@@ -1095,22 +1092,15 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
         LIMIT %(conversation_limit)d)
         UNION ALL
         (SELECT
-            um.message_id AS message_id,
-            r.id AS recipient_id
+            m.id AS message_id,
+            sender_profile.recipient_id AS recipient_id
         FROM
-            zerver_usermessage um
-        JOIN
             zerver_message m
-        ON
-            um.message_id = m.id
         JOIN
-            zerver_recipient r
+            zerver_userprofile sender_profile
         ON
-            r.type = 1 AND
-            r.type_id = m.sender_id
+            m.sender_id = sender_profile.id
         WHERE
-            um.user_profile_id=%(user_profile_id)d AND
-            um.flags & 2048 <> 0 AND
             m.recipient_id=%(my_recipient_id)d
         ORDER BY message_id DESC
         LIMIT %(conversation_limit)d)
