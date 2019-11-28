@@ -104,6 +104,7 @@ from zerver.lib.actions import (
     check_delete_user_group,
     do_update_user_custom_profile_data_if_changed,
 )
+from zerver.lib.bugdown import MentionData
 from zerver.lib.events import (
     apply_events,
     fetch_initial_state_data,
@@ -733,12 +734,16 @@ class EventsRegisterTest(ZulipTestCase):
         rendered_content = render_markdown(message, content)
         prior_mention_user_ids = set()  # type: Set[int]
         mentioned_user_ids = set()  # type: Set[int]
+        mention_data = MentionData(
+            realm_id=self.user_profile.realm_id,
+            content=content,
+        )
 
         events = self.do_test(
             lambda: do_update_message(self.user_profile, message, topic,
                                       propagate_mode, content, rendered_content,
                                       prior_mention_user_ids,
-                                      mentioned_user_ids),
+                                      mentioned_user_ids, mention_data),
             state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])

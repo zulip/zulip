@@ -4436,7 +4436,7 @@ def do_update_embedded_data(user_profile: UserProfile,
 def do_update_message(user_profile: UserProfile, message: Message, topic_name: Optional[str],
                       propagate_mode: str, content: Optional[str],
                       rendered_content: Optional[str], prior_mention_user_ids: Set[int],
-                      mention_user_ids: Set[int]) -> int:
+                      mention_user_ids: Set[int], mention_data: Optional[bugdown.MentionData]=None) -> int:
     """
     The main function for message editing.  A message edit event can
     modify:
@@ -4470,6 +4470,9 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     if content is not None:
         assert rendered_content is not None
         update_user_message_flags(message, ums)
+
+        # mention_data is required if there's a content edit.
+        assert mention_data is not None
 
         # One could imagine checking realm.allow_edit_history here and
         # modifying the events based on that setting, but doing so
@@ -4513,7 +4516,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
             recipient=message.recipient,
             sender_id=message.sender_id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=True,
+            possible_wildcard_mention=mention_data.message_has_wildcards(),
         )
 
         event['push_notify_user_ids'] = list(info['push_notify_user_ids'])
