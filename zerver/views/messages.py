@@ -1499,12 +1499,17 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     links_for_embed = set()  # type: Set[str]
     prior_mention_user_ids = set()  # type: Set[int]
     mention_user_ids = set()  # type: Set[int]
+    mention_data = None  # type: Optional[bugdown.MentionData]
     if content is not None:
         content = content.strip()
         if content == "":
             content = "(deleted)"
         content = truncate_body(content)
 
+        mention_data = bugdown.MentionData(
+            realm_id=user_profile.realm.id,
+            content=content,
+        )
         user_info = get_user_info_for_message_updates(message.id)
         prior_mention_user_ids = user_info['mention_user_ids']
 
@@ -1515,7 +1520,8 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         rendered_content = render_incoming_message(message,
                                                    content,
                                                    user_info['message_user_ids'],
-                                                   user_profile.realm)
+                                                   user_profile.realm,
+                                                   mention_data=mention_data)
         links_for_embed |= message.links_for_preview
 
         mention_user_ids = message.mentions_user_ids
@@ -1523,7 +1529,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     number_changed = do_update_message(user_profile, message, topic_name,
                                        propagate_mode, content, rendered_content,
                                        prior_mention_user_ids,
-                                       mention_user_ids)
+                                       mention_user_ids, mention_data)
 
     # Include the number of messages changed in the logs
     request._log_data['extra'] = "[%s]" % (number_changed,)
