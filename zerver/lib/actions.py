@@ -1859,9 +1859,12 @@ def create_stream_if_needed(realm: Realm,
     )
 
     if created:
+        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+
+        stream.recipient = recipient
         stream.rendered_description = render_stream_description(stream_description)
-        stream.save(update_fields=["rendered_description"])
-        Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        stream.save(update_fields=["recipient", "rendered_description"])
+
         if stream.is_public():
             send_stream_creation_event(stream, active_non_guest_user_ids(stream.realm_id))
         else:

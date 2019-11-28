@@ -63,6 +63,8 @@ class Command(BaseCommand):
         stream = Stream.objects.create(
             name='all', realm=realm, date_created=installation_time)
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        stream.recipient = recipient
+        stream.save(update_fields=["recipient"])
 
         # Subscribe shylock to the stream to avoid invariant failures.
         # TODO: This should use subscribe_users_to_streams from populate_db.

@@ -628,7 +628,9 @@ class ZulipTestCase(TestCase):
                 Please call make_stream with a stream name
                 that is not already in use.''' % (stream_name,))
 
-        Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        stream.recipient = recipient
+        stream.save(update_fields=["recipient"])
         return stream
 
     INVALID_STREAM_ID = 999999

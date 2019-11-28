@@ -817,6 +817,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     delivery_email = models.EmailField(blank=False, db_index=True)  # type: str
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
+    # Foreign key to the Recipient object for PERSONAL type messages to this user.
+    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
     # The user's name.  We prefer the model of a full_name and
     # short_name over first+last because cultures vary on how many
@@ -1351,6 +1353,9 @@ class Stream(models.Model):
     deactivated = models.BooleanField(default=False)  # type: bool
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default=u'')  # type: str
     rendered_description = models.TextField(default=u'')  # type: str
+
+    # Foreign key to the Recipient object for STREAM type messages to this stream.
+    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]
     history_public_to_subscribers = models.BooleanField(default=False)  # type: bool

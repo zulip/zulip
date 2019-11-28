@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Optional, Set, Tuple
+from django.db.models import Model
+
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from zerver.lib.initial_password import initial_password
 from zerver.models import Realm, Stream, UserProfile, \
@@ -51,6 +53,8 @@ def bulk_create_users(realm: Realm,
                                               type=Recipient.PERSONAL))
     Recipient.objects.bulk_create(recipients_to_create)
 
+    bulk_set_users_or_streams_recipient_fields(UserProfile, profiles_to_create, recipients_to_create)
+
     recipients_by_email = {}  # type: Dict[str, Recipient]
     for recipient in recipients_to_create:
         recipients_by_email[profiles_by_id[recipient.type_id].email] = recipient
@@ -61,6 +65,33 @@ def bulk_create_users(realm: Realm,
             Subscription(user_profile_id=profiles_by_email[email].id,
                          recipient=recipients_by_email[email]))
     Subscription.objects.bulk_create(subscriptions_to_create)
+
+def bulk_set_users_or_streams_recipient_fields(model: Model,
+                                               objects: Union[Iterable[UserProfile], Iterable[Stream]],
+                                               recipients: Optional[Iterable[Recipient]]=None) -> None:
+    assert model in [UserProfile, Stream]
+    for obj in objects:
+        assert isinstance(obj, model)
+
+    if model == UserProfile:
+        recipient_type = Recipient.PERSONAL
+    elif model == Stream:
+        recipient_type = Recipient.STREAM
+
+    if recipients is None:
+        object_ids = [obj.id for obj in objects]
+        recipients = Recipient.objects.filter(type=recipient_type, type_id__in=object_ids)
+
+    objects_dict = dict((obj.id, obj) for obj in objects)
+
+    for recipient in recipients:
+        assert recipient.type == recipient_type
+        result = objects_dict.get(recipient.type_id)
+        if result is not None:
+            result.recipient = recipient
+            # TODO: Django 2.2 has a bulk_update method, so once we manage to migrate to that version,
+            # we take adventage of this, instead of calling save individually.
+            result.save(update_fields=['recipient'])
 
 # This is only sed in populate_db, so doesn't realy need tests
 def bulk_create_streams(realm: Realm,
@@ -105,3 +136,5 @@ def bulk_create_streams(realm: Realm,
             recipients_to_create.append(Recipient(type_id=stream['id'],
                                                   type=Recipient.STREAM))
     Recipient.objects.bulk_create(recipients_to_create)
+
+    bulk_set_users_or_streams_recipient_fields(Stream, streams_to_create, recipients_to_create)
