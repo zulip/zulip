@@ -288,13 +288,13 @@ CSS](https://github.com/zulip/zulip/).
 - Make Zulip integrations easier for nontechnical users to setup.
   This includes adding a backend permissions system for managing bot
   permissions (and implementing the enforcement logic), adding an
-  Oauth system for presenting those controls to users, as well as
+  OAuth system for presenting those controls to users, as well as
   making the /integrations page UI have buttons to create a bot,
   rather than sending users to the administration page.  **Skills
   recommended**: Strong Python/Django; JavaScript, CSS, and design
-  sense helpful.  Understanding of implementing Oauth providers,
+  sense helpful.  Understanding of implementing OAuth providers,
   e.g. having built a prototype with
-  [the Django Oauth toolkit](https://django-oauth-toolkit.readthedocs.io/en/latest/)
+  [the Django OAuth toolkit](https://django-oauth-toolkit.readthedocs.io/en/latest/)
   would be great to demonstrate as part of an application.  The
   [Zulip integration writing guide](../documentation/integrations.md)
   and

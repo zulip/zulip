@@ -289,7 +289,7 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     return render(request, 'zerver/desktop_redirect.html', context=context)
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
-    # For the mobile Oauth flow, we send the API key and other
+    # For the mobile OAuth flow, we send the API key and other
     # necessary details in a redirect to a zulip:// URI scheme.
     api_key = get_api_key(user_profile)
     response = create_response_for_otp_flow(api_key, otp, user_profile,
