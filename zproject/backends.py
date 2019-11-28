@@ -1426,7 +1426,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
     def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Dict[str, str]:
         """This patched user_data function lets us combine together the 3
-        social auth backends into a single Zulip backend for GitHub Oauth2"""
+        social auth backends into a single Zulip backend for GitHub OAuth2"""
         team_id = settings.SOCIAL_AUTH_GITHUB_TEAM_ID
         org_name = settings.SOCIAL_AUTH_GITHUB_ORG_NAME
 

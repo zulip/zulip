@@ -1050,7 +1050,7 @@ Backend and scaling
 - Improve mention typeahead sort order to prioritize recent senders in
   a stream.
 - Swapped the 'q' and 'w' hotkeys to better match the UI.
-- Fixed most issues with the registration flow, including adding Oauth
+- Fixed most issues with the registration flow, including adding OAuth
   support for mobile and many corner case problems.
 - Significantly improved sort ordering for the emoji picker.
 - Fixed most accessibility errors detected by major accessibility
@@ -1201,7 +1201,7 @@ Zulip apps.
 * Improved markdown support for bulleted lists.
 * Improved copy-to-clipboard support in various places.
 * Improved subject lines of missed message emails.
-* Improved handling of users trying to login with Oauth without an account.
+* Improved handling of users trying to login with OAuth without an account.
 * Improved UI of off-the-Internet errors to not be hidden in narrow windows.
 * Improved rate-limiting errors to be more easily machine-readable.
 * Parallelized the backend test suite; now runs 1600 tests in <30s.

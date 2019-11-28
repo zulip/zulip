@@ -35,6 +35,7 @@ IGNORED_PHRASES = [
     r"Mac",
     r"macOS",
     r"MiB",
+    r"OAuth",
     r"OTP",
     r"Pivotal",
     r"Play Store",
