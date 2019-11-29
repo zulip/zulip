@@ -3535,6 +3535,27 @@ nav ul li.active::after {
     .tour .carousel-inner .call-to-action {
         margin: 10px auto;
     }
+
+    .gradients .gradient.dark-blue {
+        background: none;
+    }
+    
+    .gradients .gradient.green {
+        background: none;
+    }
+    
+    .gradients .gradient.blue {
+        background: none;
+    }
+    
+    .gradients .gradient.sunburst {
+        background: none;
+    }
+    
+    .gradients .gradient.white-fade {
+        background: none;
+
+    }
 }
 
 @media (max-width: 640px) {
@@ -3683,17 +3704,6 @@ nav ul li.active::after {
     /* the gradients leave the bottom of the text and the button white so we
        want to have the gradients stay darker for longer.
     */
-    .gradients .gradient.green {
-        background: linear-gradient(-25deg, transparent 10%, hsl(156, 47%, 47%) 80%);
-    }
-
-    .gradients .gradient.blue {
-        background: linear-gradient(25deg, transparent 10%, hsl(196, 38%, 51%) 80%);
-    }
-
-    .gradients .gradient.sunburst {
-        background: linear-gradient(5deg, transparent 20%, hsl(49, 71%, 68%) 80%);
-    }
 }
 
 @media (max-width: 375px) {
