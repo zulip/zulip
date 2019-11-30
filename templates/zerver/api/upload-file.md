@@ -4,6 +4,15 @@ Upload a single file and get the corresponding URI.
 
 `POST {{ api_url }}/v1/user_uploads`
 
+To share the uploaded file, you will have to prepend the URI with your
+Zulip domain and then you can [send a message][send-message] that contains the
+resulting link.
+You can also manually view all your [Uploaded files][uploaded-files]
+to verify and copy the links to the files you have uploaded.
+
+[uploaded-files]: /help/manage-your-uploaded-files
+[send-message]: /api/send-message
+
 ## Usage examples
 
 {start_tabs}
