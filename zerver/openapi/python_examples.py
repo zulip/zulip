@@ -882,6 +882,13 @@ def upload_file(client):
             method='POST',
             files=[fp]
         )
+
+    client.send_message({
+        "type": "stream",
+        "to": "Denmark",
+        "topic": "Castle",
+        "content": "Check out [this picture](%s) of my castle!" % (result['uri'],)
+    })
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/user_uploads', 'post', '200')
