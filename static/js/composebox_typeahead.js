@@ -59,26 +59,17 @@ function query_matches_string(query, source_str, split_char) {
     // match where query is a substring of one of the target characters.
     if (query.indexOf(split_char) > 0) {
         // If there's a whitespace character in the query, then we
-        // require a perfect prefix match (e.g. for 'ab cd ef',
-        // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
-        // ef', etc.).
+        // require a prefix match for every word (e.g. for 'ab cd ef',
+        // query can be e.g. 'ab c', 'a c e' not 'b cd' or 'ef', etc.).
         const queries = query.split(split_char);
         const sources = source_str.split(split_char);
-        let i;
 
-        for (i = 0; i < queries.length - 1; i += 1) {
-            if (sources[i] !== queries[i]) {
-                return false;
+        return queries.reduce((result, query, index) => {
+            if (sources[index] === undefined || sources[index].indexOf(query)) {
+                result = false;
             }
-        }
-
-        // This block is effectively a final iteration of the last
-        // loop.  What differs is that for the last word, a
-        // partial match at the beginning of the word is OK.
-        if (sources[i] === undefined) {
-            return false;
-        }
-        return sources[i].indexOf(queries[i]) === 0;
+            return result;
+        }, true);
     }
 
     // For a single token, the match can be anywhere in the string.
