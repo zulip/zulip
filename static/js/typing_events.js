@@ -16,10 +16,10 @@ const TYPING_STARTED_EXPIRY_PERIOD = 15000; // 15s
 // that make typing indicators work.
 
 function get_users_typing_for_narrow() {
-    if (!narrow_state.narrowed_to_pms()) {
-        // Narrow is neither pm-with nor is: private
-        return [];
-    }
+    // if (!narrow_state.narrowed_to_pms()) {
+    //     // Narrow is neither pm-with nor is: private
+    //     return [];
+    // }
 
     const first_term = narrow_state.operators()[0];
     if (first_term.operator === 'pm-with') {

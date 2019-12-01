@@ -26,6 +26,12 @@ function get_user_ids_array() {
         return null;
     }
 
+    const stream_name = compose_state.stream_name();
+
+    if (stream_name !== "") {
+        return stream_data.get_sub(stream_name).subscribers.keys();
+    }
+
     return people.user_ids_string_to_ids_array(user_ids_string);
 }
 

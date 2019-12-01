@@ -11,6 +11,7 @@ function buddy_list_conf() {
 
     conf.items_to_html = function (opts) {
         const user_info = opts.items;
+        console.log(opts.items);
         const html = render_user_presence_rows({users: user_info});
         return html;
     };

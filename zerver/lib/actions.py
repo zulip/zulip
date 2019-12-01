@@ -976,13 +976,6 @@ def render_incoming_message(message: Message,
     return rendered_content
 
 def get_typing_user_profiles(recipient: Recipient, sender_id: int) -> List[UserProfile]:
-    if recipient.type == Recipient.STREAM:
-        '''
-        We don't support typing indicators for streams because they
-        are expensive and initial user feedback was they were too
-        distracting.
-        '''
-        raise ValueError('Typing indicators not supported for streams')
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -1785,6 +1778,7 @@ def do_send_typing_notification(realm: Realm, notification: Dict[str, Any]) -> N
 def check_send_typing_notification(sender: UserProfile, notification_to: Union[Sequence[str], Sequence[int]],
                                    operator: str) -> None:
     typing_notification = check_typing_notification(sender, notification_to, operator)
+    print(typing_notification)
     do_send_typing_notification(sender.realm, typing_notification)
 
 # check_typing_notification:
@@ -1808,7 +1802,6 @@ def check_typing_notification(sender: UserProfile,
     except ValidationError as e:
         assert isinstance(e.messages[0], str)
         raise JsonableError(e.messages[0])
-    assert recipient.type != Recipient.STREAM
     return {'sender': sender, 'recipient': recipient, 'op': operator}
 
 def send_stream_creation_event(stream: Stream, user_ids: List[int]) -> None:
