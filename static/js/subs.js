@@ -506,6 +506,9 @@ exports.setup_page = function (callback) {
     // continue the strategy that we re-render everything from scratch.
     // Also, we'll always go back to the "Subscribed" tab.
     function initialize_components() {
+        // Reset our internal state to reflect that we're initially in
+        // the "Subscribed" tab if we're reopening "Manage streams".
+        subscribed_only = true;
         exports.toggler = components.toggle({
             child_wants_focus: true,
             values: [
