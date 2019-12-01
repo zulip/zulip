@@ -506,6 +506,7 @@ exports.setup_page = function (callback) {
     // continue the strategy that we re-render everything from scratch.
     // Also, we'll always go back to the "Subscribed" tab.
     function initialize_components() {
+        subscribed_only = true;
         exports.toggler = components.toggle({
             child_wants_focus: true,
             values: [
