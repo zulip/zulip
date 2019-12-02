@@ -332,7 +332,7 @@ reset_setup();
 
 run_test('presence_list_full_update', () => {
     $('.user-list-filter').focus();
-    compose_state.recipient = () => fred.email;
+    compose_state.private_message_recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
 
     let user_ids = activity.build_user_sidebar();

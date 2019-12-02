@@ -190,7 +190,7 @@ function same_recipient_as_before(msg_type, opts) {
               opts.stream === compose_state.stream_name() &&
               opts.topic === compose_state.topic() ||
              msg_type === "private" &&
-              opts.private_message_recipient === compose_state.recipient());
+              opts.private_message_recipient === compose_state.private_message_recipient());
 }
 
 exports.update_placeholder_text = function (opts) {
@@ -231,7 +231,7 @@ exports.start = function (msg_type, opts) {
     compose_state.topic(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.
-    compose_state.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
+    compose_state.private_message_recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
 
     // If the user opens the compose box, types some text, and then clicks on a
     // different stream/topic, we want to keep the text in the compose box

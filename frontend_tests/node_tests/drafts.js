@@ -163,7 +163,7 @@ run_test('snapshot_message', () => {
         global.compose_state.message_content = function () {
             return draft.content;
         };
-        global.compose_state.recipient = function () {
+        global.compose_state.private_message_recipient = function () {
             return draft.private_message_recipient;
         };
         global.compose_state.stream_name = function () {

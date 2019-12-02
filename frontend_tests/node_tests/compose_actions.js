@@ -34,7 +34,7 @@ const quote_and_reply = compose_actions.quote_and_reply;
 
 const compose_state = global.compose_state;
 
-compose_state.recipient = (function () {
+compose_state.private_message_recipient = (function () {
     let recipient;
 
     return function (arg) {
@@ -201,7 +201,7 @@ run_test('start', () => {
     assert_hidden('#stream-message');
     assert_visible('#private-message');
 
-    assert.equal(compose_state.recipient(), 'foo@example.com');
+    assert.equal(compose_state.private_message_recipient(), 'foo@example.com');
     assert.equal($('#compose-textarea').val(), 'hello');
     assert.equal(compose_state.get_message_type(), 'private');
     assert(compose_state.composing());
@@ -241,7 +241,7 @@ run_test('respond_to_message', () => {
     };
 
     respond_to_message(opts);
-    assert.equal(compose_state.recipient(), 'alice@example.com');
+    assert.equal(compose_state.private_message_recipient(), 'alice@example.com');
 
     // Test stream
     msg = {
