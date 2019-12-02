@@ -525,17 +525,17 @@ class WorkerTest(ZulipTestCase):
 
     def test_invites_worker(self) -> None:
         fake_client = self.FakeClient()
-        invitor = self.example_user('iago')
+        inviter = self.example_user('iago')
         prereg_alice = PreregistrationUser.objects.create(
-            email=self.nonreg_email('alice'), referred_by=invitor, realm=invitor.realm)
+            email=self.nonreg_email('alice'), referred_by=inviter, realm=inviter.realm)
         PreregistrationUser.objects.create(
-            email=self.nonreg_email('bob'), referred_by=invitor, realm=invitor.realm)
+            email=self.nonreg_email('bob'), referred_by=inviter, realm=inviter.realm)
         data = [
-            dict(prereg_id=prereg_alice.id, referrer_id=invitor.id, email_body=None),
+            dict(prereg_id=prereg_alice.id, referrer_id=inviter.id, email_body=None),
             # Nonexistent prereg_id, as if the invitation was deleted
-            dict(prereg_id=-1, referrer_id=invitor.id, email_body=None),
+            dict(prereg_id=-1, referrer_id=inviter.id, email_body=None),
             # Form with `email` is from versions up to Zulip 1.7.1
-            dict(email=self.nonreg_email('bob'), referrer_id=invitor.id, email_body=None),
+            dict(email=self.nonreg_email('bob'), referrer_id=inviter.id, email_body=None),
         ]
         for element in data:
             fake_client.queue.append(('invites', element))

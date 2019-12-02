@@ -1451,9 +1451,9 @@ class InvitationsTestCase(InviteUserBase):
         self.check_sent_emails([invitee], custom_from_name="Zulip")
 
     def test_accessing_invites_in_another_realm(self) -> None:
-        invitor = UserProfile.objects.exclude(realm=get_realm('zulip')).first()
+        inviter = UserProfile.objects.exclude(realm=get_realm('zulip')).first()
         prereg_user = PreregistrationUser.objects.create(
-            email='email', referred_by=invitor, realm=invitor.realm)
+            email='email', referred_by=inviter, realm=inviter.realm)
         self.login(self.example_email("iago"))
         error_result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
         self.assert_json_error(error_result, "No such invitation")
