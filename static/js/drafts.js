@@ -74,7 +74,7 @@ exports.snapshot_message = function () {
         content: compose_state.message_content(),
     };
     if (message.type === "private") {
-        const recipient = compose_state.recipient();
+        const recipient = compose_state.private_message_recipient();
         message.reply_to = recipient;
         message.private_message_recipient = recipient;
     } else {

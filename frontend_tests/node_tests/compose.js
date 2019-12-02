@@ -223,25 +223,25 @@ run_test('validate', () => {
     // test validating private messages
     compose_state.set_message_type('private');
 
-    compose_state.recipient('');
+    compose_state.private_message_recipient('');
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient'));
 
     initialize_pm_pill();
     add_content_to_compose_box();
-    compose_state.recipient('foo@zulip.com');
+    compose_state.private_message_recipient('foo@zulip.com');
 
     assert(!compose.validate());
 
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient', {}));
 
-    compose_state.recipient('foo@zulip.com,alice@zulip.com');
+    compose_state.private_message_recipient('foo@zulip.com,alice@zulip.com');
     assert(!compose.validate());
 
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient', {}));
 
     people.add_in_realm(bob);
-    compose_state.recipient('bob@example.com');
+    compose_state.private_message_recipient('bob@example.com');
     assert(compose.validate());
 
     page_params.realm_is_zephyr_mirror_realm = true;
@@ -271,7 +271,7 @@ run_test('get_invalid_recipient_emails', () => {
     page_params.cross_realm_bots = [feedback_bot];
     page_params.user_id = 30;
     people.initialize();
-    compose_state.recipient('feedback@example.com');
+    compose_state.private_message_recipient('feedback@example.com');
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
 
@@ -588,7 +588,7 @@ run_test('send_message', () => {
         compose_state.topic('');
         compose_state.set_message_type('private');
         page_params.user_id = 101;
-        compose_state.recipient = function () {
+        compose_state.private_message_recipient = function () {
             return 'alice@example.com';
         };
 
@@ -779,7 +779,7 @@ run_test('finish', () => {
         $("#markdown_preview").hide();
         $("#compose-textarea").val('foobarfoobar');
         compose_state.set_message_type('private');
-        compose_state.recipient = function () {
+        compose_state.private_message_recipient = function () {
             return 'bob@example.com';
         };
 
@@ -1666,7 +1666,7 @@ run_test('create_message_object', () => {
     global.compose_state.get_message_type = function () {
         return 'private';
     };
-    compose_state.recipient = function () {
+    compose_state.private_message_recipient = function () {
         return 'alice@example.com, bob@example.com';
     };
 

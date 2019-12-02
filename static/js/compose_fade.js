@@ -27,7 +27,7 @@ exports.set_focused_recipient = function (msg_type) {
     } else {
         // Normalize the recipient list so it matches the one used when
         // adding the message (see message_store.add_message_metadata()).
-        const reply_to = util.normalize_recipients(compose_state.recipient());
+        const reply_to = util.normalize_recipients(compose_state.private_message_recipient());
         focused_recipient.reply_to = reply_to;
         focused_recipient.to_user_ids = people.reply_to_to_user_ids_string(reply_to);
     }
@@ -73,7 +73,7 @@ function fade_messages() {
 
         if (current_msg_list !== expected_msg_list ||
             !compose_state.composing() ||
-            compose_state.recipient() !== expected_recipient) {
+            compose_state.private_message_recipient() !== expected_recipient) {
             return;
         }
 
@@ -88,7 +88,7 @@ function fade_messages() {
         }
 
         floating_recipient_bar.update();
-    }, 0, current_msg_list, compose_state.recipient());
+    }, 0, current_msg_list, compose_state.private_message_recipient());
 }
 
 exports.would_receive_message = function (email) {

@@ -212,7 +212,7 @@ exports.pm_recipient = {
 
     expect: function (expected_value) {
         var displayed_recipients = casper.evaluate(function () {
-            return compose_state.recipient();
+            return compose_state.private_message_recipient();
         });
         casper.test.assertEquals(displayed_recipients, expected_value);
     },

@@ -318,7 +318,7 @@ run_test('narrow_to_compose_target', () => {
     people.add_in_realm(me);
 
     // Test with valid person
-    global.compose_state.recipient = () => 'alice@example.com';
+    global.compose_state.private_message_recipient = () => 'alice@example.com';
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
@@ -327,7 +327,7 @@ run_test('narrow_to_compose_target', () => {
     ]);
 
     // Test with valid persons
-    global.compose_state.recipient = () => 'alice@example.com,ray@example.com';
+    global.compose_state.private_message_recipient = () => 'alice@example.com,ray@example.com';
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
@@ -336,7 +336,7 @@ run_test('narrow_to_compose_target', () => {
     ]);
 
     // Test with some inavlid persons
-    global.compose_state.recipient = () => 'alice@example.com,random,ray@example.com';
+    global.compose_state.private_message_recipient = () => 'alice@example.com,random,ray@example.com';
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
@@ -345,7 +345,7 @@ run_test('narrow_to_compose_target', () => {
     ]);
 
     // Test with all inavlid persons
-    global.compose_state.recipient = () => 'alice,random,ray';
+    global.compose_state.private_message_recipient = () => 'alice,random,ray';
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
@@ -354,7 +354,7 @@ run_test('narrow_to_compose_target', () => {
     ]);
 
     // Test with no persons
-    global.compose_state.recipient = () => '';
+    global.compose_state.private_message_recipient = () => '';
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
