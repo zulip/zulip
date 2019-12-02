@@ -13,11 +13,13 @@ from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingException, clear_history
+from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, UserActivity, PreregistrationUser, \
     get_system_bot, get_stream, get_realm
+from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
     get_active_worker_queues,
@@ -274,6 +276,62 @@ class WorkerTest(ZulipTestCase):
             {m['message'].content for m in othello_info['missed_messages']},
             {'where art thou, othello?'}
         )
+
+    def test_push_notifications_worker(self) -> None:
+        """
+        The push notifications system has its own comprehensive test suite,
+        so we can limit ourselves to simple unit testing the queue processor,
+        without going deeper into the system - by mocking the handle_push_notification
+        functions to immediately produce the effect we want, to test its handling by the queue
+        processor.
+        """
+        fake_client = self.FakeClient()
+
+        def fake_publish(queue_name: str,
+                         event: Dict[str, Any],
+                         processor: Callable[[Any], None]) -> None:
+            fake_client.queue.append((queue_name, event))
+
+        def generate_new_message_notification() -> Dict[str, Any]:
+            return build_offline_notification(1, 1)
+
+        def generate_remove_notification() -> Dict[str, Any]:
+            return {
+                "type": "remove",
+                "user_profile_id": 1,
+                "message_ids": [1],
+            }
+
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.PushNotificationsWorker()
+            worker.setup()
+            with patch('zerver.worker.queue_processors.handle_push_notification') as mock_handle_new, \
+                    patch('zerver.worker.queue_processors.handle_remove_push_notification') as mock_handle_remove, \
+                    patch('zerver.worker.queue_processors.initialize_push_notifications'):
+                event_new = generate_new_message_notification()
+                event_remove = generate_remove_notification()
+                fake_client.queue.append(('missedmessage_mobile_notifications', event_new))
+                fake_client.queue.append(('missedmessage_mobile_notifications', event_remove))
+
+                worker.start()
+                mock_handle_new.assert_called_once_with(event_new['user_profile_id'], event_new)
+                mock_handle_remove.assert_called_once_with(event_remove['user_profile_id'],
+                                                           event_remove['message_ids'])
+
+            with patch('zerver.worker.queue_processors.handle_push_notification',
+                       side_effect=PushNotificationBouncerRetryLaterError("test")) as mock_handle_new, \
+                    patch('zerver.worker.queue_processors.handle_remove_push_notification',
+                          side_effect=PushNotificationBouncerRetryLaterError("test")) as mock_handle_remove, \
+                    patch('zerver.worker.queue_processors.initialize_push_notifications'):
+                event_new = generate_new_message_notification()
+                event_remove = generate_remove_notification()
+                fake_client.queue.append(('missedmessage_mobile_notifications', event_new))
+                fake_client.queue.append(('missedmessage_mobile_notifications', event_remove))
+
+                with patch('zerver.lib.queue.queue_json_publish', side_effect=fake_publish):
+                    worker.start()
+                    self.assertEqual(mock_handle_new.call_count, 1 + MAX_REQUEST_RETRIES)
+                    self.assertEqual(mock_handle_remove.call_count, 1 + MAX_REQUEST_RETRIES)
 
     @patch('zerver.worker.queue_processors.mirror_email')
     def test_mirror_worker(self, mock_mirror_email: MagicMock) -> None:
