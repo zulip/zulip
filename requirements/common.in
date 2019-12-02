@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django==2.0.13
+Django==2.2.8
 
 # needed for Deque (in Python < 3.5.4) and TypedDict
 typing-extensions
