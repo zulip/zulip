@@ -504,62 +504,6 @@ make sure you understand:
   since the last release.  The **Upgrade notes** section will always
   be current, even if some new features aren't documented.
 
-### Applying system updates
-
-The Zulip upgrade script will automatically run `apt-get update` and
-then `apt-get upgrade`, to make sure you have any new versions of
-dependencies (this will also update system packages).  We assume that
-you will install security updates from `apt` regularly, according to
-your usual security practices for a production server.
-
-If you'd like to minimize downtime when installing a Zulip server
-upgrade, you may want to do an `apt-get upgrade` (and then restart the
-server and check everything is working) before running the Zulip
-upgrade script.
-
-There's one `apt` package to be careful about: upgrading `postgresql`
-while the server is running may result in an outage (basically,
-`postgresql` might stop accepting new queries but refuse to shut down
-while waiting for connections from the Zulip server to shut down).
-While this only happens sometimes, it can be hard to fix for someone
-who isn't comfortable managing a `postgresql` database [1].  You can
-avoid that possibility with the following procedure (run as root):
-
-```
-apt-get update
-supervisorctl stop all
-apt-get upgrade -y
-supervisorctl start all
-```
-
-[1] If this happens to you, just stop the Zulip server, restart
-postgres, and then start the Zulip server again, and you'll be back in
-business.
-
-#### Disabling unattended upgrades
-
-```eval_rst
-.. important::
-    We recommend that you `disable Ubuntu's unattended-upgrades
-    <https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/>`_
-    and instead install apt upgrades manually.  With unattended upgrades
-    enabled, the moment a new Postgres release is published, your Zulip
-    server will have its postgres server upgraded (and thus restarted).
-```
-
-When one of the services Zulip depends on (postgres, memcached, redis,
-rabbitmq) is restarted, that services will disconnect everything using
-them (like the Zulip server), and every operation that Zulip does
-which uses that service will throw an exception (and send you an error
-report email).  These apparently "random errors" can be confusing and
-might cause you to worry incorrectly about the stability of the Zulip
-software, which in fact the problem is that Ubuntu automatically
-upgraded and then restarted key Zulip dependencies.
-
-Instead, we recommend installing updates for these services manually,
-and then restarting the Zulip server with
-`/home/zulip/deployments/current/scripts/restart-server` afterwards.
-
 ## Contributing patches
 
 Zulip contains thousands of changes submitted by volunteer
