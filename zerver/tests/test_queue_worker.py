@@ -11,6 +11,7 @@ from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingException, clear_history
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
@@ -387,7 +388,7 @@ class WorkerTest(ZulipTestCase):
                     patch('logging.exception'):
                 worker.start()
 
-        self.assertEqual(data['failed_tries'], 4)
+        self.assertEqual(data['failed_tries'], 1 + MAX_REQUEST_RETRIES)
 
     def test_signups_worker_retries(self) -> None:
         """Tests the retry logic of signups queue."""
@@ -416,7 +417,7 @@ class WorkerTest(ZulipTestCase):
                                   ZULIP_FRIENDS_LIST_ID='id'):
                 worker.start()
 
-        self.assertEqual(data['failed_tries'], 4)
+        self.assertEqual(data['failed_tries'], 1 + MAX_REQUEST_RETRIES)
 
     def test_signups_worker_existing_member(self) -> None:
         fake_client = self.FakeClient()
