@@ -138,6 +138,43 @@ problems and how to resolve them:
   attempt. For more on this issue, see the [Django release notes on Host header
   poisoning](https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning)
 
+### Disabling unattended upgrades
+
+```eval_rst
+.. important::
+    We recommend that you `disable Ubuntu's unattended-upgrades
+    <https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/>`_
+    and instead install apt upgrades manually.  With unattended upgrades
+    enabled, the moment a new Postgres release is published, your Zulip
+    server will have its postgres server upgraded (and thus restarted).
+```
+
+When one of the services Zulip depends on (postgres, memcached, redis,
+rabbitmq) is restarted, that services will disconnect everything using
+them (like the Zulip server), and every operation that Zulip does
+which uses that service will throw an exception (and send you an error
+report email).
+
+Zulip is designed to recover from service outages like this by
+re-initializing its connection to the service in question.  However,
+some of Zulip's queue processors can be idle for hours or days on a
+low-traffic server, and a given queue processor won't re-initialize
+its connection until that process gets an error.  This means that
+after e.g. `postgres` is restarted by unattended-upgrades, you're
+likely to get a series of ~20 error emails spread over the next few
+hours about the issue as each Zulip process tries to access the
+database, fails, sends an error email, and then reconnects.
+
+These apparently "random errors" can be confusing and might cause you
+to worry incorrectly about the stability of the Zulip software, which
+in fact the problem is that Ubuntu automatically upgraded and then
+restarted key Zulip dependencies, without anyone restarting Zulip's
+owns services.
+
+Instead, we recommend installing updates for these services manually,
+and then restarting the Zulip server with
+`/home/zulip/deployments/current/scripts/restart-server` afterwards.
+
 ## Monitoring
 
 Chat is mission-critical to many organizations.  This section contains
