@@ -454,7 +454,7 @@ Zulip installations; it has minimal changes for existing servers.
   phase of the upgrade closely, we recommend
   [running them first manually](../production/expensive-migrations.md)
   and as well as the usual trick of
-  [doing an apt upgrade first](../production/upgrade-or-modify.html#applying-system-updates).
+  doing an apt upgrade first.
 
 **Full feature changelog:**
 - Added an organization setting for message deletion time limits.
@@ -832,7 +832,7 @@ Backend and scaling
   phase of the upgrade closely, we recommend
   [running them first manually](../production/expensive-migrations.md) and as well
   as the usual trick of
-  [doing an apt upgrade first](../production/upgrade-or-modify.html#applying-system-updates).
+  doing an apt upgrade first.
 
 * We've removed support for an uncommon legacy deployment model where
   a Zulip server served multiple organizations on the same domain.
