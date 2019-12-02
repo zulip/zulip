@@ -17,6 +17,9 @@ from zerver.models import RealmAuditLog
 class PushNotificationBouncerException(Exception):
     pass
 
+class PushNotificationBouncerRetryLaterError(JsonableError):
+    pass
+
 def send_to_push_bouncer(method: str,
                          endpoint: str,
                          post_data: Union[str, Dict[str, Any]],

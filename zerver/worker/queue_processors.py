@@ -47,6 +47,7 @@ from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.export import export_realm_wrapper
+from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 
 import os
 import sys
@@ -418,14 +419,21 @@ class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
         initialize_push_notifications()
         super().start()
 
-    def consume(self, data: Mapping[str, Any]) -> None:
-        if data.get("type", "add") == "remove":
-            message_ids = data.get('message_ids')
-            if message_ids is None:  # legacy task across an upgrade
-                message_ids = [data['message_id']]
-            handle_remove_push_notification(data['user_profile_id'], message_ids)
-        else:
-            handle_push_notification(data['user_profile_id'], data)
+    def consume(self, event: Dict[str, Any]) -> None:
+        try:
+            if event.get("type", "add") == "remove":
+                message_ids = event.get('message_ids')
+                if message_ids is None:  # legacy task across an upgrade
+                    message_ids = [event['message_id']]
+                handle_remove_push_notification(event['user_profile_id'], message_ids)
+            else:
+                handle_push_notification(event['user_profile_id'], event)
+        except PushNotificationBouncerRetryLaterError:
+            def failure_processor(event: Dict[str, Any]) -> None:
+                logger.warning(
+                    "Maximum retries exceeded for trigger:%s event:push_notification" % (
+                        event['user_profile_id'],))
+            retry_event('missedmessage_mobile_notifications', event, failure_processor)
 
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
 @assign_queue('feedback_messages')
