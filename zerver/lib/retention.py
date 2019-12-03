@@ -145,17 +145,16 @@ def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
     cross_realm_bot_ids = str(tuple(cross_realm_bot_ids_list))
     recipient_types = (Recipient.PERSONAL, Recipient.HUDDLE)
 
-    # Archive expired personal and huddle Messages in the realm, except cross-realm messages:
-    # TODO: Remove the "zerver_userprofile.id NOT IN {cross_realm_bot_ids}" clause
-    # once https://github.com/zulip/zulip/issues/11015 is solved.
+    # Archive expired personal and huddle Messages in the realm, except cross-realm messages.
+    # The condition zerver_userprofile.realm_id = {realm_id} assures the row won't be
+    # a message sent by a cross-realm bot, because cross-realm bots have their own separate realm.
     query = """
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
         SELECT {src_fields}, {archive_transaction_id}
         FROM zerver_message
         INNER JOIN zerver_recipient ON zerver_recipient.id = zerver_message.recipient_id
         INNER JOIN zerver_userprofile ON zerver_userprofile.id = zerver_message.sender_id
-        WHERE zerver_userprofile.id NOT IN {cross_realm_bot_ids}
-            AND zerver_userprofile.realm_id = {realm_id}
+        WHERE zerver_userprofile.realm_id = {realm_id}
             AND zerver_recipient.type in {recipient_types}
             AND zerver_message.date_sent < '{check_date}'
         LIMIT {chunk_size}
@@ -301,7 +300,7 @@ def archive_stream_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) ->
 def archive_messages(chunk_size: int=MESSAGE_BATCH_SIZE) -> None:
     logger.info("Starting the archiving process with chunk_size {}".format(chunk_size))
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.exclude(string_id=settings.SYSTEM_BOT_REALM):
         archive_stream_messages(realm, chunk_size)
         if realm.message_retention_days:
             archive_personal_and_huddle_messages(realm, chunk_size)
