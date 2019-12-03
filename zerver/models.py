@@ -1726,7 +1726,7 @@ class Message(AbstractMessage):
         Returns True if content and rendered_content are from 'me_message'
         """
         if content.startswith('/me '):
-            if rendered_content.startswith('<p>') and rendered_content.endswith('</p>'):
+            if rendered_content.startswith('<p>') and '</p>' in rendered_content:
                 return True
         return False
 
