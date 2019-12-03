@@ -18,18 +18,19 @@ class PushNotificationBouncerException(Exception):
     pass
 
 class PushNotificationBouncerRetryLaterError(JsonableError):
-    pass
+    http_status_code = 502
 
 def send_to_push_bouncer(method: str,
                          endpoint: str,
                          post_data: Union[str, Dict[str, Any]],
-                         extra_headers: Optional[Dict[str, Any]]=None) -> Tuple[Dict[str, Any], bool]:
+                         extra_headers: Optional[Dict[str, Any]]=None) -> Dict[str, Any]:
     """While it does actually send the notice, this function has a lot of
     code and comments around error handling for the push notifications
     bouncer.  There are several classes of failures, each with its own
     potential solution:
 
-    * Network errors with requests.request.  We let those happen normally.
+    * Network errors with requests.request.  We raise an exception to signal
+      it to the callers.
 
     * 500 errors from the push bouncer or other unexpected responses;
       we don't try to parse the response, but do make clear the cause.
@@ -48,22 +49,26 @@ def send_to_push_bouncer(method: str,
     if extra_headers is not None:
         headers.update(extra_headers)
 
-    res = requests.request(method,
-                           url,
-                           data=post_data,
-                           auth=api_auth,
-                           timeout=30,
-                           verify=True,
-                           headers=headers)
+    try:
+        res = requests.request(method,
+                               url,
+                               data=post_data,
+                               auth=api_auth,
+                               timeout=30,
+                               verify=True,
+                               headers=headers)
+    except requests.exceptions.ConnectionError:
+        raise PushNotificationBouncerRetryLaterError(
+            "ConnectionError while trying to connect to push notification bouncer")
 
     if res.status_code >= 500:
         # 500s should be resolved by the people who run the push
         # notification bouncer service, and they'll get an appropriate
-        # error notification from the server.  We just return after
-        # doing something.  Ideally, we'll add do some sort of spaced
-        # retry eventually.
-        logging.warning("Received 500 from push notification bouncer")
-        return {}, True
+        # error notification from the server. We raise an exception to signal
+        # to the callers that the attempt failed and they can retry.
+        error_msg = "Received 500 from push notification bouncer"
+        logging.warning(error_msg)
+        raise PushNotificationBouncerRetryLaterError(error_msg)
     elif res.status_code >= 400:
         # If JSON parsing errors, just let that exception happen
         result_dict = ujson.loads(res.content)
@@ -85,7 +90,7 @@ def send_to_push_bouncer(method: str,
             "Push notification bouncer returned unexpected status code %s" % (res.status_code,))
 
     # If we don't throw an exception, it's a successful bounce!
-    return ujson.loads(res.content), False
+    return ujson.loads(res.content)
 
 def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, Any]) -> None:
     send_to_push_bouncer(
@@ -126,8 +131,10 @@ def build_analytics_data(realm_count_query: Any,
 
 def send_analytics_to_remote_server() -> None:
     # first, check what's latest
-    (result, failed) = send_to_push_bouncer("GET", "server/analytics/status", {})
-    if failed:  # nocoverage
+    try:
+        result = send_to_push_bouncer("GET", "server/analytics/status", {})
+    except PushNotificationBouncerRetryLaterError as e:
+        logging.warning(e.msg)
         return
 
     last_acked_realm_count_id = result['last_realm_count_id']
