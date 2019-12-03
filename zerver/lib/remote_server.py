@@ -57,9 +57,10 @@ def send_to_push_bouncer(method: str,
                                timeout=30,
                                verify=True,
                                headers=headers)
-    except requests.exceptions.ConnectionError:
+    except (requests.exceptions.Timeout, requests.exceptions.SSLError,
+            requests.exceptions.ConnectionError) as e:
         raise PushNotificationBouncerRetryLaterError(
-            "ConnectionError while trying to connect to push notification bouncer")
+            "{} while trying to connect to push notification bouncer".format(e.__class__.__name__))
 
     if res.status_code >= 500:
         # 500s should be resolved by the people who run the push
