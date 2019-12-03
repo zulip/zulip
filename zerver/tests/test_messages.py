@@ -106,6 +106,7 @@ from analytics.models import RealmCount
 
 import datetime
 import mock
+from operator import itemgetter
 import time
 import ujson
 from typing import Any, Dict, List, Optional, Set, Union
@@ -2990,7 +2991,7 @@ class EditMessageTest(ZulipTestCase):
                 "flags": ["wildcard_mentioned"]
             }
 
-        users_to_be_notified = list(map(notify, [cordelia.id, hamlet.id]))
+        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
         result = self.client_patch("/json/messages/" + str(message_id), {
             'message_id': message_id,
             'content': 'Hello @**everyone**',
@@ -3005,7 +3006,7 @@ class EditMessageTest(ZulipTestCase):
             if arg_event['type'] == 'update_message':
                 self.assertEqual(arg_event['type'], 'update_message')
                 self.assertEqual(arg_event['wildcard_mention_user_ids'], [cordelia.id, hamlet.id])
-                self.assertEqual(arg_notified_users, users_to_be_notified)
+                self.assertEqual(sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified)
                 called = True
         self.assertTrue(called)
 
