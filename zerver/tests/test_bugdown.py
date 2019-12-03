@@ -1002,7 +1002,7 @@ class BugdownTest(ZulipTestCase):
             rendered_content,
             '<p>/me makes a list</p>\n<ul>\n<li>one</li>\n<li>two</li>\n</ul>'
         )
-        self.assertFalse(Message.is_status_message(content, rendered_content))
+        self.assertTrue(Message.is_status_message(content, rendered_content))
 
         content = '/me takes a walk'
         rendered_content = render_markdown(msg, content)
@@ -1019,6 +1019,11 @@ class BugdownTest(ZulipTestCase):
             '<p>/me writes a second line<br>\nline</p>'
         )
         self.assertTrue(Message.is_status_message(content, rendered_content))
+
+        # Add an artificial test to fail the check:
+        content = '/me takes a walk'
+        rendered_content = '<h1>/me takes a walk</h1>'
+        self.assertFalse(Message.is_status_message(content, rendered_content))
 
     def test_alert_words(self) -> None:
         user_profile = self.example_user('othello')
