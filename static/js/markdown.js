@@ -129,7 +129,7 @@ exports.apply_markdown = function (message) {
     };
     // Our python-markdown processor appends two \n\n to input
     message.content = marked(message.raw_content + '\n\n', options).trim();
-    message.is_me_message = exports.is_status_message(message.raw_content, message.content);
+    message.is_me_message = exports.is_status_message(message.raw_content);
 };
 
 exports.add_topic_links = function (message) {
@@ -168,10 +168,8 @@ exports.add_topic_links = function (message) {
     util.set_topic_links(message, links);
 };
 
-exports.is_status_message = function (raw_content, content) {
-    return raw_content.indexOf('/me ') === 0 &&
-            content.indexOf('<p>') === 0 &&
-            content.indexOf('</p>') !== -1;
+exports.is_status_message = function (raw_content) {
+    return raw_content.indexOf('/me ') === 0;
 };
 
 function make_emoji_span(codepoint, title, alt_text) {

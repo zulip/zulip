@@ -1723,11 +1723,11 @@ class Message(AbstractMessage):
     @staticmethod
     def is_status_message(content: str, rendered_content: str) -> bool:
         """
-        Returns True if content and rendered_content are from 'me_message'
+        "status messages" start with /me and have special rendering:
+            /me loves chocolate -> Full Name loves chocolate
         """
         if content.startswith('/me '):
-            if rendered_content.startswith('<p>') and '</p>' in rendered_content:
-                return True
+            return True
         return False
 
     def update_calculated_fields(self) -> None:

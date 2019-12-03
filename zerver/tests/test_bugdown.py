@@ -1020,11 +1020,6 @@ class BugdownTest(ZulipTestCase):
         )
         self.assertTrue(Message.is_status_message(content, rendered_content))
 
-        # Add an artificial test to fail the check:
-        content = '/me takes a walk'
-        rendered_content = '<h1>/me takes a walk</h1>'
-        self.assertFalse(Message.is_status_message(content, rendered_content))
-
     def test_alert_words(self) -> None:
         user_profile = self.example_user('othello')
         do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])
