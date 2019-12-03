@@ -729,7 +729,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
         // and will be undefined in case of errors
         let rendered_preview_html;
         if (raw_content !== undefined &&
-            markdown.is_status_message(raw_content, rendered_content)) {
+            markdown.is_status_message(raw_content)) {
             // Handle previews of /me messages
             rendered_preview_html = "<p><strong>" + page_params.full_name + "</strong>" + rendered_content.slice("<p>/me".length);
         } else {
