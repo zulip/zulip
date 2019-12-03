@@ -663,7 +663,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
 
 @assign_queue('deferred_work')
 class DeferredWorker(QueueProcessingWorker):
-    def consume(self, event: Mapping[str, Any]) -> None:
+    def consume(self, event: Dict[str, Any]) -> None:
         if event['type'] == 'mark_stream_messages_as_read':
             user_profile = get_user_profile_by_id(event['user_profile_id'])
             client = Client.objects.get(id=event['client_id'])
@@ -676,7 +676,14 @@ class DeferredWorker(QueueProcessingWorker):
                                                                require_active=False)
                 do_mark_stream_messages_as_read(user_profile, client, stream)
         elif event['type'] == 'clear_push_device_tokens':
-            clear_push_device_tokens(event["user_profile_id"])
+            try:
+                clear_push_device_tokens(event["user_profile_id"])
+            except PushNotificationBouncerRetryLaterError:
+                def failure_processor(event: Dict[str, Any]) -> None:
+                    logger.warning(
+                        "Maximum retries exceeded for trigger:%s event:clear_push_device_tokens" % (
+                            event['user_profile_id'],))
+                retry_event("deferred_work", event, failure_processor)
         elif event['type'] == 'realm_export':
             start = time.time()
             realm = Realm.objects.get(id=event['realm_id'])
