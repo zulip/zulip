@@ -262,7 +262,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_json_error(result, 'Invalid APNS token')
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_push_bouncer_api(self, mock_request: Any) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
@@ -348,7 +348,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
     TIME_ZERO = datetime.datetime(1988, 3, 14).replace(tzinfo=timezone_utc)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_analytics_api(self, mock_request: Any) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
@@ -457,7 +457,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             self.assert_json_error(result, "Invalid data.")
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_analytics_api_invalid(self, mock_request: Any) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
@@ -481,7 +481,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
     # Servers on Zulip 2.0.6 and earlier only send realm_counts and installation_counts data,
     # and don't send realmauditlog_rows. Make sure that continues to work.
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_old_two_table_format(self, mock_request: Any) -> None:
         mock_request.side_effect = self.bounce_request
         # Send fixture generated with Zulip 2.0 code
@@ -496,7 +496,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
     # Make sure we aren't sending data we don't mean to, even if we don't store it.
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_only_sending_intended_realmauditlog_data(self, mock_request: Any) -> None:
         mock_request.side_effect = self.bounce_request
         user = self.example_user('hamlet')
@@ -529,7 +529,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             send_analytics_to_remote_server()
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_realmauditlog_data_mapping(self, mock_request: Any) -> None:
         mock_request.side_effect = self.bounce_request
         user = self.example_user('hamlet')
@@ -647,7 +647,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             'trigger': 'private_message',
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
-                mock.patch('zerver.lib.push_notifications.requests.request',
+                mock.patch('zerver.lib.remote_server.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications.gcm_client') as mock_gcm, \
                 self.mock_apns() as mock_apns, \
@@ -703,7 +703,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             'trigger': 'private_message',
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
-                mock.patch('zerver.lib.push_notifications.requests.request',
+                mock.patch('zerver.lib.remote_server.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications.gcm_client') as mock_gcm, \
                 mock.patch('zerver.lib.push_notifications.send_notifications_to_bouncer',
