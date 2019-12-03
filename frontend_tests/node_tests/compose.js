@@ -1503,10 +1503,9 @@ run_test('on_events', () => {
             };
         }
 
-        function setup_mock_markdown_is_status_message(msg_content, msg_rendered, return_val) {
-            markdown.is_status_message = function (content, rendered) {
+        function setup_mock_markdown_is_status_message(msg_content, return_val) {
+            markdown.is_status_message = function (content) {
                 assert.equal(content, msg_content);
-                assert.equal(rendered, msg_rendered);
                 return return_val;
             };
         }
@@ -1572,7 +1571,7 @@ run_test('on_events', () => {
         $("#compose-textarea").val('```foobarfoobar```');
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax('```foobarfoobar```', true);
-        setup_mock_markdown_is_status_message('```foobarfoobar```', 'Server: foobarfoobar', false);
+        setup_mock_markdown_is_status_message('```foobarfoobar```', false);
         loading.make_indicator = function (spinner) {
             assert.equal(spinner.selector, "#markdown_preview_spinner");
             make_indicator_called = true;
@@ -1588,7 +1587,7 @@ run_test('on_events', () => {
         $("#compose-textarea").val('foobarfoobar');
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax('foobarfoobar', false);
-        setup_mock_markdown_is_status_message('foobarfoobar', 'Server: foobarfoobar', false);
+        setup_mock_markdown_is_status_message('foobarfoobar', false);
         mock_channel_post('foobarfoobar');
         markdown.apply_markdown = function (msg) {
             assert.equal(msg.raw_content, 'foobarfoobar');
