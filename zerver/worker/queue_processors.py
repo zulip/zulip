@@ -206,7 +206,7 @@ class SignupWorker(QueueProcessingWorker):
                 logging.warning("Attempted to sign up already existing email to list: %s" %
                                 (data['email_address'],))
             elif r.status_code == 400:
-                retry_event('signups', data, lambda e: r.raise_for_status())
+                retry_event(self.queue_name, data, lambda e: r.raise_for_status())
             else:
                 r.raise_for_status()
 
@@ -433,7 +433,7 @@ class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
                 logger.warning(
                     "Maximum retries exceeded for trigger:%s event:push_notification" % (
                         event['user_profile_id'],))
-            retry_event('missedmessage_mobile_notifications', event, failure_processor)
+            retry_event(self.queue_name, event, failure_processor)
 
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
 @assign_queue('feedback_messages')
@@ -683,7 +683,7 @@ class DeferredWorker(QueueProcessingWorker):
                     logger.warning(
                         "Maximum retries exceeded for trigger:%s event:clear_push_device_tokens" % (
                             event['user_profile_id'],))
-                retry_event("deferred_work", event, failure_processor)
+                retry_event(self.queue_name, event, failure_processor)
         elif event['type'] == 'realm_export':
             start = time.time()
             realm = Realm.objects.get(id=event['realm_id'])
