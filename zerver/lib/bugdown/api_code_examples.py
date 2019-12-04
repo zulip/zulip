@@ -158,17 +158,18 @@ def generate_curl_example(endpoint: str, method: str,
         raise AssertionError("exclude and include cannot be set at the same time.")
 
     lines = ["```curl"]
-    openapi_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
-    openapi_params = openapi_entry.get("parameters", [])
-    openapi_request_body = openapi_entry.get("requestBody", None)
+    operation = endpoint + ":" + method.lower()
+    operation_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
+    operation_params = operation_entry.get("parameters", [])
+    operation_request_body = operation_entry.get("requestBody", None)
 
     if settings.RUNNING_OPENAPI_CURL_TEST:  # nocoverage
         from zerver.openapi.curl_param_value_generators import patch_openapi_example_values
-        openapi_params, openapi_request_body = patch_openapi_example_values(endpoint + ":" + method.lower(),
-                                                                            openapi_params, openapi_request_body)
+        operation_params, operation_request_body = patch_openapi_example_values(operation, operation_params,
+                                                                                operation_request_body)
 
     format_dict = {}
-    for param in openapi_params:
+    for param in operation_params:
         if param["in"] != "path":
             continue
         example_value = get_openapi_param_example_value_as_string(endpoint, method, param)
@@ -179,11 +180,11 @@ def generate_curl_example(endpoint: str, method: str,
                                                              api_url)
     lines.append(" ".join(curl_first_line_parts))
 
-    authentication_required = openapi_entry.get("security", False)
+    authentication_required = operation_entry.get("security", False)
     if authentication_required:
         lines.append("    -u %s:%s" % (auth_email, auth_api_key))
 
-    for param in openapi_params:
+    for param in operation_params:
         if param["in"] == "path":
             continue
         param_name = param["name"]
@@ -198,8 +199,8 @@ def generate_curl_example(endpoint: str, method: str,
                                                                   curl_argument=True)
         lines.append(example_value)
 
-    if "requestBody" in openapi_entry:
-        properties = openapi_entry["requestBody"]["content"]["multipart/form-data"]["schema"]["properties"]
+    if "requestBody" in operation_entry:
+        properties = operation_entry["requestBody"]["content"]["multipart/form-data"]["schema"]["properties"]
         for key, property in properties.items():
             lines.append('    -F "{}=@{}"'.format(key, property["example"]))
 
