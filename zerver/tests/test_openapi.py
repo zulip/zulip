@@ -611,6 +611,7 @@ class ModifyExampleGenerationTestCase(ZulipTestCase):
 class TestCurlExampleGeneration(ZulipTestCase):
 
     spec_mock_without_examples = {
+        "security": [{"basicAuth": []}],
         "paths": {
             "/mark_stream_as_read": {
                 "post": {
@@ -641,6 +642,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
     }
 
     spec_mock_with_invalid_method = {
+        "security": [{"basicAuth": []}],
         "paths": {
             "/endpoint": {
                 "brew": {}  # the data is irrelevant as is should be rejected.
@@ -649,6 +651,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
     }  # type: Dict[str, object]
 
     spec_mock_using_object = {
+        "security": [{"basicAuth": []}],
         "paths": {
             "/endpoint": {
                 "get": {
@@ -673,6 +676,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
     }
 
     spec_mock_using_param_in_path = {
+        "security": [{"basicAuth": []}],
         "paths": {
             "/endpoint/{param1}": {
                 "get": {
@@ -707,6 +711,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
     }
 
     spec_mock_using_object_without_example = {
+        "security": [{"basicAuth": []}],
         "paths": {
             "/endpoint": {
                 "get": {
@@ -728,6 +733,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
     }
 
     spec_mock_using_array_without_example = {
+        "security": [{"basicAuth": []}],
         "paths": {
             "/endpoint": {
                 "get": {
@@ -786,6 +792,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         expected_curl_example = [
             "```curl",
             "curl -sSX POST http://localhost:9991/api/v1/mark_stream_as_read \\",
+            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    -d 'stream_id=1' \\",
             "    -d 'bool_param=false'",
             "```"
@@ -822,6 +829,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         expected_curl_example = [
             '```curl',
             'curl -sSX GET -G http://localhost:9991/api/v1/endpoint \\',
+            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             '    --data-urlencode param1=\'{"key": "value"}\'',
             '```'
         ]
@@ -846,6 +854,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         expected_curl_example = [
             '```curl',
             'curl -sSX GET -G http://localhost:9991/api/v1/endpoint/35 \\',
+            '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             '    --data-urlencode param2=\'{"key": "value"}\'',
             '```'
         ]
