@@ -160,8 +160,11 @@ def generate_curl_example(endpoint: str, method: str,
     lines = ["```curl"]
     operation = endpoint + ":" + method.lower()
     operation_entry = openapi_spec.spec()['paths'][endpoint][method.lower()]
+    global_security = openapi_spec.spec()['security']
+
     operation_params = operation_entry.get("parameters", [])
     operation_request_body = operation_entry.get("requestBody", None)
+    operation_security = operation_entry.get("security", None)
 
     if settings.RUNNING_OPENAPI_CURL_TEST:  # nocoverage
         from zerver.openapi.curl_param_value_generators import patch_openapi_example_values
@@ -180,7 +183,20 @@ def generate_curl_example(endpoint: str, method: str,
                                                              api_url)
     lines.append(" ".join(curl_first_line_parts))
 
-    authentication_required = operation_entry.get("security", False)
+    insecure_operations = ['/dev_fetch_api_key:post']
+    if operation_security is None:
+        if global_security == [{'basicAuth': []}]:
+            authentication_required = True
+        else:
+            raise AssertionError("Unhandled global securityScheme. Please update the code to handle this scheme.")
+    elif operation_security == []:
+        if operation in insecure_operations:
+            authentication_required = False
+        else:
+            raise AssertionError("Unknown operation without a securityScheme. Please update insecure_operations.")
+    else:
+        raise AssertionError("Unhandled securityScheme. Please update the code to handle this scheme.")
+
     if authentication_required:
         lines.append("    -u %s:%s" % (auth_email, auth_api_key))
 
