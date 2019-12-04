@@ -5,6 +5,7 @@ from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream, \
 from zerver.lib.upload import copy_avatar
 from zerver.lib.hotspots import copy_hotpots
 from zerver.lib.utils import generate_api_key
+from django.conf import settings
 
 import ujson
 
@@ -52,6 +53,8 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
                         enter_sends: bool = False) -> UserProfile:
     now = timezone_now()
     email = UserManager.normalize_email(email)
+    if settings.LOWER_EMAIL_ADDRESSES:
+        email = email.lower()
 
     user_profile = UserProfile(is_staff=False, is_active=active,
                                full_name=full_name, short_name=short_name,

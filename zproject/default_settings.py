@@ -22,6 +22,7 @@ ADD_TOKENS_TO_NOREPLY_ADDRESS = True
 TOKENIZED_NOREPLY_EMAIL_ADDRESS = "noreply-{token}@" + EXTERNAL_HOST.split(":")[0]
 PHYSICAL_ADDRESS = ''
 FAKE_EMAIL_DOMAIN = EXTERNAL_HOST.split(":")[0]
+LOWER_EMAIL_ADDRESSES = False
 
 # SMTP settings
 EMAIL_HOST = None  # type: Optional[str]

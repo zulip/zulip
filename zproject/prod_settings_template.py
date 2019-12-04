@@ -97,6 +97,12 @@ EXTERNAL_HOST = 'zulip.example.com'
 # confirmation emails when ADD_TOKENS_TO_NOREPLY_ADDRESS=False.
 #NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
 
+# Setting controls whether to lower all email-adresses. If LOWER_EMAIL_ADDRESSES=True,
+# users can login without taking care of case-sensitivity. This setting should not be changed
+# after the database was created as entries might contain upper-case-emails. If so,
+# the database has to be rewritten.
+#LOWER_EMAIL_ADDRESSES = False
+
 # Many countries and bulk mailers require certain types of email to display
 # a physical mailing address to comply with anti-spam legislation.
 # Non-commercial and non-public-facing installations are unlikely to need
