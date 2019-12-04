@@ -737,6 +737,38 @@ def flush_realm_filter(sender: Any, **kwargs: Any) -> None:
 post_save.connect(flush_realm_filter, sender=RealmFilter)
 post_delete.connect(flush_realm_filter, sender=RealmFilter)
 
+# The Recipient table is used to map Messages to the set of users who
+# received the message.  It is implemented as a set of triples (id,
+# type_id, type). We have 3 types of recipients: Huddles (for group
+# private messages), UserProfiles (for 1:1 private messages), and
+# Streams. The recipient table maps a globally unique recipient id
+# (used by the Message table) to the type-specific unique id (the
+# stream id, user_profile id, or huddle id).
+class Recipient(models.Model):
+    type_id = models.IntegerField(db_index=True)  # type: int
+    type = models.PositiveSmallIntegerField(db_index=True)  # type: int
+    # Valid types are {personal, stream, huddle}
+    PERSONAL = 1
+    STREAM = 2
+    HUDDLE = 3
+
+    class Meta:
+        unique_together = ("type", "type_id")
+
+    # N.B. If we used Django's choice=... we would get this for free (kinda)
+    _type_names = {
+        PERSONAL: 'personal',
+        STREAM: 'stream',
+        HUDDLE: 'huddle'}
+
+    def type_name(self) -> str:
+        # Raises KeyError if invalid
+        return self._type_names[self.type]
+
+    def __str__(self) -> str:
+        display_recipient = get_display_recipient(self)
+        return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
+
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
@@ -1385,38 +1417,6 @@ class Stream(models.Model):
 
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
-
-# The Recipient table is used to map Messages to the set of users who
-# received the message.  It is implemented as a set of triples (id,
-# type_id, type). We have 3 types of recipients: Huddles (for group
-# private messages), UserProfiles (for 1:1 private messages), and
-# Streams. The recipient table maps a globally unique recipient id
-# (used by the Message table) to the type-specific unique id (the
-# stream id, user_profile id, or huddle id).
-class Recipient(models.Model):
-    type_id = models.IntegerField(db_index=True)  # type: int
-    type = models.PositiveSmallIntegerField(db_index=True)  # type: int
-    # Valid types are {personal, stream, huddle}
-    PERSONAL = 1
-    STREAM = 2
-    HUDDLE = 3
-
-    class Meta:
-        unique_together = ("type", "type_id")
-
-    # N.B. If we used Django's choice=... we would get this for free (kinda)
-    _type_names = {
-        PERSONAL: 'personal',
-        STREAM: 'stream',
-        HUDDLE: 'huddle'}
-
-    def type_name(self) -> str:
-        # Raises KeyError if invalid
-        return self._type_names[self.type]
-
-    def __str__(self) -> str:
-        display_recipient = get_display_recipient(self)
-        return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
 
 class MutedTopic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
