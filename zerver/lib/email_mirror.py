@@ -23,7 +23,7 @@ from zerver.lib.send_email import FromAddress
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_entity
 from zerver.lib.exceptions import RateLimited
 from zerver.models import Stream, Recipient, \
-    get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
+    get_user_profile_by_id, get_display_recipient, \
     Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
 
 from zproject.backends import is_user_active
@@ -118,7 +118,7 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
 
     if message.recipient.type == Recipient.PERSONAL:
         # We need to reply to the sender so look up their personal recipient_id
-        recipient_id = get_personal_recipient(message.sender_id).id
+        recipient_id = message.sender.recipient_id
     else:
         recipient_id = message.recipient_id
 

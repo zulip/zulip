@@ -51,7 +51,7 @@ from zerver.lib.validator import \
     check_string_or_int_list, check_string_or_int
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
-    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
+    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, \
     email_to_domain, get_realm, get_active_streams, get_user_including_cross_realm, \
     get_user_by_id_in_realm_including_cross_realm
 
@@ -391,9 +391,9 @@ class NarrowBuilder:
             # the thread (the sender), we need to do a somewhat
             # complex query to get messages between these two users
             # with either of them as the sender.
-            self_recipient = get_personal_recipient(self.user_profile.id)
+            self_recipient_id = self.user_profile.recipient_id
             cond = or_(and_(column("sender_id") == other_participant.id,
-                            column("recipient_id") == self_recipient.id),
+                            column("recipient_id") == self_recipient_id),
                        and_(column("sender_id") == self.user_profile.id,
                             column("recipient_id") == recipient.id))
             return query.where(maybe_negate(cond))
