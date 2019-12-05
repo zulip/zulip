@@ -5,7 +5,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_stream_name, create_streams_if_needed
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
-    Realm, Recipient, bulk_get_recipients, get_stream, \
+    Realm, Recipient, get_stream, \
     bulk_get_streams, get_realm_stream, DefaultStreamGroup, get_stream_by_id_in_realm
 
 from django.db.models.query import QuerySet
@@ -202,9 +202,9 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
 def filter_stream_authorization(user_profile: UserProfile,
                                 streams: Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]:
     streams_subscribed = set()  # type: Set[int]
-    recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
+    recipient_ids = [stream.recipient_id for stream in streams]
     subs = Subscription.objects.filter(user_profile=user_profile,
-                                       recipient__in=list(recipients_map.values()),
+                                       recipient_id__in=recipient_ids,
                                        active=True)
 
     for sub in subs:

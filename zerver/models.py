@@ -1565,26 +1565,7 @@ def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]
 
     return result_dict
 
-def bulk_get_recipients(type: int, type_ids: List[int]) -> Dict[int, Any]:
-    def cache_key_function(type_id: int) -> str:
-        return get_recipient_cache_key(type, type_id)
-
-    def query_function(type_ids: List[int]) -> Sequence[Recipient]:
-        # TODO: Change return type to QuerySet[Recipient]
-        return Recipient.objects.filter(type=type, type_id__in=type_ids)
-
-    def recipient_to_type_id(recipient: Recipient) -> int:
-        return recipient.type_id
-
-    return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
-                                     id_fetcher=recipient_to_type_id)
-
 def get_stream_recipients(stream_ids: List[int]) -> List[Recipient]:
-
-    '''
-    We could call bulk_get_recipients(...).values() here, but it actually
-    leads to an extra query in test mode.
-    '''
     return Recipient.objects.filter(
         type=Recipient.STREAM,
         type_id__in=stream_ids,
