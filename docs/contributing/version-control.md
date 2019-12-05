@@ -95,9 +95,15 @@ The first line of the commit message is the **summary**. The summary:
   explaining what the commit does
 * is clear about what part of the code is affected -- often by prefixing
   with the name of the subsystem and a colon, like "zjsunit: ..." or "docs: ..."
-* is a complete sentence, ending with a period.
+* is a complete sentence.
 
-Good summaries:
+### Good summaries:
+
+Notice how the first example starts with a capital letter "**I**", ends with a
+period "**.**", and the name of the subsystem starts with a lowerecase letter
+"**p**" followed by a colon "**:**" and a single space **" "** after the colon.
+
+> *provision: Improve performance of installing npm.*
 
 > *zjsunit: Fix running stream_data and node tests individually.*
 
@@ -118,6 +124,14 @@ Compare "*gather_subscriptions: Fix exception handling bad input.*" with:
 
 The summary is followed by a blank line, and then the body of the
 commit message.
+
+**Tip:** You can set up [Zulip's Git pre-commit hook][commit-hook] to
+automatically catch common mistakes in the commit message itself.
+
+[commit-hook]: ../git/zulip-tools.html#set-up-git-repo-script
+
+### Message body:
+
 -   The body is written in prose, with full paragraphs.
 -   The body explains:
     -   why and how the change was made
