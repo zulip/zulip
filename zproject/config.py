@@ -28,9 +28,7 @@ def get_secret(key: str, default_value: Optional[str]=None,
                development_only: bool=False) -> Optional[str]:
     if development_only and PRODUCTION:
         return default_value
-    if secrets_file.has_option('secrets', key):
-        return secrets_file.get('secrets', key)
-    return default_value
+    return secrets_file.get('secrets', key, fallback=default_value)
 
 @overload
 def get_config(section: str, key: str, default_value: str) -> str:
@@ -39,9 +37,7 @@ def get_config(section: str, key: str, default_value: str) -> str:
 def get_config(section: str, key: str, default_value: Optional[str]=None) -> Optional[str]:
     ...
 def get_config(section: str, key: str, default_value: Optional[str]=None) -> Optional[str]:
-    if config_file.has_option(section, key):
-        return config_file.get(section, key)
-    return default_value
+    return config_file.get(section, key, fallback=default_value)
 
 def get_from_file_if_exists(path: str) -> str:
     if os.path.exists(path):
