@@ -1565,12 +1565,6 @@ def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]
 
     return result_dict
 
-def get_stream_recipients(stream_ids: List[int]) -> List[Recipient]:
-    return Recipient.objects.filter(
-        type=Recipient.STREAM,
-        type_id__in=stream_ids,
-    )
-
 class AbstractMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type: Recipient

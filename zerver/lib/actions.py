@@ -97,7 +97,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, \
     get_user_profile_by_id, PreregistrationUser, \
-    get_stream_recipient, get_stream_recipients, \
+    get_stream_recipient, \
     email_allowed_for_realm, email_to_username, \
     get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
@@ -320,9 +320,8 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     """
     one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
 
-    stream_ids = [stream.id for stream in streams if not stream.invite_only]
-    recipients = get_stream_recipients(stream_ids)
-    recent_messages = Message.objects.filter(recipient_id__in=recipients,
+    recipient_ids = [stream.recipient_id for stream in streams if not stream.invite_only]
+    recent_messages = Message.objects.filter(recipient_id__in=recipient_ids,
                                              date_sent__gt=one_week_ago).order_by("-id")
     message_ids_to_use = list(reversed(recent_messages.values_list(
         'id', flat=True)[0:ONBOARDING_TOTAL_MESSAGES]))

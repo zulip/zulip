@@ -66,7 +66,6 @@ from zerver.lib.actions import (
     can_access_stream_user_ids,
     validate_user_access_to_subscribers_helper,
     get_average_weekly_stream_traffic, round_to_2_significant_digits,
-    get_stream_recipients,
 )
 
 from zerver.views.streams import (
@@ -291,7 +290,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(final_message_count - initial_message_count, 2)
         # 4 UserMessages per subscriber: One for each of the subscribers, plus 1 for
         # each user in the notifications stream.
-        announce_stream_subs = Subscription.objects.filter(recipient=get_stream_recipients([announce_stream.id])[0])
+        announce_stream_subs = Subscription.objects.filter(recipient=announce_stream.recipient)
         self.assertEqual(final_usermessage_count - initial_usermessage_count,
                          4 + announce_stream_subs.count())
 
