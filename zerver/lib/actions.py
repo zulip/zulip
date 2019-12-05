@@ -97,7 +97,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, \
     get_user_profile_by_id, PreregistrationUser, \
-    bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
+    get_stream_recipient, get_stream_recipients, \
     email_allowed_for_realm, email_to_username, \
     get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
@@ -2869,12 +2869,12 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                            acting_user: Optional[UserProfile]=None) -> SubT:
     users = list(users)
 
-    recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])  # type: Mapping[int, Recipient]
-    recipients = [recipient.id for recipient in recipients_map.values()]  # type: List[int]
+    recipients_map = dict((stream.id, stream.recipient_id) for stream in streams)  # type: Dict[int, int]
+    recipient_ids = [recipient_id for recipient_id in recipients_map.values()]  # type: List[int]
 
     stream_map = {}  # type: Dict[int, Stream]
     for stream in streams:
-        stream_map[recipients_map[stream.id].id] = stream
+        stream_map[recipients_map[stream.id]] = stream
 
     subs_by_user = defaultdict(list)  # type: Dict[int, List[Subscription]]
     all_subs_query = get_stream_subscriptions_for_users(users).select_related('user_profile')
@@ -2887,7 +2887,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     subs_to_activate = []  # type: List[Tuple[Subscription, Stream]]
     new_subs = []  # type: List[Tuple[UserProfile, int, Stream]]
     for user_profile in users:
-        needs_new_sub = set(recipients)  # type: Set[int]
+        needs_new_sub = set(recipient_ids)  # type: Set[int]
         for sub in subs_by_user[user_profile.id]:
             if sub.recipient_id in needs_new_sub:
                 needs_new_sub.remove(sub.recipient_id)

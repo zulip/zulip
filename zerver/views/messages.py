@@ -51,7 +51,7 @@ from zerver.lib.validator import \
     check_string_or_int_list, check_string_or_int
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
-    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, \
+    Realm, RealmDomain, Recipient, UserMessage, \
     email_to_domain, get_realm, get_active_streams, get_user_including_cross_realm, \
     get_user_by_id_in_realm_including_cross_realm
 
@@ -255,9 +255,8 @@ class NarrowBuilder:
 
             matching_streams = get_active_streams(self.user_profile.realm).filter(
                 name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
-            matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
-            recipients_map = bulk_get_recipients(Recipient.STREAM, matching_stream_ids)
-            cond = column("recipient_id").in_([recipient.id for recipient in recipients_map.values()])
+            recipient_ids = [matching_stream.recipient_id for matching_stream in matching_streams]
+            cond = column("recipient_id").in_(recipient_ids)
             return query.where(maybe_negate(cond))
 
         recipient = stream.recipient
