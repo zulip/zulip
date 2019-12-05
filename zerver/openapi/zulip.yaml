@@ -1622,6 +1622,49 @@ paths:
               }
             ]
           required: false
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    subscribed:
+                      type: object
+                      description: A dictionary where the key is the email address of
+                        the user/bot and the value is a list of the names of the streams
+                        that were subscribed to as a result of the query.
+                    already_subscribed:
+                      type: object
+                      description: A dictionary where the key is the email address of
+                        the user/bot and the value is a list of the names of the streams
+                        that the user/bot is already subscribed to.
+                    not_removed:
+                      type: array
+                      items:
+                        type: string
+                      description: A list of the names of streams that the
+                        user is already unsubscribed from, and hence doesn't
+                        need to be unsubscribed.
+                    removed:
+                      type: array
+                      items:
+                        type: string
+                      description: A list of the names of streams which were
+                        unsubscribed from as a result of the query.
+                - example:
+                    {
+                        "msg": "",
+                        "subscribed": {},
+                        "already_subscribed": {"iago@zulip.com":["Verona"]},
+                        "not_removed": [],
+                        "removed": [
+                            "new stream"
+                        ],
+                        "result": "success"
+                    }
     delete:
       description: Unsubscribe yourself or other users from one or more
         streams.
