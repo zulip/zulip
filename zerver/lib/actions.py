@@ -4187,7 +4187,7 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
         user_profile=user_profile
     )
 
-    recipient = get_stream_recipient(stream.id)
+    recipient = stream.recipient
     msgs = msgs.filter(message__recipient=recipient)
 
     if topic_name:

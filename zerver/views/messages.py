@@ -53,7 +53,7 @@ from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
     email_to_domain, get_realm, get_active_streams, get_user_including_cross_realm, \
-    get_user_by_id_in_realm_including_cross_realm, get_stream_recipient
+    get_user_by_id_in_realm_including_cross_realm
 
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
@@ -260,7 +260,7 @@ class NarrowBuilder:
             cond = column("recipient_id").in_([recipient.id for recipient in recipients_map.values()])
             return query.where(maybe_negate(cond))
 
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
         cond = column("recipient_id") == recipient.id
         return query.where(maybe_negate(cond))
 

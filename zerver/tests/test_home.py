@@ -245,8 +245,8 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(result["Cache-Control"].split(", ")),
                          {"must-revalidate", "no-store", "no-cache"})
 
-        self.assert_length(queries, 44)
-        self.assert_length(cache_mock.call_args_list, 7)
+        self.assert_length(queries, 43)
+        self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode('utf-8')
 
