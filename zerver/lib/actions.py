@@ -2356,7 +2356,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             stream = addressee.stream()
         assert stream is not None
 
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
 
         # This will raise JsonableError if there are problems.
         validate_sender_can_write_to_stream(
