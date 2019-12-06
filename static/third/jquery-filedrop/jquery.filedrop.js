@@ -95,7 +95,7 @@
         global_progress = []
         // Zulip modification: keep a pointer to the object that the function
         // was invoked on.
-        caller = this;
+    var caller = this;
 
     this.on('drop', drop).on('dragstart', opts.dragStart).on('dragenter', dragEnter).on('dragover', dragOver).on('dragleave', dragLeave);
     this.on('paste', paste);
