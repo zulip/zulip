@@ -187,10 +187,10 @@ function populate_users(realm_people_data) {
     bot_list.sort("alphabetic", "full_name");
 
     bot_list.add_sort_function("bot_owner", function (a, b) {
-        if (!a.bot_owner) { return 1; }
-        if (!b.bot_owner) { return -1; }
+        if (!a.bot_owner_id) { return 1; }
+        if (!b.bot_owner_id) { return -1; }
 
-        return compare_a_b(a.bot_owner, b.bot_owner);
+        return compare_a_b(a.bot_owner_id, b.bot_owner_id);
     });
 
     function get_rendered_last_activity(item) {
