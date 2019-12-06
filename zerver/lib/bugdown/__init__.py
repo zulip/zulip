@@ -1440,16 +1440,12 @@ class OListProcessor(sane_lists.SaneOListProcessor):
         parser.markdown.tab_length = 4
 
 class UListProcessor(sane_lists.SaneUListProcessor):
-    """ Does not accept '+' or '-' as a bullet character. """
+    """ Unordered lists, but with 2-space indent """
 
     def __init__(self, parser: Any) -> None:
         parser.markdown.tab_length = 2
         super().__init__(parser)
         parser.markdown.tab_length = 4
-
-        self.RE = re.compile('^[ ]{0,%d}[*][ ]+(.*)' % (self.tab_length - 1,))
-        self.CHILD_RE = re.compile(r'^[ ]{0,%d}(([*]))[ ]+(.*)' %
-                                   (self.tab_length - 1,))
 
 class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
     """ Process unordered list blocks.
@@ -1502,7 +1498,7 @@ class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
         directly after a line of text, and inserts a newline between
         to satisfy Markdown"""
 
-    LI_RE = re.compile(r'^[ ]{0,3}(\*|\d\.)[ ]+(.*)', re.MULTILINE)
+    LI_RE = re.compile(r'^[ ]{0,3}([*+-]|\d\.)[ ]+(.*)', re.MULTILINE)
 
     def run(self, lines: List[str]) -> List[str]:
         """ Insert a newline between a paragraph and ulist if missing """
