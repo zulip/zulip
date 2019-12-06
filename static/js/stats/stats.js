@@ -4,7 +4,7 @@ const font_14pt = {
     color: '#000000',
 };
 
-let last_full_update = Math.min();
+let last_full_update = Infinity;
 
 // TODO: should take a dict of arrays and do it for all keys
 function partial_sums(array) {
