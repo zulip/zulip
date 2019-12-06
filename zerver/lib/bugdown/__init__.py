@@ -341,124 +341,6 @@ def has_blockquote_ancestor(element_pair: Optional[ElementPair]) -> bool:
     else:
         return has_blockquote_ancestor(element_pair.parent)
 
-# height is not actually used
-def add_a(
-        root: Element,
-        url: str,
-        link: str,
-        title: Optional[str]=None,
-        desc: Optional[str]=None,
-        class_attr: str="message_inline_image",
-        data_id: Optional[str]=None,
-        insertion_index: Optional[int]=None,
-        already_thumbnailed: Optional[bool]=False
-) -> None:
-    title = title if title is not None else url_filename(link)
-    title = title if title else ""
-    desc = desc if desc is not None else ""
-
-    if insertion_index is not None:
-        div = markdown.util.etree.Element("div")
-        root.insert(insertion_index, div)
-    else:
-        div = markdown.util.etree.SubElement(root, "div")
-
-    div.set("class", class_attr)
-    a = markdown.util.etree.SubElement(div, "a")
-    a.set("href", link)
-    a.set("target", "_blank")
-    a.set("title", title)
-    if data_id is not None:
-        a.set("data-id", data_id)
-    img = markdown.util.etree.SubElement(a, "img")
-    if settings.THUMBNAIL_IMAGES and (not already_thumbnailed) and user_uploads_or_external(url):
-        # See docs/thumbnailing.md for some high-level documentation.
-        #
-        # We strip leading '/' from relative URLs here to ensure
-        # consistency in what gets passed to /thumbnail
-        url = url.lstrip('/')
-        img.set("src", "/thumbnail?url={0}&size=thumbnail".format(
-            urllib.parse.quote(url, safe='')
-        ))
-        img.set('data-src-fullsize', "/thumbnail?url={0}&size=full".format(
-            urllib.parse.quote(url, safe='')
-        ))
-    else:
-        img.set("src", url)
-
-    if class_attr == "message_inline_ref":
-        summary_div = markdown.util.etree.SubElement(div, "div")
-        title_div = markdown.util.etree.SubElement(summary_div, "div")
-        title_div.set("class", "message_inline_image_title")
-        title_div.text = title
-        desc_div = markdown.util.etree.SubElement(summary_div, "desc")
-        desc_div.set("class", "message_inline_image_desc")
-
-def add_oembed_data(root: Element, link: str, extracted_data: Dict[str, Any]) -> bool:
-    oembed_resource_type = extracted_data.get('type', '')
-    title = extracted_data.get('title', link)
-
-    if oembed_resource_type == 'photo':
-        image = extracted_data.get('image')
-        if image:
-            add_a(root, image, link, title=title)
-            return True
-
-    elif oembed_resource_type == 'video':
-        html = extracted_data['html']
-        image = extracted_data['image']
-        title = extracted_data.get('title', link)
-        description = extracted_data.get('description')
-        add_a(root, image, link, title, description,
-              "embed-video message_inline_image",
-              html, already_thumbnailed=True)
-        return True
-
-    return False
-
-def add_embed(root: Element, link: str, extracted_data: Dict[str, Any]) -> None:
-    oembed = extracted_data.get('oembed', False)
-    if oembed and add_oembed_data(root, link, extracted_data):
-        return
-
-    img_link = extracted_data.get('image')
-    if not img_link:
-        # Don't add an embed if an image is not found
-        return
-
-    container = markdown.util.etree.SubElement(root, "div")
-    container.set("class", "message_embed")
-
-    parsed_img_link = urllib.parse.urlparse(img_link)
-    # Append domain where relative img_link url is given
-    if not parsed_img_link.netloc:
-        parsed_url = urllib.parse.urlparse(link)
-        domain = '{url.scheme}://{url.netloc}/'.format(url=parsed_url)
-        img_link = urllib.parse.urljoin(domain, img_link)
-    img = markdown.util.etree.SubElement(container, "a")
-    img.set("style", "background-image: url(" + img_link + ")")
-    img.set("href", link)
-    img.set("target", "_blank")
-    img.set("class", "message_embed_image")
-
-    data_container = markdown.util.etree.SubElement(container, "div")
-    data_container.set("class", "data-container")
-
-    title = extracted_data.get('title')
-    if title:
-        title_elm = markdown.util.etree.SubElement(data_container, "div")
-        title_elm.set("class", "message_embed_title")
-        a = markdown.util.etree.SubElement(title_elm, "a")
-        a.set("href", link)
-        a.set("target", "_blank")
-        a.set("title", title)
-        a.text = title
-    description = extracted_data.get('description')
-    if description:
-        description_elm = markdown.util.etree.SubElement(data_container, "div")
-        description_elm.set("class", "message_embed_description")
-        description_elm.text = description
-
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
     if settings.TEST_SUITE:
@@ -637,6 +519,124 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
     def __init__(self, md: markdown.Markdown) -> None:
         markdown.treeprocessors.Treeprocessor.__init__(self, md)
+
+    def add_a(
+            self,
+            root: Element,
+            url: str,
+            link: str,
+            title: Optional[str]=None,
+            desc: Optional[str]=None,
+            class_attr: str="message_inline_image",
+            data_id: Optional[str]=None,
+            insertion_index: Optional[int]=None,
+            already_thumbnailed: Optional[bool]=False
+    ) -> None:
+        title = title if title is not None else url_filename(link)
+        title = title if title else ""
+        desc = desc if desc is not None else ""
+
+        if insertion_index is not None:
+            div = markdown.util.etree.Element("div")
+            root.insert(insertion_index, div)
+        else:
+            div = markdown.util.etree.SubElement(root, "div")
+
+        div.set("class", class_attr)
+        a = markdown.util.etree.SubElement(div, "a")
+        a.set("href", link)
+        a.set("target", "_blank")
+        a.set("title", title)
+        if data_id is not None:
+            a.set("data-id", data_id)
+        img = markdown.util.etree.SubElement(a, "img")
+        if settings.THUMBNAIL_IMAGES and (not already_thumbnailed) and user_uploads_or_external(url):
+            # See docs/thumbnailing.md for some high-level documentation.
+            #
+            # We strip leading '/' from relative URLs here to ensure
+            # consistency in what gets passed to /thumbnail
+            url = url.lstrip('/')
+            img.set("src", "/thumbnail?url={0}&size=thumbnail".format(
+                urllib.parse.quote(url, safe='')
+            ))
+            img.set('data-src-fullsize', "/thumbnail?url={0}&size=full".format(
+                urllib.parse.quote(url, safe='')
+            ))
+        else:
+            img.set("src", url)
+
+        if class_attr == "message_inline_ref":
+            summary_div = markdown.util.etree.SubElement(div, "div")
+            title_div = markdown.util.etree.SubElement(summary_div, "div")
+            title_div.set("class", "message_inline_image_title")
+            title_div.text = title
+            desc_div = markdown.util.etree.SubElement(summary_div, "desc")
+            desc_div.set("class", "message_inline_image_desc")
+
+    def add_oembed_data(self, root: Element, link: str, extracted_data: Dict[str, Any]) -> bool:
+        oembed_resource_type = extracted_data.get('type', '')
+        title = extracted_data.get('title', link)
+
+        if oembed_resource_type == 'photo':
+            image = extracted_data.get('image')
+            if image:
+                self.add_a(root, image, link, title=title)
+                return True
+
+        elif oembed_resource_type == 'video':
+            html = extracted_data['html']
+            image = extracted_data['image']
+            title = extracted_data.get('title', link)
+            description = extracted_data.get('description')
+            self.add_a(root, image, link, title, description,
+                       "embed-video message_inline_image",
+                       html, already_thumbnailed=True)
+            return True
+
+        return False
+
+    def add_embed(self, root: Element, link: str, extracted_data: Dict[str, Any]) -> None:
+        oembed = extracted_data.get('oembed', False)
+        if oembed and self.add_oembed_data(root, link, extracted_data):
+            return
+
+        img_link = extracted_data.get('image')
+        if not img_link:
+            # Don't add an embed if an image is not found
+            return
+
+        container = markdown.util.etree.SubElement(root, "div")
+        container.set("class", "message_embed")
+
+        parsed_img_link = urllib.parse.urlparse(img_link)
+        # Append domain where relative img_link url is given
+        if not parsed_img_link.netloc:
+            parsed_url = urllib.parse.urlparse(link)
+            domain = '{url.scheme}://{url.netloc}/'.format(url=parsed_url)
+            img_link = urllib.parse.urljoin(domain, img_link)
+        img = markdown.util.etree.SubElement(container, "a")
+        img.set("style", "background-image: url(" + img_link + ")")
+        img.set("href", link)
+        img.set("target", "_blank")
+        img.set("class", "message_embed_image")
+
+        data_container = markdown.util.etree.SubElement(container, "div")
+        data_container.set("class", "data-container")
+
+        title = extracted_data.get('title')
+        if title:
+            title_elm = markdown.util.etree.SubElement(data_container, "div")
+            title_elm.set("class", "message_embed_title")
+            a = markdown.util.etree.SubElement(title_elm, "a")
+            a.set("href", link)
+            a.set("target", "_blank")
+            a.set("title", title)
+            a.text = title
+        description = extracted_data.get('description')
+        if description:
+            description_elm = markdown.util.etree.SubElement(data_container, "div")
+            description_elm.set("class", "message_embed_description")
+            description_elm.text = description
 
     def get_actual_image_url(self, url: str) -> str:
         # Add specific per-site cases to convert image-preview urls to image urls.
@@ -978,7 +978,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         url_eq_text = (url == text)
 
         if parent.tag == 'li':
-            add_a(parent, self.get_actual_image_url(url), url, title=text)
+            self.add_a(parent, self.get_actual_image_url(url), url, title=text)
             if not parent.text and not ahref_element.tail and url_eq_text:
                 parent.remove(ahref_element)
 
@@ -991,12 +991,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
             if parent_index is not None:
                 ins_index = self.find_proper_insertion_index(grandparent, parent, parent_index)
-                add_a(grandparent, actual_url, url, title=text, insertion_index=ins_index)
+                self.add_a(grandparent, actual_url, url, title=text, insertion_index=ins_index)
 
             else:
                 # We're not inserting after parent, since parent not found.
                 # Append to end of list of grandparent's children as normal
-                add_a(grandparent, actual_url, url, title=text)
+                self.add_a(grandparent, actual_url, url, title=text)
 
             # If link is alone in a paragraph, delete paragraph containing it
             if (len(parent.getchildren()) == 1 and
@@ -1007,7 +1007,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         else:
             # If none of the above criteria match, fall back to old behavior
-            add_a(root, actual_url, url, title=text)
+            self.add_a(root, actual_url, url, title=text)
 
     def find_proper_insertion_index(self, grandparent: Element, parent: Element,
                                     parent_index_in_grandparent: int) -> int:
@@ -1072,11 +1072,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if is_image:
                     class_attr = "message_inline_image"
                     # Not making use of title and description of images
-                add_a(root, dropbox_image['image'], url,
-                      title=dropbox_image.get('title', ""),
-                      desc=dropbox_image.get('desc', ""),
-                      class_attr=class_attr,
-                      already_thumbnailed=True)
+                self.add_a(root, dropbox_image['image'], url,
+                           title=dropbox_image.get('title', ""),
+                           desc=dropbox_image.get('desc', ""),
+                           class_attr=class_attr,
+                           already_thumbnailed=True)
                 continue
 
             if self.is_image(url):
@@ -1105,9 +1105,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             youtube = self.youtube_image(url)
             if youtube is not None:
                 yt_id = self.youtube_id(url)
-                add_a(root, youtube, url, None, None,
-                      "youtube-video message_inline_image",
-                      yt_id, already_thumbnailed=True)
+                self.add_a(root, youtube, url, None, None,
+                           "youtube-video message_inline_image",
+                           yt_id, already_thumbnailed=True)
                 # NOTE: We don't `continue` here, to allow replacing the URL with
                 # the title, if INLINE_URL_EMBED_PREVIEW feature is enabled.
                 # The entire preview would ideally be shown only if the feature
@@ -1133,7 +1133,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     if title is not None:
                         found_url.family.child.text = title
                     continue
-                add_embed(root, url, extracted_data)
+                self.add_embed(root, url, extracted_data)
                 if self.vimeo_id(url):
                     title = self.vimeo_title(extracted_data)
                     if title:
