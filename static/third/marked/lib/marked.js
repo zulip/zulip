@@ -346,7 +346,7 @@ Lexer.prototype.token = function(src, top, bq) {
           listStart.loose = true;
         }
 
-        t = {
+        var t = {
           type: 'list_item_start',
           loose: loose
         };
