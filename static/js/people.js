@@ -1,3 +1,4 @@
+require("unorm");  // String.prototype.normalize polyfill for IE11
 const Dict = require('./dict').Dict;
 
 let people_dict;
@@ -753,31 +754,10 @@ exports.incr_recipient_count = function (user_id) {
     pm_recipient_count_dict.set(user_id, old_count + 1);
 };
 
-// Diacritic removal from:
-// https://stackoverflow.com/questions/18236208/perform-a-find-match-with-javascript-ignoring-special-language-characters-acce
-const diacritic_regexes = {
-    letters_only: /^[a-z]+$/,
-    a: /[áàãâä]/g,
-    e: /[éèëê]/g,
-    i: /[íìïî]/g,
-    o: /[óòöôõ]/g,
-    u: /[úùüû]/g,
-    c: /[ç]/g,
-    n: /[ñ]/g,
-};
+const unicode_marks = /\p{M}/gu;
 
 exports.remove_diacritics = function (s) {
-    if (diacritic_regexes.letters_only.test(s)) {
-        return s;
-    }
-
-    return s.replace(diacritic_regexes.a, "a")
-        .replace(diacritic_regexes.e, "e")
-        .replace(diacritic_regexes.i, "i")
-        .replace(diacritic_regexes.o, "o")
-        .replace(diacritic_regexes.u, "u")
-        .replace(diacritic_regexes.c, "c")
-        .replace(diacritic_regexes.n, "n");
+    return s.normalize("NFKD").replace(unicode_marks, "");
 };
 
 exports.person_matches_query = function (user, query) {

@@ -59,6 +59,7 @@
     "terser-webpack-plugin": "^2.1.0",
     "turndown": "^5.0.3",
     "underscore": "^1.9.1",
+    "unorm": "^1.6.0",
     "webfonts-loader": "^5.0.0",
     "webpack": "^4.33.0",
     "webpack-cli": "^3.3.2",
