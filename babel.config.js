@@ -11,6 +11,7 @@ module.exports = {
     ],
     plugins: [
         "@babel/proposal-class-properties",
+        ["@babel/plugin-proposal-unicode-property-regex", { useUnicodeFlag: false }],
     ],
     sourceType: "unambiguous",
 };
