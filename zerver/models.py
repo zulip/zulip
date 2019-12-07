@@ -1731,11 +1731,6 @@ class Message(AbstractMessage):
         return re.search(r'[/\-]user[\-_]uploads[/\.-]', content)
 
     @staticmethod
-    def content_has_image(content: str) -> bool:
-        return bool(re.search(r'[/\-]user[\-_]uploads[/\.-]\S+\.(bmp|gif|jpg|jpeg|png|webp)',
-                              content, re.IGNORECASE))
-
-    @staticmethod
     def is_status_message(content: str, rendered_content: str) -> bool:
         """
         "status messages" start with /me and have special rendering:
@@ -1749,7 +1744,6 @@ class Message(AbstractMessage):
         # TODO: rendered_content could also be considered a calculated field
         content = self.content
         self.has_attachment = bool(Message.content_has_attachment(content))
-        self.has_image = bool(Message.content_has_image(content))
 
 @receiver(pre_save, sender=Message)
 def pre_save_message(sender: Any, **kwargs: Any) -> None:

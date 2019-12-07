@@ -3579,14 +3579,6 @@ class AttachmentTest(ZulipTestCase):
         self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo' % (
             zulip_realm.id,)))
 
-        self.assertFalse(Message.content_has_image('whatever'))
-        self.assertFalse(Message.content_has_image('yo http://foo.com'))
-        self.assertFalse(Message.content_has_image('yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo' % (
-            zulip_realm.id,)))
-        for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp", ".JPG"]:
-            content = 'yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.%s foo' % (zulip_realm.id, ext)
-            self.assertTrue(Message.content_has_image(content))
-
     def test_claim_attachment(self) -> None:
 
         # Create dummy DB entry
@@ -3615,7 +3607,9 @@ class AttachmentTest(ZulipTestCase):
             attachment = Attachment.objects.get(path_id=path_id)
             self.assertTrue(attachment.is_claimed())
 
-class LinkDetectionTest(ZulipTestCase):
+class MessageHasKeywordsTest(ZulipTestCase):
+    '''Test for keywords like has_link, has_image, has_attachment'''
+
     def test_finds_all_links(self) -> None:
         msg_ids = []
         msg_contents = ["foo.org", "[bar](baz.gov)", "http://quux.ca"]
@@ -3655,6 +3649,23 @@ class LinkDetectionTest(ZulipTestCase):
         self.assertTrue(msg.has_link)
         self.update_message(msg, 'a `http://foo.com`')
         self.assertFalse(msg.has_link)
+
+    def test_has_image(self) -> None:
+        msg_ids = []
+        msg_contents = ["Link: foo.org",
+                        "Image: https://www.google.com/images/srpr/logo4w.png",
+                        "Image: https://www.google.com/images/srpr/logo4w.pdf",
+                        "[Google Link](https://www.google.com/images/srpr/logo4w.png)"]
+        for msg_content in msg_contents:
+            msg_ids.append(self.send_stream_message(self.example_email('hamlet'),
+                                                    'Denmark', content=msg_content))
+        msgs = [Message.objects.get(id=id) for id in msg_ids]
+        self.assertEqual([False, True, False, True], [msg.has_image for msg in msgs])
+
+        self.update_message(msgs[0], 'https://www.google.com/images/srpr/logo4w.png')
+        self.assertTrue(msgs[0].has_image)
+        self.update_message(msgs[0], 'No Image Again')
+        self.assertFalse(msgs[0].has_image)
 
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:

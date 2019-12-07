@@ -536,6 +536,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         title = title if title else ""
         desc = desc if desc is not None else ""
 
+        # Update message.has_image attribute.
+        if 'message_inline_image' in class_attr and self.markdown.zulip_message:
+            self.markdown.zulip_message.has_image = True
+
         if insertion_index is not None:
             div = markdown.util.etree.Element("div")
             root.insert(insertion_index, div)
@@ -1044,9 +1048,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
 
-        # Set has_link attribute whenever a message is processed by bugdown
+        # Set has_link and similar flags whenever a message is processed by bugdown
         if self.markdown.zulip_message:
             self.markdown.zulip_message.has_link = len(found_urls) > 0
+            self.markdown.zulip_message.has_image = False  # This is updated in self.add_a
 
         # Collect unique URLs which are not quoted
         unique_urls = {found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote}
