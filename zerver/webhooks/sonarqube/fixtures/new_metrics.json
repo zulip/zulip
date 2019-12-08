@@ -1,0 +1,39 @@
+{
+  "serverUrl": "http://localhost:9000",
+  "taskId": "AW7m7C75YWNNgyb7Dmt0",
+  "status": "SUCCESS",
+  "analysedAt": "2019-12-08T16:04:11+0100",
+  "changedAt": "2019-12-08T16:04:11+0100",
+  "project": {
+    "key": "sonar",
+    "name": "sonar-test",
+    "url": "http://localhost:9000/dashboard?id=sonar"
+  },
+  "branch": {
+    "name": "master",
+    "type": "LONG",
+    "isMain": true,
+    "url": "http://localhost:9000/dashboard?id=sonar"
+  },
+  "qualityGate": {
+    "name": "Sonar way",
+    "status": "ERROR",
+    "conditions": [
+      {
+        "metric": "new_reliability_rating",
+        "operator": "GREATER_THAN",
+        "value": "1",
+        "status": "OK",
+        "errorThreshold": "1"
+      },
+      {
+        "metric": "new_security_rating",
+        "operator": "GREATER_THAN",
+        "value": "1",
+        "status": "OK",
+        "errorThreshold": "1"
+      }
+    ]
+  },
+  "properties": {}
+}

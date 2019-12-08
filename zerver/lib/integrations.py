@@ -324,6 +324,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('sentry', ['monitoring']),
     WebhookIntegration('slack', ['communication']),
     WebhookIntegration('solano', ['continuous-integration'], display_name='Solano Labs'),
+    WebhookIntegration('sonarqube', ['continuous-integration'], display_name='SonarQube'),
     WebhookIntegration('splunk', ['monitoring'], display_name='Splunk'),
     WebhookIntegration('statuspage', ['customer-support'], display_name='Statuspage'),
     WebhookIntegration('stripe', ['financial'], display_name='Stripe'),
