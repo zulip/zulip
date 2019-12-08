@@ -75,6 +75,33 @@ class PermissionTest(ZulipTestCase):
         with self.assertRaises(AssertionError):
             do_change_is_admin(user_profile, True, permission='totally-not-valid-perm')
 
+    def test_role_setters(self) -> None:
+        user_profile = self.example_user('hamlet')
+
+        user_profile.is_realm_admin = True
+        self.assertEqual(user_profile.is_realm_admin, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        user_profile.is_guest = False
+        self.assertEqual(user_profile.is_guest, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        user_profile.is_realm_admin = False
+        self.assertEqual(user_profile.is_realm_admin, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
+
+        user_profile.is_guest = True
+        self.assertEqual(user_profile.is_guest, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_GUEST)
+
+        user_profile.is_realm_admin = False
+        self.assertEqual(user_profile.is_guest, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_GUEST)
+
+        user_profile.is_guest = False
+        self.assertEqual(user_profile.is_guest, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
+
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, False)
