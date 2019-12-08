@@ -1055,9 +1055,27 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def is_realm_admin(self) -> bool:
         return self.role == UserProfile.ROLE_REALM_ADMINISTRATOR
 
+    @is_realm_admin.setter
+    def is_realm_admin(self, value: bool) -> None:
+        if value:
+            self.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        elif self.role == UserProfile.ROLE_REALM_ADMINISTRATOR:
+            # We need to be careful to not accidentally change
+            # ROLE_GUEST to ROLE_MEMBER here.
+            self.role = UserProfile.ROLE_MEMBER
+
     @property
     def is_guest(self) -> bool:
         return self.role == UserProfile.ROLE_GUEST
+
+    @is_guest.setter
+    def is_guest(self, value: bool) -> None:
+        if value:
+            self.role = UserProfile.ROLE_GUEST
+        elif self.role == UserProfile.ROLE_GUEST:
+            # We need to be careful to not accidentally change
+            # ROLE_REALM_ADMINISTRATOR to ROLE_MEMBER here.
+            self.role = UserProfile.ROLE_MEMBER
 
     @property
     def is_incoming_webhook(self) -> bool:
