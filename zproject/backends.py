@@ -16,7 +16,8 @@ import copy
 import logging
 import magic
 import ujson
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 from typing_extensions import TypedDict
 from zxcvbn import zxcvbn
 
@@ -38,7 +39,6 @@ from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, 
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.google import GoogleOAuth2
-from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.saml import SAMLAuth
 from social_core.pipeline.partial import partial
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
@@ -113,7 +113,7 @@ def any_social_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
     social_backend_names = [social_auth_subclass.auth_backend_name
-                            for social_auth_subclass in SOCIAL_AUTH_BACKENDS]
+                            for social_auth_subclass in EXTERNAL_AUTH_METHODS]
     return auth_enabled_helper(social_backend_names, realm)
 
 def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
@@ -802,6 +802,49 @@ class DevAuthBackend(ZulipAuthMixin):
             return None
         return common_get_active_user(dev_auth_username, realm, return_data=return_data)
 
+ExternalAuthMethodDictT = TypedDict('ExternalAuthMethodDictT', {
+    'name': str,
+    'display_name': str,
+    'display_icon': Optional[str],
+    'login_url': str,
+    'signup_url': str,
+})
+
+class ExternalAuthMethod(ABC):
+    """
+    To register a backend as an external_authentication_method, it should
+    subclass ExternalAuthMethod and define its dict_representation
+    classmethod, and finally use the external_auth_method class decorator to
+    get added to the EXTERNAL_AUTH_METHODS list.
+    """
+    auth_backend_name = "undeclared"
+    name = "undeclared"
+    display_icon = None  # type: Optional[str]
+
+    # Used to determine how to order buttons on login form, backend with
+    # higher sort order are displayed first.
+    sort_order = 0
+
+    @classmethod
+    @abstractmethod
+    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+        """
+        Method returning dictionaries representing the authentication methods
+        corresponding to the backend that subclasses this. The documentation
+        for the external_authentication_methods field of the /server_settings endpoint
+        explains the details of these dictionaries.
+        This returns a list, because one backend can support configuring multiple methods,
+        that are all serviced by that backend - our SAML backend is an example of that.
+        """
+
+EXTERNAL_AUTH_METHODS = []  # type: List[Type[ExternalAuthMethod]]
+
+def external_auth_method(cls: Type[ExternalAuthMethod]) -> Type[ExternalAuthMethod]:
+    assert issubclass(cls, ExternalAuthMethod)
+
+    EXTERNAL_AUTH_METHODS.append(cls)
+    return cls
+
 def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
@@ -1060,15 +1103,7 @@ def social_auth_finish(backend: Any,
         full_name_validated=full_name_validated
     )
 
-class SocialAuthMixin(ZulipAuthMixin):
-    auth_backend_name = "undeclared"
-    name = "undeclared"
-    display_icon = None  # type: Optional[str]
-
-    # Used to determine how to order buttons on login form, backend with
-    # higher sort order are displayed first.
-    sort_order = 0
-
+class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
     # Whether we expect that the full_name value obtained by the
     # social backend is definitely how the user should be referred to
     # in Zulip, which in turn determines whether we should always show
@@ -1104,6 +1139,17 @@ class SocialAuthMixin(ZulipAuthMixin):
             logging.warning(str(e))
             return None
 
+    @classmethod
+    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+        return [dict(
+            name=cls.name,
+            display_name=cls.auth_backend_name,
+            display_icon=cls.display_icon,
+            login_url=reverse('login-social', args=(cls.name,)),
+            signup_url=reverse('signup-social', args=(cls.name,)),
+        )]
+
+@external_auth_method
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     name = "github"
     auth_backend_name = "GitHub"
@@ -1170,12 +1216,14 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
         raise AssertionError("Invalid configuration")
 
+@external_auth_method
 class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     sort_order = 50
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"
     display_icon = "/static/images/landing-page/logos/azuread-icon.png"
 
+@external_auth_method
 class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
     sort_order = 150
     auth_backend_name = "Google"
@@ -1190,6 +1238,7 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
             verified_emails.append(details["email"])
         return verified_emails
 
+@external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     auth_backend_name = "SAML"
     standard_relay_params = ["subdomain", "multiuse_object_key", "mobile_flow_otp",
@@ -1335,51 +1384,32 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return None
 
-SocialBackendDictT = TypedDict('SocialBackendDictT', {
-    'name': str,
-    'display_name': str,
-    'display_icon': Optional[str],
-    'login_url': str,
-    'signup_url': str,
-})
+    @classmethod
+    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+        result = []  # type: List[ExternalAuthMethodDictT]
+        for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
+            saml_dict = dict(
+                name='saml:{}'.format(idp_name),
+                display_name=idp_dict.get('display_name', cls.auth_backend_name),
+                display_icon=idp_dict.get('display_icon', cls.display_icon),
+                login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
+                signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
+            )  # type: ExternalAuthMethodDictT
+            result.append(saml_dict)
 
-def create_standard_social_backend_dict(social_backend: SocialAuthMixin) -> SocialBackendDictT:
-    return dict(
-        name=social_backend.name,
-        display_name=social_backend.auth_backend_name,
-        display_icon=social_backend.display_icon,
-        login_url=reverse('login-social', args=(social_backend.name,)),
-        signup_url=reverse('signup-social', args=(social_backend.name,)),
-    )
+        return result
 
-def list_saml_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDictT]:
-    result = []  # type: List[SocialBackendDictT]
-    for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
-        saml_dict = dict(
-            name='saml:{}'.format(idp_name),
-            display_name=idp_dict.get('display_name', SAMLAuthBackend.auth_backend_name),
-            display_icon=idp_dict.get('display_icon', SAMLAuthBackend.display_icon),
-            login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
-            signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
-        )  # type: SocialBackendDictT
-        result.append(saml_dict)
-
-    return result
-
-def get_social_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDictT]:
+def get_external_method_dicts(realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
     """
     Returns a list of dictionaries that represent social backends, sorted
     in the order in which they should be displayed.
     """
-    result = []
-    for backend in SOCIAL_AUTH_BACKENDS:
-        # SOCIAL_AUTH_BACKENDS is already sorted in the correct order,
+    result = []  # type: List[ExternalAuthMethodDictT]
+    for backend in EXTERNAL_AUTH_METHODS:
+        # EXTERNAL_AUTH_METHODS is already sorted in the correct order,
         # so we don't need to worry about sorting here.
         if auth_enabled_helper([backend.auth_backend_name], realm):
-            if backend != SAMLAuthBackend:
-                result.append(create_standard_social_backend_dict(backend))
-            else:
-                result += list_saml_backend_dicts(realm)
+            result.extend(backend.dict_representation())
 
     return result
 
@@ -1389,14 +1419,11 @@ AUTH_BACKEND_NAME_MAP = {
     'LDAP': ZulipLDAPAuthBackend,
     'RemoteUser': ZulipRemoteUserBackend,
 }  # type: Dict[str, Any]
-SOCIAL_AUTH_BACKENDS = []  # type: List[BaseOAuth2]
 
-# Authomatically add all of our social auth backends to relevant data structures.
-for social_auth_subclass in SocialAuthMixin.__subclasses__():
-    AUTH_BACKEND_NAME_MAP[social_auth_subclass.auth_backend_name] = social_auth_subclass
-    SOCIAL_AUTH_BACKENDS.append(social_auth_subclass)
+for external_method in EXTERNAL_AUTH_METHODS:
+    AUTH_BACKEND_NAME_MAP[external_method.auth_backend_name] = external_method
 
-SOCIAL_AUTH_BACKENDS = sorted(SOCIAL_AUTH_BACKENDS, key=lambda x: x.sort_order, reverse=True)
+EXTERNAL_AUTH_METHODS = sorted(EXTERNAL_AUTH_METHODS, key=lambda x: x.sort_order, reverse=True)
 
 # Provide this alternative name for backwards compatibility with
 # installations that had the old backend enabled.

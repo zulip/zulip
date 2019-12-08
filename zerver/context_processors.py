@@ -7,7 +7,7 @@ from django.conf import settings
 from zerver.models import UserProfile, get_realm, Realm
 from zproject.backends import (
     any_social_backend_enabled,
-    get_social_backend_dicts,
+    get_external_method_dicts,
     password_auth_enabled,
     require_email_format_usernames,
     auth_enabled_helper,
@@ -175,7 +175,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         if is_enabled:
             no_auth_enabled = False
 
-    context['external_authentication_methods'] = get_social_backend_dicts(realm)
+    context['external_authentication_methods'] = get_external_method_dicts(realm)
     context['no_auth_enabled'] = no_auth_enabled
 
     return context

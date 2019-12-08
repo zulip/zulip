@@ -60,7 +60,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionNoMatchingLDAPUser, ZulipLDAPExceptionOutsideDomain, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
     PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap, \
-    get_social_backend_dicts, AzureADAuthBackend, check_password_strength, \
+    get_external_method_dicts, AzureADAuthBackend, check_password_strength, \
     ZulipLDAPUser
 
 from zerver.views.auth import (maybe_send_to_registration,
@@ -1918,8 +1918,8 @@ class DevGetEmailsTest(ZulipTestCase):
             result = self.client_get("/api/v1/dev_list_users")
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
-class SocialBackendDictsTests(ZulipTestCase):
-    def test_get_social_backend_dicts_correctly_sorted(self) -> None:
+class ExternalMethodDictsTests(ZulipTestCase):
+    def test_get_external_method_dicts_correctly_sorted(self) -> None:
         with self.settings(
             AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
                                      'zproject.backends.GitHubAuthBackend',
@@ -1927,11 +1927,11 @@ class SocialBackendDictsTests(ZulipTestCase):
                                      'zproject.backends.SAMLAuthBackend',
                                      'zproject.backends.AzureADAuthBackend')
         ):
-            social_backends = get_social_backend_dicts()
+            external_auth_methods = get_external_method_dicts()
             # First backends in the list should be SAML:
-            self.assertIn('saml:', social_backends[0]['name'])
+            self.assertIn('saml:', external_auth_methods[0]['name'])
             self.assertEqual(
-                [social_backend['name'] for social_backend in social_backends[1:]],
+                [social_backend['name'] for social_backend in external_auth_methods[1:]],
                 [social_backend.name for social_backend in sorted(
                     [GitHubAuthBackend, AzureADAuthBackend, GoogleAuthBackend],
                     key=lambda x: x.sort_order,
@@ -1951,12 +1951,12 @@ class FetchAuthBackends(ZulipTestCase):
             ]
             for backend_name_with_case in AUTH_BACKEND_NAME_MAP:
                 authentication_methods_list.append((backend_name_with_case.lower(), check_bool))
-            social_backends = get_social_backend_dicts()
+            external_auth_methods = get_external_method_dicts()
 
             self.assert_json_success(result)
             checker = check_dict_only([
                 ('authentication_methods', check_dict_only(authentication_methods_list)),
-                ('external_authentication_methods', check_list(None, length=len(social_backends))),
+                ('external_authentication_methods', check_list(None, length=len(external_auth_methods))),
                 ('email_auth_enabled', check_bool),
                 ('is_incompatible', check_bool),
                 ('require_email_format_usernames', check_bool),
@@ -1970,7 +1970,7 @@ class FetchAuthBackends(ZulipTestCase):
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="")
         check_result(result)
-        self.assertEqual(result.json()['external_authentication_methods'], get_social_backend_dicts())
+        self.assertEqual(result.json()['external_authentication_methods'], get_external_method_dicts())
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="ZulipInvalid")
         self.assertTrue(result.json()["is_incompatible"])
