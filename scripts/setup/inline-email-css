@@ -5,11 +5,12 @@ import errno
 from premailer import Premailer
 from cssutils import profile
 from cssutils.profiles import Profiles, properties, macros
+from typing import List, Tuple
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 
 #This function processes a single template based off of the escaped jinja2 characters
-def process_templates(template, escaped_jinja2_characters):
+def process_templates(template: str, escaped_jinja2_characters: List[Tuple[str, str]]) -> None:
     template_html_source = template + ".source.html"
     compiled_template_path = os.path.join(os.getcwd(), "compiled", template + ".html")
 
