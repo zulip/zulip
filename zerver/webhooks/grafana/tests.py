@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
-
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.models import get_system_bot
 
 class GrafanaHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
@@ -11,7 +8,7 @@ class GrafanaHookTests(WebhookTestCase):
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_grafana_message(self) -> None:
-        expected_topic = "Grafana alert: My alert";
+        expected_topic = "Grafana alert: My alert"
         expected_message = "Rule: **[Load peaking!](http://url.to.grafana/db/dashboard/my_dashboard?panelId=2)**\n"
         expected_message += "Rule ID: 1\n"
         expected_message += "State: alerting\n"
