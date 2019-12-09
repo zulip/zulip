@@ -2,6 +2,7 @@ from typing import Dict, Optional, Tuple, List
 
 import logging
 import re
+import datetime
 
 from email.header import decode_header, make_header
 from email.utils import getaddresses
@@ -23,8 +24,8 @@ from zerver.lib.send_email import FromAddress
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_entity
 from zerver.lib.exceptions import RateLimited
 from zerver.models import Stream, Recipient, \
-    get_user_profile_by_id, get_display_recipient, \
-    Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
+    get_user_profile_by_id, get_display_recipient, get_stream_recipient, \
+    Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm, \
 
 from zproject.backends import is_user_active
 
@@ -222,12 +223,24 @@ class ZulipEmailForwardUserError(ZulipEmailForwardError):
     pass
 
 def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
+
+    # Truncate the topic
+    truncated_topic = truncate_topic(topic)
+    # If the topic was truncated, add the topic to the front of the message
+    if (len(truncated_topic) < len(topic) and not Message.objects.filter(
+        subject=truncate_topic(topic),
+        recipient=get_stream_recipient(stream.id),
+        date_sent__lte=datetime.datetime.today(),
+        date_sent__gt=datetime.datetime.today() - datetime.timedelta(days=7)
+    ).exists()):
+        content = "Subject: {}\n\n{}".format(topic, content)
+
     internal_send_message(
         stream.realm,
         sender,
         "stream",
         stream.name,
-        truncate_topic(topic),
+        truncated_topic,
         truncate_body(content),
         email_gateway=True)
 

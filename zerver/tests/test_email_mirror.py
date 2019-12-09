@@ -1027,6 +1027,57 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
             stripped = strip_from_subject(subject['original_subject'])
             self.assertEqual(stripped, subject['stripped_subject'])
 
+class TestSubjectLineInContent(ZulipTestCase):
+    def test_long_subject_added_to_content(self) -> None:
+        user_profile = self.example_user('hamlet')
+
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_to_address = encode_email_address(stream)
+
+        msg_body = 'This is a message Body. Yessirrrr this is a message body.'
+
+        incoming_valid_message = MIMEText(msg_body)
+        incoming_valid_message['Subject'] = "Test subject longer than 60 characters, test subject longer than 60 characters, test subject longer than 60 characters."
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        self.assertIn(incoming_valid_message['Subject'], message.content)
+        self.assertIn(msg_body, message.content)
+
+        # Test to make sure that a second valid message to the same subject within
+        # 7 days does NOT include a subject line in the body.
+        second_valid_msg = MIMEText(msg_body)
+        second_valid_msg['Subject'] = "Test subject longer than 60 characters, test subject longer than 60 characters, test subject longer than 60 characters."
+        second_valid_msg['From'] = self.example_email('hamlet')
+        second_valid_msg['To'] = stream_to_address
+        second_valid_msg['Reply-to'] = self.example_email('othello')
+
+        process_message(second_valid_msg)
+        second_message = most_recent_message(user_profile)
+        self.assertNotIn(second_valid_msg['Subject'], second_message.content)
+
+    def test_short_subject_not_added_to_content(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_to_address = encode_email_address(stream)
+        incoming_valid_message = MIMEText('TestStreamEmailMessages Body. Lorem ipsum dolor sit amet.')
+        incoming_valid_message['Subject'] = "Short subj., len < 60"
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        self.assertNotIn(incoming_valid_message['Subject'], message.content)
+
 # If the Content-Type header didn't specify a charset, the text content
 # of the email used to not be properly found. Test that this is fixed:
 class TestContentTypeUnspecifiedCharset(ZulipTestCase):
