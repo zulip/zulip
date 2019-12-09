@@ -2695,9 +2695,10 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertIn((user4.id, user2.id, 'private_stream'), notifications)
 
         msg = self.get_last_message()
-        expected_msg = "%s, %s left private_stream." % (user1.full_name, user2.full_name)
         self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
-        self.assertEqual(msg.content, expected_msg)
+        self.assertIn(user1.full_name, msg.content)
+        self.assertIn(user2.full_name, msg.content)
+        self.assertIn("left private_stream.", msg.content)
 
         # NEGATIVE
 
