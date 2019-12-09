@@ -3149,9 +3149,11 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
         subscribed_user_ids = all_subscribers_by_stream[stream.id]
 
         if stream.invite_only:
-            message_unsubscribe = (_("%s left %s.") % (", ".join(altered_users_full_names), stream.name))
-            internal_send_message(users[0].realm, settings.NOTIFICATION_BOT,
-                                  "stream", stream.name, "hello", message_unsubscribe)
+            message_unsubscribe = (_("%s left %s.") % (", ".join(altered_users_full_names), stream.name))  # type: str
+
+            for altered_user in altered_users:
+                internal_send_message(altered_user.realm, settings.NOTIFICATION_BOT,
+                                      "stream", stream.name, "hello", message_unsubscribe)
 
         peer_user_ids = get_peer_user_ids_for_stream_change(
             stream=stream,

@@ -440,10 +440,10 @@ def add_subscriptions_backend(
                 )
             )
 
-    private_stream_subscribers = defaultdict(list)
+    private_stream_subscribers = defaultdict(list)  # type: Dict[Any, List[UserProfile]]
     for (subscriber, stream) in subscribed:
         if stream.invite_only and subscriber != user_profile:
-            private_stream_subscribers[stream.name].append(subscriber)
+            private_stream_subscribers[stream].append(subscriber)
 
     for stream in private_stream_subscribers:
         new_user_names = [user.full_name for user in private_stream_subscribers[stream]]
@@ -457,7 +457,7 @@ def add_subscriptions_backend(
                 sender=sender,
                 stream=stream,
                 topic="hello",
-                content=(_("%s added %s to %s.") % (user_profile.full_name, names_string, stream))
+                content=(_("%s added %s to %s.") % (user_profile.full_name, names_string, stream.name))
             )
         )
 
