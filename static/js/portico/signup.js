@@ -99,9 +99,6 @@ $(function () {
             const email_formaction = $("#login_form").attr('action');
             $("#login_form").attr('action', email_formaction + '/' + window.location.hash);
             $(".social_login_form input[name='next']").attr('value', '/' + window.location.hash);
-
-            const sso_address = $("#sso-login").attr('href');
-            $("#sso-login").attr('href', sso_address + window.location.hash);
         }
     }
 

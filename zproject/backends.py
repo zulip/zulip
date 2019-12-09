@@ -244,25 +244,6 @@ class EmailAuthBackend(ZulipAuthMixin):
             return user_profile
         return None
 
-class ZulipRemoteUserBackend(RemoteUserBackend):
-    """Authentication backend that reads the Apache REMOTE_USER variable.
-    Used primarily in enterprise environments with an SSO solution
-    that has an Apache REMOTE_USER integration.  For manual testing, see
-
-      https://zulip.readthedocs.io/en/latest/production/authentication-methods.html
-
-    See also remote_user_sso in zerver/views/auth.py.
-    """
-    create_unknown_user = False
-
-    def authenticate(self, *, remote_user: str, realm: Realm,
-                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
-        if not auth_enabled_helper(["RemoteUser"], realm):
-            return None
-
-        email = remote_user_to_email(remote_user)
-        return common_get_active_user(email, realm, return_data=return_data)
-
 def is_valid_email(email: str) -> bool:
     try:
         validate_email(email)
@@ -845,6 +826,42 @@ def external_auth_method(cls: Type[ExternalAuthMethod]) -> Type[ExternalAuthMeth
     EXTERNAL_AUTH_METHODS.append(cls)
     return cls
 
+@external_auth_method
+class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
+    """Authentication backend that reads the Apache REMOTE_USER variable.
+    Used primarily in enterprise environments with an SSO solution
+    that has an Apache REMOTE_USER integration.  For manual testing, see
+
+      https://zulip.readthedocs.io/en/latest/production/authentication-methods.html
+
+    See also remote_user_sso in zerver/views/auth.py.
+    """
+    auth_backend_name = "RemoteUser"
+    name = "remoteuser"
+    display_icon = None
+    sort_order = 9000  # If configured, this backend should have its button near the top of the list.
+
+    create_unknown_user = False
+
+    def authenticate(self, *, remote_user: str, realm: Realm,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+        if not auth_enabled_helper(["RemoteUser"], realm):
+            return None
+
+        email = remote_user_to_email(remote_user)
+        return common_get_active_user(email, realm, return_data=return_data)
+
+    @classmethod
+    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+        return [dict(
+            name=cls.name,
+            display_name="SSO",
+            display_icon=cls.display_icon,
+            # The user goes to the same URL for both login and signup:
+            login_url=reverse('login-sso'),
+            signup_url=reverse('login-sso'),
+        )]
+
 def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
@@ -1417,7 +1434,6 @@ AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
     'Email': EmailAuthBackend,
     'LDAP': ZulipLDAPAuthBackend,
-    'RemoteUser': ZulipRemoteUserBackend,
 }  # type: Dict[str, Any]
 
 for external_method in EXTERNAL_AUTH_METHODS:

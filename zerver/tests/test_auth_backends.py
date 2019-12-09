@@ -1924,6 +1924,7 @@ class ExternalMethodDictsTests(ZulipTestCase):
             AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
                                      'zproject.backends.GitHubAuthBackend',
                                      'zproject.backends.GoogleAuthBackend',
+                                     'zproject.backends.ZulipRemoteUserBackend',
                                      'zproject.backends.SAMLAuthBackend',
                                      'zproject.backends.AzureADAuthBackend')
         ):
@@ -1933,7 +1934,7 @@ class ExternalMethodDictsTests(ZulipTestCase):
             self.assertEqual(
                 [social_backend['name'] for social_backend in external_auth_methods[1:]],
                 [social_backend.name for social_backend in sorted(
-                    [GitHubAuthBackend, AzureADAuthBackend, GoogleAuthBackend],
+                    [ZulipRemoteUserBackend, GitHubAuthBackend, AzureADAuthBackend, GoogleAuthBackend],
                     key=lambda x: x.sort_order,
                     reverse=True
                 )]
