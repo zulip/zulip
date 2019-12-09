@@ -1,3 +1,4 @@
+"""Webhook handler for Grafana."""
 from typing import Any, Dict, Iterable, Optional
 
 from django.http import HttpRequest, HttpResponse
@@ -13,9 +14,9 @@ from zerver.models import UserProfile
 @api_key_only_webhook_view(webhook_client_name="Grafana")
 @has_request_variables
 def api_grafana_webhook(request: HttpRequest, user_profile: UserProfile,
-                        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body')
-) -> HttpResponse:
-    """ 
+                        payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type='body')
+                        ) -> HttpResponse:
+    """
     Grafana's webhooks are used to communicate state change.
     Possible values for alert state are:
         ok, paused, alerting, pending, no_data
@@ -29,8 +30,8 @@ def api_grafana_webhook(request: HttpRequest, user_profile: UserProfile,
     body_template += "Message: {message}"
     # Not including evalMatches at the moment...
 
-    body = body_template.format(**payload)A
-    
+    body = body_template.format(**payload)
+
     check_and_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()
