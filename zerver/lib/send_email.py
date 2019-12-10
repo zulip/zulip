@@ -168,6 +168,7 @@ def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional
                from_address=from_address, context=context)
 
 def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None:
+    
     """
     Can be used directly with from a management shell with
     send_custom_email(user_profile_list, dict(
@@ -218,6 +219,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
         send_email(email_id, to_user_ids=[user_profile.id],
                    from_address=FromAddress.SUPPORT,
                    from_name=options["from_name"], context=context)
+
 def clear_scheduled_invitation_emails(email: str) -> None:
     """Unlike most scheduled emails, invitation emails don't have an
     existing user object to key off of, so we filter by address here."""
