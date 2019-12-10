@@ -168,7 +168,6 @@ def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional
                from_address=from_address, context=context)
 
 def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None:
-    
     """
     Can be used directly with from a management shell with
     send_custom_email(user_profile_list, dict(
