@@ -111,15 +111,21 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
         # Confirmation objects, and then send the user to account
         # creation or confirm-continue-registration depending on
         # is_signup.
-        prereg_user = None
-        if settings.ONLY_SSO:
-            try:
-                prereg_user = PreregistrationUser.objects.filter(
-                    email__iexact=email, realm=realm).latest("invited_at")
-            except PreregistrationUser.DoesNotExist:
-                prereg_user = create_preregistration_user(email, request,
-                                                          password_required=password_required)
-        else:
+        try:
+            prereg_user = PreregistrationUser.objects.filter(
+                email__iexact=email, realm=realm).latest("invited_at")
+
+            # password_required and full_name data passed here as argument should take precedence
+            # over the defaults with which the existing PreregistrationUser that we've just fetched
+            # was created.
+            prereg_user.password_required = password_required
+            update_fields = ["password_required"]
+            if full_name:
+                prereg_user.full_name = full_name
+                prereg_user.full_name_validated = full_name_validated
+                update_fields.extend(["full_name", "full_name_validated"])
+            prereg_user.save(update_fields=update_fields)
+        except PreregistrationUser.DoesNotExist:
             prereg_user = create_preregistration_user(
                 email, request,
                 password_required=password_required,

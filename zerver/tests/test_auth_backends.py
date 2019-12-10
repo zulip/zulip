@@ -25,6 +25,7 @@ from zerver.lib.actions import (
     do_create_realm,
     do_deactivate_realm,
     do_deactivate_user,
+    do_invite_users,
     do_reactivate_realm,
     do_reactivate_user,
     ensure_stream,
@@ -863,6 +864,27 @@ class SocialAuthBase(ZulipTestCase):
         name = 'Full Name'
         subdomain = 'zulip'
         realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(account_data_dict,
+                                       expect_choose_email_screen=True,
+                                       subdomain=subdomain, is_signup='1')
+        self.stage_two_of_registration(result, realm, subdomain, email, name, name,
+                                       self.BACKEND_CLASS.full_name_validated)
+
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_registration_invitation_exists(self) -> None:
+        """
+        This tests the registration flow in the case where an invitation for the user
+        was generated.
+        """
+        email = "newuser@zulip.com"
+        name = 'Full Name'
+        subdomain = 'zulip'
+        realm = get_realm("zulip")
+
+        iago = self.example_user("iago")
+        do_invite_users(iago, [email], [])
+
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(account_data_dict,
                                        expect_choose_email_screen=True,
@@ -3299,15 +3321,14 @@ class TestMaybeSendToRegistration(ZulipTestCase):
             def is_valid(self) -> bool:
                 return True
 
-        with self.settings(ONLY_SSO=True):
-            with mock.patch('zerver.views.auth.HomepageForm', return_value=Form()):
-                self.assertEqual(PreregistrationUser.objects.all().count(), 0)
-                result = maybe_send_to_registration(request, self.example_email("hamlet"), is_signup=True)
-                self.assertEqual(result.status_code, 302)
-                confirmation = Confirmation.objects.all().first()
-                confirmation_key = confirmation.confirmation_key
-                self.assertIn('do_confirm/' + confirmation_key, result.url)
-                self.assertEqual(PreregistrationUser.objects.all().count(), 1)
+        with mock.patch('zerver.views.auth.HomepageForm', return_value=Form()):
+            self.assertEqual(PreregistrationUser.objects.all().count(), 0)
+            result = maybe_send_to_registration(request, self.example_email("hamlet"), is_signup=True)
+            self.assertEqual(result.status_code, 302)
+            confirmation = Confirmation.objects.all().first()
+            confirmation_key = confirmation.confirmation_key
+            self.assertIn('do_confirm/' + confirmation_key, result.url)
+            self.assertEqual(PreregistrationUser.objects.all().count(), 1)
 
         result = self.client_get(result.url)
         self.assert_in_response('action="/accounts/register/"', result)
@@ -3331,15 +3352,14 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         user = PreregistrationUser(email=email)
         user.save()
 
-        with self.settings(ONLY_SSO=True):
-            with mock.patch('zerver.views.auth.HomepageForm', return_value=Form()):
-                self.assertEqual(PreregistrationUser.objects.all().count(), 1)
-                result = maybe_send_to_registration(request, email, is_signup=True)
-                self.assertEqual(result.status_code, 302)
-                confirmation = Confirmation.objects.all().first()
-                confirmation_key = confirmation.confirmation_key
-                self.assertIn('do_confirm/' + confirmation_key, result.url)
-                self.assertEqual(PreregistrationUser.objects.all().count(), 1)
+        with mock.patch('zerver.views.auth.HomepageForm', return_value=Form()):
+            self.assertEqual(PreregistrationUser.objects.all().count(), 1)
+            result = maybe_send_to_registration(request, email, is_signup=True)
+            self.assertEqual(result.status_code, 302)
+            confirmation = Confirmation.objects.all().first()
+            confirmation_key = confirmation.confirmation_key
+            self.assertIn('do_confirm/' + confirmation_key, result.url)
+            self.assertEqual(PreregistrationUser.objects.all().count(), 1)
 
 class TestAdminSetBackends(ZulipTestCase):
 
