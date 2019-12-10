@@ -197,8 +197,8 @@ function create_message_object() {
         message.stream = stream_name;
         const sub = stream_data.get_sub(stream_name);
         // if sub exists, get the topic list from corresponding streamid.
-        // if the current topic name matches with the one already stored, 
-        // make the current topic name the same letter casing 
+        // if the current topic name matches with the one already stored,
+        // make the current topic name the same letter casing
         // as the one already stored.
         if (sub) {
             message.stream_id = sub.stream_id;
