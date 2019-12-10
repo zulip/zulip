@@ -300,9 +300,9 @@ archive of all the organization's uploaded files.
 
 1. [Install a new Zulip server](../production/install.md),
 **skipping Step 3** (you'll create your Zulip organization via the data
- import tool instead).  
+ import tool instead).
     * Ensure that the Zulip server you're importing into is running the same
-version of Zulip as the server you're exporting from.
+      version of Zulip as the server you're exporting from.
 
     * For exports from zulipchat.com, run the following:
 
@@ -310,10 +310,16 @@ version of Zulip as the server you're exporting from.
       /home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
       ```
 
-    * Note that if your server has 2GB of RAM or less, you'll want to read the
-    detailed instructions [here][upgrade-zulip-from-git].
-    It is not sufficient to be on the latest stable release, as zulipchat.com is
-    often several months of development ahead of the latest release.
+      It is not sufficient to be on the latest stable release, as
+      zulipchat.com runs pre-release versions of Zulip that are often
+      several months of development ahead of the latest release.
+
+      Read the instructions [here][upgrade-zulip-from-git] for more details.
+
+    * Note that if your server has limited free RAM, you'll want to
+      shut down the Zulip server with `supervisorctl stop all` while
+      you run the import, since our minimal system requirements do not
+      budget extra RAM for running the data import tool.
 
 2. If your new Zulip server is meant to fully replace a previous Zulip
 server, you may want to copy the contents of `/etc/zulip` to your new
