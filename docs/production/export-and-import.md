@@ -322,13 +322,44 @@ archive of all the organization's uploaded files.
       budget extra RAM for running the data import tool.
 
 2. If your new Zulip server is meant to fully replace a previous Zulip
-server, you may want to copy the contents of `/etc/zulip` to your new
-server to reuse the server-level configuration and secret keys from
-your old server.  See our [documentation on
-backups](#restore-from-manual-backups) for details on the contents of
-this directory.  In particular, if you copy `zulip-secrets.conf` from
-another system, be sure to run `scripts/setup/configure-rabbitmq` to
-update your local RabbitMQ installation to use the password there.
+server, you may want to copy some settings from `/etc/zulip` to your
+new server to reuse the server-level configuration and secret keys
+from your old server.  There are a few important details to understand
+about doing so:
+
+   * Copying `/etc/zulip/settings.py` and `/etc/zulip/zulip.conf` is
+     safe and recommended.  Care is required when copying secrets from
+     `/etc/zulip/zulip-secrets.conf` (details below).
+   * If you copy `zulip_org_id` and `zulip_org_key` (the credentials
+     for the [mobile push notifications
+     service](../production/mobile-push-notifications.md)), you should
+     be very careful to make sure the no users had their IDs
+     renumbered during the import process (this can be checked using
+     `manage.py shell` with some care).  The push notifications
+     service has a mapping of which `user_id` values are associated
+     with which devices for a given Zulip server (represented by the
+     `zulip_org_id` registration).  This means that if any `user_id`
+     values were renumbered during the import and you don't register a
+     new `zulip_org_id`, push notifications meant for the user who now
+     has ID 15 may be sent to devices registered by the user who had
+     user ID 15 before the data export (yikes!).  The solution is
+     simply to not copy these settings and re-register your server for
+     mobile push notifications if any users had their IDs renumbered
+     during the logical export/import process.
+   * If you copy the `rabbitmq_password` secret from
+     `zulip-secrets.conf`, you'll need to run
+     `scripts/setup/configure-rabbitmq` to update your local RabbitMQ
+     installation to use the password in your Zulip secrets file.
+   * You will likely want to copy `camo_key` (required to avoid
+     breaking certain links) and any settings you added related to
+     authentication and email delivery so that those work on your new
+     server.
+   * Copying `avatar_salt` is not recommended, due to similar issues
+     to the mobile push notifications service.  Zulip will
+     automatically rewrite avatars at URLs appropriate for the new
+     user IDs, and using the same avatar salt (and same server URL)
+     post import could result in issues with browsers caching the
+     avatar image improperly for users whose ID was renumbered.
 
 3. Log in to a shell on your Zulip server as the `zulip` user. Run the
 following commands, replacing the filename with the path to your data
