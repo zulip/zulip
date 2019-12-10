@@ -323,10 +323,12 @@ archive of all the organization's uploaded files.
 
 2. If your new Zulip server is meant to fully replace a previous Zulip
 server, you may want to copy the contents of `/etc/zulip` to your new
-server to reuse the server-level configuration and
-secret keys from your old server.  See our
-[documentation on backups](#backups) for details on the contents of
-this directory.
+server to reuse the server-level configuration and secret keys from
+your old server.  See our [documentation on
+backups](#restore-from-manual-backups) for details on the contents of
+this directory.  In particular, if you copy `zulip-secrets.conf` from
+another system, be sure to run `scripts/setup/configure-rabbitmq` to
+update your local RabbitMQ installation to use the password there.
 
 3. Log in to a shell on your Zulip server as the `zulip` user. Run the
 following commands, replacing the filename with the path to your data
