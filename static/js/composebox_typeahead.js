@@ -854,7 +854,10 @@ exports.initialize = function () {
         },
         sorter: function (items) {
             const sorted = typeahead_helper.sorter(this.query, items, function (x) {return x;});
-            if (sorted.length > 0 && sorted.indexOf(this.query) === -1) {
+            // Case-insensitive.
+            if (sorted.length > 0 && 
+                sorted.findIndex(item => this.query.toLowerCase() === 
+                item.toLowerCase()) === -1) {
                 sorted.unshift(this.query);
             }
             return sorted;
