@@ -3570,19 +3570,9 @@ class MessageAccessTests(ZulipTestCase):
 
         self.assertEqual(len(filtered_messages), 2)
 
-class AttachmentTest(ZulipTestCase):
-    def test_basics(self) -> None:
-        zulip_realm = get_realm("zulip")
-        self.assertFalse(Message.content_has_attachment('whatever'))
-        self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
-        self.assertTrue(Message.content_has_attachment('yo\n https://staging.zulip.com/user_uploads/'))
-        self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo' % (
-            zulip_realm.id,)))
-
-    def test_claim_attachment(self) -> None:
-
-        # Create dummy DB entry
-        user_profile = self.example_user('hamlet')
+class MessageHasKeywordsTest(ZulipTestCase):
+    '''Test for keywords like has_link, has_image, has_attachment.'''
+    def setup_dummy_attachments(self, user_profile: UserProfile) -> List[str]:
         sample_size = 10
         realm_id = user_profile.realm_id
         dummy_files = [
@@ -3594,21 +3584,54 @@ class AttachmentTest(ZulipTestCase):
         for file_name, path_id, size in dummy_files:
             create_attachment(file_name, path_id, user_profile, size)
 
+        # return path ids
+        return [x[1] for x in dummy_files]
+
+    def test_basics(self) -> None:
+        zulip_realm = get_realm("zulip")
+        self.assertFalse(Message.content_has_attachment('whatever'))
+        self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
+        self.assertTrue(Message.content_has_attachment('yo\n https://staging.zulip.com/user_uploads/'))
+        self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo' % (
+            zulip_realm.id,)))
+
+    def test_claim_attachment(self) -> None:
+        user_profile = self.example_user('hamlet')
+        dummy_path_ids = self.setup_dummy_attachments(user_profile)
+        dummy_urls = ["http://localhost:9991/user_uploads/{}".format(x) for x in dummy_path_ids]
+
         # Send message referring the attachment
         self.subscribe(user_profile, "Denmark")
 
-        body = ("Some files here ...[zulip.txt](http://localhost:9991/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +
-                "http://localhost:9991/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." +
-                "http://localhost:9991/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py").format(realm_id=realm_id)
-
-        self.send_stream_message(user_profile.email, "Denmark", body, "test")
-
-        for file_name, path_id, size in dummy_files:
+        def assert_attachment_claimed(path_id: str, claimed: bool) -> None:
             attachment = Attachment.objects.get(path_id=path_id)
-            self.assertTrue(attachment.is_claimed())
+            self.assertEqual(attachment.is_claimed(), claimed)
 
-class MessageHasKeywordsTest(ZulipTestCase):
-    '''Test for keywords like has_link, has_image, has_attachment'''
+        # This message should claim attachments 1 only because attachment 2
+        # is not being parsed as a link by Bugdown.
+        body = ("Some files here ...[zulip.txt]({})" +
+                "{}.... Some more...." +
+                "{}").format(dummy_urls[0], dummy_urls[1], dummy_urls[1])
+        self.send_stream_message(user_profile.email, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[0], True)
+        assert_attachment_claimed(dummy_path_ids[1], False)
+
+        # This message tries to claim the third attachment but fails because
+        # Bugdown would not set has_attachments = True here.
+        body = "Link in code: `{}`".format(dummy_urls[2])
+        self.send_stream_message(user_profile.email, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[2], False)
+
+        # Another scenario where we wouldn't parse the link.
+        body = "Link to not parse: .{}.`".format(dummy_urls[2])
+        self.send_stream_message(user_profile.email, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[2], False)
+
+        # Finally, claim attachment 3.
+        body = "Link: {}".format(dummy_urls[2])
+        self.send_stream_message(user_profile.email, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[2], True)
+        assert_attachment_claimed(dummy_path_ids[1], False)
 
     def test_finds_all_links(self) -> None:
         msg_ids = []
@@ -3645,7 +3668,8 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.assertTrue(msg.has_link)
         self.update_message(msg, 'a')
         self.assertFalse(msg.has_link)
-        self.update_message(msg, 'a http://foo.com')
+        # Check in blockquotes work
+        self.update_message(msg, '> http://bar.com')
         self.assertTrue(msg.has_link)
         self.update_message(msg, 'a `http://foo.com`')
         self.assertFalse(msg.has_link)
@@ -3666,6 +3690,29 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.assertTrue(msgs[0].has_image)
         self.update_message(msgs[0], 'No Image Again')
         self.assertFalse(msgs[0].has_image)
+
+    def test_has_attachment(self) -> None:
+        # This test could belong in AttachmentTest as well, but
+        # we keep it with other 'has:' tests.
+        hamlet = self.example_user('hamlet')
+        dummy_path_ids = self.setup_dummy_attachments(hamlet)
+        dummy_urls = ["http://localhost:9991/user_uploads/{}".format(x) for x in dummy_path_ids]
+        self.subscribe(hamlet, "Denmark")
+
+        body = ("Files ...[zulip.txt]({}) {} {}").format(dummy_urls[0], dummy_urls[1], dummy_urls[2])
+
+        msg_id = self.send_stream_message(hamlet.email, "Denmark", body, "test")
+        msg = Message.objects.get(id=msg_id)
+        self.assertTrue(msg.has_attachment)
+        self.update_message(msg, 'No Attachments')
+        self.assertFalse(msg.has_attachment)
+        self.update_message(msg, body)
+        self.assertTrue(msg.has_attachment)
+        self.update_message(msg, 'Link in code: `{}`'.format(dummy_urls[1]))
+        self.assertFalse(msg.has_attachment)
+        # Test blockquotes
+        self.update_message(msg, '> {}'.format(dummy_urls[1]))
+        self.assertTrue(msg.has_attachment)
 
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:
