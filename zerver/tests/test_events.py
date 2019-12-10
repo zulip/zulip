@@ -708,6 +708,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('prior_mention_user_ids', check_list(check_int)),
             ('mention_user_ids', check_list(check_int)),
             ('wildcard_mention_user_ids', check_list(check_int)),
+            ('alert_word_user_ids', check_list(check_int)),
             ('presence_idle_user_ids', check_list(check_int)),
             ('stream_push_user_ids', check_list(check_int)),
             ('stream_email_user_ids', check_list(check_int)),
@@ -2496,6 +2497,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('stream_weekly_traffic', check_none_or(check_int)),
             ('is_old_stream', check_bool),
             ('wildcard_mentions_notify', check_none_or(check_bool)),
+            ('alert_word_notify', check_none_or(check_bool)),
         ]
         if include_subscribers:
             subscription_fields.append(('subscribers', check_list(check_int)))

@@ -604,6 +604,7 @@ run_test('notifications', () => {
         email_notifications: null,
         push_notifications: null,
         wildcard_mentions_notify: null,
+        alert_word_notify: null,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub('India', india);
@@ -642,6 +643,16 @@ run_test('notifications', () => {
     page_params.wildcard_mentions_notify = true;
     india.wildcard_mentions_notify = false;
     assert(!stream_data.receives_notifications('India', "wildcard_mentions_notify"));
+
+    page_params.alert_word_notify = true;
+    assert(stream_data.receives_notifications('India', "alert_word_notify"));
+    page_params.alert_word_notify = false;
+    assert(!stream_data.receives_notifications('India', "alert_word_notify"));
+    india.alert_word_notify = true;
+    assert(stream_data.receives_notifications('India', "alert_word_notify"));
+    page_params.alert_word_notify = true;
+    india.alert_word_notify = false;
+    assert(!stream_data.receives_notifications('India', "alert_word_notify"));
 
     page_params.enable_stream_push_notifications = true;
     assert(stream_data.receives_notifications('India', "push_notifications"));

@@ -1633,6 +1633,28 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assertIsNotNone(updated_sub)
         self.assertEqual(updated_sub.wildcard_mentions_notify, True)
 
+    def test_set_stream_alert_word_notify(self) -> None:
+        """
+        A POST request to /api/v1/users/me/subscriptions/properties with alert_word_notify
+        sets the property.
+        """
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
+        self.login(test_email)
+
+        subs = gather_subscriptions(test_user)[0]
+        sub = subs[0]
+        result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
+                               {"subscription_data": ujson.dumps([{"property": "alert_word_notify",
+                                                                   "stream_id": sub["stream_id"],
+                                                                   "value": True}])})
+
+        self.assert_json_success(result)
+
+        updated_sub = get_subscription(sub['name'], test_user)
+        self.assertIsNotNone(updated_sub)
+        self.assertEqual(updated_sub.alert_word_notify, True)
+
     def test_set_pin_to_top(self) -> None:
         """
         A POST request to /api/v1/users/me/subscriptions/properties with stream_id and

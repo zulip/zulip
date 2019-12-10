@@ -241,6 +241,7 @@ const settings_labels = {
     email_notifications: i18n.t("Email notifications"),
     pin_to_top: i18n.t("Pin stream to top of left sidebar"),
     wildcard_mentions_notify: i18n.t("Notifications for @all/@everyone mentions"),
+    alert_word_notify: i18n.t("Notifications for messages with alert words"),
 };
 
 const check_realm_setting = {
@@ -326,6 +327,8 @@ function stream_setting_clicked(e) {
     }
     if (exports.is_notification_setting(setting) && sub[setting] === null) {
         if (setting === 'wildcard_mentions_notify') {
+            sub[setting] = page_params[setting];
+        } else if (setting === 'alert_word_notify') {
             sub[setting] = page_params[setting];
         } else {
             sub[setting] = page_params["enable_stream_" + setting];

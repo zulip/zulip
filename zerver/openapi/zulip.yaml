@@ -2336,6 +2336,12 @@ paths:
         schema:
           type: boolean
         example: true
+      - name: alert_word_notify
+        in: query
+        description: Whether messages containing alert words should send notifications.
+        schema:
+          type: boolean
+        example: true
       - name: desktop_icon_count_display
         in: query
         description: >

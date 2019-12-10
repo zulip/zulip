@@ -1061,6 +1061,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
             wildcard_mention_user_ids=set(),
+            alert_word_user_ids=all_user_ids,
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
             default_bot_user_ids=set(),
@@ -1070,6 +1071,7 @@ class RecipientInfoTest(ZulipTestCase):
         self.assertEqual(info, expected_info)
 
         cordelia.wildcard_mentions_notify = False
+        cordelia.alert_word_notify = False
         cordelia.save()
         hamlet.enable_stream_push_notifications = True
         hamlet.save()

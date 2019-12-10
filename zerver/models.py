@@ -895,6 +895,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_stream_audible_notifications = models.BooleanField(default=False)  # type: bool
     notification_sound = models.CharField(max_length=20, default='zulip')  # type: str
     wildcard_mentions_notify = models.BooleanField(default=True)  # type: bool
+    alert_word_notify = models.BooleanField(default=True)  # type: bool
 
     # PM + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True)  # type: bool
@@ -1040,6 +1041,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_stream_push_notifications=bool,
         enable_stream_audible_notifications=bool,
         wildcard_mentions_notify=bool,
+        alert_word_notify=bool,
         message_content_in_email_notifications=bool,
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,
@@ -2119,6 +2121,7 @@ class Subscription(models.Model):
     push_notifications = models.NullBooleanField(default=None)  # type: Optional[bool]
     email_notifications = models.NullBooleanField(default=None)  # type: Optional[bool]
     wildcard_mentions_notify = models.NullBooleanField(default=None)  # type: Optional[bool]
+    alert_word_notify = models.NullBooleanField(default=None)  # type: Optional[bool]
 
     class Meta:
         unique_together = ("user_profile", "recipient")

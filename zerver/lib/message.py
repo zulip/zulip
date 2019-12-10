@@ -62,6 +62,7 @@ RawUnreadMessagesResult = TypedDict('RawUnreadMessagesResult', {
     'stream_dict': Dict[int, Any],
     'huddle_dict': Dict[int, Any],
     'mentions': Set[int],
+    'msg_ids_with_alert_words': Set[int],
     'muted_stream_ids': List[int],
     'unmuted_stream_msgs': Set[int],
 })
@@ -71,6 +72,7 @@ UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
     'streams': List[Dict[str, Any]],
     'huddles': List[Dict[str, Any]],
     'mentions': List[int],
+    'msg_ids_with_alert_words': List[int],
     'count': int,
 })
 
@@ -834,6 +836,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
     unmuted_stream_msgs = set()
     huddle_dict = {}
     mentions = set()
+    msg_ids_with_alert_words = set()
 
     for row in rows:
         message_id = row['message_id']
@@ -864,6 +867,9 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
             )
 
         # TODO: Add support for alert words here as well.
+        contains_alert_word = (row['flags'] & UserMessage.flags.has_alert_word) != 0
+        if contains_alert_word:
+            msg_ids_with_alert_words.add(message_id)
         is_mentioned = (row['flags'] & UserMessage.flags.mentioned) != 0
         is_wildcard_mentioned = (row['flags'] & UserMessage.flags.wildcard_mentioned) != 0
         if is_mentioned:
@@ -884,6 +890,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
         unmuted_stream_msgs=unmuted_stream_msgs,
         huddle_dict=huddle_dict,
         mentions=mentions,
+        msg_ids_with_alert_words=msg_ids_with_alert_words
     )
 
 def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
@@ -893,6 +900,7 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
     unmuted_stream_msgs = raw_data['unmuted_stream_msgs']
     huddle_dict = raw_data['huddle_dict']
     mentions = list(raw_data['mentions'])
+    msg_ids_with_alert_words = list(raw_data['msg_ids_with_alert_words'])
 
     count = len(pm_dict) + len(unmuted_stream_msgs) + len(huddle_dict)
 
@@ -926,6 +934,7 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
         streams=stream_objects,
         huddles=huddle_objects,
         mentions=mentions,
+        msg_ids_with_alert_words=msg_ids_with_alert_words,
         count=count)  # type: UnreadMessagesResult
 
     return result
@@ -988,6 +997,8 @@ def apply_unread_message_event(user_profile: UserProfile,
     if 'wildcard_mentioned' in flags:
         if message_id in state['unmuted_stream_msgs']:
             state['mentions'].add(message_id)
+    if 'has_alert_word' in flags:
+        state['msg_ids_with_alert_words'].add(message_id)
 
 def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult,
                                       message_id: int) -> None:
@@ -998,6 +1009,7 @@ def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult,
     state['huddle_dict'].pop(message_id, None)
     state['unmuted_stream_msgs'].discard(message_id)
     state['mentions'].discard(message_id)
+    state['msg_ids_with_alert_words'].discard(message_id)
 
 def estimate_recent_messages(realm: Realm, hours: int) -> int:
     stat = COUNT_STATS['messages_sent:is_bot:hour']

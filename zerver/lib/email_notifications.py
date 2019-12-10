@@ -330,6 +330,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     unique_triggers = set(triggers)
     context.update({
         'mention': 'mentioned' in unique_triggers or 'wildcard_mentioned' in unique_triggers,
+        'has_alert_word': 'has_alert_word' in unique_triggers,
         'stream_email_notify': 'stream_email_notify' in unique_triggers,
         'mention_count': triggers.count('mentioned') + triggers.count("wildcard_mentioned"),
     })
@@ -379,12 +380,15 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             context.update({'huddle_display_name': huddle_display_name})
     elif (missed_messages[0]['message'].recipient.type == Recipient.PERSONAL):
         context.update({'private_message': True})
-    elif (context['mention'] or context['stream_email_notify']):
+    elif (context['mention'] or context['has_alert_word'] or context['stream_email_notify']):
         # Keep only the senders who actually mentioned the user
         if context['mention']:
             senders = list(set(m['message'].sender for m in missed_messages
                                if m['trigger'] == 'mentioned' or
                                m['trigger'] == 'wildcard_mentioned'))
+        if context['has_alert_word']:
+            senders = list(set(m['message'].sender for m in missed_messages
+                               if m['trigger'] == 'has_alert_word'))
         message = missed_messages[0]['message']
         stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
         stream_header = "%s > %s" % (stream.name, message.topic_name())

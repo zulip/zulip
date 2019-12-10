@@ -46,6 +46,7 @@ class HomeTest(ZulipTestCase):
 
         # Keep this list sorted!!!
         expected_keys = [
+            "alert_word_notify",
             "alert_words",
             "available_notification_sounds",
             "avatar_source",
