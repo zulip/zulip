@@ -196,13 +196,15 @@ function create_message_object() {
         message.to = stream_name;
         message.stream = stream_name;
         const sub = stream_data.get_sub(stream_name);
+        // if sub exists, get the topic list from corresponding streamid.
+        // if the current topic name matches with the one already stored, 
+        // make the current topic name the same letter casing 
+        // as the one already stored.
         if (sub) {
             message.stream_id = sub.stream_id;
-            // if sub exists, get the topic list from the corresponding stream id.
-            // if the current topic name matches with the one already stored, make the current topic name the same letter casing as the one already stored.
             const topic_list = topic_data.get_recent_names (sub.stream_id);
-            for (eachTopic in topic_list){
-                if (eachTopic.toLowerCase() == topic.toLowerCase()) {
+            for (var eachTopic in topic_list) {
+                if (eachTopic.toLowerCase() === topic.toLowerCase()) {
                     topic = eachTopic;
                     break;
                 }
