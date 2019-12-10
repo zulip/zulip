@@ -490,7 +490,7 @@ exports.message_is_notifiable = function (message) {
     return true;
 };
 
-function should_send_desktop_notification(message) {
+exports.should_send_desktop_notification = function (message) {
     // For streams, send if desktop notifications are enabled for this
     // stream.
     if (message.type === "stream" &&
@@ -518,9 +518,9 @@ function should_send_desktop_notification(message) {
     }
 
     return false;
-}
+};
 
-function should_send_audible_notification(message) {
+exports.should_send_audible_notification = function (message) {
     // For streams, ding if sounds are enabled for this stream.
     if (message.type === "stream" &&
         stream_data.receives_notifications(message.stream, "audible_notifications")) {
@@ -542,7 +542,7 @@ function should_send_audible_notification(message) {
     }
 
     return false;
-}
+};
 
 exports.granted_desktop_notifications_permission = function () {
     return notifications_api &&
@@ -569,13 +569,13 @@ exports.received_messages = function (messages) {
 
         message.notification_sent = true;
 
-        if (should_send_desktop_notification(message)) {
+        if (exports.should_send_desktop_notification(message)) {
             process_notification({
                 message: message,
                 desktop_notify: exports.granted_desktop_notifications_permission(),
             });
         }
-        if (should_send_audible_notification(message) && supports_sound) {
+        if (exports.should_send_audible_notification(message) && supports_sound) {
             $("#notifications-area").find("audio")[0].play();
         }
     });

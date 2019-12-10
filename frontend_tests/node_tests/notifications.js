@@ -11,12 +11,15 @@ set_global('document', {
 set_global('page_params', {
     is_admin: false,
     realm_users: [],
+    enable_desktop_notifications: true,
+    enable_sounds: true,
 });
 const _navigator = {
     userAgent: 'Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36',
 };
 set_global('navigator', _navigator);
 
+zrequire('alert_words');
 zrequire('muting');
 zrequire('stream_data');
 zrequire('people');
@@ -56,12 +59,16 @@ run_test('message_is_notifiable', () => {
         content: 'message number 1',
         sent_by_me: true,
         notification_sent: false,
+        mentioned: true,
         mentioned_me_directly: true,
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
         topic: 'whatever',
     };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), true);
+    // Not notifiable because it was sent by the current user
     assert.equal(notifications.message_is_notifiable(message), false);
 
     // Case 2: If the user has already been sent a notificaton about this message,
@@ -74,12 +81,15 @@ run_test('message_is_notifiable', () => {
         content: 'message number 2',
         sent_by_me: false,
         notification_sent: true,
+        mentioned: true,
         mentioned_me_directly: true,
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
         topic: 'whatever',
     };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), false);
 
     // Case 3: If a message mentions the user directly,
@@ -90,12 +100,15 @@ run_test('message_is_notifiable', () => {
         content: 'message number 3',
         sent_by_me: false,
         notification_sent: false,
+        mentioned: true,
         mentioned_me_directly: true,
         type: 'stream',
         stream: 'muted',
         stream_id: muted.stream_id,
         topic: 'topic_three',
     };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), true);
 
     // Case 4:
@@ -105,12 +118,15 @@ run_test('message_is_notifiable', () => {
         content: 'message number 4',
         sent_by_me: false,
         notification_sent: false,
+        mentioned: true,
         mentioned_me_directly: true,
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
         topic: 'vanilla',
     };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), true);
 
     // Case 5: If a message is in a muted stream
@@ -121,12 +137,15 @@ run_test('message_is_notifiable', () => {
         content: 'message number 5',
         sent_by_me: false,
         notification_sent: false,
+        mentioned: true,
         mentioned_me_directly: false,
         type: 'stream',
         stream: 'muted',
         stream_id: muted.stream_id,
         topic: 'whatever',
     };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), false);
 
     // Case 6: If a message is in a muted topic
@@ -137,12 +156,15 @@ run_test('message_is_notifiable', () => {
         content: 'message number 6',
         sent_by_me: false,
         notification_sent: false,
+        mentioned: true,
         mentioned_me_directly: false,
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
         topic: 'muted topic',
     };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), false);
 
     // Case 7
@@ -155,12 +177,15 @@ run_test('message_is_notifiable', () => {
         content: 'message number 7',
         sent_by_me: false,
         notification_sent: false,
+        mentioned: true,
         mentioned_me_directly: false,
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
         topic: 'whatever',
     };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), true);
 });
 
