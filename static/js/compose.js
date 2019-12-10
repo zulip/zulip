@@ -176,7 +176,7 @@ function create_message_object() {
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
-        const recipient = compose_state.recipient();
+        const recipient = compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient);
         message.to = emails;
         message.reply_to = recipient;
@@ -198,6 +198,15 @@ function create_message_object() {
         const sub = stream_data.get_sub(stream_name);
         if (sub) {
             message.stream_id = sub.stream_id;
+            // if sub exists, get the topic list from the corresponding stream id.
+            // if the current topic name matches with the one already stored, make the current topic name the same letter casing as the one already stored.
+            const topic_list = topic_data.get_recent_names (sub.stream_id);
+            for (eachTopic in topic_list){
+                if (eachTopic.toLowerCase() == topic.toLowerCase()) {
+                    topic = eachTopic;
+                    break;
+                }
+            }
         }
         util.set_message_topic(message, topic);
     }
@@ -372,7 +381,7 @@ exports.do_post_send_tasks = function () {
 };
 
 exports.update_email = function (user_id, new_email) {
-    let reply_to = compose_state.recipient();
+    let reply_to = compose_state.private_message_recipient();
 
     if (!reply_to) {
         return;
@@ -380,11 +389,12 @@ exports.update_email = function (user_id, new_email) {
 
     reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
 
-    compose_state.recipient(reply_to);
+    compose_state.private_message_recipient(reply_to);
 };
 
 exports.get_invalid_recipient_emails = function () {
-    const private_recipients = util.extract_pm_recipients(compose_state.recipient());
+    const private_recipients = util.extract_pm_recipients(
+        compose_state.private_message_recipient());
     const invalid_recipients = _.reject(private_recipients, people.is_valid_email_for_compose);
 
     return invalid_recipients;
@@ -561,7 +571,7 @@ function validate_stream_message() {
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
-    if (compose_state.recipient().length === 0) {
+    if (compose_state.private_message_recipient().length === 0) {
         compose_error(i18n.t("Please specify at least one valid recipient"), $("#private_message_recipient"));
         return false;
     } else if (page_params.realm_is_zephyr_mirror_realm) {
@@ -728,7 +738,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
         // and will be undefined in case of errors
         let rendered_preview_html;
         if (raw_content !== undefined &&
-            markdown.is_status_message(raw_content, rendered_content)) {
+            markdown.is_status_message(raw_content)) {
             // Handle previews of /me messages
             rendered_preview_html = "<p><strong>" + page_params.full_name + "</strong>" + rendered_content.slice("<p>/me".length);
         } else {
