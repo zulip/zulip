@@ -855,8 +855,8 @@ exports.initialize = function () {
         sorter: function (items) {
             const sorted = typeahead_helper.sorter(this.query, items, function (x) {return x;});
             // Case-insensitive.
-            if (sorted.length > 0 && 
-                sorted.findIndex(item => this.query.toLowerCase() === 
+            if (sorted.length > 0 &&
+                sorted.findIndex(item => this.query.toLowerCase() ===
                 item.toLowerCase()) === -1) {
                 sorted.unshift(this.query);
             }
