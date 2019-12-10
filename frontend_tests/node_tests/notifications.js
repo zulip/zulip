@@ -13,6 +13,7 @@ set_global('page_params', {
     realm_users: [],
     enable_desktop_notifications: true,
     enable_sounds: true,
+    wildcard_mentions_notify: true,
 });
 const _navigator = {
     userAgent: 'Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36',
@@ -34,6 +35,7 @@ const general = {
     name: 'general',
     stream_id: 10,
     is_muted: false,
+    wildcard_mentions_notify: null,
 };
 
 // Muted streams
@@ -42,6 +44,7 @@ const muted = {
     name: 'muted',
     stream_id: 20,
     is_muted: true,
+    wildcard_mentions_notify: null,
 };
 
 stream_data.add_sub('general', general);
@@ -50,6 +53,10 @@ stream_data.add_sub('muted', muted);
 muting.add_muted_topic(general.stream_id, 'muted topic');
 
 run_test('message_is_notifiable', () => {
+    // A notification is sent if both message_is_notifiable(message)
+    // and the appropriate should_send_*_notification function return
+    // true.
+
     // Case 1: If the message was sent by this user,
     //  DO NOT notify the user
     // In this test, all other circumstances should trigger notification
@@ -129,8 +136,43 @@ run_test('message_is_notifiable', () => {
     assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), true);
 
-    // Case 5: If a message is in a muted stream
-    //  and does not mention the user DIRECTLY,
+    // Case 5:
+    // Wildcard mention should trigger notification in unmuted topic
+    // if wildcard_mentions_notify
+    message = {
+        id: 40,
+        content: 'message number 4',
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned: true,
+        mentioned_me_directly: false,
+        type: 'stream',
+        stream: 'general',
+        stream_id: general.stream_id,
+        topic: 'vanilla',
+    };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), true);
+    assert.equal(notifications.message_is_notifiable(message), true);
+
+    // But not if it's disabled
+    page_params.wildcard_mentions_notify = false;
+    assert.equal(notifications.should_send_desktop_notification(message), false);
+    assert.equal(notifications.should_send_audible_notification(message), false);
+    assert.equal(notifications.message_is_notifiable(message), true);
+
+    // And the stream-level setting overrides the global setting
+    general.wildcard_mentions_notify = true;
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), true);
+    assert.equal(notifications.message_is_notifiable(message), true);
+
+    // Reset state
+    page_params.wildcard_mentions_notify = true;
+    general.wildcard_mentions_notify = null;
+
+    // Case 6: If a message is in a muted stream
+    //  and does not mention the user DIRECTLY (i.e. wildcard mention),
     //  DO NOT notify the user
     message = {
         id: 50,
@@ -148,8 +190,27 @@ run_test('message_is_notifiable', () => {
     assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), false);
 
-    // Case 6: If a message is in a muted topic
-    //  and does not mention the user DIRECTLY,
+    // Case 7: If a message is in a muted stream
+    //  and does mention the user DIRECTLY,
+    //  DO notify the user
+    message = {
+        id: 50,
+        content: 'message number 5',
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned: true,
+        mentioned_me_directly: true,
+        type: 'stream',
+        stream: 'muted',
+        stream_id: muted.stream_id,
+        topic: 'whatever',
+    };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), true);
+    assert.equal(notifications.message_is_notifiable(message), true);
+
+    // Case 8: If a message is in a muted topic
+    //  and does not mention the user DIRECTLY (i.e. wildcard mention),
     //  DO NOT notify the user
     message = {
         id: 50,
@@ -167,25 +228,24 @@ run_test('message_is_notifiable', () => {
     assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), false);
 
-    // Case 7
     // If none of the above cases apply
     // (ie: topic is not muted, message does not mention user,
     //  no notification sent before, message not sent by user),
-    // return true to pass it to notifications settings
+    // return true to pass it to notifications settings, which will return false.
     message = {
         id: 60,
         content: 'message number 7',
         sent_by_me: false,
         notification_sent: false,
-        mentioned: true,
+        mentioned: false,
         mentioned_me_directly: false,
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
         topic: 'whatever',
     };
-    assert.equal(notifications.should_send_desktop_notification(message), true);
-    assert.equal(notifications.should_send_audible_notification(message), true);
+    assert.equal(notifications.should_send_desktop_notification(message), false);
+    assert.equal(notifications.should_send_audible_notification(message), false);
     assert.equal(notifications.message_is_notifiable(message), true);
 });
 

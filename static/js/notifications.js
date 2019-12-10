@@ -491,29 +491,36 @@ exports.message_is_notifiable = function (message) {
 };
 
 exports.should_send_desktop_notification = function (message) {
-    // For streams, send if desktop notifications are enabled for this
-    // stream.
+    // For streams, send if desktop notifications are enabled for all
+    // message on this stream.
     if (message.type === "stream" &&
         stream_data.receives_notifications(message.stream, "desktop_notifications")) {
         return true;
     }
 
-    // For PMs and @-mentions, send if desktop notifications are
-    // enabled.
-    if (message.type === "private" &&
-        page_params.enable_desktop_notifications) {
+    // enable_desktop_notifications determines whether we pop up a
+    // notification for PMs/mentions/alerts
+    if (!page_params.enable_desktop_notifications) {
+        return false;
+    }
+
+    // And then we need to check if the message is a PM, mention,
+    // wildcard mention with wildcard_mentions_notify, or alert.
+    if (message.type === "private") {
         return true;
     }
 
-    // For alert words and @-mentions, send if desktop notifications
-    // are enabled.
-    if (alert_words.notifies(message) &&
-        page_params.enable_desktop_notifications) {
+    if (alert_words.notifies(message)) {
         return true;
     }
 
+    if (message.mentioned_me_directly) {
+        return true;
+    }
+
+    // wildcard mentions
     if (message.mentioned &&
-        page_params.enable_desktop_notifications) {
+            stream_data.receives_notifications(message.stream, "wildcard_mentions_notify")) {
         return true;
     }
 
@@ -521,23 +528,35 @@ exports.should_send_desktop_notification = function (message) {
 };
 
 exports.should_send_audible_notification = function (message) {
-    // For streams, ding if sounds are enabled for this stream.
+    // For streams, ding if sounds are enabled for all messages on
+    // this stream.
     if (message.type === "stream" &&
         stream_data.receives_notifications(message.stream, "audible_notifications")) {
         return true;
     }
 
-    // For PMs and @-mentions, ding if sounds are enabled.
-    if (message.type === "private" && page_params.enable_sounds) {
+    // enable_sounds determines whether we ding for PMs/mentions/alerts
+    if (!page_params.enable_sounds) {
+        return false;
+    }
+
+    // And then we need to check if the message is a PM, mention,
+    // wildcard mention with wildcard_mentions_notify, or alert.
+    if (message.type === "private") {
         return true;
     }
 
-    // For alert words and @-mentions, ding if sounds are enabled.
-    if (alert_words.notifies(message) && page_params.enable_sounds) {
+    if (alert_words.notifies(message)) {
         return true;
     }
 
-    if (message.mentioned && page_params.enable_sounds) {
+    if (message.mentioned_me_directly) {
+        return true;
+    }
+
+    // wildcard mentions
+    if (message.mentioned &&
+            stream_data.receives_notifications(message.stream, "wildcard_mentions_notify")) {
         return true;
     }
 
