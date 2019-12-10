@@ -25,7 +25,7 @@ from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_entity
 from zerver.lib.exceptions import RateLimited
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_stream_recipient, \
-    Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm, \
+    Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
 
 from zproject.backends import is_user_active
 
