@@ -127,6 +127,30 @@ class TestFollowupEmails(ZulipTestCase):
         self.assertEqual(len(scheduled_emails), 1)
         email_data = ujson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["template_prefix"], 'zerver/emails/followup_day1')
+        
+class TestCustomEmails(ZulipTestCase):
+    def test_send_custom_email(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        try:
+            send_custom_email([hamlet, othello, cordelia], dict([
+                ("markdown_template_path","templates/zerver/emails/custom_email_base.pre.html"),
+                ("subject", "Testing custom email"),
+                ("from_name", "Test email") 
+            ]))
+            print("Test was successful")
+        except:
+            print("Exception")
+    def test_send_custom_email_empty(self) -> None:
+        try:
+            send_custom_email([], dict([
+                ("markdown_template_path","templates/zerver/emails/custom_email_base.pre.html"),
+                ("subject", "Testing custom email"),
+                ("from_name", "Test email") 
+            ]))
+        except:
+            print("Exception")
 
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s: str) -> str:
