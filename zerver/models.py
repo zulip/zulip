@@ -1726,6 +1726,14 @@ class Message(AbstractMessage):
                                    'website', 'ios', 'android')) or (
                                        'desktop app' in sending_client)
 
+    @property
+    def potential_attachment_urls(self) -> List[str]:
+        return getattr(self, '_potential_attachment_urls', [])
+
+    @potential_attachment_urls.setter
+    def potential_attachment_urls(self, urls: List[str]) -> None:
+        self._potential_attachment_urls = urls
+
     @staticmethod
     def content_has_attachment(content: str) -> Match:
         return re.search(r'[/\-]user[\-_]uploads[/\.-]', content)
@@ -1742,8 +1750,7 @@ class Message(AbstractMessage):
 
     def update_calculated_fields(self) -> None:
         # TODO: rendered_content could also be considered a calculated field
-        content = self.content
-        self.has_attachment = bool(Message.content_has_attachment(content))
+        return
 
 @receiver(pre_save, sender=Message)
 def pre_save_message(sender: Any, **kwargs: Any) -> None:

@@ -143,9 +143,9 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
             create_attachment(file_name, path_id, user_profile, size)
 
         self.subscribe(user_profile, "Denmark")
-        body = ("Some files here ...[zulip.txt](http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +
-                "http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." +
-                "http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py").format(id=realm_id)
+        body = ("Some files here ... [zulip.txt](http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +
+                " http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." +
+                " http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py").format(id=realm_id)
 
         expired_message_id = self.send_stream_message(sender_email, "Denmark", body)
         actual_message_id = self.send_stream_message(sender_email, "Denmark", body)

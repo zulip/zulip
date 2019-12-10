@@ -129,6 +129,10 @@ STREAM_TOPIC_LINK_REGEX = r"""
 def get_compiled_stream_topic_link_regex() -> Pattern:
     return verbose_compile(STREAM_TOPIC_LINK_REGEX)
 
+@one_time
+def get_compiled_attachment_regex() -> Pattern:
+    return verbose_compile(r'(?P<path>[/\-]user[\-_]uploads[/\.-].*)')
+
 LINK_REGEX = None  # type: Pattern
 
 def get_web_link_regex() -> str:
@@ -1044,17 +1048,29 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_absolute_url(self, url: str) -> bool:
         return bool(urllib.parse.urlparse(url).netloc)
 
+    def maybe_append_attachment_url(self, url: str) -> None:
+        attachment_regex = get_compiled_attachment_regex()
+        m = attachment_regex.match(url)
+        if m:
+            urls = self.markdown.zulip_message.potential_attachment_urls
+            urls.append(m.group('path'))
+            self.markdown.zulip_message.potential_attachment_urls = urls
+
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
+        # Collect unique URLs which are not quoted
+        unique_urls = {found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote}
 
         # Set has_link and similar flags whenever a message is processed by bugdown
         if self.markdown.zulip_message:
             self.markdown.zulip_message.has_link = len(found_urls) > 0
             self.markdown.zulip_message.has_image = False  # This is updated in self.add_a
+            # Populate potential_attachment_urls. do_claim_attachments() handles setting has_attachments.
+            self.markdown.zulip_message.potential_attachment_urls = []
+            for url in unique_urls:
+                self.maybe_append_attachment_url(url)
 
-        # Collect unique URLs which are not quoted
-        unique_urls = {found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote}
         if len(found_urls) == 0 or len(unique_urls) > self.INLINE_PREVIEW_LIMIT_PER_MESSAGE:
             return
 

@@ -1397,6 +1397,13 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
     user_message_flags = defaultdict(dict)  # type: Dict[int, Dict[int, List[str]]]
     with transaction.atomic():
         Message.objects.bulk_create([message['message'] for message in messages])
+
+        # Claim attachments in message
+        for message in messages:
+            if do_claim_attachments(message['message']):
+                message['message'].has_attachment = True
+                message['message'].save(update_fields=['has_attachment'])
+
         ums = []  # type: List[UserMessageLite]
         for message in messages:
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
@@ -1426,11 +1433,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             )
 
         bulk_insert_ums(ums)
-
-        # Claim attachments in message
-        for message in messages:
-            if Message.content_has_attachment(message['message'].content):
-                do_claim_attachments(message['message'])
 
         for message in messages:
             do_widget_post_save_actions(message)
@@ -4501,7 +4503,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
 
         prev_content = edit_history_event['prev_content']
         if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
-            check_attachment_reference_change(prev_content, message)
+            message.has_attachment = check_attachment_reference_change(prev_content, message)
 
         if message.is_stream_message():
             if topic_name is not None:
@@ -5451,9 +5453,12 @@ def notify_attachment_update(user_profile: UserProfile, op: str,
     }
     send_event(user_profile.realm, event, [user_profile.id])
 
-def do_claim_attachments(message: Message) -> None:
-    attachment_url_list = attachment_url_re.findall(message.content)
+def do_claim_attachments(message: Message) -> bool:
+    attachment_url_list = message.potential_attachment_urls
+    if not attachment_url_list:
+        return False
 
+    claimed = False
     for url in attachment_url_list:
         path_id = attachment_url_to_path_id(url)
         user_profile = message.sender
@@ -5475,8 +5480,10 @@ def do_claim_attachments(message: Message) -> None:
                 user_profile.id, path_id, message.id))
             continue
 
+        claimed = True
         attachment = claim_attachment(user_profile, path_id, message, is_message_realm_public)
         notify_attachment_update(user_profile, "update", attachment.to_dict())
+    return claimed
 
 def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     old_unclaimed_attachments = get_old_unclaimed_attachments(weeks_ago)
@@ -5485,7 +5492,7 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
         delete_message_image(attachment.path_id)
         attachment.delete()
 
-def check_attachment_reference_change(prev_content: str, message: Message) -> None:
+def check_attachment_reference_change(prev_content: str, message: Message) -> bool:
     new_content = message.content
     prev_attachments = set(attachment_url_re.findall(prev_content))
     new_attachments = set(attachment_url_re.findall(new_content))
@@ -5499,9 +5506,11 @@ def check_attachment_reference_change(prev_content: str, message: Message) -> No
     attachments_to_update = Attachment.objects.filter(path_id__in=path_ids).select_for_update()
     message.attachment_set.remove(*attachments_to_update)
 
+    claimed = False
     to_add = list(new_attachments - prev_attachments)
     if len(to_add) > 0:
-        do_claim_attachments(message)
+        claimed = do_claim_attachments(message)
+    return claimed
 
 def notify_realm_custom_profile_fields(realm: Realm, operation: str) -> None:
     fields = custom_profile_fields_for_realm(realm.id)
