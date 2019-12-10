@@ -6,7 +6,8 @@ Get Grafana notifications in Zulip!
 
    {!git-webhook-url-with-branches-indented.md!}
 
-1. Set up an alert notifcation of type Webhook in Grafana, see more [here](https://grafana.com/docs/grafana/latest/alerting/notifications/).
+1. Set up an alert notifcation of type Webhook in Grafana, see more 
+[here](https://grafana.com/docs/grafana/latest/alerting/notifications/).
 
 {!congrats.md!}
 
