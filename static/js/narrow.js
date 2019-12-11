@@ -56,24 +56,7 @@ exports.save_pre_narrow_offset_for_reload = function () {
     }
 };
 
-exports.narrow_title = "home";
-exports.activate = function (raw_operators, opts) {
-    const start_time = new Date();
-    const was_narrowed_already = narrow_state.active();
-    // most users aren't going to send a bunch of a out-of-narrow messages
-    // and expect to visit a list of narrows, so let's get these out of the way.
-    notifications.clear_compose_notifications();
-
-    // Open tooltips are only interesting for current narrow,
-    // so hide them when activating a new one.
-    $(".tooltip").hide();
-
-    if (raw_operators.length === 0) {
-        return exports.deactivate();
-    }
-    const filter = new Filter(raw_operators);
-    const operators = filter.operators();
-
+function update_narrow_title(filter) {
     // Take the most detailed part of the narrow to use as the title.
     // If the operator is something other than "stream", "topic", or
     // "is", we shouldn't update the narrow title
@@ -105,8 +88,28 @@ exports.activate = function (raw_operators, opts) {
             }
         }
     }
-
     notifications.redraw_title();
+}
+
+exports.narrow_title = "home";
+exports.activate = function (raw_operators, opts) {
+    const start_time = new Date();
+    const was_narrowed_already = narrow_state.active();
+    // most users aren't going to send a bunch of a out-of-narrow messages
+    // and expect to visit a list of narrows, so let's get these out of the way.
+    notifications.clear_compose_notifications();
+
+    // Open tooltips are only interesting for current narrow,
+    // so hide them when activating a new one.
+    $(".tooltip").hide();
+
+    if (raw_operators.length === 0) {
+        return exports.deactivate();
+    }
+    const filter = new Filter(raw_operators);
+    const operators = filter.operators();
+
+    update_narrow_title(filter);
     notifications.hide_history_limit_message();
     $(".all-messages-search-caution").hide();
 
