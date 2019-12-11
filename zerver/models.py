@@ -901,7 +901,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_offline_email_notifications = models.BooleanField(default=True)  # type: bool
     message_content_in_email_notifications = models.BooleanField(default=True)  # type: bool
     enable_offline_push_notifications = models.BooleanField(default=True)  # type: bool
-    enable_online_push_notifications = models.BooleanField(default=False)  # type: bool
+    enable_online_push_notifications = models.BooleanField(default=True)  # type: bool
 
     DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
     DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2

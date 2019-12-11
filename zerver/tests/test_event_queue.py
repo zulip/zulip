@@ -217,6 +217,10 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         """Tests what arguments missedmessage_hook passes into maybe_enqueue_notifications.
         Combined with the previous test, this ensures that the missedmessage_hook is correct"""
         user_profile = self.example_user('hamlet')
+
+        user_profile.enable_online_push_notifications = False
+        user_profile.save()
+
         email = user_profile.email
         # Fetch the Denmark stream for testing
         stream = get_stream("Denmark", user_profile.realm)

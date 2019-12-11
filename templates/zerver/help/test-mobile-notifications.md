@@ -1,10 +1,11 @@
 # Test mobile notifications
 
-Normally, mobile notifications are only sent after you've been idle for a
-few minutes, which isn't ideal for testing.
+Zulip supports configuring mobile notifications to skip sending mobile
+push notifications when you are currently actively using one of the
+Zulip apps.
 
-You can instead have mobile notifications sent regardless of how recently
-you've been online.
+When testing mobile notifications, you should make sure Zulip is
+configured to send mobile notifications even when you're online.
 
 {start_tabs}
 
