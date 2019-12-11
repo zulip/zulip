@@ -43,7 +43,7 @@ things:
   refresher on how this works.
 * If you're planning on using GitHub auth or another social
   authentication method, review
-  [the notes on `SOCIAL_AUTH_SUBDOMAIN` below](#social-authentication).
+  [the notes on `SOCIAL_AUTH_SUBDOMAIN` below](#authentication).
 
 For servers hosting a large number of organizations, like
 [zulipchat.com](https://zulipchat.com), one can set

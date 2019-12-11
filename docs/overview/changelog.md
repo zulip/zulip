@@ -472,7 +472,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Renamed the hotkey for starring a message to Ctrl+S.
 - Added the new `SOCIAL_AUTH_SUBDOMAIN` setting, which all servers using
   both GitHub authentication and hosting multiple Zulip organizations
-  should set (see [the docs for details](../production/multiple-organizations.html#social-authentication)).
+  should set (see [the docs for details](../production/multiple-organizations.html#authentication)).
 - Added automatic thumbnailing of images, powered by thumbor.  The new
   THUMBOR_URL setting controls this feature; it is disabled by default
   in this release, because the mobile apps don't support it yet.
