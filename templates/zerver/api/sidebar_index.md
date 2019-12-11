@@ -1,6 +1,5 @@
 ## Incoming webhooks
 
-* [Overview](/api/integrations-overview)
 * [Webhook integrations](/api/incoming-webhooks-overview)
 * [Integration walkthrough](/api/incoming-webhooks-walkthrough)
 * [Other integrations](/api/non-webhook-integrations)
