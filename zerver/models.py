@@ -12,7 +12,6 @@ import django.contrib.auth
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, MinLengthValidator, \
     RegexValidator, validate_email
-from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_api_key_cache_key, active_non_guest_user_ids_cache_key, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
@@ -27,7 +26,7 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
-from django.db.models.signals import pre_save, post_save, post_delete
+from django.db.models.signals import post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
 from zerver.lib.validator import check_int, \
@@ -1747,16 +1746,6 @@ class Message(AbstractMessage):
         if content.startswith('/me '):
             return True
         return False
-
-    def update_calculated_fields(self) -> None:
-        # TODO: rendered_content could also be considered a calculated field
-        return
-
-@receiver(pre_save, sender=Message)
-def pre_save_message(sender: Any, **kwargs: Any) -> None:
-    if kwargs['update_fields'] is None or "content" in kwargs['update_fields']:
-        message = kwargs['instance']
-        message.update_calculated_fields()
 
 def get_context_for_message(message: Message) -> Sequence[Message]:
     # TODO: Change return type to QuerySet[Message]

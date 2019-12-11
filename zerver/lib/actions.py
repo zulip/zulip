@@ -1390,9 +1390,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
         message['um_eligible_user_ids'] |= mentioned_bot_user_ids
 
-        # Update calculated fields of the message
-        message['message'].update_calculated_fields()
-
     # Save the message receipts in the database
     user_message_flags = defaultdict(dict)  # type: Dict[int, Dict[int, List[str]]]
     with transaction.atomic():
