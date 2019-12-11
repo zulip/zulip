@@ -4930,16 +4930,30 @@ def get_active_presence_idle_user_ids(realm: Realm,
     return filter_presence_idle_user_ids(user_ids)
 
 def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
+    # Given a set of user IDs (the recipients of a message), accesses
+    # the UserPresence table to determine which of these users are
+    # currently idle and should potentially get email notifications
+    # (and push notifications with with
+    # user_profile.enable_online_push_notifications=False).
+    #
+    # We exclude any presence data from ZulipMobile for the purpose of
+    # triggering these notifications; the mobile app can more
+    # effectively do its own client-side filtering of notification
+    # sounds/etc. for the case that the user is actively doing a PM
+    # conversation in the app.
+
     if not user_ids:
         return []
 
-    # 140 seconds is consistent with presence.js:OFFLINE_THRESHOLD_SECS
-    recent = timezone_now() - datetime.timedelta(seconds=140)
+    # Matches presence.js constant
+    OFFLINE_THRESHOLD_SECS = 140
+
+    recent = timezone_now() - datetime.timedelta(seconds=OFFLINE_THRESHOLD_SECS)
     rows = UserPresence.objects.filter(
         user_profile_id__in=user_ids,
         status=UserPresence.ACTIVE,
         timestamp__gte=recent
-    ).distinct('user_profile_id').values('user_profile_id')
+    ).exclude(client__name="ZulipMobile").distinct('user_profile_id').values('user_profile_id')
     active_user_ids = {row['user_profile_id'] for row in rows}
     idle_user_ids = user_ids - active_user_ids
     return sorted(list(idle_user_ids))
