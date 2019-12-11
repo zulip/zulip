@@ -17,7 +17,8 @@ Pygments
 hyperlink
 
 # Needed for manage.py
-ipython
+# Upgrade blocked because ipython dropped Python 3.5 support.
+ipython==7.9.*
 
 # Needed for Image Processing
 Pillow
