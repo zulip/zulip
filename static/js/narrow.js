@@ -260,6 +260,13 @@ exports.activate = function (raw_operators, opts) {
                     !filter.includes_full_stream_history() &&
                     !filter.has_operand("is", "starred")) {
                     $(".all-messages-search-caution").show();
+                    // Set the link to point to this search with streams:public added.
+                    // It's a bit hacky to use the href, but
+                    // !filter.includes_full_stream_history() implies streams:public
+                    // wasn't already present.
+                    $(".all-messages-search-caution a.search-shared-history").attr(
+                        "href", window.location.hash.replace("#narrow/", "#narrow/streams/public/")
+                    );
                 }
             },
         });
