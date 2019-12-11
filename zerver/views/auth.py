@@ -260,14 +260,12 @@ def remote_user_sso(request: HttpRequest,
         realm = None
 
     if not auth_enabled_helper([ZulipRemoteUserBackend.auth_backend_name], realm):
-        raise JsonableError(_("This authentication backend is disabled."))
+        return redirect_to_config_error("remoteuser/backend_disabled")
 
     try:
         remote_user = request.META["REMOTE_USER"]
     except KeyError:
-        # TODO: Arguably the JsonableError values here should be
-        # full-page HTML configuration errors instead.
-        raise JsonableError(_("No REMOTE_USER set."))
+        return redirect_to_config_error("remoteuser/remote_user_header_missing")
 
     # Django invokes authenticate methods by matching arguments, and this
     # authentication flow will not invoke LDAP authentication because of
