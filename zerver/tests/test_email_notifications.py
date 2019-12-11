@@ -136,7 +136,7 @@ class TestCustomEmails(ZulipTestCase):
 
     def test_send_custom_email_group(self) -> None:
         management.call_command("send_custom_email", "--markdown-template-path", "templates/zerver/emails/email_base_default.source.html",
-                                "-u", "hamlet@zulip.com, iago@zulip.com, cordelia@zulip.com", "--from-name", "test", "--subject", "test_email")
+                                "-u", "hamlet@zulip.com, iago@zulip.com", "--from-name", "test", "--subject", "test_email")
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s: str) -> str:
         s = s.strip()
