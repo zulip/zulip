@@ -146,7 +146,7 @@ from zerver.lib.alert_words import add_user_alert_words, \
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
-from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
+from zerver.lib.upload import attachment_url_to_path_id, \
     claim_attachment, delete_message_image, upload_emoji_image, delete_avatar_image, \
     delete_export_tarball
 from zerver.lib.video_calls import request_zoom_video_call_url
@@ -5490,9 +5490,8 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
         attachment.delete()
 
 def check_attachment_reference_change(prev_content: str, message: Message) -> bool:
-    new_content = message.content
-    prev_attachments = set(attachment_url_re.findall(prev_content))
-    new_attachments = set(attachment_url_re.findall(new_content))
+    prev_attachments = set([a.path_id for a in message.attachment_set.all()])
+    new_attachments = set(message.potential_attachment_urls)
 
     to_remove = list(prev_attachments - new_attachments)
     path_ids = []

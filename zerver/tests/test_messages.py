@@ -3714,6 +3714,21 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.update_message(msg, '> {}'.format(dummy_urls[1]))
         self.assertTrue(msg.has_attachment)
 
+        # Additional test to check has_attachment is being set is due to the correct attachment.
+        self.update_message(msg, 'Outside: {}. In code: `{}`.'.format(dummy_urls[0], dummy_urls[1]))
+        self.assertTrue(msg.has_attachment)
+        self.assertTrue(msg.attachment_set.filter(path_id=dummy_path_ids[0]))
+        self.assertEqual(msg.attachment_set.count(), 1)
+
+        self.update_message(msg, 'Outside: {}. In code: `{}`.'.format(dummy_urls[1], dummy_urls[0]))
+        self.assertTrue(msg.has_attachment)
+        self.assertTrue(msg.attachment_set.filter(path_id=dummy_path_ids[1]))
+        self.assertEqual(msg.attachment_set.count(), 1)
+
+        self.update_message(msg, 'Both in code: `{} {}`.'.format(dummy_urls[1], dummy_urls[0]))
+        self.assertFalse(msg.has_attachment)
+        self.assertEqual(msg.attachment_set.count(), 0)
+
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:
         UserPresence.objects.all().delete()
