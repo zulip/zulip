@@ -199,6 +199,7 @@ def template_database_status(
             'zerver/lib/generate_test_data.py',
             'tools/setup/postgres-init-test-db',
             'tools/setup/postgres-init-dev-db',
+            'zerver/migrations/0258_enable_online_push_notifications_default.py',
         ]
     if check_settings is None:
         check_settings = [

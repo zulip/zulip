@@ -1030,6 +1030,16 @@ class RecipientInfoTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         othello = self.example_user('othello')
 
+        # These tests were written with the old default for
+        # enable_online_push_notifications; that default is better for
+        # testing the full code path anyway.
+        hamlet.enable_online_push_notifications = False
+        cordelia.enable_online_push_notifications = False
+        othello.enable_online_push_notifications = False
+        hamlet.save()
+        cordelia.save()
+        othello.save()
+
         realm = hamlet.realm
 
         stream_name = 'Test Stream'

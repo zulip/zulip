@@ -56,7 +56,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             content='now we mention @**Cordelia Lear**',
         )
 
-    def _login_and_send_original_stream_message(self, content: str) -> int:
+    def _login_and_send_original_stream_message(self, content: str,
+                                                enable_online_push_notifications: bool=False) -> int:
         '''
             Note our conventions here:
 
@@ -66,6 +67,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         '''
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
+
+        cordelia.enable_online_push_notifications = enable_online_push_notifications
+        cordelia.save()
 
         self.login(hamlet.email)
         self.subscribe(hamlet, 'Scotland')
@@ -292,11 +296,10 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
     def test_always_push_notify_for_fully_present_mentioned_user(self) -> None:
         cordelia = self.example_user('cordelia')
-        cordelia.enable_online_push_notifications = True
-        cordelia.save()
 
         message_id = self._login_and_send_original_stream_message(
-            content='no mention'
+            content='no mention',
+            enable_online_push_notifications=True,
         )
 
         self._make_cordelia_present_on_web()
@@ -331,11 +334,10 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
     def test_always_push_notify_for_fully_present_boring_user(self) -> None:
         cordelia = self.example_user('cordelia')
-        cordelia.enable_online_push_notifications = True
-        cordelia.save()
 
         message_id = self._login_and_send_original_stream_message(
-            content='no mention'
+            content='no mention',
+            enable_online_push_notifications=True,
         )
 
         self._make_cordelia_present_on_web()
