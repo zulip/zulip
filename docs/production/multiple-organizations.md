@@ -98,16 +98,18 @@ visible to the subdomain (so it's not possible for a single
 browser/client to be logged into both).  So we don't recommend that
 configuration.
 
-### Social authentication
+### Authentication
 
-If you're using GitHub authentication (or any other authentication
-backend that we implement using python-social-auth), you will likely
-want to set the `SOCIAL_AUTH_SUBDOMAIN` setting to something (`'auth'`
-is a good choice) and update the GitHub authentication callback URL to
-be that subdomain.  Otherwise, your users will experience confusing
-behavior where attempting to login using a social authentication
-backend will appear to log them out of the other organizations on your
-server.
+Many of Zulip's supported authentication methods (Google, GitHub,
+SAML, etc.) can require providing the third-party authentication
+provider with a whitelist of callback URLs to your Zulip server (or
+even a single URL).  For those vendors that support a whitelist, you
+can provide the callback URLs for each of your Zulip organizations.
+
+The cleaner solution is to register a special subdomain, e.g.
+`auth.zulip.example.com` with the third-party provider, and then set
+`SOCIAL_AUTH_SUBDOMAIN = 'auth'` in `/etc/zulip/settings.py`, so that
+Zulip knows to use that subdomain for these authentication callbacks.
 
 ### The system bot realm
 
