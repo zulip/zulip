@@ -178,12 +178,15 @@ run_test('basics', () => {
     };
 
     let cont;
+    let pre_scroll_cont;
 
     message_fetch.load_messages_for_narrow = (opts) => {
         cont = opts.cont;
+        pre_scroll_cont = opts.pre_scroll_cont;
 
         assert.deepEqual(opts, {
             cont: opts.cont,
+            pre_scroll_cont: opts.pre_scroll_cont,
             then_select_id: 1000,
             use_first_unread_anchor: false,
         });
@@ -230,6 +233,7 @@ run_test('basics', () => {
     };
 
     helper.clear();
+    pre_scroll_cont();
     cont();
     helper.assert_events([
         'report narrow times',

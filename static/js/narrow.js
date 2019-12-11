@@ -108,6 +108,8 @@ exports.activate = function (raw_operators, opts) {
 
     notifications.redraw_title();
     notifications.hide_history_limit_message();
+    $(".all-messages-search-caution").hide();
+
     blueslip.debug("Narrowed", {operators: _.map(operators,
                                                  function (e) { return e.operator; }),
                                 trigger: opts ? opts.trigger : undefined,
@@ -244,6 +246,19 @@ exports.activate = function (raw_operators, opts) {
                 msg_list.network_time = new Date();
                 maybe_report_narrow_time(msg_list);
             },
+            pre_scroll_cont: function () {
+                // Potentially display the notice that lets users know
+                // that not all messages were searched.  One could
+                // imagine including `filter.is_search()` in these
+                // conditions, but there's a very legitimate use case
+                // for moderation of searching for all messages sent
+                // by a potential spammer user.
+                if (!filter.contains_only_private_messages() &&
+                    !filter.includes_full_stream_history() &&
+                    !filter.has_operand("is", "starred")) {
+                    $(".all-messages-search-caution").show();
+                }
+            },
         });
     }());
 
@@ -276,18 +291,6 @@ exports.activate = function (raw_operators, opts) {
         compose.update_closed_compose_buttons_for_private();
     } else {
         compose.update_closed_compose_buttons_for_stream();
-    }
-
-    // Toggle the notice that lets users know that not all messages were searched.
-    // One could imagine including `filter.is_search()` in these conditions, but
-    // there's a very legitimate use case for moderation of searching for all
-    // messages sent by a potential spammer user.
-    if (!filter.contains_only_private_messages() &&
-        !filter.includes_full_stream_history() &&
-        !filter.has_operand("is", "starred")) {
-        $(".all-messages-search-caution").show();
-    } else {
-        $(".all-messages-search-caution").hide();
     }
 
     // Put the narrow operators in the search bar.

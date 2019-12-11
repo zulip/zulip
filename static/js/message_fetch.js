@@ -49,6 +49,11 @@ function process_result(data, opts) {
     activity.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
+
+    if (opts.pre_scroll_cont !== undefined) {
+        opts.pre_scroll_cont(data);
+    }
+
     stream_list.maybe_scroll_narrow_into_view();
 
     if (opts.cont !== undefined) {
@@ -222,6 +227,7 @@ exports.load_messages_for_narrow = function (opts) {
         num_after: consts.narrow_after,
         msg_list: msg_list,
         use_first_unread_anchor: opts.use_first_unread_anchor,
+        pre_scroll_cont: opts.pre_scroll_cont,
         cont: function () {
             message_scroll.hide_indicators();
             opts.cont();
