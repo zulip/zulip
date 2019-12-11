@@ -585,6 +585,12 @@ i18n_urls = [
     url(r'^config-error/saml$', TemplateView.as_view(
         template_name='zerver/config_error.html',),
         {'saml_error': True},),
+    url(r'^config-error/remoteuser/backend_disabled$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'remoteuser_error_backend_disabled': True},),
+    url(r'^config-error/remoteuser/remote_user_header_missing$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'remoteuser_error_remote_user_header_missing': True},),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english

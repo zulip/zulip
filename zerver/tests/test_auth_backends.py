@@ -2225,7 +2225,10 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_login_failure(self) -> None:
         email = self.example_email("hamlet")
         result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
-        self.assert_json_error(result, "This authentication backend is disabled.")
+        self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Authentication via the REMOTE_USER header is disabled.", result)
         self.assert_logged_in_user_id(None)
 
     def test_login_failure_due_to_nonexisting_user(self) -> None:
@@ -2245,7 +2248,10 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_login_failure_due_to_missing_field(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             result = self.client_post('/accounts/login/sso/')
-            self.assert_json_error_contains(result, "No REMOTE_USER set.", 400)
+            self.assertEqual(result.status_code, 302)
+
+            result = self.client_get(result["Location"])
+            self.assert_in_response("Your REMOTE_USER header is not set.", result)
 
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
         email = self.example_email("hamlet")
