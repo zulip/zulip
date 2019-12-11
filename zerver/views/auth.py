@@ -39,7 +39,7 @@ from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
     AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled, SAMLAuthBackend, \
-    redirect_to_config_error
+    redirect_to_config_error, ZulipRemoteUserBackend
 from version import ZULIP_VERSION
 
 import jwt
@@ -253,6 +253,15 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
 @has_request_variables
 def remote_user_sso(request: HttpRequest,
                     mobile_flow_otp: Optional[str]=REQ(default=None)) -> HttpResponse:
+    subdomain = get_subdomain(request)
+    try:
+        realm = get_realm(subdomain)  # type: Optional[Realm]
+    except Realm.DoesNotExist:
+        realm = None
+
+    if not auth_enabled_helper([ZulipRemoteUserBackend.auth_backend_name], realm):
+        raise JsonableError(_("This authentication backend is disabled."))
+
     try:
         remote_user = request.META["REMOTE_USER"]
     except KeyError:
@@ -274,9 +283,7 @@ def remote_user_sso(request: HttpRequest,
             raise JsonableError(_("Invalid OTP"))
 
     subdomain = get_subdomain(request)
-    try:
-        realm = get_realm(subdomain)
-    except Realm.DoesNotExist:
+    if realm is None:
         user_profile = None
     else:
         user_profile = authenticate(remote_user=remote_user, realm=realm)

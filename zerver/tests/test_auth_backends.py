@@ -2225,7 +2225,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_login_failure(self) -> None:
         email = self.example_email("hamlet")
         result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
-        self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
+        self.assert_json_error(result, "This authentication backend is disabled.")
         self.assert_logged_in_user_id(None)
 
     def test_login_failure_due_to_nonexisting_user(self) -> None:
