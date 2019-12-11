@@ -4498,9 +4498,9 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         event['prev_rendered_content_version'] = message.rendered_content_version
         event['is_me_message'] = Message.is_status_message(content, rendered_content)
 
-        prev_content = edit_history_event['prev_content']
-        if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
-            message.has_attachment = check_attachment_reference_change(prev_content, message)
+        # message.has_image and message.has_link will have been
+        # already updated by bugdown rendering in the caller.
+        message.has_attachment = check_attachment_reference_change(message)
 
         if message.is_stream_message():
             if topic_name is not None:
@@ -5489,7 +5489,10 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
         delete_message_image(attachment.path_id)
         attachment.delete()
 
-def check_attachment_reference_change(prev_content: str, message: Message) -> bool:
+def check_attachment_reference_change(message: Message) -> bool:
+    # For a unsaved message edit (message.* has been updated, but not
+    # saved to the database), adjusts Attachment data to correspond to
+    # the new content.
     prev_attachments = set([a.path_id for a in message.attachment_set.all()])
     new_attachments = set(message.potential_attachment_urls)
 

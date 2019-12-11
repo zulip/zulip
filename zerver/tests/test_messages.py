@@ -3587,14 +3587,6 @@ class MessageHasKeywordsTest(ZulipTestCase):
         # return path ids
         return [x[1] for x in dummy_files]
 
-    def test_basics(self) -> None:
-        zulip_realm = get_realm("zulip")
-        self.assertFalse(Message.content_has_attachment('whatever'))
-        self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
-        self.assertTrue(Message.content_has_attachment('yo\n https://staging.zulip.com/user_uploads/'))
-        self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo' % (
-            zulip_realm.id,)))
-
     def test_claim_attachment(self) -> None:
         user_profile = self.example_user('hamlet')
         dummy_path_ids = self.setup_dummy_attachments(user_profile)

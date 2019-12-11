@@ -1,6 +1,5 @@
 from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, \
     Union, Optional, Sequence, AbstractSet, Callable, Iterable
-from typing.re import Match
 
 from django.db import models
 from django.db.models.query import QuerySet
@@ -1732,10 +1731,6 @@ class Message(AbstractMessage):
     @potential_attachment_urls.setter
     def potential_attachment_urls(self, urls: List[str]) -> None:
         self._potential_attachment_urls = urls
-
-    @staticmethod
-    def content_has_attachment(content: str) -> Match:
-        return re.search(r'[/\-]user[\-_]uploads[/\.-]', content)
 
     @staticmethod
     def is_status_message(content: str, rendered_content: str) -> bool:
