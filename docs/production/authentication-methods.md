@@ -49,7 +49,11 @@ it as follows:
     * **SP Entity ID**: `https://yourzulipdomain.example.com`.
     * **SSO URL**:
       `https://yourzulipdomain.example.com/complete/saml/`.  This is
-      the "SAML ACS url" in SAML terminology.
+      the "SAML ACS url" in SAML terminology. If you're using
+      a configuration with `SOCIAL_AUTH_SUBDOMAIN` (see documentation on
+      [authentication with multiple organizations](../production/multiple-organizations.html#authentication))
+      this URL should go to the configured subdomain. For example,
+      `https://auth.example.com/complete/saml/` if `SOCIAL_AUTH_SUBDOMAIN="auth"`.
 
    The `Entity ID` should match the value of
    `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
