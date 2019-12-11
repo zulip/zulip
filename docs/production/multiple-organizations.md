@@ -100,10 +100,15 @@ configuration.
 
 ### Social authentication
 
-If you're using GitHub authentication (or any other authentication
-backend that we implement using python-social-auth), you will likely
-want to set the `SOCIAL_AUTH_SUBDOMAIN` setting to something (`'auth'`
-is a good choice) and update the GitHub authentication callback URL to
+If you're using one of the following authentication methods:
+* Github
+* Google
+* SAML
+* AzureAD
+* (Or any other authentication backend that we implement using python-social-auth)
+
+You will likely want to set the `SOCIAL_AUTH_SUBDOMAIN` setting to something (`'auth'`
+is a good choice) and update the authentication provider's callback URL to
 be that subdomain.  Otherwise, your users will experience confusing
 behavior where attempting to login using a social authentication
 backend will appear to log them out of the other organizations on your
