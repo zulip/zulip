@@ -1,5 +1,6 @@
 const render_more_topics = require('../templates/more_topics.hbs');
 const render_topic_list_item = require('../templates/topic_list_item.hbs');
+const render_new_topic = require('../templates/new_topic.hbs');
 const Dict = require('./dict').Dict;
 
 /*
@@ -144,8 +145,13 @@ exports.widget = function (parent_elem, my_stream_id) {
         if (topic_names.length > max_topics || !stream_data.all_topics_in_cache(sub)) {
             ul.append(show_more);
         }
+
+        // add new topic
+        const new_topic_li = $(render_new_topic());
+        ul.append(new_topic_li);
+
         return ul;
-    };
+    };    
 
     self.build_more_topics_section = function (more_topics_unreads) {
         const show_more_html = render_more_topics({

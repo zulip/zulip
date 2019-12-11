@@ -665,6 +665,11 @@ exports.initialize = function () {
     $("#compose_buttons").click(handle_compose_click);
     $(".compose-content").click(handle_compose_click);
 
+    $(document).on('click', '#new_topic', (function () {
+        popovers.hide_mobile_message_buttons_popover();
+        compose_actions.start('stream', {trigger: 'new topic button'});
+    }));    
+
     $("#compose_close").click(function () {
         compose_actions.cancel();
     });
