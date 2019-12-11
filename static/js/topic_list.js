@@ -151,7 +151,7 @@ exports.widget = function (parent_elem, my_stream_id) {
         ul.append(new_topic_li);
 
         return ul;
-    };    
+    };
 
     self.build_more_topics_section = function (more_topics_unreads) {
         const show_more_html = render_more_topics({
