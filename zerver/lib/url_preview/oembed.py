@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup, SoupStrainer
 from typing import Optional, Dict, Any
 from pyoembed import oEmbed, PyOembedException
 
@@ -20,25 +19,16 @@ def get_oembed_data(url: str,
         data['oembed'] = True
 
     elif oembed_resource_type == 'video' and html and thumbnail:
-        data['html'] = get_safe_html(html)
+        data['html'] = strip_cdata(html)
         data['image'] = thumbnail
         # Add a key to identify oembed metadata as opposed to other metadata
         data['oembed'] = True
 
     return data
 
-def get_safe_html(html: str) -> str:
-    """Return a safe version of the oEmbed html.
-
-    Verify that the HTML:
-    1. has a single iframe
-    2. the src uses a schema relative URL or explicitly specifies http(s)
-
-    """
+def strip_cdata(html: str) -> str:
+    # Work around a bug in SoundCloud's XML generation:
+    # <html>&lt;![CDATA[&lt;iframe ...&gt;&lt;/iframe&gt;]]&gt;</html>
     if html.startswith('<![CDATA[') and html.endswith(']]>'):
         html = html[9:-3]
-    soup = BeautifulSoup(html, 'lxml', parse_only=SoupStrainer('iframe'))
-    iframe = soup.find('iframe')
-    if iframe is not None and iframe.get('src').startswith(('http://', 'https://', '//')):
-        return str(soup)
-    return ''
+    return html

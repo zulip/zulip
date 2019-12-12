@@ -14,7 +14,7 @@ from zerver.lib.test_helpers import MockPythonResponse
 from zerver.worker.queue_processors import FetchLinksEmbedData
 from zerver.lib.url_preview.preview import (
     get_link_embed_data, link_embed_data_from_cache)
-from zerver.lib.url_preview.oembed import get_oembed_data, get_safe_html
+from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
 from zerver.lib.url_preview.parsers import (
     OpenGraphParser, GenericParser)
 from zerver.lib.cache import cache_set, NotFoundInCache, preview_url_cache_key
@@ -116,22 +116,16 @@ class OembedTestCase(ZulipTestCase):
         data = get_oembed_data(url)
         self.assertIsNone(data)
 
-    def test_safe_oembed_html(self) -> None:
+    def test_oembed_html(self) -> None:
         html = '<iframe src="//www.instagram.com/embed.js"></iframe>'
-        safe_html = get_safe_html(html)
-        self.assertEqual(html, safe_html)
-
-    def test_unsafe_oembed_html(self) -> None:
-        html = ('<blockquote class="instagram-media" data-instgrm-captioned>test</blockquote>\n'
-                '<script async src="//www.instagram.com/embed.js"></script>')
-        safe_html = get_safe_html(html)
-        self.assertEqual('', safe_html)
+        stripped_html = strip_cdata(html)
+        self.assertEqual(html, stripped_html)
 
     def test_autodiscovered_oembed_xml_format_html(self) -> None:
         iframe_content = '<iframe src="https://w.soundcloud.com/player"></iframe>'
         html = '<![CDATA[{}]]>'.format(iframe_content)
-        safe_html = get_safe_html(html)
-        self.assertEqual(iframe_content, safe_html)
+        stripped_html = strip_cdata(html)
+        self.assertEqual(iframe_content, stripped_html)
 
 
 class OpenGraphParserTestCase(ZulipTestCase):
