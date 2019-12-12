@@ -1904,13 +1904,15 @@ def create_streams_if_needed(realm: Realm,
     return added_streams, existing_streams
 
 
-def get_recipient_from_user_ids(recipient_profile_ids: Set[int],
-                                forwarded_mirror_message: bool,
-                                forwarder_user_profile: Optional[UserProfile],
-                                sender: UserProfile) -> Recipient:
+def get_recipient_from_user_profiles(recipient_profiles: Sequence[UserProfile],
+                                     forwarded_mirror_message: bool,
+                                     forwarder_user_profile: Optional[UserProfile],
+                                     sender: UserProfile) -> Recipient:
 
-    # Avoid mutating the passed in set of recipient_profile_ids.
-    recipient_profile_ids = set(recipient_profile_ids)
+    # Avoid mutating the passed in list of recipient_profiles.
+    recipient_profiles_map = {}
+    for user_profile in recipient_profiles:
+        recipient_profiles_map[user_profile.id] = user_profile
 
     if forwarded_mirror_message:
         # In our mirroring integrations with some third-party
@@ -1922,25 +1924,26 @@ def get_recipient_from_user_ids(recipient_profile_ids: Set[int],
         # for whether forwarder_user_profile is among the private
         # message recipients of the message.
         assert forwarder_user_profile is not None
-        if forwarder_user_profile.id not in recipient_profile_ids:
+        if forwarder_user_profile.id not in recipient_profiles_map:
             raise ValidationError(_("User not authorized for this query"))
 
     # If the private message is just between the sender and
     # another person, force it to be a personal internally
-    if (len(recipient_profile_ids) == 2 and sender.id in recipient_profile_ids):
-        recipient_profile_ids.remove(sender.id)
+    if (len(recipient_profiles_map) == 2 and sender.id in recipient_profiles_map):
+        del recipient_profiles_map[sender.id]
 
-    if len(recipient_profile_ids) > 1:
+    if len(recipient_profiles_map) > 1:
         # Make sure the sender is included in huddle messages
-        recipient_profile_ids.add(sender.id)
-        return get_huddle_recipient(recipient_profile_ids)
+        recipient_profiles_map[sender.id] = sender
+        user_ids = set([user_id for user_id in recipient_profiles_map])  # type: Set[int]
+        return get_huddle_recipient(user_ids)
     else:
-        return get_personal_recipient(list(recipient_profile_ids)[0])
+        return list(recipient_profiles_map.values())[0].recipient
 
 def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
                                      sender: UserProfile,
-                                     allow_deactivated: bool=False) -> Set[int]:
-    recipient_profile_ids = set()
+                                     allow_deactivated: bool=False) -> Sequence[UserProfile]:
+    recipient_profiles_map = {}  # type: Dict[int, UserProfile]
 
     # We exempt cross-realm bots from the check that all the recipients
     # are in the same realm.
@@ -1952,14 +1955,14 @@ def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
         if (not user_profile.is_active and not user_profile.is_mirror_dummy and
                 not allow_deactivated) or user_profile.realm.deactivated:
             raise ValidationError(_("'%s' is no longer using Zulip.") % (user_profile.email,))
-        recipient_profile_ids.add(user_profile.id)
+        recipient_profiles_map[user_profile.id] = user_profile
         if not is_cross_realm_bot_email(user_profile.email):
             realms.add(user_profile.realm_id)
 
     if len(realms) > 1:
         raise ValidationError(_("You can't send private messages outside of your organization."))
 
-    return recipient_profile_ids
+    return list(recipient_profiles_map.values())
 
 def recipient_for_emails(emails: Iterable[str], forwarded_mirror_message: bool,
                          forwarder_user_profile: Optional[UserProfile],
@@ -2003,11 +2006,11 @@ def recipient_for_user_profiles(user_profiles: Sequence[UserProfile], forwarded_
                                 forwarder_user_profile: Optional[UserProfile],
                                 sender: UserProfile, allow_deactivated: bool=False) -> Recipient:
 
-    recipient_profile_ids = validate_recipient_user_profiles(user_profiles, sender,
-                                                             allow_deactivated=allow_deactivated)
+    recipient_profiles = validate_recipient_user_profiles(user_profiles, sender,
+                                                          allow_deactivated=allow_deactivated)
 
-    return get_recipient_from_user_ids(recipient_profile_ids, forwarded_mirror_message,
-                                       forwarder_user_profile, sender)
+    return get_recipient_from_user_profiles(recipient_profiles, forwarded_mirror_message,
+                                            forwarder_user_profile, sender)
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
     if message.recipient.type == Recipient.HUDDLE:
