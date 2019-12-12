@@ -9,6 +9,7 @@ import markdown
 import logging
 import traceback
 import urllib
+import urllib.parse
 import re
 import os
 import html
@@ -495,7 +496,7 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
         found_imgs = walk_tree(root, lambda e: e if e.tag == "img" else None)
         for img in found_imgs:
             url = img.get("src")
-            if not url.startswith("http://"):
+            if urllib.parse.urlsplit(url).scheme != "http":
                 # Don't rewrite images on our own site (e.g. emoji).
                 continue
             img.set("src", get_camo_url(url))
