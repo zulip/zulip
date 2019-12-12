@@ -10,7 +10,22 @@ import lxml
 
 def fix_has_link(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Message = apps.get_model('zerver', 'Message')
-    for message in Message.objects.all():
+    total_messages = Message.objects.count()
+    print(" Processing messages...")
+
+    for message in Message.objects.order_by("id"):
+        if message.rendered_content == "":
+            # There have been bugs in the past that made it possible
+            # for a message to have "" as its rendered_content; we
+            # need to skip those because lxml won't process them.
+            #
+            # They should safely already have the correct state
+            #   has_link=has_image=has_attachment=False.
+            continue
+
+        if message.id % 1000 == 0:
+            print("Processed %s / %s" % (message.id, total_messages))
+
         # Because we maintain the Attachment table, this should be as
         # simple as just just checking if there's any Attachment
         # objects associated with this message.
