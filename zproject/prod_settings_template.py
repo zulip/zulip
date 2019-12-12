@@ -393,12 +393,13 @@ ENABLE_GRAVATAR = True
 #DEFAULT_AVATAR_URI = '/local-static/default-avatar.png'
 
 # To access an external postgres database you should define the host name in
-# REMOTE_POSTGRES_HOST, you can define the password in the secrets file in the
+# REMOTE_POSTGRES_HOST, port in REMOTE_POSTGRES_PORT, password in the secrets file in the
 # property postgres_password, and the SSL connection mode in REMOTE_POSTGRES_SSLMODE
 # Valid values for REMOTE_POSTGRES_SSLMODE are documented in the
 # "SSL Mode Descriptions" table in
 #   https://www.postgresql.org/docs/9.5/static/libpq-ssl.html
 #REMOTE_POSTGRES_HOST = 'dbserver.example.com'
+#REMOTE_POSTGRES_PORT = '5432'
 #REMOTE_POSTGRES_SSLMODE = 'require'
 
 # If you want to set a Terms of Service for your server, set the path

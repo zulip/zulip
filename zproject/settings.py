@@ -282,6 +282,7 @@ if DEVELOPMENT:
 elif REMOTE_POSTGRES_HOST != '':
     DATABASES['default'].update({
         'HOST': REMOTE_POSTGRES_HOST,
+        'PORT': REMOTE_POSTGRES_PORT
     })
     if get_secret("postgres_password") is not None:
         DATABASES['default'].update({

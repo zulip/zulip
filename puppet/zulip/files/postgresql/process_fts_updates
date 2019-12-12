@@ -73,6 +73,8 @@ try:
     from django.conf import settings
     if settings.REMOTE_POSTGRES_HOST != '':
         pg_args['host'] = settings.REMOTE_POSTGRES_HOST
+    if settings.REMOTE_POSTGRES_PORT != '':
+        pg_args['port'] = settings.REMOTE_POSTGRES_PORT
     USING_PGROONGA = settings.USING_PGROONGA
 except ImportError:
     # process_fts_updates also supports running locally on a remote
