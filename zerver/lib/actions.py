@@ -1912,9 +1912,6 @@ def get_recipient_from_user_ids(recipient_profile_ids: Set[int],
     # Avoid mutating the passed in set of recipient_profile_ids.
     recipient_profile_ids = set(recipient_profile_ids)
 
-    # If the private message is just between the sender and
-    # another person, force it to be a personal internally
-
     if forwarded_mirror_message:
         # In our mirroring integrations with some third-party
         # protocols, bots subscribed to the third-party protocol
@@ -1928,6 +1925,8 @@ def get_recipient_from_user_ids(recipient_profile_ids: Set[int],
         if forwarder_user_profile.id not in recipient_profile_ids:
             raise ValidationError(_("User not authorized for this query"))
 
+    # If the private message is just between the sender and
+    # another person, force it to be a personal internally
     if (len(recipient_profile_ids) == 2 and sender.id in recipient_profile_ids):
         recipient_profile_ids.remove(sender.id)
 
