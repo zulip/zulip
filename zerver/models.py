@@ -1459,7 +1459,7 @@ def get_client_remote_cache(name: str) -> Client:
 
 @cache_with_key(get_stream_cache_key, timeout=3600*24*7)
 def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
-    return Stream.objects.select_related("realm").get(
+    return Stream.objects.select_related().get(
         name__iexact=stream_name.strip(), realm_id=realm_id)
 
 def stream_name_in_use(stream_name: str, realm_id: int) -> bool:
@@ -1493,14 +1493,14 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
         #
         # This should be just
         #
-        # Stream.objects.select_related("realm").filter(name__iexact__in=stream_names,
-        #                                               realm_id=realm_id)
+        # Stream.objects.select_related().filter(name__iexact__in=stream_names,
+        #                                        realm_id=realm_id)
         #
         # But chaining __in and __iexact doesn't work with Django's
         # ORM, so we have the following hack to construct the relevant where clause
         upper_list = ", ".join(["UPPER(%s)"] * len(stream_names))
         where_clause = "UPPER(zerver_stream.name::text) IN (%s)" % (upper_list,)
-        return get_active_streams(realm.id).select_related("realm").extra(
+        return get_active_streams(realm.id).select_related().extra(
             where=[where_clause],
             params=stream_names)
 

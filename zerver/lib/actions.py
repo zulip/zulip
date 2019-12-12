@@ -1491,7 +1491,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             # messages are only associated to their subscribed users.
             if message['stream'] is None:
                 stream_id = message['message'].recipient.type_id
-                message['stream'] = Stream.objects.select_related("realm").get(id=stream_id)
+                message['stream'] = Stream.objects.select_related().get(id=stream_id)
             assert message['stream'] is not None  # assert needed because stubs for django are missing
             if message['stream'].is_public():
                 event['realm_id'] = message['stream'].realm_id
@@ -3947,8 +3947,7 @@ def do_remove_default_stream_group(realm: Realm, group: DefaultStreamGroup) -> N
 
 def get_default_streams_for_realm(realm_id: int) -> List[Stream]:
     return [default.stream for default in
-            DefaultStream.objects.select_related("stream", "stream__realm").filter(
-                realm_id=realm_id)]
+            DefaultStream.objects.select_related().filter(realm_id=realm_id)]
 
 def get_default_subs(user_profile: UserProfile) -> List[Stream]:
     # Right now default streams are realm-wide.  This wrapper gives us flexibility
