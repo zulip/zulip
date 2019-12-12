@@ -81,11 +81,14 @@ def get_link_embed_data(url: str,
     data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight) or {}
     if data.get('oembed'):
         return data
+
     response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
     if response.ok:
         og_data = OpenGraphParser(response.text).extract_data()
-        if og_data:
-            data.update(og_data)
+        for key in ['title', 'description', 'image']:
+            if not data.get(key) and og_data.get(key):
+                data[key] = og_data[key]
+
         generic_data = GenericParser(response.text).extract_data() or {}
         for key in ['title', 'description', 'image']:
             if not data.get(key) and generic_data.get(key):

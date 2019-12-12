@@ -14,17 +14,30 @@ def get_oembed_data(url: str,
     thumbnail = data.get('thumbnail_url')
     html = data.pop('html', '')
     if oembed_resource_type == 'photo' and image:
-        data['image'] = image
-        # Add a key to identify oembed metadata as opposed to other metadata
-        data['oembed'] = True
+        return dict(
+            oembed=True,
+            image=image,
+            type=oembed_resource_type,
+            title=data.get('title'),
+            description=data.get('description'),
+        )
 
-    elif oembed_resource_type == 'video' and html and thumbnail:
-        data['html'] = strip_cdata(html)
-        data['image'] = thumbnail
-        # Add a key to identify oembed metadata as opposed to other metadata
-        data['oembed'] = True
+    if oembed_resource_type == 'video' and html and thumbnail:
+        return dict(
+            oembed=True,
+            image=thumbnail,
+            type=oembed_resource_type,
+            html=strip_cdata(html),
+            title=data.get('title'),
+            description=data.get('description'),
+        )
 
-    return data
+    # Otherwise, start with just the embed type.
+    return dict(
+        type=oembed_resource_type,
+        title=data.get('title'),
+        description=data.get('description'),
+    )
 
 def strip_cdata(html: str) -> str:
     # Work around a bug in SoundCloud's XML generation:
