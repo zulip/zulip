@@ -7,13 +7,12 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 import lxml
+import time
+BATCH_SIZE = 1000
 
-def fix_has_link(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def process_batch(apps: StateApps, id_start: int, id_end: int, last_id: int) -> None:
     Message = apps.get_model('zerver', 'Message')
-    total_messages = Message.objects.count()
-    print(" Processing messages...")
-
-    for message in Message.objects.order_by("id"):
+    for message in Message.objects.filter(id__gte=id_start, id__lte=id_end).order_by("id"):
         if message.rendered_content == "":
             # There have been bugs in the past that made it possible
             # for a message to have "" as its rendered_content; we
@@ -24,7 +23,7 @@ def fix_has_link(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
             continue
 
         if message.id % 1000 == 0:
-            print("Processed %s / %s" % (message.id, total_messages))
+            print("Processed %s / %s" % (message.id, last_id))
 
         # Because we maintain the Attachment table, this should be as
         # simple as just just checking if there's any Attachment
@@ -56,7 +55,33 @@ def fix_has_link(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
         message.has_attachment = has_attachment
         message.save(update_fields=['has_link', 'has_attachment', 'has_image'])
 
+def fix_has_link(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+    Message = apps.get_model('zerver', 'Message')
+    if not Message.objects.exists():
+        # Nothing to do, and Message.objects.latest() will crash.
+        return
+
+    # This migration logic assumes that either the server is not
+    # running, or that it's being run after the logic to correct how
+    # `has_link` and friends are set for new messages have been
+    # deployed.
+    last_id = Message.objects.latest("id").id
+
+    id_range_lower_bound = 0
+    id_range_upper_bound = 0 + BATCH_SIZE
+    while id_range_upper_bound <= last_id:
+        process_batch(apps, id_range_lower_bound, id_range_upper_bound, last_id)
+
+        id_range_lower_bound = id_range_upper_bound + 1
+        id_range_upper_bound = id_range_lower_bound + BATCH_SIZE
+        time.sleep(0.1)
+
+    if last_id > id_range_lower_bound:
+        # Copy for the last batch.
+        process_batch(apps, id_range_lower_bound, last_id, last_id)
+
 class Migration(migrations.Migration):
+    atomic = False
 
     dependencies = [
         ('zerver', '0256_userprofile_stream_set_recipient_column_values'),
