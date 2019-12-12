@@ -14,9 +14,9 @@ service (or back):
     the same output).
   * Backups must be restored on a server running the same `postgres`
     version.
-  * Migrating organizations between self-hosting and Zulip Cloud
-    (generally requires renumbering all the
-    users/messages/etc.).
+  * Backups aren't useful for migrating organizations between
+    self-hosting and Zulip Cloud (which may require renumbering all
+    the users/messages/etc.).
 
   We highly recommend this tool in situations where it is applicable,
   because it is highly optimized and highly stable, since the hard
@@ -34,11 +34,12 @@ service (or back):
   [Slack](https://zulipchat.com/help/import-from-slack).
 
   Like the backup tool, logical data exports must be imported on a
-  Zulip server running the same version.  However, these exports
-  imported on Zulip servers running a different `postgres` version or
-  hosting a different set of Zulip organizations.  We recommend this
-  tool in cases where the backup tool isn't applicable, including
-  situations where an easily machine-parsable export format is desired.
+  Zulip server running the same version.  However, logical data
+  exports can be imported on Zulip servers running a different
+  `postgres` version or hosting a different set of Zulip
+  organizations.  We recommend this tool in cases where the backup
+  tool isn't applicable, including situations where an easily
+  machine-parsable export format is desired.
 
 * Zulip also has an [HTML archive
   tool](https://github.com/zulip/zulip-archive), which is primarily
@@ -65,7 +66,7 @@ su zulip -c '/home/zulip/deployments/current/manage.py backup'
 
 The backup tool provides the following options:
 - `--output`: Path where the output file should be stored. If no path is
- provided, the output file would be saved to a temporary directory.
+ provided, the output file is saved to a temporary directory.
 - `--skip-db`: Skip backup of the database.  Useful if you're using a
   remote postgres host with its own backup system and just need to
   backup non-database state.
@@ -138,20 +139,15 @@ and you may want to backup separately:
   exceed its disk capacity.  Additionally, S3 is a reliable persistent
   storage system with its own high-quality tools for doing backups.
 
-* Transient data present in Zulip's RabbitMQ queues.  For example, a
-  record that a missed-message email for a given Zulip message is
-  scheduled to be sent to a given user in 2 minutes, if the recipient
-  user doesn't interact with Zulip during that time window.  You can
-  check their status using `rabbitmq list_queues` as root.
+* SSL certificates.  These are not included because they are
+  particularly security-sensitive and are either trivially replaced
+  (if generated via Certbot) or provided by the system administrator.
 
-* Certain highly transient state that Zulip doesn't store in a
-  database, such as typing status, API rate-limiting counters,
-  etc. that would have no value 1 minute after the backup is
-  completed.
-
-* SSL certificates.  Since these are particularly security-sensitive
-  and either trivially replaced (if generated via Certbot) or provided
-  by the system administrator.
+For completeness, Zulip's backups do not include certain highly
+transient state that Zulip doesn't store in a database.  For example,
+typing status data, API rate-limiting counters, and RabbitMQ queues of
+that are essentially always empty in a healthy server (like outgoing
+emails to send).
 
 #### Backup details
 
