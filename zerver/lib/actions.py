@@ -1932,13 +1932,16 @@ def get_recipient_from_user_profiles(recipient_profiles: Sequence[UserProfile],
     if (len(recipient_profiles_map) == 2 and sender.id in recipient_profiles_map):
         del recipient_profiles_map[sender.id]
 
-    if len(recipient_profiles_map) > 1:
-        # Make sure the sender is included in huddle messages
-        recipient_profiles_map[sender.id] = sender
-        user_ids = set([user_id for user_id in recipient_profiles_map])  # type: Set[int]
-        return get_huddle_recipient(user_ids)
-    else:
-        return list(recipient_profiles_map.values())[0].recipient
+    assert len(recipient_profiles_map) != 0
+    if len(recipient_profiles_map) == 1:
+        user_profile = list(recipient_profiles_map.values())[0]
+        return user_profile.recipient
+
+    # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages
+    recipient_profiles_map[sender.id] = sender
+
+    user_ids = set([user_id for user_id in recipient_profiles_map])  # type: Set[int]
+    return get_huddle_recipient(user_ids)
 
 def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
                                      sender: UserProfile,
