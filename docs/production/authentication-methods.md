@@ -47,19 +47,22 @@ it as follows:
 1. Tell your IdP how to find your Zulip server:
 
     * **SP Entity ID**: `https://yourzulipdomain.example.com`.
+
+      The `Entity ID` should match the value of
+      `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
+       You can get the correct value by running the following:
+      `/home/zulip/deployments/current/scripts/setup/get-django-setting
+       SOCIAL_AUTH_SAML_SP_ENTITY_ID`.
+
     * **SSO URL**:
       `https://yourzulipdomain.example.com/complete/saml/`.  This is
-      the "SAML ACS url" in SAML terminology.  If you're
-      [hosting multiple organizations](../production/multiple-organizations.html#authentication))
+      the "SAML ACS url" in SAML terminology.
+
+      If you're
+      [hosting multiple organizations](../production/multiple-organizations.html#authentication),
       you need to use `SOCIAL_AUTH_SUBDOMAIN`.  For example,
       if `SOCIAL_AUTH_SUBDOMAIN="auth"` and `EXTERNAL_HOST=zulip.example.com`,
       this should be `https://auth.zulip.example.com/complete/saml/`.
-
-   The `Entity ID` should match the value of
-   `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
-   You can run on your Zulip server
-   `/home/zulip/deployments/current/scripts/setup/get-django-setting
-   SOCIAL_AUTH_SAML_SP_ENTITY_ID` to get the computed value.
 
 2. Tell Zulip how to connect to your SAML provider(s) by filling
    out the section of `/etc/zulip/settings.py` on your Zulip server
