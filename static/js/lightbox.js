@@ -60,17 +60,19 @@ function display_video(payload) {
         source = "https://www.youtube.com/embed/" + payload.source;
     } else if (payload.type === "vimeo-video") {
         source = "https://player.vimeo.com/video/" + payload.source;
+    } else if (payload.type === "embed-video") {
+        // Use data: to load the player in a unique origin for security.
+        source = "data:text/html," + window.encodeURIComponent(
+            "<!DOCTYPE html><style>iframe{position:absolute;left:0;top:0;width:100%;height:100%;box-sizing:border-box}</style>" +
+                payload.source
+        );
     }
 
-    let iframe = $("<iframe></iframe>");
+    const iframe = $("<iframe></iframe>");
+    iframe.attr("sandbox", "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts");
     iframe.attr("src", source);
     iframe.attr("frameborder", 0);
     iframe.attr("allowfullscreen", true);
-
-    // For oEmbed videos we set the complete html as the payload source
-    if (payload.type === "embed-video") {
-        iframe = $(payload.source);
-    }
 
     $("#lightbox_overlay .player-container").html(iframe).show();
     $(".image-actions .open").attr("href", payload.url);
