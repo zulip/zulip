@@ -13,6 +13,8 @@ Other options:
   --no-init-db
   --cacert
   --no-dist-upgrade
+  --postgres-missing-dictionaries
+  --remote-postgres
 
 The --hostname and --email options are required,
 unless --no-init-db is set and --certbot is not.
@@ -22,7 +24,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,no-init-db,no-dist-upgrade,no-overwrite-settings,self-signed-cert,certbot,hostname:,email:,cacert: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,no-init-db,no-dist-upgrade,no-overwrite-settings,self-signed-cert,certbot,postgres-missing-dictionaries,remote-postgres,hostname:,email:,cacert: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -35,6 +37,8 @@ while true; do
         --no-overwrite-settings) NO_OVERWRITE_SETTINGS=1; shift;;
         --no-init-db) NO_INIT_DB=1; shift;;
         --no-dist-upgrade) NO_DIST_UPGRADE=1; shift;;
+        --postgres-missing-dictionaries) POSTGRES_MISSING_DICTIONARIES=1; shift;;
+        --remote-postgres) REMOTE_POSTGRES=1; shift;;
         --) shift; break;;
     esac
 done
@@ -275,6 +279,14 @@ if [ "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
     has_postgres=1
 fi
 
+if [ -n "$POSTGRES_MISSING_DICTIONARIES" ]; then
+    export POSTGRES_MISSING_DICTIONARIES="true"
+fi
+
+if [ -n "$REMOTE_POSTGRES" ]; then
+  has_postgres=1
+fi
+
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get -y upgrade
 
@@ -364,15 +376,17 @@ if [ -e "/var/run/supervisor.sock" ]; then
     chown zulip:zulip /var/run/supervisor.sock
 fi
 
-if [ -n "$NO_INIT_DB" ]; then
+if [ -n "$NO_INIT_DB" ] || [ -n "$REMOTE_POSTGRES" ]; then
     set +x
     cat <<EOF
 
  Success!
 
- Stopping because --no-init-db was passed.  To complete the installation, run:
+ Stopping because --no-init-db or --remote-postgres was passed.
+ To complete the installation, configure postgres and then run:
 
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
+   su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 EOF
     exit 0
 fi
