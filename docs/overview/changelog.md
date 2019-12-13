@@ -7,6 +7,10 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.0.8 -- 2019-12-12
+
+- CVE-2019-19775: Close open redirect in thumbnail view.
+
 ### 2.0.7 -- 2019-11-21
 
 - CVE-2019-18933: Fix insecure account creation via social authentication.
