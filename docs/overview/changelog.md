@@ -98,7 +98,7 @@ lose the setting and need to re-enable it.
   It runs in 2 phases: A first migration that doesn't require the
   server to be down (which took about 4 hours to process the 250M rows
   on chat.zulip.org, and a second migration that does require downtime
-  (which took about 60 seconds for chat.zulip.org).  You check the
+  (which took about 60 seconds for chat.zulip.org). You can check the
   number of rows for your server with `UserMessage.objects.count()`.
 
   We expect that most Zulip servers can happily just use the normal
