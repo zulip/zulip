@@ -222,6 +222,10 @@ downtime, and then upgrade to the new release.
 - Enabled webpack code splitting and deduplication.
 - Started migrating our frontend codebase to TypeScript.
 
+### 2.0.8 -- 2019-12-12
+
+- CVE-2019-19775: Close open redirect in thumbnail view.
+
 ### 2.0.7 -- 2019-11-21
 
 - CVE-2019-18933: Fix insecure account creation via social authentication.
