@@ -420,7 +420,7 @@ master or an official release.
 The exception to this rule is when we ask or encourage a user to apply
 a change to their production system to help verify the fix resolves
 the issue for them.  You can expect the Zulip community to be
-responsive in debugging any problems any caused by a patch we asked
+responsive in debugging any problems caused by a patch we asked
 you to apply.
 
 ### Upgrading to master
@@ -438,7 +438,7 @@ While it's possible to backport these sorts of changes, you're
 unlikely to succeed without help from the core team via a support
 contract.
 
-If you need an unreleased feature, the best path is usually to to
+If you need an unreleased feature, the best path is usually to
 upgrade to Zulip master using [upgrade-zulip-from-git][].  Before
 upgrading to master, make sure you understand:
 
