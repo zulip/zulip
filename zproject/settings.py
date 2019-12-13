@@ -293,6 +293,8 @@ elif REMOTE_POSTGRES_HOST != '':
     else:
         DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
 
+POSTGRES_MISSING_DICTIONARIES = bool(get_config('postgresql', 'missing_dictionaries', None))
+
 ########################################################################
 # RABBITMQ CONFIGURATION
 ########################################################################

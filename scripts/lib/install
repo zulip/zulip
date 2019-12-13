@@ -280,7 +280,7 @@ if [ "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
 fi
 
 if [ -n "$POSTGRES_MISSING_DICTIONARIES" ]; then
-    export POSTGRES_MISSING_DICTIONARIES="true"
+    crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
 fi
 
 if [ -n "$REMOTE_POSTGRES" ]; then
