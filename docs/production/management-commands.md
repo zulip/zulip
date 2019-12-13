@@ -35,9 +35,8 @@ worth reading the documentation (or the code, usually available at
 
 Since Zulip supports hosting multiple organizations on a single
 server, many management commands require you specify which
-organization ("realm") you'd like to modify.  Many management commands
-require the Zulip realm/organization to interact with as an argument,
-which you can specify via numeric or string ID.
+organization ("realm") you'd like to modify, either via numerical or
+string ID (usually the subdomain).
 
 You can see all the organizations on your Zulip server using
 `./manage.py list_realms`.
@@ -72,7 +71,7 @@ subdomain.  E.g. on `it.zulip.example.com`, use
 If you need to query or edit data directly in the Zulip database, the
 best way to do this is with Django's built-in management shell.
 
-You can get an iPython shell with full access to code within the Zulip
+You can get an IPython shell with full access to code within the Zulip
 project using `manage.py shell`, e.g., you can do the following to
 change a user's email address:
 
@@ -119,8 +118,10 @@ There are dozens of useful management commands under
   to one or more users.
 * `./manage.py change_user_email`: Change a user's email address.
 * `./manage.py knight`: Can toggle whether a user is an administrator
-  (easier done via the UI) or create an API super user bot (with
-  `--permission=api_super_user`).
+  (easier done [via the
+  UI](https://zulipchat.com/help/change-a-users-role)) or create an
+  API super user bot (with `--permission=api_super_user`), which are
+  needed for some content mirroring integrations.
 * `./manage.py export_single_user` does a limited version of the [main
   export tools](../production/export-and-import.md) containing just
   the messages accessible by a single user.
