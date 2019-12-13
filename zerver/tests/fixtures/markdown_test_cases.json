@@ -8,6 +8,12 @@
       "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n"
     },
     {
+      "name": "ampampamp",
+      "input": "& &amp; &amp;amp;\n~~~~\n& &amp; &amp;amp;\n~~~~\n    & &amp; &amp;amp;",
+      "expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<div class=\"codehilite\"><pre><span></span>&amp; &amp;amp; &amp;amp;amp;\n</pre></div>\n\n\n<div class=\"codehilite\"><pre><span></span>&amp; &amp;amp; &amp;amp;amp;\n</pre></div>",
+      "marked_expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<div class=\"codehilite\"><pre><span></span>&amp; &amp;amp; &amp;amp;amp;\n</pre></div>\n\n\n<div class=\"codehilite\"><pre>&amp; &amp;amp; &amp;amp;amp;\n</pre></div>"
+    },
+    {
       "name": "basic_paragraph",
       "input": "test_input",
       "expected_output": "<p>test_input</p>",

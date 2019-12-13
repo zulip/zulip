@@ -96,6 +96,12 @@ people.add({
     email: 'bobby2@zulip.com',
 });
 
+people.add({
+    full_name: "& & &amp;",
+    user_id: 107,
+    email: "ampampamp@zulip.com",
+});
+
 people.initialize_current_user(cordelia.user_id);
 
 const hamletcharacters = {
@@ -119,9 +125,17 @@ const edgecase_group = {
     members: [],
 };
 
+const amp_group = {
+    name: "& & &amp;",
+    id: 4,
+    description: "Check ampersand escaping",
+    members: [],
+};
+
 global.user_groups.add(hamletcharacters);
 global.user_groups.add(backend);
 global.user_groups.add(edgecase_group);
+global.user_groups.add(amp_group);
 
 const stream_data = global.stream_data;
 const denmark = {
@@ -153,12 +167,20 @@ const edgecase_stream_2 = {
     stream_id: 4,
     is_muted: false,
 };
+const amp_stream = {
+    subscribed: true,
+    color: 'orange',
+    name: '& & &amp;',
+    stream_id: 5,
+    is_muted: false,
+};
 stream_data.add_sub(denmark);
 stream_data.add_sub(social);
 stream_data.add_sub(edgecase_stream);
 stream_data.add_sub(edgecase_stream_2);
 // Note: edgecase_stream cannot be mentioned because it is caught by
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
+stream_data.add_sub(amp_stream);
 
 // Check the default behavior of fenced code blocks
 // works properly before markdown is initialized.
@@ -383,10 +405,18 @@ run_test('marked', () => {
          expected: '<p>@**O&#39;Connell**</p>'},
         {input: '@*Bobby <h1>Tables</h1>*',
          expected: '<p><span class="user-group-mention" data-user-group-id="3">@Bobby &lt;h1&gt;Tables&lt;/h1&gt;</span></p>'},
+        {input: '@*& &amp; &amp;amp;*',
+         expected: '<p><span class="user-group-mention" data-user-group-id="4">@&amp; &amp; &amp;amp;</span></p>'},
         {input: '@**Bobby <h1>Tables</h1>**',
          expected: '<p><span class="user-mention" data-user-id="103">@Bobby &lt;h1&gt;Tables&lt;/h1&gt;</span></p>'},
+        {input: '@**& &amp; &amp;amp;**',
+         expected: '<p><span class="user-mention" data-user-id="107">@&amp; &amp; &amp;amp;</span></p>'},
         {input: '#**Bobby <h1>Tables</h1>**',
          expected: '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/stream/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 > Tables&lt;/h1&gt;</a></p>'},
+        {input: '#**& &amp; &amp;amp;**',
+         expected: '<p><a class="stream" data-stream-id="5" href="/#narrow/stream/5-.26-.26.20.26amp.3B">#&amp; &amp; &amp;amp;</a></p>'},
+        {input: '#**& &amp; &amp;amp;>& &amp; &amp;amp;**',
+         expected: '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/stream/5-.26-.26.20.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; > &amp; &amp; &amp;amp;</a></p>'},
     ];
 
     // We remove one of the unicode emoji we put as input in one of the test
