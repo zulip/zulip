@@ -11,12 +11,6 @@ const emoji_codes = require("../generated/emoji/emoji_codes.json");
 const realm_filter_map = new Map();
 let realm_filter_list = [];
 
-
-// Helper function
-function escape(html, encode) {
-    return util.escape_html(html, encode);
-}
-
 // Regexes that match some of our common bugdown markup
 const backend_only_markdown_re = [
     // Inline image previews, check for contiguous chars ending in image suffix
@@ -85,7 +79,7 @@ exports.apply_markdown = function (message) {
                 } else {
                     str += '<span class="user-mention" data-user-id="' + person.user_id + '">@';
                 }
-                return str + escape(person.full_name, true) + '</span>';
+                return str + _.escape(person.full_name) + '</span>';
             } else if (name === 'all' || name === 'everyone' || name === 'stream') {
                 message.mentioned = true;
                 return '<span class="user-mention" data-user-id="*">' +
@@ -101,7 +95,7 @@ exports.apply_markdown = function (message) {
                     message.mentioned = true;
                 }
                 return '<span class="user-group-mention" data-user-group-id="' + group.id + '">' +
-                       '@' + escape(group.name, true) +
+                       '@' + _.escape(group.name) +
                        '</span>';
             }
             return;
@@ -216,7 +210,7 @@ function handleStream(streamName) {
     const href = hash_util.by_stream_uri(stream.stream_id);
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
         'href="/' + href + '"' +
-        '>' + '#' + escape(stream.name) + '</a>';
+        '>' + '#' + _.escape(stream.name) + '</a>';
 }
 
 function handleStreamTopic(streamName, topic) {
@@ -225,7 +219,7 @@ function handleStreamTopic(streamName, topic) {
         return;
     }
     const href = hash_util.by_stream_topic_uri(stream.stream_id, topic);
-    const text = '#' + escape(stream.name) + ' > ' + escape(topic);
+    const text = '#' + _.escape(stream.name) + ' > ' + _.escape(topic);
     return '<a class="stream-topic" data-stream-id="' + stream.stream_id + '" ' +
         'href="/' + href + '"' + '>' + text + '</a>';
 }
@@ -249,7 +243,7 @@ function handleTex(tex, fullmatch) {
         return katex.renderToString(tex);
     } catch (ex) {
         if (ex.message.startsWith('KaTeX parse error')) { // TeX syntax error
-            return '<span class="tex-error">' + escape(fullmatch) + '</span>';
+            return '<span class="tex-error">' + _.escape(fullmatch) + '</span>';
         }
         blueslip.error(ex);
     }
@@ -350,7 +344,7 @@ exports.initialize = function () {
     // class-specific highlighting.
     r.code = function (code) {
         return '<div class="codehilite"><pre>'
-          + escape(code, true)
+          + _.escape(code)
           + '\n</pre></div>\n\n\n';
     };
 
@@ -409,7 +403,6 @@ exports.initialize = function () {
     fenced_code.set_stash_func(function (html) {
         return marked.stashHtml(html, true);
     });
-    fenced_code.set_escape_func(escape);
 
     marked.setOptions({
         gfm: true,
