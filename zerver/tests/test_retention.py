@@ -132,6 +132,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         user_profile = self.example_user("hamlet")
         sender_email = user_profile.email
         sample_size = 10
+        host = user_profile.realm.host
         realm_id = get_realm("zulip").id
         dummy_files = [
             ('zulip.txt', '%s/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt' % (realm_id,), sample_size),
@@ -143,9 +144,9 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
             create_attachment(file_name, path_id, user_profile, size)
 
         self.subscribe(user_profile, "Denmark")
-        body = ("Some files here ... [zulip.txt](http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +
-                " http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." +
-                " http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py").format(id=realm_id)
+        body = ("Some files here ... [zulip.txt](http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +
+                " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." +
+                " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py").format(id=realm_id, host=host)
 
         expired_message_id = self.send_stream_message(sender_email, "Denmark", body)
         actual_message_id = self.send_stream_message(sender_email, "Denmark", body)
@@ -535,17 +536,17 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
     def test_archiving_messages_with_attachment(self) -> None:
         self._create_attachments()
         realm_id = get_realm("zulip").id
-
+        host = get_realm("zulip").host
         body1 = """Some files here ...[zulip.txt](
-            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
-            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
-            Some more.... http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
-        """.format(id=realm_id)
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
+            Some more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
+        """.format(id=realm_id, host=host)
         body2 = """Some files here
-            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt ...
-            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
-            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
-        """.format(id=realm_id)
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt ...
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+        """.format(id=realm_id, host=host)
 
         msg_ids = [
             self.send_personal_message(self.sender, self.recipient, body1),
@@ -598,14 +599,14 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         # Make sure that attachments still in use in other messages don't get deleted:
         self._create_attachments()
         realm_id = get_realm("zulip").id
-
+        host = get_realm("zulip").host
         body = """Some files here ...[zulip.txt](
-            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
-            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
-            Some more.... http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
-            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
-            http://localhost:9991/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
-        """.format(id=realm_id)
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
+            Some more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+        """.format(id=realm_id, host=host)
 
         msg_id = self.send_personal_message(self.sender, self.recipient, body)
         # Simulate a reply with the same contents.

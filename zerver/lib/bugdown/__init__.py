@@ -130,10 +130,6 @@ STREAM_TOPIC_LINK_REGEX = r"""
 def get_compiled_stream_topic_link_regex() -> Pattern:
     return verbose_compile(STREAM_TOPIC_LINK_REGEX)
 
-@one_time
-def get_compiled_attachment_regex() -> Pattern:
-    return verbose_compile(r'(?P<path>[/\-]user[\-_]uploads[/\.-].*)')
-
 LINK_REGEX = None  # type: Pattern
 
 def get_web_link_regex() -> str:
@@ -205,13 +201,13 @@ def clear_state_for_testing() -> None:
 bugdown_logger = logging.getLogger()
 
 def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str:
-    """ If the link points to a local destination we can just switch to that
-    instead of opening a new tab. """
+    """If the link points to a local destination (e.g. #narrow/...),
+    generate a relative link that will open it in the current window.
+    """
 
     if db_data:
         realm_uri_prefix = db_data['realm_uri'] + "/"
         if link.startswith(realm_uri_prefix):
-            # +1 to skip the `/` before the hash link.
             return link[len(realm_uri_prefix):]
 
     return link
@@ -1049,14 +1045,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_absolute_url(self, url: str) -> bool:
         return bool(urllib.parse.urlparse(url).netloc)
 
-    def maybe_append_attachment_url(self, url: str) -> None:
-        attachment_regex = get_compiled_attachment_regex()
-        m = attachment_regex.match(url)
-        if m:
-            urls = self.markdown.zulip_message.potential_attachment_urls
-            urls.append(m.group('path'))
-            self.markdown.zulip_message.potential_attachment_urls = urls
-
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
@@ -1070,10 +1058,25 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if self.markdown.zulip_message:
             self.markdown.zulip_message.has_link = len(found_urls) > 0
             self.markdown.zulip_message.has_image = False  # This is updated in self.add_a
-            # Populate potential_attachment_urls. do_claim_attachments() handles setting has_attachments.
-            self.markdown.zulip_message.potential_attachment_urls = []
+            self.markdown.zulip_message.potential_attachment_path_ids = []
+
             for url in unique_urls:
-                self.maybe_append_attachment_url(url)
+                # Due to rewrite_local_links_to_relative, we need to
+                # handle both relative URLs beginning with
+                # `/user_uploads` and beginning with `user_uploads`.
+                # This urllib construction converts the latter into
+                # the former.
+                parsed_url = urllib.parse.urlsplit(urllib.parse.urljoin("/", url))
+                host = parsed_url.netloc
+
+                if host != '' and host != self.markdown.zulip_realm.host:
+                    continue
+
+                if not parsed_url.path.startswith("/user_uploads/"):
+                    continue
+
+                path_id = parsed_url.path[len("/user_uploads/"):]
+                self.markdown.zulip_message.potential_attachment_path_ids.append(path_id)
 
         if len(found_urls) == 0:
             return

@@ -1699,14 +1699,6 @@ class Message(AbstractMessage):
                                    'website', 'ios', 'android')) or (
                                        'desktop app' in sending_client)
 
-    @property
-    def potential_attachment_urls(self) -> List[str]:
-        return getattr(self, '_potential_attachment_urls', [])
-
-    @potential_attachment_urls.setter
-    def potential_attachment_urls(self, urls: List[str]) -> None:
-        self._potential_attachment_urls = urls
-
     @staticmethod
     def is_status_message(content: str, rendered_content: str) -> bool:
         """
