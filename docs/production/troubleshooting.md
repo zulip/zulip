@@ -109,15 +109,6 @@ If one of these services is not installed or functioning correctly,
 Zulip will not work.  Below we detail some common configuration
 problems and how to resolve them:
 
-* An AMQPConnectionError traceback or error running rabbitmqctl
-  usually means that RabbitMQ is not running; to fix this, try:
-  ```
-  service rabbitmq-server restart
-  ```
-  If RabbitMQ fails to start, the problem is often that you are using
-  a virtual machine with broken DNS configuration; you can often
-  correct this by configuring `/etc/hosts` properly.
-
 * If your browser reports no webserver is running, that is likely
   because nginx is not configured properly and thus failed to start.
   nginx will fail to start if you configured SSL incorrectly or did
@@ -138,6 +129,15 @@ problems and how to resolve them:
   attempt. For more on this issue, see the [Django release notes on Host header
   poisoning](https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning)
 
+* An AMQPConnectionError traceback or error running rabbitmqctl
+  usually means that RabbitMQ is not running; to fix this, try:
+  ```
+  service rabbitmq-server restart
+  ```
+  If RabbitMQ fails to start, the problem is often that you are using
+  a virtual machine with broken DNS configuration; you can often
+  correct this by configuring `/etc/hosts` properly.
+
 ### Disabling unattended upgrades
 
 ```eval_rst
@@ -149,31 +149,34 @@ problems and how to resolve them:
     server will have its postgres server upgraded (and thus restarted).
 ```
 
-When one of the services Zulip depends on (postgres, memcached, redis,
-rabbitmq) is restarted, that services will disconnect everything using
-them (like the Zulip server), and every operation that Zulip does
-which uses that service will throw an exception (and send you an error
-report email).
+Restarting one of the system services that Zulip uses (`postgres`,
+`memcached`, `redis`, or `rabbitmq`) will drop the connections that
+Zulip processes have to the service, resulting in future operations on
+those connections throwing errors.
 
-Zulip is designed to recover from service outages like this by
-re-initializing its connection to the service in question.  However,
-some of Zulip's queue processors can be idle for hours or days on a
-low-traffic server, and a given queue processor won't re-initialize
-its connection until that process gets an error.  This means that
-after e.g. `postgres` is restarted by unattended-upgrades, you're
-likely to get a series of ~20 error emails spread over the next few
-hours about the issue as each Zulip process tries to access the
-database, fails, sends an error email, and then reconnects.
+Zulip is designed to recover from system service downtime by creating
+new connections once the system service is back up, so the Zulip
+outage will end once the system service finishes restarting.  But
+you'll get a bunch of error emails during the system service outage
+whenever one of the Zulip server's ~20 workers attempts to access the
+system service.
 
-These apparently "random errors" can be confusing and might cause you
-to worry incorrectly about the stability of the Zulip software, which
-in fact the problem is that Ubuntu automatically upgraded and then
-restarted key Zulip dependencies, without anyone restarting Zulip's
-owns services.
+An unplanned outage will also result in an annoying (and potentially
+confusing) trickle of error emails over the following hours or days.
+These emails happen because a worker only learns its connection was
+dropped when it next tries to access the connection (at which point
+it'll send an error email and make a new connection), and several
+workers are commonly idle for periods of hours or days at a time.
 
-Instead, we recommend installing updates for these services manually,
-and then restarting the Zulip server with
-`/home/zulip/deployments/current/scripts/restart-server` afterwards.
+You can prevent this trickle when doing a planned upgrade by
+restarting the Zulip server with
+`/home/zulip/deployments/current/scripts/restart-server` after
+installing system package updates to `postgres`, `memcached`,
+`rabbitmq`, or `redis`.
+
+Few system administrators enjoy outages at random times (even if only
+brief) or the resulting distribution of error emails, which is why we
+recommend disabling `unattended-upgrades`.
 
 ## Monitoring
 
@@ -192,7 +195,8 @@ standard stuff:
   especially for the database and where uploads are stored.
 * Service uptime and standard monitoring for the [services Zulip
   depends on](#troubleshooting-services).  Most monitoring software
-  has standard plugins for `nginx`, `postgres`.
+  has standard plugins for `nginx`, `postgres`, `redis`, `rabbitmq`,
+  and `memcached`, and those will work well with Zulip.
 * `supervisorctl status` showing all services `RUNNING`.
 * Checking for processes being OOM killed.
 
@@ -212,46 +216,35 @@ tarballs).
 The Nagios plugins used by that configuration are installed
 automatically by the Zulip installation process in subdirectories
 under `/usr/lib/nagios/plugins/`.  The following is a summary of the
-various Nagios plugins included with Zulip and what they check:
+useful Nagios plugins included with Zulip and what they check:
 
 Application server and queue worker monitoring:
 
-* `check_send_receive_time` (sends a test message through the system
-  between two bot users to check that end-to-end message sending works)
-
-* `check_rabbitmq_consumers` and `check_rabbitmq_queues` (checks for
-  rabbitmq being down or the queue workers being behind)
-
-* `check_queue_worker_errors` (checks for errors reported by the queue
-  workers)
-
-* `check_worker_memory` (monitors for memory leaks in queue workers)
-
-* `check_email_deliverer_backlog` and `check_email_deliverer_process`
-  (monitors for whether scheduled outgoing emails are being sent)
+* `check_send_receive_time`: Sends a test message through the system
+  between two bot users to check that end-to-end message sending
+  works.  An effective end-to-end check for Zulip's Django and Tornado
+  systems being healthy.
+* `check_rabbitmq_consumers` and `check_rabbitmq_queues`: Effective
+  checks for Zulip's RabbitMQ-based queuing systems being healthy.
+* `check_worker_memory`: Monitors for memory leaks in queue workers.
+* `check_email_deliverer_backlog` and `check_email_deliverer_process`:
+  Monitors for whether scheduled outgoing emails (e.g. invitation
+  reminders) are being sent properly.
 
 Database monitoring:
 
-* `check_postgres_replication_lag` (checks streaming replication is up
-  to date).
-
-* `check_postgres` (checks the health of the postgres database)
-
-* `check_postgres_backup` (checks backups are up to date; see above)
-
-* `check_fts_update_log` (monitors for whether full-text search updates
-  are being processed)
+* `check_fts_update_log`: Checks whether full-text search updates are
+  being processed properly or getting backlogged.
+* `check_postgres`: General checks for database health.
+* `check_postgres_backup`: Checks status of postgres backups.
+* `check_postgres_replication_lag`: Checks whether postgres streaming
+  replication is up to date.
 
 Standard server monitoring:
 
-* `check_website_response.sh` (standard HTTP check)
-
-* `check_debian_packages` (checks apt repository is up to date)
-
-**Note**: While most commands require no special permissions,
-  `check_email_deliverer_backlog`, requires the `nagios` user to be in
-  the `zulip` group, in order to access `SECRET_KEY` and thus run
-  Zulip management commands.
+* `check_website_response.sh`: Basic HTTP check.
+* `check_debian_packages`: Checks whether the system is behind on `apt
+  upgrade`.
 
 If you're using these plugins, bug reports and pull requests to make
 it easier to monitor Zulip and maintain it in production are
@@ -259,7 +252,7 @@ encouraged!
 
 ## Memory leak mitigation
 
-As a measure to mitigate the impact of potential memory leaks in one
-of the Zulip daemons, the service automatically restarts itself
-every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
-precise configuration.
+As a measure to mitigate the potential impact of any future memory
+leak bugs in one of the Zulip daemons, Zulip service automatically
+restarts itself every Sunday early morning.  See
+`/etc/cron.d/restart-zulip` for the precise configuration.
