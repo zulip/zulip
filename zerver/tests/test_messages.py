@@ -19,6 +19,7 @@ from zerver.lib.actions import (
     create_mirror_user_if_needed,
     do_add_alert_words,
     do_change_stream_invite_only,
+    do_claim_attachments,
     do_create_user,
     do_deactivate_user,
     do_send_messages,
@@ -3590,7 +3591,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
     def test_claim_attachment(self) -> None:
         user_profile = self.example_user('hamlet')
         dummy_path_ids = self.setup_dummy_attachments(user_profile)
-        dummy_urls = ["http://localhost:9991/user_uploads/{}".format(x) for x in dummy_path_ids]
+        dummy_urls = ["http://zulip.testserver/user_uploads/{}".format(x) for x in dummy_path_ids]
 
         # Send message referring the attachment
         self.subscribe(user_profile, "Denmark")
@@ -3684,11 +3685,9 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.assertFalse(msgs[0].has_image)
 
     def test_has_attachment(self) -> None:
-        # This test could belong in AttachmentTest as well, but
-        # we keep it with other 'has:' tests.
         hamlet = self.example_user('hamlet')
         dummy_path_ids = self.setup_dummy_attachments(hamlet)
-        dummy_urls = ["http://localhost:9991/user_uploads/{}".format(x) for x in dummy_path_ids]
+        dummy_urls = ["http://zulip.testserver/user_uploads/{}".format(x) for x in dummy_path_ids]
         self.subscribe(hamlet, "Denmark")
 
         body = ("Files ...[zulip.txt]({}) {} {}").format(dummy_urls[0], dummy_urls[1], dummy_urls[2])
@@ -3720,6 +3719,40 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.update_message(msg, 'Both in code: `{} {}`.'.format(dummy_urls[1], dummy_urls[0]))
         self.assertFalse(msg.has_attachment)
         self.assertEqual(msg.attachment_set.count(), 0)
+
+    def test_potential_attachment_path_ids(self) -> None:
+        hamlet = self.example_user('hamlet')
+        self.subscribe(hamlet, "Denmark")
+        dummy_path_ids = self.setup_dummy_attachments(hamlet)
+
+        body = "Hello"
+        msg_id = self.send_stream_message(hamlet.email, "Denmark", body, "test")
+        msg = Message.objects.get(id=msg_id)
+
+        with mock.patch("zerver.lib.actions.do_claim_attachments",
+                        wraps=do_claim_attachments) as m:
+            self.update_message(msg, '[link](http://{}/user_uploads/{})'.format(
+                hamlet.realm.host, dummy_path_ids[0]))
+            self.assertTrue(m.called)
+            m.reset_mock()
+
+            self.update_message(msg, '[link](/user_uploads/{})'.format(dummy_path_ids[1]))
+            self.assertTrue(m.called)
+            m.reset_mock()
+
+            self.update_message(msg, '[new text link](/user_uploads/{})'.format(dummy_path_ids[1]))
+            self.assertFalse(m.called)
+            m.reset_mock()
+
+            # It's not clear this is correct behavior
+            self.update_message(msg, '[link](user_uploads/{})'.format(dummy_path_ids[2]))
+            self.assertFalse(m.called)
+            m.reset_mock()
+
+            self.update_message(msg, '[link](https://github.com/user_uploads/{})'.format(
+                dummy_path_ids[0]))
+            self.assertFalse(m.called)
+            m.reset_mock()
 
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:

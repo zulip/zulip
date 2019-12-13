@@ -146,8 +146,8 @@ from zerver.lib.alert_words import add_user_alert_words, \
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
-from zerver.lib.upload import attachment_url_to_path_id, \
-    claim_attachment, delete_message_image, upload_emoji_image, delete_avatar_image, \
+from zerver.lib.upload import claim_attachment, delete_message_image, \
+    upload_emoji_image, delete_avatar_image, \
     delete_export_tarball
 from zerver.lib.video_calls import request_zoom_video_call_url
 from zerver.tornado.event_queue import send_event
@@ -1396,7 +1396,8 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
 
         # Claim attachments in message
         for message in messages:
-            if do_claim_attachments(message['message']):
+            if do_claim_attachments(message['message'],
+                                    message['message'].potential_attachment_path_ids):
                 message['message'].has_attachment = True
                 message['message'].save(update_fields=['has_attachment'])
 
@@ -5467,14 +5468,9 @@ def notify_attachment_update(user_profile: UserProfile, op: str,
     }
     send_event(user_profile.realm, event, [user_profile.id])
 
-def do_claim_attachments(message: Message) -> bool:
-    attachment_url_list = message.potential_attachment_urls
-    if not attachment_url_list:
-        return False
-
+def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> bool:
     claimed = False
-    for url in attachment_url_list:
-        path_id = attachment_url_to_path_id(url)
+    for path_id in potential_path_ids:
         user_profile = message.sender
         is_message_realm_public = False
         if message.is_stream_message():
@@ -5511,22 +5507,21 @@ def check_attachment_reference_change(message: Message) -> bool:
     # saved to the database), adjusts Attachment data to correspond to
     # the new content.
     prev_attachments = set([a.path_id for a in message.attachment_set.all()])
-    new_attachments = set(message.potential_attachment_urls)
+    new_attachments = set(message.potential_attachment_path_ids)
+
+    if new_attachments == prev_attachments:
+        return bool(prev_attachments)
 
     to_remove = list(prev_attachments - new_attachments)
-    path_ids = []
-    for url in to_remove:
-        path_id = attachment_url_to_path_id(url)
-        path_ids.append(path_id)
+    if len(to_remove) > 0:
+        attachments_to_update = Attachment.objects.filter(path_id__in=to_remove).select_for_update()
+        message.attachment_set.remove(*attachments_to_update)
 
-    attachments_to_update = Attachment.objects.filter(path_id__in=path_ids).select_for_update()
-    message.attachment_set.remove(*attachments_to_update)
-
-    claimed = False
     to_add = list(new_attachments - prev_attachments)
     if len(to_add) > 0:
-        claimed = do_claim_attachments(message)
-    return claimed
+        do_claim_attachments(message, to_add)
+
+    return message.attachment_set.exists()
 
 def notify_realm_custom_profile_fields(realm: Realm, operation: str) -> None:
     fields = custom_profile_fields_for_realm(realm.id)

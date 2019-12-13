@@ -2762,8 +2762,9 @@ class EventsRegisterTest(ZulipTestCase):
             ('upload_space_used', equals(6)),
         ])
 
-        self.subscribe(self.example_user("hamlet"), "Denmark")
-        body = "First message ...[zulip.txt](http://localhost:9991" + data['uri'] + ")"
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
+        body = "First message ...[zulip.txt](http://{}".format(hamlet.realm.host) + data['uri'] + ")"
         events = self.do_test(
             lambda: self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test"),
             num_events=2)
