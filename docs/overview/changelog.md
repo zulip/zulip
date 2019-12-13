@@ -2,10 +2,12 @@
 
 All notable changes to the Zulip server are documented in this file.
 
-### 2.1.0-rc1 -- 2019-11-22
+### Unreleased
 
 This section lists notable unreleased changes; it is generally updated
 in bursts.
+
+### 2.1.0 -- 2019-12-12
 
 **Highlights:**
 
@@ -31,9 +33,6 @@ in bursts.
   to existing Slack/HipChat/Gitter import tools).  Slack import now
   supports importing data only included in corporate exports,
   including private messages and shared channels.
-- Changed the user-level stream notification settings model to be
-  defaults (for all streams where the user hasn't specifically changed
-  their settings) instead of a default for newly subscribed streams.
 - Added markdown support and typeahead for mentioning topics.
 - Email notifications have been completely redesigned with a minimal,
   readable style inspired by GitHub's email notifications.
@@ -133,6 +132,9 @@ lose the setting and need to re-enable it.
 - Added markdown support for headings, implemented using `# heading`,
   and removed several other unnecessary differences from CommonMark.
 - Added local echo when editing messages for a more responsive experience.
+- Changes to global notification settings for stream messages now
+  affect existing subscriptions where the user had not explicitly
+  changed the notification settings, as expected.
 - The default setting value is now to send mobile push notifications
   if the user was recently online.
 - Fixed issues with positioning and marking messages as read when
