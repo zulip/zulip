@@ -145,7 +145,7 @@ and you may want to backup separately:
 
 For completeness, Zulip's backups do not include certain highly
 transient state that Zulip doesn't store in a database.  For example,
-typing status data, API rate-limiting counters, and RabbitMQ queues of
+typing status data, API rate-limiting counters, and RabbitMQ queues
 that are essentially always empty in a healthy server (like outgoing
 emails to send).  You can check whether these queues are empty using
 `rabbitmqctl list_queues`.
