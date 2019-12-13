@@ -134,14 +134,11 @@ follows:
 postgres_password = abcd1234
 ```
 
-Now complete the installation by running the following command to ask
-the Zulip installer to initialize the postgres database. (Note: The
-options are different from before).
+Now complete the installation by running the following commands.
 
 ```
-./zulip-server-*/scripts/setup/install --certbot \
-    --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
-    --remote-postgres --postgres-missing-dictionaries
+# Ask Zulip installer to initialize the postgres database.
+su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
 
 # And then generate a realm creation link:
 su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
