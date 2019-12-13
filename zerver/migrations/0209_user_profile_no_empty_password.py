@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.contrib.auth import get_backends
 from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
@@ -13,7 +12,6 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.cache import cache_delete, user_profile_by_api_key_cache_key
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import generate_api_key
-from zproject.backends import EmailAuthBackend
 
 from typing import Any, Set, Union
 
@@ -159,8 +157,7 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
     # If Zulip's built-in password authentication is not enabled on
     # the server level, then we plan to skip resetting any users' API
     # keys, since the bug requires EmailAuthBackend.
-    email_auth_enabled = any(isinstance(backend, EmailAuthBackend)
-                             for backend in get_backends())
+    email_auth_enabled = 'zproject.backends.EmailAuthBackend' in settings.AUTHENTICATION_BACKENDS
 
     # A quick note: This query could in theory exclude users with
     # is_active=False, is_bot=True, or realm__deactivated=True here to
