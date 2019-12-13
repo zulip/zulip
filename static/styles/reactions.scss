@@ -16,6 +16,9 @@
 
         &.reacted {
             background-color: hsl(195, 50%, 95%);
+            .message_reaction_count {
+                color: hsl(200, 100%, 40%);
+            }
         }
 
         &:hover {
@@ -53,7 +56,7 @@
         font-size: 0.8em;
         display: inline-block;
         vertical-align: top;
-        color: hsl(200, 100%, 40%);
+        color: hsl(0, 0%, 33%);
         margin: 0px 1px 0px 0px;
         line-height: 1em;
     }
