@@ -6,7 +6,7 @@ const admin_settings_label = {
     realm_allow_edit_history: i18n.t("Enable message edit history"),
     realm_mandatory_topics: i18n.t("Require topics in stream messages"),
     realm_inline_image_preview: i18n.t("Show previews of uploaded and linked images"),
-    realm_inline_url_embed_preview: i18n.t("Show previews of linked websites"),
+    realm_inline_url_embed_preview: i18n.t(`Show previews of linked websites <a href="/help/allow-image-link-previews" target="_blank"><i class="fa fa-question-circle-o" aria-hidden="true"></i></a>`),
     realm_default_twenty_four_hour_time: i18n.t("Time format"),
     realm_send_welcome_emails: i18n.t("Send emails introducing Zulip to new users"),
     realm_message_content_allowed_in_email_notifications:
