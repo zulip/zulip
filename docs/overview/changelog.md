@@ -7,6 +7,15 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.1.1 -- 2019-12-13
+
+- Fixed upgrading to 2.1.x with the LDAP integration enabled in a
+  configuration where `AUTH_LDAP_REVERSE_EMAIL_SEARCH` is newly
+  required, but is not set yet.
+- Reimplemented --postgres-missing-dictionaries installer option,
+  used with our new support for a DBaaS managed database.
+- Improved documentation for `AUTH_LDAP_REVERSE_EMAIL_SEARCH`.
+
 ### 2.1.0 -- 2019-12-12
 
 **Highlights:**
