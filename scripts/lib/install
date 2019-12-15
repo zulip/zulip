@@ -52,7 +52,7 @@ fi
 #
 # Specify options for apt.
 read -r -a APT_OPTIONS <<< "${APT_OPTIONS:-}"
-# Install additional packages using apt.
+# Install additional packages.
 read -r -a ADDITIONAL_PACKAGES <<< "${ADDITIONAL_PACKAGES:-}"
 # Deployment type is almost always voyager.
 DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
@@ -160,8 +160,16 @@ if [ "$mem_kb" -lt 1900000 ]; then
     exit 1
 fi
 
-# setup-apt-repo does an `apt-get update`
-"$ZULIP_PATH"/scripts/lib/setup-apt-repo
+# Do package update, e.g. do `apt-get update` on Debian
+case "$os_id" in
+    Ubuntu|Debian)
+        # setup-apt-repo does an `apt-get update`
+        "$ZULIP_PATH"/scripts/lib/setup-apt-repo
+        ;;
+    centos)
+        "$ZULIP_PATH"/scripts/lib/setup-yum-repo
+        ;;
+esac
 
 # Handle issues around upstart on Ubuntu Xenial
 "$ZULIP_PATH"/scripts/lib/check-upstart
