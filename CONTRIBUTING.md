@@ -75,8 +75,6 @@ to help.
   [#git help](https://chat.zulip.org/#narrow/stream/44-git-help) if
   you run into any troubles.  Be sure to check out the
   [extremely useful Zulip-specific tools page](https://zulip.readthedocs.io/en/latest/git/zulip-tools.html).
-* Sign the
-  [Dropbox Contributor License Agreement](https://opensource.dropbox.com/cla/).
 
 ### Picking an issue
 
