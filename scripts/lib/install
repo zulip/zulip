@@ -99,9 +99,16 @@ export LANG="en_US.UTF-8"
 export LANGUAGE="en_US.UTF-8"
 
 # Check for a supported OS release.
-apt-get install -y lsb-release
-os_info="$(lsb_release --short --id --release --codename)"
-{ read -r os_id; read -r os_release; read -r os_version_id; } <<< "$os_info"
+if [ -f /etc/debian_version ]; then
+    apt-get install -y lsb-release
+    os_info="$(lsb_release --short --id --release --codename)"
+    { read -r os_id; read -r os_release; read -r os_version_id; } <<< "$os_info"
+elif [ -f /etc/os-release ]; then
+    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$VERSION_ID")"
+    { read -r os_id; read -r os_version_id; } <<< "$os_info"
+else
+    export os_version_id="unsupported"
+fi
 
 case "$os_version_id" in
     xenial|stretch|bionic|buster) ;;
