@@ -28,6 +28,7 @@ from zerver.lib.actions import (
     do_invite_users,
     do_reactivate_realm,
     do_reactivate_user,
+    do_set_realm_property,
     ensure_stream,
     validate_email,
 )
@@ -2984,6 +2985,18 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
 
         self.perform_ldap_sync(self.example_user('hamlet'))
         hamlet = self.example_user('hamlet')
+        self.assertEqual(hamlet.full_name, 'New Name')
+
+    def test_update_with_hidden_emails(self) -> None:
+        hamlet = self.example_user('hamlet')
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, 'email_address_visibility', Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        hamlet.refresh_from_db()
+
+        self.change_ldap_user_attr('hamlet', 'cn', 'New Name')
+        self.perform_ldap_sync(hamlet)
+
+        hamlet.refresh_from_db()
         self.assertEqual(hamlet.full_name, 'New Name')
 
     def test_update_split_full_name(self) -> None:
