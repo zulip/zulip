@@ -682,13 +682,13 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
             if user_disabled_in_ldap:
                 if user.is_active:
                     logging.info("Deactivating user %s because they are disabled in LDAP." %
-                                 (user.email,))
+                                 (user.delivery_email,))
                     do_deactivate_user(user)
                 # Do an early return to avoid trying to sync additional data.
                 return (user, built)
             elif not user.is_active:
                 logging.info("Reactivating user %s because they are not disabled in LDAP." %
-                             (user.email,))
+                             (user.delivery_email,))
                 do_reactivate_user(user)
 
         self.sync_avatar_from_ldap(user, ldap_user)
@@ -717,14 +717,14 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
 def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
     backend = ZulipLDAPUserPopulator()
     try:
-        ldap_username = backend.django_to_ldap_username(user_profile.email)
+        ldap_username = backend.django_to_ldap_username(user_profile.delivery_email)
     except ZulipLDAPExceptionNoMatchingLDAPUser:
         if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
             do_deactivate_user(user_profile)
-            logger.info("Deactivated non-matching user: %s" % (user_profile.email,))
+            logger.info("Deactivated non-matching user: %s" % (user_profile.delivery_email,))
             return True
         elif user_profile.is_active:
-            logger.warning("Did not find %s in LDAP." % (user_profile.email,))
+            logger.warning("Did not find %s in LDAP." % (user_profile.delivery_email,))
         return False
 
     # What one would expect to see like to do here is just a call to
@@ -744,7 +744,7 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
     # making this flow possible in a more directly supported fashion.
     updated_user = ZulipLDAPUser(backend, ldap_username, realm=user_profile.realm).populate_user()
     if updated_user:
-        logger.info("Updated %s." % (user_profile.email,))
+        logger.info("Updated %s." % (user_profile.delivery_email,))
         return True
 
     raise PopulateUserLDAPError("populate_user unexpectedly returned {}".format(updated_user))
