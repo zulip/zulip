@@ -307,7 +307,14 @@ if [ -n "$REMOTE_POSTGRES" ]; then
 fi
 
 # These server restarting bits should be moveable into puppet-land, ideally
-apt-get -y upgrade
+case "$os_id" in
+    Ubuntu|Debian)
+        apt-get -y upgrade
+        ;;
+    centos)
+        # No action is required because `yum update` already does upgrade.
+        ;;
+esac
 
 if [ "$has_nginx" = 0 ]; then
     # Check nginx was configured properly now that we've installed it.
