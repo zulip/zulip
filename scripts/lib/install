@@ -204,17 +204,34 @@ if [ -z "$NO_DIST_UPGRADE" ]; then
     apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
 fi
 
-if ! apt-get install -y \
-    puppet git curl wget jq \
-    python python3 python-six python3-six crudini \
-    "${ADDITIONAL_PACKAGES[@]}"; then
-    set +x
-    echo -e '\033[0;31m' >&2
-    echo "Installing packages failed; is network working and (on Ubuntu) the universe repository enabled?" >&2
-    echo >&2
-    echo -e '\033[0m' >&2
-    exit 1
-fi
+case "$os_id" in
+    Ubuntu|Debian)
+        if ! apt-get install -y \
+            puppet git curl wget jq \
+            python python3 python-six python3-six crudini \
+            "${ADDITIONAL_PACKAGES[@]}"; then
+            set +x
+            echo -e '\033[0;31m' >&2
+            echo "Installing packages failed; is network working and (on Ubuntu) the universe repository enabled?" >&2
+            echo >&2
+            echo -e '\033[0m' >&2
+            exit 1
+        fi
+        ;;
+    centos)
+        if ! yum install -y \
+            puppet git curl wget jq \
+            python python3 python-six python3-six crudini \
+            "${ADDITIONAL_PACKAGES[@]}"; then
+            set +x
+            echo -e '\033[0;31m' >&2
+            echo "Installing packages failed; is network working?" >&2
+            echo >&2
+            echo -e '\033[0m' >&2
+            exit 1
+        fi
+        ;;
+esac
 
 if [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/setup-certbot \
