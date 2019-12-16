@@ -78,7 +78,7 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     # Test error payloads
     client = Client(
         email=email,
-        api_key='abcedrsdfd',
+        api_key='X'*32,
         site=site
     )
     test_invalid_api_key(client)
