@@ -6,6 +6,7 @@ import hashlib
 import heapq
 import itertools
 import os
+import re
 import string
 from time import sleep
 from itertools import zip_longest
@@ -116,6 +117,9 @@ def generate_api_key() -> str:
     altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)]).encode("utf-8")
     api_key = base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")
     return api_key
+
+def has_api_key_format(key: str) -> bool:
+    return bool(re.fullmatch(r"([A-Za-z0-9]){32}", key))
 
 def query_chunker(queries: List[Any],
                   id_collector: Optional[Set[int]]=None,

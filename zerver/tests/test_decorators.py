@@ -25,6 +25,7 @@ from zerver.lib.test_classes import (
 from zerver.lib.response import json_response, json_success
 from zerver.lib.users import get_api_key
 from zerver.lib.user_agent import parse_user_agent
+from zerver.lib.utils import generate_api_key, has_api_key_format
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
     RequestVariableConversionError, RequestConfusingParmsError
@@ -1291,6 +1292,17 @@ class TestValidateApiKey(ZulipTestCase):
         zulip_realm = get_realm('zulip')
         self.webhook_bot = get_user('webhook-bot@zulip.com', zulip_realm)
         self.default_bot = get_user('default-bot@zulip.com', zulip_realm)
+
+    def test_has_api_key_format(self) -> None:
+        self.assertFalse(has_api_key_format("TooShort"))
+        # Has an invalid character:
+        self.assertFalse(has_api_key_format("32LONGXXXXXXXXXXXXXXXXXXXXXXXXX-"))
+        # Too long:
+        self.assertFalse(has_api_key_format("33LONGXXXXXXXXXXXXXXXXXXXXXXXXXXX"))
+
+        self.assertTrue(has_api_key_format("VIzRVw2CspUOnEm9Yu5vQiQtJNkvETkp"))
+        for i in range(0, 10):
+            self.assertTrue(has_api_key_format(generate_api_key()))
 
     def test_validate_api_key_if_profile_does_not_exist(self) -> None:
         with self.assertRaises(JsonableError):
