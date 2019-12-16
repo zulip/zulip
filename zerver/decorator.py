@@ -21,9 +21,9 @@ from zerver.lib.exceptions import UnexpectedWebhookEventType
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, is_remote_server
+from zerver.lib.utils import statsd, is_remote_server, has_api_key_format
 from zerver.lib.exceptions import JsonableError, ErrorCode, \
-    InvalidJSONError, InvalidAPIKeyError, \
+    InvalidJSONError, InvalidAPIKeyError, InvalidAPIKeyFormatError, \
     OrganizationAdministratorRequired
 from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import to_non_negative_int
@@ -266,6 +266,9 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
         raise JsonableError(_("Account is not associated with this subdomain"))
 
 def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[str]=None) -> UserProfile:
+    if not has_api_key_format(api_key):
+        raise InvalidAPIKeyFormatError()
+
     try:
         user_profile = get_user_profile_by_api_key(api_key)
     except UserProfile.DoesNotExist:
