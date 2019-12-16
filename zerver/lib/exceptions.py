@@ -216,6 +216,11 @@ class InvalidAPIKeyError(JsonableError):
     def msg_format() -> str:
         return _("Invalid API key")
 
+class InvalidAPIKeyFormatError(InvalidAPIKeyError):
+    @staticmethod
+    def msg_format() -> str:
+        return _("Malformed API key")
+
 class UnexpectedWebhookEventType(JsonableError):
     code = ErrorCode.UNEXPECTED_WEBHOOK_EVENT_TYPE
     data_fields = ['webhook_name', 'event_type']

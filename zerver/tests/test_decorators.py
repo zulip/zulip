@@ -14,7 +14,7 @@ from django.conf import settings
 from zerver.forms import OurAuthenticationForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm, do_set_realm_property
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, InvalidAPIKeyError, InvalidAPIKeyFormatError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
     HostRequestMock,
@@ -291,7 +291,7 @@ class DecoratorTestCase(TestCase):
         webhook_client_name = "ZulipClientNameWebhook"
 
         request = HostRequestMock()
-        request.POST['api_key'] = 'not_existing_api_key'
+        request.POST['api_key'] = 'X'*32
 
         with self.assertRaisesRegex(JsonableError, "Invalid API key"):
             my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
@@ -1306,13 +1306,13 @@ class TestValidateApiKey(ZulipTestCase):
 
     def test_validate_api_key_if_profile_does_not_exist(self) -> None:
         with self.assertRaises(JsonableError):
-            validate_api_key(HostRequestMock(), 'email@doesnotexist.com', 'api_key')
+            validate_api_key(HostRequestMock(), 'email@doesnotexist.com', 'VIzRVw2CspUOnEm9Yu5vQiQtJNkvETkp')
 
     def test_validate_api_key_if_api_key_does_not_match_profile_api_key(self) -> None:
-        with self.assertRaises(JsonableError):
+        with self.assertRaises(InvalidAPIKeyFormatError):
             validate_api_key(HostRequestMock(), self.webhook_bot.email, 'not_32_length')
 
-        with self.assertRaises(JsonableError):
+        with self.assertRaises(InvalidAPIKeyError):
             # We use default_bot's key but webhook_bot's email address to test
             # the logic when an API key is passed and it doesn't belong to the
             # user whose email address has been provided.
