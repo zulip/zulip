@@ -201,7 +201,13 @@ fi
 # don't run dist-upgrade in one click apps to make the
 # installation process more seamless.
 if [ -z "$NO_DIST_UPGRADE" ]; then
-    apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
+    case "$os_id" in
+        Ubuntu|Debian)
+            apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
+            ;;
+        # On CentOS, there is no need to do `yum -y upgrade` because `yum -y
+        # update` already does the same thing.
+    esac
 fi
 
 case "$os_id" in
