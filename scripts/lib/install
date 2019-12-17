@@ -101,15 +101,15 @@ export LANGUAGE="en_US.UTF-8"
 # Check for a supported OS release.
 apt-get install -y lsb-release
 os_info="$(lsb_release --short --id --release --codename)"
-{ read -r os_id; read -r os_release; read -r os_codename; } <<< "$os_info"
+{ read -r os_id; read -r os_release; read -r os_version_id; } <<< "$os_info"
 
-case "$os_codename" in
+case "$os_version_id" in
     xenial|stretch|bionic|buster) ;;
     *)
         set +x
         cat <<EOF
 
-Unsupported OS release: $os_codename
+Unsupported OS release: $os_version_id
 
 Zulip in production is supported only on:
  - Debian 9 "stretch"
@@ -124,7 +124,7 @@ EOF
 esac
 
 if [ "$os_id" = Ubuntu ] && ! apt-cache policy |
-           grep -q "^     release v=$os_release,o=Ubuntu,a=$os_codename,n=$os_codename,l=Ubuntu,c=universe"; then
+           grep -q "^     release v=$os_release,o=Ubuntu,a=$os_version_id,n=$os_version_id,l=Ubuntu,c=universe"; then
     set +x
     cat <<'EOF'
 
