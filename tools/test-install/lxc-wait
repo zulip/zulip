@@ -29,7 +29,7 @@ fi
 # We poll.
 for _ in {1..60}; do
     echo "lxc-wait: $CONTAINER_NAME: polling for boot..." >&2
-    runlevel="$(lxc-attach -n "$CONTAINER_NAME" -- runlevel 2>/dev/null)" \
+    runlevel="$(lxc-attach --clear-env -n "$CONTAINER_NAME" -- runlevel 2>/dev/null)" \
         || { sleep 1; continue; }
     if [ "$runlevel" != "${0%[0-9]}" ]; then
         echo "lxc-wait: $CONTAINER_NAME: booted!" >&2

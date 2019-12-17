@@ -45,7 +45,7 @@ done
 message="$(cat <<EOF
 
 Container:
-  sudo lxc-attach -n $CONTAINER_NAME
+  sudo lxc-attach --clear-env -n $CONTAINER_NAME
 
 Unpacked tree:
   sudo ls $shared_dir/mnt/zulip-server
@@ -73,7 +73,7 @@ lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME" \
 "$THIS_DIR"/lxc-wait -n "$CONTAINER_NAME"
 
 run() {
-    lxc-attach -n "$CONTAINER_NAME" -- "$@"
+    lxc-attach --clear-env -n "$CONTAINER_NAME" -- "$@"
 }
 
 run eatmydata -- /mnt/src/zulip-server/scripts/setup/install --self-signed-cert "${INSTALLER_ARGS[@]}"
