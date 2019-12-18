@@ -91,9 +91,17 @@ class zulip::base {
   ]
 
   # $::memorysize_mb is a string in Facter < 3.0 and a double in Facter ≥ 3.0.
-  # Either way, convert it to an integer.
-  $total_memory_mb_array = scanf("${::memorysize_mb} ", '%i')
-  $total_memory_mb = $total_memory_mb_array[0]
+  # Either way, convert it to an integer in one of two ways, both of which are
+  # stupid, depending on the Puppet version.  (╯°□°）╯︵ ┻━┻
+  case $::puppetversion {
+    /^3\./: {
+      $total_memory_mb = 0 + inline_template('<%= @memorysize_mb.to_i %>')
+    }
+    default: {
+      $total_memory_mb_array = scanf("${::memorysize_mb} ", '%i')
+      $total_memory_mb = $total_memory_mb_array[0]
+    }
+  }
 
   group { 'zulip':
     ensure     => present,
