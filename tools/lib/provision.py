@@ -170,6 +170,7 @@ elif "rhel" in os_families():
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql{0}-server",
             "postgresql{0}",
+            "postgresql{0}-devel",
             "postgresql{0}-pgroonga",
         ]
     ] + REDHAT_VENV_DEPENDENCIES
