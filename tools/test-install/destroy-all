@@ -31,6 +31,5 @@ lxc-ls -f \
   | while read -r c
 do
     echo "$c"
-    lxc-stop -n "$c"
-    lxc-destroy -n "$c"
+    lxc-destroy -f -n "$c"
 done
