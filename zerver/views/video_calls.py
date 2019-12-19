@@ -19,6 +19,7 @@ from requests_oauthlib import OAuth2Session
 from zerver.decorator import REQ, has_request_variables, zulip_login_required
 from zerver.lib.actions import do_set_zoom_token
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.validator import check_dict, check_string
@@ -57,7 +58,10 @@ def get_zoom_sid(request: HttpRequest) -> str:
     # token directly to the Zoom server.
 
     csrf.get_token(request)
-    return (
+    # Use 'mark_sanitized' to cause Pysa to ignore the flow of user controlled
+    # data out of this function. 'request.META' is indeed user controlled, but
+    # post-HMAC ouptut is no longer meaningfully controllable.
+    return mark_sanitized(
         ""
         if getattr(request, "_dont_enforce_csrf_checks", False)
         else salted_hmac("Zulip Zoom sid", request.META["CSRF_COOKIE"]).hexdigest()

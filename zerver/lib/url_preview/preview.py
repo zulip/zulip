@@ -9,6 +9,7 @@ from typing.re import Match
 
 from version import ZULIP_VERSION
 from zerver.lib.cache import cache_with_key, get_cache_with_key, preview_url_cache_key
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import OpenGraphParser, GenericParser
 
@@ -88,7 +89,7 @@ def get_link_embed_data(url: str,
     if data.get('oembed'):
         return data
 
-    response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
+    response = requests.get(mark_sanitized(url), stream=True, headers=HEADERS, timeout=TIMEOUT)
     if response.ok:
         og_data = OpenGraphParser(response.text).extract_data()
         for key in ['title', 'description', 'image']:

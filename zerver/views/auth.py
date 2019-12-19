@@ -30,6 +30,7 @@ from zerver.forms import HomepageForm, OurAuthenticationForm, \
     AuthenticationTokenForm
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
@@ -64,7 +65,10 @@ ExtraContext = Optional[Dict[str, Any]]
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
     is_url_safe = is_safe_url(url=url, allowed_hosts=None)
     if is_url_safe:
-        return urllib.parse.urljoin(redirect_host, url)
+        # Mark as safe to prevent Pysa from surfacing false positives for
+        # open redirects. In this branch, we have already checked that the URL
+        # points to the specified 'redirect_host', or is relative.
+        return urllib.parse.urljoin(redirect_host, mark_sanitized(url))
     else:
         return redirect_host
 
@@ -186,7 +190,10 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
             host = realm.host
         else:
             host = request.get_host()
-        confirmation_link = create_confirmation_link(prereg_user, host,
+        # Mark 'host' as safe for use in a redirect. It's pulled from the
+        # current request or realm, both of which only allow a limited set of
+        # trusted hosts.
+        confirmation_link = create_confirmation_link(prereg_user, mark_sanitized(host),
                                                      Confirmation.USER_REGISTRATION)
         if is_signup:
             return redirect(confirmation_link)

@@ -1,6 +1,7 @@
 import urllib
 from typing import Any, Dict, List
 
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.models import Realm, Stream, UserProfile
 
@@ -97,8 +98,12 @@ def near_pm_message_url(realm: Realm,
     return full_url
 
 def add_query_to_redirect_url(original_url: str, query: str) -> str:
-    return original_url + "?" + query
+    # Using 'mark_sanitized' because user-controlled data after the '?' is
+    # not relevant for open redirects
+    return original_url + "?" + mark_sanitized(query)
 
 def add_query_arg_to_redirect_url(original_url: str, query_arg: str) -> str:
     assert '?' in original_url
-    return original_url + "&" + query_arg
+    # Using 'mark_sanitized' because user-controlled data after the '?' is
+    # not relevant for open redirects
+    return original_url + "&" + mark_sanitized(query_arg)

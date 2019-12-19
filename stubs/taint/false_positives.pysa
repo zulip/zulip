@@ -1,0 +1,59 @@
+# This function ensures that a redirect is only within the specified domain.
+# Assuming that the domain isn't attacker controllable, the result is safe to
+# redirect to
+def zerver.views.auth.get_safe_redirect_to(url, redirect_host) -> Sanitize: ...
+
+# This function was previously the source of an open redirect, but has now been
+# reviewed and patched, so the output should now be safe to redirect to,
+# regardless of the value of the specified 'path'.
+def zerver.lib.thumbnail.generate_thumbnail_url(
+    path,
+    size=...,
+    is_camo_url=...
+) -> Sanitize: ...
+
+# This function returns a version of name that only contains word and space
+# characters, or ., -, _ characters. This should be safe to put into URLs and
+# filesystem operations.
+def zerver.lib.upload.sanitize_name(value) -> Sanitize: ...
+
+# This function accepts two integers and then concatenates them into a path
+# segment. The result should be safe for use in filesystem and other operations.
+def zerver.lib.avatar_hash.user_avatar_path_from_ids(user_profile_id, realm_id) -> Sanitize: ...
+
+# This function creates a list of 'UserMessageLite' objects, which contain only
+# integral IDs and flags. These should safe for use with SQL and other
+# operations.
+def zerver.lib.actions.create_user_messages(
+    message,
+    um_eligible_user_ids,
+    long_term_idle_user_ids,
+    stream_push_user_ids,
+    stream_email_user_ids,
+    mentioned_user_ids,
+    mark_as_read
+) -> Sanitize: ...
+
+# This function is an identity function used for removing taint from variables
+# when there is no convenient way to do it by annotating existing functions.
+def zerver.lib.pysa.mark_sanitized(arg) -> Sanitize: ...
+
+############################
+# Overbroad Approximations #
+############################
+
+# Note that the below functions are overbroad approximations of Sanitizers and
+# could lead to false negatives. They should be replaced with more specific
+# feature-based filtering when that is available through SAPP.
+
+# This function generates a URL pointing to a valid Django endpoint, with
+# arguments properly URL encoded. The resulting URL can usually be used as a
+# part of a redirect or HTTP request without fear of open redirect or SSRF
+# vulnerabilities respectively.
+def django.urls.base.reverse(
+    viewname,
+    urlconf=...,
+    args=...,
+    kwargs=...,
+    current_app=...
+) -> Sanitize: ...

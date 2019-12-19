@@ -28,6 +28,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.validator import check_int, \
     check_short_string, check_long_string, validate_choice_field, check_date, \
     check_url, check_list
@@ -518,7 +519,9 @@ class Realm(models.Model):
 
     @property
     def host(self) -> str:
-        return self.host_for_subdomain(self.subdomain)
+        # Use mark sanitized to prevent false positives from Pysa thinking that
+        # the host is user controlled.
+        return mark_sanitized(self.host_for_subdomain(self.subdomain))
 
     @staticmethod
     def host_for_subdomain(subdomain: str) -> str:
