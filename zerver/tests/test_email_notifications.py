@@ -8,7 +8,7 @@ from django.core import mail
 from django.test import override_settings
 from django_auth_ldap.config import LDAPSearch
 from email.utils import formataddr
-from mock import patch, MagicMock
+from mock import patch
 from typing import List, Optional
 
 from zerver.lib.email_notifications import fix_emojis, handle_missedmessage_emails, \
@@ -136,14 +136,16 @@ class TestMissedMessages(ZulipTestCase):
     def _get_tokens(self) -> List[str]:
         return [str(random.getrandbits(32)) for _ in range(30)]
 
-    def _test_cases(self, tokens: List[str], msg_id: int, body: str, email_subject: str,
+    def _test_cases(self, msg_id: int, body: str, email_subject: str,
                     send_as_user: bool, verify_html_body: bool=False,
                     show_message_content: bool=True,
                     verify_body_does_not_include: Optional[List[str]]=None,
                     trigger: str='') -> None:
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
-        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id, 'trigger': trigger}])
+        tokens = self._get_tokens()
+        with patch('zerver.lib.email_mirror.generate_random_token', side_effect=tokens):
+            handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id, 'trigger': trigger}])
         if settings.EMAIL_GATEWAY_PATTERN != "":
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t,) for t in tokens]
             reply_to_emails = [formataddr(("Zulip", address)) for address in reply_to_addresses]
@@ -166,13 +168,7 @@ class TestMissedMessages(ZulipTestCase):
             for text in verify_body_does_not_include:
                 self.assertNotIn(text, self.normalize_string(msg.body))
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _realm_name_in_missed_message_email_subject(self,
-                                                    realm_name_in_notifications: bool,
-                                                    mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def _realm_name_in_missed_message_email_subject(self, realm_name_in_notifications: bool) -> None:
         msg_id = self.send_personal_message(
             self.example_email('othello'),
             self.example_email('hamlet'),
@@ -183,15 +179,10 @@ class TestMissedMessages(ZulipTestCase):
 
         if realm_name_in_notifications:
             email_subject = 'PMs with Othello, the Moor of Venice [Zulip Dev]'
-        self._test_cases(tokens, msg_id, body, email_subject, False)
+        self._test_cases(msg_id, body, email_subject, False)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_missed_stream_messages_mention(self, send_as_user: bool,
-                                                         mock_random_token: MagicMock,
                                                          show_message_content: bool=True) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
         for i in range(0, 11):
             self.send_stream_message(self.example_email('othello'), "Denmark", content=str(i))
         self.send_stream_message(
@@ -213,18 +204,13 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_does_not_include = ['Denmark > test', 'Othello, the Moor of Venice',
                                             '1 2 3 4 5 6 7 8 9 10 @**King Hamlet**', 'private', 'group',
                                             'Reply to this email directly, or view it in Zulip']
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user,
+        self._test_cases(msg_id, body, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include,
                          trigger='mentioned')
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_missed_stream_messages_wildcard_mention(self, send_as_user: bool,
-                                                                  mock_random_token: MagicMock,
                                                                   show_message_content: bool=True) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
         for i in range(1, 6):
             self.send_stream_message(self.example_email('othello'), "Denmark", content=str(i))
         self.send_stream_message(
@@ -246,17 +232,12 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_does_not_include = ['Denmark > test', 'Othello, the Moor of Venice',
                                             '1 2 3 4 5 @**all**', 'private', 'group',
                                             'Reply to this email directly, or view it in Zulip']
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user,
+        self._test_cases(msg_id, body, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include,
                          trigger='wildcard_mentioned')
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_missed_stream_messages_email_notify(self, send_as_user: bool,
-                                                              mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def _extra_context_in_missed_stream_messages_email_notify(self, send_as_user: bool) -> None:
         for i in range(0, 11):
             self.send_stream_message(self.example_email('othello'), "Denmark", content=str(i))
         self.send_stream_message(
@@ -268,14 +249,9 @@ class TestMissedMessages(ZulipTestCase):
         body = ("Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 12 -- "
                 "You are receiving this because you have email notifications enabled for this stream.")
         email_subject = '#Denmark > test'
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user, trigger='stream_email_notify')
+        self._test_cases(msg_id, body, email_subject, send_as_user, trigger='stream_email_notify')
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_missed_stream_messages_mention_two_senders(
-            self, send_as_user: bool, mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def _extra_context_in_missed_stream_messages_mention_two_senders(self, send_as_user: bool) -> None:
         for i in range(0, 3):
             self.send_stream_message(self.example_email('cordelia'), "Denmark", str(i))
         msg_id = self.send_stream_message(
@@ -284,15 +260,10 @@ class TestMissedMessages(ZulipTestCase):
         body = ("Cordelia Lear: 0 1 2 Othello, the Moor of Venice: @**King Hamlet** -- "
                 "You are receiving this because you were mentioned in Zulip Dev.")
         email_subject = '#Denmark > test'
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user, trigger='mentioned')
+        self._test_cases(msg_id, body, email_subject, send_as_user, trigger='mentioned')
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_personal_missed_stream_messages(self, send_as_user: bool,
-                                                          mock_random_token: MagicMock,
                                                           show_message_content: bool=True) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
         msg_id = self.send_personal_message(
             self.example_email('othello'),
             self.example_email('hamlet'),
@@ -308,16 +279,11 @@ class TestMissedMessages(ZulipTestCase):
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Othello, the Moor of Venice', 'Extremely personal message!',
                                             'mentioned', 'group', 'Reply to this email directly, or view it in Zulip']
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user,
+        self._test_cases(msg_id, body, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _reply_to_email_in_personal_missed_stream_messages(self, send_as_user: bool,
-                                                           mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def _reply_to_email_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_personal_message(
             self.example_email('othello'),
             self.example_email('hamlet'),
@@ -325,14 +291,9 @@ class TestMissedMessages(ZulipTestCase):
         )
         body = 'Reply to this email directly, or view it in Zulip'
         email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user)
+        self._test_cases(msg_id, body, email_subject, send_as_user)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _reply_warning_in_personal_missed_stream_messages(self, send_as_user: bool,
-                                                          mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def _reply_warning_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_personal_message(
             self.example_email('othello'),
             self.example_email('hamlet'),
@@ -340,15 +301,10 @@ class TestMissedMessages(ZulipTestCase):
         )
         body = 'Do not reply to this message.'
         email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user)
+        self._test_cases(msg_id, body, email_subject, send_as_user)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_huddle_missed_stream_messages_two_others(self, send_as_user: bool,
-                                                                   mock_random_token: MagicMock,
                                                                    show_message_content: bool=True) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
         msg_id = self.send_huddle_message(
             self.example_email('othello'),
             [
@@ -368,16 +324,11 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_does_not_include = ['Iago', 'Othello, the Moor of Venice Othello, the Moor of Venice',
                                             'Group personal message!', 'mentioned',
                                             'Reply to this email directly, or view it in Zulip']
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user,
+        self._test_cases(msg_id, body, email_subject, send_as_user,
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_huddle_missed_stream_messages_three_others(self, send_as_user: bool,
-                                                                     mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def _extra_context_in_huddle_missed_stream_messages_three_others(self, send_as_user: bool) -> None:
         msg_id = self.send_huddle_message(
             self.example_email('othello'),
             [
@@ -390,14 +341,9 @@ class TestMissedMessages(ZulipTestCase):
 
         body = 'Othello, the Moor of Venice: Group personal message! -- Reply'
         email_subject = 'Group PMs with Cordelia Lear, Iago, and Othello, the Moor of Venice'
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user)
+        self._test_cases(msg_id, body, email_subject, send_as_user)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_huddle_missed_stream_messages_many_others(self, send_as_user: bool,
-                                                                    mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def _extra_context_in_huddle_missed_stream_messages_many_others(self, send_as_user: bool) -> None:
         msg_id = self.send_huddle_message(self.example_email('othello'),
                                           [self.example_email('hamlet'),
                                            self.example_email('iago'),
@@ -407,14 +353,9 @@ class TestMissedMessages(ZulipTestCase):
 
         body = 'Othello, the Moor of Venice: Group personal message! -- Reply'
         email_subject = 'Group PMs with Cordelia Lear, Iago, and 2 others'
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user)
+        self._test_cases(msg_id, body, email_subject, send_as_user)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _deleted_message_in_missed_stream_messages(self, send_as_user: bool,
-                                                   mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def _deleted_message_in_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_stream_message(
             self.example_email('othello'), "denmark",
             '@**King Hamlet** to be deleted')
@@ -428,12 +369,7 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _deleted_message_in_personal_missed_stream_messages(self, send_as_user: bool,
-                                                            mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def _deleted_message_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_personal_message(self.example_email('othello'),
                                             self.example_email('hamlet'),
                                             'Extremely personal message! to be deleted!')
@@ -447,12 +383,7 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _deleted_message_in_huddle_missed_stream_messages(self, send_as_user: bool,
-                                                          mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def _deleted_message_in_huddle_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_huddle_message(
             self.example_email('othello'),
             [
@@ -615,10 +546,7 @@ class TestMissedMessages(ZulipTestCase):
         mail.outbox = []
         self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_realm_emoji_in_missed_message(self, mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
+    def test_realm_emoji_in_missed_message(self) -> None:
         realm = get_realm("zulip")
 
         msg_id = self.send_personal_message(
@@ -629,13 +557,9 @@ class TestMissedMessages(ZulipTestCase):
             realm.id, realm_emoji_id,)
         body = '<img alt=":green_tick:" src="%s" title="green tick" style="height: 20px;">' % (realm_emoji_url,)
         email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
+        self._test_cases(msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_emojiset_in_missed_message(self, mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def test_emojiset_in_missed_message(self) -> None:
         hamlet = self.example_user('hamlet')
         hamlet.emojiset = 'twitter'
         hamlet.save(update_fields=['emojiset'])
@@ -644,13 +568,9 @@ class TestMissedMessages(ZulipTestCase):
             'Extremely personal message with a hamburger :hamburger:!')
         body = '<img alt=":hamburger:" src="http://zulip.testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">'
         email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
+        self._test_cases(msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_stream_link_in_missed_message(self, mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def test_stream_link_in_missed_message(self) -> None:
         msg_id = self.send_personal_message(
             self.example_email('othello'), self.example_email('hamlet'),
             'Come and join us in #**Verona**.')
@@ -658,13 +578,9 @@ class TestMissedMessages(ZulipTestCase):
         href = "http://zulip.testserver/#narrow/stream/{stream_id}-Verona".format(stream_id=stream_id)
         body = '<a class="stream" data-stream-id="5" href="{href}">#Verona</a'.format(href=href)
         email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
+        self._test_cases(msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_sender_name_in_missed_message(self, mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def test_sender_name_in_missed_message(self) -> None:
         hamlet = self.example_user('hamlet')
         msg_id_1 = self.send_stream_message(self.example_email('iago'),
                                             "Denmark",
@@ -696,11 +612,7 @@ class TestMissedMessages(ZulipTestCase):
         self.assertIn('>\n                    \n                        <p>Hello</p>\n',
                       mail.outbox[2].alternatives[0][0])
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_multiple_missed_personal_messages(self, mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def test_multiple_missed_personal_messages(self) -> None:
         hamlet = self.example_user('hamlet')
         msg_id_1 = self.send_personal_message(self.example_email('othello'),
                                               hamlet.email,
@@ -719,11 +631,7 @@ class TestMissedMessages(ZulipTestCase):
         email_subject = 'PMs with Iago'
         self.assertEqual(mail.outbox[1].subject, email_subject)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_multiple_stream_messages(self, mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
+    def test_multiple_stream_messages(self) -> None:
         hamlet = self.example_user('hamlet')
         msg_id_1 = self.send_stream_message(self.example_email('othello'),
                                             "Denmark",
@@ -740,12 +648,8 @@ class TestMissedMessages(ZulipTestCase):
         email_subject = '#Denmark > test'
         self.assertEqual(mail.outbox[0].subject, email_subject)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_multiple_stream_messages_and_mentions(self, mock_random_token: MagicMock) -> None:
+    def test_multiple_stream_messages_and_mentions(self) -> None:
         """Subject should be stream name and topic as usual."""
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
         hamlet = self.example_user('hamlet')
         msg_id_1 = self.send_stream_message(self.example_email('iago'),
                                             "Denmark",
@@ -762,13 +666,9 @@ class TestMissedMessages(ZulipTestCase):
         email_subject = '#Denmark > test'
         self.assertEqual(mail.outbox[0].subject, email_subject)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_message_access_in_emails(self, mock_random_token: MagicMock) -> None:
+    def test_message_access_in_emails(self) -> None:
         # Messages sent to a protected history-private stream shouldn't be
         # accessible/available in emails before subscribing
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
         stream_name = "private_stream"
         self.make_stream(stream_name, invite_only=True,
                          history_public_to_subscribers=False)
@@ -801,12 +701,8 @@ class TestMissedMessages(ZulipTestCase):
         self.assertIn('After subscribing', email_text)
         self.assertIn('@**King Hamlet**', email_text)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_stream_mentions_multiple_people(self, mock_random_token: MagicMock) -> None:
+    def test_stream_mentions_multiple_people(self) -> None:
         """Subject should be stream name and topic as usual."""
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
         hamlet = self.example_user('hamlet')
         msg_id_1 = self.send_stream_message(self.example_email('iago'),
                                             "Denmark",
@@ -827,12 +723,8 @@ class TestMissedMessages(ZulipTestCase):
         email_subject = '#Denmark > test'
         self.assertEqual(mail.outbox[0].subject, email_subject)
 
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_multiple_stream_messages_different_topics(self, mock_random_token: MagicMock) -> None:
+    def test_multiple_stream_messages_different_topics(self) -> None:
         """Should receive separate emails for each topic within a stream."""
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
         hamlet = self.example_user('hamlet')
         msg_id_1 = self.send_stream_message(self.example_email('othello'),
                                             "Denmark",
