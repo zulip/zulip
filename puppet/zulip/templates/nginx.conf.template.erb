@@ -62,7 +62,7 @@ http {
     ssl_prefer_server_ciphers off;
     ssl_stapling on;
     ssl_stapling_verify on;
-    ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+    ssl_trusted_certificate <%= @ca_crt %>;
 
 
     include /etc/nginx/conf.d/*.conf;

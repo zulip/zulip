@@ -58,6 +58,11 @@ class zulip::nginx {
     source  => 'puppet:///modules/zulip/nginx/dhparam.pem',
   }
 
+  if $::osfamily == 'debian' {
+      $ca_crt = '/etc/ssl/certs/ca-certificates.crt'
+  } else {
+      $ca_crt = '/etc/pki/tls/certs/ca-bundle.crt'
+  }
   file { '/etc/nginx/nginx.conf':
     ensure  => file,
     require => Package[$zulip::common::nginx, 'ca-certificates'],
