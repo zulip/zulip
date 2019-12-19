@@ -50,6 +50,9 @@ exports.bot_error = function (bot_id, xhr) {
 };
 
 function add_bot_row(info) {
+    if (info.type === "Outgoing webhook") {
+        info.token = bot_data.get_services(info.user_id)[0].token;
+    }
     const row = $(render_bot_avatar_row(info));
     if (info.is_active) {
         $('#active_bots_list').append(row);
@@ -86,6 +89,7 @@ exports.render_bots = function () {
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
             is_active: elem.is_active,
+            is_outgoing_webhook: elem.bot_type === 3,
             zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
         });
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;

@@ -2,7 +2,10 @@
     <div class="image overflow-hidden">
         <img src="{{avatar_url}}" class="avatar" />
         <div class="details">
-            <div class="name">{{name}}</div>
+            <div class="bot-name-type">
+                <div class="type">{{type}}</div>
+                <div class="name" title={{name}}>{{name}}</div>
+            </div>
             {{#if is_active}}
             <div class="edit-bot-buttons">
                 <button type="submit" class="btn open_edit_bot_form" data-sidebar-form="edit-bot" title="{{t 'Edit bot' }}" data-email="{{email}}">
@@ -22,28 +25,30 @@
         </div>
     </div>
     <div class="bot_info" data-user-id="{{user_id}}">
-        <div class="type">
-            <div class="field">{{t "Bot type" }}</div>
-            <div class="value">{{type}}</div>
-        </div>
         <div class="email">
             <div class="field">{{t "Bot email" }}</div>
             <div class="value">{{email}}</div>
         </div>
         {{#if is_active}}
-        <div class="api_key">
-            <span class="field">{{t "API key" }}</span>
-            <div class="api-key-value-and-button no-select">
-                <!-- have the `.text-select` in `.no-select` so that the value doesn't have trailing whitespace. -->
-                <span class="value text-select">{{api_key}}</span>
-                <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
-                    <i class="fa fa-refresh" aria-hidden="true"></i>
-                </button>
+            {{#if is_outgoing_webhook}}
+            <div class="token">
+                <div class="field">{{t "Bot token" }}</div>
+                <div class="value">{{token}}</div>
             </div>
-            <div class="api_key_error text-error"></div>
-        </div>
+            {{/if}}
+            <div class="api_key">
+                <span class="field">{{t "API key" }}</span>
+                <div class="api-key-value-and-button no-select">
+                    <!-- have the `.text-select` in `.no-select` so that the value doesn't have trailing whitespace. -->
+                    <span class="value text-select">{{api_key}}</span>
+                    <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
+                        <i class="fa fa-refresh" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="api_key_error text-error"></div>
+            </div>
         {{else}}
-        <button class="button round btn-warning reactivate_bot" title="{{t 'Reactivate bot' }}" data-user-id="{{user_id}}">{{t "Reactivate bot" }}</button>
+            <button class="button round btn-warning reactivate_bot" title="{{t 'Reactivate bot' }}" data-user-id="{{user_id}}">{{t "Reactivate bot" }}</button>
         {{/if}}
         <div class="bot_error alert alert-error hide"></div>
     </div>
