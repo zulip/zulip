@@ -45,6 +45,7 @@ from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQ
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
+from zerver.lib.pysa import mark_sanitized
 
 import os
 import ujson
@@ -204,7 +205,9 @@ class QueueProcessingWorker(ABC):
         self._log_problem()
         if not os.path.exists(settings.QUEUE_ERROR_DIR):
             os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
-        fname = f'{self.queue_name}.errors'
+        # Use 'mark_sanitized' to prevent Pysa from detecting this false positive
+        # flow. 'queue_name' is always a constant string.
+        fname = mark_sanitized(f'{self.queue_name}.errors')
         fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
         line = f'{time.asctime()}\t{ujson.dumps(events)}\n'
         lock_fn = fn + '.lock'

@@ -98,7 +98,9 @@ def sanitize_name(value: str) -> str:
     """
     value = unicodedata.normalize('NFKC', value)
     value = re.sub(r'[^\w\s._-]', '', value, flags=re.U).strip()
-    return mark_safe(re.sub(r'[-\s]+', '-', value, flags=re.U))
+    value = re.sub(r'[-\s]+', '-', value, flags=re.U)
+    assert value not in {'', '.', '..'}
+    return mark_safe(value)
 
 def random_name(bytes: int=60) -> str:
     return base64.urlsafe_b64encode(os.urandom(bytes)).decode('utf-8')
@@ -653,6 +655,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
 def write_local_file(type: str, path: str, file_data: bytes) -> None:
     file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, 'wb') as f:
         f.write(file_data)

@@ -27,6 +27,7 @@ from zerver.decorator import require_post, \
 from zerver.lib.create_user import get_role_for_new_user
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.sessions import get_expirable_session_var
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
 from zerver.lib.url_encoding import add_query_to_redirect_url
@@ -408,7 +409,9 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
         return finish_desktop_flow(request, user_profile, desktop_flow_otp)
 
     do_login(request, user_profile)
-    return HttpResponseRedirect(user_profile.realm.uri + reverse('zerver.views.home.home'))
+    # Using 'mark_sanitized' to work around false positive where Pysa thinks
+    # that 'user_profile' is user-controlled
+    return HttpResponseRedirect(mark_sanitized(user_profile.realm.uri) + reverse('zerver.views.home.home'))
 
 def prepare_activation_url(email: str, request: HttpRequest,
                            realm_creation: bool=False,

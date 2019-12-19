@@ -31,6 +31,8 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
     RealmAuditLog, UserHotspot, MutedTopic, Service, UserGroup, \
     UserGroupMembership, BotStorageData, BotConfigData
+from zerver.lib.pysa import mark_sanitized
+
 import zerver.lib.upload
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Union
@@ -1239,7 +1241,11 @@ def _save_s3_object_to_file(key: ServiceResource, output_dir: str, processing_av
     if "../" in filename:
         raise AssertionError(f"Suspicious file with invalid format {filename}")
 
-    dirname = os.path.dirname(filename)
+    # Use 'mark_sanitized' to cause Pysa to ignore the flow of user controlled
+    # data into the filesystem sink, because we've already prevented directory
+    # traversal with our assertion above.
+    dirname = mark_sanitized(os.path.dirname(filename))
+
     if not os.path.exists(dirname):
         os.makedirs(dirname)
     key.download_file(filename)
@@ -1303,16 +1309,22 @@ def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
     count = 0
     records = []
     for attachment in Attachment.objects.filter(realm_id=realm.id):
-        local_path = os.path.join(local_dir, attachment.path_id)
-        output_path = os.path.join(output_dir, attachment.path_id)
+        # Use 'mark_sanitized' to work around false positive caused by Pysa
+        # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
+        # are user controlled
+        path_id = mark_sanitized(attachment.path_id)
+
+        local_path = os.path.join(local_dir, path_id)
+        output_path = os.path.join(output_dir, path_id)
+
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         shutil.copy2(local_path, output_path)
         stat = os.stat(local_path)
         record = dict(realm_id=attachment.realm_id,
                       user_profile_id=attachment.owner.id,
                       user_profile_email=attachment.owner.email,
-                      s3_path=attachment.path_id,
-                      path=attachment.path_id,
+                      s3_path=path_id,
+                      path=path_id,
                       size=stat.st_size,
                       last_modified=stat.st_mtime,
                       content_type=None)
@@ -1398,8 +1410,15 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
             realm_id=realm.id,
             emoji_file_name=realm_emoji.file_name
         )
+
+        # Use 'mark_sanitized' to work around false positive caused by Pysa
+        # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
+        # are user controlled
+        emoji_path = mark_sanitized(emoji_path)
+
         local_path = os.path.join(local_dir, emoji_path)
         output_path = os.path.join(output_dir, emoji_path)
+
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         shutil.copy2(local_path, output_path)
         # Realm Emoji author is optional.

@@ -50,6 +50,7 @@ from zerver.lib.message import (
     truncate_body,
     truncate_topic,
 )
+from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_data
 from zerver.lib.retention import move_messages_to_archive
@@ -5146,6 +5147,11 @@ def check_add_realm_emoji(realm: Realm,
     realm_emoji.save()
 
     emoji_file_name = get_emoji_file_name(image_file.name, realm_emoji.id)
+
+    # The only user-controlled portion of 'emoji_file_name' is an extension,
+    # which can not contain '..' or '/' or '\', making it difficult to exploit
+    emoji_file_name = mark_sanitized(emoji_file_name)
+
     emoji_uploaded_successfully = False
     try:
         upload_emoji_image(image_file, emoji_file_name, author)
