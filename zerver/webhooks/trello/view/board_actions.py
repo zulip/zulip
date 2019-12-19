@@ -39,7 +39,7 @@ def get_proper_action(payload: Mapping[str, Any], action_type: Optional[str]) ->
             return None
         elif data['old']['name']:
             return CHANGE_NAME
-        raise UnknownUpdateBoardAction()
+        raise UnknownUpdateBoardAction(action_type)
     return action_type
 
 def get_subject(payload: Mapping[str, Any]) -> str:
