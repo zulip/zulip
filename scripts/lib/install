@@ -99,24 +99,18 @@ export LANG="en_US.UTF-8"
 export LANGUAGE="en_US.UTF-8"
 
 # Check for a supported OS release.
-if [ -f /etc/debian_version ]; then
-    apt-get install -y lsb-release
-    os_info="$(lsb_release --short --id --release --codename)"
-    { read -r os_id; read -r os_release; read -r os_version_id; } <<< "$os_info"
-elif [ -f /etc/os-release ]; then
-    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$VERSION_ID")"
-    { read -r os_id; read -r os_version_id; } <<< "$os_info"
-else
-    export os_version_id="unsupported"
+if [ -f /etc/os-release ]; then
+    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$VERSION_ID" "$VERSION_CODENAME")"
+    { read -r os_id; read -r os_version_id; read -r os_version_codename; } <<< "$os_info"
 fi
 
-case "$os_version_id" in
-    xenial|stretch|bionic|buster) ;;
+case "$os_id$os_version_id" in
+    ubuntu16.04|ubuntu18.04|debian9|debian10) ;;
     *)
         set +x
         cat <<EOF
 
-Unsupported OS release: $os_version_id
+Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
  - Debian 9 "stretch"
@@ -130,8 +124,8 @@ EOF
         exit 1
 esac
 
-if [ "$os_id" = Ubuntu ] && ! apt-cache policy |
-           grep -q "^     release v=$os_release,o=Ubuntu,a=$os_version_id,n=$os_version_id,l=Ubuntu,c=universe"; then
+if [ "$os_id" = ubuntu ] && ! apt-cache policy |
+           grep -q "^     release v=$os_version_id,o=Ubuntu,a=$os_version_codename,n=$os_version_codename,l=Ubuntu,c=universe"; then
     set +x
     cat <<'EOF'
 
@@ -162,7 +156,7 @@ fi
 
 # Do package update, e.g. do `apt-get update` on Debian
 case "$os_id" in
-    Ubuntu|Debian)
+    ubuntu|debian)
         # setup-apt-repo does an `apt-get update`
         "$ZULIP_PATH"/scripts/lib/setup-apt-repo
         ;;
@@ -202,7 +196,7 @@ fi
 # installation process more seamless.
 if [ -z "$NO_DIST_UPGRADE" ]; then
     case "$os_id" in
-        Ubuntu|Debian)
+        ubuntu|debian)
             apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
             ;;
         # On CentOS, there is no need to do `yum -y upgrade` because `yum -y
@@ -211,7 +205,7 @@ if [ -z "$NO_DIST_UPGRADE" ]; then
 fi
 
 case "$os_id" in
-    Ubuntu|Debian)
+    ubuntu|debian)
         if ! apt-get install -y \
             puppet git curl wget jq \
             python python3 python-six python3-six crudini \
@@ -331,7 +325,7 @@ fi
 
 # These server restarting bits should be moveable into puppet-land, ideally
 case "$os_id" in
-    Ubuntu|Debian)
+    ubuntu|debian)
         apt-get -y upgrade
         ;;
     centos)
