@@ -4,8 +4,9 @@ import base64
 import os
 import sys
 import urllib
-from urllib.parse import urljoin, urlsplit, urlunsplit
+from urllib.parse import urljoin
 from django.conf import settings
+from django.utils.http import is_safe_url
 from libthumbor import CryptoURL
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath('__file__'))))
@@ -20,8 +21,7 @@ def is_thumbor_enabled() -> bool:
     return settings.THUMBOR_URL != ''
 
 def user_uploads_or_external(url: str) -> bool:
-    u = urlsplit(url)
-    return u.scheme != "" or u.netloc != "" or u.path.startswith("/user_uploads/")
+    return not is_safe_url(url) or url.startswith("/user_uploads/")
 
 def get_source_type(url: str) -> str:
     if not url.startswith('/user_uploads/'):
@@ -36,15 +36,14 @@ def generate_thumbnail_url(path: str,
                            size: str='0x0',
                            is_camo_url: bool=False) -> str:
     path = urljoin("/", path)
-    u = urlsplit(path)
 
     if not is_thumbor_enabled():
-        if u.scheme == "" and u.netloc == "":
-            return urlunsplit(u)
+        if is_safe_url(path):
+            return path
         return get_camo_url(path)
 
-    if u.scheme == "" and u.netloc == "" and not u.path.startswith("/user_uploads/"):
-        return urlunsplit(u)
+    if is_safe_url(path) and not path.startswith("/user_uploads/"):
+        return path
 
     source_type = get_source_type(path)
     safe_url = base64.urlsafe_b64encode(path.encode()).decode('utf-8')
