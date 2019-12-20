@@ -1,6 +1,6 @@
 from typing import Any, Dict, Mapping, Optional, Tuple
 
-from .exceptions import UnknownUpdateCardAction
+from zerver.lib.exceptions import UnexpectedWebhookEventType
 
 SUPPORTED_CARD_ACTIONS = [
     u'updateCard',
@@ -104,7 +104,7 @@ def get_proper_action(payload: Mapping[str, Any], action_type: str) -> Optional[
         # within a single list
         if old_data.get('pos'):
             return None
-        raise UnknownUpdateCardAction(action_type)
+        raise UnexpectedWebhookEventType("Trello", action_type)
 
     return action_type
 
