@@ -1,7 +1,11 @@
 from django.http import HttpResponse, HttpRequest
-from typing import Optional
+from typing import Optional, Union
 
 from django.utils.translation import ugettext as _
+from django.utils.timezone import (
+    now as timezone_now,
+    timedelta
+)
 from zerver.lib.actions import do_mute_topic, do_unmute_topic
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
@@ -19,7 +23,8 @@ from zerver.models import UserProfile
 def mute_topic(user_profile: UserProfile,
                stream_id: Optional[int],
                stream_name: Optional[str],
-               topic_name: str) -> HttpResponse:
+               topic_name: str,
+               scheduled_timestamp: Union[str, None] = None) -> HttpResponse:
     if stream_name is not None:
         (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
     else:
@@ -29,7 +34,7 @@ def mute_topic(user_profile: UserProfile,
     if topic_is_muted(user_profile, stream.id, topic_name):
         return json_error(_("Topic already muted"))
 
-    do_mute_topic(user_profile, stream, recipient, topic_name)
+    do_mute_topic(user_profile, stream, recipient, topic_name, scheduled_timestamp)
     return json_success()
 
 def unmute_topic(user_profile: UserProfile,
@@ -56,9 +61,14 @@ def update_muted_topic(request: HttpRequest,
                        stream_id: Optional[int]=REQ(validator=check_int, default=None),
                        stream: Optional[str]=REQ(default=None),
                        topic: str=REQ(),
+                       duration: str=REQ(default=''),
                        op: str=REQ()) -> HttpResponse:
 
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
+    if duration != "":
+        scheduled_timestamp = timezone_now() + timedelta(seconds=int(duration))  # nocoverage
+    else:
+        scheduled_timestamp = None
 
     if op == 'add':
         return mute_topic(
@@ -66,6 +76,7 @@ def update_muted_topic(request: HttpRequest,
             stream_id=stream_id,
             stream_name=stream,
             topic_name=topic,
+            scheduled_timestamp=scheduled_timestamp,
         )
     elif op == 'remove':
         return unmute_topic(

@@ -1756,6 +1756,13 @@ paths:
           type: string
         example: dinner
         required: true
+      - name: duration
+        in: query
+        description: The duration in seconds the topic should be muted
+        schema:
+          type: string
+        example: 120
+        required: true
       - name: op
         in: query
         description: Whether to mute (`add`) or unmute (`remove`) the provided

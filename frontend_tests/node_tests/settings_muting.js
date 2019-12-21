@@ -24,15 +24,15 @@ run_test('settings', () => {
 
     settings_muting.set_up();
 
-    const click_handler = $('body').get_on_handler('click', '.settings-unmute-topic');
+    let click_handler = $('body').get_on_handler('click', '.settings-unmute-topic');
     assert.equal(typeof click_handler, 'function');
 
     const event = {
         stopImmediatePropagation: noop,
     };
 
-    const fake_this = $.create('fake.settings-unmute-topic');
-    const tr_html = $('tr[data-topic="js"]');
+    let fake_this = $.create('fake.settings-unmute-topic');
+    let tr_html = $('tr[data-topic="js"]');
     fake_this.closest = function (opts) {
         assert.equal(opts, 'tr');
         return tr_html;
@@ -58,6 +58,41 @@ run_test('settings', () => {
     };
     click_handler.call(fake_this, event);
     assert(unmute_called);
+    assert(set_up_ui_called);
+    assert.equal(data_called, 2);
+
+    // temporary tests to get coverage
+    click_handler = $('body').get_on_handler('click', '.settings-mute-topic');
+    assert.equal(typeof click_handler, 'function');
+
+    fake_this = $.create('fake.settings-mute-topic');
+    tr_html = $('tr[data-topic="js"]');
+    fake_this.closest = function (opts) {
+        assert.equal(opts, 'tr');
+        return tr_html;
+    };
+
+    data_called = 0;
+    tr_html.attr = function (opts) {
+        if (opts === 'data-stream-id') {
+            data_called += 1;
+            return frontend.stream_id;
+        }
+        if (opts === 'data-topic') {
+            data_called += 1;
+            return 'js';
+        }
+    };
+
+    let mute_called = false;
+    muting_ui.mute = function (stream_id, topic) {
+        assert.equal(stream_id, frontend.stream_id);
+        assert.equal(topic, 'js');
+        mute_called = true;
+    };
+
+    click_handler.call(fake_this, event);
+    assert(mute_called);
     assert(set_up_ui_called);
     assert.equal(data_called, 2);
 });

@@ -146,6 +146,7 @@ cmds = [['./manage.py', 'runserver'] +
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates'],
         ['./manage.py', 'deliver_scheduled_messages'],
+        ['./manage.py', 'perform_scheduled_unmutes'],
         ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
          '-p', '%s' % (thumbor_port,)]]
 if options.test:

@@ -5306,8 +5306,9 @@ def do_set_alert_words(user_profile: UserProfile, alert_words: List[str]) -> Non
     set_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, alert_words)
 
-def do_mute_topic(user_profile: UserProfile, stream: Stream, recipient: Recipient, topic: str) -> None:
-    add_topic_mute(user_profile, stream.id, recipient.id, topic)
+def do_mute_topic(user_profile: UserProfile, stream: Stream, recipient: Recipient, topic: str,
+                  scheduled_timestamp: Union[str, None] = None) -> None:
+    add_topic_mute(user_profile, stream.id, recipient.id, topic, scheduled_timestamp)
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 

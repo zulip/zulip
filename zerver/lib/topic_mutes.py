@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from zerver.lib.topic import (
     topic_match_sa,
@@ -50,12 +50,14 @@ def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[str]]) ->
             topic_name=topic_name,
         )
 
-def add_topic_mute(user_profile: UserProfile, stream_id: int, recipient_id: int, topic_name: str) -> None:
+def add_topic_mute(user_profile: UserProfile, stream_id: int, recipient_id: int, topic_name: str,
+                   scheduled_timestamp: Union[str, None]=None) -> None:
     MutedTopic.objects.create(
         user_profile=user_profile,
         stream_id=stream_id,
         recipient_id=recipient_id,
         topic_name=topic_name,
+        scheduled_timestamp=scheduled_timestamp,
     )
 
 def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str) -> None:

@@ -1,5 +1,12 @@
 <tr data-stream-id="{{stream_id}}" data-topic="{{topic}}">
     <td>{{stream}}</td>
     <td>{{topic}}</td>
-    <td><a class="settings-unmute-topic">Unmute</a></td>
+    <td>
+        <select name="mute_duration" id={{ this.mute_duration_id }}>
+            {{#each mute_duration}}
+            <option value='{{ this.code }}'>{{ this.description }}</option>
+            {{/each}}
+        </select>
+    </td>
+    <td><a class="settings-mute-topic">Mute</a> / <a class="settings-unmute-topic">Unmute</a></td>
 </tr>

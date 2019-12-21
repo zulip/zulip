@@ -3,13 +3,13 @@ const FoldDict = require('./fold_dict').FoldDict;
 
 let muted_topics = new Dict();
 
-exports.add_muted_topic = function (stream_id, topic) {
+exports.add_muted_topic = function (stream_id, topic, duration = "") {
     let sub_dict = muted_topics.get(stream_id);
     if (!sub_dict) {
         sub_dict = new FoldDict();
         muted_topics.set(stream_id, sub_dict);
     }
-    sub_dict.set(topic, true);
+    sub_dict.set(topic, duration);
 };
 
 exports.remove_muted_topic = function (stream_id, topic) {
@@ -24,6 +24,10 @@ exports.is_topic_muted = function (stream_id, topic) {
         return false;
     }
     const sub_dict = muted_topics.get(stream_id);
+    if (typeof sub_dict !== 'undefined' &&
+    typeof sub_dict.get(topic) !== 'undefined') {
+        return sub_dict && true;
+    }
     return sub_dict && sub_dict.get(topic);
 };
 

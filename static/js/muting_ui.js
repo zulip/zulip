@@ -22,10 +22,11 @@ exports.rerender = function () {
     }
 };
 
-exports.persist_mute = function (stream_id, topic_name) {
+exports.persist_mute = function (stream_id, topic_name, duration = "") {
     const data = {
         stream_id: stream_id,
         topic: topic_name,
+        duration: duration,
         op: 'add',
     };
     last_topic_update = timestamp_ms();
@@ -36,10 +37,11 @@ exports.persist_mute = function (stream_id, topic_name) {
     });
 };
 
-exports.persist_unmute = function (stream_id, topic_name) {
+exports.persist_unmute = function (stream_id, topic_name, duration = "") {
     const data = {
         stream_id: stream_id,
         topic: topic_name,
+        duration: duration,
         op: 'remove',
     };
     last_topic_update = timestamp_ms();
@@ -73,6 +75,7 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
     _.each(muted_topics, function (tup) {
         const stream_id = tup[0];
         const topic = tup[1];
+        const mute_duration_id = "mute_duration_" + topic + stream_id;
 
         const stream = stream_data.maybe_get_stream_name(stream_id);
 
@@ -85,6 +88,8 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
             stream: stream,
             stream_id: stream_id,
             topic: topic,
+            mute_duration: exports.mute_duration,
+            mute_duration_id: mute_duration_id,
         };
 
         const row = render_muted_topic_ui_row(template_data);
@@ -92,14 +97,29 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
     });
 };
 
-exports.mute = function (stream_id, topic) {
+exports.mute_duration = {
+    indefinite: {
+        code: "",
+        description: i18n.t("Indefinite"),
+    },
+    "20 seconds": {
+        code: "20",
+        description: i18n.t("20 seconds"),
+    },
+    "12 hours": {
+        code: "43200",
+        description: i18n.t("12 hours"),
+    },
+};
+
+exports.mute = function (stream_id, topic, duration = "") {
     const stream_name = stream_data.maybe_get_stream_name(stream_id);
 
     stream_popover.hide_topic_popover();
-    muting.add_muted_topic(stream_id, topic);
+    muting.add_muted_topic(stream_id, topic, duration);
     unread_ui.update_unread_counts();
     exports.rerender();
-    exports.persist_mute(stream_id, topic);
+    exports.persist_mute(stream_id, topic, duration);
     feedback_widget.show({
         populate: function (container) {
             const rendered_html = render_topic_muted();
@@ -116,7 +136,7 @@ exports.mute = function (stream_id, topic) {
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
 
-exports.unmute = function (stream_id, topic) {
+exports.unmute = function (stream_id, topic, duration = "") {
     // we don't run a unmute_notify function because it isn't an issue as much
     // if someone accidentally unmutes a stream rather than if they mute it
     // and miss out on info.
@@ -124,7 +144,7 @@ exports.unmute = function (stream_id, topic) {
     muting.remove_muted_topic(stream_id, topic);
     unread_ui.update_unread_counts();
     exports.rerender();
-    exports.persist_unmute(stream_id, topic);
+    exports.persist_unmute(stream_id, topic, duration);
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
     feedback_widget.dismiss();
 };
