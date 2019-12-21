@@ -100,8 +100,8 @@ export LANGUAGE="en_US.UTF-8"
 
 # Check for a supported OS release.
 if [ -f /etc/os-release ]; then
-    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$VERSION_ID" "$VERSION_CODENAME")"
-    { read -r os_id; read -r os_version_id; read -r os_version_codename; } <<< "$os_info"
+    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$ID_LIKE" "$VERSION_ID" "$VERSION_CODENAME")"
+    { read -r os_id; read -r os_id_like; read -r os_version_id; read -r os_version_codename; } <<< "$os_info"
 fi
 
 case "$os_id$os_version_id" in
@@ -155,12 +155,12 @@ if [ "$mem_kb" -lt 1900000 ]; then
 fi
 
 # Do package update, e.g. do `apt-get update` on Debian
-case "$os_id" in
-    ubuntu|debian)
+case " $os_id $os_id_like " in
+    *' debian '*)
         # setup-apt-repo does an `apt-get update`
         "$ZULIP_PATH"/scripts/lib/setup-apt-repo
         ;;
-    centos)
+    *' rhel '*)
         "$ZULIP_PATH"/scripts/lib/setup-yum-repo
         ;;
 esac
@@ -195,8 +195,8 @@ fi
 # don't run dist-upgrade in one click apps to make the
 # installation process more seamless.
 if [ -z "$NO_DIST_UPGRADE" ]; then
-    case "$os_id" in
-        ubuntu|debian)
+    case " $os_id $os_id_like " in
+        *' debian '*)
             apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
             ;;
         # On CentOS, there is no need to do `yum -y upgrade` because `yum -y
@@ -204,8 +204,8 @@ if [ -z "$NO_DIST_UPGRADE" ]; then
     esac
 fi
 
-case "$os_id" in
-    ubuntu|debian)
+case " $os_id $os_id_like " in
+    *' debian '*)
         if ! apt-get install -y \
             puppet git curl wget jq \
             python python3 python-six python3-six crudini \
@@ -218,7 +218,7 @@ case "$os_id" in
             exit 1
         fi
         ;;
-    centos)
+    *' rhel '*)
         if ! yum install -y \
             puppet git curl wget jq \
             python python3 python-six python3-six crudini \
@@ -324,11 +324,11 @@ if [ -n "$REMOTE_POSTGRES" ]; then
 fi
 
 # These server restarting bits should be moveable into puppet-land, ideally
-case "$os_id" in
-    ubuntu|debian)
+case " $os_id $os_id_like " in
+    *' debian '*)
         apt-get -y upgrade
         ;;
-    centos)
+    *' rhel '*)
         # No action is required because `yum update` already does upgrade.
         ;;
 esac
