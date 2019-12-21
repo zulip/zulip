@@ -140,7 +140,7 @@ AUTHENTICATION_BACKENDS = (
 # (3) Return to "Credentials", and select "Create credentials".
 # Choose "OAuth client ID", and follow prompts to create a consent
 # screen.  Fill in "Authorized redirect URIs" with a value like
-#   https://zulip.example.com/accounts/login/google/done/
+#   https://zulip.example.com/complete/google/
 # based on your value for EXTERNAL_HOST.
 #
 # (4) You should get a client ID and a client secret. Copy them.
