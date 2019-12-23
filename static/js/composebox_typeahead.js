@@ -58,6 +58,12 @@ function clean_query(query) {
     return query;
 }
 
+function clean_query_lowercase(query) {
+    query = query.toLowerCase();
+    query = clean_query(query);
+    return query;
+}
+
 function query_matches_string(query, source_str, split_char) {
     source_str = people.remove_diacritics(source_str);
 
@@ -107,16 +113,14 @@ function query_matches_source_attrs(query, source, match_attrs, split_char) {
 
 function query_matches_person(query, person) {
     // Case-insensitive.
-    query = query.toLowerCase();
-    query = clean_query(query);
+    query = clean_query_lowercase(query);
 
     return query_matches_source_attrs(query, person, ["full_name", "email"], " ");
 }
 
 function query_matches_user_group_or_stream(query, user_group_or_stream) {
     // Case-insensitive.
-    query = query.toLowerCase();
-    query = clean_query(query);
+    query = clean_query_lowercase(query);
 
     return query_matches_source_attrs(query, user_group_or_stream, ["name", "description"], " ");
 }
@@ -130,18 +134,16 @@ function query_matches_person_or_user_group(query, item) {
 }
 
 function query_matches_slash_commmand(query, item) {
-    query = query.toLowerCase();
-    query = clean_query(query);
+    query = clean_query_lowercase(query);
 
     return query_matches_source_attrs(query, item, ["name"], " ");
 }
 
 // Case-insensitive
 function query_matches_emoji(query, emoji) {
-    // replaces spaces with underscores
-    query = query.toLowerCase();
+    // replaces spaces with underscores for emoji matching
     query = query.split(" ").join("_");
-    query = clean_query(query);
+    query = clean_query_lowercase(query);
 
     return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
 }
@@ -150,8 +152,7 @@ function query_matches_topic(query, topic) {
     const obj = {
         topic: topic,
     };
-    query = query.toLowerCase();
-    query = clean_query(query);
+    query = clean_query_lowercase(query);
 
     return query_matches_source_attrs(query, obj, ['topic'], ' ');
 }
