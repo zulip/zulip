@@ -153,13 +153,16 @@ function get_emoji_matcher(query) {
     };
 }
 
-function query_matches_topic(query, topic) {
-    const obj = {
-        topic: topic,
-    };
+function get_topic_matcher(query) {
     query = clean_query_lowercase(query);
 
-    return query_matches_source_attrs(query, obj, ['topic'], ' ');
+    return function (topic) {
+        const obj = {
+            topic: topic,
+        };
+
+        return query_matches_source_attrs(query, obj, ['topic'], ' ');
+    };
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
@@ -783,6 +786,8 @@ exports.compose_content_matcher = function (completing, token) {
         return get_slash_matcher(token);
     case 'syntax':
         return get_language_matcher(token);
+    case 'topic_list':
+        return get_topic_matcher(token);
     }
 
     return function (item) {
@@ -795,8 +800,6 @@ exports.compose_content_matcher = function (completing, token) {
         case 'topic_jump':
             // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
             return true;
-        case 'topic_list':
-            return query_matches_topic(token, item);
         }
     };
 };
