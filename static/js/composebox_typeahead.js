@@ -736,21 +736,25 @@ exports.compose_content_matcher = function (item) {
 };
 
 exports.compose_matches_sorter = function (matches) {
-    if (this.completing === 'emoji') {
-        return typeahead_helper.sort_emojis(matches, this.token);
-    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
-        return typeahead_helper.sort_people_and_user_groups(this.token, matches);
-    } else if (this.completing === 'slash') {
-        return typeahead_helper.sort_slash_commands(matches, this.token);
-    } else if (this.completing === 'stream') {
-        return typeahead_helper.sort_streams(matches, this.token);
-    } else if (this.completing === 'syntax') {
-        return typeahead_helper.sort_languages(matches, this.token);
-    } else if (this.completing === 'topic_jump') {
+    const token = this.token;
+
+    switch (this.completing) {
+    case 'emoji':
+        return typeahead_helper.sort_emojis(matches, token);
+    case 'mention':
+    case 'silent_mention':
+        return typeahead_helper.sort_people_and_user_groups(token, matches);
+    case 'slash':
+        return typeahead_helper.sort_slash_commands(matches, token);
+    case 'stream':
+        return typeahead_helper.sort_streams(matches, token);
+    case 'syntax':
+        return typeahead_helper.sort_languages(matches, token);
+    case 'topic_jump':
         // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
         return matches;
-    } else if (this.completing === 'topic_list') {
-        return typeahead_helper.sorter(this.token, matches, function (x) {return x;});
+    case 'topic_list':
+        return typeahead_helper.sorter(token, matches, function (x) {return x;});
     }
 };
 
