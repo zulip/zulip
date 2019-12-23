@@ -770,12 +770,15 @@ exports.build_termlet_matcher = function (termlet) {
 
     const is_ascii = /^[a-z]+$/.test(termlet);
 
-    return function (names) {
+    return function (user) {
+        let full_name = user.full_name;
+        if (is_ascii) {
+            // Only ignore diacritics if the query is plain ascii
+            full_name = exports.remove_diacritics(full_name);
+        }
+        const names = full_name.toLowerCase().split(' ');
+
         return _.any(names, function (name) {
-            if (is_ascii) {
-                // Only ignore diacritics if the query is plain ascii
-                name = exports.remove_diacritics(name);
-            }
             if (name.indexOf(termlet) === 0) {
                 return true;
             }
@@ -796,9 +799,8 @@ exports.build_person_matcher = function (query) {
             return true;
         }
 
-        const names = user.full_name.toLowerCase().split(' ');
         return _.all(termlet_matchers, function (matcher) {
-            return matcher(names);
+            return matcher(user);
         });
     };
 };
