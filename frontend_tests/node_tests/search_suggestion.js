@@ -41,7 +41,10 @@ set_global('settings_org', {
 topic_data.reset();
 
 function get_suggestions(base_query, query) {
-    return search.get_suggestions(base_query, query);
+    const results = search.get_suggestions(base_query, query);
+    people.clear_search_bar_cache_for_testing();
+
+    return results;
 }
 
 run_test('basic_get_suggestions', () => {

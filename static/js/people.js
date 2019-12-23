@@ -1,5 +1,6 @@
 require("unorm");  // String.prototype.normalize polyfill for IE11
 const Dict = require('./dict').Dict;
+const search_cache = require('./search_cache');
 
 let people_dict;
 let people_by_name_dict;
@@ -760,7 +761,7 @@ exports.remove_diacritics = function (s) {
     return s.normalize("NFKD").replace(unicode_marks, "");
 };
 
-exports.get_people_for_search_bar = function (query) {
+exports._actually_get_people_for_search_bar = function (query) {
     const pred = exports.build_person_matcher(query);
 
     const message_people = _.compact(
@@ -776,6 +777,29 @@ exports.get_people_for_search_bar = function (query) {
     }
 
     return exports.filter_all_persons(pred);
+};
+
+let quick_people_finder;
+
+exports.get_people_for_search_bar = function (query) {
+    if (quick_people_finder === undefined) {
+        const config = {};
+        config.is_good = exports.build_person_matcher;
+        config.get_first_results = exports._actually_get_people_for_search_bar;
+        config.cache_life_ms = 10000; // 10s
+        config.sort = function (users) {
+            users = users.sort(typeahead_helper.compare_by_pms);
+            return users;
+        };
+
+        quick_people_finder = search_cache.make(config);
+    }
+
+    return quick_people_finder(query);
+};
+
+exports.clear_search_bar_cache_for_testing = function () {
+    quick_people_finder = undefined;
 };
 
 exports.build_termlet_matcher = function (termlet) {
