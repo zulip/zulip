@@ -764,13 +764,29 @@ exports.person_matches_query = function (user, query) {
     return exports.build_person_matcher(query)(user);
 };
 
+exports.build_termlet_matcher = function (termlet) {
+    termlet = termlet.trim();
+
+    const is_ascii = /^[a-z]+$/.test(termlet);
+
+    return function (names) {
+        return _.any(names, function (name) {
+            if (is_ascii) {
+                // Only ignore diacritics if the query is plain ascii
+                name = exports.remove_diacritics(name);
+            }
+            if (name.indexOf(termlet) === 0) {
+                return true;
+            }
+        });
+    };
+};
+
 exports.build_person_matcher = function (query) {
     query = query.trim();
 
-    let termlets = query.toLowerCase().split(/\s+/);
-    termlets = _.map(termlets, function (termlet) {
-        return termlet.trim();
-    });
+    const termlets = query.toLowerCase().split(/\s+/);
+    const termlet_matchers = _.map(termlets, exports.build_termlet_matcher);
 
     return function (user) {
         const email = user.email.toLowerCase();
@@ -780,17 +796,8 @@ exports.build_person_matcher = function (query) {
         }
 
         const names = user.full_name.toLowerCase().split(' ');
-        return _.all(termlets, function (termlet) {
-            const is_ascii = /^[a-z]+$/.test(termlet);
-            return _.any(names, function (name) {
-                if (is_ascii) {
-                    // Only ignore diacritics if the query is plain ascii
-                    name = exports.remove_diacritics(name);
-                }
-                if (name.indexOf(termlet) === 0) {
-                    return true;
-                }
-            });
+        return _.all(termlet_matchers, function (matcher) {
+            return matcher(names);
         });
     };
 };
