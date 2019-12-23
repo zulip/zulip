@@ -755,6 +755,17 @@ exports.incr_recipient_count = function (user_id) {
     pm_recipient_count_dict.set(user_id, old_count + 1);
 };
 
+exports.get_ascii_full_name = function (user) {
+    if (!user.full_name) {
+        // This is mostly for tests, and maybe bots.
+        return '';
+    }
+
+    const ascii_full_name = exports.remove_diacritics(user.full_name);
+
+    return ascii_full_name;
+};
+
 const unicode_marks = /\p{M}/gu;
 
 exports.remove_diacritics = function (s) {
@@ -771,11 +782,15 @@ exports.build_termlet_matcher = function (termlet) {
     const is_ascii = /^[a-z]+$/.test(termlet);
 
     return function (user) {
-        let full_name = user.full_name;
+        let full_name;
+
         if (is_ascii) {
             // Only ignore diacritics if the query is plain ascii
-            full_name = exports.remove_diacritics(full_name);
+            full_name = exports.get_ascii_full_name(user);
+        } else {
+            full_name = user.full_name;
         }
+
         const names = full_name.toLowerCase().split(' ');
 
         return _.any(names, function (name) {

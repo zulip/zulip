@@ -928,6 +928,36 @@ run_test('email_for_user_settings', () => {
     assert.equal(email(isaac), isaac.email);
 });
 
+run_test('get_ascii_full_name', () => {
+    const user = {
+        email: 'francois@example.com',
+        user_id: 93,
+        full_name: 'François DuPont',
+    };
+
+    // François
+    people.add_in_realm(user);
+    assert.equal(people.get_ascii_full_name(user), 'Francois DuPont');
+
+    // Frank
+    people.set_full_name(user, 'Frank DuPont');
+    assert.equal(people.get_ascii_full_name(user), 'Frank DuPont');
+
+    // Noël
+    people.set_full_name(user, 'Noël Bridges');
+    assert.equal(people.get_ascii_full_name(user), 'Noel Bridges');
+
+    // Blank name.  These should be impossible, but we'll be defensive.
+    // Get the name twice to make sure our any cache behavior doesn't
+    // cause strange results.
+    people.set_full_name(user, '');
+    assert.equal(people.get_ascii_full_name(user), '');
+    assert.equal(people.get_ascii_full_name(user), '');
+
+    // undefined
+    assert.equal(people.get_ascii_full_name({}), '');
+});
+
 run_test('emails_strings_to_user_ids_array', function () {
     const steven = {
         email: 'steven@example.com',
