@@ -713,21 +713,25 @@ exports.content_typeahead_selected = function (item, event) {
 };
 
 exports.compose_content_matcher = function (item) {
-    if (this.completing === 'emoji') {
-        return query_matches_emoji(this.token, item);
-    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
-        return query_matches_person_or_user_group(this.token, item);
-    } else if (this.completing === 'slash') {
-        return query_matches_slash_commmand(this.token, item);
-    } else if (this.completing === 'stream') {
-        return query_matches_user_group_or_stream(this.token, item);
-    } else if (this.completing === 'syntax') {
-        return query_matches_language(this.token, item);
-    } else if (this.completing === 'topic_jump') {
+    const token = this.token;
+
+    switch (this.completing) {
+    case 'emoji':
+        return query_matches_emoji(token, item);
+    case 'mention':
+    case 'silent_mention':
+        return query_matches_person_or_user_group(token, item);
+    case 'slash':
+        return query_matches_slash_commmand(token, item);
+    case 'stream':
+        return query_matches_user_group_or_stream(token, item);
+    case 'syntax':
+        return query_matches_language(token, item);
+    case 'topic_jump':
         // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
         return true;
-    } else if (this.completing === 'topic_list') {
-        return query_matches_topic(this.token, item);
+    case 'topic_list':
+        return query_matches_topic(token, item);
     }
 };
 
