@@ -99,8 +99,6 @@ function query_matches_string(query, source_str, split_char) {
 // account, there might be 2 attrs: their full name and their email.
 // * split_char is the separator for this syntax (e.g. ' ').
 function query_matches_source_attrs(query, source, match_attrs, split_char) {
-    query = clean_query(query);
-
     return _.any(match_attrs, function (attr) {
         const source_str = source[attr].toLowerCase();
         return query_matches_string(query, source_str, split_char);
@@ -110,12 +108,16 @@ function query_matches_source_attrs(query, source, match_attrs, split_char) {
 function query_matches_person(query, person) {
     // Case-insensitive.
     query = query.toLowerCase();
+    query = clean_query(query);
+
     return query_matches_source_attrs(query, person, ["full_name", "email"], " ");
 }
 
 function query_matches_user_group_or_stream(query, user_group_or_stream) {
     // Case-insensitive.
     query = query.toLowerCase();
+    query = clean_query(query);
+
     return query_matches_source_attrs(query, user_group_or_stream, ["name", "description"], " ");
 }
 
@@ -129,6 +131,8 @@ function query_matches_person_or_user_group(query, item) {
 
 function query_matches_slash_commmand(query, item) {
     query = query.toLowerCase();
+    query = clean_query(query);
+
     return query_matches_source_attrs(query, item, ["name"], " ");
 }
 
@@ -137,6 +141,8 @@ function query_matches_emoji(query, emoji) {
     // replaces spaces with underscores
     query = query.toLowerCase();
     query = query.split(" ").join("_");
+    query = clean_query(query);
+
     return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
 }
 
@@ -145,6 +151,8 @@ function query_matches_topic(query, topic) {
         topic: topic,
     };
     query = query.toLowerCase();
+    query = clean_query(query);
+
     return query_matches_source_attrs(query, obj, ['topic'], ' ');
 }
 
