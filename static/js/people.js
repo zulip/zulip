@@ -761,29 +761,35 @@ exports.remove_diacritics = function (s) {
 };
 
 exports.person_matches_query = function (user, query) {
-    const email = user.email.toLowerCase();
-    const names = user.full_name.toLowerCase().split(' ');
+    return exports.build_person_matcher(query)(user);
+};
 
+exports.build_person_matcher = function (query) {
     let termlets = query.toLowerCase().split(/\s+/);
     termlets = _.map(termlets, function (termlet) {
         return termlet.trim();
     });
 
-    if (email.indexOf(query.trim()) === 0) {
-        return true;
-    }
-    return _.all(termlets, function (termlet) {
-        const is_ascii = /^[a-z]+$/.test(termlet);
-        return _.any(names, function (name) {
-            if (is_ascii) {
-                // Only ignore diacritics if the query is plain ascii
-                name = exports.remove_diacritics(name);
-            }
-            if (name.indexOf(termlet) === 0) {
-                return true;
-            }
+    return function (user) {
+        const email = user.email.toLowerCase();
+        const names = user.full_name.toLowerCase().split(' ');
+
+        if (email.indexOf(query.trim()) === 0) {
+            return true;
+        }
+        return _.all(termlets, function (termlet) {
+            const is_ascii = /^[a-z]+$/.test(termlet);
+            return _.any(names, function (name) {
+                if (is_ascii) {
+                    // Only ignore diacritics if the query is plain ascii
+                    name = exports.remove_diacritics(name);
+                }
+                if (name.indexOf(termlet) === 0) {
+                    return true;
+                }
+            });
         });
-    });
+    };
 };
 
 exports.filter_people_by_search_terms = function (users, search_terms) {
