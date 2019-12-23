@@ -795,6 +795,12 @@ exports.build_person_matcher = function (query) {
 exports.filter_people_by_search_terms = function (users, search_terms) {
     const filtered_users = new Dict();
 
+    // Build our matchers outside the loop to avoid some
+    // search overhead that is not user-specific.
+    const matchers = _.map(search_terms, function (search_term) {
+        return exports.build_person_matcher(search_term);
+    });
+
     // Loop through users and populate filtered_users only
     // if they include search_terms
     _.each(users, function (user) {
@@ -805,8 +811,8 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
         }
 
         // Return user emails that include search terms
-        const match = _.any(search_terms, function (search_term) {
-            return exports.person_matches_query(user, search_term);
+        const match = _.any(matchers, function (matcher) {
+            return matcher(user);
         });
 
         if (match) {
