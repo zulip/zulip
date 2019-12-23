@@ -139,13 +139,14 @@ function query_matches_slash_commmand(query, item) {
     return query_matches_source_attrs(query, item, ["name"], " ");
 }
 
-// Case-insensitive
-function query_matches_emoji(query, emoji) {
+function get_emoji_matcher(query) {
     // replaces spaces with underscores for emoji matching
     query = query.split(" ").join("_");
     query = clean_query_lowercase(query);
 
-    return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
+    return function (emoji) {
+        return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
+    };
 }
 
 function query_matches_topic(query, topic) {
@@ -771,10 +772,13 @@ exports.content_typeahead_selected = function (item, event) {
 };
 
 exports.compose_content_matcher = function (completing, token) {
+    switch (completing) {
+    case 'emoji':
+        return get_emoji_matcher(token);
+    }
+
     return function (item) {
         switch (completing) {
-        case 'emoji':
-            return query_matches_emoji(token, item);
         case 'mention':
         case 'silent_mention':
             return query_matches_person_or_user_group(token, item);
