@@ -42,9 +42,11 @@ exports.topics_seen_for = function (stream_name) {
     return topic_names;
 };
 
-function query_matches_language(query, lang) {
+function get_language_matcher(query) {
     query = query.toLowerCase();
-    return lang.indexOf(query) !== -1;
+    return function (lang) {
+        return lang.indexOf(query) !== -1;
+    };
 }
 
 function clean_query(query) {
@@ -779,6 +781,8 @@ exports.compose_content_matcher = function (completing, token) {
         return get_emoji_matcher(token);
     case 'slash':
         return get_slash_matcher(token);
+    case 'syntax':
+        return get_language_matcher(token);
     }
 
     return function (item) {
@@ -788,8 +792,6 @@ exports.compose_content_matcher = function (completing, token) {
             return query_matches_person_or_user_group(token, item);
         case 'stream':
             return query_matches_user_group_or_stream(token, item);
-        case 'syntax':
-            return query_matches_language(token, item);
         case 'topic_jump':
             // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
             return true;
