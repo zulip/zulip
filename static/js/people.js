@@ -765,6 +765,8 @@ exports.person_matches_query = function (user, query) {
 };
 
 exports.build_person_matcher = function (query) {
+    query = query.trim();
+
     let termlets = query.toLowerCase().split(/\s+/);
     termlets = _.map(termlets, function (termlet) {
         return termlet.trim();
@@ -772,11 +774,12 @@ exports.build_person_matcher = function (query) {
 
     return function (user) {
         const email = user.email.toLowerCase();
-        const names = user.full_name.toLowerCase().split(' ');
 
-        if (email.indexOf(query.trim()) === 0) {
+        if (email.indexOf(query) === 0) {
             return true;
         }
+
+        const names = user.full_name.toLowerCase().split(' ');
         return _.all(termlets, function (termlet) {
             const is_ascii = /^[a-z]+$/.test(termlet);
             return _.any(names, function (name) {
