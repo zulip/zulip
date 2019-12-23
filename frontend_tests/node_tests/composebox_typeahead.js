@@ -803,7 +803,7 @@ run_test('initialize', () => {
             const token = fake_this.token;
             const completing = fake_this.completing;
 
-            return ct.compose_content_matcher(completing, item, token);
+            return ct.compose_content_matcher(completing, token)(item);
         }
 
         fake_this = { completing: 'emoji', token: 'ta' };

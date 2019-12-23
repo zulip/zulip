@@ -503,9 +503,10 @@ exports.get_sorted_filtered_items = function (query) {
 };
 
 exports.filter_and_sort_candidates = function (completing, candidates, token) {
-    const matcher = exports.compose_content_matcher;
+    const matcher = exports.compose_content_matcher(completing, token);
+
     const small_results = _.filter(candidates, function (item) {
-        return matcher(completing, item, token);
+        return matcher(item);
     });
 
     const sorted_results = exports.sort_results(completing, small_results, token);
@@ -769,25 +770,27 @@ exports.content_typeahead_selected = function (item, event) {
     return beginning + rest;
 };
 
-exports.compose_content_matcher = function (completing, item, token) {
-    switch (completing) {
-    case 'emoji':
-        return query_matches_emoji(token, item);
-    case 'mention':
-    case 'silent_mention':
-        return query_matches_person_or_user_group(token, item);
-    case 'slash':
-        return query_matches_slash_commmand(token, item);
-    case 'stream':
-        return query_matches_user_group_or_stream(token, item);
-    case 'syntax':
-        return query_matches_language(token, item);
-    case 'topic_jump':
-        // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
-        return true;
-    case 'topic_list':
-        return query_matches_topic(token, item);
-    }
+exports.compose_content_matcher = function (completing, token) {
+    return function (item) {
+        switch (completing) {
+        case 'emoji':
+            return query_matches_emoji(token, item);
+        case 'mention':
+        case 'silent_mention':
+            return query_matches_person_or_user_group(token, item);
+        case 'slash':
+            return query_matches_slash_commmand(token, item);
+        case 'stream':
+            return query_matches_user_group_or_stream(token, item);
+        case 'syntax':
+            return query_matches_language(token, item);
+        case 'topic_jump':
+            // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
+            return true;
+        case 'topic_list':
+            return query_matches_topic(token, item);
+        }
+    };
 };
 
 exports.sort_results = function (completing, matches, token) {
