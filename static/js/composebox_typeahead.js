@@ -61,8 +61,6 @@ function clean_query(query) {
 function query_matches_string(query, source_str, split_char) {
     source_str = people.remove_diacritics(source_str);
 
-    query = clean_query(query);
-
     // If query doesn't contain a separator, we just want an exact
     // match where query is a substring of one of the target characters.
     if (query.indexOf(split_char) > 0) {
@@ -101,6 +99,8 @@ function query_matches_string(query, source_str, split_char) {
 // account, there might be 2 attrs: their full name and their email.
 // * split_char is the separator for this syntax (e.g. ' ').
 function query_matches_source_attrs(query, source, match_attrs, split_char) {
+    query = clean_query(query);
+
     return _.any(match_attrs, function (attr) {
         const source_str = source[attr].toLowerCase();
         return query_matches_string(query, source_str, split_char);
