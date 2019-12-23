@@ -36,8 +36,12 @@ function initialize() {
 
 initialize();
 
+function get_all_persons() {
+    return people.filter_all_persons(() => true);
+}
+
 run_test('basics', () => {
-    const persons = people.get_all_persons();
+    const persons = get_all_persons();
 
     assert.equal(_.size(persons), 1);
     assert.equal(persons[0].full_name, 'Me Myself');
@@ -704,7 +708,7 @@ run_test('updates', () => {
     assert.equal(people.get_active_user_for_email(new_email).user_id, user_id);
     assert (!people.is_cross_realm_email(new_email));
 
-    const all_people = people.get_all_persons();
+    const all_people = get_all_persons();
     assert.equal(all_people.length, 2);
 
     person = _.filter(all_people, function (p) {
