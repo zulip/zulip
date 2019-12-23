@@ -114,25 +114,32 @@ function query_matches_source_attrs(query, source, match_attrs, split_char) {
 }
 
 function query_matches_person(query, person) {
-    // Case-insensitive.
-    query = clean_query_lowercase(query);
-
     return query_matches_source_attrs(query, person, ["full_name", "email"], " ");
 }
 
-function query_matches_user_group_or_stream(query, user_group_or_stream) {
-    // Case-insensitive.
-    query = clean_query_lowercase(query);
-
+function query_matches_name_description(query, user_group_or_stream) {
     return query_matches_source_attrs(query, user_group_or_stream, ["name", "description"], " ");
 }
 
-function query_matches_person_or_user_group(query, item) {
-    if (user_groups.is_user_group(item)) {
-        return query_matches_user_group_or_stream(query, item);
-    }
+function get_stream_or_user_group_matcher(query) {
+    // Case-insensitive.
+    query = clean_query_lowercase(query);
 
-    return query_matches_person(query, item);
+    return function (user_group_or_stream) {
+        return query_matches_name_description(query, user_group_or_stream);
+    };
+}
+
+function get_person_or_user_group_matcher(query) {
+    query = clean_query_lowercase(query);
+
+    return function (item) {
+        if (user_groups.is_user_group(item)) {
+            return query_matches_name_description(query, item);
+        }
+
+        return query_matches_person(query, item);
+    };
 }
 
 function get_slash_matcher(query) {
@@ -782,21 +789,21 @@ exports.compose_content_matcher = function (completing, token) {
     switch (completing) {
     case 'emoji':
         return get_emoji_matcher(token);
+    case 'mention':
+    case 'silent_mention':
+        return get_person_or_user_group_matcher(token);
     case 'slash':
         return get_slash_matcher(token);
+    case 'stream':
+        return get_stream_or_user_group_matcher(token);
     case 'syntax':
         return get_language_matcher(token);
     case 'topic_list':
         return get_topic_matcher(token);
     }
 
-    return function (item) {
+    return function () {
         switch (completing) {
-        case 'mention':
-        case 'silent_mention':
-            return query_matches_person_or_user_group(token, item);
-        case 'stream':
-            return query_matches_user_group_or_stream(token, item);
         case 'topic_jump':
             // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
             return true;
@@ -974,7 +981,7 @@ exports.initialize = function () {
             return typeahead_helper.render_person_or_user_group(item);
         },
         matcher: function (item) {
-            return query_matches_person_or_user_group(this.query, item);
+            return get_person_or_user_group_matcher(this.query)(item);
         },
         sorter: function (matches) {
             return typeahead_helper.sort_people_and_user_groups(this.query, matches);
