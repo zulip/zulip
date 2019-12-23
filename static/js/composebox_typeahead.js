@@ -47,14 +47,22 @@ function query_matches_language(query, lang) {
     return lang.indexOf(query) !== -1;
 }
 
-function query_matches_string(query, source_str, split_char) {
-    source_str = people.remove_diacritics(source_str);
+function clean_query(query) {
     query = people.remove_diacritics(query);
     // When `abc ` with a space at the end is typed in a
     // contenteditable widget such as the composebox PM section, the
     // space at the end was a `no break-space (U+00A0)` instead of
     // `space (U+0020)`, which lead to no matches in those cases.
     query = query.replace(/\u00A0/g, String.fromCharCode(32));
+
+    return query;
+}
+
+function query_matches_string(query, source_str, split_char) {
+    source_str = people.remove_diacritics(source_str);
+
+    query = clean_query(query);
+
     // If query doesn't contain a separator, we just want an exact
     // match where query is a substring of one of the target characters.
     if (query.indexOf(split_char) > 0) {
