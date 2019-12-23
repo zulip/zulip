@@ -133,10 +133,12 @@ function query_matches_person_or_user_group(query, item) {
     return query_matches_person(query, item);
 }
 
-function query_matches_slash_commmand(query, item) {
+function get_slash_matcher(query) {
     query = clean_query_lowercase(query);
 
-    return query_matches_source_attrs(query, item, ["name"], " ");
+    return function (item) {
+        return query_matches_source_attrs(query, item, ["name"], " ");
+    };
 }
 
 function get_emoji_matcher(query) {
@@ -775,6 +777,8 @@ exports.compose_content_matcher = function (completing, token) {
     switch (completing) {
     case 'emoji':
         return get_emoji_matcher(token);
+    case 'slash':
+        return get_slash_matcher(token);
     }
 
     return function (item) {
@@ -782,8 +786,6 @@ exports.compose_content_matcher = function (completing, token) {
         case 'mention':
         case 'silent_mention':
             return query_matches_person_or_user_group(token, item);
-        case 'slash':
-            return query_matches_slash_commmand(token, item);
         case 'stream':
             return query_matches_user_group_or_stream(token, item);
         case 'syntax':
