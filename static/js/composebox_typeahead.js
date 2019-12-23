@@ -462,7 +462,58 @@ exports.slash_commands = [
     },
 ];
 
-exports.compose_content_begins_typeahead = function (query) {
+exports.get_sorted_filtered_items = function (query) {
+    /*
+        This is just a "glue" function to work
+        around bootstrap.  We want to control these
+        three steps ourselves:
+
+            - get data
+            - filter data
+            - sort data
+
+        If we do it ourselves, we can convert some
+        O(N) behavior to just O(1) time.
+
+        For example, we want to avoid dispatching
+        on completing every time through the loop, plus
+        doing the same token cleanup every time.
+
+        It's also a bit easier to debug typeahead when
+        it's all one step, instead of three callbacks.
+
+        (We did the same thing for search suggestions
+        several years ago.)
+    */
+
+    const hacky_this = this;
+    const fetcher = exports.get_candidates.bind(hacky_this);
+    const big_results = fetcher(query);
+
+    if (!big_results) {
+        return false;
+    }
+
+    // We are still hacking info onto the "this" from
+    // bootstrap.  Yuck.
+    const completing = hacky_this.completing;
+    const token = hacky_this.token;
+
+    return exports.filter_and_sort_candidates(completing, big_results, token);
+};
+
+exports.filter_and_sort_candidates = function (completing, candidates, token) {
+    const matcher = exports.compose_content_matcher;
+    const small_results = _.filter(candidates, function (item) {
+        return matcher(completing, item, token);
+    });
+
+    const sorted_results = exports.sort_results(completing, small_results, token);
+
+    return sorted_results;
+};
+
+exports.get_candidates = function (query) {
     const split = exports.split_at_cursor(query, this.$element);
     let current_token = exports.tokenize_compose_str(split[0]);
     if (current_token === '') {
@@ -718,10 +769,8 @@ exports.content_typeahead_selected = function (item, event) {
     return beginning + rest;
 };
 
-exports.compose_content_matcher = function (item) {
-    const token = this.token;
-
-    switch (this.completing) {
+exports.compose_content_matcher = function (completing, item, token) {
+    switch (completing) {
     case 'emoji':
         return query_matches_emoji(token, item);
     case 'mention':
@@ -741,10 +790,8 @@ exports.compose_content_matcher = function (item) {
     }
 };
 
-exports.compose_matches_sorter = function (matches) {
-    const token = this.token;
-
-    switch (this.completing) {
+exports.sort_results = function (completing, matches, token) {
+    switch (completing) {
     case 'emoji':
         return typeahead_helper.sort_emojis(matches, token);
     case 'mention':
@@ -808,10 +855,18 @@ exports.initialize_compose_typeahead = function (selector) {
         items: 5,
         dropup: true,
         fixed: true,
-        source: exports.compose_content_begins_typeahead,
+        // Performance note: We have trivial matcher/sorters to do
+        // matching and sorting inside the `source` field to avoid
+        // O(n) behavior in the number of users in the organization
+        // inside the typeahead library.
+        source: exports.get_sorted_filtered_items,
         highlighter: exports.content_highlighter,
-        matcher: exports.compose_content_matcher,
-        sorter: exports.compose_matches_sorter,
+        matcher: function () {
+            return true;
+        },
+        sorter: function (items) {
+            return items;
+        },
         updater: exports.content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a tab or enter
         completions: completions,
