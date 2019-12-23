@@ -708,8 +708,8 @@ exports.is_active_user_for_popover = function (user_id) {
     return false;
 };
 
-exports.get_all_persons = function () {
-    return people_by_user_id_dict.values();
+exports.filter_all_persons = function (pred) {
+    return people_by_user_id_dict.filter_values(pred);
 };
 
 exports.get_realm_persons = function () {
@@ -761,8 +761,9 @@ exports.remove_diacritics = function (s) {
     return s.normalize("NFKD").replace(unicode_marks, "");
 };
 
-exports.person_matches_query = function (user, query) {
-    return exports.build_person_matcher(query)(user);
+exports.get_people_for_search_bar = function (query) {
+    const pred =  exports.build_person_matcher(query);
+    return exports.filter_all_persons(pred);
 };
 
 exports.build_termlet_matcher = function (termlet) {

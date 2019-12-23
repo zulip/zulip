@@ -116,7 +116,7 @@ function get_stream_suggestions(last, operators) {
     return objs;
 }
 
-function get_group_suggestions(all_persons, last, operators) {
+function get_group_suggestions(last, operators) {
     if (!check_validity(last, operators, ['pm-with'], [{operator: 'stream'}])) {
         return [];
     }
@@ -142,11 +142,13 @@ function get_group_suggestions(all_persons, last, operators) {
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
     const parts = all_but_last_part.split(',').concat(people.my_current_email());
-    let persons = _.filter(all_persons, function (person) {
+
+    const person_matcher = people.build_person_matcher(last_part);
+    let persons = people.filter_all_persons(function (person) {
         if (_.contains(parts, person.email)) {
             return false;
         }
-        return last_part === '' || people.person_matches_query(person, last_part);
+        return last_part === '' || person_matcher(person);
     });
 
     persons.sort(compare_by_huddle(parts));
@@ -178,7 +180,7 @@ function get_group_suggestions(all_persons, last, operators) {
 }
 
 // Possible args for autocomplete_operator: pm-with, sender, from
-function get_person_suggestions(all_persons, last, operators, autocomplete_operator) {
+function get_person_suggestions(last, operators, autocomplete_operator) {
     if (last.operator === "is" && last.operand === "private") {
         // Interpret 'is:private' as equivalent to 'pm-with:'
         last = {operator: "pm-with", operand: "", negated: false};
@@ -204,9 +206,7 @@ function get_person_suggestions(all_persons, last, operators, autocomplete_opera
         return [];
     }
 
-    const persons = _.filter(all_persons, function (person) {
-        return people.person_matches_query(person, query);
-    });
+    const persons = people.get_people_for_search_bar(query);
 
     persons.sort(typeahead_helper.compare_by_pms);
 
@@ -674,21 +674,19 @@ exports.get_search_result = function (base_query, query) {
     suggestions = get_stream_suggestions(last, base_operators);
     attach(suggestions);
 
-    const persons = people.get_all_persons();
-
-    suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
+    suggestions = get_person_suggestions(last, base_operators, 'sender');
     attach(suggestions);
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'pm-with');
+    suggestions = get_person_suggestions(last, base_operators, 'pm-with');
     attach(suggestions);
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'from');
+    suggestions = get_person_suggestions(last, base_operators, 'from');
     attach(suggestions);
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'group-pm-with');
+    suggestions = get_person_suggestions(last, base_operators, 'group-pm-with');
     attach(suggestions);
 
-    suggestions = get_group_suggestions(persons, last, base_operators);
+    suggestions = get_group_suggestions(last, base_operators);
     attach(suggestions);
 
     suggestions = get_topic_suggestions(last, base_operators);
@@ -754,16 +752,10 @@ exports.get_search_result_legacy = function (query) {
         attacher.push(suggestion);
     }
 
-    const persons = people.get_all_persons();
-
     function get_people(flavor) {
         return function (last, base_operators) {
-            return get_person_suggestions(persons, last, base_operators, flavor);
+            return get_person_suggestions(last, base_operators, flavor);
         };
-    }
-
-    function get_groups(last, base_operators) {
-        return get_group_suggestions(persons, last, base_operators);
     }
 
     const filterers = [
@@ -775,7 +767,7 @@ exports.get_search_result_legacy = function (query) {
         get_people('pm-with'),
         get_people('from'),
         get_people('group-pm-with'),
-        get_groups,
+        get_group_suggestions,
         get_topic_suggestions,
         get_operator_suggestions,
         get_has_filter_suggestions,
