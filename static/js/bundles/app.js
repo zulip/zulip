@@ -22,6 +22,7 @@ import "../../generated/emoji/emoji_codes.js";
 import "../../generated/pygments_data.js";
 
 // Import App JS
+import "../search_cache.js";
 import "../translations.js";
 import "../feature_flags.js";
 import "../loading.js";
