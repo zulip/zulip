@@ -755,13 +755,36 @@ exports.incr_recipient_count = function (user_id) {
     pm_recipient_count_dict.set(user_id, old_count + 1);
 };
 
+exports.fix_person_for_search = function (user) {
+    user._has_ascii_full_name = undefined;
+    user._ascii_full_name = undefined;
+    exports.get_ascii_full_name(user);
+};
+
 exports.get_ascii_full_name = function (user) {
+    // Important: This function caches data on the user.
+    //
+    // You can call this just for the side effect.
+    if (user._has_ascii_full_name) {
+        return user.full_name;
+    }
+
+    if (user._ascii_full_name !== undefined) {
+        return user._ascii_full_name;
+    }
+
     if (!user.full_name) {
         // This is mostly for tests, and maybe bots.
         return '';
     }
 
     const ascii_full_name = exports.remove_diacritics(user.full_name);
+
+    if (ascii_full_name === user.full_name) {
+        user._has_ascii_full_name = true;
+    } else {
+        user._ascii_full_name = ascii_full_name;
+    }
 
     return ascii_full_name;
 };
@@ -940,6 +963,7 @@ exports.add = function add(person) {
         blueslip.warn('No user_id provided for ' + person.email);
     }
 
+    exports.fix_person_for_search(person);
     exports.track_duplicate_full_name(person.full_name, person.user_id);
     people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
@@ -1064,6 +1088,7 @@ exports.set_full_name = function (person_obj, new_full_name) {
     exports.track_duplicate_full_name(new_full_name, person_obj.user_id);
     people_by_name_dict.set(new_full_name, person_obj);
     person_obj.full_name = new_full_name;
+    exports.fix_person_for_search(person_obj);
 };
 
 exports.set_custom_profile_field_data = function (user_id, field) {

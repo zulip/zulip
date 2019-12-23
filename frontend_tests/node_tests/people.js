@@ -937,14 +937,20 @@ run_test('get_ascii_full_name', () => {
 
     // François
     people.add_in_realm(user);
+    assert.equal(user._has_ascii_full_name, undefined);
+    assert.equal(user._ascii_full_name, 'Francois DuPont');
     assert.equal(people.get_ascii_full_name(user), 'Francois DuPont');
 
     // Frank
     people.set_full_name(user, 'Frank DuPont');
+    assert.equal(user._has_ascii_full_name, true);
+    assert.equal(user._ascii_full_name, undefined);
     assert.equal(people.get_ascii_full_name(user), 'Frank DuPont');
 
     // Noël
     people.set_full_name(user, 'Noël Bridges');
+    assert.equal(user._has_ascii_full_name, undefined);
+    assert.equal(user._ascii_full_name, 'Noel Bridges');
     assert.equal(people.get_ascii_full_name(user), 'Noel Bridges');
 
     // Blank name.  These should be impossible, but we'll be defensive.
