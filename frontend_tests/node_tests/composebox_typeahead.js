@@ -626,39 +626,46 @@ run_test('initialize', () => {
         assert.equal(actual_value, expected_value);
 
         // options.matcher()
-        options.query = 'el';  // Matches both "othELlo" and "cordELia"
-        assert.equal(options.matcher(othello), true);
-        assert.equal(options.matcher(cordelia), true);
 
-        options.query = 'bender';  // Doesn't exist
-        assert.equal(options.matcher(othello), false);
-        assert.equal(options.matcher(cordelia), false);
+        function matcher(query, person) {
+            options.query = query;
+            return options.matcher(person);
+        }
 
-        options.query = 'gael';
-        assert.equal(options.matcher(gael), true);
+        let query;
+        query = 'el';  // Matches both "othELlo" and "cordELia"
+        assert.equal(matcher(query, othello), true);
+        assert.equal(matcher(query, cordelia), true);
 
-        options.query = 'Gaël';
-        assert.equal(options.matcher(gael), true);
+        query = 'bender';  // Doesn't exist
+        assert.equal(matcher(query, othello), false);
+        assert.equal(matcher(query, cordelia), false);
 
-        options.query = 'gaël';
-        assert.equal(options.matcher(gael), true);
+        query = 'gael';
+        assert.equal(matcher(query, gael), true);
+
+        query = 'Gaël';
+        assert.equal(matcher(query, gael), true);
+
+        query = 'gaël';
+        assert.equal(matcher(query, gael), true);
 
         // Don't make suggestions if the last name only has whitespaces
         // (we're between typing names).
-        options.query = 'othello@zulip.com,     ';
-        assert.equal(options.matcher(othello), false);
-        assert.equal(options.matcher(cordelia), false);
+        query = 'othello@zulip.com,     ';
+        assert.equal(matcher(query, othello), false);
+        assert.equal(matcher(query, cordelia), false);
 
-        // options.query = 'othello@zulip.com,, , cord';
-        options.query = 'cord';
-        assert.equal(options.matcher(othello), false);
-        assert.equal(options.matcher(cordelia), true);
+        // query = 'othello@zulip.com,, , cord';
+        query = 'cord';
+        assert.equal(matcher(query, othello), false);
+        assert.equal(matcher(query, cordelia), true);
 
         // If the user is already in the list, typeahead doesn't include it
         // again.
-        options.query = 'cordelia@zulip.com, cord';
-        assert.equal(options.matcher(othello), false);
-        assert.equal(options.matcher(cordelia), false);
+        query = 'cordelia@zulip.com, cord';
+        assert.equal(matcher(query, othello), false);
+        assert.equal(matcher(query, cordelia), false);
 
         // options.sorter()
         //
@@ -684,9 +691,9 @@ run_test('initialize', () => {
         // Adds a `no break-space` at the end. This should fail
         // if there wasn't any logic replacing `no break-space`
         // with normal space.
-        options.query = 'cordelia' + String.fromCharCode(160);
-        assert.equal(options.matcher(cordelia), true);
-        assert.equal(options.matcher(othello), false);
+        query = 'cordelia' + String.fromCharCode(160);
+        assert.equal(matcher(query, cordelia), true);
+        assert.equal(matcher(query, othello), false);
 
         const event = {
             target: '#doesnotmatter',
