@@ -335,10 +335,14 @@ class Command(BaseCommand):
                         r = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                         subscriptions_list.append((profile, r))
             else:
+                num_streams = len(recipient_streams)
+                num_users = len(profiles)
                 for i, profile in enumerate(profiles):
                     # Subscribe to some streams.
-                    for type_id in recipient_streams[:int(len(recipient_streams) *
-                                                          float(i)/len(profiles)) + 1]:
+                    fraction = float(i) / num_users
+                    num_recips = int(num_streams * fraction) + 1
+
+                    for type_id in recipient_streams[:num_recips]:
                         r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
                         subscriptions_list.append((profile, r))
 
