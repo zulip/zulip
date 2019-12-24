@@ -669,22 +669,28 @@ run_test('initialize', () => {
 
         // options.sorter()
         //
+
+        function sorter(query, people) {
+            options.query = query;
+            return options.sorter(people);
+        }
+
         // The sorter's output has the items that match the query from the
         // beginning first, and then the rest of them in REVERSE order of
         // the input.
-        options.query = 'othello';
-        actual_value = options.sorter([othello]);
+        query = 'othello';
+        actual_value = sorter(query, [othello]);
         expected_value = [othello];
         assert.deepEqual(actual_value, expected_value);
 
         // A literal match at the beginning of an element puts it at the top.
-        options.query = 'co';  // Matches everything ("x@zulip.COm")
-        actual_value = options.sorter([othello, deactivated_user, cordelia]);
+        query = 'co';  // Matches everything ("x@zulip.COm")
+        actual_value = sorter(query, [othello, deactivated_user, cordelia]);
         expected_value = [cordelia, othello, deactivated_user];
         assert.deepEqual(actual_value, expected_value);
 
-        options.query = 'non-existing-user';
-        actual_value = options.sorter([]);
+        query = 'non-existing-user';
+        actual_value = sorter(query, []);
         expected_value = [];
         assert.deepEqual(actual_value, expected_value);
 
