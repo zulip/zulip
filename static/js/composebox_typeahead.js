@@ -130,7 +130,7 @@ function get_stream_or_user_group_matcher(query) {
     };
 }
 
-function get_person_or_user_group_matcher(query) {
+exports.get_person_or_user_group_matcher = function (query) {
     query = clean_query_lowercase(query);
 
     return function (item) {
@@ -140,7 +140,7 @@ function get_person_or_user_group_matcher(query) {
 
         return query_matches_person(query, item);
     };
-}
+};
 
 function get_slash_matcher(query) {
     query = clean_query_lowercase(query);
@@ -477,6 +477,18 @@ exports.slash_commands = [
     },
 ];
 
+exports.get_pm_people = function (query) {
+    const people = compose_pm_pill.get_typeahead_items();
+    const groups = user_groups.get_realm_user_groups();
+
+    const people_and_groups = people.concat(groups);
+    const matcher = exports.get_person_or_user_group_matcher(query);
+
+    const filtered_results = _.filter(people_and_groups, matcher);
+
+    return typeahead_helper.sort_people_and_user_groups(query, filtered_results);
+};
+
 exports.get_sorted_filtered_items = function (query) {
     /*
         This is just a "glue" function to work
@@ -791,7 +803,7 @@ exports.compose_content_matcher = function (completing, token) {
         return get_emoji_matcher(token);
     case 'mention':
     case 'silent_mention':
-        return get_person_or_user_group_matcher(token);
+        return exports.get_person_or_user_group_matcher(token);
     case 'slash':
         return get_slash_matcher(token);
     case 'stream':
@@ -969,22 +981,18 @@ exports.initialize = function () {
     });
 
     $("#private_message_recipient").typeahead({
-        source: function () {
-            const people = compose_pm_pill.get_typeahead_items();
-            const groups = user_groups.get_realm_user_groups();
-            return people.concat(groups);
-        },
+        source: exports.get_pm_people,
         items: 5,
         dropup: true,
         fixed: true,
         highlighter: function (item) {
             return typeahead_helper.render_person_or_user_group(item);
         },
-        matcher: function (item) {
-            return get_person_or_user_group_matcher(this.query)(item);
+        matcher: function () {
+            return true;
         },
-        sorter: function (matches) {
-            return typeahead_helper.sort_people_and_user_groups(this.query, matches);
+        sorter: function (items) {
+            return items;
         },
         updater: function (item) {
             if (user_groups.is_user_group(item)) {

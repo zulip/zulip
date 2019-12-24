@@ -602,7 +602,7 @@ run_test('initialize', () => {
         };
 
         // This should match the users added at the beginning of this test file.
-        let actual_value = options.source();
+        let actual_value = options.source('');
         let expected_value = [hamlet, othello, cordelia, lear,
                               twin1, twin2, gael, hamletcharacters, backend];
         assert.deepEqual(actual_value, expected_value);
@@ -626,11 +626,9 @@ run_test('initialize', () => {
         expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-cordelia@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>';
         assert.equal(actual_value, expected_value);
 
-        // options.matcher()
-
         function matcher(query, person) {
-            options.query = query;
-            return options.matcher(person);
+            const matcher = ct.get_person_or_user_group_matcher(query);
+            return matcher(person);
         }
 
         let query;
@@ -668,12 +666,8 @@ run_test('initialize', () => {
         assert.equal(matcher(query, othello), false);
         assert.equal(matcher(query, cordelia), false);
 
-        // options.sorter()
-        //
-
         function sorter(query, people) {
-            options.query = query;
-            return options.sorter(people);
+            return typeahead_helper.sort_people_and_user_groups(query, people);
         }
 
         // The sorter's output has the items that match the query from the
