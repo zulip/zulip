@@ -51,21 +51,23 @@ exports.highlight_with_escaping_and_regex = function (regex, item) {
     return result;
 };
 
-exports.highlight_query_in_phrase = function (query, phrase) {
+exports.make_query_highlighter = function (query) {
     let i;
     query = query.toLowerCase();
     query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
     const regex = new RegExp('(^' + query + ')', 'ig');
 
-    let result = "";
-    const parts = phrase.split(' ');
-    for (i = 0; i < parts.length; i += 1) {
-        if (i > 0) {
-            result += " ";
+    return function (phrase) {
+        let result = "";
+        const parts = phrase.split(' ');
+        for (i = 0; i < parts.length; i += 1) {
+            if (i > 0) {
+                result += " ";
+            }
+            result += exports.highlight_with_escaping_and_regex(regex, parts[i]);
         }
-        result += exports.highlight_with_escaping_and_regex(regex, parts[i]);
-    }
-    return result;
+        return result;
+    };
 };
 
 exports.render_typeahead_item = function (args) {
