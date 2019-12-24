@@ -2,12 +2,15 @@ function stream_matches_query(stream_name, q) {
     return common.phrase_match(q, stream_name);
 }
 
-function highlight_person(query, person) {
-    const hilite = typeahead_helper.highlight_query_in_phrase;
-    if (settings_org.show_email()) {
-        return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
-    }
-    return hilite(query, person.full_name);
+function make_person_highlighter(query) {
+    const hilite = typeahead_helper.make_query_highlighter(query);
+
+    return function (person) {
+        if (settings_org.show_email()) {
+            return hilite(person.full_name) + " &lt;" + hilite(person.email) + "&gt;";
+        }
+        return hilite(person.full_name);
+    };
 }
 
 function match_criteria(operators, criteria) {
@@ -148,13 +151,15 @@ function get_group_suggestions(all_persons, last, operators) {
 
     const prefix = Filter.operator_to_prefix('pm-with', negated);
 
+    const highlight_person = make_person_highlighter(last_part);
+
     const suggestions = _.map(persons, function (person) {
         const term = {
             operator: 'pm-with',
             operand: all_but_last_part + ',' + person.email,
             negated: negated,
         };
-        const name = highlight_person(last_part, person);
+        const name = highlight_person(person);
         const description = prefix + ' ' + Handlebars.Utils.escapeExpression(all_but_last_part) + ',' + name;
         let terms = [term];
         if (negated) {
@@ -202,8 +207,10 @@ function get_person_suggestions(all_persons, last, operators, autocomplete_opera
 
     const prefix = Filter.operator_to_prefix(autocomplete_operator, last.negated);
 
+    const highlight_person = make_person_highlighter(query);
+
     const objs = _.map(persons, function (person) {
-        const name = highlight_person(query, person);
+        const name = highlight_person(person);
         const description = prefix + ' ' + name;
         const terms = [{
             operator: autocomplete_operator,
