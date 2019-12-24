@@ -209,8 +209,41 @@ class Command(BaseCommand):
                 ("aaron", "AARON@zulip.com"),
                 ("Polonius", "polonius@zulip.com"),
             ]
-            for i in range(options["extra_users"]):
-                names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
+
+            # For testing really large batches:
+            # Create extra users with semi realistic names to make search
+            # functions somewhat realistic.  We'll still create 1000 users
+            # like Extra222 User for some predicability.
+            num_names = options['extra_users']
+            num_boring_names = 1000
+
+            for i in range(min(num_names, num_boring_names)):
+                full_name = 'Extra%03d User' % (i,)
+                names.append((full_name, 'extrauser%d@zulip.com' % (i,)))
+
+            if num_names > num_boring_names:
+                fnames = ['Amber', 'Arpita', 'Bob', 'Cindy', 'Daniela', 'Dan', 'Dinesh',
+                          'Faye', 'François', 'George', 'Hank', 'Irene',
+                          'James', 'Janice', 'Jenny', 'Jill', 'John',
+                          'Kate', 'Katelyn', 'Kobe', 'Lexi', 'Manish', 'Mark', 'Matt', 'Mayna',
+                          'Michael', 'Pete', 'Peter', 'Phil', 'Phillipa', 'Preston',
+                          'Sally', 'Scott', 'Sandra', 'Steve', 'Stephanie',
+                          'Vera']
+                mnames = ['de', 'van', 'von', 'Shaw', 'T.']
+                lnames = ['Adams', 'Agarwal', 'Beal', 'Benson', 'Bonita', 'Davis',
+                          'George', 'Harden', 'James', 'Jones', 'Johnson', 'Jordan',
+                          'Lee', 'Leonard', 'Singh', 'Smith', 'Patel', 'Towns', 'Wall']
+
+            for i in range(num_boring_names, num_names):
+                fname = random.choice(fnames) + str(i)
+                full_name = fname
+                if random.random() < 0.7:
+                    if random.random() < 0.5:
+                        full_name += ' ' + random.choice(mnames)
+                    full_name += ' ' + random.choice(lnames)
+                email = fname.lower() + '@zulip.com'
+                names.append((full_name, email))
+
             create_users(zulip_realm, names)
 
             iago = get_user("iago@zulip.com", zulip_realm)
