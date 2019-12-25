@@ -2509,6 +2509,21 @@ class ScheduledEmail(AbstractScheduledJob):
                                                self.address or list(self.users.all()),
                                                self.scheduled_timestamp)
 
+class MissedMessageEmailAddress(models.Model):
+    EXPIRY_SECONDS = 60 * 60 * 24 * 5
+
+    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    email_token = models.CharField(max_length=34, unique=True, db_index=True)  # type: str
+
+    # Timestamp of when the missed message address generated.
+    # The address is valid until timestamp + EXPIRY_SECONDS.
+    timestamp = models.DateTimeField(db_index=True, default=timezone_now)  # type: datetime.datetime
+    times_used = models.PositiveIntegerField(default=0, db_index=True)  # type: int
+
+    def __str__(self) -> str:
+        return settings.EMAIL_GATEWAY_PATTERN % (self.email_token,)
+
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type: Recipient
