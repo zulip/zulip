@@ -565,12 +565,7 @@ function attach_suggestions(result, base, suggestions) {
     });
 }
 
-exports.get_suggestions = function (base_query, query) {
-    // This method works in tandem with the typeahead library to generate
-    // search suggestions.  If you want to change its behavior, be sure to update
-    // the tests.  Its API is partly shaped by the typeahead library, which wants
-    // us to give it strings only, but we also need to return our caller a hash
-    // with information for subsequent callbacks.
+exports.get_search_result = function (base_query, query) {
     let result = [];
     let suggestion;
     let suggestions;
@@ -682,32 +677,10 @@ exports.get_suggestions = function (base_query, query) {
     attach_suggestions(result, base, suggestions);
 
     result = result.concat(suggestions);
-
-    _.each(result, function (sug) {
-        const first = sug.description.charAt(0).toUpperCase();
-        sug.description = first + sug.description.slice(1);
-    });
-
-    // Typeahead expects us to give it strings, not objects, so we maintain our own hash
-    // back to our objects, and we also filter duplicates here.
-    const lookup_table = {};
-    const unique_suggestions = [];
-    _.each(result, function (obj) {
-        if (!lookup_table[obj.search_string]) {
-            lookup_table[obj.search_string] = obj;
-            unique_suggestions.push(obj);
-        }
-    });
-    const strings = _.map(unique_suggestions, function (obj) {
-        return obj.search_string;
-    });
-    return {
-        strings: strings,
-        lookup_table: lookup_table,
-    };
+    return result;
 };
 
-exports.get_suggestions_legacy = function (query) {
+exports.get_search_result_legacy = function (query) {
     // This method works in tandem with the typeahead library to generate
     // search suggestions.  If you want to change its behavior, be sure to update
     // the tests.  Its API is partly shaped by the typeahead library, which wants
@@ -805,7 +778,20 @@ exports.get_suggestions_legacy = function (query) {
 
     suggestions = get_operator_subset_suggestions(operators);
     result = result.concat(suggestions);
+    return result;
+};
 
+exports.get_suggestions_legacy = function (query) {
+    const result = exports.get_search_result_legacy(query);
+    return exports.finalize_search_result(result);
+};
+
+exports.get_suggestions = function (base_query, query) {
+    const result = exports.get_search_result(base_query, query);
+    return exports.finalize_search_result(result);
+};
+
+exports.finalize_search_result = function (result) {
     _.each(result, function (sug) {
         const first = sug.description.charAt(0).toUpperCase();
         sug.description = first + sug.description.slice(1);
