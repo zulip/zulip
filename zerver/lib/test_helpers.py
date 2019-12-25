@@ -515,6 +515,9 @@ def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocove
         RealmEmoji = apps.get_model('zerver', 'RealmEmoji')
         RealmFilter = apps.get_model('zerver', 'RealmFilter')
         Recipient = apps.get_model('zerver', 'Recipient')
+        Recipient.PERSONAL = 1
+        Recipient.STREAM = 2
+        Recipient.HUDDLE = 3
         ScheduledEmail = apps.get_model('zerver', 'ScheduledEmail')
         ScheduledMessage = apps.get_model('zerver', 'ScheduledMessage')
         Service = apps.get_model('zerver', 'Service')
