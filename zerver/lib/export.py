@@ -98,6 +98,7 @@ ALL_ZULIP_TABLES = {
     'zerver_emailchangestatus',
     'zerver_huddle',
     'zerver_message',
+    'zerver_missedmessageemailaddress',
     'zerver_multiuseinvite',
     'zerver_multiuseinvite_streams',
     'zerver_preregistrationuser',
@@ -144,6 +145,11 @@ NON_EXPORTED_TABLES = {
     'zerver_multiuseinvite_streams',
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
+
+    # Missed message addresses are low value to export since
+    # missed-message email addresses include the server's hostname and
+    # expire after a few days.
+    'zerver_missedmessageemailaddress',
 
     # When switching servers, clients will need to re-login and
     # reregister for push notifications anyway.
