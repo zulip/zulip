@@ -17,28 +17,16 @@ exports.highlight_with_escaping = function (query, item) {
     // item: The string we are trying to appropriately highlight
     query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
     const regex = new RegExp('(' + query + ')', 'ig');
-    // The result of the split will include the query term, because our regex
-    // has parens in it.
-    // (as per https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String/split)
-    // However, "not all browsers support this capability", so this is a place to look
-    // if we have an issue here in, e.g. IE.
-    const pieces = item.split(regex);
+
+    return exports.highlight_with_escaping_and_regex(regex, item);
+};
+
+exports.highlight_with_escaping_and_regex = function (regex, item) {
     // We need to assemble this manually (as opposed to doing 'join') because we need to
     // (1) escape all the pieces and (2) the regex is case-insensitive, and we need
     // to know the case of the content we're replacing (you can't just use a bolded
     // version of 'query')
-    let result = "";
-    _.each(pieces, function (piece) {
-        if (piece.match(regex)) {
-            result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
-        } else {
-            result += Handlebars.Utils.escapeExpression(piece);
-        }
-    });
-    return result;
-};
 
-exports.highlight_with_escaping_and_regex = function (regex, item) {
     const pieces = item.split(regex);
     let result = "";
     _.each(pieces, function (piece) {
