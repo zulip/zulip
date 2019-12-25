@@ -1,3 +1,5 @@
+exports.max_num_of_search_results = 12;
+
 function stream_matches_query(stream_name, q) {
     return common.phrase_match(q, stream_name);
 }
@@ -779,14 +781,21 @@ exports.get_search_result_legacy = function (query) {
         get_has_filter_suggestions,
     ];
 
+    const max_items = exports.max_num_of_search_results;
+
     _.each(filterers, function (filterer) {
-        const suggestions = filterer(last, base_operators);
-        attacher.attach_many(suggestions);
+        if (attacher.result.length < max_items) {
+            const suggestions = filterer(last, base_operators);
+            attacher.attach_many(suggestions);
+        }
     });
 
-    const subset_suggestions = get_operator_subset_suggestions(operators);
-    attacher.concat(subset_suggestions);
-    return attacher.result;
+    if (attacher.result.length < max_items) {
+        const subset_suggestions = get_operator_subset_suggestions(operators);
+        attacher.concat(subset_suggestions);
+    }
+
+    return attacher.result.slice(0, max_items);
 };
 
 exports.get_suggestions_legacy = function (query) {

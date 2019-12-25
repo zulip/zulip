@@ -85,9 +85,11 @@ run_test('initizalize', () => {
         return 'is:starred';
     };
 
+    search_suggestion.max_num_of_search_results = 99;
     search_query_box.typeahead = (opts) => {
+
         assert.equal(opts.fixed, true);
-        assert.equal(opts.items, 12);
+        assert.equal(opts.items, 99);
         assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);

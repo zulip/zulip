@@ -13,6 +13,8 @@ zrequire('unread');
 zrequire('common');
 const search = zrequire('search_suggestion');
 
+search.max_num_of_search_results = 15;
+
 const bob = {
     email: 'bob@zulip.com',
     full_name: 'Bob Roberts',
