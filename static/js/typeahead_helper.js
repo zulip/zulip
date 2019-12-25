@@ -18,11 +18,6 @@ exports.build_highlight_regex = function (query) {
     return regex;
 };
 
-exports.highlight_with_escaping = function (query, item) {
-    const regex = exports.build_highlight_regex(query);
-    return exports.highlight_with_escaping_and_regex(regex, item);
-};
-
 exports.highlight_with_escaping_and_regex = function (regex, item) {
     // We need to assemble this manually (as opposed to doing 'join') because we need to
     // (1) escape all the pieces and (2) the regex is case-insensitive, and we need

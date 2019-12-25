@@ -94,9 +94,12 @@ function get_stream_suggestions(last, operators) {
 
     streams = typeahead_helper.sorter(query, streams);
 
+    const regex = typeahead_helper.build_highlight_regex(query);
+    const hilite = typeahead_helper.highlight_with_escaping_and_regex;
+
     const objs = _.map(streams, function (stream) {
         const prefix = 'stream';
-        const highlighted_stream = typeahead_helper.highlight_with_escaping(query, stream);
+        const highlighted_stream = hilite(regex, stream);
         const verb = last.negated ? 'exclude ' : '';
         const description = verb + prefix + ' ' + highlighted_stream;
         const term = {

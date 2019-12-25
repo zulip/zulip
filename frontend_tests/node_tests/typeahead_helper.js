@@ -408,22 +408,27 @@ run_test('sort_recipients', () => {
 });
 
 run_test('highlight_with_escaping', () => {
+    function highlight(query, item) {
+        const regex = th.build_highlight_regex(query);
+        return th.highlight_with_escaping_and_regex(regex, item);
+    }
+
     let item = "Denmark";
     let query = "Den";
     let expected = "<strong>Den</strong>mark";
-    let result = th.highlight_with_escaping(query, item);
+    let result = highlight(query, item);
     assert.equal(result, expected);
 
     item = "w3IrD_naMe";
     query = "w3IrD_naMe";
     expected = "<strong>w3IrD_naMe</strong>";
-    result = th.highlight_with_escaping(query, item);
+    result = highlight(query, item);
     assert.equal(result, expected);
 
     item = "development help";
     query = "development h";
     expected = "<strong>development h</strong>elp";
-    result = th.highlight_with_escaping(query, item);
+    result = highlight(query, item);
     assert.equal(result, expected);
 });
 
