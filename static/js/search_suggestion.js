@@ -688,7 +688,6 @@ exports.get_search_result_legacy = function (query) {
     // with information for subsequent callbacks.
     let result = [];
     let suggestion;
-    let suggestions;
 
     // Add an entry for narrow by operators.
     const operators = Filter.parse(query);
@@ -736,48 +735,40 @@ exports.get_search_result_legacy = function (query) {
     }
     const base = get_default_suggestion_legacy(base_operators);
 
-    // Get all individual suggestions, and then attach_suggestions
-    // mutates the list 'result' to add a properly-formatted suggestion
-    suggestions = get_streams_filter_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
-
-    suggestions = get_is_filter_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
-
-    suggestions = get_sent_by_me_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
-
-    suggestions = get_stream_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
-
     const persons = people.get_all_persons();
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
-    attach_suggestions(result, base, suggestions);
+    function get_people(flavor) {
+        return function (last, base_operators) {
+            return get_person_suggestions(persons, last, base_operators, flavor);
+        };
+    }
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'pm-with');
-    attach_suggestions(result, base, suggestions);
+    function get_groups(last, base_operators) {
+        return get_group_suggestions(persons, last, base_operators);
+    }
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'from');
-    attach_suggestions(result, base, suggestions);
+    const filterers = [
+        get_streams_filter_suggestions,
+        get_is_filter_suggestions,
+        get_sent_by_me_suggestions,
+        get_stream_suggestions,
+        get_people('sender'),
+        get_people('pm-with'),
+        get_people('from'),
+        get_people('group-pm-with'),
+        get_groups,
+        get_topic_suggestions,
+        get_operator_suggestions,
+        get_has_filter_suggestions,
+    ];
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'group-pm-with');
-    attach_suggestions(result, base, suggestions);
+    _.each(filterers, function (filterer) {
+        const suggestions = filterer(last, base_operators);
+        attach_suggestions(result, base, suggestions);
+    });
 
-    suggestions = get_group_suggestions(persons, last, base_operators);
-    attach_suggestions(result, base, suggestions);
-
-    suggestions = get_topic_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
-
-    suggestions = get_operator_suggestions(last);
-    attach_suggestions(result, base, suggestions);
-
-    suggestions = get_has_filter_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
-
-    suggestions = get_operator_subset_suggestions(operators);
-    result = result.concat(suggestions);
+    const subset_suggestions = get_operator_subset_suggestions(operators);
+    result = result.concat(subset_suggestions);
     return result;
 };
 
