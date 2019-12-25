@@ -11,13 +11,15 @@ exports.get_cleaned_pm_recipients = function (query_string) {
     return recipients;
 };
 
-// Loosely based on Bootstrap's default highlighter, but with escaping added.
-exports.highlight_with_escaping = function (query, item) {
-    // query: The text currently in the searchbox
-    // item: The string we are trying to appropriately highlight
+exports.build_highlight_regex = function (query) {
+    // the regex below is based on bootstrap code
     query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
     const regex = new RegExp('(' + query + ')', 'ig');
+    return regex;
+};
 
+exports.highlight_with_escaping = function (query, item) {
+    const regex = exports.build_highlight_regex(query);
     return exports.highlight_with_escaping_and_regex(regex, item);
 };
 
@@ -42,8 +44,8 @@ exports.highlight_with_escaping_and_regex = function (regex, item) {
 exports.make_query_highlighter = function (query) {
     let i;
     query = query.toLowerCase();
-    query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
-    const regex = new RegExp('(^' + query + ')', 'ig');
+
+    const regex = exports.build_highlight_regex(query);
 
     return function (phrase) {
         let result = "";
