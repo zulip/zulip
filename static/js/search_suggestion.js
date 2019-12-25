@@ -555,18 +555,40 @@ function get_operator_suggestions(last) {
     });
 }
 
-function attach_suggestions(result, base, suggestions) {
-    _.each(suggestions, function (suggestion) {
+function make_attacher(base) {
+    const self = {};
+    self.result = [];
+    const prev = {};
+
+    function prepend_base(suggestion) {
         if (base && base.description.length > 0) {
             suggestion.search_string = base.search_string + " " + suggestion.search_string;
             suggestion.description = base.description + ", " + suggestion.description;
         }
-        result.push(suggestion);
-    });
+    }
+
+    self.push = function (suggestion) {
+        if (!prev[suggestion.search_string]) {
+            prev[suggestion.search_string] = suggestion;
+            self.result.push(suggestion);
+        }
+    };
+
+    self.concat = function (suggestions) {
+        _.each(suggestions, self.push);
+    };
+
+    self.attach_many = function (suggestions) {
+        _.each(suggestions, function (suggestion) {
+            prepend_base(suggestion);
+            self.push(suggestion);
+        });
+    };
+
+    return self;
 }
 
 exports.get_search_result = function (base_query, query) {
-    let result = [];
     let suggestion;
     let suggestions;
 
@@ -618,6 +640,10 @@ exports.get_search_result = function (base_query, query) {
         }
     }
 
+    const base = get_default_suggestion(query_operators.slice(0, -1));
+    const attacher = make_attacher(base);
+    const attach = attacher.attach_many;
+
     // Display the default first
     // `has` and `is` operators work only on predefined categories. Default suggestion
     // is not displayed in that case. e.g. `messages with one or more abc` as
@@ -625,7 +651,7 @@ exports.get_search_result = function (base_query, query) {
     if (last.operator !== '' && last.operator !== 'has' && last.operator !== 'is') {
         suggestion = get_default_suggestion(query_operators);
         if (suggestion) {
-            result = [suggestion];
+            attacher.push(suggestion);
         }
     }
 
@@ -634,59 +660,49 @@ exports.get_search_result = function (base_query, query) {
         base_operators = operators.slice(0, -1);
     }
 
-    const base = get_default_suggestion(query_operators.slice(0, -1));
-
-    // Get all individual suggestions, and then attach_suggestions
-    // mutates the list 'result' to add a properly-formatted suggestion
     suggestions = get_streams_filter_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     suggestions = get_is_filter_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     suggestions = get_sent_by_me_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     suggestions = get_stream_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     const persons = people.get_all_persons();
 
     suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     suggestions = get_person_suggestions(persons, last, base_operators, 'pm-with');
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     suggestions = get_person_suggestions(persons, last, base_operators, 'from');
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     suggestions = get_person_suggestions(persons, last, base_operators, 'group-pm-with');
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     suggestions = get_group_suggestions(persons, last, base_operators);
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     suggestions = get_topic_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     suggestions = get_operator_suggestions(last);
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
     suggestions = get_has_filter_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
+    attach(suggestions);
 
-    result = result.concat(suggestions);
-    return result;
+    attacher.concat(suggestions);
+    return attacher.result;
 };
 
 exports.get_search_result_legacy = function (query) {
-    // This method works in tandem with the typeahead library to generate
-    // search suggestions.  If you want to change its behavior, be sure to update
-    // the tests.  Its API is partly shaped by the typeahead library, which wants
-    // us to give it strings only, but we also need to return our caller a hash
-    // with information for subsequent callbacks.
-    let result = [];
     let suggestion;
 
     // Add an entry for narrow by operators.
@@ -720,20 +736,21 @@ exports.get_search_result_legacy = function (query) {
         }
     }
 
+    let base_operators = [];
+    if (operators.length > 1) {
+        base_operators = operators.slice(0, -1);
+    }
+    const base = get_default_suggestion_legacy(base_operators);
+    const attacher = make_attacher(base);
+
     // Display the default first
     // `has` and `is` operators work only on predefined categories. Default suggestion
     // is not displayed in that case. e.g. `messages with one or more abc` as
     // a suggestion for `has:abc`does not make sense.
     if (last.operator !== '' && last.operator !== 'has' && last.operator !== 'is') {
         suggestion = get_default_suggestion_legacy(operators);
-        result = [suggestion];
+        attacher.push(suggestion);
     }
-
-    let base_operators = [];
-    if (operators.length > 1) {
-        base_operators = operators.slice(0, -1);
-    }
-    const base = get_default_suggestion_legacy(base_operators);
 
     const persons = people.get_all_persons();
 
@@ -764,12 +781,12 @@ exports.get_search_result_legacy = function (query) {
 
     _.each(filterers, function (filterer) {
         const suggestions = filterer(last, base_operators);
-        attach_suggestions(result, base, suggestions);
+        attacher.attach_many(suggestions);
     });
 
     const subset_suggestions = get_operator_subset_suggestions(operators);
-    result = result.concat(subset_suggestions);
-    return result;
+    attacher.concat(subset_suggestions);
+    return attacher.result;
 };
 
 exports.get_suggestions_legacy = function (query) {
@@ -788,17 +805,13 @@ exports.finalize_search_result = function (result) {
         sug.description = first + sug.description.slice(1);
     });
 
-    // Typeahead expects us to give it strings, not objects, so we maintain our own hash
-    // back to our objects, and we also filter duplicates here.
+    // Typeahead expects us to give it strings, not objects,
+    // so we maintain our own hash back to our objects
     const lookup_table = {};
-    const unique_suggestions = [];
     _.each(result, function (obj) {
-        if (!lookup_table[obj.search_string]) {
-            lookup_table[obj.search_string] = obj;
-            unique_suggestions.push(obj);
-        }
+        lookup_table[obj.search_string] = obj;
     });
-    const strings = _.map(unique_suggestions, function (obj) {
+    const strings = _.map(result, function (obj) {
         return obj.search_string;
     });
     return {
