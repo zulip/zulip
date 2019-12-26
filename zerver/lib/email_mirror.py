@@ -145,54 +145,6 @@ def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bo
 
     return body
 
-def send_to_missed_message_address(address: str, message: message.Message) -> None:
-    mm_address = get_missed_message_address(address)
-    if not mm_address.is_usable():
-        raise ZulipEmailForwardError("Missed message address out of uses.")
-    mm_address.increment_times_used()
-
-    user_profile = mm_address.user_profile
-    topic = mm_address.message.topic_name()
-
-    if mm_address.message.recipient.type == Recipient.PERSONAL:
-        # We need to reply to the sender so look up their personal recipient_id
-        recipient = mm_address.message.sender.recipient
-    else:
-        recipient = mm_address.message.recipient
-
-    if not is_user_active(user_profile):
-        logger.warning("Sending user is not active. Ignoring this missed message email.")
-        return
-
-    body = construct_zulip_body(message, user_profile.realm)
-
-    if recipient.type == Recipient.STREAM:
-        stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
-        internal_send_stream_message(
-            user_profile.realm, user_profile, stream,
-            topic, body
-        )
-        recipient_str = stream.name
-    elif recipient.type == Recipient.PERSONAL:
-        display_recipient = get_display_recipient(recipient)
-        assert not isinstance(display_recipient, str)
-        recipient_str = display_recipient[0]['email']
-        recipient_user = get_user(recipient_str, user_profile.realm)
-        internal_send_private_message(user_profile.realm, user_profile,
-                                      recipient_user, body)
-    elif recipient.type == Recipient.HUDDLE:
-        display_recipient = get_display_recipient(recipient)
-        assert not isinstance(display_recipient, str)
-        emails = [user_dict['email'] for user_dict in display_recipient]
-        recipient_str = ', '.join(emails)
-        internal_send_huddle_message(user_profile.realm, user_profile,
-                                     emails, body)
-    else:
-        raise AssertionError("Invalid recipient type!")
-
-    logger.info("Successfully processed email from user %s to %s" % (
-        user_profile.id, recipient_str))
-
 ## Sending the Zulip ##
 
 class ZulipEmailForwardUserError(ZulipEmailForwardError):
@@ -350,7 +302,52 @@ def process_stream_message(to: str, message: message.Message) -> None:
         stream.name, stream.realm.string_id))
 
 def process_missed_message(to: str, message: message.Message) -> None:
-    send_to_missed_message_address(to, message)
+    mm_address = get_missed_message_address(to)
+    if not mm_address.is_usable():
+        raise ZulipEmailForwardError("Missed message address out of uses.")
+    mm_address.increment_times_used()
+
+    user_profile = mm_address.user_profile
+    topic = mm_address.message.topic_name()
+
+    if mm_address.message.recipient.type == Recipient.PERSONAL:
+        # We need to reply to the sender so look up their personal recipient_id
+        recipient = mm_address.message.sender.recipient
+    else:
+        recipient = mm_address.message.recipient
+
+    if not is_user_active(user_profile):
+        logger.warning("Sending user is not active. Ignoring this missed message email.")
+        return
+
+    body = construct_zulip_body(message, user_profile.realm)
+
+    if recipient.type == Recipient.STREAM:
+        stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
+        internal_send_stream_message(
+            user_profile.realm, user_profile, stream,
+            topic, body
+        )
+        recipient_str = stream.name
+    elif recipient.type == Recipient.PERSONAL:
+        display_recipient = get_display_recipient(recipient)
+        assert not isinstance(display_recipient, str)
+        recipient_str = display_recipient[0]['email']
+        recipient_user = get_user(recipient_str, user_profile.realm)
+        internal_send_private_message(user_profile.realm, user_profile,
+                                      recipient_user, body)
+    elif recipient.type == Recipient.HUDDLE:
+        display_recipient = get_display_recipient(recipient)
+        assert not isinstance(display_recipient, str)
+        emails = [user_dict['email'] for user_dict in display_recipient]
+        recipient_str = ', '.join(emails)
+        internal_send_huddle_message(user_profile.realm, user_profile,
+                                     emails, body)
+    else:
+        raise AssertionError("Invalid recipient type!")
+
+    logger.info("Successfully processed email from user %s to %s" % (
+        user_profile.id, recipient_str))
 
 def process_message(message: message.Message, rcpt_to: Optional[str]=None) -> None:
     to = None  # type: Optional[str]
