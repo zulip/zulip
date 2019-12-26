@@ -570,7 +570,7 @@ class MirrorWorker(QueueProcessingWorker):
                 return
 
         mirror_email(email.message_from_string(event["message"]),
-                     rcpt_to=rcpt_to, pre_checked=True)
+                     rcpt_to=rcpt_to)
 
 @assign_queue('test', queue_type="test")
 class TestWorker(QueueProcessingWorker):

@@ -134,7 +134,7 @@ class TestMissedMessages(ZulipTestCase):
         return re.sub(r'\s+', ' ', s)
 
     def _get_tokens(self) -> List[str]:
-        return [str(random.getrandbits(32)) for _ in range(30)]
+        return ['mm' + str(random.getrandbits(32)) for _ in range(30)]
 
     def _test_cases(self, msg_id: int, body: str, email_subject: str,
                     send_as_user: bool, verify_html_body: bool=False,
@@ -144,10 +144,10 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
         tokens = self._get_tokens()
-        with patch('zerver.lib.email_mirror.generate_random_token', side_effect=tokens):
+        with patch('zerver.lib.email_mirror.generate_missed_message_token', side_effect=tokens):
             handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id, 'trigger': trigger}])
         if settings.EMAIL_GATEWAY_PATTERN != "":
-            reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t,) for t in tokens]
+            reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (t,) for t in tokens]
             reply_to_emails = [formataddr(("Zulip", address)) for address in reply_to_addresses]
         else:
             reply_to_emails = ["noreply@testserver"]
