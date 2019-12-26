@@ -134,19 +134,22 @@ class QueueProcessingWorker:
         try:
             self.consume(data)
         except Exception:
-            self._log_problem()
-            if not os.path.exists(settings.QUEUE_ERROR_DIR):
-                os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
-            fname = '%s.errors' % (self.queue_name,)
-            fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
-            line = '%s\t%s\n' % (time.asctime(), ujson.dumps(data))
-            lock_fn = fn + '.lock'
-            with lockfile(lock_fn):
-                with open(fn, 'ab') as f:
-                    f.write(line.encode('utf-8'))
-            check_and_send_restart_signal()
+            self._handle_consume_exception([data])
         finally:
             reset_queries()
+
+    def _handle_consume_exception(self, events: List[Dict[str, Any]]) -> None:
+        self._log_problem()
+        if not os.path.exists(settings.QUEUE_ERROR_DIR):
+            os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
+        fname = '%s.errors' % (self.queue_name,)
+        fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
+        line = '%s\t%s\n' % (time.asctime(), ujson.dumps(events))
+        lock_fn = fn + '.lock'
+        with lockfile(lock_fn):
+            with open(fn, 'ab') as f:
+                f.write(line.encode('utf-8'))
+        check_and_send_restart_signal()
 
     def _log_problem(self) -> None:
         logging.exception("Problem handling data on queue %s" % (self.queue_name,))
@@ -167,10 +170,11 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
 
     def start(self) -> None:  # nocoverage
         while True:
-            # TODO: Probably it'd be better to share code with consume_wrapper()
             events = self.q.drain_queue(self.queue_name, json=True)
             try:
                 self.consume_batch(events)
+            except Exception:
+                self._handle_consume_exception(events)
             finally:
                 reset_queries()
 
@@ -180,7 +184,7 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
             if not self.sleep_only_if_empty or len(events) == 0:
                 time.sleep(self.sleep_delay)
 
-    def consume_batch(self, event: List[Dict[str, Any]]) -> None:
+    def consume_batch(self, events: List[Dict[str, Any]]) -> None:
         raise NotImplementedError
 
     def consume(self, event: Dict[str, Any]) -> None:
