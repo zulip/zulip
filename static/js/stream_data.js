@@ -1,4 +1,5 @@
 const Dict = require('./dict').Dict;
+const FoldDict = require('./fold_dict').FoldDict;
 const LazySet = require('./lazy_set').LazySet;
 
 const BinaryDict = function (pred) {
@@ -18,8 +19,8 @@ const BinaryDict = function (pred) {
     */
 
     const self = {};
-    self.trues = new Dict({fold_case: true});
-    self.falses = new Dict({fold_case: true});
+    self.trues = new FoldDict();
+    self.falses = new FoldDict();
 
     self.true_values = function () {
         return self.trues.values();
@@ -83,13 +84,12 @@ let stream_info;
 let subs_by_stream_id;
 let filter_out_inactives = false;
 
-const stream_ids_by_name = new Dict({fold_case: true});
+const stream_ids_by_name = new FoldDict();
 
 exports.clear_subscriptions = function () {
     stream_info = new BinaryDict(function (sub) {
         return sub.subscribed;
     });
-
     subs_by_stream_id = new Dict();
 };
 

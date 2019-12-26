@@ -13,10 +13,12 @@ run_test('basic', () => {
 
     d.set('foo', 'baz');
     assert.equal(d.get('foo'), 'baz');
+    assert.equal(d.num_items(), 1);
 
     d.set('bar', 'qux');
     assert.equal(d.get('foo'), 'baz');
     assert.equal(d.get('bar'), 'qux');
+    assert.equal(d.num_items(), 2);
 
     assert.equal(d.has('bar'), true);
     assert.equal(d.has('baz'), false);
@@ -52,41 +54,14 @@ run_test('filter_values', () => {
     assert.deepEqual(d.filter_values(pred).sort(), ['fay', 'foo', 'fred']);
 });
 
-run_test('fold_case', () => {
-    const d = new Dict({fold_case: true});
-
-    assert.deepEqual(d.keys(), []);
-
-    assert(!d.has('foo'));
-    d.set('fOO', 'Hello World');
-    assert.equal(d.get('foo'), 'Hello World');
-    assert(d.has('foo'));
-    assert(d.has('FOO'));
-    assert(!d.has('not_a_key'));
-
-    assert.deepEqual(d.keys(), ['fOO']);
-
-    d.del('Foo');
-    assert.equal(d.has('foo'), false);
-
-    assert.deepEqual(d.keys(), []);
-});
-
 run_test('undefined_keys', () => {
     blueslip.set_test_data('error', 'Tried to call a Dict method with an undefined key.');
 
-    let d = new Dict();
+    const d = new Dict();
 
     assert.equal(d.has(undefined), false);
     assert.strictEqual(d.get(undefined), undefined);
-
-    d = new Dict({fold_case: true});
-
-    assert.equal(d.has(undefined), false);
-    assert.strictEqual(d.get(undefined), undefined);
-    assert.equal(blueslip.get_test_logs('error').length, 4);
-
-    blueslip.clear_test_data();
+    assert.equal(blueslip.get_test_logs('error').length, 2);
 });
 
 run_test('restricted_keys', () => {

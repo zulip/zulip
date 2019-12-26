@@ -1,4 +1,5 @@
 const Dict = require('./dict').Dict;
+const FoldDict = require('./fold_dict').FoldDict;
 
 let stream_dict = new Dict(); // stream_id -> array of objects
 
@@ -13,7 +14,7 @@ exports.stream_has_topics = function (stream_id) {
 };
 
 exports.topic_history = function (stream_id) {
-    const topics = new Dict({fold_case: true});
+    const topics = new FoldDict();
 
     const self = {};
 

@@ -1,4 +1,5 @@
 const Dict = require('./dict').Dict;
+const FoldDict = require('./fold_dict').FoldDict;
 
 const partners = new Dict();
 
@@ -15,7 +16,7 @@ exports.recent = (function () {
     // recent conversations with, sorted by time (implemented via
     // `message_id` sorting, since that's how we time-sort messages).
     const self = {};
-    const recent_message_ids = new Dict({fold_case: true}); // key is user_ids_string
+    const recent_message_ids = new FoldDict(); // key is user_ids_string
     const recent_private_messages = [];
 
     self.insert = function (user_ids, message_id) {

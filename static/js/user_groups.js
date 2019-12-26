@@ -1,4 +1,5 @@
 const Dict = require('./dict').Dict;
+const FoldDict = require('./fold_dict').FoldDict;
 
 let user_group_name_dict;
 let user_group_by_id_dict;
@@ -6,7 +7,7 @@ let user_group_by_id_dict;
 // We have an init() function so that our automated tests
 // can easily clear data.
 exports.init = function () {
-    user_group_name_dict = new Dict({fold_case: true});
+    user_group_name_dict = new FoldDict();
     user_group_by_id_dict = new Dict();
 };
 

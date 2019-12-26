@@ -1,4 +1,5 @@
 const Dict = require('./dict').Dict;
+const FoldDict = require('./fold_dict').FoldDict;
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html for notes on
 // how this system is designed.
@@ -65,8 +66,7 @@ const unread_messages = make_id_set();
 
 function make_bucketer(options) {
     const self = {};
-
-    const key_to_bucket = new Dict({fold_case: options.fold_case});
+    const key_to_bucket = options.fold_case ? new FoldDict() : new Dict();
     const reverse_lookup = new Dict();
 
     self.clear = function () {
@@ -273,7 +273,7 @@ exports.unread_topic_counter = (function () {
 
     function str_dict() {
         // Use this when keys are topics
-        return new Dict({fold_case: true});
+        return new FoldDict();
     }
 
     function num_dict() {

@@ -6,6 +6,7 @@ zrequire('stream_data');
 zrequire('util');
 zrequire('unread');
 zrequire('settings_notifications');
+const FoldDict = zrequire('fold_dict').FoldDict;
 
 set_global('page_params', {});
 set_global('blueslip', {});
@@ -285,7 +286,7 @@ run_test('num_unread_for_topic', () => {
     msg_ids = unread.get_msg_ids_for_stream(stream_id);
     assert.deepEqual(msg_ids, _.range(1, 501));
 
-    const topic_dict = new Dict({fold_case: true});
+    const topic_dict = new FoldDict();
 
     let missing_topics = unread.get_missing_topics({
         stream_id: stream_id,

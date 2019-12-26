@@ -1,44 +1,23 @@
 import * as _ from 'underscore';
 
-/**
- * Implementation detail of the Dict class. `key` is `k` converted to a string,
- * in lowercase if the `fold_case` option is enabled.
- */
 type KeyValue<K, V> = { k: K; v: V };
 type Items<K, V> = {
     [key: string]: KeyValue<K, V>;
 };
 
-/**
- * This class primarily exists to support the fold_case option, because so many
- * string keys in Zulip are case-insensitive (emails, stream names, topics,
- * etc.). Dict also accepts any key that can be converted to a string.
- */
 export class Dict<K, V> {
     private _items: Items<K, V> = {};
-    private _fold_case: boolean;
-
-    /**
-     * @param opts - setting `fold_case` to true will make `has()` and `get()`
-     *               case-insensitive. `keys()` and other methods that
-     *               implicitly return keys return the original casing/type
-     *               of the key passed into `set()`.
-     */
-    constructor(opts?: {fold_case: boolean}) {
-        this._fold_case = opts ? opts.fold_case : false;
-    }
 
     /**
      * Constructs a Dict object from an existing object's keys and values.
      * @param obj - A javascript object
-     * @param opts - Options to be passed to the Dict constructor
      */
-    static from<V>(obj: { [key: string]: V }, opts?: {fold_case: boolean}): Dict<string, V> {
+    static from<V>(obj: { [key: string]: V }): Dict<string, V> {
         if (typeof obj !== "object" || obj === null) {
             throw new TypeError("Cannot convert argument to Dict");
         }
 
-        const dict = new Dict<string, V>(opts);
+        const dict = new Dict<string, V>();
         _.each(obj, function (val: V, key: string) {
             dict.set(key, val);
         });
@@ -50,14 +29,13 @@ export class Dict<K, V> {
      * Construct a Dict object from an array with each element set to `true`.
      * Intended for use as a set data structure.
      * @param arr - An array of keys
-     * @param opts - Options to be passed to the Dict constructor
      */
-    static from_array<K, V>(arr: K[], opts?: {fold_case: boolean}): Dict<K, V | true> {
+    static from_array<K, V>(arr: K[]): Dict<K, V | true> {
         if (!(arr instanceof Array)) {
             throw new TypeError("Argument is not an array");
         }
 
-        const dict = new Dict<K, V | true>(opts);
+        const dict = new Dict<K, V | true>();
         for (const key of arr) {
             dict.set(key, true);
         }
@@ -65,7 +43,7 @@ export class Dict<K, V> {
     }
 
     clone(): Dict<K, V> {
-        const dict = new Dict<K, V>({fold_case: this._fold_case});
+        const dict = new Dict<K, V>();
         dict._items = { ...this._items };
         return dict;
     }
@@ -144,13 +122,13 @@ export class Dict<K, V> {
         this._items = {};
     }
 
-    // Handle case-folding of keys and the empty string.
+    // Convert keys to strings and handle undefined.
     private _munge(key: K): string | undefined {
         if (key === undefined) {
             blueslip.error("Tried to call a Dict method with an undefined key.");
             return undefined;
         }
         const str_key = ':' + key.toString();
-        return this._fold_case ? str_key.toLowerCase() : str_key;
+        return str_key;
     }
 }

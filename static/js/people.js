@@ -1,5 +1,6 @@
 require("unorm");  // String.prototype.normalize polyfill for IE11
 const Dict = require('./dict').Dict;
+const FoldDict = require('./fold_dict').FoldDict;
 
 let people_dict;
 let people_by_name_dict;
@@ -17,8 +18,8 @@ exports.init = function () {
     // (all people we've seen), but people_dict can have duplicate
     // keys related to email changes.  We want to deprecate
     // people_dict over time and always do lookups by user_id.
-    people_dict = new Dict({fold_case: true});
-    people_by_name_dict = new Dict({fold_case: true});
+    people_dict = new FoldDict();
+    people_by_name_dict = new FoldDict();
     people_by_user_id_dict = new Dict();
 
     // The next dictionary includes all active users (human/user)
@@ -29,7 +30,7 @@ exports.init = function () {
     pm_recipient_count_dict = new Dict();
 
     // The next Dict maintains a set of ids of people with same full names.
-    duplicate_full_name_data = new Dict({fold_case: true});
+    duplicate_full_name_data = new FoldDict();
 };
 
 // WE INITIALIZE DATA STRUCTURES HERE!
