@@ -581,8 +581,53 @@ class WorkerTest(ZulipTestCase):
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
         with open(fn, 'r') as f:
             line = f.readline().strip()
-        event = ujson.loads(line.split('\t')[1])
+        events = ujson.loads(line.split('\t')[1])
+        self.assert_length(events, 1)
+        event = events[0]
         self.assertEqual(event["type"], 'unexpected behaviour')
+
+        processed = []
+        @queue_processors.assign_queue('unreliable_loopworker')
+        class UnreliableLoopWorker(queue_processors.LoopQueueProcessingWorker):
+            def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+                for event in events:
+                    if event["type"] == 'unexpected behaviour':
+                        raise Exception('Worker task not performing as expected!')
+                    processed.append(event["type"])
+
+        for msg in ['good', 'fine', 'unexpected behaviour', 'back to normal']:
+            fake_client.queue.append(('unreliable_loopworker', {'type': msg}))
+
+        fn = os.path.join(settings.QUEUE_ERROR_DIR, 'unreliable_loopworker.errors')
+        try:
+            os.remove(fn)
+        except OSError:  # nocoverage # error handling for the directory not existing
+            pass
+
+        time_mock = patch(
+            'zerver.worker.queue_processors.time.sleep',
+            side_effect=AbortLoop,
+        )
+
+        with time_mock, simulated_queue_client(lambda: fake_client):
+            loopworker = UnreliableLoopWorker()
+            loopworker.setup()
+            with patch('logging.exception') as logging_exception_mock:
+                try:
+                    loopworker.start()
+                except AbortLoop:
+                    pass
+                logging_exception_mock.assert_called_once_with(
+                    "Problem handling data on queue unreliable_loopworker")
+
+        self.assertEqual(processed, ['good', 'fine'])
+        with open(fn, 'r') as f:
+            line = f.readline().strip()
+        events = ujson.loads(line.split('\t')[1])
+        self.assert_length(events, 4)
+
+        self.assertEqual([event["type"] for event in events],
+                         ['good', 'fine', 'unexpected behaviour', 'back to normal'])
 
     def test_worker_noname(self) -> None:
         class TestWorker(queue_processors.QueueProcessingWorker):
