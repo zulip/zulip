@@ -7,17 +7,9 @@
 
 # Install hunspell, zulip stop words, and run zulip database
 # init.
-FROM postgres:10
-COPY puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/$PG_MAJOR/tsearch_data/zulip_english.stop
+FROM groonga/pgroonga:latest-alpine-10-slim
+RUN apk add -U --no-cache hunspell-en
+RUN ln -sf /usr/share/hunspell/en_US.dic /usr/local/share/postgresql/tsearch_data/en_us.dict && ln -sf /usr/share/hunspell/en_US.aff /usr/local/share/postgresql/tsearch_data/en_us.affix 
+COPY puppet/zulip/files/postgresql/zulip_english.stop /usr/local/share/postgresql/tsearch_data/zulip_english.stop
 COPY scripts/setup/create-db.sql /docker-entrypoint-initdb.d/zulip-create-db.sql
 COPY scripts/setup/create-pgroonga.sql /docker-entrypoint-initdb.d/zulip-create-pgroonga.sql
-COPY scripts/setup/pgroonga-debian.asc /tmp
-RUN apt-key add /tmp/pgroonga-debian.asc \
-    && echo "deb http://packages.groonga.org/debian/ stretch main" > /etc/apt/sources.list.d/zulip.list \
-    && apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-       hunspell-en-us \
-       postgresql-${PG_MAJOR}-pgroonga \
-    && ln -sf /var/cache/postgresql/dicts/en_us.dict "/usr/share/postgresql/$PG_MAJOR/tsearch_data/en_us.dict" \
-    && ln -sf /var/cache/postgresql/dicts/en_us.affix "/usr/share/postgresql/$PG_MAJOR/tsearch_data/en_us.affix" \
-    && rm -rf /var/lib/apt/lists/*
