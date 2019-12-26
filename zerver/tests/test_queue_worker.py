@@ -40,6 +40,11 @@ Event = Dict[str, Any]
 class AbortLoop(Exception):
     pass
 
+loopworker_sleep_mock = patch(
+    'zerver.worker.queue_processors.time.sleep',
+    side_effect=AbortLoop,
+)
+
 class WorkerTest(ZulipTestCase):
     class FakeClient:
         def __init__(self) -> None:
@@ -78,16 +83,11 @@ class WorkerTest(ZulipTestCase):
         fake_client = self.FakeClient()
         worker = SlowQueryWorker()
 
-        time_mock = patch(
-            'zerver.worker.queue_processors.time.sleep',
-            side_effect=AbortLoop,
-        )
-
         send_mock = patch(
             'zerver.worker.queue_processors.internal_send_message'
         )
 
-        with send_mock as sm, time_mock as tm:
+        with send_mock as sm, loopworker_sleep_mock as tm:
             with simulated_queue_client(lambda: fake_client):
                 try:
                     worker.setup()
@@ -131,12 +131,7 @@ class WorkerTest(ZulipTestCase):
         )
         fake_client.queue.append(('user_activity', data))
 
-        time_mock = patch(
-            'zerver.worker.queue_processors.time.sleep',
-            side_effect=AbortLoop,
-        )
-
-        with time_mock:
+        with loopworker_sleep_mock:
             with simulated_queue_client(lambda: fake_client):
                 worker = queue_processors.UserActivityWorker()
                 worker.setup()
@@ -155,7 +150,7 @@ class WorkerTest(ZulipTestCase):
         # up to 2.  Ideally, we'd use an event with a slightly never
         # time, but it's not really important.
         fake_client.queue.append(('user_activity', data))
-        with time_mock:
+        with loopworker_sleep_mock:
             with simulated_queue_client(lambda: fake_client):
                 worker = queue_processors.UserActivityWorker()
                 worker.setup()
@@ -224,7 +219,7 @@ class WorkerTest(ZulipTestCase):
                 self.is_running = False
 
         timer = MockTimer()
-        time_mock = patch(
+        loopworker_sleep_mock = patch(
             'zerver.worker.queue_processors.Timer',
             return_value=timer,
         )
@@ -236,7 +231,7 @@ class WorkerTest(ZulipTestCase):
 
         bonus_event = dict(user_profile_id=hamlet.id, message_id=hamlet3_msg_id)
 
-        with send_mock as sm, time_mock as tm:
+        with send_mock as sm, loopworker_sleep_mock as tm:
             with simulated_queue_client(lambda: fake_client):
                 self.assertFalse(timer.is_alive())
                 mmw.setup()
@@ -604,12 +599,7 @@ class WorkerTest(ZulipTestCase):
         except OSError:  # nocoverage # error handling for the directory not existing
             pass
 
-        time_mock = patch(
-            'zerver.worker.queue_processors.time.sleep',
-            side_effect=AbortLoop,
-        )
-
-        with time_mock, simulated_queue_client(lambda: fake_client):
+        with loopworker_sleep_mock, simulated_queue_client(lambda: fake_client):
             loopworker = UnreliableLoopWorker()
             loopworker.setup()
             with patch('logging.exception') as logging_exception_mock:
