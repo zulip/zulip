@@ -870,24 +870,25 @@ exports.get_people_for_stream_create = function () {
 };
 
 exports.track_duplicate_full_name = function (full_name, user_id, to_remove) {
-    let ids = new Dict();
+    let ids;
     if (duplicate_full_name_data.has(full_name)) {
         ids = duplicate_full_name_data.get(full_name);
+    } else {
+        ids = new Set();
     }
     if (!to_remove && user_id) {
-        ids.set(user_id);
+        ids.add(user_id);
     }
-    if (to_remove && user_id && ids.has(user_id)) {
-        ids.del(user_id);
+    if (to_remove && user_id) {
+        ids.delete(user_id);
     }
     duplicate_full_name_data.set(full_name, ids);
 };
 
 exports.is_duplicate_full_name = function (full_name) {
-    if (duplicate_full_name_data.has(full_name)) {
-        return duplicate_full_name_data.get(full_name).keys().length > 1;
-    }
-    return false;
+    const ids = duplicate_full_name_data.get(full_name);
+
+    return ids && ids.size > 1;
 };
 
 exports.get_mention_syntax = function (full_name, user_id, silent) {
