@@ -8,6 +8,7 @@ from email.utils import getaddresses
 import email.message as message
 
 from django.conf import settings
+from django.utils.timezone import timedelta, now as timezone_now
 
 from zerver.lib.actions import internal_send_message, internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message, \
@@ -16,14 +17,13 @@ from zerver.lib.email_mirror_helpers import decode_email_address, \
     get_email_gateway_message_string_from_address, ZulipEmailForwardError
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.redis_utils import get_redis_client
-from zerver.lib.upload import upload_message_file
 from zerver.lib.utils import generate_random_token
+from zerver.lib.upload import upload_message_file
 from zerver.lib.send_email import FromAddress
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_entity
 from zerver.lib.exceptions import RateLimited
-from zerver.models import Stream, Recipient, \
-    get_user_profile_by_id, get_display_recipient, \
+from zerver.models import Stream, Recipient, MissedMessageEmailAddress, \
+    get_display_recipient, \
     Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
 
 from zproject.backends import is_user_active
@@ -79,12 +79,8 @@ def log_and_report(email_message: message.Message, error_message: str, to: Optio
 
 # Temporary missed message addresses
 
-redis_client = get_redis_client()
-
-
-def missed_message_redis_key(token: str) -> str:
-    return 'missed_message:' + token
-
+def generate_missed_message_token() -> str:
+    return 'mm' + generate_random_token(32)
 
 def is_missed_message_address(address: str) -> bool:
     try:
@@ -107,8 +103,17 @@ def get_missed_message_token_from_address(address: str) -> str:
     if not is_mm_32_format(msg_string):
         raise ZulipEmailForwardError('Could not parse missed message address')
 
-    # strip off the 'mm' before returning the redis key
-    return msg_string[2:]
+    return msg_string
+
+def get_missed_message_address(address: str) -> MissedMessageEmailAddress:
+    token = get_missed_message_token_from_address(address)
+    try:
+        return MissedMessageEmailAddress.objects.select_related().get(
+            email_token=token,
+            timestamp__gt=timezone_now() - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS)
+        )
+    except MissedMessageEmailAddress.DoesNotExist:
+        raise ZulipEmailForwardError("Missed message address expired or doesn't exist")
 
 def create_missed_message_address(user_profile: UserProfile, message: Message) -> str:
     if settings.EMAIL_GATEWAY_PATTERN == '':
@@ -116,43 +121,10 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
                        "NOREPLY_EMAIL_ADDRESS in the 'from' field.")
         return FromAddress.NOREPLY
 
-    if message.recipient.type == Recipient.PERSONAL:
-        # We need to reply to the sender so look up their personal recipient_id
-        recipient_id = message.sender.recipient_id
-    else:
-        recipient_id = message.recipient_id
-
-    data = {
-        'user_profile_id': user_profile.id,
-        'recipient_id': recipient_id,
-        'subject': message.topic_name().encode('utf-8'),
-    }
-
-    while True:
-        token = generate_random_token(32)
-        key = missed_message_redis_key(token)
-        if redis_client.hsetnx(key, 'uses_left', 1):
-            break
-
-    with redis_client.pipeline() as pipeline:
-        pipeline.hmset(key, data)
-        pipeline.expire(key, 60 * 60 * 24 * 5)
-        pipeline.execute()
-
-    address = 'mm' + token
-    return settings.EMAIL_GATEWAY_PATTERN % (address,)
-
-
-def mark_missed_message_address_as_used(address: str) -> None:
-    token = get_missed_message_token_from_address(address)
-    key = missed_message_redis_key(token)
-    with redis_client.pipeline() as pipeline:
-        pipeline.hincrby(key, 'uses_left', -1)
-        pipeline.expire(key, 60 * 60 * 24 * 5)
-        new_value = pipeline.execute()[0]
-    if new_value < 0:
-        redis_client.delete(key)
-        raise ZulipEmailForwardError('Missed message address has already been used')
+    mm_address = MissedMessageEmailAddress.objects.create(message=message,
+                                                          user_profile=user_profile,
+                                                          email_token=generate_missed_message_token())
+    return str(mm_address)
 
 def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bool=False,
                          include_quotes: bool=False, include_footer: bool=False) -> str:
@@ -174,18 +146,23 @@ def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bo
     return body
 
 def send_to_missed_message_address(address: str, message: message.Message) -> None:
-    token = get_missed_message_token_from_address(address)
-    key = missed_message_redis_key(token)
-    result = redis_client.hmget(key, 'user_profile_id', 'recipient_id', 'subject')
-    if not all(val is not None for val in result):
-        raise ZulipEmailForwardError('Missing missed message address data')
-    user_profile_id, recipient_id, subject_b = result  # type: (bytes, bytes, bytes)
+    mm_address = get_missed_message_address(address)
+    if not mm_address.is_usable():
+        raise ZulipEmailForwardError("Missed message address out of uses.")
+    mm_address.increment_times_used()
 
-    user_profile = get_user_profile_by_id(user_profile_id)
+    user_profile = mm_address.user_profile
+    topic = mm_address.message.topic_name()
+
+    if mm_address.message.recipient.type == Recipient.PERSONAL:
+        # We need to reply to the sender so look up their personal recipient_id
+        recipient = mm_address.message.sender.recipient
+    else:
+        recipient = mm_address.message.recipient
+
     if not is_user_active(user_profile):
         logger.warning("Sending user is not active. Ignoring this missed message email.")
         return
-    recipient = Recipient.objects.get(id=recipient_id)
 
     body = construct_zulip_body(message, user_profile.realm)
 
@@ -193,7 +170,7 @@ def send_to_missed_message_address(address: str, message: message.Message) -> No
         stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
         internal_send_stream_message(
             user_profile.realm, user_profile, stream,
-            subject_b.decode('utf-8'), body
+            topic, body
         )
         recipient_str = stream.name
     elif recipient.type == Recipient.PERSONAL:
@@ -372,12 +349,10 @@ def process_stream_message(to: str, message: message.Message) -> None:
     logger.info("Successfully processed email to %s (%s)" % (
         stream.name, stream.realm.string_id))
 
-def process_missed_message(to: str, message: message.Message, pre_checked: bool) -> None:
-    if not pre_checked:
-        mark_missed_message_address_as_used(to)
+def process_missed_message(to: str, message: message.Message) -> None:
     send_to_missed_message_address(to, message)
 
-def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_checked: bool=False) -> None:
+def process_message(message: message.Message, rcpt_to: Optional[str]=None) -> None:
     to = None  # type: Optional[str]
 
     try:
@@ -387,7 +362,7 @@ def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_c
             to = find_emailgateway_recipient(message)
 
         if is_missed_message_address(to):
-            process_missed_message(to, message, pre_checked)
+            process_missed_message(to, message)
         else:
             process_stream_message(to, message)
     except ZulipEmailForwardError as e:
@@ -401,7 +376,9 @@ def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
     rcpt_to = data['recipient']
     if is_missed_message_address(rcpt_to):
         try:
-            mark_missed_message_address_as_used(rcpt_to)
+            mm_address = get_missed_message_address(rcpt_to)
+            if not mm_address.is_usable():
+                raise ZulipEmailForwardError("Missed message address out of uses.")
         except ZulipEmailForwardError:
             return {
                 "status": "error",
