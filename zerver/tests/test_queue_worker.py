@@ -629,16 +629,6 @@ class WorkerTest(ZulipTestCase):
         with self.assertRaises(queue_processors.WorkerDeclarationException):
             TestWorker()
 
-    def test_worker_noconsume(self) -> None:
-        @queue_processors.assign_queue('test_worker')
-        class TestWorker(queue_processors.QueueProcessingWorker):
-            def __init__(self) -> None:
-                super().__init__()
-
-        with self.assertRaises(queue_processors.WorkerDeclarationException):
-            worker = TestWorker()
-            worker.consume({})
-
     def test_get_active_worker_queues(self) -> None:
         worker_queue_count = (len(QueueProcessingWorker.__subclasses__()) +
                               len(EmailSendingWorker.__subclasses__()) +
