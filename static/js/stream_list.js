@@ -216,7 +216,7 @@ function build_stream_sidebar_li(sub) {
         is_muted: stream_data.is_muted(sub.stream_id) === true,
         invite_only: sub.invite_only,
         is_web_public: sub.is_web_public,
-        color: stream_data.get_color(name),
+        color: sub.color,
         pin_to_top: sub.pin_to_top,
     };
     args.dark_background = stream_color.get_color_class(args.color);
