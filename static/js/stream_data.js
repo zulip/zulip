@@ -1,4 +1,5 @@
 const Dict = require('./dict').Dict;
+const LazySet = require('./lazy_set').LazySet;
 
 
 // The stream_info variable maps stream names to stream properties objects
@@ -74,7 +75,7 @@ exports.unsubscribe_myself = function (sub) {
 
 exports.add_sub = function (stream_name, sub) {
     if (!_.has(sub, 'subscribers')) {
-        sub.subscribers = Dict.from_array([]);
+        sub.subscribers = LazySet([]);
     }
 
     stream_info.set(stream_name, sub);
@@ -507,7 +508,7 @@ exports.maybe_get_stream_name = function (stream_id) {
 };
 
 exports.set_subscribers = function (sub, user_ids) {
-    sub.subscribers = Dict.from_array(user_ids || []);
+    sub.subscribers = LazySet(user_ids || []);
 };
 
 exports.add_subscriber = function (stream_name, user_id) {
@@ -521,7 +522,7 @@ exports.add_subscriber = function (stream_name, user_id) {
         blueslip.error("We tried to add invalid subscriber: " + user_id);
         return false;
     }
-    sub.subscribers.set(user_id, true);
+    sub.subscribers.add(user_id);
 
     return true;
 };
