@@ -9,6 +9,8 @@ const noop = function () {};
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
+const LazySet = zrequire('lazy_set.js').LazySet;
+
 const _navigator = {
     platform: '',
 };
@@ -1328,13 +1330,13 @@ run_test('on_events', () => {
     (function test_stream_name_completed_triggered() {
         const handler = $(document).get_on_handler('streamname_completed.zulip');
         stream_data.add_sub(compose_state.stream_name(), {
-            subscribers: Dict.from_array([1, 2]),
+            subscribers: LazySet([1, 2]),
         });
 
         let data = {
             stream: {
                 name: 'Denmark',
-                subscribers: Dict.from_array([1, 2, 3]),
+                subscribers: LazySet([1, 2, 3]),
             },
         };
 
@@ -1379,7 +1381,7 @@ run_test('on_events', () => {
             stream: {
                 invite_only: true,
                 name: 'Denmark',
-                subscribers: Dict.from_array([1]),
+                subscribers: LazySet([1]),
             },
         };
 

@@ -36,12 +36,9 @@ exports.is_sub_settings_active = function (sub) {
 };
 
 exports.get_email_of_subscribers = function (subscribers) {
-    const emails = [];
-    subscribers.each(function (o, i) {
-        const email = people.get_person_from_user_id(i).email;
-        emails.push(email);
+    return subscribers.map(function (user_id) {
+        return people.get_person_from_user_id(user_id).email;
     });
-    return emails;
 };
 
 function clear_edit_panel() {

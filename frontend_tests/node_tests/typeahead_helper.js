@@ -17,6 +17,7 @@ zrequire('marked', 'third/marked/lib/marked');
 const actual_pygments_data = zrequire('actual_pygments_data', 'generated/pygments_data');
 zrequire('settings_org');
 const th = zrequire('typeahead_helper');
+const LazySet = zrequire('lazy_set.js').LazySet;
 
 stream_data.create_streams([
     {name: 'Dev', subscribed: true, color: 'blue', stream_id: 1},
@@ -24,13 +25,9 @@ stream_data.create_streams([
 ]);
 
 run_test('sort_streams', () => {
-    const popular = {num_items: function () {
-        return 10;
-    }};
+    const popular = LazySet([1, 2, 3, 4, 5, 6]);
 
-    const unpopular = {num_items: function () {
-        return 2;
-    }};
+    const unpopular = LazySet([1]);
 
     let test_streams = [
         {name: 'Dev', pin_to_top: false, subscribers: unpopular, subscribed: true},
