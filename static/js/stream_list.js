@@ -91,7 +91,7 @@ exports.build_stream_list = function () {
 
     // The main logic to build the list is in stream_sort.js, and
     // we get three lists of streams (pinned/normal/dormant).
-    const stream_groups = stream_sort.sort_groups(get_search_term());
+    const stream_groups = stream_sort.sort_groups(streams, get_search_term());
 
     if (stream_groups.same_as_before) {
         return;
