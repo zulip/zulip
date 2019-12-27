@@ -1,4 +1,5 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
+from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Mapping, Optional, cast, Tuple, TypeVar, Type
 
 import copy
@@ -119,7 +120,7 @@ def retry_send_email_failures(
 
     return wrapper
 
-class QueueProcessingWorker:
+class QueueProcessingWorker(ABC):
     queue_name = None  # type: str
 
     def __init__(self) -> None:
@@ -127,8 +128,9 @@ class QueueProcessingWorker:
         if self.queue_name is None:
             raise WorkerDeclarationException("Queue worker declared without queue_name")
 
+    @abstractmethod
     def consume(self, data: Dict[str, Any]) -> None:
-        raise WorkerDeclarationException("No consumer defined!")
+        pass
 
     def consume_wrapper(self, data: Dict[str, Any]) -> None:
         try:
@@ -184,8 +186,9 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
             if not self.sleep_only_if_empty or len(events) == 0:
                 time.sleep(self.sleep_delay)
 
+    @abstractmethod
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
-        raise NotImplementedError
+        pass
 
     def consume(self, event: Dict[str, Any]) -> None:
         """In LoopQueueProcessingWorker, consume is used just for automated tests"""
