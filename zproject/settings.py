@@ -640,6 +640,7 @@ EMAIL_LOG_PATH = zulip_path("/var/log/zulip/send_email.log")
 EMAIL_MIRROR_LOG_PATH = zulip_path("/var/log/zulip/email_mirror.log")
 EMAIL_DELIVERER_LOG_PATH = zulip_path("/var/log/zulip/email-deliverer.log")
 EMAIL_CONTENT_LOG_PATH = zulip_path("/var/log/zulip/email_content.log")
+LDAP_LOG_PATH = zulip_path("/var/log/zulip/ldap.log")
 LDAP_SYNC_LOG_PATH = zulip_path("/var/log/zulip/sync_ldap_user_data.log")
 QUEUE_ERROR_DIR = zulip_path("/var/log/zulip/queue_error")
 DIGEST_LOG_PATH = zulip_path("/var/log/zulip/digest.log")
@@ -745,6 +746,12 @@ LOGGING = {
             'formatter': 'default',
             'filename': ERROR_FILE_LOG_PATH,
         },
+        'ldap_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'default',
+            'filename': LDAP_LOG_PATH,
+        },
     },
     'loggers': {
         # The Python logging module uses a hierarchy of logger names for config:
@@ -812,6 +819,11 @@ LOGGING = {
         # },
 
         # other libraries, alphabetized
+        'django_auth_ldap': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'ldap_file', 'errors_file'],
+            'propagate': False,
+        },
         'pika.adapters': {
             # pika is super chatty on INFO.
             'level': 'WARNING',
@@ -853,6 +865,11 @@ LOGGING = {
         },
         'zerver.management.commands.deliver_scheduled_messages': {
             'level': 'DEBUG',
+        },
+        'zulip.ldap': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'ldap_file', 'errors_file'],
+            'propagate': False,
         },
         'zulip.management': {
             'handlers': ['file', 'errors_file'],

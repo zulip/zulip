@@ -286,7 +286,7 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     else:
         return False
 
-
+ldap_logger = logging.getLogger("zulip.ldap")
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     """Since this inherits from _LDAPUser.AuthenticationFailed, these will
     be caught and logged at debug level inside django-auth-ldap's authenticate()"""
@@ -368,7 +368,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         if _LDAPUser(self, result).attrs is None:
             # Check that there actually is an ldap entry matching the result username
             # we want to return. Otherwise, raise an exception.
-            raise ZulipLDAPExceptionNoMatchingLDAPUser()
+            error_message = "No ldap user matching django_to_ldap_username result: {}. Input username: {}"
+            raise ZulipLDAPExceptionNoMatchingLDAPUser(
+                error_message.format(result, username)
+            )
 
         return result
 
@@ -541,7 +544,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             # to the user's LDAP username before calling the
             # django-auth-ldap authenticate().
             username = self.django_to_ldap_username(username)
-        except ZulipLDAPExceptionNoMatchingLDAPUser:
+        except ZulipLDAPExceptionNoMatchingLDAPUser as e:
+            ldap_logger.debug("{}: {}".format(self.__class__.__name__, e))
             if return_data is not None:
                 return_data['no_matching_ldap_user'] = True
             return None
@@ -753,8 +757,8 @@ def query_ldap(email: str) -> List[str]:
     if backend is not None:
         try:
             ldap_username = backend.django_to_ldap_username(email)
-        except ZulipLDAPExceptionNoMatchingLDAPUser:
-            values.append("No such user found")
+        except ZulipLDAPExceptionNoMatchingLDAPUser as e:
+            values.append("No such user found: {}".format(e))
             return values
 
         ldap_attrs = _LDAPUser(backend, ldap_username).attrs

@@ -3246,7 +3246,8 @@ class TestQueryLDAP(ZulipLDAPTestCase):
     def test_user_not_present(self) -> None:
         # othello doesn't have an entry in our test directory
         values = query_ldap(self.example_email('othello'))
-        self.assertEqual(values, ['No such user found'])
+        self.assert_length(values, 1)
+        self.assertIn('No such user found', values[0])
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_normal_query(self) -> None:
