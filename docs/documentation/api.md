@@ -229,7 +229,7 @@ above.
    "fixture").  The easiest way to do this is add an appropriate print
    statement (usually `json.dumps(result, indent=4, sort_keys=True)`),
    and then run `tools/test-api`.  You can also use
-   <http://jsonformatter.curiousconcept.com/> to format the JSON
+   <http://jsonformatter.curiousconcept.com/> or <https://goonlinetools.com/json-formatter/> to format the JSON
    fixtures.  Add the fixture to the `example` subsection of the
    `responses` section for the endpoint in
    `zerver/openapi/zulip.yaml`.
