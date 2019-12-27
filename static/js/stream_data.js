@@ -34,7 +34,6 @@ exports.is_filtering_inactives = function () {
 };
 
 exports.is_active = function (sub) {
-    exports.set_filter_out_inactives();
     if (!filter_out_inactives || sub.pin_to_top) {
         // If users don't want to filter inactive streams
         // to the bottom, we respect that setting and don't
