@@ -124,8 +124,8 @@ run_test('filter_table', () => {
     assert.deepEqual(sub_table_append, [
         '.stream-row-poland',
         '.stream-row-pomona',
-        '.stream-row-denmark',
         '.stream-row-cpp',
+        '.stream-row-denmark',
     ]);
 
     // Search with multiple keywords
@@ -180,8 +180,8 @@ run_test('filter_table', () => {
     assert.deepEqual(sub_table_append, [
         '.stream-row-pomona',
         '.stream-row-poland',
-        '.stream-row-denmark',
         '.stream-row-cpp',
+        '.stream-row-denmark',
     ]);
 
     // active stream-row is not included in results
