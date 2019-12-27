@@ -534,7 +534,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             return None
 
         try:
-            # We want to apss the user's LDAP username into
+            # We want to pass the user's LDAP username into
             # authenticate() below.  If an email address was entered
             # in the login form, we need to use
             # django_to_ldap_username to translate the email address
@@ -551,10 +551,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         # against the LDAP database, and assuming those are correct,
         # end up calling `self.get_or_build_user` with the
         # authenticated user's data from LDAP.
-        return ZulipLDAPAuthBackendBase.authenticate(self,
-                                                     request=None,
-                                                     username=username,
-                                                     password=password)
+        return super().authenticate(request=None, username=username, password=password)
 
     def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
         """The main function of our authentication backend extension of
