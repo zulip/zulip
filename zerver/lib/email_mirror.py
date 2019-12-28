@@ -237,13 +237,14 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
     for idx, part in enumerate(message.walk()):
         if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
+	    subject = part.get_payload(decode=True).splitlines()[0]
             assert isinstance(content, bytes)
             if charsets[idx]:
-                return content.decode(charsets[idx], errors="ignore")
+                return content.decode(charsets[idx], errors="ignore"), subject
             # If no charset has been specified in the header, assume us-ascii,
             # by RFC6657: https://tools.ietf.org/html/rfc6657
             else:
-                return content.decode("us-ascii", errors="ignore")
+                return content.decode("us-ascii", errors="ignore"), subject
 
     return None
 
