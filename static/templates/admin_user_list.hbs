@@ -4,13 +4,9 @@
         <span class="user_name">{{full_name}}</span>
         <i class="fa fa-ban deactivated-user-icon" title="{{t 'User is deactivated' }}" {{#if is_active}}style="display: none;"{{/if}}></i>
     </td>
-    {{#if ../show_email}}
+    {{#if ../display_email}}
     <td>
-        {{#if ../can_modify}}
-        <span class="email">{{delivery_email}}</span>
-        {{else}}
-        <span class="email">{{email}}</span>
-        {{/if}}
+        <span class="email">{{../display_email}}</span>
     </td>
     {{/if}}
     {{#unless is_bot}}
