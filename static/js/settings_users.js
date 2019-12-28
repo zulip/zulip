@@ -222,7 +222,7 @@ function populate_users(realm_people_data) {
             element: $users_table.closest(".settings-section").find(".search"),
             callback: function (item, value) {
                 let email = item.email;
-                if (page_params.is_admin) {
+                if (page_params.is_admin && item.delivery_email) {
                     email = item.delivery_email;
                 }
 
@@ -266,7 +266,7 @@ function populate_users(realm_people_data) {
             element: $deactivated_users_table.closest(".settings-section").find(".search"),
             callback: function (item, value) {
                 let email = item.email;
-                if (page_params.is_admin) {
+                if (page_params.is_admin && item.delivery_email) {
                     email = item.delivery_email;
                 }
 
