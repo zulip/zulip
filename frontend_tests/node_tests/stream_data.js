@@ -27,6 +27,22 @@ zrequire('MessageListView', 'js/message_list_view');
 zrequire('message_list');
 zrequire('settings_display', 'js/settings_display');
 
+const me = {
+    email: 'me@zulip.com',
+    full_name: 'Current User',
+    user_id: 81,
+};
+
+// set up user data
+people.add(me);
+people.initialize_current_user(me.user_id);
+
+function contains_sub(subs, sub) {
+    return _.any(subs, function (s) {
+        return s.name === sub.name;
+    });
+}
+
 run_test('basics', () => {
     const denmark = {
         subscribed: false,
@@ -128,15 +144,6 @@ run_test('unsubscribe', () => {
     stream_data.clear_subscriptions();
 
     let sub = {name: 'devel', subscribed: false, stream_id: 1};
-    const me = {
-        email: 'me@zulip.com',
-        full_name: 'Current User',
-        user_id: 81,
-    };
-
-    // set up user data
-    people.add(me);
-    people.initialize_current_user(me.user_id);
 
     // set up our subscription
     stream_data.add_sub('devel', sub);
@@ -150,6 +157,8 @@ run_test('unsubscribe', () => {
     stream_data.unsubscribe_myself(sub);
     assert(!sub.subscribed);
     assert(!stream_data.is_subscribed('devel'));
+    assert(!contains_sub(stream_data.subscribed_subs(), sub));
+    assert(contains_sub(stream_data.unsubscribed_subs(), sub));
 
     // make sure subsequent calls work
     sub = stream_data.get_sub('devel');
@@ -303,6 +312,9 @@ run_test('is_active', () => {
 
     stream_data.subscribe_myself(sub);
     assert(stream_data.is_active(sub));
+
+    assert(contains_sub(stream_data.subscribed_subs(), sub));
+    assert(!contains_sub(stream_data.unsubscribed_subs(), sub));
 
     stream_data.unsubscribe_myself(sub);
     assert(stream_data.is_active(sub));
