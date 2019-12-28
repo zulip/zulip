@@ -27,7 +27,7 @@
     "file-loader": "^4.0.0",
     "flatpickr": "^4.5.7",
     "font-awesome": "^4.7.0",
-    "handlebars": "~4.2.2",
+    "handlebars": "~4.3.0",
     "handlebars-loader": "^1.7.1",
     "html-webpack-plugin": "^4.0.0-beta.8",
     "i18next": "^19.0.0",

@@ -5433,10 +5433,10 @@ handlebars@^4.0.11, handlebars@^4.1.2:
   optionalDependencies:
     uglify-js "^3.1.4"
 
-handlebars@~4.2.2:
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.2.2.tgz#614ef0999e660b5e3165327e0eded5468e0a943d"
-  integrity sha512-G72GwXJ5uq6KySt95e40az1QpgM8FvHYJaVMrd5m+1+U7nRceWxqaKp1bCyq34qdjhnV7ZW9+jfklEYnobpCuA==
+handlebars@~4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.3.0.tgz#427391b584626c9c9c6ffb7d1fb90aa9789221cc"
+  integrity sha512-7XlnO8yBXOdi7AzowjZssQr47Ctidqm7GbgARapOaqSN9HQhlClnOkR9HieGauIT3A8MBC6u9wPCXs97PCYpWg==
   dependencies:
     neo-async "^2.6.0"
     optimist "^0.6.1"
