@@ -973,6 +973,18 @@ exports.matches_user_settings_search = function (person, value) {
     );
 };
 
+exports.email_for_user_settings = function (person) {
+    if (!settings_org.show_email()) {
+        return;
+    }
+
+    if (page_params.is_admin && person.delivery_email) {
+        return person.delivery_email;
+    }
+
+    return person.email;
+};
+
 exports.maybe_incr_recipient_count = function (message) {
     if (message.type !== 'private') {
         return;
