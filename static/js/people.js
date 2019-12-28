@@ -957,6 +957,22 @@ exports.extract_people_from_message = function (message) {
     });
 };
 
+function safe_lower(s) {
+    return (s || '').toLowerCase();
+}
+
+exports.matches_user_settings_search = function (person, value) {
+    let email = person.email;
+    if (page_params.is_admin && person.delivery_email) {
+        email = person.delivery_email;
+    }
+
+    return (
+        safe_lower(person.full_name).indexOf(value) >= 0 ||
+        safe_lower(email).indexOf(value) >= 0
+    );
+};
+
 exports.maybe_incr_recipient_count = function (message) {
     if (message.type !== 'private') {
         return;

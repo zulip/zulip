@@ -854,6 +854,36 @@ run_test('initialize', () => {
     assert.equal(global.page_params.realm_non_active_users, undefined);
 });
 
+run_test('matches_user_settings_search', () => {
+    const match = people.matches_user_settings_search;
+
+    page_params.is_admin = true;
+    assert.equal(match({delivery_email: 'fred@example.com'}, 'fr'), true);
+    assert.equal(
+        match({delivery_email: 'bogus', email: 'fred@example.com'}, 'fr'),
+        false);
+
+    page_params.is_admin = false;
+    assert.equal(match({delivery_email: 'fred@example.com'}, 'fr'), false);
+    assert.equal(match({email: 'fred@example.com'}, 'fr'), true);
+
+    // test normal stuff
+    assert.equal(match({email: 'fred@example.com'}, 'st'), false);
+    assert.equal(match({full_name: 'Fred Smith'}, 'st'), false);
+    assert.equal(match({full_name: 'Joe Frederick'}, 'st'), false);
+
+    assert.equal(match({email: 'fred@example.com'}, 'fr'), true);
+    assert.equal(match({full_name: 'Fred Smith'}, 'fr'), true);
+    assert.equal(match({full_name: 'Joe Frederick'}, 'fr'), true);
+
+    // test in-string matches...we may want not to be so liberal
+    // here about matching, as it's noisy for large realms (who
+    // need search the most)
+    assert.equal(match({email: 'fred@example.com'}, 're'), true);
+    assert.equal(match({full_name: 'Fred Smith'}, 're'), true);
+    assert.equal(match({full_name: 'Joe Frederick'}, 're'), true);
+});
+
 run_test('emails_strings_to_user_ids_array', function () {
     const steven = {
         email: 'steven@example.com',
