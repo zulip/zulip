@@ -1,4 +1,5 @@
 set_global('blueslip', global.make_zblueslip());
+const Dict = zrequire('dict').Dict;
 
 run_test('basic', () => {
     const d = new Dict();

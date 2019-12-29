@@ -1,5 +1,7 @@
 set_global('$', global.make_zjquery());
 
+const Dict = zrequire('dict').Dict;
+
 set_global('narrow_state', {});
 set_global('resize', {
     resize_stream_filters_container: function () {},

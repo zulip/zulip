@@ -1,6 +1,8 @@
 set_global('$', global.make_zjquery());
 set_global('blueslip', global.make_zblueslip());
 
+const Dict = zrequire('dict').Dict;
+
 let filter_key_handlers;
 
 const _page_params = {

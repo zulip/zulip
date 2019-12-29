@@ -1,6 +1,7 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
+const Dict = zrequire('dict').Dict;
 const FoldDict = zrequire('fold_dict').FoldDict;
 zrequire('unread_ui');
 zrequire('Filter', 'js/filter');

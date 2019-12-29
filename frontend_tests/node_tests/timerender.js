@@ -80,11 +80,11 @@ run_test('render_date_renders_time_html', () => {
     const message_time  = today.clone();
     const expected_html = i18n.t('Today');
 
-    const attrs = new Dict();
+    const attrs = {};
     const span_stub = $('<span />');
 
     span_stub.attr = function (name, val) {
-        attrs.set(name, val);
+        attrs[name] = val;
         return span_stub;
     };
 
@@ -95,8 +95,8 @@ run_test('render_date_renders_time_html', () => {
 
     const actual = timerender.render_date(message_time, undefined, today);
     assert.equal(expected_html, actual.html());
-    assert.equal(attrs.get('title'), 'Friday, April 12, 2019');
-    assert.equal(attrs.get('class'), 'timerender0');
+    assert.equal(attrs.title, 'Friday, April 12, 2019');
+    assert.equal(attrs.class, 'timerender0');
 });
 
 run_test('render_date_renders_time_above_html', () => {
@@ -200,10 +200,10 @@ run_test('set_full_datetime', () => {
         timestamp: 1495091573, // 2017/5/18 7:12:53 AM (UTC+0)
     };
     const time_element = $('<span/>');
-    const attrs = new Dict();
+    const attrs = {};
 
     time_element.attr = function (name, val) {
-        attrs.set(name, val);
+        attrs[name] = val;
         return time_element;
     };
 
@@ -212,8 +212,7 @@ run_test('set_full_datetime', () => {
     const time = new Date(message.timestamp * 1000);
     const expected = `${time.toLocaleDateString()} 7:12:53 AM (UTC+0)`;
     timerender.set_full_datetime(message, time_element);
-    const actual = attrs.get('title');
-    assert.equal(expected, actual);
+    assert.equal(expected, attrs.title);
 });
 
 run_test('last_seen_status_from_date', () => {

@@ -15,8 +15,6 @@ global.assert = require('assert');
 global._ = require('underscore/underscore.js');
 const _ = global._;
 
-global.Dict = require('../../static/js/dict').Dict;
-
 // Create a helper function to avoid sneaky delays in tests.
 function immediate(f) {
     return () => {

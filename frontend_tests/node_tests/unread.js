@@ -6,6 +6,7 @@ zrequire('stream_data');
 zrequire('util');
 zrequire('unread');
 zrequire('settings_notifications');
+const Dict = zrequire('dict').Dict;
 const FoldDict = zrequire('fold_dict').FoldDict;
 
 set_global('page_params', {});
