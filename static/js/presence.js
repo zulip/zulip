@@ -38,7 +38,8 @@ exports.get_status = function (user_id) {
 };
 
 exports.get_user_ids = function () {
-    const user_ids = Object.keys(exports.presence_info);
+    const user_ids = Object.keys(exports.presence_info).map(s => parseInt(s, 10));
+
     return user_ids;
 };
 

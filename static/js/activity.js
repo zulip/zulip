@@ -127,8 +127,14 @@ exports.get_huddles = function () {
     return huddles.reverse();
 };
 
+function huddle_split(huddle) {
+    return _.map(huddle.split(','), function (s) {
+        return parseInt(s, 10);
+    });
+}
+
 exports.full_huddle_name = function (huddle) {
-    const user_ids = huddle.split(',');
+    const user_ids = huddle_split(huddle);
 
     const names = _.map(user_ids, function (user_id) {
         const person = people.get_person_from_user_id(user_id);
@@ -139,7 +145,7 @@ exports.full_huddle_name = function (huddle) {
 };
 
 exports.short_huddle_name = function (huddle) {
-    const user_ids = huddle.split(',');
+    const user_ids = huddle_split(huddle);
 
     const num_to_show = 3;
     let names = _.map(user_ids, function (user_id) {
