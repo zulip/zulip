@@ -31,7 +31,6 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
     RealmAuditLog, UserHotspot, MutedTopic, Service, UserGroup, \
     UserGroupMembership, BotStorageData, BotConfigData
-from zerver.lib.parallel import run_parallel
 import zerver.lib.upload
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Union
@@ -1507,24 +1506,25 @@ def create_soft_link(source: Path, in_progress: bool=True) -> None:
 def launch_user_message_subprocesses(threads: int, output_dir: Path,
                                      consent_message_id: Optional[int]=None) -> None:
     logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
+    pids = {}
 
-    def run_job(shard: str) -> int:
+    for shard_id in range(threads):
         arguments = [
             os.path.join(settings.DEPLOY_ROOT, "manage.py"),
             'export_usermessage_batch',
             '--path', str(output_dir),
-            '--thread', shard
+            '--thread', str(shard_id)
         ]
         if consent_message_id is not None:
             arguments.extend(['--consent-message-id', str(consent_message_id)])
 
-        subprocess.call(arguments)
-        return 0
+        process = subprocess.Popen(arguments)
+        pids[process.pid] = shard_id
 
-    for (status, job) in run_parallel(run_job,
-                                      [str(x) for x in range(0, threads)],
-                                      threads=threads):
-        print("Shard %s finished, status %s" % (job, status))
+    while pids:
+        pid, status = os.wait()
+        shard = pids.pop(pid)
+        print('Shard %s finished, status %s' % (shard, status))
 
 def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
     response = {}  # type: TableData
