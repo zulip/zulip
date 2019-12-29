@@ -1,10 +1,20 @@
 exports.t = function (str, context) {
-    // We are currently assuming that we will receive context in form of a Dict
-    // of key value pairs and string will be having substitution for keywords
-    // like these "__keyword__".
+    // HAPPY PATH: most translations are a simple string:
     if (context === undefined) {
         return 'translated: ' + str;
     }
+
+    /*
+    context will be an ordinary JS object like this:
+
+        {minutes: minutes.toString()}
+
+    This supports use cases like the following:
+
+        i18n.t("__minutes__ min to edit", {minutes: minutes.toString()})
+
+    We have to munge in the context here.
+    */
     const keyword_regex = /__(- )?(\w)+__/g;
     const keys_in_str = str.match(keyword_regex);
     const substitutions = _.map(keys_in_str, function (key) {
