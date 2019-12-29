@@ -171,6 +171,27 @@ run_test('num_items', () => {
     assert.equal(d.num_items(), 1);
 });
 
+/*
+run_test('benchmark', () => {
+    const d = new Dict();
+    const n = 5000;
+    const t1 = new Date().getTime();
+
+    _.each(_.range(n), (i) => {
+        d.set(i, i);
+    });
+
+    _.each(_.range(n), (i) => {
+        d.get(i, i);
+    });
+
+    const t2 = new Date().getTime();
+    const elapsed = t2 - t1;
+    console.log('elapsed (milli)', elapsed);
+    console.log('per (micro)', 1000 * elapsed / n);
+});
+*/
+
 run_test('clear', () => {
     const d = new Dict();
 
