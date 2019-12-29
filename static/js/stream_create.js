@@ -364,7 +364,7 @@ exports.create_handlers_for_users = function (container) {
             // implementation is merely sluggish.
             user_labels.each(function () {
                 const elem = $(this);
-                const user_id = elem.attr('data-user-id');
+                const user_id = parseInt(elem.attr('data-user-id'), 10);
                 const user_checked = filtered_users.has(user_id);
                 const display = user_checked ? "block" : "none";
                 elem.css({display: display});

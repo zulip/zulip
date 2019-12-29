@@ -217,7 +217,7 @@ exports.get_title_data = function (user_ids_string, is_group) {
     }
 
     // Since it's not a group, user_ids_string is a single user ID.
-    const user_id = user_ids_string;
+    const user_id = parseInt(user_ids_string, 10);
     const person = people.get_person_from_user_id(user_id);
 
     if (person.is_bot) {

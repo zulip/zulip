@@ -1,5 +1,5 @@
 require("unorm");  // String.prototype.normalize polyfill for IE11
-const Dict = require('./dict').Dict;
+const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 
 let people_dict;
@@ -20,21 +20,27 @@ exports.init = function () {
     // people_dict over time and always do lookups by user_id.
     people_dict = new FoldDict();
     people_by_name_dict = new FoldDict();
-    people_by_user_id_dict = new Dict();
+    people_by_user_id_dict = new IntDict();
 
     // The next dictionary includes all active users (human/user)
     // in our realm, but it excludes non-active users and
     // cross-realm bots.
-    active_user_dict = new Dict();
-    cross_realm_dict = new Dict(); // keyed by user_id
-    pm_recipient_count_dict = new Dict();
+    active_user_dict = new IntDict();
+    cross_realm_dict = new IntDict(); // keyed by user_id
+    pm_recipient_count_dict = new IntDict();
 
-    // The next Dict maintains a set of ids of people with same full names.
+    // This maintains a set of ids of people with same full names.
     duplicate_full_name_data = new FoldDict();
 };
 
 // WE INITIALIZE DATA STRUCTURES HERE!
 exports.init();
+
+function split_to_ints(lst) {
+    return _.map(lst.split(','), function (s) {
+        return parseInt(s, 10);
+    });
+}
 
 exports.get_person_from_user_id = function (user_id) {
     if (!people_by_user_id_dict.has(user_id)) {
@@ -118,10 +124,6 @@ exports.is_known_user_id = function (user_id) {
 };
 
 function sort_numerically(user_ids) {
-    user_ids = _.map(user_ids, function (user_id) {
-        return parseInt(user_id, 10);
-    });
-
     user_ids.sort(function (a, b) {
         return a - b;
     });
@@ -156,7 +158,8 @@ exports.huddle_string = function (message) {
 };
 
 exports.user_ids_string_to_emails_string = function (user_ids_string) {
-    const user_ids = user_ids_string.split(',');
+    const user_ids = split_to_ints(user_ids_string);
+
     let emails = _.map(user_ids, function (user_id) {
         const person = people_by_user_id_dict.get(user_id);
         if (person) {
@@ -242,6 +245,7 @@ exports.get_user_time = function (user_id) {
 };
 
 exports.get_user_type = function (user_id) {
+    user_id = parseInt(user_id, 10);
     const user_profile = exports.get_person_from_user_id(user_id);
 
     if (user_profile.is_admin) {
@@ -297,7 +301,7 @@ exports.get_full_name = function (user_id) {
 exports.get_recipients = function (user_ids_string) {
     // See message_store.get_pm_full_names() for a similar function.
 
-    const user_ids = user_ids_string.split(',');
+    const user_ids = split_to_ints(user_ids_string);
     const other_ids = _.reject(user_ids, exports.is_my_user_id);
 
     if (other_ids.length === 0) {
@@ -367,7 +371,7 @@ exports.pm_lookup_key = function (user_ids_string) {
         in keys for PMs, but we only want our user id if
         we sent a message to ourself.
     */
-    let user_ids = user_ids_string.split(',');
+    let user_ids = split_to_ints(user_ids_string);
     user_ids = sorted_other_user_ids(user_ids);
     return user_ids.join(',');
 };
@@ -566,7 +570,7 @@ exports.slug_to_emails = function (slug) {
 exports.exclude_me_from_string = function (user_ids_string) {
     // Exclude me from a user_ids_string UNLESS I'm the
     // only one in it.
-    let user_ids = user_ids_string.split(',');
+    let user_ids = split_to_ints(user_ids_string);
 
     if (user_ids.length <= 1) {
         // We either have a message to ourself, an empty
@@ -820,7 +824,7 @@ exports.build_person_matcher = function (query) {
 };
 
 exports.filter_people_by_search_terms = function (users, search_terms) {
-    const filtered_users = new Dict();
+    const filtered_users = new IntDict();
 
     // Build our matchers outside the loop to avoid some
     // search overhead that is not user-specific.
@@ -876,7 +880,7 @@ exports.get_people_for_stream_create = function () {
         to your use case.
     */
     const people_minus_you = [];
-    active_user_dict.each(function (person) {
+    _.each(active_user_dict.values(), function (person) {
         if (!exports.is_my_user_id(person.user_id)) {
             people_minus_you.push({email: person.email,
                                    user_id: person.user_id,

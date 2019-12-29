@@ -29,7 +29,7 @@ function buddy_list_conf() {
 
     conf.get_key_from_li = function (opts) {
         const user_id = opts.li.expectOne().attr('data-user-id');
-        return user_id;
+        return parseInt(user_id, 10);
     };
 
     conf.get_data_from_keys = function (opts) {
@@ -85,9 +85,7 @@ function buddy_list_create() {
 
         // We rely on our caller to give us items
         // in already-sorted order.
-        self.keys = _.map(opts.keys, function (k) {
-            return k.toString();
-        });
+        self.keys = opts.keys;
 
         self.fill_screen_with_content();
     };
@@ -136,7 +134,7 @@ function buddy_list_create() {
     };
 
     self.prev_key = function (key) {
-        const i = self.keys.indexOf(key.toString());
+        const i = self.keys.indexOf(key);
 
         if (i <= 0) {
             return;
@@ -146,7 +144,7 @@ function buddy_list_create() {
     };
 
     self.next_key = function (key) {
-        const i = self.keys.indexOf(key.toString());
+        const i = self.keys.indexOf(key);
 
         if (i < 0) {
             return;
@@ -204,7 +202,7 @@ function buddy_list_create() {
     };
 
     self.find_li = function (opts) {
-        const key = opts.key.toString();
+        const key = opts.key;
 
         // Try direct DOM lookup first for speed.
         let li = self.get_li_from_key({
@@ -263,7 +261,7 @@ function buddy_list_create() {
     };
 
     self.insert_or_move = function (opts) {
-        const key = opts.key.toString();
+        const key = opts.key;
         const item = opts.item;
 
         self.maybe_remove_key({key: key});

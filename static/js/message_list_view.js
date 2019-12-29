@@ -30,7 +30,7 @@ function get_user_id_for_mention_button(elem) {
     }
 
     if (user_id) {
-        return user_id;
+        return parseInt(user_id, 10);
     }
 
     if (email) {

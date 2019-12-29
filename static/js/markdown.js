@@ -70,8 +70,9 @@ exports.apply_markdown = function (message) {
             const id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
             const match = id_regex.exec(name);
             if (match) {
-                if (people.is_known_user_id(match[2])) {
-                    person = people.get_person_from_user_id(match[2]);
+                const user_id = parseInt(match[2], 10);
+                if (people.is_known_user_id(user_id)) {
+                    person = people.get_person_from_user_id(user_id);
                     if (person.full_name !== match[1]) { // Invalid Syntax
                         return;
                     }
