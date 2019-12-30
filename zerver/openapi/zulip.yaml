@@ -114,7 +114,7 @@ paths:
                                     "sender_id": 13215,
                                     "sender_realm_str": "example",
                                     "sender_short_name": "othello-bot",
-                                    "subject": "Castle",
+                                    "topic": "Castle",
                                     "subject_links": [],
                                     "timestamp": 1375978403,
                                     "type": "stream"
