@@ -1,5 +1,6 @@
 const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
+const IntDict = require('./int_dict').IntDict;
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html for notes on
 // how this system is designed.
@@ -276,16 +277,12 @@ exports.unread_topic_counter = (function () {
         return new FoldDict();
     }
 
-    function num_dict() {
-        // Use this for stream ids.
-        return new Dict();
-    }
 
     self.get_counts = function () {
         const res = {};
         res.stream_unread_messages = 0;
-        res.stream_count = num_dict();  // hash by stream_id -> count
-        res.topic_count = num_dict(); // hash of hashes (stream_id, then topic -> count)
+        res.stream_count = new IntDict();  // hash by stream_id -> count
+        res.topic_count = new IntDict(); // hash of hashes (stream_id, then topic -> count)
         bucketer.each(function (per_stream_bucketer, stream_id) {
 
             // We track unread counts for streams that may be currently
