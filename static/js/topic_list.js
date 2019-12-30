@@ -393,7 +393,8 @@ exports.initialize = function () {
         // In a more componentized world, we would delegate some
         // of this stuff back up to our parents.
 
-        const stream_id = $(e.target).parents('.narrow-filter').attr('data-stream-id');
+        const stream_row = $(e.target).parents('.narrow-filter');
+        const stream_id = parseInt(stream_row.attr('data-stream-id'), 10);
         const sub = stream_data.get_sub_by_id(stream_id);
         const topic = $(e.target).parents('li').attr('data-topic-name');
 

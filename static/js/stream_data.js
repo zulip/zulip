@@ -1,4 +1,5 @@
 const Dict = require('./dict').Dict;
+const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 const LazySet = require('./lazy_set').LazySet;
 
@@ -90,7 +91,7 @@ exports.clear_subscriptions = function () {
     stream_info = new BinaryDict(function (sub) {
         return sub.subscribed;
     });
-    subs_by_stream_id = new Dict();
+    subs_by_stream_id = new IntDict();
 };
 
 exports.clear_subscriptions();
@@ -231,7 +232,7 @@ exports.name_to_slug = function (name) {
 exports.slug_to_name = function (slug) {
     const m = /^([\d]+)-/.exec(slug);
     if (m) {
-        const stream_id = m[1];
+        const stream_id = parseInt(m[1], 10);
         const sub = subs_by_stream_id.get(stream_id);
         if (sub) {
             return sub.name;

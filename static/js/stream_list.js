@@ -153,6 +153,10 @@ exports.get_stream_li = function (stream_id) {
     return li;
 };
 
+function stream_id_for_elt(elt) {
+    return parseInt(elt.attr('data-stream-id'), 10);
+}
+
 exports.zoom_in_topics = function (options) {
     // This only does stream-related tasks related to zooming
     // in to more topics, which is basically hiding all the
@@ -170,9 +174,9 @@ exports.zoom_in_topics = function (options) {
 
     $("#stream_filters li.narrow-filter").each(function () {
         const elt = $(this);
-        const stream_id = options.stream_id.toString();
+        const stream_id = options.stream_id;
 
-        if (elt.attr('data-stream-id') === stream_id) {
+        if (stream_id_for_elt(elt) === stream_id) {
             elt.show();
         } else {
             elt.hide();
@@ -502,7 +506,7 @@ exports.set_event_handlers = function () {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
-        const stream_id = $(e.target).parents('li').attr('data-stream-id');
+        const stream_id = stream_id_for_elt($(e.target).parents('li'));
         const sub = stream_data.get_sub_by_id(stream_id);
         popovers.hide_all();
         narrow.by('stream', sub.name, {trigger: 'sidebar'});
