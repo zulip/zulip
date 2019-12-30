@@ -8,6 +8,7 @@ zrequire('unread');
 zrequire('settings_notifications');
 const Dict = zrequire('dict').Dict;
 const FoldDict = zrequire('fold_dict').FoldDict;
+const IntDict = zrequire('int_dict').IntDict;
 
 set_global('page_params', {});
 set_global('blueslip', {});
@@ -36,8 +37,8 @@ const zero_counts = {
     private_message_count: 0,
     home_unread_messages: 0,
     mentioned_message_count: 0,
-    stream_count: new Dict(),
-    topic_count: new Dict(),
+    stream_count: new IntDict(),
+    topic_count: new IntDict(),
     pm_count: new Dict(),
 };
 
