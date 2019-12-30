@@ -52,6 +52,7 @@ from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
 from zerver.lib.email_notifications import enqueue_welcome_emails, \
     followup_day2_email_delay
+from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
@@ -64,6 +65,7 @@ from zerver.context_processors import common_context
 
 import re
 import smtplib
+import time
 import ujson
 
 from typing import Any, List, Optional
@@ -486,6 +488,31 @@ class LoginTest(ZulipTestCase):
         result = self.login_with_return(email, password="wrongpassword")
         self.assert_in_success_response([email], result)
         self.assert_logged_in_user_id(None)
+
+    @override_settings(RATE_LIMITING_AUTHENTICATE=True)
+    def test_login_bad_password_rate_limiter(self) -> None:
+        user_profile = self.example_user("hamlet")
+        email = user_profile.email
+        add_ratelimit_rule(10, 2, domain='authenticate')
+
+        start_time = time.time()
+        with patch('time.time', return_value=start_time):
+            self.login_with_return(email, password="wrongpassword")
+            self.assert_logged_in_user_id(None)
+            self.login_with_return(email, password="wrongpassword")
+            self.assert_logged_in_user_id(None)
+
+            # We're over the allowed limit, so the next attempt, even with the correct
+            # password, will get blocked.
+            result = self.login_with_return(email)
+            self.assert_in_success_response(["Try again in 10 seconds"], result)
+
+        # After time passes, we should be able to log in.
+        with patch('time.time', return_value=start_time + 11):
+            self.login_with_return(email)
+            self.assert_logged_in_user_id(user_profile.id)
+
+        remove_ratelimit_rule(10, 2, domain='authenticate')
 
     def test_login_nonexist_user(self) -> None:
         result = self.login_with_return("xxx@zulip.com", "xxx")
