@@ -308,8 +308,8 @@ section.  If that doesn't help, please visit
 in the [Zulip development community server](../contributing/chat-zulip-org.md) for
 real-time help.
 
-On Windows, you will see `The system cannot find the path specified.` message
-several times. This is expected behavior and is not an error.
+On Windows, you will see the message `The system cannot find the path
+specified.` several times.  This is normal and is not a problem.
 
 Once `vagrant up` has completed, connect to the development
 environment with `vagrant ssh`:
@@ -443,15 +443,16 @@ guest); this should complete in about a minute.
 After provisioning, you'll want to
 [(re)start the Zulip development server](#step-3-start-the-development-environment).
 
-If you run into any trouble, the
-[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.md) for
-is a great place to ask for help.
+If you run into any trouble, [#provision
+help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
+[Zulip development community
+server](../contributing/chat-zulip-org.md) is a great place to ask for
+help.
 
 #### Rebuilding the development environment
 
 If you ever want to recreate your development environment again from
-scratch (e.g. to test as change you've made to the provisioning
+scratch (e.g. to test a change you've made to the provisioning
 process, or because you think something is broken), you can do so
 using `vagrant destroy` and then `vagrant up`.  This will usually be
 much faster than the original `vagrant up` since the base image is
