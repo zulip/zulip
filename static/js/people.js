@@ -984,10 +984,7 @@ function safe_lower(s) {
 }
 
 exports.matches_user_settings_search = function (person, value) {
-    let email = person.email;
-    if (page_params.is_admin && person.delivery_email) {
-        email = person.delivery_email;
-    }
+    const email = exports.email_for_user_settings(person);
 
     return (
         safe_lower(person.full_name).indexOf(value) >= 0 ||
