@@ -992,17 +992,21 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
 
         if not chosen_email:
             avatars = {}  # Dict[str, str]
+            existing_account_emails = []
             for email in verified_emails:
                 existing_account = common_get_active_user(email, realm, {})
                 if existing_account is not None:
+                    existing_account_emails.append(email)
                     avatars[email] = avatar_url(existing_account)
-
-            return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
-                'primary_email': verified_emails[0],
-                'verified_non_primary_emails': verified_emails[1:],
-                'backend': 'github',
-                'avatar_urls': avatars,
-            })
+            if (len(existing_account_emails) != 1 or backend.strategy.session_get('is_signup') == '1'):
+                return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
+                    'primary_email': verified_emails[0],
+                    'verified_non_primary_emails': verified_emails[1:],
+                    'backend': 'github',
+                    'avatar_urls': avatars,
+                })
+            else:
+                chosen_email = existing_account_emails[0]
 
         try:
             validate_email(chosen_email)
