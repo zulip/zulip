@@ -130,6 +130,63 @@ def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: 
         for row in user_dicts
     }
 
+
+
+
+def get_single_user_data(realm: Realm, user_profile: UserProfile, user_id: int, client_gravatar: bool,
+                      include_custom_profile_fields: bool=True) -> Dict[str, Any]:
+    user_dicts = get_realm_user_dicts(realm.id)
+
+    if include_custom_profile_fields:
+        profiles_by_user_id = get_custom_profile_field_values(realm.id)
+
+    def user_data(row: Dict[str, Any]) -> Dict[str, Any]:
+        avatar_url = get_avatar_field(
+            user_id=row['id'],
+            realm_id=realm.id,
+            email=row['delivery_email'],
+            avatar_source=row['avatar_source'],
+            avatar_version=row['avatar_version'],
+            medium=False,
+            client_gravatar=client_gravatar,
+        )
+
+        is_admin = row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
+        is_guest = row['role'] == UserProfile.ROLE_GUEST
+        is_bot = row['is_bot']
+        # This format should align with get_cross_realm_dicts() and notify_created_user
+        result = dict(
+            email=row['email'],
+            user_id=row['id'],
+            avatar_url=avatar_url,
+            is_admin=is_admin,
+            is_guest=is_guest,
+            is_bot=is_bot,
+            full_name=row['full_name'],
+            timezone=row['timezone'],
+            is_active = row['is_active'],
+            date_joined = row['date_joined'].isoformat(),
+        )
+
+        if (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
+                user_profile.is_realm_admin):
+            result['delivery_email'] = row['delivery_email']
+
+        if is_bot:
+            result["bot_type"] = row["bot_type"]
+            if row['email'] in settings.CROSS_REALM_BOT_EMAILS:
+                result['is_cross_realm_bot'] = True
+
+            # Note that bot_owner_id can be None with legacy data.
+            result['bot_owner_id'] = row['bot_owner_id']
+        elif include_custom_profile_fields:
+            result['profile_data'] = profiles_by_user_id.get(row['id'], {})
+        return result
+   
+    for row in user_dicts:
+        if row['id'] == user_id:
+            return user_data(row)
+       
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state['realm_logo_url'] = get_realm_logo_url(realm, night = False)
     state['realm_logo_source'] = realm.logo_source

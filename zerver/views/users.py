@@ -9,7 +9,7 @@ from django.conf import settings
 
 from zerver.decorator import require_realm_admin, require_member_or_admin
 from zerver.forms import CreateUserForm, PASSWORD_TOO_WEAK_ERROR
-from zerver.lib.events import get_raw_user_data
+from zerver.lib.events import get_raw_user_data, get_single_user_data
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
@@ -420,6 +420,30 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
                                 client_gravatar=client_gravatar,
                                 include_custom_profile_fields=include_custom_profile_fields)
     return json_success({'members': members.values()})
+
+@has_request_variables
+def get_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
+                        include_custom_profile_fields: bool=REQ(validator=check_bool,
+                                                                default=False),
+                        client_gravatar: bool=REQ(validator=check_bool, default=False)
+                        ) -> HttpResponse:
+    '''
+    The client_gravatar field here is set to True if clients can compute
+    their own gravatars, which saves us bandwidth.  We want to eventually
+    make this the default behavior, but we have old clients that expect
+    the server to compute this for us.
+    '''
+    realm = user_profile.realm
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+        # If email addresses are only available to administrators,
+        # clients cannot compute gravatars, so we force-set it to false.
+        client_gravatar = False
+    member = get_single_user_data(realm,
+                                user_profile=user_profile,
+                                user_id=user_id,
+                                client_gravatar=client_gravatar,
+                                include_custom_profile_fields=include_custom_profile_fields)
+    return json_success({'user_id': member})
 
 @require_realm_admin
 @has_request_variables
