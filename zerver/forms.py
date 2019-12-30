@@ -17,7 +17,8 @@ from jinja2 import Markup as mark_safe
 from zerver.lib.actions import do_change_password, email_not_system_bot, \
     validate_email_for_realm
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
-from zerver.lib.rate_limiter import RateLimited, get_rate_limit_result_from_request
+from zerver.lib.rate_limiter import RateLimited, get_rate_limit_result_from_request, \
+    RateLimitedObject, rate_limit_entity
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
@@ -32,7 +33,7 @@ import logging
 import re
 import DNS
 
-from typing import Any, List, Optional, Dict
+from typing import Any, List, Optional, Dict, Tuple
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 
@@ -255,6 +256,14 @@ class ZulipPasswordResetForm(PasswordResetForm):
             logging.info("Realm is deactivated")
             return
 
+        if settings.RATE_LIMITING:
+            try:
+                rate_limit_password_reset_form_by_email(email)
+            except RateLimited:
+                # TODO: Show an informative, user-facing error message.
+                logging.info("Too many password reset attempts for email %s" % (email,))
+                return
+
         user = None  # type: Optional[UserProfile]
         try:
             user = get_user_by_delivery_email(email, realm)
@@ -289,6 +298,24 @@ class ZulipPasswordResetForm(PasswordResetForm):
                        from_address=FromAddress.tokenized_no_reply_address(),
                        language=request.LANGUAGE_CODE,
                        context=context)
+
+class RateLimitedPasswordResetByEmail(RateLimitedObject):
+    def __init__(self, email: str) -> None:
+        self.email = email
+
+    def __str__(self) -> str:
+        return "Email: {}".format(self.email)
+
+    def key_fragment(self) -> str:
+        return "{}:{}".format(type(self), self.email)
+
+    def rules(self) -> List[Tuple[int, int]]:
+        return settings.RATE_LIMITING_RULES['password_reset_form_by_email']
+
+def rate_limit_password_reset_form_by_email(email: str) -> None:
+    ratelimited, _ = rate_limit_entity(RateLimitedPasswordResetByEmail(email))
+    if ratelimited:
+        raise RateLimited
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
