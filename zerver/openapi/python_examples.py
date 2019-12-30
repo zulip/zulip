@@ -582,7 +582,7 @@ def send_message(client):
     request = {
         "type": "stream",
         "to": "Denmark",
-        "subject": "Castle",
+        "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
