@@ -209,7 +209,7 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_wrong_old_password_rate_limiter(self) -> None:
         self.login(self.example_email("hamlet"))
         with self.settings(RATE_LIMITING_AUTHENTICATE=True):
-            add_ratelimit_rule(10, 2, domain='authenticate')
+            add_ratelimit_rule(10, 2, domain='authenticate_by_username')
             start_time = time.time()
             with mock.patch('time.time', return_value=start_time):
                 result = self.client_patch(
@@ -246,7 +246,7 @@ class ChangeSettingsTest(ZulipTestCase):
                     ))
                 self.assert_json_success(json_result)
 
-            remove_ratelimit_rule(10, 2, domain='authenticate')
+            remove_ratelimit_rule(10, 2, domain='authenticate_by_username')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.EmailAuthBackend',

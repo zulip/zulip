@@ -222,5 +222,6 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
 
 RATE_LIMITING_RULES = {
     'api_by_user': [],
-    'authenticate': [],
+    'authenticate_by_username': [],
+    'password_reset_form_by_email': [],
 }
