@@ -1078,7 +1078,8 @@ exports.build_page = function () {
             }
         }
 
-        update_notifications_stream($(this).attr("data-stream-id"));
+        const stream_id = parseInt($(this).attr('data-stream-id'), 10);
+        update_notifications_stream(stream_id);
     });
 
     $(".notifications-stream-disable").click(function () {
@@ -1125,7 +1126,8 @@ exports.build_page = function () {
             }
         }
 
-        update_signup_notifications_stream($(this).attr("data-stream-id"));
+        const stream_id = parseInt($(this).attr('data-stream-id'), 10);
+        update_signup_notifications_stream(stream_id);
     });
 
     $(".signup-notifications-stream-disable").click(function () {

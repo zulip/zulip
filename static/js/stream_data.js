@@ -1,4 +1,3 @@
-const Dict = require('./dict').Dict;
 const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 const LazySet = require('./lazy_set').LazySet;
@@ -86,6 +85,7 @@ let subs_by_stream_id;
 let filter_out_inactives = false;
 
 const stream_ids_by_name = new FoldDict();
+const default_stream_ids = new Set();
 
 exports.clear_subscriptions = function () {
     stream_info = new BinaryDict(function (sub) {
@@ -532,19 +532,17 @@ exports.all_topics_in_cache = function (sub) {
     return first_cached_message.id <= sub.first_message_id;
 };
 
-const default_stream_ids = new Dict();
-
 exports.set_realm_default_streams = function (realm_default_streams) {
     page_params.realm_default_streams = realm_default_streams;
     default_stream_ids.clear();
 
     realm_default_streams.forEach(function (stream) {
-        default_stream_ids.set(stream.stream_id, true);
+        default_stream_ids.add(stream.stream_id);
     });
 };
 
 exports.get_default_stream_names = function () {
-    const streams = _.map(default_stream_ids.keys(), exports.get_sub_by_id);
+    const streams = _.map(Array.from(default_stream_ids), exports.get_sub_by_id);
     const default_stream_names = _.pluck(streams, 'name');
     return default_stream_names;
 };
@@ -818,7 +816,7 @@ exports.remove_default_stream = function (stream_id) {
             return stream.stream_id === stream_id;
         }
     );
-    default_stream_ids.del(stream_id);
+    default_stream_ids.delete(stream_id);
 };
 
 window.stream_data = exports;
