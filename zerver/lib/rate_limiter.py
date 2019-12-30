@@ -1,5 +1,6 @@
 import os
 
+from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
@@ -27,20 +28,23 @@ logger = logging.getLogger(__name__)
 class RateLimiterLockingException(Exception):
     pass
 
-class RateLimitedObject:
+class RateLimitedObject(ABC):
     def get_keys(self) -> List[str]:
         key_fragment = self.key_fragment()
         return ["{}ratelimit:{}:{}".format(KEY_PREFIX, key_fragment, keytype)
                 for keytype in ['list', 'zset', 'block']]
 
+    @abstractmethod
     def key_fragment(self) -> str:
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def rules(self) -> List[Tuple[int, int]]:
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def __str__(self) -> str:
-        raise NotImplementedError()
+        pass
 
 class RateLimitedUser(RateLimitedObject):
     def __init__(self, user: UserProfile, domain: str='api_by_user') -> None:
