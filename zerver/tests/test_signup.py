@@ -524,7 +524,7 @@ class LoginTest(ZulipTestCase):
     def test_login_bad_password_rate_limiter(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.email
-        add_ratelimit_rule(10, 2, domain='authenticate')
+        add_ratelimit_rule(10, 2, domain='authenticate_by_username')
 
         start_time = time.time()
         with patch('time.time', return_value=start_time):
@@ -543,7 +543,7 @@ class LoginTest(ZulipTestCase):
             self.login_with_return(email)
             self.assert_logged_in_user_id(user_profile.id)
 
-        remove_ratelimit_rule(10, 2, domain='authenticate')
+        remove_ratelimit_rule(10, 2, domain='authenticate_by_username')
 
     def test_login_nonexist_user(self) -> None:
         result = self.login_with_return("xxx@zulip.com", "xxx")
