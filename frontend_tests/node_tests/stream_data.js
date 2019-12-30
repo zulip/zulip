@@ -564,9 +564,8 @@ run_test('delete_sub', () => {
 
     // We had earlier disabled warnings, so we need to remake zblueslip.
     set_global('blueslip', global.make_zblueslip());
-    blueslip.set_test_data('warn', 'Failed to delete stream does_not_exist');
-    blueslip.set_test_data('warn', 'We got a get_subscriber_count count call for a non-existent stream.');
-    stream_data.delete_sub('does_not_exist');
+    blueslip.set_test_data('warn', 'Failed to delete stream 99999');
+    stream_data.delete_sub(99999);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
 });
@@ -776,17 +775,17 @@ run_test('initialize', () => {
     function initialize() {
         page_params.subscriptions = [{
             name: 'subscriptions',
-            stream_id: '2001',
+            stream_id: 2001,
         }];
 
         page_params.unsubscribed = [{
             name: 'unsubscribed',
-            stream_id: '2002',
+            stream_id: 2002,
         }];
 
         page_params.never_subscribed = [{
             name: 'never_subscribed',
-            stream_id: '2003',
+            stream_id: 2003,
         }];
     }
 

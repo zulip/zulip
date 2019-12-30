@@ -586,7 +586,7 @@ MessageListView.prototype = {
         });
 
         content.find('a.stream').each(function () {
-            const stream_id = $(this).attr('data-stream-id');
+            const stream_id = parseInt($(this).attr('data-stream-id'), 10);
             if (stream_id && !$(this).find(".highlight").length) {
                 // Display the current name for stream if it is not
                 // being displayed in search highlight.
@@ -595,7 +595,7 @@ MessageListView.prototype = {
         });
 
         content.find('a.stream-topic').each(function () {
-            const stream_id = $(this).attr('data-stream-id');
+            const stream_id = parseInt($(this).attr('data-stream-id'), 10);
             if (stream_id && !$(this).find(".highlight").length) {
                 // Display the current name for stream if it is not
                 // being displayed in search highlight.

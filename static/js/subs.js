@@ -393,12 +393,16 @@ exports.populate_stream_settings_left_panel = function () {
 exports.filter_table = function (query) {
     exports.show_active_stream_in_left_panel();
 
+    function stream_id_for_row(row) {
+        return parseInt($(row).attr('data-stream-id'), 10);
+    }
+
     const widgets = {};
     const streams_list_scrolltop = ui.get_scroll_element($(".streams-list")).scrollTop();
 
     const stream_ids = [];
     _.each($("#subscriptions_table .stream-row"), function (row) {
-        const stream_id = $(row).attr('data-stream-id');
+        const stream_id = stream_id_for_row(row);
         stream_ids.push(stream_id);
     });
 
@@ -412,7 +416,7 @@ exports.filter_table = function (query) {
     });
 
     _.each($("#subscriptions_table .stream-row"), function (row) {
-        const stream_id = $(row).attr('data-stream-id');
+        const stream_id = stream_id_for_row(row);
 
         // Below code goes away if we don't do sort-DOM-in-place.
         if (hidden_ids[stream_id]) {

@@ -51,7 +51,8 @@ function get_stream_id(target) {
     if (target.constructor !== jQuery) {
         target = $(target);
     }
-    return target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
+    const row = target.closest(".stream-row, .subscription_settings");
+    return parseInt(row.attr("data-stream-id"), 10);
 }
 
 function get_sub_for_target(target) {
