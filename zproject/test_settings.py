@@ -218,3 +218,8 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         "display_name": "Test IdP",
     }
 }
+
+RATE_LIMITING_RULES = {
+    'api_by_user': [],
+    'authenticate': [],
+}
