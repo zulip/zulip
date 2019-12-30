@@ -344,6 +344,37 @@ class PasswordResetTest(ZulipTestCase):
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 0)
 
+    @override_settings(RATE_LIMITING=True)
+    def test_rate_limiting(self) -> None:
+        user_profile = self.example_user("hamlet")
+        email = user_profile.email
+        from django.core.mail import outbox
+
+        add_ratelimit_rule(10, 2, domain='password_reset_form_by_email')
+        start_time = time.time()
+        with patch('time.time', return_value=start_time):
+            self.client_post('/accounts/password/reset/', {'email': email})
+            self.client_post('/accounts/password/reset/', {'email': email})
+            self.assert_length(outbox, 2)
+
+            # Too many password reset emails sent to the address, we won't send more.
+            self.client_post('/accounts/password/reset/', {'email': email})
+            self.assert_length(outbox, 2)
+
+            # Resetting for a different address works though.
+            self.client_post('/accounts/password/reset/', {'email': self.example_email("othello")})
+            self.assert_length(outbox, 3)
+            self.client_post('/accounts/password/reset/', {'email': self.example_email("othello")})
+            self.assert_length(outbox, 4)
+
+        # After time, password reset emails can be sent again.
+        with patch('time.time', return_value=start_time + 11):
+            self.client_post('/accounts/password/reset/', {'email': email})
+            self.client_post('/accounts/password/reset/', {'email': email})
+            self.assert_length(outbox, 6)
+
+        remove_ratelimit_rule(10, 2, domain='password_reset_form_by_email')
+
     def test_wrong_subdomain(self) -> None:
         email = self.example_email("hamlet")
 

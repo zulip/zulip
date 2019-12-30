@@ -352,6 +352,10 @@ RATE_LIMITING_RULES = {
     'authenticate': [
         (1800, 5),  # 5 login attempts within 30 minutes
     ],
+    'password_reset_form_by_email': [
+        (3600, 2),  # 2 reset emails per hour
+        (86400, 5),  # 5 per day
+    ],
 }
 
 RATE_LIMITING_MIRROR_REALM_RULES = [
