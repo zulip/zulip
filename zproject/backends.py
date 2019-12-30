@@ -169,7 +169,7 @@ def common_get_active_user(email: str, realm: Realm,
     return user_profile
 
 AuthFuncT = TypeVar('AuthFuncT', bound=Callable[..., Optional[UserProfile]])
-rate_limiting_rules = settings.RATE_LIMITING_RULES['authenticate']
+rate_limiting_rules = settings.RATE_LIMITING_RULES['authenticate_by_username']
 
 class RateLimitedAuthenticationByUsername(RateLimitedObject):
     def __init__(self, username: str) -> None:

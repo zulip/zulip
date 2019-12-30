@@ -520,7 +520,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
             request = HttpRequest()
             return attempt_authentication_func(request, username, password)
 
-        add_ratelimit_rule(10, 2, domain='authenticate')
+        add_ratelimit_rule(10, 2, domain='authenticate_by_username')
         with mock.patch.object(RateLimitedAuthenticationByUsername, 'key_fragment', new=_mock_key_fragment):
             try:
                 start_time = time.time()
@@ -549,7 +549,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
             finally:
                 # Clean up to avoid affecting other tests.
                 clear_history(RateLimitedAuthenticationByUsername(username))
-                remove_ratelimit_rule(10, 2, domain='authenticate')
+                remove_ratelimit_rule(10, 2, domain='authenticate_by_username')
 
     def test_email_auth_backend_user_based_rate_limiting(self) -> None:
         user_profile = self.example_user('hamlet')
