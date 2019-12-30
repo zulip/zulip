@@ -37,7 +37,7 @@ exports.populate_filters = function (filters_data) {
         },
         filter: {
             element: filters_table.closest(".settings-section").find(".search"),
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 return (
                     item[0].toLowerCase().indexOf(value) >= 0 ||
                     item[1].toLowerCase().indexOf(value) >= 0

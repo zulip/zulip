@@ -37,7 +37,7 @@ exports.build_default_stream_table = function (streams_data) {
         },
         filter: {
             element: table.closest(".settings-section").find(".search"),
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
             onupdate: function () {

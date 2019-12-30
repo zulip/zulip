@@ -173,7 +173,7 @@ function populate_users(realm_people_data) {
         },
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 return (
                     item.full_name.toLowerCase().indexOf(value) >= 0 ||
                     item.email.toLowerCase().indexOf(value) >= 0
@@ -220,7 +220,7 @@ function populate_users(realm_people_data) {
         },
         filter: {
             element: $users_table.closest(".settings-section").find(".search"),
-            callback: people.matches_user_settings_search,
+            predicate: people.matches_user_settings_search,
             onupdate: reset_scrollbar($users_table),
         },
         parent_container: $("#admin-user-list").expectOne(),
@@ -254,7 +254,7 @@ function populate_users(realm_people_data) {
         },
         filter: {
             element: $deactivated_users_table.closest(".settings-section").find(".search"),
-            callback: people.matches_user_settings_search,
+            predicate: people.matches_user_settings_search,
             onupdate: reset_scrollbar($deactivated_users_table),
         },
         parent_container: $("#admin-deactivated-users-list").expectOne(),

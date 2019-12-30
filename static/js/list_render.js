@@ -10,10 +10,10 @@ exports.filter = (value, list, opts) => {
         but we split it out to make it a bit easier
         to test.
     */
-    const callback = opts.filter.callback;
+    const predicate = opts.filter.predicate;
 
     return list.filter(function (item) {
-        return callback(item, value);
+        return predicate(item, value);
     });
 };
 
@@ -58,8 +58,8 @@ exports.create = function ($container, list, opts) {
         return;
     }
 
-    if (typeof opts.filter.callback !== 'function') {
-        blueslip.error('Filter callback function is missing.');
+    if (typeof opts.filter.predicate !== 'function') {
+        blueslip.error('Filter predicate function is missing.');
         return;
     }
 
