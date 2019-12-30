@@ -68,7 +68,7 @@ function render_attachments_ui() {
         },
         filter: {
             element: $search_input,
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 return item.name.toLocaleLowerCase().indexOf(value) >= 0;
             },
             onupdate: function () {

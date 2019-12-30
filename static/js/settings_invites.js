@@ -63,7 +63,7 @@ function populate_invites(invites_data) {
             },
             filter: {
                 element: invites_table.closest(".settings-section").find(".search"),
-                callback: function (item, value) {
+                predicate: function (item, value) {
                     const referrer_email_matched = item.ref.toLowerCase().indexOf(value) >= 0;
                     if (item.is_multiuse) {
                         return referrer_email_matched;

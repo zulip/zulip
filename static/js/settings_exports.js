@@ -46,7 +46,7 @@ exports.populate_exports_table = function (exports) {
         },
         filter: {
             element: exports_table.closest(".settings-section").find(".search"),
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 return people.get_full_name(item.acting_user_id).toLowerCase().indexOf(value) >= 0;
             },
             onupdate: function () {

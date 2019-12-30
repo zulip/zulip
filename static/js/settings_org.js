@@ -421,7 +421,7 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
         },
         filter: {
             element: search_input,
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
             onupdate: function () {
@@ -450,7 +450,7 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
         },
         filter: {
             element: search_input,
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
         },

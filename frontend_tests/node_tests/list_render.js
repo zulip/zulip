@@ -109,7 +109,7 @@ run_test('list_render', () => {
     const opts = {
         filter: {
             element: search_input,
-            callback: (item, value) => {
+            predicate: (item, value) => {
                 return _.contains(item, value);
             },
         },
@@ -223,7 +223,7 @@ run_test('filtering', () => {
 
     const opts = {
         filter: {
-            callback: (item, value) => {
+            predicate: (item, value) => {
                 return item.length === value;
             },
         },
@@ -261,7 +261,7 @@ run_test('sorting', () => {
             return div(item.name) + div(item.salary);
         },
         filter: {
-            callback: () => true,
+            predicate: () => true,
         },
     };
 

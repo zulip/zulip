@@ -181,7 +181,7 @@ function show_subscription_settings(sub_row) {
         },
         filter: {
             element: $("[data-stream-id='" + stream_id + "'] .search"),
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 const person = people.get_by_email(item);
 
                 if (person) {
