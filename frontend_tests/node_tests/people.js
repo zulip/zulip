@@ -859,6 +859,17 @@ run_test('initialize', () => {
 run_test('matches_user_settings_search', () => {
     const match = people.matches_user_settings_search;
 
+    settings_org.show_email = () => {
+        return false;
+    };
+
+    assert.equal(match({email: 'fred@example.com'}, 'fred'), false);
+    assert.equal(match({full_name: 'Fred Smith'}, 'fr'), true);
+
+    settings_org.show_email = () => {
+        return true;
+    };
+
     page_params.is_admin = true;
     assert.equal(match({delivery_email: 'fred@example.com'}, 'fr'), true);
     assert.equal(
