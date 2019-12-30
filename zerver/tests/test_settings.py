@@ -1,3 +1,5 @@
+import mock
+import time
 import ujson
 
 from django.http import HttpResponse
@@ -8,6 +10,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.users import get_all_api_keys
+from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.models import get_realm, UserProfile, \
     get_user_profile_by_api_key
 
@@ -202,6 +205,48 @@ class ChangeSettingsTest(ZulipTestCase):
                 new_password="ignored",
             ))
         self.assert_json_error(result, "Wrong password!")
+
+    def test_wrong_old_password_rate_limiter(self) -> None:
+        self.login(self.example_email("hamlet"))
+        with self.settings(RATE_LIMITING_AUTHENTICATE=True):
+            add_ratelimit_rule(10, 2, domain='authenticate')
+            start_time = time.time()
+            with mock.patch('time.time', return_value=start_time):
+                result = self.client_patch(
+                    "/json/settings",
+                    dict(
+                        old_password='bad_password',
+                        new_password="ignored",
+                    ))
+                self.assert_json_error(result, "Wrong password!")
+                result = self.client_patch(
+                    "/json/settings",
+                    dict(
+                        old_password='bad_password',
+                        new_password="ignored",
+                    ))
+                self.assert_json_error(result, "Wrong password!")
+
+                # We're over the limit, so we'll get blocked even with the correct password.
+                result = self.client_patch(
+                    "/json/settings",
+                    dict(
+                        old_password=initial_password(self.example_email("hamlet")),
+                        new_password="ignored",
+                    ))
+                self.assert_json_error(result, "You're making too many attempts! Try again in 10 seconds.")
+
+            # After time passes, we should be able to succeed if we give the correct password.
+            with mock.patch('time.time', return_value=start_time + 11):
+                json_result = self.client_patch(
+                    "/json/settings",
+                    dict(
+                        old_password=initial_password(self.example_email("hamlet")),
+                        new_password='foobar1',
+                    ))
+                self.assert_json_success(json_result)
+
+            remove_ratelimit_rule(10, 2, domain='authenticate')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.EmailAuthBackend',

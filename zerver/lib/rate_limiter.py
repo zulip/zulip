@@ -300,3 +300,6 @@ class RateLimitResult:
         self.secs_to_freedom = secs_to_freedom
         self.over_limit = over_limit
         self.remaining = remaining
+
+def get_rate_limit_result_from_request(request: HttpRequest, entity_type: str) -> RateLimitResult:
+    return request._ratelimit[entity_type]
