@@ -647,7 +647,7 @@ def apply_event(state: Dict[str, Any],
             # Remove our user from the subscribers of the removed subscriptions.
             if include_subscribers:
                 for sub in removed_subs:
-                    sub['subscribers'] = [id for id in sub['subscribers'] if id != user_profile.id]
+                    sub['subscribers'].remove(user_profile.id)
 
             # We must effectively copy the removed subscriptions from subscriptions to
             # unsubscribe, since we only have the name in our data structure.
