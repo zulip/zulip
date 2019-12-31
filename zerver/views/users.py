@@ -423,10 +423,9 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def get_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
-                        include_custom_profile_fields: bool=REQ(validator=check_bool,
-                                                                default=False),
-                        client_gravatar: bool=REQ(validator=check_bool, default=False)
-                        ) -> HttpResponse:
+                     include_custom_profile_fields: bool=REQ(validator=check_bool,
+                                                             default=False),
+                     client_gravatar: bool=REQ(validator=check_bool, default=False)) -> HttpResponse:
     '''
     The client_gravatar field here is set to True if clients can compute
     their own gravatars, which saves us bandwidth.  We want to eventually
@@ -440,10 +439,10 @@ def get_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: i
         client_gravatar = False
 
     member = get_single_user_data(realm,
-                                 user_profile = user_profile,
-                                 user_id=user_id,
-                                 client_gravatar= client_gravatar,
-                                 include_custom_profile_fields=include_custom_profile_fields)
+                                  user_profile = user_profile,
+                                  user_id=user_id,
+                                  client_gravatar= client_gravatar,
+                                  include_custom_profile_fields=include_custom_profile_fields)
     return json_success({'user': member})
 
 @require_realm_admin
