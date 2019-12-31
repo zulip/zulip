@@ -100,7 +100,7 @@ def get_single_user_data(realm: Realm, user_profile: UserProfile, user_id: int, 
                              include_custom_profile_fields=include_custom_profile_fields)
 
 def user_data(realm: Realm, user_profile: UserProfile, row: Dict[str, Any], client_gravatar: bool,
-                  include_custom_profile_fields: bool=True) -> Dict[str, Any]:
+              include_custom_profile_fields: bool=True) -> Dict[str, Any]:
     if include_custom_profile_fields:
         profiles_by_user_id = get_custom_profile_field_values(realm.id)
     avatar_url = get_avatar_field(user_id=row['id'],
