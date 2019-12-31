@@ -1123,7 +1123,13 @@ exports.is_my_user_id = function (user_id) {
     if (!user_id) {
         return false;
     }
-    return user_id.toString() === my_user_id.toString();
+
+    if (typeof user_id !== 'number') {
+        blueslip.error('user_id is a string in my_user_id: ' + user_id);
+        user_id = parseInt(user_id, 10);
+    }
+
+    return user_id === my_user_id;
 };
 
 exports.initialize = function () {

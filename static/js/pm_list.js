@@ -83,14 +83,15 @@ exports._build_private_messages_list = function (active_conversation) {
 
         const is_group = user_ids_string.indexOf(',') >= 0;
 
-        let user_circle_class = buddy_data.get_user_circle_class(user_ids_string);
-
+        let user_circle_class;
         let fraction_present;
+
         if (is_group) {
             user_circle_class = 'user_circle_fraction';
             fraction_present = buddy_data.huddle_fraction_present(user_ids_string);
         } else {
             const user_id = parseInt(user_ids_string, 10);
+            user_circle_class = buddy_data.get_user_circle_class(user_id);
             const recipient_user_obj = people.get_person_from_user_id(user_id);
 
             if (recipient_user_obj.is_bot) {
