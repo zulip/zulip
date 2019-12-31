@@ -80,13 +80,13 @@ def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: 
 
     return {
         row['id']: get_user_data(realm,
-                                 user_profile = user_profile,      
-                                 row=row,                            
+                                 user_profile = user_profile,
+                                 row=row,        
                                  client_gravatar= client_gravatar,
                                  include_custom_profile_fields=include_custom_profile_fields)
         for row in user_dicts
     }
- 
+
 def get_single_user_data(realm: Realm, user_profile: UserProfile, user_id:int, client_gravatar: bool,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
     user_dicts = get_realm_user_dicts(realm.id)
@@ -94,17 +94,15 @@ def get_single_user_data(realm: Realm, user_profile: UserProfile, user_id:int, c
     for row in user_dicts:
         if int(row['id'])==int(user_id):
             return get_user_data(realm,
-                                user_profile = user_profile,      
-                                row=row,                            
+                                user_profile = user_profile,
+                                row=row,
                                 client_gravatar= client_gravatar,
                                 include_custom_profile_fields=include_custom_profile_fields)
-          
-    
 
 def get_user_data(realm: Realm, user_profile: UserProfile, row: Dict[str, Any], client_gravatar: bool,
                       include_custom_profile_fields: bool=True) -> Dict[str, Any]:
     if include_custom_profile_fields:
-        profiles_by_user_id = get_custom_profile_field_values(realm.id)                  
+        profiles_by_user_id = get_custom_profile_field_values(realm.id)
     avatar_url = get_avatar_field(
             user_id=row['id'],
             realm_id=realm.id,
@@ -114,7 +112,6 @@ def get_user_data(realm: Realm, user_profile: UserProfile, row: Dict[str, Any], 
             medium=False,
             client_gravatar=client_gravatar,
         )
-    print(row)
     is_admin = row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
     is_guest = row['role'] == UserProfile.ROLE_GUEST
     is_bot = row['is_bot']
@@ -145,8 +142,8 @@ def get_user_data(realm: Realm, user_profile: UserProfile, row: Dict[str, Any], 
         result['bot_owner_id'] = row['bot_owner_id']
     elif include_custom_profile_fields:
         result['profile_data'] = profiles_by_user_id.get(row['id'], {})
-    return result    
-       
+    return result
+
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state['realm_logo_url'] = get_realm_logo_url(realm, night = False)
     state['realm_logo_source'] = realm.logo_source

@@ -438,10 +438,10 @@ def get_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: i
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
-    
+
     member = get_single_user_data(realm,
-                                 user_profile = user_profile,      
-                                 user_id=user_id,                            
+                                 user_profile = user_profile,
+                                 user_id=user_id,
                                  client_gravatar= client_gravatar,
                                  include_custom_profile_fields=include_custom_profile_fields)
     return json_success({'user': member})
