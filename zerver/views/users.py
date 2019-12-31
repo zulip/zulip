@@ -9,7 +9,7 @@ from django.conf import settings
 
 from zerver.decorator import require_realm_admin, require_member_or_admin
 from zerver.forms import CreateUserForm, PASSWORD_TOO_WEAK_ERROR
-from zerver.lib.events import get_raw_user_data, get_user_data
+from zerver.lib.events import get_raw_user_data, get_single_user_data
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
@@ -438,12 +438,13 @@ def get_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: i
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
-    member = get_user_data(realm,
-                          user_profile=user_profile,
-                          user_id=user_id,
-                          client_gravatar=client_gravatar,
-                          include_custom_profile_fields=include_custom_profile_fields)
-    return json_success({'user_id': member})
+    
+    member = get_single_user_data(realm,
+                                 user_profile = user_profile,      
+                                 user_id=user_id,                            
+                                 client_gravatar= client_gravatar,
+                                 include_custom_profile_fields=include_custom_profile_fields)
+    return json_success({'user': member})
 
 @require_realm_admin
 @has_request_variables

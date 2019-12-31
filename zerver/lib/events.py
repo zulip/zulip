@@ -74,30 +74,32 @@ def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
             }
     return profiles_by_user_id
 
-
 def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: bool,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
     user_dicts = get_realm_user_dicts(realm.id)
 
     return {
-        row['id']: get_user_data(realm, user_profile, row, client_gravatar,
-                      include_custom_profile_fields)
+        row['id']: get_user_data(realm,
+                                 user_profile = user_profile,      
+                                 row=row,                            
+                                 client_gravatar= client_gravatar,
+                                 include_custom_profile_fields=include_custom_profile_fields)
         for row in user_dicts
     }
  
-
-def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: bool,
+def get_single_user_data(realm: Realm, user_profile: UserProfile, user_id:int, client_gravatar: bool,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
     user_dicts = get_realm_user_dicts(realm.id)
-
-    return {
-        row['id']: get_user_data(realm, user_profile, row, client_gravatar,
-                      include_custom_profile_fields)
-        for row in user_dicts
-    }
- 
-
-
+    
+    for row in user_dicts:
+        if int(row['id'])==int(user_id):
+            return get_user_data(realm,
+                                user_profile = user_profile,      
+                                row=row,                            
+                                client_gravatar= client_gravatar,
+                                include_custom_profile_fields=include_custom_profile_fields)
+          
+    
 
 def get_user_data(realm: Realm, user_profile: UserProfile, row: Dict[str, Any], client_gravatar: bool,
                       include_custom_profile_fields: bool=True) -> Dict[str, Any]:
@@ -112,7 +114,7 @@ def get_user_data(realm: Realm, user_profile: UserProfile, row: Dict[str, Any], 
             medium=False,
             client_gravatar=client_gravatar,
         )
-
+    print(row)
     is_admin = row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
     is_guest = row['role'] == UserProfile.ROLE_GUEST
     is_bot = row['is_bot']
