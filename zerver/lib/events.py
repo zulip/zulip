@@ -79,11 +79,11 @@ def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: 
     user_dicts = get_realm_user_dicts(realm.id)
 
     return {
-        row['id']: get_user_data(realm,
-                                 user_profile = user_profile,
-                                 row=row,
-                                 client_gravatar= client_gravatar,
-                                 include_custom_profile_fields=include_custom_profile_fields)
+        row['id']: user_data(realm,
+                             user_profile = user_profile,
+                             row=row,
+                             client_gravatar= client_gravatar,
+                             include_custom_profile_fields=include_custom_profile_fields)
         for row in user_dicts
     }
 
@@ -93,13 +93,13 @@ def get_single_user_data(realm: Realm, user_profile: UserProfile, user_id: int, 
 
     for row in user_dicts:
         if int(row['id']) == int(user_id):
-            return get_user_data(realm,
-                                 user_profile = user_profile,
-                                 row=row,
-                                 client_gravatar= client_gravatar,
-                                 include_custom_profile_fields=include_custom_profile_fields)
+            return user_data(realm,
+                             user_profile = user_profile,
+                             row=row,
+                             client_gravatar= client_gravatar,
+                             include_custom_profile_fields=include_custom_profile_fields)
 
-def get_user_data(realm: Realm, user_profile: UserProfile, row: Dict[str, Any], client_gravatar: bool,
+def user_data(realm: Realm, user_profile: UserProfile, row: Dict[str, Any], client_gravatar: bool,
                   include_custom_profile_fields: bool=True) -> Dict[str, Any]:
     if include_custom_profile_fields:
         profiles_by_user_id = get_custom_profile_field_values(realm.id)
