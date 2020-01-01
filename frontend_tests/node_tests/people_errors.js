@@ -106,7 +106,7 @@ run_test('blueslip', () => {
         display_recipient: [
             {id: maria.user_id},
             {id: 42},
-            {user_id: charles.user_id},
+            {id: charles.user_id},
         ],
         sender_id: charles.user_id,
     };

@@ -62,7 +62,7 @@ run_test('get_unread_ids', () => {
         type: 'private',
         unread: true,
         display_recipient: [
-            {user_id: alice.user_id},
+            {id: alice.user_id},
         ],
     };
 

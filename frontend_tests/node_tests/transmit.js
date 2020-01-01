@@ -224,7 +224,7 @@ run_test('reply_message_private', () => {
     const pm_message = {
         type: 'private',
         display_recipient: [
-            {user_id: fred.user_id},
+            {id: fred.user_id},
         ],
     };
 

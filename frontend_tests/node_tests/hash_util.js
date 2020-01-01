@@ -140,7 +140,7 @@ run_test('test_by_conversation_and_time_uri', () => {
         type: 'private',
         display_recipient: [
             {
-                user_id: hamlet.user_id,
+                id: hamlet.user_id,
             },
         ],
         id: 43,

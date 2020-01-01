@@ -459,7 +459,7 @@ run_test('message_methods', () => {
         display_recipient: [
             {id: maria.user_id},
             {id: me.user_id},
-            {user_id: charles.user_id},
+            {id: charles.user_id},
         ],
         sender_id: charles.user_id,
     };
@@ -474,7 +474,7 @@ run_test('message_methods', () => {
         type: 'private',
         display_recipient: [
             {id: maria.user_id},
-            {user_id: me.user_id},
+            {id: me.user_id},
         ],
         avatar_url: 'legacy.png',
     };
@@ -505,7 +505,7 @@ run_test('message_methods', () => {
     message = {
         type: 'private',
         display_recipient: [
-            {user_id: me.user_id},
+            {id: me.user_id},
         ],
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/30-me');
@@ -615,17 +615,14 @@ run_test('maybe_incr_recipient_count', () => {
         user_id: 452,
         full_name: 'Maria Athens',
     };
-    people.add_in_realm(maria);
-
-    const unknown_user = {
-        email: 'unknown@example.com',
-        user_id: 500,
-        unknown_local_echo_user: true,
+    const maria_recip = {
+        id: maria.user_id,
     };
+    people.add_in_realm(maria);
 
     let message = {
         type: 'private',
-        display_recipient: [maria],
+        display_recipient: [maria_recip],
         sent_by_me: true,
     };
     assert.equal(people.get_recipient_count(maria), 0);
@@ -637,15 +634,21 @@ run_test('maybe_incr_recipient_count', () => {
     message = {
         type: 'private',
         sent_by_me: false,
-        display_recipient: [maria],
+        display_recipient: [maria_recip],
     };
     people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
 
+    const unknown_recip = {
+        email: 'unknown@example.com',
+        id: 500,
+        unknown_local_echo_user: true,
+    };
+
     message = {
         type: 'private',
         sent_by_me: true,
-        display_recipient: [unknown_user],
+        display_recipient: [unknown_recip],
     };
     people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);

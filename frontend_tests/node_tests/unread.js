@@ -408,7 +408,7 @@ run_test('private_messages', () => {
         id: 15,
         type: 'private',
         display_recipient: [
-            {user_id: anybody.user_id},
+            {id: anybody.user_id},
             {id: me.user_id},
         ],
         unread: true,
