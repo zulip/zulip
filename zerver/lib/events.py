@@ -424,9 +424,9 @@ def apply_event(state: Dict[str, Any],
 
                 if recipient_id not in conversations:
                     conversations[recipient_id] = dict(
-                        user_ids=[user_dict['id'] for user_dict in
-                                  event['message']['display_recipient'] if
-                                  user_dict['id'] != user_profile.id]
+                        user_ids=sorted([user_dict['id'] for user_dict in
+                                         event['message']['display_recipient'] if
+                                         user_dict['id'] != user_profile.id])
                     )
                 conversations[recipient_id]['max_message_id'] = event['message']['id']
             return
