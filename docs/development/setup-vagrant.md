@@ -1016,7 +1016,29 @@ If at any time you wish to revert back to the default settings, simply
 remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 `~/.zulip-vagrant-config`.
 
-[cygwin-dl]: https://cygwin.com/
+
+
+#### MacOS [os version - sierra and Mojave] - Error while installing VirtualBox
+
+If you receive the following error while installing VirtualBox in MacOS:
+
+```
+The installation failed. The Installer encountered an error that caused the installation to fail.
+```
+
+You should see something like this:
+
+![MacOS VirtualBox installation Error](../images/macos-virtualbox-installation-error.png)
+
+The error is arising because macOS is blocking any software installation from "Oracle America Inc".
+
+Solution :
+1. Go to : ```System Preferences --> Security & Privacy```
+2. Make sure that you click on Allow button besides a message stating -
+```System software from developer "Oracle America, Inc." was blocked from loading.```
+3. After allowing, try installing again.
+
+[cygwin-dl]: http://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [vmware-fusion-dl]: https://www.vmware.com/products/fusion.html
