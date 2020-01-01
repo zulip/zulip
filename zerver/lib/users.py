@@ -395,15 +395,29 @@ def get_custom_profile_field_values(custom_profile_field_values:
     return profiles_by_user_id
 
 def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: bool,
+                      target_user: Optional[UserProfile]=None,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
-    user_dicts = get_realm_user_dicts(realm.id)
+    """Fetches data about the target user(s) appropriate for sending to
+    acting_user via the standard format for the Zulip API.  If
+    target_user is None, we fetch all users in the realm.
+    """
     profiles_by_user_id = None
     custom_profile_field_data = None
+    # target_user is an optional parameter which is passed when user data of a specific user
+    # is required. It is 'None' otherwise.
+    if target_user is not None:
+        user_dicts = [user_profile_to_user_row(target_user)]
+    else:
+        user_dicts = get_realm_user_dicts(realm.id)
 
     if include_custom_profile_fields:
         base_query = CustomProfileFieldValue.objects.select_related("field")
         # TODO: Consider optimizing this query away with caching.
         custom_profile_field_values = base_query.filter(user_profile__realm_id=realm.id)
+        if target_user is not None:
+            custom_profile_field_values = base_query.filter(user_profile=target_user)
+        else:
+            custom_profile_field_values = base_query.filter(user_profile__realm_id=realm.id)
         profiles_by_user_id = get_custom_profile_field_values(custom_profile_field_values)
 
     result = {}

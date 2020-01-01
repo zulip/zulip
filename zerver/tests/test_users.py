@@ -1336,6 +1336,22 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result['is_bot'])
         self.assertTrue(result['is_admin'])
 
+        # Tests the GET ../users/{id} api endpoint.
+        user = self.example_user('hamlet')
+        result = ujson.loads(self.client_get('/json/users/{}'.format(user.id)).content)
+        self.assertEqual(result['members'][0]['email'], user.email)
+        self.assertEqual(result['members'][0]['full_name'], user.full_name)
+        self.assertIn("user_id", result['members'][0])
+        self.assertNotIn("profile_data", result['members'][0])
+        self.assertFalse(result['members'][0]['is_bot'])
+        self.assertFalse(result['members'][0]['is_admin'])
+
+        result = ujson.loads(self.client_get('/json/users/{}?include_custom_profile_fields=true'.format(user.id)).content)
+
+        self.assertIn('profile_data', result['members'][0])
+        result = self.client_get('/json/users/{}?'.format(30))
+        self.assert_json_error(result, "No such user")
+
     def test_api_get_empty_profile(self) -> None:
         """
         Ensure GET /users/me returns a max message id and returns successfully
