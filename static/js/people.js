@@ -860,7 +860,7 @@ exports.get_people_for_stream_create = function () {
     */
     const people_minus_you = [];
     active_user_dict.each(function (person) {
-        if (!exports.is_current_user(person.email)) {
+        if (!exports.is_my_user_id(person.user_id)) {
             people_minus_you.push({email: person.email,
                                    user_id: person.user_id,
                                    full_name: person.full_name});
