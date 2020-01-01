@@ -749,8 +749,20 @@ exports.get_recipient_count = function (person) {
         return person.pm_recipient_count;
     }
 
-    const user_id = person.user_id || person.id;
-    const count = pm_recipient_count_dict.get(user_id);
+    /*
+        For searching in the search bar, we will
+        have true `person` objects with `user_id`.
+
+        Likewise, we'll have user_id if we
+        are tab-completing a user to send a PM
+        to (but we only get called if we're not
+        currently in a stream view).
+
+        Finally, we'll have user_id if we are adding
+        people to a stream (w/typeahead).
+
+    */
+    const count = pm_recipient_count_dict.get(person.user_id);
 
     return count || 0;
 };
