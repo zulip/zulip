@@ -33,7 +33,7 @@ run_test('insert_recent_private_message', () => {
     pmc.recent.initialize();
 
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: '11,2', max_message_id: 150},
+        {user_ids_string: '2,11', max_message_id: 150},
         {user_ids_string: '1', max_message_id: 111},
         {user_ids_string: '15', max_message_id: 7},
     ]);
@@ -48,9 +48,9 @@ run_test('insert_recent_private_message', () => {
     assert.deepEqual(pmc.recent.get(), [
         {user_ids_string: '1', max_message_id: 3001},
         {user_ids_string: '2', max_message_id: 2001},
-        {user_ids_string: '11,2', max_message_id: 150},
+        {user_ids_string: '2,11', max_message_id: 150},
         {user_ids_string: '15', max_message_id: 7},
     ]);
 
-    assert.deepEqual(pmc.recent.get_strings(), ['1', '2', '11,2', '15']);
+    assert.deepEqual(pmc.recent.get_strings(), ['1', '2', '2,11', '15']);
 });

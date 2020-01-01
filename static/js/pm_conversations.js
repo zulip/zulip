@@ -23,6 +23,8 @@ exports.recent = (function () {
             // The server sends [] for self-PMs.
             user_ids = [people.my_current_user_id()];
         }
+        user_ids.sort((a, b) => a - b);
+
         const user_ids_string = user_ids.join(',');
         let conversation = recent_message_ids.get(user_ids_string);
 
