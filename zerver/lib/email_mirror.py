@@ -235,6 +235,8 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
     charsets = message.get_charsets()
 
     for idx, part in enumerate(message.walk()):
+        if part.get_content_type() == 'text/plain':
+           subject = part.get_payload(0, decode=True)
         if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
             assert isinstance(content, bytes)
