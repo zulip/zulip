@@ -73,9 +73,8 @@ run_test('build_private_messages_list', () => {
     const active_conversation_2 = 'me@zulip.com,alice@zulip.com';
     let max_conversations = 5;
 
-    const user_ids_string = '101,102';
     const timestamp = 0;
-    pm_conversations.recent.insert(user_ids_string, timestamp);
+    pm_conversations.recent.insert([101, 102], timestamp);
 
     global.unread.num_unread_for_person = function () {
         return 1;
@@ -125,9 +124,8 @@ run_test('build_private_messages_list_bot', () => {
     const active_conversation_1 = 'outgoingwebhook@zulip.com';
     const max_conversations = 5;
 
-    const user_ids_string = '314';
     const timestamp = 0;
-    pm_conversations.recent.insert(user_ids_string, timestamp);
+    pm_conversations.recent.insert([314], timestamp);
 
     global.unread.num_unread_for_person = function () {
         return 1;

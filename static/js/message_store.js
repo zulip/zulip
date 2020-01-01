@@ -54,9 +54,7 @@ exports.process_message_for_recent_private_messages = function (message) {
         pm_conversations.set_partner(user_id);
     });
 
-    const user_ids_string = user_ids.join(',');
-
-    pm_conversations.recent.insert(user_ids_string, message.id);
+    pm_conversations.recent.insert(user_ids, message.id);
 };
 
 exports.set_message_booleans = function (message) {
