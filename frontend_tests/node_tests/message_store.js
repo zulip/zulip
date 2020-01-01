@@ -66,12 +66,23 @@ people.add_in_realm(denise);
 
 global.people.initialize_current_user(me.user_id);
 
+function convert_recipients(people) {
+    // Display_recipient uses `id` for user_ids.
+    return _.map(people, (p) => {
+        return {
+            email: p.email,
+            id: p.user_id,
+            full_name: p.full_name,
+        };
+    });
+}
+
 run_test('add_message_metadata', () => {
     let message = {
         sender_email: 'me@example.com',
         sender_id: me.user_id,
         type: 'private',
-        display_recipient: [me, bob, cindy],
+        display_recipient: convert_recipients([me, bob, cindy]),
         flags: ['has_alert_word'],
         is_me_message: false,
         id: 2067,
@@ -172,7 +183,7 @@ run_test('errors', () => {
     // Test a user that doesn't exist
     let message = {
         type: 'private',
-        display_recipient: [{user_id: 92714}],
+        display_recipient: [{id: 92714}],
     };
 
     blueslip.set_test_data('error', 'Unknown user_id in get_person_from_user_id: 92714');
@@ -254,7 +265,7 @@ run_test('message_id_change', () => {
         sender_email: 'me@example.com',
         sender_id: me.user_id,
         type: 'private',
-        display_recipient: [me, bob, cindy],
+        display_recipient: convert_recipients([me, bob, cindy]),
         flags: ['has_alert_word'],
         id: 401,
     };

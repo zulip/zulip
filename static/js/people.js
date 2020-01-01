@@ -386,8 +386,8 @@ exports.all_user_ids_in_pm = function (message) {
         return;
     }
 
-    let user_ids = _.map(message.display_recipient, function (elem) {
-        return elem.user_id || elem.id;
+    let user_ids = _.map(message.display_recipient, function (recip) {
+        return recip.id;
     });
 
     user_ids = sort_numerically(user_ids);
@@ -404,8 +404,8 @@ exports.pm_with_user_ids = function (message) {
         return;
     }
 
-    const user_ids = _.map(message.display_recipient, function (elem) {
-        return elem.user_id || elem.id;
+    const user_ids = _.map(message.display_recipient, function (recip) {
+        return recip.id;
     });
 
     return sorted_other_user_ids(user_ids);
@@ -420,8 +420,9 @@ exports.group_pm_with_user_ids = function (message) {
         blueslip.error('Empty recipient list in message');
         return;
     }
-    const user_ids = _.map(message.display_recipient, function (elem) {
-        return elem.user_id || elem.id;
+
+    const user_ids = _.map(message.display_recipient, function (recip) {
+        return recip.id;
     });
     const is_user_present = _.some(user_ids, function (user_id) {
         return exports.is_my_user_id(user_id);
@@ -1047,13 +1048,13 @@ exports.maybe_incr_recipient_count = function (message) {
     }
 
     // Track the number of PMs we've sent to this person to improve autocomplete
-    _.each(message.display_recipient, function (person) {
+    _.each(message.display_recipient, function (recip) {
 
-        if (person.unknown_local_echo_user) {
+        if (recip.unknown_local_echo_user) {
             return;
         }
 
-        const user_id = person.user_id || person.id;
+        const user_id = recip.id;
         exports.incr_recipient_count(user_id);
     });
 };
