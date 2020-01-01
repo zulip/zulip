@@ -1133,4 +1133,9 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
                 user_profile_id=user_profile.id).values_list(
                     "recipient_id", "user_profile_id"):
         recipient_map[recipient_id]['user_ids'].append(user_profile_id)
+
+    # Sort to prevent test flakes and client bugs.
+    for rec in recipient_map.values():
+        rec['user_ids'].sort()
+
     return recipient_map
