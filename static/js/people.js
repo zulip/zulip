@@ -846,7 +846,18 @@ function people_cmp(person1, person2) {
     return util.strcmp(person1.email, person2.email);
 }
 
-exports.get_rest_of_realm = function get_rest_of_realm() {
+exports.get_people_for_stream_create = function () {
+    /*
+        If you are thinking of reusing this function,
+        a better option in most cases is to just
+        call `exports.get_realm_persons()` and then
+        filter out the "me" user yourself as part of
+        any other filtering that you are doing.
+
+        In particular, this function does a sort
+        that is kinda expensive and may not apply
+        to your use case.
+    */
     const people_minus_you = [];
     active_user_dict.each(function (person) {
         if (!exports.is_current_user(person.email)) {
