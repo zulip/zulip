@@ -395,7 +395,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     return json_success({'bots': list(map(bot_info, bot_profiles))})
 
 @has_request_variables
-def get_members_backend(request: HttpRequest, user_profile: UserProfile,
+def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id: Optional[int]=None,
                         include_custom_profile_fields: bool=REQ(validator=check_bool,
                                                                 default=False),
                         client_gravatar: bool=REQ(validator=check_bool, default=False)
@@ -411,7 +411,13 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
+    target_user = None
+    if user_id is not None:
+        target_user = access_user_by_id(user_profile, user_id, allow_deactivated=True,
+                                        read_only=True)
+
     members = get_raw_user_data(realm, user_profile, client_gravatar=client_gravatar,
+                                target_user=target_user,
                                 include_custom_profile_fields=include_custom_profile_fields)
     return json_success({'members': members.values()})
 
