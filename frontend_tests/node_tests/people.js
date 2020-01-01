@@ -30,7 +30,7 @@ const isaac = {
 
 function initialize() {
     people.init();
-    people.add(me);
+    people.add_in_realm(me);
     people.initialize_current_user(me.user_id);
 }
 
@@ -43,8 +43,11 @@ run_test('basics', () => {
     assert.equal(persons[0].full_name, 'Me Myself');
 
     let realm_persons = people.get_realm_persons();
-    assert.equal(_.size(realm_persons), 0);
-    assert.equal(people.get_realm_count(), 0);
+    assert.equal(realm_persons[0].full_name, 'Me Myself');
+
+    realm_persons = people.get_realm_persons();
+    assert.equal(_.size(realm_persons), 1);
+    assert.equal(people.get_realm_count(), 1);
 
     const full_name = 'Isaac Newton';
     const email = 'isaac@example.com';
@@ -53,7 +56,7 @@ run_test('basics', () => {
     people.add(isaac);
 
     assert(people.is_known_user_id(32));
-    assert.equal(people.get_realm_count(), 0);
+    assert.equal(people.get_realm_count(), 1);
 
     let person = people.get_by_name(full_name);
     assert.equal(people.get_user_id(email), 32);
@@ -63,16 +66,15 @@ run_test('basics', () => {
     person = people.get_active_user_for_email(email);
     assert(!person);
     people.add_in_realm(isaac);
-    assert.equal(people.get_realm_count(), 1);
+    assert.equal(people.get_realm_count(), 2);
     person = people.get_active_user_for_email(email);
     assert.equal(person.email, email);
 
     realm_persons = people.get_realm_persons();
-    assert.equal(_.size(realm_persons), 1);
-    assert.equal(realm_persons[0].full_name, 'Isaac Newton');
+    assert.equal(_.size(realm_persons), 2);
 
-    const active_user_ids = people.get_active_user_ids();
-    assert.deepEqual(active_user_ids, [isaac.user_id]);
+    const active_user_ids = people.get_active_user_ids().sort();
+    assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
     assert(people.is_valid_email_for_compose(isaac.email));
 
@@ -80,7 +82,7 @@ run_test('basics', () => {
     people.deactivate(isaac);
     person = people.get_active_user_for_email(email);
     assert(!person);
-    assert.equal(people.get_realm_count(), 0);
+    assert.equal(people.get_realm_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), false);
 
@@ -119,8 +121,10 @@ run_test('basics', () => {
     // Reactivating issac
     people.add_in_realm(isaac);
     const active_human_persons = people.get_active_human_persons();
-    assert.equal(active_human_persons.length, 1);
-    assert.deepEqual(active_human_persons, [isaac]);
+    assert.equal(active_human_persons.length, 2);
+    assert.deepEqual(
+        active_human_persons.sort((p) => p.user_id),
+        [me, isaac]);
 });
 
 run_test('pm_lookup_key', () => {
@@ -264,6 +268,8 @@ run_test('set_custom_profile_field_data', () => {
     assert.equal(person.profile_data[field.id].rendered_value, '<p>Field value</p>');
 });
 
+initialize();
+
 run_test('get_people_for_stream_create', () => {
     const alice1 = {
         email: 'alice1@example.com',
@@ -283,7 +289,7 @@ run_test('get_people_for_stream_create', () => {
     people.add_in_realm(alice1);
     people.add_in_realm(bob);
     people.add_in_realm(alice2);
-    assert.equal(people.get_realm_count(), 3);
+    assert.equal(people.get_realm_count(), 4);
 
     const others = people.get_people_for_stream_create();
     const expected = [
