@@ -254,7 +254,7 @@ exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
 
-    const all_users = people.get_rest_of_realm();
+    const all_users = people.get_people_for_stream_create();
     // Add current user on top of list
     all_users.unshift(people.get_person_from_user_id(page_params.user_id));
     const html = render_new_stream_users({
@@ -352,7 +352,7 @@ exports.create_handlers_for_users = function (container) {
                 return;
             }
 
-            const users = people.get_rest_of_realm();
+            const users = people.get_people_for_stream_create();
             const filtered_users = people.filter_people_by_search_terms(users, search_terms);
 
             // Be careful about modifying the follow code.  A naive implementation

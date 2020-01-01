@@ -264,7 +264,7 @@ run_test('set_custom_profile_field_data', () => {
     assert.equal(person.profile_data[field.id].rendered_value, '<p>Field value</p>');
 });
 
-run_test('get_rest_of_realm', () => {
+run_test('get_people_for_stream_create', () => {
     const alice1 = {
         email: 'alice1@example.com',
         user_id: 202,
@@ -285,7 +285,7 @@ run_test('get_rest_of_realm', () => {
     people.add_in_realm(alice2);
     assert.equal(people.get_realm_count(), 3);
 
-    const others = people.get_rest_of_realm();
+    const others = people.get_people_for_stream_create();
     const expected = [
         { email: 'alice1@example.com', user_id: 202, full_name: 'Alice' },
         { email: 'alice2@example.com', user_id: 203, full_name: 'Alice' },
@@ -347,7 +347,7 @@ run_test('filtered_users', () => {
     people.add_in_realm(plain_noah);
 
     const search_term = 'a';
-    const users = people.get_rest_of_realm();
+    const users = people.get_people_for_stream_create();
     let filtered_people = people.filter_people_by_search_terms(users, [search_term]);
     assert.equal(filtered_people.num_items(), 2);
     assert(filtered_people.has(ashton.user_id));
