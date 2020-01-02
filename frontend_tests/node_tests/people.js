@@ -4,8 +4,10 @@ zrequire('people');
 set_global('blueslip', global.make_zblueslip({
     error: false, // We check for errors in people_errors.js
 }));
+set_global('message_store', {});
 set_global('page_params', {});
 set_global('settings_org', {});
+set_global('typeahead_helper', {});
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
@@ -671,6 +673,37 @@ run_test('slugs', () => {
 
     // Test undefined slug
     assert.equal(people.emails_to_slug('does@not.exist'), undefined);
+});
+
+initialize();
+
+run_test('get_people_for_search_bar', () => {
+    typeahead_helper.compare_by_pms = () => 0;
+    message_store.user_ids = () => [];
+
+    _.each(_.range(20), (i) => {
+        const person = {
+            email: 'whatever@email.com',
+            full_name: 'James Jones',
+            user_id: 1000 + i,
+        };
+        people.add_in_realm(person);
+    });
+
+    const big_results = people.get_people_for_search_bar('James');
+
+    assert.equal(big_results.length, 20);
+
+    message_store.user_ids = () => {
+        return [1001, 1002, 1003, 1004, 1005, 1006];
+    };
+
+    const small_results = people.get_people_for_search_bar('Jones');
+
+    // As long as there are 5+ results among the user_ids
+    // in message_store, we will get a small result and not
+    // seach all people.
+    assert.equal(small_results.length, 6);
 });
 
 initialize();

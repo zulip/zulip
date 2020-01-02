@@ -1,6 +1,11 @@
 set_global('page_params', {
     search_pills_enabled: true,
 });
+
+set_global('message_store', {
+    user_ids: () => [],
+});
+
 zrequire('util');
 zrequire('typeahead_helper');
 set_global('Handlebars', global.make_handlebars());
