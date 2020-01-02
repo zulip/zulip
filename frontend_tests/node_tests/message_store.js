@@ -52,10 +52,17 @@ const cindy = {
     full_name: 'Cindy',
 };
 
+const denise  = {
+    email: 'denise@example.com',
+    user_id: 105,
+    full_name: 'Denise ',
+};
+
 people.add_in_realm(me);
 people.add_in_realm(alice);
 people.add_in_realm(bob);
 people.add_in_realm(cindy);
+people.add_in_realm(denise);
 
 global.people.initialize_current_user(me.user_id);
 
@@ -71,6 +78,10 @@ run_test('add_message_metadata', () => {
     };
     message_store.set_message_booleans(message);
     message_store.add_message_metadata(message);
+
+    assert.deepEqual(
+        message_store.user_ids().sort(),
+        [me.user_id, bob.user_id, cindy.user_id]);
 
     assert.equal(message.is_private, true);
     assert.equal(message.reply_to, 'bob@example.com,cindy@example.com');
@@ -97,8 +108,8 @@ run_test('add_message_metadata', () => {
     assert.equal(message.match_content, 'bar content');
 
     message = {
-        sender_email: 'me@example.com',
-        sender_id: me.user_id,
+        sender_email: denise.email,
+        sender_id: denise.user_id,
         type: 'stream',
         display_recipient: 'Zoolippy',
         topic: 'cool thing',
@@ -109,9 +120,13 @@ run_test('add_message_metadata', () => {
     message_store.set_message_booleans(message);
     message_store.add_message_metadata(message);
     assert.deepEqual(message.stream, message.display_recipient);
-    assert.equal(message.reply_to, 'me@example.com');
+    assert.equal(message.reply_to, 'denise@example.com');
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
+
+    assert.deepEqual(
+        message_store.user_ids().sort(),
+        [me.user_id, bob.user_id, cindy.user_id, denise.user_id]);
 });
 
 run_test('message_booleans_parity', () => {
