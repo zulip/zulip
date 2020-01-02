@@ -46,6 +46,7 @@ import copy
 import mock
 import os
 import ujson
+import re
 
 from typing import cast, Any, Dict, List, Optional, Set, Tuple
 
@@ -252,6 +253,93 @@ class BugdownMiscTest(ZulipTestCase):
             with mock.patch('logging.error') as mock_logger:
                 render_tex("random text")
                 mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
+
+class BugdownListPreprocessorTest(ZulipTestCase):
+    # We test that the preprocessor inserts blank lines at correct places.
+    # We use <> to indicate that we need to insert a blank line here.
+    def split_message(self, msg: str) -> Tuple[List[str], List[str]]:
+        original = msg.replace('<>', '').split('\n')
+        expected = re.split(r'\n|<>', msg)
+        return original, expected
+
+    def test_basic_list(self) -> None:
+        preprocessor = bugdown.BugdownListPreprocessor()
+        original, expected = self.split_message('List without a gap\n<>* One\n* Two')
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_list_after_quotes(self) -> None:
+        preprocessor = bugdown.BugdownListPreprocessor()
+        original, expected = self.split_message('```quote\nSomething\n```\n\nList without a gap\n<>* One\n* Two')
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_list_in_code(self) -> None:
+        preprocessor = bugdown.BugdownListPreprocessor()
+        original, expected = self.split_message('```\nList without a gap\n* One\n* Two\n```')
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_complex_nesting_with_different_fences(self) -> None:
+        preprocessor = bugdown.BugdownListPreprocessor()
+        msg = """```quote
+In quote. We should convert a list here:<>
+* one
+* two
+
+~~~
+This is a nested code fence, do not make changes here:
+* one
+* two
+
+````quote
+Quote in code fence. Should not convert:
+* one
+* two
+````
+
+~~~
+
+Back in the quote. We should convert:<>
+* one
+* two
+```
+
+Outside. Should convert:<>
+* one
+* two
+        """
+        original, expected = self.split_message(msg)
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_complex_nesting_with_same_fence(self) -> None:
+        preprocessor = bugdown.BugdownListPreprocessor()
+        msg = """```quote
+In quote. We should convert a list here:<>
+* one
+* two
+
+```python
+This is a nested code fence, do not make changes here:
+* one
+* two
+
+```quote
+Quote in code fence. Should not convert:
+* one
+* two
+```
+
+```
+
+Back in the quote. We should convert:<>
+* one
+* two
+```
+
+Outside. Should convert:<>
+* one
+* two
+        """
+        original, expected = self.split_message(msg)
+        self.assertEqual(preprocessor.run(original), expected)
 
 class BugdownTest(ZulipTestCase):
     def setUp(self) -> None:

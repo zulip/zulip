@@ -95,6 +95,12 @@
       "text_content": "> line 1\n> #line 2\n"
     },
     {
+      "name": "fenced_quote_and_list",
+      "input": "Before:\n* One.\n* Two.\n\n```quote\nLists should work after a quote\n```\n\nAfter:\n* One.\n* Two.",
+      "expected_output": "<p>Before:</p>\n<ul>\n<li>One.</li>\n<li>Two.</li>\n</ul>\n<blockquote>\n<p>Lists should work after a quote</p>\n</blockquote>\n<p>After:</p>\n<ul>\n<li>One.</li>\n<li>Two.</li>\n</ul>",
+      "text_content": "Before:\n\nOne.\nTwo.\n\n> Lists should work after a quote\n\nAfter:\n\nOne.\nTwo.\n"
+    },
+    {
       "name": "dangerous_block",
       "input": "xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\n```\"xxxx xxxx\\xxxxx\\xxxxxx\"```\n\nxxx xxxx xxxxx:```xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)```\n\nxxxxxxx'x xxxx xxxxxxxxxx ```'xxxx'```, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?",
       "expected_output": "<p>xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:</p>\n<p><code>\"xxxx xxxx\\xxxxx\\xxxxxx\"</code></p>\n<p>xxx xxxx xxxxx:<code>xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)</code></p>\n<p>xxxxxxx'x xxxx xxxxxxxxxx <code>'xxxx'</code>, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>",
