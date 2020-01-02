@@ -1538,25 +1538,39 @@ class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
 
     def run(self, lines: List[str]) -> List[str]:
         """ Insert a newline between a paragraph and ulist if missing """
+        Fence = NamedTuple('Fence', [
+            ('fence_str', str),
+            ('is_code', bool),
+        ])
+
         inserts = 0
-        fence = None  # type: Optional[Match.group]
+        in_code_fence = False  # type: bool
+        open_fences = []  # type: List[Fence]
         copy = lines[:]
         for i in range(len(lines) - 1):
-            # Ignore anything that is inside a fenced code block
-            # but not quoted
+            # Ignore anything that is inside a fenced code block but not quoted.
+            # We ignore all lines where some parent is a non quote code block.
             m = FENCE_RE.match(lines[i])
-            if not fence and m:
-                quote = m.group('lang') in ('quote', 'quoted')
-                fence = m.group('fence') and not quote
-            elif fence and m and fence == m.group('fence'):
-                fence = None
+            if m:
+                fence_str = m.group('fence')
+                is_code = not m.group('lang') in ('quote', 'quoted')
+                has_open_fences = not len(open_fences) == 0
+                matches_last_fence = fence_str == open_fences[-1].fence_str if has_open_fences else False
+                closes_last_fence = not m.group('lang') and matches_last_fence
+
+                if closes_last_fence:
+                    open_fences.pop()
+                else:
+                    open_fences.append(Fence(fence_str, is_code))
+
+                in_code_fence = any([fence.is_code for fence in open_fences])
 
             # If we're not in a fenced block and we detect an upcoming list
             # hanging off any block (including a list of another type), add
             # a newline.
             li1 = self.LI_RE.match(lines[i])
             li2 = self.LI_RE.match(lines[i+1])
-            if not fence and lines[i]:
+            if not in_code_fence and lines[i]:
                 if (li2 and not li1) or (li1 and li2 and
                                          (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1)):
                     copy.insert(i+inserts+1, '')
