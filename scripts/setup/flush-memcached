@@ -1,26 +1,15 @@
 #!/usr/bin/env python3
 
 import os
-import socket
 import sys
-from urllib.parse import urlsplit
 
 BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
 sys.path.append(BASE_DIR)
 
 import scripts.lib.setup_path_on_import
 from zproject import settings
+import pylibmc
 
-url = urlsplit("//" + settings.MEMCACHED_LOCATION)
-assert url.port is not None
-
-print("Flushing memcached...")
-with socket.create_connection((url.hostname, url.port)) as f:
-    f.sendall(b"flush_all\r\n")
-    response = b""
-    while b"\n" not in response:
-        response += f.recv(4096)
-    if response != b"OK\r\n":
-        print(response, file=sys.stderr)
-        print("Failed to flush memcached", file=sys.stderr)
-        sys.exit(1)
+pylibmc.Client(
+    [settings.MEMCACHED_LOCATION], behaviors=settings.CACHES["default"]["OPTIONS"]
+).flush_all()
