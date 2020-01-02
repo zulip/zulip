@@ -202,7 +202,7 @@ exports.compare_by_pms = function (user_a, user_b) {
     return 1;
 };
 
-function compare_for_at_mentioning(person_a, person_b, tertiary_compare, current_stream) {
+function compare_people_for_relevance(person_a, person_b, tertiary_compare, current_stream) {
     // give preference to "all", "everyone" or "stream"
     if (person_a.email === "all" || person_a.email === "everyone" || person_a.email === "stream") {
         return -1;
@@ -235,7 +235,7 @@ function compare_for_at_mentioning(person_a, person_b, tertiary_compare, current
     return tertiary_compare(person_a, person_b);
 }
 
-exports.sort_for_at_mentioning = function (objs, current_stream_name, current_topic) {
+exports.sort_people_for_relevance = function (objs, current_stream_name, current_topic) {
     // If sorting for recipientbox typeahead or compose state is private, then current_stream = ""
     let current_stream = false;
     if (current_stream_name) {
@@ -243,7 +243,7 @@ exports.sort_for_at_mentioning = function (objs, current_stream_name, current_to
     }
     if (!current_stream) {
         objs.sort(function (person_a, person_b) {
-            return compare_for_at_mentioning(
+            return compare_people_for_relevance(
                 person_a,
                 person_b,
                 exports.compare_by_pms
@@ -253,7 +253,7 @@ exports.sort_for_at_mentioning = function (objs, current_stream_name, current_to
         const stream_id = current_stream.stream_id;
 
         objs.sort(function (person_a, person_b) {
-            return compare_for_at_mentioning(
+            return compare_people_for_relevance(
                 person_a,
                 person_b,
                 function (user_a, user_b) {
@@ -301,7 +301,7 @@ exports.sort_languages = function (matches, query) {
 exports.sort_recipients = function (users, query, current_stream, current_topic, groups) {
     const users_name_results =  util.prefix_sort(
         query, users, function (x) { return x.full_name; });
-    let result = exports.sort_for_at_mentioning(
+    let result = exports.sort_people_for_relevance(
         users_name_results.matches,
         current_stream,
         current_topic
@@ -315,12 +315,12 @@ exports.sort_recipients = function (users, query, current_stream, current_topic,
 
     const email_results = util.prefix_sort(query, users_name_results.rest,
                                            function (x) { return x.email; });
-    result = result.concat(exports.sort_for_at_mentioning(
+    result = result.concat(exports.sort_people_for_relevance(
         email_results.matches,
         current_stream,
         current_topic
     ));
-    let rest_sorted = exports.sort_for_at_mentioning(
+    let rest_sorted = exports.sort_people_for_relevance(
         email_results.rest,
         current_stream,
         current_topic
