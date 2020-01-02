@@ -12,5 +12,8 @@ import pylibmc
 
 pylibmc.Client(
     [settings.MEMCACHED_LOCATION],
+    binary=True,
+    username=settings.MEMCACHED_USERNAME,
+    password=settings.MEMCACHED_PASSWORD,
     behaviors=settings.CACHES["default"]["OPTIONS"]  # type: ignore # settings not typed properly
 ).flush_all()
