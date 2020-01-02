@@ -2218,7 +2218,9 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
         return huddle
 
 def clear_database() -> None:  # nocoverage # Only used in populate_db
-    pylibmc.Client(['127.0.0.1']).flush_all()
+    pylibmc.Client(
+        [settings.MEMCACHED_LOCATION], behaviors=settings.CACHES["default"]["OPTIONS"]
+    ).flush_all()
     model = None  # type: Any
     for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,
