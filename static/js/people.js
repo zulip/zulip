@@ -762,7 +762,20 @@ exports.remove_diacritics = function (s) {
 };
 
 exports.get_people_for_search_bar = function (query) {
-    const pred =  exports.build_person_matcher(query);
+    const pred = exports.build_person_matcher(query);
+
+    const message_people = _.compact(
+        _.map(message_store.user_ids(), (user_id) => {
+            return people_by_user_id_dict.get(user_id);
+        })
+    );
+
+    const small_results = _.filter(message_people, pred);
+
+    if (small_results.length >= 5) {
+        return small_results;
+    }
+
     return exports.filter_all_persons(pred);
 };
 
