@@ -166,3 +166,5 @@ USE_X_FORWARDED_PORT = True
 
 # Override the default SAML entity ID
 SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991/"
+
+MEMCACHED_USERNAME = None
