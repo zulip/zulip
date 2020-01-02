@@ -57,7 +57,10 @@ def clear_database() -> None:
     if default_cache['BACKEND'] == 'django_pylibmc.memcached.PyLibMCCache':
         pylibmc.Client(
             [default_cache['LOCATION']],
-            behaviors=default_cache["OPTIONS"]  # type: ignore # settings not typed properly
+            binary=True,
+            username=default_cache["USERNAME"],
+            password=default_cache["PASSWORD"],
+            behaviors=default_cache["OPTIONS"],
         ).flush_all()
 
     model = None  # type: Any # Hack because mypy doesn't know these are model classes

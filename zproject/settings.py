@@ -313,13 +313,17 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 PYLIBMC_MIN_COMPRESS_LEN = 100 * 1024
 PYLIBMC_COMPRESS_LEVEL = 1
 
+MEMCACHED_PASSWORD = get_secret("memcached_password")
+
 CACHES = {
     'default': {
         'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
         'LOCATION': MEMCACHED_LOCATION,
         'TIMEOUT': 3600,
+        'BINARY': True,
+        'USERNAME': MEMCACHED_USERNAME,
+        'PASSWORD': MEMCACHED_PASSWORD,
         'OPTIONS': {
-            'verify_keys': True,
             'tcp_nodelay': True,
             'retry_timeout': 1,
         }
