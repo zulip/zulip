@@ -179,8 +179,36 @@ function get_group_suggestions(last, operators) {
     return suggestions;
 }
 
+function make_people_getter(last) {
+    let persons;
+
+    /* The next function will be called between 0 and 4
+       times for each keystroke in a search, but we will
+       only do real work one time.
+    */
+    return function () {
+        if (persons !== undefined) {
+            return persons;
+        }
+
+        let query;
+
+        // This next block is designed to match the behavior of the
+        // `is:private` block in get_person_suggestions
+        if (last.operator === "is" && last.operand === "private") {
+            query = '';
+        } else {
+            query = last.operand;
+        }
+
+        persons = people.get_people_for_search_bar(query);
+        persons.sort(typeahead_helper.compare_by_pms);
+        return persons;
+    };
+}
+
 // Possible args for autocomplete_operator: pm-with, sender, from
-function get_person_suggestions(last, operators, autocomplete_operator) {
+function get_person_suggestions(people_getter, last, operators, autocomplete_operator) {
     if (last.operator === "is" && last.operand === "private") {
         // Interpret 'is:private' as equivalent to 'pm-with:'
         last = {operator: "pm-with", operand: "", negated: false};
@@ -206,9 +234,7 @@ function get_person_suggestions(last, operators, autocomplete_operator) {
         return [];
     }
 
-    const persons = people.get_people_for_search_bar(query);
-
-    persons.sort(typeahead_helper.compare_by_pms);
+    const persons = people_getter();
 
     const prefix = Filter.operator_to_prefix(autocomplete_operator, last.negated);
 
@@ -662,6 +688,9 @@ exports.get_search_result = function (base_query, query) {
         base_operators = operators.slice(0, -1);
     }
 
+    // only make one people_getter to avoid duplicate work
+    const people_getter = make_people_getter(last);
+
     suggestions = get_streams_filter_suggestions(last, base_operators);
     attach(suggestions);
 
@@ -674,16 +703,16 @@ exports.get_search_result = function (base_query, query) {
     suggestions = get_stream_suggestions(last, base_operators);
     attach(suggestions);
 
-    suggestions = get_person_suggestions(last, base_operators, 'sender');
+    suggestions = get_person_suggestions(people_getter, last, base_operators, 'sender');
     attach(suggestions);
 
-    suggestions = get_person_suggestions(last, base_operators, 'pm-with');
+    suggestions = get_person_suggestions(people_getter, last, base_operators, 'pm-with');
     attach(suggestions);
 
-    suggestions = get_person_suggestions(last, base_operators, 'from');
+    suggestions = get_person_suggestions(people_getter, last, base_operators, 'from');
     attach(suggestions);
 
-    suggestions = get_person_suggestions(last, base_operators, 'group-pm-with');
+    suggestions = get_person_suggestions(people_getter, last, base_operators, 'group-pm-with');
     attach(suggestions);
 
     suggestions = get_group_suggestions(last, base_operators);
@@ -752,9 +781,12 @@ exports.get_search_result_legacy = function (query) {
         attacher.push(suggestion);
     }
 
+    // only make one people_getter to avoid duplicate work
+    const people_getter = make_people_getter(last);
+
     function get_people(flavor) {
         return function (last, base_operators) {
-            return get_person_suggestions(last, base_operators, flavor);
+            return get_person_suggestions(people_getter, last, base_operators, flavor);
         };
     }
 
