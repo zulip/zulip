@@ -16,6 +16,7 @@ zrequire('hash_util');
 zrequire('marked', 'third/marked/lib/marked');
 const actual_pygments_data = zrequire('actual_pygments_data', 'generated/pygments_data');
 zrequire('settings_org');
+const ct = zrequire('composebox_typeahead');
 const th = zrequire('typeahead_helper');
 const LazySet = zrequire('lazy_set.js').LazySet;
 
@@ -308,10 +309,10 @@ run_test('sort_recipients', () => {
     ]);
 });
 
-const all_obj = {
-    email: 'all',
-    full_name: 'all',
-};
+const all_obj = ct.broadcast_mentions()[0];
+assert.equal(all_obj.email, 'all');
+assert.equal(all_obj.is_broadcast, true);
+assert.equal(all_obj.idx, 0);
 
 run_test('sort_recipients all mention', () => {
     // Test person email is "all" or "everyone"
@@ -422,6 +423,43 @@ run_test('sort_recipients pm partners', () => {
         'b_user_2@zulip.net',
     ];
     assert.deepEqual(recipients_email, expected);
+});
+
+run_test('sort broadcast mentions', () => {
+    // test the normal case, which is that the
+    // broadcast mentions are already sorted (we
+    // actually had a bug where the sort would
+    // randomly rearrange them)
+    const results = th.sort_people_for_relevance(
+        ct.broadcast_mentions().reverse(),
+        '',
+        '');
+
+    assert.deepEqual(
+        _.map(results, (r) => r.email),
+        ['all', 'everyone', 'stream']
+    );
+
+    // Reverse the list to test actual sorting
+    // and ensure test coverage for the defensive
+    // code.  Also, add in some people users.
+    const test_objs = [...ct.broadcast_mentions()].reverse();
+    test_objs.unshift(zman);
+    test_objs.push(a_user);
+
+    const results2 = th.sort_people_for_relevance(
+        test_objs,
+        '',
+        '');
+
+    assert.deepEqual(
+        _.map(results2, (r) => r.email),
+        ['all',
+         'everyone',
+         'stream',
+         a_user.email,
+         zman.email]
+    );
 });
 
 run_test('highlight_with_escaping', () => {

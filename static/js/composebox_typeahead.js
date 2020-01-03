@@ -391,7 +391,7 @@ exports.tokenize_compose_str = function (s) {
 };
 
 exports.broadcast_mentions = function () {
-    return _.map(['all', 'everyone', 'stream'], function (mention) {
+    return _.map(['all', 'everyone', 'stream'], function (mention, idx) {
         return {
             special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
                                       {wildcard_mention_token: mention}),
@@ -400,6 +400,8 @@ exports.broadcast_mentions = function () {
             // be longer and only contain "all" as a substring.
             pm_recipient_count: Infinity,
             full_name: mention,
+            is_broadcast: true,
+            idx: idx, // used for sorting
         };
     });
 };

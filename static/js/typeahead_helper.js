@@ -204,11 +204,19 @@ exports.compare_by_pms = function (user_a, user_b) {
 
 function compare_people_for_relevance(person_a, person_b, tertiary_compare, current_stream) {
     // give preference to "all", "everyone" or "stream"
-    if (person_a.email === "all" || person_a.email === "everyone" || person_a.email === "stream") {
+    // We use is_broadcast for a quick check.  It will
+    // true for all/everyone/stream and undefined (falsy)
+    // for actual people.
+    if (person_a.is_broadcast) {
+        if (person_b.is_broadcast) {
+            return person_a.idx - person_b.idx;
+        }
         return -1;
-    } else if (person_b.email === "all" || person_b.email === "everyone" || person_b.email === "stream") {
+    } else if (person_b.is_broadcast) {
         return 1;
     }
+
+    // Now handle actual people users.
 
     // give preference to subscribed users first
     if (current_stream !== undefined) {
