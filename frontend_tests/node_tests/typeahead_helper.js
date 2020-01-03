@@ -192,19 +192,19 @@ _.each(matches, function (person) {
     global.people.add_in_realm(person);
 });
 
-run_test('sort_recipients', () => {
-    function get_typeahead_result(query, current_stream, current_topic) {
-        const result = th.sort_recipients(
-            global.people.get_realm_persons(),
-            query,
-            current_stream,
-            current_topic
-        );
-        return _.map(result, function (person) {
-            return person.email;
-        });
-    }
+function get_typeahead_result(query, current_stream, current_topic) {
+    const result = th.sort_recipients(
+        global.people.get_realm_persons(),
+        query,
+        current_stream,
+        current_topic
+    );
+    return _.map(result, function (person) {
+        return person.email;
+    });
+}
 
+run_test('sort_recipients', () => {
     // Typeahead for recipientbox [query, "", undefined]
     assert.deepEqual(get_typeahead_result("b", ""), [
         'b_user_1@zulip.net',
@@ -299,7 +299,9 @@ run_test('sort_recipients', () => {
         'b_user_1@zulip.net',
         'b_user_2@zulip.net',
     ]);
+});
 
+run_test('sort_recipients all mention', () => {
     // Test person email is "all" or "everyone"
     const person = {
         email: "all",
@@ -322,7 +324,9 @@ run_test('sort_recipients', () => {
     ]);
 
     people.deactivate(person);
+});
 
+run_test('sort_recipients pm counts', () => {
     // Test sort_recipients with pm counts
     a_bot.pm_recipient_count = 50;
     a_user.pm_recipient_count = 2;
@@ -340,15 +344,16 @@ run_test('sort_recipients', () => {
         'a_user@zulip.org',
         'a_bot@zulip.com',
     ]);
+});
 
-    // Test sort_recipients with duplicate bots
+run_test('sort_recipients dup bots', () => {
     const dup_objects = matches.concat([a_bot]);
 
-    let recipients = th.sort_recipients(dup_objects, "b", "", "");
-    let recipients_email = _.map(recipients, function (person) {
+    const recipients = th.sort_recipients(dup_objects, "b", "", "");
+    const recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
-    let expected = [
+    const expected = [
         'b_bot@example.com',
         'b_user_3@zulip.net',
         'b_user_2@zulip.net',
@@ -359,9 +364,11 @@ run_test('sort_recipients', () => {
         'a_bot@zulip.com',
     ];
     assert.deepEqual(recipients_email, expected);
+});
 
+run_test('sort_recipients dup alls', () => {
     // full_name starts with same character but emails are 'all'
-    let small_matches = [
+    const small_matches = [
         {
             email: "all",
             full_name: "All 1",
@@ -383,38 +390,42 @@ run_test('sort_recipients', () => {
         },
     ];
 
-    recipients = th.sort_recipients(small_matches, "a", "Linux", "Linux Topic");
+    const recipients = th.sort_recipients(small_matches, "a", "Linux", "Linux Topic");
 
-    recipients_email = _.map(recipients, function (person) {
+    const recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
-    expected = [
+    const expected = [
         'all',
         'all',
         'a_user@zulip.net',
     ];
     assert.deepEqual(recipients_email, expected);
+});
 
+run_test('sort_recipients subscribers', () => {
     // b_user_2 is a subscriber and b_user_1 is not.
-    small_matches = [b_user_2, b_user_1];
-    recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev Topic");
-    recipients_email = _.map(recipients, function (person) {
+    const small_matches = [b_user_2, b_user_1];
+    const recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev Topic");
+    const recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
-    expected = [
+    const expected = [
         'b_user_2@zulip.net',
         'b_user_1@zulip.net',
     ];
     assert.deepEqual(recipients_email, expected);
+});
 
+run_test('sort_recipients pm partners', () => {
     // b_user_3 is a pm partner and b_user_2 is not and
     // both are not subscribered to the stream Linux.
-    small_matches = [b_user_3, b_user_2];
-    recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux Topic");
-    recipients_email = _.map(recipients, function (person) {
+    const small_matches = [b_user_3, b_user_2];
+    const recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux Topic");
+    const recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
-    expected = [
+    const expected = [
         'b_user_3@zulip.net',
         'b_user_2@zulip.net',
     ];
