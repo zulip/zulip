@@ -19,6 +19,13 @@ zrequire('settings_org');
 const th = zrequire('typeahead_helper');
 const LazySet = zrequire('lazy_set.js').LazySet;
 
+function assertSameEmails(lst1, lst2) {
+    assert.deepEqual(
+        _.map(lst1, (r) => r.email),
+        _.map(lst2, (r) => r.email)
+    );
+}
+
 stream_data.create_streams([
     {name: 'Dev', subscribed: true, color: 'blue', stream_id: 1},
     {name: 'Linux', subscribed: true, color: 'red', stream_id: 2},
@@ -301,29 +308,32 @@ run_test('sort_recipients', () => {
     ]);
 });
 
+const all_obj = {
+    email: 'all',
+    full_name: 'all',
+};
+
 run_test('sort_recipients all mention', () => {
     // Test person email is "all" or "everyone"
-    const person = {
-        email: "all",
-        full_name: "All",
-        is_admin: false,
-        is_bot: false,
-        user_id: 42,
-    };
-    people.add_in_realm(person);
+    const test_objs = matches.concat([all_obj]);
 
-    assert.deepEqual(get_typeahead_result("a", "Linux", "Linux Topic"), [
-        'all',
-        'a_user@zulip.org',
-        'a_bot@zulip.com',
-        'zman@test.net',
-        'b_user_3@zulip.net',
-        'b_bot@example.com',
-        'b_user_1@zulip.net',
-        'b_user_2@zulip.net',
+    const results = th.sort_recipients(
+        test_objs,
+        'a',
+        'Linux',
+        'Linux Topic'
+    );
+
+    assertSameEmails(results, [
+        all_obj,
+        a_user,
+        a_bot,
+        zman,
+        b_user_3,
+        b_bot,
+        b_user_1,
+        b_user_2,
     ]);
-
-    people.deactivate(person);
 });
 
 run_test('sort_recipients pm counts', () => {
@@ -368,39 +378,21 @@ run_test('sort_recipients dup bots', () => {
 
 run_test('sort_recipients dup alls', () => {
     // full_name starts with same character but emails are 'all'
-    const small_matches = [
-        {
-            email: "all",
-            full_name: "All 1",
-            is_admin: false,
-            is_bot: false,
-            user_id: 43,
-        }, {
-            email: "a_user@zulip.net",
-            full_name: "A user",
-            is_admin: false,
-            is_bot: false,
-            user_id: 44,
-        }, {
-            email: "all",
-            full_name: "All 2",
-            is_admin: false,
-            is_bot: false,
-            user_id: 45,
-        },
+    const test_objs = [
+        all_obj,
+        a_user,
+        all_obj,
     ];
 
-    const recipients = th.sort_recipients(small_matches, "a", "Linux", "Linux Topic");
+    const recipients = th.sort_recipients(
+        test_objs, "a", "Linux", "Linux Topic");
 
-    const recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
     const expected = [
-        'all',
-        'all',
-        'a_user@zulip.net',
+        all_obj,
+        all_obj,
+        a_user,
     ];
-    assert.deepEqual(recipients_email, expected);
+    assertSameEmails(recipients, expected);
 });
 
 run_test('sort_recipients subscribers', () => {
