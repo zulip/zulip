@@ -1160,15 +1160,7 @@ run_test('begins_typeahead', () => {
         );
     }
 
-    const all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
-        return {
-            special_item_text: 'translated: ' + mention + " (Notify stream)",
-            email: mention,
-            pm_recipient_count: Infinity,
-            full_name: mention,
-        };
-    });
-
+    const all_items = ct.broadcast_mentions();
     const people_only = global.people.get_realm_persons();
     const people_with_all = people_only.concat(all_items);
     const all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());

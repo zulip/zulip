@@ -390,22 +390,26 @@ exports.tokenize_compose_str = function (s) {
     return '';
 };
 
+exports.broadcast_mentions = function () {
+    return _.map(['all', 'everyone', 'stream'], function (mention) {
+        return {
+            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
+                                      {wildcard_mention_token: mention}),
+            email: mention,
+            // Always sort above, under the assumption that names will
+            // be longer and only contain "all" as a substring.
+            pm_recipient_count: Infinity,
+            full_name: mention,
+        };
+    });
+};
+
 function get_mention_candidates_data(is_silent) {
     let all_items = [];
     let groups = [];
 
     if (!is_silent) {
-        all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
-            return {
-                special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                          {wildcard_mention_token: mention}),
-                email: mention,
-                // Always sort above, under the assumption that names will
-                // be longer and only contain "all" as a substring.
-                pm_recipient_count: Infinity,
-                full_name: mention,
-            };
-        });
+        all_items = exports.broadcast_mentions();
         groups = user_groups.get_realm_user_groups();
     }
 
