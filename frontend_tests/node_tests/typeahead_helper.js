@@ -122,50 +122,70 @@ run_test('sort_languages', () => {
     assert.deepEqual(test_langs, ["j", "javascript", "java", "js"]);
 });
 
+const a_bot = {
+    email: "a_bot@zulip.com",
+    full_name: "A zulip test bot",
+    is_admin: false,
+    is_bot: true,
+    user_id: 1,
+};
+
+const a_user = {
+    email: "a_user@zulip.org",
+    full_name: "A zulip user",
+    is_admin: false,
+    is_bot: false,
+    user_id: 2,
+};
+
+const b_user_1 = {
+    email: "b_user_1@zulip.net",
+    full_name: "Bob 1",
+    is_admin: false,
+    is_bot: false,
+    user_id: 3,
+};
+
+const b_user_2 = {
+    email: "b_user_2@zulip.net",
+    full_name: "Bob 2",
+    is_admin: true,
+    is_bot: false,
+    user_id: 4,
+};
+
+const b_user_3 = {
+    email: "b_user_3@zulip.net",
+    full_name: "Bob 3",
+    is_admin: false,
+    is_bot: false,
+    user_id: 5,
+};
+
+const b_bot = {
+    email: "b_bot@example.com",
+    full_name: "B bot",
+    is_admin: false,
+    is_bot: true,
+    user_id: 6,
+};
+
+const zman = {
+    email: "zman@test.net",
+    full_name: "Zman",
+    is_admin: false,
+    is_bot: false,
+    user_id: 7,
+};
+
 const matches = [
-    {
-        email: "a_bot@zulip.com",
-        full_name: "A zulip test bot",
-        is_admin: false,
-        is_bot: true,
-        user_id: 1,
-    }, {
-        email: "a_user@zulip.org",
-        full_name: "A zulip user",
-        is_admin: false,
-        is_bot: false,
-        user_id: 2,
-    }, {
-        email: "b_user_1@zulip.net",
-        full_name: "Bob 1",
-        is_admin: false,
-        is_bot: false,
-        user_id: 3,
-    }, {
-        email: "b_user_2@zulip.net",
-        full_name: "Bob 2",
-        is_admin: true,
-        is_bot: false,
-        user_id: 4,
-    }, {
-        email: "b_user_3@zulip.net",
-        full_name: "Bob 3",
-        is_admin: false,
-        is_bot: false,
-        user_id: 5,
-    }, {
-        email: "b_bot@example.com",
-        full_name: "B bot",
-        is_admin: false,
-        is_bot: true,
-        user_id: 6,
-    }, {
-        email: "zman@test.net",
-        full_name: "Zman",
-        is_admin: false,
-        is_bot: false,
-        user_id: 7,
-    },
+    a_bot,
+    a_user,
+    b_user_1,
+    b_user_2,
+    b_user_3,
+    b_bot,
+    zman,
 ];
 
 _.each(matches, function (person) {
@@ -304,12 +324,12 @@ run_test('sort_recipients', () => {
     people.deactivate(person);
 
     // Test sort_recipients with pm counts
-    matches[0].pm_recipient_count = 50;
-    matches[1].pm_recipient_count = 2;
-    matches[2].pm_recipient_count = 32;
-    matches[3].pm_recipient_count = 42;
-    matches[4].pm_recipient_count = 0;
-    matches[5].pm_recipient_count = 1;
+    a_bot.pm_recipient_count = 50;
+    a_user.pm_recipient_count = 2;
+    b_user_1.pm_recipient_count = 32;
+    b_user_2.pm_recipient_count = 42;
+    b_user_3.pm_recipient_count = 0;
+    b_bot.pm_recipient_count = 1;
 
     assert.deepEqual(get_typeahead_result("b", "Linux", "Linux Topic"), [
         'b_user_3@zulip.net',
@@ -321,8 +341,8 @@ run_test('sort_recipients', () => {
         'a_bot@zulip.com',
     ]);
 
-    // Test sort_recipients with duplicate people
-    matches.push(matches[0]);
+    // Test sort_recipients with duplicate bots
+    matches.push(a_bot);
 
     let recipients = th.sort_recipients(matches, "b", "", "");
     let recipients_email = _.map(recipients, function (person) {
@@ -378,8 +398,8 @@ run_test('sort_recipients', () => {
     ];
     assert.deepEqual(recipients_email, expected);
 
-    // matches[3] is a subscriber and matches[2] is not.
-    small_matches = [matches[3], matches[2]];
+    // b_user_2 is a subscriber and b_user_1 is not.
+    small_matches = [b_user_2, b_user_1];
     recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev Topic");
     recipients_email = _.map(recipients, function (person) {
         return person.email;
@@ -390,9 +410,9 @@ run_test('sort_recipients', () => {
     ];
     assert.deepEqual(recipients_email, expected);
 
-    // matches[4] is a pm partner and matches[3] is not and
+    // b_user_3 is a pm partner and b_user_2 is not and
     // both are not subscribered to the stream Linux.
-    small_matches = [matches[4], matches[3]];
+    small_matches = [b_user_3, b_user_2];
     recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux Topic");
     recipients_email = _.map(recipients, function (person) {
         return person.email;
@@ -435,12 +455,12 @@ run_test('render_person when emails hidden', () => {
     let rendered = false;
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
-        assert.equal(args.primary, matches[2].full_name);
+        assert.equal(args.primary, b_user_1.full_name);
         assert.equal(args.secondary, undefined);
         rendered = true;
         return 'typeahead-item-stub';
     });
-    assert.equal(th.render_person(matches[2]), 'typeahead-item-stub');
+    assert.equal(th.render_person(b_user_1), 'typeahead-item-stub');
     assert(rendered);
 });
 
@@ -450,12 +470,12 @@ run_test('render_person', () => {
     let rendered = false;
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
-        assert.equal(args.primary, matches[1].full_name);
-        assert.equal(args.secondary, matches[1].email);
+        assert.equal(args.primary, a_user.full_name);
+        assert.equal(args.secondary, a_user.email);
         rendered = true;
         return 'typeahead-item-stub';
     });
-    assert.equal(th.render_person(matches[1]), 'typeahead-item-stub');
+    assert.equal(th.render_person(a_user), 'typeahead-item-stub');
     assert(rendered);
 
     // Test render_person with special_item_text person
@@ -482,24 +502,24 @@ run_test('clear_rendered_person', () => {
     let rendered = false;
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
-        assert.equal(args.primary, matches[5].full_name);
-        assert.equal(args.secondary, matches[5].email);
+        assert.equal(args.primary, b_bot.full_name);
+        assert.equal(args.secondary, b_bot.email);
         rendered = true;
         return 'typeahead-item-stub';
     });
-    assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
+    assert.equal(th.render_person(b_bot), 'typeahead-item-stub');
     assert(rendered);
 
     // Bot once rendered won't be rendered again until clear_rendered_person
     // function is called. clear_rendered_person is used to clear rendered
     // data once bot name is modified.
     rendered = false;
-    assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
+    assert.equal(th.render_person(b_bot), 'typeahead-item-stub');
     assert.equal(rendered, false);
 
     // Here rendered will be true as it is being rendered again.
-    th.clear_rendered_person(matches[5].user_id);
-    assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
+    th.clear_rendered_person(b_bot.user_id);
+    assert.equal(th.render_person(b_bot), 'typeahead-item-stub');
     assert(rendered);
 
 });
