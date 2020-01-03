@@ -202,7 +202,12 @@ exports.compare_by_pms = function (user_a, user_b) {
     return 1;
 };
 
-function compare_people_for_relevance(person_a, person_b, tertiary_compare, current_stream) {
+exports.compare_people_for_relevance = function (
+    person_a,
+    person_b,
+    tertiary_compare,
+    current_stream) {
+
     // give preference to "all", "everyone" or "stream"
     // We use is_broadcast for a quick check.  It will
     // true for all/everyone/stream and undefined (falsy)
@@ -241,7 +246,7 @@ function compare_people_for_relevance(person_a, person_b, tertiary_compare, curr
     }
 
     return tertiary_compare(person_a, person_b);
-}
+};
 
 exports.sort_people_for_relevance = function (objs, current_stream_name, current_topic) {
     // If sorting for recipientbox typeahead or compose state is private, then current_stream = ""
@@ -251,7 +256,7 @@ exports.sort_people_for_relevance = function (objs, current_stream_name, current
     }
     if (!current_stream) {
         objs.sort(function (person_a, person_b) {
-            return compare_people_for_relevance(
+            return exports.compare_people_for_relevance(
                 person_a,
                 person_b,
                 exports.compare_by_pms
@@ -261,7 +266,7 @@ exports.sort_people_for_relevance = function (objs, current_stream_name, current
         const stream_id = current_stream.stream_id;
 
         objs.sort(function (person_a, person_b) {
-            return compare_people_for_relevance(
+            return exports.compare_people_for_relevance(
                 person_a,
                 person_b,
                 function (user_a, user_b) {
