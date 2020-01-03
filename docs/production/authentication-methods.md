@@ -51,7 +51,7 @@ it as follows:
       The `Entity ID` should match the value of
       `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
        You can get the correct value by running the following:
-      `/home/zulip/deployments/current/scripts/setup/get-django-setting
+      `/home/zulip/deployments/current/scripts/get-django-setting
        SOCIAL_AUTH_SAML_SP_ENTITY_ID`.
 
     * **SSO URL**:
