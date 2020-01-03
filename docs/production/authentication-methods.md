@@ -379,6 +379,23 @@ details.
 
 [upstream-ldap-groups]: https://django-auth-ldap.readthedocs.io/en/latest/groups.html#limiting-access
 
+### Troubleshooting
+
+Issues with logging in via LDAP are usually due to some form of misconfiguration
+of the user and email search settings. Some things you can try to get to the
+bottom of the problem:
+
+* Make sure you know which configuration type (A), (B) or (C) is the correct
+  one for your purposes and that you have configured all the required settings
+  according to the instructions for the intended configuration type.
+* Use the `manage.py query_ldap` tool to query for usernames. The output
+  of the command can help determine what the problem is. For the LDAP
+  integration to work, this command should be able to successfully fetch
+  data of the queried user.
+* You can find LDAP-specific logs in `/var/log/zulip/ldap.log`. If you're
+  asking for help with your setup, you should copypaste the recent data from
+  this file.
+
 ## Apache-based SSO with `REMOTE_USER`
 
 If you have any existing SSO solution where a preferred way to deploy
