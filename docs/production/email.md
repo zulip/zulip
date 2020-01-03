@@ -62,7 +62,7 @@ find the service's provided "SMTP credentials", and configure Zulip as
 follows:
 
 * The hostname like `EMAIL_HOST = 'smtp.mailgun.org'` in `/etc/zulip/settings.py`
-* The username like `EMAIL_HOST_USER = 'username@example.com` in
+* The username like `EMAIL_HOST_USER = 'username@example.com'` in
   `/etc/zulip/settings.py`.
 * The TLS setting as `EMAIL_USE_TLS = True` in
   `/etc/zulip/settings.py`, for most providers
