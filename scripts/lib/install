@@ -293,6 +293,16 @@ EOF
 
 case ",$PUPPET_CLASSES," in
     *,zulip::voyager,* | *,zulip::dockervoyager,* | *,zulip::app_frontend,*)
+        if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/settings.py" ]; then
+            cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
+            if [ -n "$EXTERNAL_HOST" ]; then
+                sed -i "s/^EXTERNAL_HOST =.*/EXTERNAL_HOST = '$EXTERNAL_HOST'/" /etc/zulip/settings.py
+            fi
+            if [ -n "$ZULIP_ADMINISTRATOR" ]; then
+                sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
+            fi
+        fi
+        ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
         "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
         ;;
 esac
@@ -351,19 +361,6 @@ EOF
         exit 1
     )
     service nginx restart
-fi
-
-if [ "$has_appserver" = 0 ]; then
-    if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/settings.py" ]; then
-        cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
-        if [ -n "$EXTERNAL_HOST" ]; then
-            sed -i "s/^EXTERNAL_HOST =.*/EXTERNAL_HOST = '$EXTERNAL_HOST'/" /etc/zulip/settings.py
-        fi
-        if [ -n "$ZULIP_ADMINISTRATOR" ]; then
-            sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
-        fi
-    fi
-    ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
 fi
 
 if [ "$has_rabbit" = 0 ]; then

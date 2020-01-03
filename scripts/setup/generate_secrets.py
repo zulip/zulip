@@ -17,6 +17,7 @@ import argparse
 import uuid
 import configparser
 from zerver.lib.utils import generate_random_token
+from zproject import settings
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -79,6 +80,13 @@ def generate_secrets(development=False):
 
     if need_secret('camo_key'):
         add_secret('camo_key', get_random_string(64))
+
+    if (
+        not development
+        and settings.MEMCACHED_LOCATION == "127.0.0.1:11211"
+        and need_secret("memcached_password")
+    ):
+        add_secret("memcached_password", generate_random_token(64))
 
     # zulip_org_key is generated using os.urandom().
     # zulip_org_id does not require a secure CPRNG,
