@@ -223,6 +223,7 @@ of the following configurations:
                                        ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
     AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                        ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+    AUTH_LDAP_USERNAME_ATTR = "sAMAccountName"
     ```
 
 * To access by Active Directory email address:
@@ -231,6 +232,7 @@ of the following configurations:
                                        ldap.SCOPE_SUBTREE, "(mail=%(user)s)")
     AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                                 ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+    AUTH_LDAP_USERNAME_ATTR = "mail"
     ```
 
 **If you are using LDAP for authentication**: you will need to enable
