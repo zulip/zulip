@@ -462,6 +462,23 @@ run_test('sort broadcast mentions', () => {
     );
 });
 
+run_test('test compare directly', () => {
+    // This is important for ensuring test coverage.
+    // We don't technically need it now, but our test
+    // coverage is subject to the whims of how JS sorts.
+    assert.equal(
+        th.compare_people_for_relevance(all_obj, all_obj),
+        0);
+
+    assert.equal(
+        th.compare_people_for_relevance(all_obj, zman),
+        -1);
+
+    assert.equal(
+        th.compare_people_for_relevance(zman, all_obj),
+        1);
+});
+
 run_test('highlight_with_escaping', () => {
     function highlight(query, item) {
         const regex = th.build_highlight_regex(query);
