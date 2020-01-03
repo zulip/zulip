@@ -342,9 +342,9 @@ run_test('sort_recipients', () => {
     ]);
 
     // Test sort_recipients with duplicate bots
-    matches.push(a_bot);
+    const dup_objects = matches.concat([a_bot]);
 
-    let recipients = th.sort_recipients(matches, "b", "", "");
+    let recipients = th.sort_recipients(dup_objects, "b", "", "");
     let recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
@@ -359,9 +359,6 @@ run_test('sort_recipients', () => {
         'a_bot@zulip.com',
     ];
     assert.deepEqual(recipients_email, expected);
-
-    // Reset matches
-    matches.splice(matches.length - 1, 1);
 
     // full_name starts with same character but emails are 'all'
     let small_matches = [
