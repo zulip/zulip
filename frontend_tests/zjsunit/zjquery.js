@@ -177,7 +177,17 @@ exports.make_new_elem = function (selector, opts) {
             }
             return elem.parent().closest(selector);
         },
-        data: noop,
+        data: function (name, val) {
+            if (val === undefined) {
+                const data_val = attrs.get('data-' + name);
+                if (data_val === undefined) {
+                    return;
+                }
+                return JSON.parse(data_val);
+            }
+            attrs.set('data-' + name, val);
+            return self;
+        },
         delay: function () {
             return self;
         },
