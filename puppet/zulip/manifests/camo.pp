@@ -14,5 +14,9 @@ class zulip::camo {
     group   => 'root',
     mode    => '0644',
     content => template('zulip/camo_defaults.template.erb'),
+    notify  => Service[camo],
+  }
+  service { 'camo':
+    ensure => running,
   }
 }
