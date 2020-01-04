@@ -259,11 +259,16 @@ EOF
     fi
 ) > /etc/zulip/zulip.conf
 
+case ",$PUPPET_CLASSES," in
+    *,zulip::voyager,* | *,zulip::dockervoyager,* | *,zulip::app_frontend,*)
+        "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
+        ;;
+esac
+
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
 # Detect which features were selected for the below
 set +e
-[ -e "/etc/init.d/camo" ]; has_camo=$?
 [ -e "/etc/init.d/nginx" ]; has_nginx=$?
 [ -e "/etc/supervisor/conf.d/zulip.conf" ]; has_appserver=$?
 [ -e "/etc/cron.d/rabbitmq-numconsumers" ]; has_rabbit=$?
@@ -272,7 +277,6 @@ set -e
 
 # Docker service setup is done in the docker config, not here
 if [ "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
-    has_camo=1
     has_nginx=1
     has_appserver=0
     has_rabbit=1
@@ -311,7 +315,6 @@ EOF
 fi
 
 if [ "$has_appserver" = 0 ]; then
-    "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
     if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/settings.py" ]; then
         cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
         if [ -n "$EXTERNAL_HOST" ]; then
@@ -322,15 +325,6 @@ if [ "$has_appserver" = 0 ]; then
         fi
     fi
     ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
-fi
-
-# Restart camo since generate_secrets.py likely replaced its secret key
-if [ "$has_camo" = 0 ]; then
-    # Cut off stdin because a bug in the Debian packaging for camo
-    # causes our stdin to leak to the daemon, which can cause tools
-    # invoking the installer to hang.
-    # TODO: fix in Debian too.
-    service camo restart </dev/null
 fi
 
 if [ "$has_rabbit" = 0 ]; then
