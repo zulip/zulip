@@ -703,7 +703,7 @@ html_rules = whitespace_rules + prose_style_rules + [
 
          # background image property is dynamically generated
          'static/templates/user_profile_modal.hbs',
-         'static/templates/sidebar_private_message_list.hbs',
+         'static/templates/pm_list_item.hbs',
 
          # Inline styling for an svg; could be moved to CSS files?
          'templates/zerver/landing_nav.html',

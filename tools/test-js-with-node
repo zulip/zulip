@@ -96,6 +96,7 @@ enforce_fully_covered = {
     'static/js/user_search.js',
     'static/js/user_status.js',
     'static/js/util.js',
+    'static/js/vdom.js',
     'static/js/widgetize.js',
     'static/js/search_pill.js',
     'static/js/billing/billing.js',
