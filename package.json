@@ -92,7 +92,7 @@
     "svgo": "^1.2.2",
     "swagger-parser": "^8.0.1",
     "typescript": "^3.5.1",
-    "vnu-jar": "^19.6.7",
+    "vnu-jar": "^20.1.2",
     "webpack-dev-server": "^3.5.1",
     "yarn-deduplicate": "^1.1.1"
   },

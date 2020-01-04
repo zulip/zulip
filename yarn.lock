@@ -12120,10 +12120,10 @@ vm-browserify@^1.0.1:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==
 
-vnu-jar@^19.6.7:
-  version "19.9.4"
-  resolved "https://registry.yarnpkg.com/vnu-jar/-/vnu-jar-19.9.4.tgz#fa04135dee3df1cdb1bbcbcd11fc40b73fd39d8a"
-  integrity sha512-x91WyaNr1oPJaYZkbyMElRyV60BUaxPuhm3zXXjlFOpW3E2KavPWlyohX0LTf6gX7/tujIMgLE5UGc0jn7o4XQ==
+vnu-jar@^20.1.2:
+  version "20.1.2"
+  resolved "https://registry.yarnpkg.com/vnu-jar/-/vnu-jar-20.1.2.tgz#98558dd7de00d5b9fa23aa11d25568972aa6feb7"
+  integrity sha512-j2ZVSIlDug2vpzBwbZqDrVmM2sh49a36vaqJorX1P2DT71/LW9stS4Cpeh+qih5FWQmuNkZAopIzbOmlXJjs9Q==
 
 vt-pbf@^3.1.1:
   version "3.1.1"
