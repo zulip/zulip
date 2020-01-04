@@ -1156,23 +1156,6 @@ run_test('settings_tab', () => {
 
 });
 
-run_test('sidebar_private_message_list', () => {
-    const args = {
-        want_show_more_messages_links: true,
-        messages: [
-            {
-                recipients: "alice,bob",
-            },
-        ],
-    };
-
-    let html = '';
-    html += render('sidebar_private_message_list', args);
-
-    const conversations = $(html).find('a').text().trim().split('\n');
-    assert.equal(conversations[0], 'alice,bob');
-});
-
 run_test('stream_member_list_entry', () => {
     const everyone_items = ["subscriber-name", "subscriber-email"];
     const admin_items = ["remove-subscriber-button"];
