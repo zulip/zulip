@@ -89,18 +89,6 @@ export class Dict<K, V> {
         return _.pluck(_.values(this._items), 'v');
     }
 
-    filter_values(pred: (item: V) => boolean): V[] {
-        const results: V[] = [];
-
-        _.each(this._items, function (item) {
-            if (pred(item.v)) {
-                results.push(item.v);
-            }
-        });
-
-        return results;
-    }
-
     items(): [K, V][] {
         return _.map(_.values(this._items),
             (mapping: KeyValue<K, V>): [K, V] => [mapping.k, mapping.v]);

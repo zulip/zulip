@@ -39,22 +39,6 @@ run_test('basic', () => {
     assert.equal(val, res);
 });
 
-run_test('filter_values', () => {
-    const d = new Dict();
-
-    d.set(1, "fred");
-    d.set(2, "foo");
-    d.set(3, "bar");
-    d.set(4, "baz");
-    d.set(4, "fay");
-
-    const pred = (v) => {
-        return v.startsWith('f');
-    };
-
-    assert.deepEqual(d.filter_values(pred).sort(), ['fay', 'foo', 'fred']);
-});
-
 run_test('undefined_keys', () => {
     blueslip.set_test_data('error', 'Tried to call a Dict method with an undefined key.');
 
