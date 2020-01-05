@@ -1377,6 +1377,10 @@ nav ul li.active::after {
     opacity: 0.4;
 }
 
+.tour .carousel-inner .start-image:hover {
+    box-shadow: 0px 3px 10px hsla(0, 0%, 0%, 0.3);
+}
+
 .tour .carousel-inner .tour-item-header {
     margin: 0 0 30px 54px;
     max-width: 700px;
