@@ -179,7 +179,7 @@ exports.add_message_metadata = function (message) {
 
         if (people.is_my_user_id(message.sender_id)) {
             _.each(message.display_recipient, (recip) => {
-                message_user_ids.add(recip.id || recip.user_id);
+                message_user_ids.add(recip.id);
             });
         }
         break;
