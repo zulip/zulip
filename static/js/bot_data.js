@@ -13,7 +13,7 @@ const send_change_event = _.debounce(function () {
 const set_can_admin = function bot_data__set_can_admin(bot) {
     if (page_params.is_admin) {
         bot.can_admin = true;
-    } else if (bot.owner !== undefined && people.is_current_user(bot.owner)) {
+    } else if (bot.owner && people.is_current_user(bot.owner)) {
         bot.can_admin = true;
     } else {
         bot.can_admin = false;

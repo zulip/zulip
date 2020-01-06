@@ -222,7 +222,7 @@ exports.get_title_data = function (user_ids_string, is_group) {
 
     if (person.is_bot) {
         // Bot has an owner.
-        if (person.bot_owner_id !== null) {
+        if (person.bot_owner_id) {
             person.bot_owner_full_name = people.get_person_from_user_id(
                 person.bot_owner_id).full_name;
 
