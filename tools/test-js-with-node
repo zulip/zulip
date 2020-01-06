@@ -59,6 +59,7 @@ enforce_fully_covered = {
     'static/js/narrow_state.js',
     'static/js/people.js',
     'static/js/pm_conversations.js',
+    'static/js/pm_list.js',
     'static/js/presence.js',
     'static/js/reactions.js',
     'static/js/recent_senders.js',
