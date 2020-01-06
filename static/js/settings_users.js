@@ -134,7 +134,7 @@ function populate_users(realm_people_data) {
             // Convert bot type id to string for viewing to the users.
             user.bot_type = settings_bots.type_id_to_string(user.bot_type);
 
-            if (user.bot_owner_id !== null) {
+            if (user.bot_owner_id) {
                 user.bot_owner_full_name = people.get_person_from_user_id(
                     user.bot_owner_id).full_name;
             } else {
