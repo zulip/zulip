@@ -64,15 +64,10 @@ exports.close = function () {
     remove_expanded_private_messages();
 };
 
-exports._build_private_messages_list = function (active_conversation) {
+exports._build_private_messages_list = function () {
 
     const private_messages = pm_conversations.recent.get();
     const display_messages = [];
-
-    // SHIM
-    if (active_conversation) {
-        active_conversation = people.emails_strings_to_user_ids_string(active_conversation);
-    }
 
     _.each(private_messages, function (private_message_obj) {
         const user_ids_string = private_message_obj.user_ids_string;
@@ -122,8 +117,7 @@ exports.rebuild_recent = function (active_conversation) {
     stream_popover.hide_topic_popover();
 
     if (private_messages_open) {
-        const rendered_pm_list = exports._build_private_messages_list(
-            active_conversation);
+        const rendered_pm_list = exports._build_private_messages_list();
         ui.get_content_element($("#private-container")).html(rendered_pm_list);
     }
 

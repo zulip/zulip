@@ -71,10 +71,6 @@ run_test('close', () => {
 });
 
 run_test('build_private_messages_list', () => {
-    const active_conversation_1 = "alice@zulip.com,bob@zulip.com";
-    const active_conversation_2 = 'me@zulip.com,alice@zulip.com';
-    let max_conversations = 5;
-
     const timestamp = 0;
     pm_conversations.recent.insert([101, 102], timestamp);
 
@@ -89,7 +85,7 @@ run_test('build_private_messages_list', () => {
         template_data = data;
     });
 
-    pm_list._build_private_messages_list(active_conversation_1, max_conversations);
+    pm_list._build_private_messages_list();
 
     const expected_data = {
         messages: [
@@ -108,24 +104,20 @@ run_test('build_private_messages_list', () => {
 
     assert.deepEqual(template_data, expected_data);
 
-    max_conversations = 0;
     global.unread.num_unread_for_person = function () {
         return 0;
     };
-    pm_list._build_private_messages_list(active_conversation_2, max_conversations);
+    pm_list._build_private_messages_list();
     expected_data.messages[0].unread = 0;
     expected_data.messages[0].is_zero = true;
     assert.deepEqual(template_data, expected_data);
 
     pm_list.initialize();
-    pm_list._build_private_messages_list(active_conversation_2, max_conversations);
+    pm_list._build_private_messages_list();
     assert.deepEqual(template_data, expected_data);
 });
 
 run_test('build_private_messages_list_bot', () => {
-    const active_conversation_1 = 'outgoingwebhook@zulip.com';
-    const max_conversations = 5;
-
     const timestamp = 0;
     pm_conversations.recent.insert([314], timestamp);
 
@@ -139,7 +131,7 @@ run_test('build_private_messages_list_bot', () => {
         template_data = data;
     });
 
-    pm_list._build_private_messages_list(active_conversation_1, max_conversations);
+    pm_list._build_private_messages_list();
     const expected_data = {
         messages: [
             {
