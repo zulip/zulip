@@ -291,3 +291,59 @@ run_test('is_all_privates', () => {
         pm_list.is_all_privates(),
         true);
 });
+
+function with_fake_list(f) {
+    const orig = pm_list._build_private_messages_list;
+    pm_list._build_private_messages_list = () => {
+        return 'PM_LIST_CONTENTS';
+    };
+    f();
+    pm_list._build_private_messages_list = orig;
+}
+
+run_test('expand', () => {
+    with_fake_list(() => {
+        let html_inserted;
+
+        $('#private-container').html = function (html) {
+            assert.equal(html, 'PM_LIST_CONTENTS');
+            html_inserted = true;
+        };
+        pm_list.expand();
+
+        assert(html_inserted);
+    });
+});
+
+run_test('update_private_messages', () => {
+    narrow_state.active = () => true;
+
+    with_fake_list(() => {
+        let html_inserted;
+
+        $('#private-container').html = function (html) {
+            assert.equal(html, 'PM_LIST_CONTENTS');
+            html_inserted = true;
+        };
+
+        const orig_is_all_privates = pm_list.is_all_privates;
+        pm_list.is_all_privates = () => true;
+
+        pm_list.update_private_messages();
+
+        assert(html_inserted);
+        assert($(".top_left_private_messages").hasClass('active-filter'));
+
+        pm_list.is_all_privates = orig_is_all_privates;
+    });
+});
+
+run_test('ensure coverage', () => {
+    // These aren't rigorous; they just cover cases
+    // where functions early exit.
+    narrow_state.active = () => false;
+    pm_list.rebuild_recent = () => {
+        throw Error('we should not call rebuild_recent');
+    };
+    pm_list.update_private_messages();
+});
