@@ -71,8 +71,7 @@ exports.handle_narrow_activated = function (filter) {
     }
 
     if (exports.should_expand_pm_list(filter)) {
-        const op_pm = filter.operands('pm-with');
-        pm_list.expand(op_pm);
+        pm_list.expand();
     } else {
         pm_list.close();
     }

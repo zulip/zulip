@@ -56,11 +56,6 @@ global.people.add_in_realm(me);
 global.people.add_in_realm(bot_test);
 global.people.initialize_current_user(me.user_id);
 
-run_test('get_conversation_li', () => {
-    const test_conversation = 'foo@example.com,bar@example.com'; // people.js
-    pm_list.get_conversation_li(test_conversation);
-});
-
 run_test('close', () => {
     let collapsed;
     $('#private-container').empty = function () {
@@ -85,6 +80,7 @@ run_test('build_private_messages_list', () => {
         template_data = data;
     });
 
+    narrow_state.filter = () => {};
     pm_list._build_private_messages_list();
 
     const expected_data = {
@@ -94,6 +90,7 @@ run_test('build_private_messages_list', () => {
                 user_ids_string: '101,102',
                 unread: 1,
                 is_zero: false,
+                is_active: false,
                 url: '#narrow/pm-with/101,102-group',
                 user_circle_class: 'user_circle_fraction',
                 fraction_present: undefined,
@@ -139,6 +136,7 @@ run_test('build_private_messages_list_bot', () => {
                 user_ids_string: '314',
                 unread: 1,
                 is_zero: false,
+                is_active: false,
                 url: '#narrow/pm-with/314-outgoingwebhook',
                 user_circle_class: 'user_circle_green',
                 fraction_present: undefined,
@@ -149,6 +147,7 @@ run_test('build_private_messages_list_bot', () => {
                 user_ids_string: '101,102',
                 unread: 1,
                 is_zero: false,
+                is_active: false,
                 url: '#narrow/pm-with/101,102-group',
                 user_circle_class: 'user_circle_fraction',
                 fraction_present: undefined,
@@ -214,7 +213,7 @@ run_test('update_dom_with_unread_counts', () => {
     assert.equal(child_value.text(), '');
     assert.equal(total_value.text(), '');
 
-    const pm_li = pm_list.get_conversation_li("alice@zulip.com,bob@zulip.com");
+    const pm_li = pm_list.get_li_for_user_ids_string("101,102");
     pm_li.find = function (sel) {
         assert.equal(sel, '.private_message_count');
         return {find: function (sel) {
@@ -226,4 +225,33 @@ run_test('update_dom_with_unread_counts', () => {
     assert(toggle_button_set);
     assert.equal(child_value.text(), '');
     assert.equal(total_value.text(), '');
+});
+
+run_test('get_active_user_ids_string', () => {
+    narrow_state.filter = () => {};
+
+    assert.equal(
+        pm_list.get_active_user_ids_string(),
+        undefined);
+
+    function set_filter_result(emails) {
+        narrow_state.filter = () => {
+            return {
+                operands: (operand) => {
+                    assert.equal(operand, 'pm-with');
+                    return emails;
+                },
+            };
+        };
+    }
+
+    set_filter_result([]);
+    assert.equal(
+        pm_list.get_active_user_ids_string(),
+        undefined);
+
+    set_filter_result(['bob@zulip.com,alice@zulip.com']);
+    assert.equal(
+        pm_list.get_active_user_ids_string(),
+        '101,102');
 });
