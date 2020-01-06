@@ -135,27 +135,31 @@ exports.rebuild_recent = function () {
     resize.resize_stream_filters_container();
 };
 
+exports.is_all_privates = function () {
+    const filter = narrow_state.filter();
+
+    if (!filter) {
+        return false;
+    }
+
+    // Handle the edge case that somebody said pm-with:alice is:private.
+    // This should basically be treated like pm-with:alice.
+    const conversation = filter.operands('pm-with');
+    if (conversation.length !== 0) {
+        return false;
+    }
+
+    return _.contains(filter.operands('is'), "private");
+};
+
 exports.update_private_messages = function () {
     if (!narrow_state.active()) {
         return;
     }
 
-    let is_pm_filter = false;
-    const filter = narrow_state.filter();
-
-    if (filter) {
-        const conversation = filter.operands('pm-with');
-        if (conversation.length === 0) {
-            is_pm_filter = _.contains(filter.operands('is'), "private");
-        }
-        // We don't support having two pm-with: operands in a search
-        // (Group PMs are represented as a single pm-with operand
-        // containing a list).
-    }
-
     exports.rebuild_recent();
 
-    if (is_pm_filter) {
+    if (exports.is_all_privates()) {
         $(".top_left_private_messages").addClass('active-filter');
     }
 };
