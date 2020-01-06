@@ -1079,6 +1079,7 @@ def social_auth_finish(backend: Any,
     realm = Realm.objects.get(id=return_data["realm_id"])
     multiuse_object_key = strategy.session_get('multiuse_object_key', '')
     mobile_flow_otp = strategy.session_get('mobile_flow_otp')
+    desktop_flow_otp = strategy.session_get('desktop_flow_otp')
 
     # At this point, we have now confirmed that the user has
     # demonstrated control over the target email address.
@@ -1098,6 +1099,17 @@ def social_auth_finish(backend: Any,
             strategy.request, email_address,
             user_profile, full_name,
             mobile_flow_otp=mobile_flow_otp,
+            is_signup=is_signup,
+            redirect_to=redirect_to,
+            full_name_validated=full_name_validated
+        )
+    
+    # We use a similar flow to authenticate users of the desktop app too.
+    if desktop_flow_otp is not None:
+        return login_or_register_remote_user(
+            strategy.request, email_address,
+            user_profile, full_name,
+            desktop_flow_otp=desktop_flow_otp,
             is_signup=is_signup,
             redirect_to=redirect_to,
             full_name_validated=full_name_validated

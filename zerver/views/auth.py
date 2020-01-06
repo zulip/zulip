@@ -183,6 +183,7 @@ def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
 def login_or_register_remote_user(request: HttpRequest, remote_username: str,
                                   user_profile: Optional[UserProfile], full_name: str='',
                                   mobile_flow_otp: Optional[str]=None,
+                                  desktop_flow_otp: Optional[str]=None,
                                   is_signup: bool=False, redirect_to: str='',
                                   multiuse_object_key: str='',
                                   full_name_validated: bool=False) -> HttpResponse:
@@ -201,8 +202,8 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
       Zulip account but is_signup is False (i.e. the user tried to login
       and then did social authentication selecting an email address that does
       not have a Zulip account in this organization).
-    * A zulip:// URL to send control back to the mobile apps if they
-      are doing authentication using the mobile_flow_otp flow.
+    * A zulip:// URL to send control back to the mobile or desktop apps if they
+      are doing authentication using the mobile_flow_otp or desktop_flow_otp flow.
     """
     email = remote_user_to_email(remote_username)
     if user_profile is None or user_profile.is_mirror_dummy:
@@ -216,12 +217,13 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
     # Otherwise, the user has successfully authenticated to an
     # account, and we need to do the right thing depending whether
     # or not they're using the mobile OTP flow or want a browser session.
-    if mobile_flow_otp is not None:
+    otp = mobile_flow_otp or desktop_flow_otp
+    if otp is not None:
         # For the mobile Oauth flow, we send the API key and other
         # necessary details in a redirect to a zulip:// URI scheme.
         api_key = get_api_key(user_profile)
         params = {
-            'otp_encrypted_api_key': otp_encrypt_api_key(api_key, mobile_flow_otp),
+            'otp_encrypted_api_key': otp_encrypt_api_key(api_key, otp),
             'email': email,
             'realm': user_profile.realm.uri,
         }
@@ -363,6 +365,12 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
         if not is_valid_otp(mobile_flow_otp):
             raise JsonableError(_("Invalid OTP"))
         params['mobile_flow_otp'] = mobile_flow_otp
+
+    desktop_flow_otp = request.GET.get('desktop_flow_otp')
+    if desktop_flow_otp is not None:
+        if not is_valid_otp(desktop_flow_otp):
+            raise JsonableError(_("Invalid OTP"))
+        params['desktop_flow_otp'] = desktop_flow_otp
 
     next = request.GET.get('next')
     if next:
