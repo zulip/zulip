@@ -618,7 +618,6 @@ function make_attacher(base) {
 
 exports.get_search_result = function (base_query, query) {
     let suggestion;
-    let suggestions;
 
     // base_query_operators correspond to the existing pills. query_operators correspond
     // to the operators for the query in the input. This query may contain one or more
@@ -670,7 +669,6 @@ exports.get_search_result = function (base_query, query) {
 
     const base = get_default_suggestion(query_operators.slice(0, -1));
     const attacher = make_attacher(base);
-    const attach = attacher.attach_many;
 
     // Display the default first
     // `has` and `is` operators work only on predefined categories. Default suggestion
@@ -691,44 +689,37 @@ exports.get_search_result = function (base_query, query) {
     // only make one people_getter to avoid duplicate work
     const people_getter = make_people_getter(last);
 
-    suggestions = get_streams_filter_suggestions(last, base_operators);
-    attach(suggestions);
+    function get_people(flavor) {
+        return function (last, base_operators) {
+            return get_person_suggestions(people_getter, last, base_operators, flavor);
+        };
+    }
 
-    suggestions = get_is_filter_suggestions(last, base_operators);
-    attach(suggestions);
+    const filterers = [
+        get_streams_filter_suggestions,
+        get_is_filter_suggestions,
+        get_sent_by_me_suggestions,
+        get_stream_suggestions,
+        get_people('sender'),
+        get_people('pm-with'),
+        get_people('from'),
+        get_people('group-pm-with'),
+        get_group_suggestions,
+        get_topic_suggestions,
+        get_operator_suggestions,
+        get_has_filter_suggestions,
+    ];
 
-    suggestions = get_sent_by_me_suggestions(last, base_operators);
-    attach(suggestions);
+    const max_items = exports.max_num_of_search_results;
 
-    suggestions = get_stream_suggestions(last, base_operators);
-    attach(suggestions);
+    _.each(filterers, function (filterer) {
+        if (attacher.result.length < max_items) {
+            const suggestions = filterer(last, base_operators);
+            attacher.attach_many(suggestions);
+        }
+    });
 
-    suggestions = get_person_suggestions(people_getter, last, base_operators, 'sender');
-    attach(suggestions);
-
-    suggestions = get_person_suggestions(people_getter, last, base_operators, 'pm-with');
-    attach(suggestions);
-
-    suggestions = get_person_suggestions(people_getter, last, base_operators, 'from');
-    attach(suggestions);
-
-    suggestions = get_person_suggestions(people_getter, last, base_operators, 'group-pm-with');
-    attach(suggestions);
-
-    suggestions = get_group_suggestions(last, base_operators);
-    attach(suggestions);
-
-    suggestions = get_topic_suggestions(last, base_operators);
-    attach(suggestions);
-
-    suggestions = get_operator_suggestions(last);
-    attach(suggestions);
-
-    suggestions = get_has_filter_suggestions(last, base_operators);
-    attach(suggestions);
-
-    attacher.concat(suggestions);
-    return attacher.result;
+    return attacher.result.slice(0, max_items);
 };
 
 exports.get_search_result_legacy = function (query) {
@@ -814,6 +805,11 @@ exports.get_search_result_legacy = function (query) {
         }
     });
 
+    // This is unique to the legacy search system.  With pills
+    // it is difficult to "suggest" a subset of operators,
+    // and there's a more natural mechanism under that paradigm,
+    // where the user just deletes one or more pills.  So you
+    // won't see this is in the new code.
     if (attacher.result.length < max_items) {
         const subset_suggestions = get_operator_subset_suggestions(operators);
         attacher.concat(subset_suggestions);
