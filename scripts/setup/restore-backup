@@ -24,7 +24,9 @@ def restore_backup(tarball_file):
 
     su_to_zulip(save_suid=True)
 
-    import scripts.lib.setup_path_on_import
+    from scripts.lib.setup_path import setup_path
+
+    setup_path()
 
     # First, we unpack the /etc/zulip configuration, so we know how
     # this server is supposed to be configured (and can import
