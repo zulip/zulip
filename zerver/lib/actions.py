@@ -4980,6 +4980,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
              'avatar_url': avatar_url(user),
              'timezone': user.timezone,
              'date_joined': user.date_joined.isoformat(),
+             'bot_owner_id': None,
              'full_name': user.full_name}
             for user in users
             # Important: We filter here, is addition to in

@@ -584,6 +584,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 email='emailgateway@zulip.com',
                 full_name='Email Gateway',
+                bot_owner_id=None,
                 is_bot=True
             ),
             dict(
@@ -591,6 +592,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 email='feedback@zulip.com',
                 full_name='Zulip Feedback Bot',
+                bot_owner_id=None,
                 is_bot=True
             ),
             dict(
@@ -598,6 +600,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 email=notification_bot.email,
                 full_name='Notification Bot',
+                bot_owner_id=None,
                 is_bot=True
             ),
             dict(
@@ -605,6 +608,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 email='welcome-bot@zulip.com',
                 full_name='Welcome Bot',
+                bot_owner_id=None,
                 is_bot=True
             ),
         ], key=by_email))
