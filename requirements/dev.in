@@ -24,7 +24,7 @@ https://github.com/zulip/fakeldap/archive/ff32deaad34b91d5ba5735f314362c0456c926
 responses
 
 # For sorting imports
-isort
+https://github.com/timothycrosley/isort/archive/4cb7c66de817661728dec21aea4182dc489cb2e7.zip#egg=isort==5.0.0+git
 
 # For doing highly usable Python profiling (temporary fork of
 # line_profiler: https://github.com/rkern/line_profiler/issues/127)
