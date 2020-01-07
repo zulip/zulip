@@ -17,7 +17,9 @@ import os
 
 sys.path.append('.')
 sys.path.append('/home/zulip/deployments/current')
-import scripts.lib.setup_path_on_import
+from scripts.lib.setup_path import setup_path
+
+setup_path()
 
 import django
 

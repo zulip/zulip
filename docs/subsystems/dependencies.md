@@ -184,8 +184,8 @@ highlighting.  The system is largely managed by the code in
   amounts of disk over time.
 * **Scripts**.  Often, we want a script running in production to use
   the Zulip virtualenv.  To make that work without a lot of duplicated
-  code, we have a helpful library,
-  `scripts/lib/setup_path_on_import.py`, which on import will put the
+  code, we have a helpful function,
+  `scripts.lib.setup_path.setup_path`, which on import will put the
   currently running Python script into the Zulip virtualenv.  This is
   called by `./manage.py` to ensure that our Django code always uses
   the correct virtualenv as well.

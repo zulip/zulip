@@ -10,7 +10,10 @@ if sys.version_info <= (3, 0):
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
-import scripts.lib.setup_path_on_import
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
 from scripts.lib.zulip_tools import assert_not_running_as_root
 
 if __name__ == "__main__":
