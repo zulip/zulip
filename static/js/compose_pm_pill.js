@@ -56,8 +56,8 @@ exports.get_emails = function () {
     return emails;
 };
 
-exports.get_typeahead_items = function () {
-    return user_pill.typeahead_source(exports.widget);
+exports.filter_taken_users = function (persons) {
+    return user_pill.filter_taken_users(persons, exports.widget);
 };
 
 window.compose_pm_pill = exports;
