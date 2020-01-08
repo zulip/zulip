@@ -312,13 +312,15 @@ exports.sort_languages = function (matches, query) {
 };
 
 exports.sort_recipients = function (users, query, current_stream, current_topic, groups) {
+    function sort_relevance(items) {
+        return exports.sort_people_for_relevance(
+            items, current_stream, current_topic);
+    }
+
     const users_name_results =  util.prefix_sort(
         query, users, function (x) { return x.full_name; });
-    let result = exports.sort_people_for_relevance(
-        users_name_results.matches,
-        current_stream,
-        current_topic
-    );
+
+    let result = sort_relevance(users_name_results.matches);
 
     let groups_results;
     if (groups !== undefined) {
@@ -328,16 +330,9 @@ exports.sort_recipients = function (users, query, current_stream, current_topic,
 
     const email_results = util.prefix_sort(query, users_name_results.rest,
                                            function (x) { return x.email; });
-    result = result.concat(exports.sort_people_for_relevance(
-        email_results.matches,
-        current_stream,
-        current_topic
-    ));
-    let rest_sorted = exports.sort_people_for_relevance(
-        email_results.rest,
-        current_stream,
-        current_topic
-    );
+    result = result.concat(sort_relevance(email_results.matches));
+
+    let rest_sorted = sort_relevance(email_results.rest);
     if (groups !== undefined) {
         rest_sorted = rest_sorted.concat(groups_results.rest);
     }
