@@ -50,8 +50,12 @@ And then in `user_pill.js`...
 
 ```js
 exports.typeahead_source = function (pill_widget) {
-    var items = people.get_realm_persons();
-    var taken_user_ids = exports.get_user_ids(pill_widget);
+    const persons = people.get_realm_persons();
+    return exports.filter_taken_users(persons, pill_widget);
+};
+
+exports.filter_taken_users = function (items, pill_widget) {
+    const taken_user_ids = exports.get_user_ids(pill_widget);
     items = _.filter(items, function (item) {
         return taken_user_ids.indexOf(item.user_id) === -1;
     });
