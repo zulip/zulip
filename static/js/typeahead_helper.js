@@ -347,20 +347,21 @@ exports.sort_recipients = function (users, query, current_stream, current_topic,
         users_name_results.rest,
         (p) => p.email);
 
-    let result = sort_relevance(users_name_results.matches);
-
     const groups_results = partition(
         groups,
         (g) => g.name);
 
-    result = result.concat(groups_results.matches);
+    const best_users = () => sort_relevance(users_name_results.matches);
+    const best_groups = () => groups_results.matches;
+    const ok_users = () => sort_relevance(email_results.matches);
+    const worst_users = () => sort_relevance(email_results.rest);
+    const worst_groups = () => groups_results.rest;
 
-    result = result.concat(sort_relevance(email_results.matches));
-
-    let rest_sorted = sort_relevance(email_results.rest);
-    rest_sorted = rest_sorted.concat(groups_results.rest);
-
-    return result.concat(rest_sorted);
+    return best_users().concat(
+        best_groups(),
+        ok_users(),
+        worst_users(),
+        worst_groups());
 };
 
 function slash_command_comparator(slash_command_a, slash_command_b) {
