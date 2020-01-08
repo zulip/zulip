@@ -14,62 +14,76 @@ import * as _ from 'underscore';
         - topics
         - etc.
  */
-type KeyValue<V> = { k: string; v: V };
-type Items<V> = {
-    [key: string]: KeyValue<V>;
-};
 
 export class FoldDict<V> {
-    private _items: Items<V> = {};
+    private _map = new Map();
+
+    // For historical reasons, we keep the last
+    // unmunged value of any key.  Any function
+    // returning keys should maybe just return
+    // the munged (lowercase) value of the key.
+    private _keymap = new Map();
 
     get(key: string): V | undefined {
-        const mapping = this._items[this._munge(key)];
-        if (mapping === undefined) {
-            return undefined;
-        }
-        return mapping.v;
+        return this._map.get(this._munge(key));
     }
 
     set(key: string, value: V): V {
-        this._items[this._munge(key)] = {k: key, v: value};
+        const k = this._munge(key);
+        this._map.set(k, value);
+        this._keymap.set(k, key);
         return value;
     }
 
     has(key: string): boolean {
-        return _.has(this._items, this._munge(key));
+        return this._map.has(this._munge(key));
     }
 
     del(key: string): void {
-        delete this._items[this._munge(key)];
+        this._map.delete(this._munge(key));
     }
 
     keys(): string[] {
-        return _.pluck(_.values(this._items), 'k');
+        const res = [];
+
+        for (const key of this._map.keys()) {
+            res.push(this._keymap.get(key));
+        }
+
+        return res;
     }
 
     values(): V[] {
-        return _.pluck(_.values(this._items), 'v');
+        return Array.from(this._map.values());
     }
 
     items(): [string, V][] {
-        return _.map(_.values(this._items),
-            (mapping: KeyValue<V>): [string, V] => [mapping.k, mapping.v]);
+        const res: [string, V][] = [];
+
+        for (const k of this._map.keys()) {
+            const key = this._keymap.get(k);
+            res.push([key, this._map.get(k)]);
+        }
+        return res;
     }
 
     num_items(): number {
-        return _.keys(this._items).length;
+        return this._map.size;
     }
 
     is_empty(): boolean {
-        return _.isEmpty(this._items);
+        return this._map.size === 0;
     }
 
     each(f: (v: V, k?: string) => void): void {
-        _.each(this._items, (mapping: KeyValue<V>) => f(mapping.v, mapping.k));
+        for (const k of this._map.keys()) {
+            const key = this._keymap.get(k);
+            f(this._map.get(k), key);
+        }
     }
 
     clear(): void {
-        this._items = {};
+        this._map.clear();
     }
 
     // Handle case-folding of keys and the empty string.
@@ -79,7 +93,7 @@ export class FoldDict<V> {
             return undefined;
         }
 
-        const str_key = ':' + key.toString().toLowerCase();
+        const str_key = key.toString().toLowerCase();
         return str_key;
     }
 }
