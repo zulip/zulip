@@ -317,19 +317,42 @@ exports.sort_recipients = function (users, query, current_stream, current_topic,
             items, current_stream, current_topic);
     }
 
-    const users_name_results =  util.prefix_sort(
-        query, users, function (x) { return x.full_name; });
+    function partition(items, get_item) {
+        /*
+            The name for util.prefix_sort is quite
+            misleading.  It really just partitions a list
+            of items into two groups--good and bad.  But
+            for the goods, it puts case-senstitive matches
+            before case-insensitive matches, otherwise preserving
+            the original sort, so it's kinda like a sort
+            if you're starting with data that's most sorted
+            the way you want it.  And then we re-sort it, but
+            maybe sort_people_for_relevance is a stable sort?
+            And do we actually care whether matches are case
+            sensitive here?  I don't know.
+        */
+
+        return util.prefix_sort(query, items, get_item);
+    }
+
+    const users_name_results = partition(
+        users,
+        (p) => p.full_name);
+
+    const email_results = partition(
+        users_name_results.rest,
+        (p) => p.email);
 
     let result = sort_relevance(users_name_results.matches);
 
     let groups_results;
     if (groups !== undefined) {
-        groups_results = util.prefix_sort(query, groups, function (x) { return x.name; });
+        groups_results = partition(
+            groups,
+            (g) => g.name);
         result = result.concat(groups_results.matches);
     }
 
-    const email_results = util.prefix_sort(query, users_name_results.rest,
-                                           function (x) { return x.email; });
     result = result.concat(sort_relevance(email_results.matches));
 
     let rest_sorted = sort_relevance(email_results.rest);
