@@ -175,6 +175,7 @@ class HomeTest(ZulipTestCase):
             "realm_password_auth_enabled",
             "realm_plan_type",
             "realm_presence_disabled",
+            "realm_private_message_policy",
             "realm_push_notifications_enabled",
             "realm_send_welcome_emails",
             "realm_signup_notifications_stream_id",

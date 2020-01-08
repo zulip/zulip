@@ -2319,6 +2319,17 @@ def validate_stream_id_with_pm_notification(stream_id: int, realm: Realm,
 
     return stream
 
+def check_private_message_policy(realm: Realm, sender: UserProfile,
+                                 user_profiles: Sequence[UserProfile]) -> None:
+    if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
+        if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
+            # We allow PMs only between users and bots, to avoid
+            # breaking the tutorial as well as automated
+            # notifications from system bots to users.
+            return
+
+        raise JsonableError(_("Private messages are disabled in this organization."))
+
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(sender: UserProfile, client: Client, addressee: Addressee,
@@ -2373,6 +2384,8 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         user_profiles = addressee.user_profiles()
         mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror",
                                                     "jabber_mirror", "JabberMirror"]
+
+        check_private_message_policy(realm, sender, user_profiles)
 
         # API Super-users who set the `forged` flag are allowed to
         # forge messages sent by any user, so we disable the

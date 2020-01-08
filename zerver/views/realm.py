@@ -68,6 +68,8 @@ def update_realm(
             Realm.INVITE_TO_STREAM_POLICY_TYPES), default=None),
         user_group_edit_policy: Optional[int]=REQ(validator=check_int_in(
             Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None),
+        private_message_policy: Optional[int]=REQ(validator=check_int_in(
+            Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None),
         email_address_visibility: Optional[int]=REQ(validator=check_int_in(
             Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),

@@ -375,6 +375,8 @@ definitions:
         type: int64
       realm_invite_to_stream_policy:
         type: int64
+      realm_private_message_policy:
+        type: int64
       realm_default_language:
         type: string
       realm_default_streams:

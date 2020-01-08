@@ -126,6 +126,15 @@ function get_property_value(property_name) {
         }
     }
 
+    if (property_name === 'realm_private_message_policy') {
+        if (page_params.realm_private_message_policy === 1) {
+            return "by_anyone";
+        }
+        if (page_params.realm_private_message_policy === 2) {
+            return "disabled";
+        }
+    }
+
     if (property_name === 'realm_add_emoji_by_admins_only') {
         if (page_params.realm_add_emoji_by_admins_only) {
             return "by_admins_only";
@@ -218,6 +227,11 @@ function set_invite_to_stream_policy_dropdown() {
 function set_user_group_edit_policy_dropdown() {
     const value = get_property_value("realm_user_group_edit_policy");
     $("#id_realm_user_group_edit_policy").val(value);
+}
+
+function set_private_message_policy_dropdown() {
+    const value = get_property_value("realm_private_message_policy");
+    $("#id_realm_private_message_policy").val(value);
 }
 
 function set_add_emoji_permission_dropdown() {
@@ -639,6 +653,7 @@ exports.build_page = function () {
     set_message_content_in_email_notifications_visiblity();
     set_digest_emails_weekday_visibility();
     set_user_group_edit_policy_dropdown();
+    set_private_message_policy_dropdown();
 
     function get_auth_method_table_data() {
         const new_auth_methods = {};
@@ -774,6 +789,7 @@ exports.build_page = function () {
             const create_stream_policy = $("#id_realm_create_stream_policy").val();
             const invite_to_stream_policy = $("#id_realm_invite_to_stream_policy").val();
             const user_group_edit_policy = $("#id_realm_user_group_edit_policy").val();
+            const private_message_policy = $("#id_realm_private_message_policy").val();
             const add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
 
             if (add_emoji_permission === "by_admins_only") {
@@ -802,6 +818,12 @@ exports.build_page = function () {
                 data.user_group_edit_policy = 2;
             } else if (user_group_edit_policy === "by_members") {
                 data.user_group_edit_policy = 1;
+            }
+
+            if (private_message_policy === "disabled") {
+                data.private_message_policy = 2;
+            } else if (private_message_policy === "by_anyone") {
+                data.private_message_policy = 1;
             }
 
             if (waiting_period_threshold === "none") {

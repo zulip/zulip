@@ -816,6 +816,22 @@ class PersonalMessagesTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         self.assert_personal(self.example_email("hamlet"), self.example_email("othello"))
 
+    def test_private_message_policy(self) -> None:
+        """
+        Tests that PRIVATE_MESSAGE_POLICY_DISABLED works correctly.
+        """
+        user_profile = self.example_user("hamlet")
+        self.login(user_profile.email)
+        do_set_realm_property(user_profile.realm, "private_message_policy",
+                              Realm.PRIVATE_MESSAGE_POLICY_DISABLED)
+        with self.assertRaises(JsonableError):
+            self.send_personal_message(user_profile.email, self.example_email("cordelia"))
+
+        bot_profile = self.create_test_bot("testbot", user_profile)
+        self.send_personal_message(user_profile.email, settings.NOTIFICATION_BOT)
+        self.send_personal_message(user_profile.email, bot_profile.email)
+        self.send_personal_message(bot_profile.email, user_profile.email)
+
     def test_non_ascii_personal(self) -> None:
         """
         Sending a PM containing non-ASCII characters succeeds.
