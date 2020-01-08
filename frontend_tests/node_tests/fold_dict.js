@@ -1,6 +1,32 @@
 const FoldDict = zrequire('fold_dict').FoldDict;
 set_global('blueslip', global.make_zblueslip());
 
+/*
+run_test('benchmark', () => {
+    const d = new FoldDict();
+    const n = 15000;
+
+    const emails = _.map(_.range(n), (i) => {
+        return 'fred' + i + '@example.com';
+    });
+
+    const t1 = new Date().getTime();
+
+    _.each(emails, (email) => {
+        d.set(email, true);
+    });
+
+    _.each(emails, (email) => {
+        d.get(email, true);
+    });
+
+    const t2 = new Date().getTime();
+    const elapsed = t2 - t1;
+    console.log('elapsed (milli)', elapsed);
+    console.log('per (micro)', 1000 * elapsed / n);
+});
+*/
+
 run_test('basic', () => {
     const d = new FoldDict();
 
