@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+if [ "$1" = "--fix" ]; then
+    shift
+    exec isort "$@"
+else
+    exec isort --check-only --diff "$@"
+fi
