@@ -382,13 +382,48 @@ Filter.prototype = {
     },
 
     can_mark_messages_read: function () {
-        return _.every(this._operators, function (elem) {
-            return (_.contains(['stream', 'topic', 'pm-with'], elem.operator)
-                || elem.operator === 'is' && elem.operand === 'private'
-                || elem.operator === 'in' && elem.operand === 'all'
-                || elem.operator === 'in' && elem.operand === 'home')
-                && !elem.negated;
-        });
+        const term_types = this.sorted_term_types();
+
+        if (_.isEqual(term_types, ['stream', 'topic'])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ['pm-with'])) {
+            return true;
+        }
+
+        // Folks like me really hate it when Zulip
+        // marks messages as read in interleaved views,
+        // so we will eventually have a setting that
+        // early-exits before the subsequent checks.
+
+        if (_.isEqual(term_types, ['stream'])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ['is-private'])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, [])) {
+            // All view
+            return true;
+        }
+
+        if (this._operators.length === 1) {
+            // I am not sure why we make special cases for in:all
+            // and in:home, since these are like searches, but we
+            // can fix this in a follow-up.
+            const elem = this._operators[0];
+
+            if (elem.operator === 'in' && !elem.negated) {
+                if (elem.operand === 'home' || elem.operand === 'all') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     },
 
     allow_use_first_unread_when_narrowing: function () {
