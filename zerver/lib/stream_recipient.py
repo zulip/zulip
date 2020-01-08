@@ -60,11 +60,9 @@ class StreamRecipientMap:
         query = '''
             SELECT
                 zerver_recipient.id as recipient_id,
-                zerver_stream.id as stream_id
+                zerver_recipient.type_id as stream_id
             FROM
                 zerver_recipient
-            INNER JOIN zerver_stream ON
-                zerver_stream.id = zerver_recipient.type_id
             WHERE
                 zerver_recipient.type = %d
             AND
