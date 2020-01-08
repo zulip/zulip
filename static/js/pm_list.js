@@ -142,13 +142,6 @@ exports.is_all_privates = function () {
         return false;
     }
 
-    // Handle the edge case that somebody said pm-with:alice is:private.
-    // This should basically be treated like pm-with:alice.
-    const conversation = filter.operands('pm-with');
-    if (conversation.length !== 0) {
-        return false;
-    }
-
     return _.contains(filter.operands('is'), "private");
 };
 
