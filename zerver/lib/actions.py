@@ -2671,6 +2671,8 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
     for stream_dict in stream_dicts:
+        stream_recipient.populate_with(stream_id=stream_dict["id"],
+                                       recipient_id=stream_dict["recipient_id"])
         try:
             validate_user_access_to_subscribers_helper(user_profile, stream_dict,
                                                        lambda: sub_dict[stream_dict["id"]])
@@ -2679,7 +2681,6 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
         target_stream_dicts.append(stream_dict)
 
     stream_ids = [stream['id'] for stream in target_stream_dicts]
-    stream_recipient.populate_for_stream_ids(stream_ids)
     recipient_ids = sorted([
         stream_recipient.recipient_id_for(stream_id)
         for stream_id in stream_ids
@@ -4759,7 +4760,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "is_announcement_only", "realm_id",
                         "email_token", "description", "rendered_description", "date_created",
-                        "history_public_to_subscribers", "first_message_id", "is_web_public")
+                        "history_public_to_subscribers", "first_message_id", "is_web_public",
+                        "recipient_id")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}

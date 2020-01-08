@@ -245,7 +245,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(result["Cache-Control"].split(", ")),
                          {"must-revalidate", "no-store", "no-cache"})
 
-        self.assert_length(queries, 43)
+        self.assert_length(queries, 42)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode('utf-8')
@@ -311,7 +311,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 41)
+            self.assert_length(queries, 40)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:
@@ -343,7 +343,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 38)
+        self.assert_length(queries2, 37)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
