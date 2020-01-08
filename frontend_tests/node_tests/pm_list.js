@@ -266,21 +266,6 @@ run_test('is_all_privates', () => {
     narrow_state.filter = () => {
         return {
             operands: (operand) => {
-                assert.equal(operand, 'pm-with');
-                return ['alice@zulip.com'];
-            },
-        };
-    };
-    assert.equal(
-        pm_list.is_all_privates(),
-        false);
-
-    narrow_state.filter = () => {
-        return {
-            operands: (operand) => {
-                if (operand === 'pm-with') {
-                    return [];
-                }
                 assert.equal(operand, 'is');
                 return ['private', 'starred'];
             },
