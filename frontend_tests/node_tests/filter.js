@@ -414,6 +414,28 @@ run_test('public_operators', () => {
     assert_same_operators(filter.public_operators(), []);
 });
 
+run_test('redundancies', () => {
+    let terms;
+    let filter;
+
+    terms = [
+        { operator: 'pm-with', operand: 'joe@example.com,' },
+        { operator: 'is', operand: 'private' },
+    ];
+    filter = new Filter(terms);
+    assert(filter.is_exactly('pm-with'));
+
+    terms = [
+        { operator: 'pm-with',
+          operand: 'joe@example.com,',
+          negated: true,
+        },
+        { operator: 'is', operand: 'private' },
+    ];
+    filter = new Filter(terms);
+    assert(filter.is_exactly('is-private', 'not-pm-with'));
+});
+
 run_test('canonicalizations', () => {
     assert.equal(Filter.canonicalize_operator('Is'), 'is');
     assert.equal(Filter.canonicalize_operator('Stream'), 'stream');
