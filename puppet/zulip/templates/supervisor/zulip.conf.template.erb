@@ -103,6 +103,20 @@ stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 
+[program:zulip_perform_scheduled_unmutes]
+command=/home/zulip/deployments/current/manage.py perform_scheduled_unmutes
+priority=350                   ; the relative start priority (default 999)
+autostart=true                 ; start at supervisord start (default: true)
+autorestart=true               ; whether/when to restart (default: unexpected)
+stopsignal=TERM                ; signal used to kill process (default TERM)
+topwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+user=zulip                    ; setuid to this UNIX account to run the program
+redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+stdout_logfile=/var/log/zulip/events_deliver_enqueued_emails.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
+directory=/home/zulip/deployments/current/
+
 [program:zulip_deliver_scheduled_messages]
 command=/home/zulip/deployments/current/manage.py deliver_scheduled_messages
 priority=350                   ; the relative start priority (default 999)
@@ -140,9 +154,9 @@ numprocs=<%= @message_sender_processes %>
 [group:zulip-workers]
 <% if @queues_multiprocess %>
 ; each refers to 'x' in [program:x] definitions
-programs=zulip_deliver_enqueued_emails, zulip_deliver_scheduled_messages, <% @queues.each_with_index do |queue, i| -%>zulip_events_<%= queue %><%= ',' if i < (@queues.size - 1) %> <% end -%>
+programs=zulip_deliver_enqueued_emails, zulip_deliver_scheduled_messages, zulip_perform_scheduled_unmutes, <% @queues.each_with_index do |queue, i| -%>zulip_events_<%= queue %><%= ',' if i < (@queues.size - 1) %> <% end -%>
 <% else %>
-programs=zulip_deliver_enqueued_emails, zulip_events, zulip_deliver_scheduled_messages
+programs=zulip_deliver_enqueued_emails, zulip_events, zulip_deliver_scheduled_messages, zulip_perform_scheduled_unmutes
 <% end %>
 
 [group:zulip-senders]
