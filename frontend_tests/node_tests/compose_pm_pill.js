@@ -139,7 +139,8 @@ run_test('pills', () => {
     const emails = compose_pm_pill.get_emails();
     assert.equal(emails, 'othello@example.com,hamlet@example.com');
 
-    const items = compose_pm_pill.get_typeahead_items();
+    const persons = [othello, iago, hamlet];
+    const items = compose_pm_pill.filter_taken_users(persons);
     assert.deepEqual(items, [{email: 'iago@zulip.com', user_id: 2, full_name: 'Iago'}]);
 
     test_create_item(create_item_handler);
