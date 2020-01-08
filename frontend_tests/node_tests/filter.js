@@ -275,11 +275,17 @@ run_test('can_mark_messages_read', () => {
         { operator: 'pm-with', operand: 'joe@example.com,' },
     ];
 
+    const pm_with_negated = [
+        { operator: 'pm-with', operand: 'joe@example.com,', negated: true},
+    ];
+
     const group_pm = [
         { operator: 'pm-with', operand: 'joe@example.com,STEVE@foo.com' },
     ];
     filter = new Filter(pm_with);
     assert(filter.can_mark_messages_read());
+    filter = new Filter(pm_with_negated);
+    assert(!filter.can_mark_messages_read());
     filter = new Filter(group_pm);
     assert(filter.can_mark_messages_read());
     assert_not_mark_read_with_is_operands(group_pm);
