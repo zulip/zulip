@@ -152,7 +152,7 @@ function Filter(operators) {
     if (operators === undefined) {
         this._operators = [];
     } else {
-        this._operators = this._canonicalize_operators(operators);
+        this._operators = this.fix_operators(operators);
     }
 }
 
@@ -427,6 +427,26 @@ Filter.prototype = {
 
         // If we get this far, we're good!
         return true;
+    },
+
+    fix_operators: function (operators) {
+        operators = this._canonicalize_operators(operators);
+        operators = this._fix_redundant_is_private(operators);
+        return operators;
+    },
+
+    _fix_redundant_is_private: function (terms) {
+        const is_pm_with = (term) => {
+            return Filter.term_type(term) === 'pm-with';
+        };
+
+        if (!_.any(terms, is_pm_with)) {
+            return terms;
+        }
+
+        return _.reject(terms, (term) => {
+            return Filter.term_type(term) === 'is-private';
+        });
     },
 
     _canonicalize_operators: function (operators_mixed_case) {
