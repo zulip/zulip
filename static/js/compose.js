@@ -562,6 +562,17 @@ function validate_stream_message() {
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
+    if (page_params.realm_private_message_policy === 2) {
+        // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED
+        const user_ids = compose_pm_pill.get_user_ids();
+        if (user_ids.length !== 1 || !people.get_person_from_user_id(user_ids[0]).is_bot) {
+            // Unless we're composing to a bot
+            compose_error(i18n.t("Private messages are disabled in this organization."),
+                          $("#private_message_recipient"));
+            return false;
+        }
+    }
+
     if (compose_state.private_message_recipient().length === 0) {
         compose_error(i18n.t("Please specify at least one valid recipient"), $("#private_message_recipient"));
         return false;

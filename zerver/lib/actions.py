@@ -2374,6 +2374,15 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror",
                                                     "jabber_mirror", "JabberMirror"]
 
+        if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
+            if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
+                # We allow PMs only between users and bots, to avoid
+                # breaking the tutorial as well as automated
+                # notifications from system bots to users.
+                pass
+            else:
+                raise JsonableError(_("Private messages are disabled in this organization."))
+
         # API Super-users who set the `forged` flag are allowed to
         # forge messages sent by any user, so we disable the
         # `forwarded_mirror_message` security check in that case.
