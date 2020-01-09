@@ -309,10 +309,18 @@ esac
 
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
+case " $os_id $os_id_like " in
+    *' debian '*)
+        SUPERVISOR_CONF_DIR="/etc/supervisor/conf.d"
+        ;;
+    *' rhel '*)
+        SUPERVISOR_CONF_DIR="/etc/supervisord.d/conf.d"
+        ;;
+esac
 # Detect which features were selected for the below
 set +e
 [ -e "/etc/init.d/nginx" ]; has_nginx=$?
-[ -e "/etc/supervisor/conf.d/zulip.conf" ]; has_appserver=$?
+[ -e "$SUPERVISOR_CONF_DIR/zulip.conf" ]; has_appserver=$?
 [ -e "/etc/cron.d/rabbitmq-numconsumers" ]; has_rabbit=$?
 [ -e "/etc/init.d/postgresql" ]; has_postgres=$?
 set -e
