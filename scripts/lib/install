@@ -101,7 +101,7 @@ export LANGUAGE="en_US.UTF-8"
 # Check for a supported OS release.
 if [ -f /etc/os-release ]; then
     os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$ID_LIKE" "$VERSION_ID" "$VERSION_CODENAME")"
-    { read -r os_id; read -r os_id_like; read -r os_version_id; read -r os_version_codename; } <<< "$os_info"
+    { read -r os_id; read -r os_id_like; read -r os_version_id; read -r os_version_codename || true; } <<< "$os_info"
 fi
 
 case "$os_id$os_version_id" in
