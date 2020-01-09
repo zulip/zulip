@@ -439,24 +439,4 @@ exports.sort_recipientbox_typeahead = function (query, matches, current_stream) 
     return exports.sort_recipients(matches, query, current_stream);
 };
 
-exports.sort_people_and_user_groups = function (query, matches) {
-    const users = [];
-    const groups = [];
-    _.each(matches, function (match) {
-        if (user_groups.is_user_group(match)) {
-            groups.push(match);
-        } else {
-            users.push(match);
-        }
-    });
-
-    const recipients = exports.sort_recipients(
-        users,
-        query,
-        compose_state.stream_name(),
-        compose_state.topic(),
-        groups);
-    return recipients;
-};
-
 window.typeahead_helper = exports;

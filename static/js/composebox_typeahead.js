@@ -421,24 +421,6 @@ exports.broadcast_mentions = function () {
     });
 };
 
-exports.filter_and_sort_mentions = function (is_silent, token) {
-    let all_items = [];
-    let groups = [];
-
-    if (!is_silent) {
-        all_items = exports.broadcast_mentions();
-        groups = user_groups.get_realm_user_groups();
-    }
-
-    const persons = people.get_realm_persons();
-    const big_results = [].concat(persons, all_items, groups);
-
-    const matcher = exports.get_person_or_user_group_matcher(token);
-    const filtered_results = _.filter(big_results, matcher);
-
-    return typeahead_helper.sort_people_and_user_groups(token, filtered_results);
-};
-
 function filter_mention_name(current_token) {
     if (current_token.startsWith('**')) {
         current_token = current_token.substring(2);
@@ -482,7 +464,25 @@ exports.slash_commands = [
     },
 ];
 
+exports.filter_and_sort_mentions = function (is_silent, query) {
+    const opts = {
+        want_broadcast: !is_silent,
+        want_groups: !is_silent,
+        filter_pills: false,
+    };
+    return exports.get_person_suggestions(query, opts);
+};
+
 exports.get_pm_people = function (query) {
+    const opts = {
+        want_broadcast: false,
+        want_groups: true,
+        filter_pills: true,
+    };
+    return exports.get_person_suggestions(query, opts);
+};
+
+exports.get_person_suggestions = function (query, opts) {
     query = clean_query_lowercase(query);
 
     const person_matcher = (item) => {
@@ -494,10 +494,28 @@ exports.get_pm_people = function (query) {
     };
 
     const all_persons = people.get_realm_persons();
-    const persons = compose_pm_pill.filter_taken_users(all_persons);
+    let persons;
+
+    if (opts.filter_pills) {
+        persons = compose_pm_pill.filter_taken_users(all_persons);
+    } else {
+        persons = all_persons;
+    }
+
+    if (opts.want_broadcast) {
+        persons = persons.concat(exports.broadcast_mentions());
+    }
+
     const filtered_persons = _.filter(persons, person_matcher);
 
-    const groups = user_groups.get_realm_user_groups();
+    let groups;
+
+    if (opts.want_groups) {
+        groups = user_groups.get_realm_user_groups();
+    } else {
+        groups = [];
+    }
+
     const filtered_groups = _.filter(groups, group_matcher);
 
     return typeahead_helper.sort_recipients(

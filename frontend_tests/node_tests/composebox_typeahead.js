@@ -667,7 +667,12 @@ run_test('initialize', () => {
         assert.equal(matcher(query, cordelia), false);
 
         function sorter(query, people) {
-            return typeahead_helper.sort_people_and_user_groups(query, people);
+            return typeahead_helper.sort_recipients(
+                people,
+                query,
+                compose_state.stream_name(),
+                compose_state.topic()
+            );
         }
 
         // The sorter's output has the items that match the query from the
