@@ -540,7 +540,8 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 context.update({
                     'email': user.delivery_email,
                 })
-                send_email('zerver/emails/find_team', to_user_ids=[user.id], context=context)
+                send_email('zerver/emails/find_team', to_user_ids=[user.id], context=context,
+                           from_address=FromAddress.SUPPORT)
 
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
