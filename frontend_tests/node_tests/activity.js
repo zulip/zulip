@@ -38,6 +38,7 @@ const _scroll_util = {
 
 const _pm_list = {
     update_private_messages: () => {},
+    update_presence_info: () => {},
 };
 
 const _popovers = {

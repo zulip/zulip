@@ -11,6 +11,7 @@ EXCLUDED_FILES = [
     # checking for in these anyway.
     "locale",
     "tools/check-openapi",
+    "static/js/pm_list.js"
 ]
 
 PUPPET_CHECK_RULES_TO_EXCLUDE = [

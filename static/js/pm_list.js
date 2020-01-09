@@ -25,6 +25,29 @@ function set_count(count) {
     update_count_in_dom(count_span, value_span, count);
 }
 
+function get_presence_info_for_pm(user_ids_string, is_group)
+{
+    let user_circle_class;
+    let fraction_present;
+
+    if (is_group) {
+        user_circle_class = 'user_circle_fraction';
+        fraction_present = buddy_data.huddle_fraction_present(user_ids_string);
+    } else {
+        const user_id = parseInt(user_ids_string, 10);
+        user_circle_class = buddy_data.get_user_circle_class(user_id);
+        const recipient_user_obj = people.get_person_from_user_id(user_id);
+
+        if (recipient_user_obj.is_bot) {
+            user_circle_class = 'user_circle_green';
+        }
+    }
+    return {
+        user_circle_class: user_circle_class,
+        fraction_present: fraction_present
+    };
+}
+
 exports.get_li_for_user_ids_string = function (user_ids_string) {
     const pm_li = get_filter_li();
     const convo_li = pm_li.find("li[data-user-ids-string='" + user_ids_string + "']");
@@ -88,6 +111,8 @@ exports._build_private_messages_list = function () {
 
         const is_active = user_ids_string === active_user_ids_string;
 
+        const presence_info = get_presence_info_for_pm(user_ids_string, is_group);
+
         const display_message = {
             recipients: recipients_string,
             user_ids_string: user_ids_string,
@@ -95,8 +120,8 @@ exports._build_private_messages_list = function () {
             is_zero: num_unread === 0,
             is_active: is_active,
             url: hash_util.pm_with_uri(reply_to),
-            user_circle_class: user_circle_class,
-            fraction_present: fraction_present,
+            user_circle_class: presence_info.user_circle_class,
+            fraction_present: presence_info.fraction_present,
             is_group: is_group,
         };
         display_messages.push(display_message);
@@ -146,6 +171,31 @@ exports.update_private_messages = function () {
     if (exports.is_all_privates()) {
         $(".top_left_private_messages").addClass('active-filter');
     }
+};
+
+exports.update_presence_info = function () {
+    if (!narrow_state.active()) {
+        return;
+    }
+    const private_messages = pm_conversations.recent.get();
+
+    _.each(private_messages, function (private_message_obj) {
+        const user_ids_string = private_message_obj.user_ids_string;
+        const is_group = user_ids_string.indexOf(',') >= 0;
+        const presence_info = get_presence_info_for_pm(user_ids_string, is_group);
+        const pm_li = exports.get_li_for_user_ids_string(user_ids_string);
+        const presence_span = pm_li.find('.user_circle');
+        presence_span.attr('class', 'user_circle');
+        presence_span.addClass(presence_info.user_circle_class);
+        if (is_group) {
+            if (presence_info.fraction_present) {
+                presence_span.attr('style', 'background: hsla(106, 74%, 44%, ' + presence_info.fraction_present + ');');
+            } else {
+                presence_span.attr('style', 'background:none; border-color:hsl(0, 0%, 50%);');
+            }
+        }
+        presence_span.show();
+    });
 };
 
 exports.expand = function () {

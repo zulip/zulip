@@ -338,6 +338,69 @@ run_test('update_private_messages', () => {
     });
 });
 
+run_test('update_presence_info', () => {
+    $.clear_all_elements();
+    presence.presence_info['101'] = { status: 'active' };
+    presence.presence_info['102'] = { status: 'idle' };
+
+    pm_conversations.recent.get = function () {
+        return [{user_ids_string: '314', max_message_id: 0}];
+    };
+    const private_li = $(".top_left_private_messages");
+    const child_li = $.create('child-li-stub');
+    private_li.set_find_results("li[data-user-ids-string='314']", child_li);
+    const user_circle = $.create('user_circle_stub');
+    child_li.set_find_results('.user_circle', user_circle);
+
+    pm_list.update_presence_info();
+    assert(user_circle.hasClass('user_circle_green'));
+
+    user_circle.removeClass('user_circle_green');
+
+    pm_conversations.recent.get = function () {
+        return [{user_ids_string: '101,102', max_message_id: 0}];
+    };
+    private_li.set_find_results("li[data-user-ids-string='101,102']", child_li);
+    pm_list.update_presence_info();
+    assert(user_circle.hasClass('user_circle_fraction'));
+    let attr_val = user_circle.attr('style');
+    assert(attr_val, 'background: hsla(106, 74%, 44%, 0.5);');
+
+    user_circle.removeAttr('style');
+    user_circle.removeClass('user_circle_fraction');
+
+    presence.presence_info['101'].status = 'offline';
+    pm_list.update_presence_info();
+    assert(user_circle.hasClass('user_circle_fraction'));
+    attr_val = user_circle.attr('style');
+    assert(attr_val, 'background:none; border-color:hsl(0, 0%, 50%);');
+
+    user_circle.removeClass('user_circle_fraction');
+
+    presence.presence_info['101'].status = 'active';
+    pm_conversations.recent.get = function () {
+        return [{user_ids_string: '101', max_message_id: 0}];
+    };
+    private_li.set_find_results("li[data-user-ids-string='101']", child_li);
+    pm_list.update_presence_info();
+    assert(user_circle.hasClass('user_circle_green'));
+
+    user_circle.removeClass('user_circle_green');
+
+    pm_conversations.recent.get = function () {
+        return [{user_ids_string: '102', max_message_id: 0}];
+    };
+    private_li.set_find_results("li[data-user-ids-string='102']", child_li);
+    pm_list.update_presence_info();
+    assert(user_circle.hasClass('user_circle_orange'));
+
+    user_circle.removeClass('user_circle_orange');
+
+    presence.presence_info['102'].status = 'offline';
+    pm_list.update_presence_info();
+    assert(user_circle.hasClass('user_circle_empty'));
+});
+
 run_test('ensure coverage', () => {
     // These aren't rigorous; they just cover cases
     // where functions early exit.
@@ -346,4 +409,5 @@ run_test('ensure coverage', () => {
         throw Error('we should not call rebuild_recent');
     };
     pm_list.update_private_messages();
+    pm_list.update_presence_info();
 });
