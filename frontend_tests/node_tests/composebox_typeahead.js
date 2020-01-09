@@ -627,8 +627,8 @@ run_test('initialize', () => {
         assert.equal(actual_value, expected_value);
 
         function matcher(query, person) {
-            const matcher = ct.get_person_or_user_group_matcher(query);
-            return matcher(person);
+            query = ct.clean_query_lowercase(query);
+            return ct.query_matches_person(query, person);
         }
 
         let query;
