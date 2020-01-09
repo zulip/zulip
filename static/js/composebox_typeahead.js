@@ -421,7 +421,7 @@ exports.broadcast_mentions = function () {
     });
 };
 
-function get_mention_candidates_data(is_silent) {
+exports.filter_and_sort_mentions = function (is_silent, token) {
     let all_items = [];
     let groups = [];
 
@@ -431,8 +431,13 @@ function get_mention_candidates_data(is_silent) {
     }
 
     const persons = people.get_realm_persons();
-    return [].concat(persons, all_items, groups);
-}
+    const big_results = [].concat(persons, all_items, groups);
+
+    const matcher = exports.get_person_or_user_group_matcher(token);
+    const filtered_results = _.filter(big_results, matcher);
+
+    return typeahead_helper.sort_people_and_user_groups(token, filtered_results);
+};
 
 function filter_mention_name(current_token) {
     if (current_token.startsWith('**')) {
@@ -540,6 +545,11 @@ exports.get_sorted_filtered_items = function (query) {
     const completing = hacky_this.completing;
     const token = hacky_this.token;
 
+    if (completing === 'mention' || completing === 'silent_mention') {
+        return exports.filter_and_sort_mentions(
+            big_results.is_silent, token);
+    }
+
     return exports.filter_and_sort_candidates(completing, big_results, token);
 };
 
@@ -632,7 +642,7 @@ exports.get_candidates = function (query) {
             return false;
         }
         this.token = current_token;
-        return get_mention_candidates_data(is_silent);
+        return {is_silent: is_silent};
     }
 
     function get_slash_commands_data() {
@@ -815,9 +825,6 @@ exports.compose_content_matcher = function (completing, token) {
     switch (completing) {
     case 'emoji':
         return get_emoji_matcher(token);
-    case 'mention':
-    case 'silent_mention':
-        return exports.get_person_or_user_group_matcher(token);
     case 'slash':
         return get_slash_matcher(token);
     case 'stream':
@@ -841,9 +848,6 @@ exports.sort_results = function (completing, matches, token) {
     switch (completing) {
     case 'emoji':
         return typeahead_helper.sort_emojis(matches, token);
-    case 'mention':
-    case 'silent_mention':
-        return typeahead_helper.sort_people_and_user_groups(token, matches);
     case 'slash':
         return typeahead_helper.sort_slash_commands(matches, token);
     case 'stream':

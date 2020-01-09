@@ -804,14 +804,6 @@ run_test('initialize', () => {
         assert.equal(match(fake_this, make_emoji(emoji_tada)), true);
         assert.equal(match(fake_this, make_emoji(emoji_moneybag)), false);
 
-        fake_this = { completing: 'mention', token: 'Cord' };
-        assert.equal(match(fake_this, cordelia), true);
-        assert.equal(match(fake_this, othello), false);
-
-        fake_this = { completing: 'mention', token: 'hamletchar' };
-        assert.equal(match(fake_this, hamletcharacters), true);
-        assert.equal(match(fake_this, backend), false);
-
         fake_this = { completing: 'stream', token: 'swed' };
         assert.equal(match(fake_this, sweden_stream), true);
         assert.equal(match(fake_this, denmark_stream), false);
@@ -852,52 +844,6 @@ run_test('initialize', () => {
         fake_this = { completing: 'slash', token: 'm' };
         actual_value = sort_items(fake_this, [my_slash, me_slash]);
         expected_value = [me_slash, my_slash];
-        assert.deepEqual(actual_value, expected_value);
-
-        fake_this = { completing: 'mention', token: 'co' };
-        actual_value = sort_items(fake_this, [othello, cordelia]);
-        expected_value = [cordelia, othello];
-        assert.deepEqual(actual_value, expected_value);
-
-        const hamburger = {
-            email: 'coolham@zulip.com',
-            user_id: 200,
-            full_name: "Hamburger",
-        };
-        const hammer = {
-            email: 'hammer@zulip.com',
-            user_id: 202,
-            full_name: "Apollo",
-        };
-        const zeus = {
-            email: 'zeus@hamel.com',
-            user_id: 201,
-            full_name: "Zeus",
-        };
-
-        fake_this = { completing: 'mention', token: 'ham' };
-        actual_value = sort_items(fake_this, [hamletcharacters, hamburger]);
-        expected_value = [hamburger, hamletcharacters];
-        assert.deepEqual(actual_value, expected_value);
-
-        fake_this = { completing: 'mention', token: 'ham' };
-        actual_value = sort_items(fake_this, [hamletcharacters, hamlet]);
-        expected_value = [hamletcharacters, hamlet];
-        assert.deepEqual(actual_value, expected_value);
-
-        fake_this = { completing: 'mention', token: 'ham' };
-        actual_value = sort_items(fake_this, [hamletcharacters, backend]);
-        expected_value = [hamletcharacters, backend];
-        assert.deepEqual(actual_value, expected_value);
-
-        fake_this = { completing: 'mention', token: 'ham' };
-        actual_value = sort_items(fake_this, [hamletcharacters, zeus]);
-        expected_value = [hamletcharacters, zeus];
-        assert.deepEqual(actual_value, expected_value);
-
-        fake_this = { completing: 'mention', token: 'ham' };
-        actual_value = sort_items(fake_this, [hamletcharacters, hammer]);
-        expected_value = [hamletcharacters, hammer];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'stream', token: 'de' };
@@ -1170,10 +1116,8 @@ run_test('begins_typeahead', () => {
         );
     }
 
-    const all_items = ct.broadcast_mentions();
-    const people_only = global.people.get_realm_persons();
-    const people_with_all = people_only.concat(all_items);
-    const all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
+    const people_only = {is_silent: true};
+    const all_mentions = {is_silent: false};
     const lang_list = Object.keys(pygments_data.langs);
 
     assert_typeahead_equals("test", false);
@@ -1418,16 +1362,6 @@ run_test('content_highlighter', () => {
 });
 
 run_test('typeahead_results', () => {
-    const all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
-        return {
-            special_item_text: 'translated: ' + mention + " (Notify stream)",
-            email: mention,
-            pm_recipient_count: Infinity,
-            full_name: mention,
-        };
-    });
-    const people_with_all = global.people.get_realm_persons().concat(all_items);
-    const all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
     const stream_list = [denmark_stream, sweden_stream, netherland_stream];
 
     function compose_typeahead_results(completing, items, token) {
@@ -1439,7 +1373,8 @@ run_test('typeahead_results', () => {
         assert.deepEqual(returned, expected);
     }
     function assert_mentions_matches(input, expected) {
-        const returned = compose_typeahead_results('mention', all_mentions, input);
+        const is_silent = false;
+        const returned = ct.filter_and_sort_mentions(is_silent, input);
         assert.deepEqual(returned, expected);
     }
     function assert_stream_matches(input, expected) {
