@@ -478,12 +478,23 @@ exports.slash_commands = [
 ];
 
 exports.get_pm_people = function (query) {
+    query = clean_query_lowercase(query);
+
+    const person_matcher = (item) => {
+        return query_matches_person(query, item);
+    };
+
+    const group_matcher = (item) => {
+        return query_matches_name_description(query, item);
+    };
+
     const all_persons = people.get_realm_persons();
     const persons = compose_pm_pill.filter_taken_users(all_persons);
+    const filtered_persons = _.filter(persons, person_matcher);
+
     const groups = user_groups.get_realm_user_groups();
-    const matcher = exports.get_person_or_user_group_matcher(query);
-    const filtered_persons = _.filter(persons, matcher);
-    const filtered_groups = _.filter(groups, matcher);
+    const filtered_groups = _.filter(groups, group_matcher);
+
     return typeahead_helper.sort_recipients(
         filtered_persons,
         query,
