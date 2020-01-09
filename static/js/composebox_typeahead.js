@@ -481,10 +481,15 @@ exports.get_pm_people = function (query) {
     const all_persons = people.get_realm_persons();
     const persons = compose_pm_pill.filter_taken_users(all_persons);
     const groups = user_groups.get_realm_user_groups();
-    const people_and_groups = persons.concat(groups);
     const matcher = exports.get_person_or_user_group_matcher(query);
-    const filtered_results = _.filter(people_and_groups, matcher);
-    return typeahead_helper.sort_people_and_user_groups(query, filtered_results);
+    const filtered_persons = _.filter(persons, matcher);
+    const filtered_groups = _.filter(groups, matcher);
+    return typeahead_helper.sort_recipients(
+        filtered_persons,
+        query,
+        compose_state.stream_name(),
+        compose_state.topic(),
+        filtered_groups);
 };
 
 exports.get_sorted_filtered_items = function (query) {
