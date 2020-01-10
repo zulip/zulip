@@ -26,6 +26,10 @@ stream_data.set_filter_out_inactives = () => false;
 set_global('topic_data', {
 });
 
+set_global('message_store', {
+    user_ids: () => [],
+});
+
 const ct = composebox_typeahead;
 const noop = function () {};
 
@@ -228,6 +232,18 @@ const gael = {
     email: 'twin3@zulip.com',
 };
 
+const hal = {
+    full_name: 'Earl Hal',
+    user_id: 108,
+    email: 'hal@zulip.com',
+};
+
+const harry = {
+    full_name: 'Harry',
+    user_id: 109,
+    email: 'harry@zulip.com',
+};
+
 global.people.add_in_realm(alice);
 global.people.add_in_realm(hamlet);
 global.people.add_in_realm(othello);
@@ -236,6 +252,8 @@ global.people.add_in_realm(lear);
 global.people.add_in_realm(twin1);
 global.people.add_in_realm(twin2);
 global.people.add_in_realm(gael);
+global.people.add_in_realm(hal);
+global.people.add_in_realm(harry);
 global.people.add(deactivated_user);
 
 const hamletcharacters = {
@@ -620,7 +638,7 @@ run_test('initialize', () => {
         // This should match the users added at the beginning of this test file.
         let actual_value = options.source('');
         let expected_value = [alice, hamlet, othello, cordelia, lear,
-                              twin1, twin2, gael,
+                              twin1, twin2, gael, hal, harry,
                               hamletcharacters, backend, call_center];
         assert.deepEqual(actual_value, expected_value);
 
@@ -1392,6 +1410,7 @@ run_test('filter_and_sort_mentions (normal)', () => {
     assert.deepEqual(suggestions, [
         mention_all,
         alice,
+        hal,
         call_center,
     ]);
 });
@@ -1402,7 +1421,7 @@ run_test('filter_and_sort_mentions (silent)', () => {
     const suggestions = ct.filter_and_sort_mentions(
         is_silent, 'al');
 
-    assert.deepEqual(suggestions, [alice]);
+    assert.deepEqual(suggestions, [alice, hal]);
 });
 
 run_test('typeahead_results', () => {
@@ -1468,4 +1487,36 @@ run_test('typeahead_results', () => {
     assert_stream_matches('cold', [sweden_stream, denmark_stream]);
     assert_stream_matches('the ', [netherland_stream]);
     assert_stream_matches('city', [netherland_stream]);
+});
+
+run_test('message people', () => {
+    let results;
+
+    compose_state.stream_name = () => undefined;
+    ct.max_num_items = 2;
+
+    /*
+        We will simulate that we talk to Hal and Harry,
+        while we don't talk to King Hamlet.  This will
+        knock King Hamlet out of consideration in the
+        filtering pass.  Then Hal will be truncated in
+        the sorting step.
+    */
+
+    message_store.user_ids = () => [hal.user_id, harry.user_id];
+
+    const opts = {
+        want_broadcast: false,
+        want_groups: true,
+        filter_pills: false,
+    };
+
+    results = ct.get_person_suggestions('Ha', opts);
+    assert.deepEqual(results, [harry, hamletcharacters]);
+
+    // Now let's exclude Hal.
+    message_store.user_ids = () => [hamlet.user_id, harry.user_id];
+
+    results = ct.get_person_suggestions('Ha', opts);
+    assert.deepEqual(results, [harry, hamletcharacters]);
 });

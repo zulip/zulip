@@ -500,9 +500,6 @@ exports.get_person_suggestions = function (query, opts) {
         return _.filter(persons, person_matcher);
     }
 
-    const all_persons = people.get_realm_persons();
-    const filtered_persons = filter_persons(all_persons);
-
     let groups;
 
     if (opts.want_groups) {
@@ -512,6 +509,44 @@ exports.get_person_suggestions = function (query, opts) {
     }
 
     const filtered_groups = _.filter(groups, group_matcher);
+
+    /*
+        Let's say you're on a big realm and type
+        "st" in a typeahead.  Maybe there are like
+        30 people named Steve/Stephanie/etc.  We don't
+        want those search results to squeeze out
+        groups like "staff", and we also want to
+        prefer Steve Yang over Stan Adams if the
+        former has sent messages recently, despite
+        the latter being first alphabetically.
+
+        Also, from a performance standpoint, we can
+        save some expensive work if we get enough
+        matches from the more selective group of
+        people.
+
+        Note that we don't actually guarantee that we
+        won't squeeze out groups here, but we make it
+        less likely by removing some users from
+        consideration.  (The sorting step will favor
+        persons who match on prefix to groups who
+        match on prefix.)
+    */
+    const cutoff_length = exports.max_num_items;
+
+    const filtered_message_persons = filter_persons(
+        people.get_message_people()
+    );
+
+    let filtered_persons;
+
+    if (filtered_message_persons.length >= cutoff_length) {
+        filtered_persons = filtered_message_persons;
+    } else {
+        filtered_persons = filter_persons(
+            people.get_realm_persons()
+        );
+    }
 
     return typeahead_helper.sort_recipients(
         filtered_persons,
