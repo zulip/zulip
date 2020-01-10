@@ -1008,7 +1008,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         self.assert_json_error(
             result,
             "5.1.1 Bad destination mailbox address: "
-            "Please use the address specified in your Streams page.")
+            "Bad stream token from email recipient " + stream_to_address)
 
     def test_success_to_stream_with_good_token_wrong_stream_name(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
@@ -1032,7 +1032,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         result = self.send_offline_message(mm_address, self.example_email('cordelia'))
         self.assert_json_error(
             result,
-            "5.1.1 Bad destination mailbox address: Bad or expired missed message address.")
+            "5.1.1 Bad destination mailbox address: Missed message address out of uses.")
 
     def test_wrong_missed_email_private_message(self) -> None:
         self.send_private_message()
@@ -1040,7 +1040,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         result = self.send_offline_message(mm_address, self.example_email('cordelia'))
         self.assert_json_error(
             result,
-            "5.1.1 Bad destination mailbox address: Bad or expired missed message address.")
+            "5.1.1 Bad destination mailbox address: Missed message address expired or doesn't exist.")
 
 
 class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
