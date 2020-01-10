@@ -46,7 +46,7 @@ def redact_email_address(error_message: str) -> str:
                                                      "{} <Missed message address>".format(email_address))
         else:
             try:
-                target_stream_id = extract_and_validate(email_address)[0].id
+                target_stream_id = decode_stream_email_address(email_address)[0].id
                 annotated_address = "{} <Address to stream id: {}>".format(email_address, target_stream_id)
                 redacted_message = error_message.replace(email_address, annotated_address)
             except ZulipEmailForwardError:
@@ -244,7 +244,7 @@ def extract_and_upload_attachments(message: message.Message, realm: Realm) -> st
 
     return "\n".join(attachment_links)
 
-def extract_and_validate(email: str) -> Tuple[Stream, Dict[str, bool]]:
+def decode_stream_email_address(email: str) -> Tuple[Stream, Dict[str, bool]]:
     token, options = decode_email_address(email)
 
     try:
@@ -291,7 +291,7 @@ def process_stream_message(to: str, message: message.Message) -> None:
     subject_header = str(make_header(decode_header(message.get("Subject", ""))))
     subject = strip_from_subject(subject_header) or "(no topic)"
 
-    stream, options = extract_and_validate(to)
+    stream, options = decode_stream_email_address(to)
     # Don't remove quotations if message is forwarded, unless otherwise specified:
     if 'include_quotes' not in options:
         options['include_quotes'] = is_forwarded(subject_header)
@@ -375,7 +375,7 @@ def validate_to_address(rcpt_to: str) -> None:
         if not mm_address.is_usable():
             raise ZulipEmailForwardError("Missed message address out of uses.")
     else:
-        extract_and_validate(rcpt_to)
+        decode_stream_email_address(rcpt_to)
 
 def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
     rcpt_to = data['recipient']
