@@ -778,14 +778,34 @@ exports.remove_diacritics = function (s) {
     return s.normalize("NFKD").replace(unicode_marks, "");
 };
 
-exports.get_people_for_search_bar = function (query) {
-    const pred = exports.build_person_matcher(query);
-
+exports.get_message_people = function () {
+    /*
+        message_people are roughly the people who have
+        actually sent messages that are currently
+        showing up on your feed.  These people
+        are important--we give them preference
+        over other users in certain search
+        suggestions, since non-message-people are
+        presumably either not very active or
+        possibly subscribed to streams you don't
+        care about.  message_people also includes
+        people whom you have sent PMs, but look
+        at the message_store code to see the precise
+        semantics
+    */
     const message_people = _.compact(
         _.map(message_store.user_ids(), (user_id) => {
             return people_by_user_id_dict.get(user_id);
         })
     );
+
+    return message_people;
+};
+
+exports.get_people_for_search_bar = function (query) {
+    const pred = exports.build_person_matcher(query);
+
+    const message_people = exports.get_message_people();
 
     const small_results = _.filter(message_people, pred);
 
