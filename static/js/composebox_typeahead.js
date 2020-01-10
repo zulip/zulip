@@ -485,20 +485,23 @@ exports.get_person_suggestions = function (query, opts) {
         return query_matches_name_description(query, item);
     };
 
+    function filter_persons(all_persons) {
+        let persons;
+
+        if (opts.filter_pills) {
+            persons = compose_pm_pill.filter_taken_users(all_persons);
+        } else {
+            persons = all_persons;
+        }
+
+        if (opts.want_broadcast) {
+            persons = persons.concat(exports.broadcast_mentions());
+        }
+        return _.filter(persons, person_matcher);
+    }
+
     const all_persons = people.get_realm_persons();
-    let persons;
-
-    if (opts.filter_pills) {
-        persons = compose_pm_pill.filter_taken_users(all_persons);
-    } else {
-        persons = all_persons;
-    }
-
-    if (opts.want_broadcast) {
-        persons = persons.concat(exports.broadcast_mentions());
-    }
-
-    const filtered_persons = _.filter(persons, person_matcher);
+    const filtered_persons = filter_persons(all_persons);
 
     let groups;
 
