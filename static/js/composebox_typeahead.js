@@ -11,6 +11,10 @@ const autosize = require('autosize');
 // highlighter that escapes (i.e. one that calls
 // typeahead_helper.highlight_with_escaping).
 
+// This is what we use for PM/compose typeaheads.
+// We export it to allow tests to mock it.
+exports.max_num_items = 5;
+
 exports.emoji_collection = [];
 
 exports.update_emoji_data = function () {
@@ -511,7 +515,9 @@ exports.get_person_suggestions = function (query, opts) {
         query,
         compose_state.stream_name(),
         compose_state.topic(),
-        filtered_groups);
+        filtered_groups,
+        exports.max_num_items
+    );
 };
 
 exports.get_sorted_filtered_items = function (query) {
@@ -909,7 +915,7 @@ exports.initialize_compose_typeahead = function (selector) {
     };
 
     $(selector).typeahead({
-        items: 5,
+        items: exports.max_num_items,
         dropup: true,
         fixed: true,
         // Performance note: We have trivial matcher/sorters to do
@@ -1006,7 +1012,7 @@ exports.initialize = function () {
 
     $("#private_message_recipient").typeahead({
         source: exports.get_pm_people,
-        items: 5,
+        items: exports.max_num_items,
         dropup: true,
         fixed: true,
         highlighter: function (item) {

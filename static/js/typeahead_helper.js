@@ -311,9 +311,21 @@ exports.sort_languages = function (matches, query) {
     return results.matches.concat(results.rest);
 };
 
-exports.sort_recipients = function (users, query, current_stream, current_topic, groups) {
+exports.sort_recipients = function (
+    users,
+    query,
+    current_stream,
+    current_topic,
+    groups,
+    max_num_items
+) {
+
     if (!groups) {
         groups = [];
+    }
+
+    if (max_num_items === undefined) {
+        max_num_items = 20;
     }
 
     function sort_relevance(items) {
@@ -357,11 +369,30 @@ exports.sort_recipients = function (users, query, current_stream, current_topic,
     const worst_users = () => sort_relevance(email_results.rest);
     const worst_groups = () => groups_results.rest;
 
-    return best_users().concat(
-        best_groups(),
-        ok_users(),
-        worst_users(),
-        worst_groups());
+    const getters = [
+        best_users,
+        best_groups,
+        ok_users,
+        worst_users,
+        worst_groups,
+    ];
+
+    /*
+        The following optimization is important for large realms.
+        If we know we're only showing 5 suggestions, and we
+        get 5 matches from `best_users`, then we want to avoid
+        calling the expensives sorts for `ok_users` and `worst_users`,
+        since they just get dropped.
+    */
+
+    let items = [];
+    _.each(getters, (getter) => {
+        if (items.length < max_num_items) {
+            items = items.concat(getter());
+        }
+    });
+
+    return items.slice(0, max_num_items);
 };
 
 function slash_command_comparator(slash_command_a, slash_command_b) {

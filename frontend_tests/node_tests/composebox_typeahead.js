@@ -32,6 +32,11 @@ const noop = function () {};
 set_global('blueslip', {});
 blueslip.warn = noop;
 
+// Use a slightly larger value than what's user-facing
+// to facilitate testing different combinations of
+// broadcast-mentions/persons/groups.
+ct.max_num_items = 10;
+
 const emoji_stadium = {
     name: 'stadium',
     aliases: ['stadium'],
