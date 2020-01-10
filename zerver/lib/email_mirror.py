@@ -105,15 +105,20 @@ def get_missed_message_token_from_address(address: str) -> str:
 
     return msg_string
 
-def get_missed_message_address(address: str) -> MissedMessageEmailAddress:
+def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress:
     token = get_missed_message_token_from_address(address)
     try:
-        return MissedMessageEmailAddress.objects.select_related().get(
+        mm_address = MissedMessageEmailAddress.objects.select_related().get(
             email_token=token,
             timestamp__gt=timezone_now() - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS)
         )
     except MissedMessageEmailAddress.DoesNotExist:
         raise ZulipEmailForwardError("Missed message address expired or doesn't exist.")
+
+    if not mm_address.is_usable():
+        raise ZulipEmailForwardError("Missed message address out of uses.")
+
+    return mm_address
 
 def create_missed_message_address(user_profile: UserProfile, message: Message) -> str:
     if settings.EMAIL_GATEWAY_PATTERN == '':
@@ -302,9 +307,7 @@ def process_stream_message(to: str, message: message.Message) -> None:
         stream.name, stream.realm.string_id))
 
 def process_missed_message(to: str, message: message.Message) -> None:
-    mm_address = get_missed_message_address(to)
-    if not mm_address.is_usable():
-        raise ZulipEmailForwardError("Missed message address out of uses.")
+    mm_address = get_usable_missed_message_address(to)
     mm_address.increment_times_used()
 
     user_profile = mm_address.user_profile
@@ -371,9 +374,7 @@ def process_message(message: message.Message, rcpt_to: Optional[str]=None) -> No
 
 def validate_to_address(rcpt_to: str) -> None:
     if is_missed_message_address(rcpt_to):
-        mm_address = get_missed_message_address(rcpt_to)
-        if not mm_address.is_usable():
-            raise ZulipEmailForwardError("Missed message address out of uses.")
+        get_usable_missed_message_address(rcpt_to)
     else:
         decode_stream_email_address(rcpt_to)
 
