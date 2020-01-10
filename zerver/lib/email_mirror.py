@@ -113,7 +113,7 @@ def get_missed_message_address(address: str) -> MissedMessageEmailAddress:
             timestamp__gt=timezone_now() - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS)
         )
     except MissedMessageEmailAddress.DoesNotExist:
-        raise ZulipEmailForwardError("Missed message address expired or doesn't exist")
+        raise ZulipEmailForwardError("Missed message address expired or doesn't exist.")
 
 def create_missed_message_address(user_profile: UserProfile, message: Message) -> str:
     if settings.EMAIL_GATEWAY_PATTERN == '':
@@ -369,28 +369,24 @@ def process_message(message: message.Message, rcpt_to: Optional[str]=None) -> No
         else:
             log_and_report(message, str(e), to)
 
+def validate_to_address(rcpt_to: str) -> None:
+    if is_missed_message_address(rcpt_to):
+        mm_address = get_missed_message_address(rcpt_to)
+        if not mm_address.is_usable():
+            raise ZulipEmailForwardError("Missed message address out of uses.")
+    else:
+        extract_and_validate(rcpt_to)
+
 def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
     rcpt_to = data['recipient']
-    if is_missed_message_address(rcpt_to):
-        try:
-            mm_address = get_missed_message_address(rcpt_to)
-            if not mm_address.is_usable():
-                raise ZulipEmailForwardError("Missed message address out of uses.")
-        except ZulipEmailForwardError:
-            return {
-                "status": "error",
-                "msg": "5.1.1 Bad destination mailbox address: "
-                       "Bad or expired missed message address."
-            }
-    else:
-        try:
-            extract_and_validate(rcpt_to)
-        except ZulipEmailForwardError:
-            return {
-                "status": "error",
-                "msg": "5.1.1 Bad destination mailbox address: "
-                       "Please use the address specified in your Streams page."
-            }
+    try:
+        validate_to_address(rcpt_to)
+    except ZulipEmailForwardError as e:
+        return {
+            "status": "error",
+            "msg": "5.1.1 Bad destination mailbox address: {}".format(e)
+        }
+
     queue_json_publish(
         "email_mirror",
         {
