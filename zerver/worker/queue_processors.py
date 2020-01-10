@@ -34,7 +34,7 @@ from zerver.lib.digest import handle_digest_email
 from zerver.lib.send_email import send_future_email, send_email_from_dict, \
     FromAddress, EmailNotDeliveredException, handle_send_email_format_changes
 from zerver.lib.email_mirror import process_message as mirror_email, rate_limit_mirror_by_realm, \
-    is_missed_message_address, extract_and_validate
+    is_missed_message_address, decode_stream_email_address
 from zerver.lib.streams import access_stream_by_id
 from zerver.tornado.socket import req_redis_key, respond_send_message
 from zerver.lib.db import reset_queries
@@ -544,7 +544,7 @@ class MirrorWorker(QueueProcessingWorker):
         if not is_missed_message_address(rcpt_to):
             # Missed message addresses are one-time use, so we don't need
             # to worry about emails to them resulting in message spam.
-            recipient_realm = extract_and_validate(rcpt_to)[0].realm
+            recipient_realm = decode_stream_email_address(rcpt_to)[0].realm
             try:
                 rate_limit_mirror_by_realm(recipient_realm)
             except RateLimited:
