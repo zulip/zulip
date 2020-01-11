@@ -1068,62 +1068,30 @@ exports.build_page = function () {
         });
     });
 
-    function notification_stream_update(data) {
-        _.each(get_subsection_property_elements($("#org-discard-notifications")),
-               discard_property_element_changes);
-        const nearest_save_button = $("#org-submit-notifications");
-        exports.save_organization_settings(data, nearest_save_button);
+    function notification_stream_update(stream_id, notification_type) {
+        exports.render_notifications_stream_ui(stream_id,
+                                               $(`#realm_${notification_type}_stream_name`));
+        exports.save_organization_settings({
+            [`${notification_type}_stream_id`]: JSON.stringify(parseInt(stream_id, 10)),
+        }, $("#org-submit-notifications"));
+
     }
 
-    function update_notifications_stream(new_notifications_stream_id) {
-        exports.render_notifications_stream_ui(new_notifications_stream_id,
-                                               $('#realm_notifications_stream_name'));
-        notification_stream_update({
-            notifications_stream_id: JSON.stringify(parseInt(new_notifications_stream_id, 10)),
-        });
-    }
-
-    $("#id_realm_notifications_stream .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
+    $(".notifications-stream-setting .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
+        const notifications_stream_setting_elem = $(this).closest(".notifications-stream-setting");
         if (e.type === "keypress") {
             if (e.which === 13) {
-                $("#id_realm_notifications_stream .dropdown-menu").dropdown("toggle");
+                notifications_stream_setting_elem.find(".dropdown-menu").dropdown("toggle");
             } else {
                 return;
             }
         }
-
         const stream_id = parseInt($(this).attr('data-stream-id'), 10);
-        update_notifications_stream(stream_id);
+        notification_stream_update(stream_id, notifications_stream_setting_elem.data("notifications-type"));
     });
 
-    $("#notifications_stream_disable").click(function () {
-        update_notifications_stream(-1);
-    });
-
-    function update_signup_notifications_stream(new_signup_notifications_stream_id) {
-        exports.render_notifications_stream_ui(new_signup_notifications_stream_id,
-                                               $('#realm_signup_notifications_stream_name'));
-        notification_stream_update({
-            signup_notifications_stream_id: JSON.stringify(
-                parseInt(new_signup_notifications_stream_id, 10)),
-        });
-    }
-
-    $("#id_realm_signup_notifications_stream .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
-        if (e.type === "keypress") {
-            if (e.which === 13) {
-                $("#id_realm_signup_notifications_stream .dropdown-menu").dropdown("toggle");
-            } else {
-                return;
-            }
-        }
-
-        const stream_id = parseInt($(this).attr('data-stream-id'), 10);
-        update_signup_notifications_stream(stream_id);
-    });
-
-    $("#signup_notifications_stream_disable").click(function () {
-        update_signup_notifications_stream(-1);
+    $(".notification-disable").click(function (e) {
+        notification_stream_update(-1, e.target.id.replace("_stream_disable", ""));
     });
 
     function upload_realm_icon(file_input) {
