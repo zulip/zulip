@@ -407,9 +407,12 @@ function insert_tip_box() {
         .prepend(tip_box);
 }
 
-exports.render_notifications_stream_ui = function (stream_id, elem) {
-
+exports.render_notifications_stream_ui = function (stream_id, notification_type) {
     const name = stream_data.maybe_get_stream_name(stream_id);
+
+    $(`#id_realm_${notification_type}_stream`).data("stream-id", stream_id);
+
+    const elem = $(`#realm_${notification_type}_stream_name`);
 
     if (!name) {
         elem.text(i18n.t("Disabled"));
@@ -628,10 +631,8 @@ exports.build_page = function () {
         exports.populate_notifications_stream_dropdown(streams);
         exports.populate_signup_notifications_stream_dropdown(streams);
     }
-    exports.render_notifications_stream_ui(page_params.realm_notifications_stream_id,
-                                           $('#realm_notifications_stream_name'));
-    exports.render_notifications_stream_ui(page_params.realm_signup_notifications_stream_id,
-                                           $('#realm_signup_notifications_stream_name'));
+    exports.render_notifications_stream_ui(page_params.realm_notifications_stream_id, 'notifications');
+    exports.render_notifications_stream_ui(page_params.realm_signup_notifications_stream_id, 'signup_notifications');
 
     // Populate realm domains
     exports.populate_realm_domains(page_params.realm_domains);
@@ -1069,8 +1070,7 @@ exports.build_page = function () {
     });
 
     function notification_stream_update(stream_id, notification_type) {
-        exports.render_notifications_stream_ui(stream_id,
-                                               $(`#realm_${notification_type}_stream_name`));
+        exports.render_notifications_stream_ui(stream_id, notification_type);
         exports.save_organization_settings({
             [`${notification_type}_stream_id`]: JSON.stringify(parseInt(stream_id, 10)),
         }, $("#org-submit-notifications"));
