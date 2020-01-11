@@ -660,7 +660,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
         if s3_uploads:
             key = Key(bucket)
             key.key = relative_path
-            if processing_emojis:
+            if processing_emojis and "user_profile_id" not in record:
                 # Exported custom emoji from tools like Slack don't have
                 # the data for what user uploaded them in `user_profile_id`.
                 pass
