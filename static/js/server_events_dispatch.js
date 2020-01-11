@@ -142,12 +142,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 }
             } else if (event.property === 'notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(
-                    page_params.realm_notifications_stream_id,
-                    $('#realm_notifications_stream_name'));
+                    page_params.realm_notifications_stream_id, 'notifications');
             } else if (event.property === 'signup_notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(
-                    page_params.realm_signup_notifications_stream_id,
-                    $('#realm_signup_notifications_stream_name'));
+                    page_params.realm_signup_notifications_stream_id, 'signup_notifications');
             }
 
             if (event.property === 'name' && window.electron_bridge !== undefined) {
@@ -293,14 +291,12 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {
                     page_params.realm_notifications_stream_id = -1;
                     settings_org.render_notifications_stream_ui(
-                        page_params.realm_notifications_stream_id,
-                        $('#realm_notifications_stream_name'));
+                        page_params.realm_notifications_stream_id, 'notifications');
                 }
                 if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
                     page_params.realm_signup_notifications_stream_id = -1;
                     settings_org.render_notifications_stream_ui(
-                        page_params.realm_signup_notifications_stream_id,
-                        $('#realm_signup_notifications_stream_name'));
+                        page_params.realm_signup_notifications_stream_id, 'signup_notifications');
                 }
             });
         }
