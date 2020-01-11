@@ -155,6 +155,15 @@ exports.make_strcmp = function () {
 };
 exports.strcmp = exports.make_strcmp();
 
+exports.escape_html = function (html, encode) {
+    return html
+        .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+};
+
 exports.escape_regexp = function (string) {
     // code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
     // Modified to escape the ^ to appease jslint. :/
