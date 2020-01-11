@@ -1096,7 +1096,7 @@ exports.build_page = function () {
         update_notifications_stream(stream_id);
     });
 
-    $(".notifications-stream-disable").click(function () {
+    $("#notifications_stream_disable").click(function () {
         update_notifications_stream(-1);
     });
 
@@ -1122,7 +1122,7 @@ exports.build_page = function () {
         update_signup_notifications_stream(stream_id);
     });
 
-    $(".signup-notifications-stream-disable").click(function () {
+    $("#signup_notifications_stream_disable").click(function () {
         update_signup_notifications_stream(-1);
     });
 

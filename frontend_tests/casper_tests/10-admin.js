@@ -39,7 +39,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.click(".notifications-stream-disable");
+    casper.click("#notifications_stream_disable");
     casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
@@ -61,7 +61,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.click(".signup-notifications-stream-disable");
+    casper.click("#signup_notifications_stream_disable");
     casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
