@@ -83,35 +83,33 @@ run_test('build_private_messages_list', () => {
     narrow_state.filter = () => {};
     pm_list._build_private_messages_list();
 
-    const expected_data = {
-        messages: [
-            {
-                recipients: 'Alice, Bob',
-                user_ids_string: '101,102',
-                unread: 1,
-                is_zero: false,
-                is_active: false,
-                url: '#narrow/pm-with/101,102-group',
-                user_circle_class: 'user_circle_fraction',
-                fraction_present: undefined,
-                is_group: true,
-            },
-        ],
-    };
+    const expected_data = [
+        {
+            recipients: 'Alice, Bob',
+            user_ids_string: '101,102',
+            unread: 1,
+            is_zero: false,
+            is_active: false,
+            url: '#narrow/pm-with/101,102-group',
+            user_circle_class: 'user_circle_fraction',
+            fraction_present: undefined,
+            is_group: true,
+        },
+    ];
 
-    assert.deepEqual(template_data, expected_data);
+    assert.deepEqual(template_data, {messages: expected_data});
 
     global.unread.num_unread_for_person = function () {
         return 0;
     };
     pm_list._build_private_messages_list();
-    expected_data.messages[0].unread = 0;
-    expected_data.messages[0].is_zero = true;
-    assert.deepEqual(template_data, expected_data);
+    expected_data[0].unread = 0;
+    expected_data[0].is_zero = true;
+    assert.deepEqual(template_data, {messages: expected_data});
 
     pm_list.initialize();
     pm_list._build_private_messages_list();
-    assert.deepEqual(template_data, expected_data);
+    assert.deepEqual(template_data, {messages: expected_data});
 });
 
 run_test('build_private_messages_list_bot', () => {
@@ -129,34 +127,32 @@ run_test('build_private_messages_list_bot', () => {
     });
 
     pm_list._build_private_messages_list();
-    const expected_data = {
-        messages: [
-            {
-                recipients: 'Outgoing webhook',
-                user_ids_string: '314',
-                unread: 1,
-                is_zero: false,
-                is_active: false,
-                url: '#narrow/pm-with/314-outgoingwebhook',
-                user_circle_class: 'user_circle_green',
-                fraction_present: undefined,
-                is_group: false,
-            },
-            {
-                recipients: 'Alice, Bob',
-                user_ids_string: '101,102',
-                unread: 1,
-                is_zero: false,
-                is_active: false,
-                url: '#narrow/pm-with/101,102-group',
-                user_circle_class: 'user_circle_fraction',
-                fraction_present: undefined,
-                is_group: true,
-            },
-        ],
-    };
+    const expected_data = [
+        {
+            recipients: 'Outgoing webhook',
+            user_ids_string: '314',
+            unread: 1,
+            is_zero: false,
+            is_active: false,
+            url: '#narrow/pm-with/314-outgoingwebhook',
+            user_circle_class: 'user_circle_green',
+            fraction_present: undefined,
+            is_group: false,
+        },
+        {
+            recipients: 'Alice, Bob',
+            user_ids_string: '101,102',
+            unread: 1,
+            is_zero: false,
+            is_active: false,
+            url: '#narrow/pm-with/101,102-group',
+            user_circle_class: 'user_circle_fraction',
+            fraction_present: undefined,
+            is_group: true,
+        },
+    ];
 
-    assert.deepEqual(template_data, expected_data);
+    assert.deepEqual(template_data, {messages: expected_data});
 });
 
 run_test('update_dom_with_unread_counts', () => {
