@@ -1179,7 +1179,6 @@ def _check_key_metadata(email_gateway_bot: Optional[UserProfile],
 def _get_exported_s3_record(
         bucket_name: str,
         key: Key,
-        processing_avatars: bool,
         processing_emoji: bool) -> Dict[str, Union[str, int]]:
     # Helper function for export_files_from_s3
     record = dict(s3_path=key.name, bucket=bucket_name,
@@ -1269,7 +1268,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
 
         # This can happen if an email address has moved realms
         _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
-        record = _get_exported_s3_record(bucket_name, key, processing_avatars, processing_emoji)
+        record = _get_exported_s3_record(bucket_name, key, processing_emoji)
 
         record['path'] = key.name
         _save_s3_object_to_file(key, output_dir, processing_avatars, processing_emoji,
