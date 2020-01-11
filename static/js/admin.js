@@ -5,6 +5,8 @@ const admin_settings_label = {
     realm_allow_community_topic_editing: i18n.t("Users can edit the topic of any message"),
     realm_allow_edit_history: i18n.t("Enable message edit history"),
     realm_mandatory_topics: i18n.t("Require topics in stream messages"),
+    realm_notifications_stream: i18n.t("New stream notifications:"),
+    realm_signup_notifications_stream: i18n.t("New user notifications:"),
     realm_inline_image_preview: i18n.t("Show previews of uploaded and linked images"),
     realm_inline_url_embed_preview: i18n.t("Show previews of linked websites"),
     realm_default_twenty_four_hour_time: i18n.t("Time format"),
