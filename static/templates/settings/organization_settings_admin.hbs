@@ -102,49 +102,13 @@
                 </div>
             </div>
 
-            <div class="input-group">
-                <label for="realm_notifications_stream" id="realm_notifications_stream_label" class="inline-block">
-                    {{t "New stream notifications:" }}
-                    <span class="dropup actual-dropdown-menu" id="id_realm_notifications_stream"
-                      name="realm_notifications_stream" aria-labelledby="realm_notifications_stream_label">
-                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
-                            <span id="realm_notifications_stream_name"></span>
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                        <ul class="dropdown-menu modal-bg" role="menu">
-                            <li class="dropdown-search" role="presentation">
-                                <input class="no-input-change-detection" type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
-                            </li>
-                            <span class="dropdown-list-body" data-simplebar></span>
-                        </ul>
-                    </span>
-                </label>
-                {{#if is_admin }}
-                <a class="notification-disable" id="notifications_stream_disable">{{t "[Disable]" }}</a>
-                {{/if}}
-            </div>
+            {{> notifications_stream_settings_widget
+              notifications_type="notifications"
+              label=admin_settings_label.realm_notifications_stream }}
 
-            <div class="input-group">
-                <label for="realm_signup_notifications_stream" id="realm_signup_notifications_stream_label" class="inline-block">
-                    {{t "New user notifications:" }}
-                    <span class="dropup actual-dropdown-menu" id="id_realm_signup_notifications_stream"
-                      name="realm_signup_notifications_stream" aria-labelledby="realm_signup_notifications_stream_label">
-                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
-                            <span id="realm_signup_notifications_stream_name"></span>
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                        <ul class="dropdown-menu modal-bg" role="menu">
-                            <li class="dropdown-search" role="presentation">
-                                <input class="no-input-change-detection" type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
-                            </li>
-                            <span class="dropdown-list-body" data-simplebar></span>
-                        </ul>
-                    </span>
-                </label>
-                {{#if is_admin }}
-                <a class="notification-disable" id="signup_notifications_stream_disable">{{t "[Disable]" }}</a>
-                {{/if}}
-            </div>
+            {{> notifications_stream_settings_widget
+              notifications_type="signup_notifications"
+              label=admin_settings_label.realm_signup_notifications_stream }}
         </div>
 
         <div id="org-user-defaults" class="org-subsection-parent">
