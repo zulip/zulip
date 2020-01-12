@@ -1,7 +1,8 @@
 const Dict = require('./dict').Dict;
+const IntDict = require('./int_dict').IntDict;
 
 const away_user_ids = new Dict();
-const user_info = new Dict();
+const user_info = new IntDict();
 
 exports.server_update = function (opts) {
     channel.post({
@@ -53,7 +54,11 @@ exports.set_status_text = function (opts) {
 };
 
 exports.initialize = function () {
-    _.each(page_params.user_status, function (dct, user_id) {
+    _.each(page_params.user_status, function (dct, str_user_id) {
+        // JSON does not allow integer keys, so we
+        // convert them here.
+        const user_id = parseInt(str_user_id, 10);
+
         if (dct.away) {
             away_user_ids.set(user_id, true);
         }
