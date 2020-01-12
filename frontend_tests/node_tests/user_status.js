@@ -1,3 +1,4 @@
+set_global('blueslip', global.make_zblueslip());
 set_global('channel', {});
 set_global('page_params', {});
 zrequire('user_status');
@@ -69,4 +70,10 @@ run_test('server', () => {
 
     success();
     assert(called);
+});
+
+run_test('defensive checks', () => {
+    blueslip.set_test_data('error', 'need ints for user_id');
+    user_status.set_away('string');
+    user_status.revoke_away('string');
 });

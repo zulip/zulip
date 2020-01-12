@@ -1,7 +1,6 @@
-const Dict = require('./dict').Dict;
 const IntDict = require('./int_dict').IntDict;
 
-const away_user_ids = new Dict();
+const away_user_ids = new Set();
 const user_info = new IntDict();
 
 exports.server_update = function (opts) {
@@ -29,11 +28,17 @@ exports.server_revoke_away = function () {
 };
 
 exports.set_away = function (user_id) {
-    away_user_ids.set(user_id, true);
+    if (typeof user_id !== 'number') {
+        blueslip.error('need ints for user_id');
+    }
+    away_user_ids.add(user_id);
 };
 
 exports.revoke_away = function (user_id) {
-    away_user_ids.del(user_id);
+    if (typeof user_id !== 'number') {
+        blueslip.error('need ints for user_id');
+    }
+    away_user_ids.delete(user_id);
 };
 
 exports.is_away = function (user_id) {
@@ -60,7 +65,7 @@ exports.initialize = function () {
         const user_id = parseInt(str_user_id, 10);
 
         if (dct.away) {
-            away_user_ids.set(user_id, true);
+            away_user_ids.add(user_id);
         }
 
         if (dct.status_text) {
