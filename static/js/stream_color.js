@@ -76,7 +76,7 @@ exports.update_stream_color = function (sub, color, opts) {
 };
 
 function picker_do_change_color(color) {
-    const stream_id = $(this).attr('stream_id');
+    const stream_id = parseInt($(this).attr('stream_id'), 10);
     const hex_color = color.toHexString();
     subs.set_color(stream_id, hex_color);
 }
