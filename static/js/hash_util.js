@@ -114,9 +114,8 @@ exports.by_sender_uri = function (reply_to) {
 };
 
 exports.pm_with_uri = function (reply_to) {
-    return exports.operators_to_hash([
-        {operator: 'pm-with', operand: reply_to},
-    ]);
+    const slug = people.emails_to_slug(reply_to);
+    return "#narrow/pm-with/" + slug;
 };
 
 exports.huddle_with_uri = function (user_ids_string) {
