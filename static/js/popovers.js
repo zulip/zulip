@@ -18,6 +18,10 @@ let userlist_placement = "right";
 
 let list_of_popovers = [];
 
+function elem_to_user_id(elem) {
+    return parseInt(elem.attr('data-user-id'), 10);
+}
+
 // this utilizes the proxy pattern to intercept all calls to $.fn.popover
 // and push the $.fn.data($o, "popover") results to an array.
 // this is needed so that when we try to unload popovers, we can kill all dead
@@ -728,7 +732,8 @@ exports.register_click_handlers = function () {
         const message = current_msg_list.get(rows.id(row));
         let user;
         if (id) {
-            user = people.get_person_from_user_id(id);
+            const user_id = parseInt(id, 10);
+            user = people.get_person_from_user_id(user_id);
         } else {
             user = people.get_by_email(email);
         }
@@ -751,7 +756,7 @@ exports.register_click_handlers = function () {
 
 
     $('body').on('click', '.info_popover_actions .narrow_to_private_messages', function (e) {
-        const user_id = $(e.target).parents('ul').attr('data-user-id');
+        const user_id = elem_to_user_id($(e.target).parents('ul'));
         const email = people.get_person_from_user_id(user_id).email;
         exports.hide_message_info_popover();
         narrow.by('pm-with', email, {trigger: 'user sidebar popover'});
@@ -760,7 +765,7 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.info_popover_actions .narrow_to_messages_sent', function (e) {
-        const user_id = $(e.target).parents('ul').attr('data-user-id');
+        const user_id = elem_to_user_id($(e.target).parents('ul'));
         const email = people.get_person_from_user_id(user_id).email;
         exports.hide_message_info_popover();
         narrow.by('sender', email, {trigger: 'user sidebar popover'});
@@ -772,7 +777,7 @@ exports.register_click_handlers = function () {
         if (!compose_state.composing()) {
             compose_actions.start('stream', {trigger: 'sidebar user actions'});
         }
-        const user_id = $(e.target).parents('ul').attr('data-user-id');
+        const user_id = elem_to_user_id($(e.target).parents('ul'));
         const name = people.get_person_from_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
@@ -786,7 +791,7 @@ exports.register_click_handlers = function () {
         if (!compose_state.composing()) {
             compose_actions.respond_to_message({trigger: 'user sidebar popover'});
         }
-        const user_id = $(e.target).parents('ul').attr('data-user-id');
+        const user_id = elem_to_user_id($(e.target).parents('ul'));
         const name = people.get_person_from_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
@@ -796,7 +801,7 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.info_popover_actions .view_user_profile', function (e) {
-        const user_id = $(e.target).parents('ul').attr('data-user-id');
+        const user_id = elem_to_user_id($(e.target).parents('ul'));
         const user = people.get_person_from_user_id(user_id);
         exports.show_user_profile(user);
         e.stopPropagation();
@@ -805,7 +810,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.info_popover_actions .clear_status', function (e) {
         e.preventDefault();
-        const me = $(e.target).parents('ul').attr('data-user-id');
+        const me = elem_to_user_id($(e.target).parents('ul'));
         user_status.server_update({
             user_id: me,
             status_text: '',
@@ -860,9 +865,9 @@ exports.register_click_handlers = function () {
         // use email of currently selected user, rather than some elem comparison,
         // as the presence list may be redrawn with new elements.
         const target = $(this).closest('li');
-        const user_id = target.find('a').attr('data-user-id');
+        const user_id = elem_to_user_id(target.find('a'));
 
-        if (String(current_user_sidebar_user_id) === user_id) {
+        if (current_user_sidebar_user_id === user_id) {
             // If the popover is already shown, clicking again should toggle it.
             // We don't want to hide the sidebars on smaller browser windows.
             exports.hide_all_except_sidebars();
@@ -966,7 +971,7 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.respond_personal_button, .compose_private_message', function (e) {
-        const user_id = $(e.target).parents('ul').attr('data-user-id');
+        const user_id = elem_to_user_id($(e.target).parents('ul'));
         const email = people.get_person_from_user_id(user_id).email;
         compose_actions.start('private', {
             trigger: 'popover send private',
