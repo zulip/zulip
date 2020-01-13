@@ -1038,6 +1038,23 @@ exports.matches_user_settings_search = function (person, value) {
     );
 };
 
+exports.filter_for_user_settings_search = function (persons, query) {
+    /*
+        TODO: For large realms, we can optimize this a couple
+              different ways.  For realms that don't show
+              emails, we can make a simpler filter predicate
+              that works solely with full names.  And we can
+              also consider two-pass filters that try more
+              stingy criteria first, such as exact prefix
+              matches, before widening the search.
+
+              See #13554 for more context.
+    */
+    return _.filter(persons, (person) => {
+        return exports.matches_user_settings_search(person, query);
+    });
+};
+
 exports.email_for_user_settings = function (person) {
     if (!settings_org.show_email()) {
         return;

@@ -902,6 +902,31 @@ run_test('initialize', () => {
     assert.equal(global.page_params.realm_non_active_users, undefined);
 });
 
+run_test('filter_for_user_settings_search', () => {
+    /*
+        This function calls matches_user_settings_search,
+        so that is where we do more thorough testing.
+        This test is just a sanity check for now.
+    */
+    settings_org.show_email = () => {
+        return false;
+    };
+
+    const fred_smith = {full_name: 'Fred Smith'};
+    const alice_lee = {full_name: 'Alice Lee'};
+    const jenny_franklin = {full_name: 'Jenny Franklin'};
+
+    const persons = [fred_smith, alice_lee, jenny_franklin];
+
+    assert.deepEqual(
+        people.filter_for_user_settings_search(persons, 'fr'),
+        [fred_smith, jenny_franklin]);
+
+    assert.deepEqual(
+        people.filter_for_user_settings_search(persons, 'le'),
+        [alice_lee]);
+});
+
 run_test('matches_user_settings_search', () => {
     const match = people.matches_user_settings_search;
 
