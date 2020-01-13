@@ -518,13 +518,12 @@ function discard_property_element_changes(elem) {
     const property_name = exports.extract_property_name(elem);
     const property_value = get_property_value(property_name);
 
-    if (typeof property_value === 'boolean') {
+    if (property_name === 'realm_authentication_methods') {
+        exports.populate_auth_methods(property_value);
+    } else if (typeof property_value === 'boolean') {
         elem.prop('checked', property_value);
     } else if (typeof property_value === 'string' || typeof property_value === 'number') {
         elem.val(property_value);
-    } else if (typeof property_value === 'object' &&
-              property_name === 'realm_authentication_methods') {
-        exports.populate_auth_methods(property_value);
     } else {
         blueslip.error('Element refers to unknown property ' + property_name);
     }
@@ -670,19 +669,19 @@ exports.build_page = function () {
         const property_name = exports.extract_property_name(elem);
         let changed_val;
         let current_val = get_property_value(property_name);
-        if (typeof current_val === 'boolean') {
+
+        if (property_name === 'realm_authentication_methods') {
+            current_val = sort_object_by_key(current_val);
+            current_val = JSON.stringify(current_val);
+            changed_val = get_auth_method_table_data();
+            changed_val = JSON.stringify(changed_val);
+        } else if (typeof current_val === 'boolean') {
             changed_val = elem.prop('checked');
         } else if (typeof current_val === 'string') {
             changed_val = elem.val().trim();
         } else if (typeof current_val === 'number') {
             current_val = current_val.toString();
             changed_val = elem.val().trim();
-        } else if (typeof current_val === 'object') {
-            // Currently we only deal with realm_authentication_methods object
-            current_val = sort_object_by_key(current_val);
-            current_val = JSON.stringify(current_val);
-            changed_val = get_auth_method_table_data();
-            changed_val = JSON.stringify(changed_val);
         } else {
             blueslip.error('Element refers to unknown property ' + property_name);
         }
