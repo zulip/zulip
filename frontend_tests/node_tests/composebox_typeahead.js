@@ -35,7 +35,7 @@ blueslip.warn = noop;
 // Use a slightly larger value than what's user-facing
 // to facilitate testing different combinations of
 // broadcast-mentions/persons/groups.
-ct.max_num_items = 10;
+ct.max_num_items = 15;
 
 const emoji_stadium = {
     name: 'stadium',
@@ -173,6 +173,12 @@ set_global('pygments_data', {langs:
     {python: 0, javscript: 1, html: 2, css: 3},
 });
 
+const alice = {
+    email: 'alice@zulip.com',
+    user_id: 99,
+    full_name: "Alice",
+};
+
 const hamlet = {
     email: 'hamlet@zulip.com',
     user_id: 100,
@@ -218,6 +224,7 @@ const gael = {
     email: 'twin3@zulip.com',
 };
 
+global.people.add_in_realm(alice);
 global.people.add_in_realm(hamlet);
 global.people.add_in_realm(othello);
 global.people.add_in_realm(cordelia);
@@ -241,8 +248,16 @@ const backend = {
     members: [],
 };
 
+const call_center = {
+    name: "Call Center",
+    id: 3,
+    description: "folks working in support",
+    members: [],
+};
+
 global.user_groups.add(hamletcharacters);
 global.user_groups.add(backend);
+global.user_groups.add(call_center);
 
 const make_emoji = function (emoji_dict) {
     return { emoji_name: emoji_dict.name, emoji_code: emoji_dict.emoji_code };
@@ -600,8 +615,9 @@ run_test('initialize', () => {
 
         // This should match the users added at the beginning of this test file.
         let actual_value = options.source('');
-        let expected_value = [hamlet, othello, cordelia, lear,
-                              twin1, twin2, gael, hamletcharacters, backend];
+        let expected_value = [alice, hamlet, othello, cordelia, lear,
+                              twin1, twin2, gael,
+                              hamletcharacters, backend, call_center];
         assert.deepEqual(actual_value, expected_value);
 
         // Even though the items passed to .highlighter() are the full
