@@ -10,6 +10,10 @@ exports.filter = (value, list, opts) => {
         but we split it out to make it a bit easier
         to test.
     */
+    if (opts.filter.filterer) {
+        return opts.filter.filterer(list, value);
+    }
+
     const predicate = opts.filter.predicate;
 
     return list.filter(function (item) {
@@ -58,9 +62,20 @@ exports.create = function ($container, list, opts) {
         return;
     }
 
-    if (typeof opts.filter.predicate !== 'function') {
-        blueslip.error('Filter predicate function is missing.');
-        return;
+    if (opts.filter.predicate) {
+        if (typeof opts.filter.predicate !== 'function') {
+            blueslip.error('Filter predicate function is missing.');
+            return;
+        }
+        if (opts.filter.filterer) {
+            blueslip.error('Filterer and predicate are mutually exclusive.');
+            return;
+        }
+    } else {
+        if (typeof opts.filter.filterer !== 'function') {
+            blueslip.error('Filter filterer function is missing.');
+            return;
+        }
     }
 
     const prototype = {
