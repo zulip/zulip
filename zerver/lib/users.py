@@ -1,14 +1,15 @@
-from typing import Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import unicodedata
 
+from django.conf import settings
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 
 from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id, \
     user_profile_by_id_cache_key
 from zerver.lib.request import JsonableError
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import UserProfile, Service, Realm, \
     get_user_profile_by_id_in_realm, \
@@ -273,3 +274,51 @@ def compute_show_invites_and_add_streams(user_profile: UserProfile) -> Tuple[boo
         show_add_streams = False
 
     return (show_invites, show_add_streams)
+
+def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
+                    client_gravatar: bool,
+                    custom_profile_field_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Formats a user row returned by a database fetch using
+    .values(*realm_user_dict_fields) into a dictionary representation
+    of that user for API delivery to clients.  The acting_user
+    argument is used for permissions checks.
+    """
+
+    avatar_url = get_avatar_field(user_id=row['id'],
+                                  realm_id=realm.id,
+                                  email=row['delivery_email'],
+                                  avatar_source=row['avatar_source'],
+                                  avatar_version=row['avatar_version'],
+                                  medium=False,
+                                  client_gravatar=client_gravatar,)
+
+    is_admin = row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
+    is_guest = row['role'] == UserProfile.ROLE_GUEST
+    is_bot = row['is_bot']
+    # This format should align with get_cross_realm_dicts() and notify_created_user
+    result = dict(
+        email=row['email'],
+        user_id=row['id'],
+        avatar_url=avatar_url,
+        is_admin=is_admin,
+        is_guest=is_guest,
+        is_bot=is_bot,
+        full_name=row['full_name'],
+        timezone=row['timezone'],
+        is_active = row['is_active'],
+        date_joined = row['date_joined'].isoformat(),
+    )
+    if (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
+            acting_user.is_realm_admin):
+        result['delivery_email'] = row['delivery_email']
+
+    if is_bot:
+        result["bot_type"] = row["bot_type"]
+        if row['email'] in settings.CROSS_REALM_BOT_EMAILS:
+            result['is_cross_realm_bot'] = True
+
+        # Note that bot_owner_id can be None with legacy data.
+        result['bot_owner_id'] = row['bot_owner_id']
+    elif custom_profile_field_data is not None:
+        result['profile_data'] = custom_profile_field_data
+    return result

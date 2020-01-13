@@ -14,7 +14,7 @@ from typing import (
 session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
-from zerver.lib.avatar import avatar_url, get_avatar_field
+from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
@@ -37,13 +37,15 @@ from zerver.lib.stream_subscription import handle_stream_notifications_compatibi
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.actions import (
-    do_get_streams, get_default_streams_for_realm,
+    do_get_streams,
+    get_default_streams_for_realm,
     gather_subscriptions_helper, get_cross_realm_dicts,
     get_status_dict, streams_to_dicts_sorted,
     default_stream_groups_to_dicts_sorted,
     get_owned_bot_dicts,
     get_available_notification_sounds,
 )
+from zerver.lib.users import format_user_row
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_status import get_user_info_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
@@ -78,57 +80,23 @@ def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
 def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: bool,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
     user_dicts = get_realm_user_dicts(realm.id)
+    profiles_by_user_id = None
+    custom_profile_field_data = None
 
     if include_custom_profile_fields:
         profiles_by_user_id = get_custom_profile_field_values(realm.id)
+    result = {}
+    for row in user_dicts:
+        if profiles_by_user_id is not None:
+            custom_profile_field_data = profiles_by_user_id.get(row['id'], {})
 
-    def user_data(row: Dict[str, Any]) -> Dict[str, Any]:
-        avatar_url = get_avatar_field(
-            user_id=row['id'],
-            realm_id=realm.id,
-            email=row['delivery_email'],
-            avatar_source=row['avatar_source'],
-            avatar_version=row['avatar_version'],
-            medium=False,
-            client_gravatar=client_gravatar,
-        )
-
-        is_admin = row['role'] == UserProfile.ROLE_REALM_ADMINISTRATOR
-        is_guest = row['role'] == UserProfile.ROLE_GUEST
-        is_bot = row['is_bot']
-        # This format should align with get_cross_realm_dicts() and notify_created_user
-        result = dict(
-            email=row['email'],
-            user_id=row['id'],
-            avatar_url=avatar_url,
-            is_admin=is_admin,
-            is_guest=is_guest,
-            is_bot=is_bot,
-            full_name=row['full_name'],
-            timezone=row['timezone'],
-            is_active = row['is_active'],
-            date_joined = row['date_joined'].isoformat(),
-        )
-
-        if (realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS and
-                user_profile.is_realm_admin):
-            result['delivery_email'] = row['delivery_email']
-
-        if is_bot:
-            result["bot_type"] = row["bot_type"]
-            if row['email'] in settings.CROSS_REALM_BOT_EMAILS:
-                result['is_cross_realm_bot'] = True
-
-            # Note that bot_owner_id can be None with legacy data.
-            result['bot_owner_id'] = row['bot_owner_id']
-        elif include_custom_profile_fields:
-            result['profile_data'] = profiles_by_user_id.get(row['id'], {})
-        return result
-
-    return {
-        row['id']: user_data(row)
-        for row in user_dicts
-    }
+        result[row['id']] = format_user_row(realm,
+                                            acting_user = user_profile,
+                                            row=row,
+                                            client_gravatar= client_gravatar,
+                                            custom_profile_field_data = custom_profile_field_data
+                                            )
+    return result
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state['realm_logo_url'] = get_realm_logo_url(realm, night = False)
