@@ -3,7 +3,6 @@
 
 import copy
 
-from collections import defaultdict
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from importlib import import_module
@@ -39,64 +38,23 @@ from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.actions import (
     do_get_streams,
     get_default_streams_for_realm,
-    gather_subscriptions_helper, get_cross_realm_dicts,
+    gather_subscriptions_helper,
     get_status_dict, streams_to_dicts_sorted,
     default_stream_groups_to_dicts_sorted,
     get_owned_bot_dicts,
     get_available_notification_sounds,
 )
-from zerver.lib.users import format_user_row
+from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_status import get_user_info_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
-from zerver.models import Client, Message, Realm, UserPresence, UserProfile, CustomProfileFieldValue, \
-    get_user_profile_by_id, \
-    get_realm_user_dicts, realm_filters_for_realm, get_user,\
+from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
+    get_user_profile_by_id, realm_filters_for_realm, get_user,\
     custom_profile_fields_for_realm, get_realm_domains, \
     get_default_stream_groups, CustomProfileField, Stream
 from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
-
-def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
-    # TODO: Consider optimizing this query away with caching.
-    custom_profile_field_values = CustomProfileFieldValue.objects.select_related(
-        "field").filter(user_profile__realm_id=realm_id)
-    profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
-    for profile_field in custom_profile_field_values:
-        user_id = profile_field.user_profile_id
-        if profile_field.field.is_renderable():
-            profiles_by_user_id[user_id][profile_field.field_id] = {
-                "value": profile_field.value,
-                "rendered_value": profile_field.rendered_value
-            }
-        else:
-            profiles_by_user_id[user_id][profile_field.field_id] = {
-                "value": profile_field.value
-            }
-    return profiles_by_user_id
-
-
-def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: bool,
-                      include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
-    user_dicts = get_realm_user_dicts(realm.id)
-    profiles_by_user_id = None
-    custom_profile_field_data = None
-
-    if include_custom_profile_fields:
-        profiles_by_user_id = get_custom_profile_field_values(realm.id)
-    result = {}
-    for row in user_dicts:
-        if profiles_by_user_id is not None:
-            custom_profile_field_data = profiles_by_user_id.get(row['id'], {})
-
-        result[row['id']] = format_user_row(realm,
-                                            acting_user = user_profile,
-                                            row=row,
-                                            client_gravatar= client_gravatar,
-                                            custom_profile_field_data = custom_profile_field_data
-                                            )
-    return result
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state['realm_logo_url'] = get_realm_logo_url(realm, night = False)

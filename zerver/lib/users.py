@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import unicodedata
+from collections import defaultdict
 
 from django.conf import settings
 from django.db.models.query import QuerySet
@@ -12,7 +13,8 @@ from zerver.lib.request import JsonableError
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id_in_realm, \
+    get_user_profile_by_id_in_realm, CustomProfileFieldValue, \
+    get_realm_user_dicts, \
     CustomProfileField
 
 from zulip_bots.custom_exceptions import ConfigValidationError
@@ -321,4 +323,62 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
         result['bot_owner_id'] = row['bot_owner_id']
     elif custom_profile_field_data is not None:
         result['profile_data'] = custom_profile_field_data
+    return result
+
+def get_cross_realm_dicts() -> List[Dict[str, Any]]:
+    users = bulk_get_users(list(settings.CROSS_REALM_BOT_EMAILS), None,
+                           base_query=UserProfile.objects.filter(
+                               realm__string_id=settings.SYSTEM_BOT_REALM)).values()
+    return [{'email': user.email,
+             'user_id': user.id,
+             'is_admin': user.is_realm_admin,
+             'is_bot': user.is_bot,
+             'avatar_url': avatar_url(user),
+             'timezone': user.timezone,
+             'date_joined': user.date_joined.isoformat(),
+             'bot_owner_id': None,
+             'full_name': user.full_name}
+            for user in users
+            # Important: We filter here, is addition to in
+            # `base_query`, because of how bulk_get_users shares its
+            # cache with other UserProfile caches.
+            if user.realm.string_id == settings.SYSTEM_BOT_REALM]
+
+def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
+    # TODO: Consider optimizing this query away with caching.
+    custom_profile_field_values = CustomProfileFieldValue.objects.select_related(
+        "field").filter(user_profile__realm_id=realm_id)
+    profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
+    for profile_field in custom_profile_field_values:
+        user_id = profile_field.user_profile_id
+        if profile_field.field.is_renderable():
+            profiles_by_user_id[user_id][profile_field.field_id] = {
+                "value": profile_field.value,
+                "rendered_value": profile_field.rendered_value
+            }
+        else:
+            profiles_by_user_id[user_id][profile_field.field_id] = {
+                "value": profile_field.value
+            }
+    return profiles_by_user_id
+
+def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: bool,
+                      include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
+    user_dicts = get_realm_user_dicts(realm.id)
+    profiles_by_user_id = None
+    custom_profile_field_data = None
+
+    if include_custom_profile_fields:
+        profiles_by_user_id = get_custom_profile_field_values(realm.id)
+    result = {}
+    for row in user_dicts:
+        if profiles_by_user_id is not None:
+            custom_profile_field_data = profiles_by_user_id.get(row['id'], {})
+
+        result[row['id']] = format_user_row(realm,
+                                            acting_user = user_profile,
+                                            row=row,
+                                            client_gravatar= client_gravatar,
+                                            custom_profile_field_data = custom_profile_field_data
+                                            )
     return result

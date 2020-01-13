@@ -79,7 +79,6 @@ from zerver.lib.topic_mutes import (
     remove_topic_mute,
 )
 from zerver.lib.users import (
-    bulk_get_users,
     check_bot_name_available,
     check_full_name,
     get_api_key,
@@ -4973,25 +4972,6 @@ def get_status_dict(requesting_user_profile: UserProfile) -> Dict[str, Dict[str,
         return defaultdict(dict)
 
     return UserPresence.get_status_dict_by_realm(requesting_user_profile.realm_id)
-
-def get_cross_realm_dicts() -> List[Dict[str, Any]]:
-    users = bulk_get_users(list(settings.CROSS_REALM_BOT_EMAILS), None,
-                           base_query=UserProfile.objects.filter(
-                               realm__string_id=settings.SYSTEM_BOT_REALM)).values()
-    return [{'email': user.email,
-             'user_id': user.id,
-             'is_admin': user.is_realm_admin,
-             'is_bot': user.is_bot,
-             'avatar_url': avatar_url(user),
-             'timezone': user.timezone,
-             'date_joined': user.date_joined.isoformat(),
-             'bot_owner_id': None,
-             'full_name': user.full_name}
-            for user in users
-            # Important: We filter here, is addition to in
-            # `base_query`, because of how bulk_get_users shares its
-            # cache with other UserProfile caches.
-            if user.realm.string_id == settings.SYSTEM_BOT_REALM]
 
 def do_send_confirmation_email(invitee: PreregistrationUser,
                                referrer: UserProfile) -> str:
