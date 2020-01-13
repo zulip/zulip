@@ -7,9 +7,9 @@ from django.utils.timezone import now as timezone_now
 from mock import MagicMock, patch
 import urllib
 from typing import Any, Dict
-
-from zerver.lib.actions import do_create_user
-from zerver.lib.actions import do_change_logo_source
+from zerver.lib.actions import (
+    do_create_user, do_change_logo_source
+)
 from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -17,6 +17,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_runner import slow
+from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.models import (
     get_realm, get_stream, get_user, UserProfile,
     flush_per_request_caches, DefaultStream, Realm,
@@ -938,3 +939,32 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode('utf-8')
         self.assertIn('google-blob-sprite.css', html)
         self.assertNotIn('text-sprite.css', html)
+
+    def test_compute_show_invites_and_add_streams_admin(self) -> None:
+        user = self.example_user("iago")
+
+        realm = user.realm
+        realm.invite_by_admins_only = True
+        realm.save()
+
+        show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
+        self.assertEqual(show_invites, True)
+        self.assertEqual(show_add_streams, True)
+
+    def test_compute_show_invites_and_add_streams_require_admin(self) -> None:
+        user = self.example_user("hamlet")
+
+        realm = user.realm
+        realm.invite_by_admins_only = True
+        realm.save()
+
+        show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
+        self.assertEqual(show_invites, False)
+        self.assertEqual(show_add_streams, True)
+
+    def test_compute_show_invites_and_add_streams_guest(self) -> None:
+        user = self.example_user("polonius")
+
+        show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
+        self.assertEqual(show_invites, False)
+        self.assertEqual(show_add_streams, False)
