@@ -37,6 +37,10 @@ blueslip.warn = noop;
 // broadcast-mentions/persons/groups.
 ct.max_num_items = 15;
 
+const mention_all = ct.broadcast_mentions()[0];
+assert.equal(mention_all.email, 'all');
+assert.equal(mention_all.full_name, 'all');
+
 const emoji_stadium = {
     name: 'stadium',
     aliases: ['stadium'],
@@ -1377,6 +1381,28 @@ run_test('content_highlighter', () => {
     assert(th_render_stream_called);
     assert(th_render_typeahead_item_called);
     assert(th_render_slash_command_called);
+});
+
+run_test('filter_and_sort_mentions (normal)', () => {
+    const is_silent = false;
+
+    const suggestions = ct.filter_and_sort_mentions(
+        is_silent, 'al');
+
+    assert.deepEqual(suggestions, [
+        mention_all,
+        alice,
+        call_center,
+    ]);
+});
+
+run_test('filter_and_sort_mentions (silent)', () => {
+    const is_silent = true;
+
+    const suggestions = ct.filter_and_sort_mentions(
+        is_silent, 'al');
+
+    assert.deepEqual(suggestions, [alice]);
 });
 
 run_test('typeahead_results', () => {
