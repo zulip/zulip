@@ -26,7 +26,7 @@ from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd, generate_random_token
 from two_factor.utils import default_device
-
+from zproject.backends import only_auth_enabled
 import calendar
 import logging
 import time
@@ -249,6 +249,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if user_profile.is_guest:
         show_invites = False
         show_add_streams = False
+    if only_auth_enabled(['LDAP'], user_profile.realm) and not user_profile.realm.invite_required:
+        show_invites = False
 
     show_billing = False
     show_plans = False

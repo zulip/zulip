@@ -4,12 +4,14 @@ import ujson
 
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
+from django.test import override_settings
 from mock import MagicMock, patch
 import urllib
 from typing import Any, Dict
-
-from zerver.lib.actions import do_create_user
-from zerver.lib.actions import do_change_logo_source
+from zproject.backends import ZulipLDAPAuthBackend
+from zerver.lib.actions import (
+    do_create_user, do_change_logo_source, do_set_realm_property,
+)
 from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -17,6 +19,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_runner import slow
+from zerver.lib.test_helpers import MockLDAP
 from zerver.models import (
     get_realm, get_stream, get_user, UserProfile,
     flush_per_request_caches, DefaultStream, Realm,
@@ -660,6 +663,45 @@ class HomeTest(ZulipTestCase):
         result = self._get_home_page()
         html = result.content.decode('utf-8')
         self.assertNotIn('Invite more users', html)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_show_invites_for_LDAP_only(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+
+        ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
+        self.mock_initialize = ldap_patcher.start()
+        self.mock_ldap = MockLDAP()
+        self.mock_initialize.return_value = self.mock_ldap
+        self.backend = ZulipLDAPAuthBackend()
+
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': ['testing', ]
+            }
+        }
+
+        realm = user_profile.realm
+        do_set_realm_property(realm, 'invite_required', True)
+
+        with self.settings(
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+
+            self.login(email, password='testing')
+            result = self._get_home_page()
+            html = result.content.decode('utf-8')
+            self.assertIn('Invite more users', html)
+
+            do_set_realm_property(realm, 'invite_required', False)
+
+            result = self._get_home_page()
+            html = result.content.decode('utf-8')
+            self.assertNotIn('Invite more users', html)
+
+        self.mock_ldap.reset()
+        self.mock_initialize.stop()
 
     def test_show_billing(self) -> None:
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")

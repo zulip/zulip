@@ -74,19 +74,33 @@ def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
             method_dict[key] = False
     return method_dict
 
-def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) -> bool:
+def build_method_dict(realm: Optional[Realm]) -> Dict[str, bool]:
     if realm is not None:
         enabled_method_dict = realm.authentication_methods_dict()
         pad_method_dict(enabled_method_dict)
     else:
         enabled_method_dict = dict((method, True) for method in Realm.AUTHENTICATION_FLAGS)
         pad_method_dict(enabled_method_dict)
+    return enabled_method_dict
+
+def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) -> bool:
+    enabled_method_dict = build_method_dict(realm)
     for supported_backend in supported_auth_backends():
         for backend_name in backends_to_check:
             backend = AUTH_BACKEND_NAME_MAP[backend_name]
             if enabled_method_dict[backend_name] and isinstance(supported_backend, backend):
                 return True
     return False
+
+def only_auth_enabled(backends_to_check: List[str], realm: Optional[Realm]) -> bool:
+    enabled_method_dict = build_method_dict(realm)
+    for supported_backend in supported_auth_backends():
+        for backend_name in backends_to_check:
+            backend = AUTH_BACKEND_NAME_MAP[backend_name]
+            if not enabled_method_dict[backend_name] or not isinstance(supported_backend, backend):
+                return False
+    return True
+
 
 def ldap_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['LDAP'], realm)
