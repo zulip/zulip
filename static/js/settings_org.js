@@ -689,6 +689,22 @@ exports.build_page = function () {
         return current_val !== changed_val;
     }
 
+    function save_discard_widget_status_handler(subsection) {
+        subsection.find('.subsection-failed-status p').hide();
+        subsection.find('.save-button').show();
+        const properties_elements = get_subsection_property_elements(subsection);
+        let show_change_process_button = false;
+        _.each(properties_elements, function (elem) {
+            if (check_property_changed(elem)) {
+                show_change_process_button = true;
+            }
+        });
+
+        const save_btn_controls = subsection.find('.subsection-header .save-button-controls');
+        const button_state = show_change_process_button ? "unsaved" : "discarded";
+        exports.change_save_button_state(save_btn_controls, button_state);
+    }
+
     $('.admin-realm-form').on('change input', 'input, select, textarea', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -708,19 +724,7 @@ exports.build_page = function () {
         }
 
         const subsection = $(e.target).closest('.org-subsection-parent');
-        subsection.find('.subsection-failed-status p').hide();
-        subsection.find('.save-button').show();
-        const properties_elements = get_subsection_property_elements(subsection);
-        let show_change_process_button = false;
-        _.each(properties_elements, function (elem) {
-            if (check_property_changed(elem)) {
-                show_change_process_button = true;
-            }
-        });
-
-        const save_btn_controls = subsection.find('.subsection-header .save-button-controls');
-        const button_state = show_change_process_button ? "unsaved" : "discarded";
-        exports.change_save_button_state(save_btn_controls, button_state);
+        save_discard_widget_status_handler(subsection);
     });
 
     $('.organization').on('click', '.subsection-header .subsection-changes-discard .button', function (e) {
