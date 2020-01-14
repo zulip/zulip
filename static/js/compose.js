@@ -837,6 +837,44 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
     warning_area.show();
 };
 
+exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
+    if (compose_state.get_message_type() !== 'stream') {
+        return;
+    }
+
+    // Disable for Zephyr mirroring realms, since we never have subscriber lists there
+    if (page_params.realm_is_zephyr_mirror_realm) {
+        return;
+    }
+
+    const email = mentioned.email;
+
+    if (mentioned.full_name  === 'all' || mentioned.full_name === 'everyone' || mentioned.full_name === 'stream') {
+        return; // don't check if @all or @everyone is subscribed to a stream
+    }
+
+    if (exports.needs_subscribe_warning(email)) {
+        const error_area = $("#compose_invite_users");
+        const existing_invites_area = $('#compose_invite_users .compose_invite_user');
+
+        const existing_invites = _.map($(existing_invites_area), function (user_row) {
+            return $(user_row).data('useremail');
+        });
+
+        if (existing_invites.indexOf(email) === -1) {
+            const context = {
+                email: email,
+                name: mentioned.full_name,
+                can_subscribe_other_users: page_params.can_subscribe_other_users,
+            };
+            const new_row = render_compose_invite_users(context);
+            error_area.append(new_row);
+        }
+
+        error_area.show();
+    }
+};
+
 exports.initialize = function () {
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('keyup', update_fade);
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('change', update_fade);
@@ -855,57 +893,6 @@ exports.initialize = function () {
     resize.watch_manual_resize("#compose-textarea");
 
     upload.feature_check($("#compose #attach_files"));
-
-    // Show a warning if a user @-mentions someone who will not receive this message
-    $(document).on('usermention_completed.zulip', function (event, data) {
-        if (compose_state.get_message_type() !== 'stream') {
-            return;
-        }
-        if (data.is_silent) {
-            // We don't need to warn in case of silent mentions.
-            return;
-        }
-
-        // Disable for Zephyr mirroring realms, since we never have subscriber lists there
-        if (page_params.realm_is_zephyr_mirror_realm) {
-            return;
-        }
-
-        if (data !== undefined && data.mentioned !== undefined) {
-            const email = data.mentioned.email;
-
-            // warn if @all, @everyone or @stream is mentioned
-            if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone' || data.mentioned.full_name === 'stream') {
-                return; // don't check if @all or @everyone is subscribed to a stream
-            }
-
-            if (exports.needs_subscribe_warning(email)) {
-                const error_area = $("#compose_invite_users");
-                const existing_invites_area = $('#compose_invite_users .compose_invite_user');
-
-                const existing_invites = _.map($(existing_invites_area), function (user_row) {
-                    return $(user_row).data('useremail');
-                });
-
-                if (existing_invites.indexOf(email) === -1) {
-                    const context = {
-                        email: email,
-                        name: data.mentioned.full_name,
-                        can_subscribe_other_users: page_params.can_subscribe_other_users,
-                    };
-                    const new_row = render_compose_invite_users(context);
-                    error_area.append(new_row);
-                }
-
-                error_area.show();
-            }
-        }
-
-        // User group mentions will fall through here.  In the future,
-        // we may want to add some sort of similar warning for cases
-        // where nobody in the group is subscribed, but that decision
-        // can wait on user feedback.
-    });
 
     $("#compose-all-everyone").on('click', '.compose-all-everyone-confirm', function (event) {
         event.preventDefault();

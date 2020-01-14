@@ -770,11 +770,17 @@ exports.content_typeahead_selected = function (item, event) {
         }
         if (user_groups.is_user_group(item)) {
             beginning += '@*' + item.name + '* ';
-            $(document).trigger('usermention_completed.zulip', {user_group: item});
+            // We could theoretically warn folks if they are
+            // mentioning a user group that literally has zero
+            // members where we are posting to, but we don't have
+            // that functionality yet, and we haven't gotten much
+            // feedback on this being an actual pitfall.
         } else {
             const mention_text = people.get_mention_syntax(item.full_name, item.user_id, is_silent);
             beginning += mention_text + ' ';
-            $(document).trigger('usermention_completed.zulip', {mentioned: item, is_silent: is_silent});
+            if (!is_silent) {
+                compose.warn_if_mentioning_unsubscribed_user(item);
+            }
         }
     } else if (this.completing === 'slash') {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1) + "/" + item.name + " ";

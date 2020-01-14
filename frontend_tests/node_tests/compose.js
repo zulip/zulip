@@ -1098,13 +1098,9 @@ run_test('needs_subscribe_warning', () => {
 });
 
 run_test('on_events', () => {
-    (function test_usermention_completed_zulip_triggered() {
-        const handler = $(document).get_on_handler('usermention_completed.zulip');
-
-        let data = {
-            mentioned: {
-                email: 'foo@bar.com',
-            },
+    (function test_warn_if_mentioning_unsubscribed_user() {
+        let mentioned  = {
+            email: 'foo@bar.com',
         };
 
         $('#compose_invite_users .compose_invite_user').length = 0;
@@ -1112,8 +1108,8 @@ run_test('on_events', () => {
         function test_noop_case(msg_type, is_zephyr_mirror, mentioned_full_name) {
             compose_state.set_message_type(msg_type);
             page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
-            data.mentioned.full_name = mentioned_full_name;
-            handler({}, data);
+            mentioned.full_name = mentioned_full_name;
+            compose.warn_if_mentioning_unsubscribed_user(mentioned);
             assert.equal($('#compose_invite_users').visible(), false);
         }
 
@@ -1161,14 +1157,12 @@ run_test('on_events', () => {
             }()),
         ];
 
-        data = {
-            mentioned: {
-                email: 'foo@bar.com',
-                full_name: 'Foo Barson',
-            },
+        mentioned = {
+            email: 'foo@bar.com',
+            full_name: 'Foo Barson',
         };
 
-        handler({}, data);
+        compose.warn_if_mentioning_unsubscribed_user(mentioned);
         assert.equal($('#compose_invite_users').visible(), true);
 
         _.each(checks, function (f) { f(); });
@@ -1192,7 +1186,7 @@ run_test('on_events', () => {
         // Now try to mention the same person again. The template should
         // not render.
         global.stub_templates(noop);
-        handler({}, data);
+        compose.warn_if_mentioning_unsubscribed_user(mentioned);
         assert.equal($('#compose_invite_users').visible(), true);
         assert(looked_for_existing);
     }());
