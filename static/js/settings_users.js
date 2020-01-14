@@ -419,7 +419,7 @@ exports.on_load_success = function (realm_people_data) {
     });
 
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
-        const user_id = $(e.currentTarget).attr("data-user-id");
+        const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const person = people.get_person_from_user_id(user_id);
 
         if (!person) {
