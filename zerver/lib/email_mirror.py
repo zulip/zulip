@@ -141,6 +141,8 @@ def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bo
     if not include_footer:
         body = filter_footer(body)
 
+    if not body.endswith('\n'):
+        body += '\n'
     body += extract_and_upload_attachments(message, realm)
     body = body.strip()
     if not body:
