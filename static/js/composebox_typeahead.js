@@ -792,7 +792,7 @@ exports.content_typeahead_selected = function (item, event) {
         } else {
             beginning += '** ';
         }
-        $(document).trigger('streamname_completed.zulip', {stream: item});
+        compose.warn_if_private_stream_is_linked(item);
     } else if (this.completing === 'syntax') {
         // Isolate the end index of the triple backticks/tildes, including
         // possibly a space afterward

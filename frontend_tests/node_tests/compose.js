@@ -863,6 +863,67 @@ function test_raw_file_drop(raw_drop_func) {
     assert(compose_ui_autosize_textarea_checked);
 }
 
+run_test('warn_if_private_stream_is_linked', () => {
+    stream_data.add_sub(compose_state.stream_name(), {
+        subscribers: LazySet([1, 2]),
+    });
+
+    let denmark = {
+        name: 'Denmark',
+        subscribers: LazySet([1, 2, 3]),
+    };
+
+    function test_noop_case(invite_only) {
+        compose_state.set_message_type('stream');
+        denmark.invite_only = invite_only;
+        compose.warn_if_private_stream_is_linked(denmark);
+        assert.equal($('#compose_private_stream_alert').visible(), false);
+    }
+
+    test_noop_case(false);
+    // invite_only=true and current compose stream subscribers are a subset
+    // of mentioned_stream subscribers.
+    test_noop_case(true);
+
+    $("#compose_private").hide();
+    compose_state.set_message_type('stream');
+
+    const checks = [
+        (function () {
+            let called;
+            global.stub_templates(function (template_name, context) {
+                called = true;
+                assert.equal(template_name, 'compose_private_stream_alert');
+                assert.equal(context.stream_name, 'Denmark');
+                return 'fake-compose_private_stream_alert-template';
+            });
+            return function () { assert(called); };
+        }()),
+
+        (function () {
+            let called;
+            $("#compose_private_stream_alert").append = function (html) {
+                called = true;
+                assert.equal(html, 'fake-compose_private_stream_alert-template');
+            };
+            return function () { assert(called); };
+        }()),
+    ];
+
+    denmark = {
+        invite_only: true,
+        name: 'Denmark',
+        subscribers: LazySet([1]),
+    };
+
+    compose.warn_if_private_stream_is_linked(denmark);
+    assert.equal($('#compose_private_stream_alert').visible(), true);
+
+    _.each(checks, function (f) { f(); });
+
+});
+
+
 run_test('initialize', () => {
     // In this test we mostly do the setup stuff in addition to testing the
     // normal workflow of the function. All the tests for the on functions are
@@ -1325,71 +1386,6 @@ run_test('on_events', () => {
         handler(helper.event);
 
         assert(!$("#compose-send-status").visible());
-    }());
-
-    (function test_stream_name_completed_triggered() {
-        const handler = $(document).get_on_handler('streamname_completed.zulip');
-        stream_data.add_sub(compose_state.stream_name(), {
-            subscribers: LazySet([1, 2]),
-        });
-
-        let data = {
-            stream: {
-                name: 'Denmark',
-                subscribers: LazySet([1, 2, 3]),
-            },
-        };
-
-        function test_noop_case(invite_only) {
-            compose_state.set_message_type('stream');
-            data.stream.invite_only = invite_only;
-            handler({}, data);
-            assert.equal($('#compose_private_stream_alert').visible(), false);
-        }
-
-        test_noop_case(false);
-        // invite_only=true and current compose stream subscribers are a subset
-        // of mentioned_stream subscribers.
-        test_noop_case(true);
-
-        $("#compose_private").hide();
-        compose_state.set_message_type('stream');
-
-        const checks = [
-            (function () {
-                let called;
-                global.stub_templates(function (template_name, context) {
-                    called = true;
-                    assert.equal(template_name, 'compose_private_stream_alert');
-                    assert.equal(context.stream_name, 'Denmark');
-                    return 'fake-compose_private_stream_alert-template';
-                });
-                return function () { assert(called); };
-            }()),
-
-            (function () {
-                let called;
-                $("#compose_private_stream_alert").append = function (html) {
-                    called = true;
-                    assert.equal(html, 'fake-compose_private_stream_alert-template');
-                };
-                return function () { assert(called); };
-            }()),
-        ];
-
-        data = {
-            stream: {
-                invite_only: true,
-                name: 'Denmark',
-                subscribers: LazySet([1]),
-            },
-        };
-
-        handler({}, data);
-        assert.equal($('#compose_private_stream_alert').visible(), true);
-
-        _.each(checks, function (f) { f(); });
-
     }());
 
     (function test_attach_files_compose_clicked() {
