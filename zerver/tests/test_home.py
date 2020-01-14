@@ -2,6 +2,7 @@ import datetime
 import lxml.html
 import ujson
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 from mock import MagicMock, patch
@@ -576,33 +577,47 @@ class HomeTest(ZulipTestCase):
             del cross_bot['date_joined']
 
         notification_bot = self.notification_bot()
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+        welcome_bot = get_system_bot(settings.WELCOME_BOT)
 
         by_email = lambda d: d['email']
 
         self.assertEqual(sorted(cross_bots, key=by_email), sorted([
             dict(
-                user_id=get_system_bot('emailgateway@zulip.com').id,
-                is_admin=False,
-                email='emailgateway@zulip.com',
-                full_name='Email Gateway',
                 bot_owner_id=None,
-                is_bot=True
+                bot_type=1,
+                email=email_gateway_bot.email,
+                user_id=email_gateway_bot.id,
+                full_name=email_gateway_bot.full_name,
+                is_active=True,
+                is_bot=True,
+                is_admin=False,
+                is_cross_realm_bot=True,
+                is_guest=False
             ),
             dict(
-                user_id=notification_bot.id,
-                is_admin=False,
+                bot_owner_id=None,
+                bot_type=1,
                 email=notification_bot.email,
-                full_name='Notification Bot',
-                bot_owner_id=None,
-                is_bot=True
+                user_id=notification_bot.id,
+                full_name=notification_bot.full_name,
+                is_active=True,
+                is_bot=True,
+                is_admin=False,
+                is_cross_realm_bot=True,
+                is_guest=False
             ),
             dict(
-                user_id=get_system_bot('welcome-bot@zulip.com').id,
-                is_admin=False,
-                email='welcome-bot@zulip.com',
-                full_name='Welcome Bot',
                 bot_owner_id=None,
-                is_bot=True
+                bot_type=1,
+                email=welcome_bot.email,
+                user_id=welcome_bot.id,
+                full_name=welcome_bot.full_name,
+                is_active=True,
+                is_bot=True,
+                is_admin=False,
+                is_cross_realm_bot=True,
+                is_guest=False
             ),
         ], key=by_email))
 
