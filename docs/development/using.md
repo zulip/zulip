@@ -12,12 +12,11 @@ encounters.
 
 Here's what you need to do to see your changes take effect:
 
-* If you change Python code used by the main Django/Tornado server
-processes, these services are run on top of Django's [manage.py
-runserver][django-runserver] which will automatically restart the
-Zulip Django and Tornado servers whenever you save changes to Python
-code.  You can watch this happen in the `run-dev.py` console to make
-sure the backend has reloaded.
+* The main Django/Tornado server processes are run on top of Django's
+[manage.py runserver][django-runserver], which will automatically
+restart them when you save changes to Python code they use.  You can
+watch this happen in the `run-dev.py` console to make sure the backend
+has reloaded.
 
 * The Python queue workers will also automatically restart when you
 save changes.  However, you may need to ctrl-C and then restart
