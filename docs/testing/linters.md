@@ -185,14 +185,6 @@ that we exempt may be deemed not worthwhile to fix.
 We check our JavaScript code in a few different ways:
 - We run eslint.
 - We perform custom Zulip regex checks on the code.
-- We verify that all addClass calls, with a few exceptions, explicitly
-  contain a CSS class.
-
-The last check happens via a call to `./tools/find-add-class`.  This
-particular check is a work in progress, as we are trying to evolve a
-more rigorous system for weeding out legacy CSS styles, and the ability
-to quickly introspect our JS code for `addClass` calls is part of our
-vision.
 
 #### Puppet manifests
 
