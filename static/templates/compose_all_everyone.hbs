@@ -1,6 +1,12 @@
 <div class="compose-all-everyone">
     <span class="compose-all-everyone-msg">
-        {{#tr this}}Are you sure you want to mention all <strong>__count__</strong> people in this stream?{{/tr}}
+        {{#tr this}}
+        Are you sure you want to mention all <strong>__count__</strong> people in this stream?
+        <br />
+        This will send email and mobile push notifications to most of those <strong>__count__</strong> users.
+        <br />
+        If you don't want to do that, please edit your message to remove the mention.
+        {{/tr}}
     </span>
     <span class="compose-all-everyone-controls">
         <button type="button" class="btn btn-warning compose-all-everyone-confirm">{{t "Yes, send" }}</button>

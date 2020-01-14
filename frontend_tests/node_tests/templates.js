@@ -525,7 +525,7 @@ run_test('compose_all_everyone', () => {
     const button = $(html).find("button").first();
     assert.equal(button.text(), "translated: Yes, send");
     const error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
-    assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?");
+    assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?  This will send email and mobile push notifications to most of those 101 users.  If you don't want to do that, please edit your message to remove the mention.");
 });
 
 run_test('compose_announce', () => {
