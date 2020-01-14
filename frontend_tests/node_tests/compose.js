@@ -1097,100 +1097,100 @@ run_test('needs_subscribe_warning', () => {
     assert.equal(compose.needs_subscribe_warning(), true);
 });
 
+run_test('warn_if_mentioning_unsubscribed_user', () => {
+    let mentioned  = {
+        email: 'foo@bar.com',
+    };
+
+    $('#compose_invite_users .compose_invite_user').length = 0;
+
+    function test_noop_case(msg_type, is_zephyr_mirror, mentioned_full_name) {
+        compose_state.set_message_type(msg_type);
+        page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
+        mentioned.full_name = mentioned_full_name;
+        compose.warn_if_mentioning_unsubscribed_user(mentioned);
+        assert.equal($('#compose_invite_users').visible(), false);
+    }
+
+    test_noop_case('private', true, 'everyone');
+    test_noop_case('stream', true, 'everyone');
+    test_noop_case('stream', false, 'everyone');
+
+    // Test mentioning a user that should gets a warning.
+
+    $("#compose_invite_users").hide();
+    compose_state.set_message_type('stream');
+    page_params.realm_is_zephyr_mirror_realm = false;
+
+    const checks = [
+        (function () {
+            let called;
+            compose.needs_subscribe_warning = function (email) {
+                called = true;
+                assert.equal(email, 'foo@bar.com');
+                return true;
+            };
+            return function () { assert(called); };
+        }()),
+
+
+        (function () {
+            let called;
+            global.stub_templates(function (template_name, context) {
+                called = true;
+                assert.equal(template_name, 'compose_invite_users');
+                assert.equal(context.email, 'foo@bar.com');
+                assert.equal(context.name, 'Foo Barson');
+                return 'fake-compose-invite-user-template';
+            });
+            return function () { assert(called); };
+        }()),
+
+        (function () {
+            let called;
+            $("#compose_invite_users").append = function (html) {
+                called = true;
+                assert.equal(html, 'fake-compose-invite-user-template');
+            };
+            return function () { assert(called); };
+        }()),
+    ];
+
+    mentioned = {
+        email: 'foo@bar.com',
+        full_name: 'Foo Barson',
+    };
+
+    compose.warn_if_mentioning_unsubscribed_user(mentioned);
+    assert.equal($('#compose_invite_users').visible(), true);
+
+    _.each(checks, function (f) { f(); });
+
+
+    // Simulate that the row was added to the DOM.
+    const warning_row = $('<warning row>');
+
+    let looked_for_existing;
+    warning_row.data = function (field) {
+        assert.equal(field, 'useremail');
+        looked_for_existing = true;
+        return 'foo@bar.com';
+    };
+
+    const previous_users = $('#compose_invite_users .compose_invite_user');
+    previous_users.length = 1;
+    previous_users[0] = warning_row;
+    $('#compose_invite_users').hide();
+
+    // Now try to mention the same person again. The template should
+    // not render.
+    global.stub_templates(noop);
+    compose.warn_if_mentioning_unsubscribed_user(mentioned);
+    assert.equal($('#compose_invite_users').visible(), true);
+    assert(looked_for_existing);
+});
+
 run_test('on_events', () => {
-    (function test_warn_if_mentioning_unsubscribed_user() {
-        let mentioned  = {
-            email: 'foo@bar.com',
-        };
-
-        $('#compose_invite_users .compose_invite_user').length = 0;
-
-        function test_noop_case(msg_type, is_zephyr_mirror, mentioned_full_name) {
-            compose_state.set_message_type(msg_type);
-            page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
-            mentioned.full_name = mentioned_full_name;
-            compose.warn_if_mentioning_unsubscribed_user(mentioned);
-            assert.equal($('#compose_invite_users').visible(), false);
-        }
-
-        test_noop_case('private', true, 'everyone');
-        test_noop_case('stream', true, 'everyone');
-        test_noop_case('stream', false, 'everyone');
-
-        // Test mentioning a user that should gets a warning.
-
-        $("#compose_invite_users").hide();
-        compose_state.set_message_type('stream');
-        page_params.realm_is_zephyr_mirror_realm = false;
-
-        const checks = [
-            (function () {
-                let called;
-                compose.needs_subscribe_warning = function (email) {
-                    called = true;
-                    assert.equal(email, 'foo@bar.com');
-                    return true;
-                };
-                return function () { assert(called); };
-            }()),
-
-
-            (function () {
-                let called;
-                global.stub_templates(function (template_name, context) {
-                    called = true;
-                    assert.equal(template_name, 'compose_invite_users');
-                    assert.equal(context.email, 'foo@bar.com');
-                    assert.equal(context.name, 'Foo Barson');
-                    return 'fake-compose-invite-user-template';
-                });
-                return function () { assert(called); };
-            }()),
-
-            (function () {
-                let called;
-                $("#compose_invite_users").append = function (html) {
-                    called = true;
-                    assert.equal(html, 'fake-compose-invite-user-template');
-                };
-                return function () { assert(called); };
-            }()),
-        ];
-
-        mentioned = {
-            email: 'foo@bar.com',
-            full_name: 'Foo Barson',
-        };
-
-        compose.warn_if_mentioning_unsubscribed_user(mentioned);
-        assert.equal($('#compose_invite_users').visible(), true);
-
-        _.each(checks, function (f) { f(); });
-
-
-        // Simulate that the row was added to the DOM.
-        const warning_row = $('<warning row>');
-
-        let looked_for_existing;
-        warning_row.data = function (field) {
-            assert.equal(field, 'useremail');
-            looked_for_existing = true;
-            return 'foo@bar.com';
-        };
-
-        const previous_users = $('#compose_invite_users .compose_invite_user');
-        previous_users.length = 1;
-        previous_users[0] = warning_row;
-        $('#compose_invite_users').hide();
-
-        // Now try to mention the same person again. The template should
-        // not render.
-        global.stub_templates(noop);
-        compose.warn_if_mentioning_unsubscribed_user(mentioned);
-        assert.equal($('#compose_invite_users').visible(), true);
-        assert(looked_for_existing);
-    }());
-
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
         const container = $.create('fake ' + container_sel);
         let container_removed = false;
