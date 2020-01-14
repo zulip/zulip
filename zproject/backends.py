@@ -54,7 +54,7 @@ from zerver.lib.utils import generate_random_token
 from zerver.lib.redis_utils import get_redis_client
 from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
-    email_allowed_for_realm, get_default_stream_groups, get_user_profile_by_id, remote_user_to_email, \
+    email_allowed_for_realm, get_user_profile_by_id, remote_user_to_email, \
     email_to_username, get_realm, get_user_by_delivery_email, supported_auth_backends
 
 redis_client = get_redis_client()
@@ -631,7 +631,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']) or realm_creation
             opts['is_guest'] = invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']
             opts['realm_creation'] = realm_creation
-            opts['default_stream_groups'] = get_default_stream_groups(self._realm)
+            # TODO: Ideally, we should add a mechanism for the user
+            # entering which default stream groups they've selected in
+            # the LDAP flow.
+            opts['default_stream_groups'] = []
 
         user_profile = do_create_user(username, None, self._realm, full_name, short_name, **opts)
         self.sync_avatar_from_ldap(user_profile, ldap_user)
