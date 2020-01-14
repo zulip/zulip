@@ -322,17 +322,18 @@ run_test('content_typeahead_selected', () => {
     // mention
     fake_this.completing = 'mention';
 
+    compose.warn_if_mentioning_unsubscribed_user = () => {};
+
     fake_this.query = '@**Mark Tw';
     fake_this.token = 'Mark Tw';
     actual_value = ct.content_typeahead_selected.call(fake_this, twin1);
     expected_value = '@**Mark Twin|105** ';
     assert.equal(actual_value, expected_value);
 
-    let document_stub_trigger1_called = false;
-    $('document-stub').trigger = function (event, params) {
-        assert.equal(event, 'usermention_completed.zulip');
-        assert.deepEqual(params, { mentioned: othello, is_silent: false });
-        document_stub_trigger1_called = true;
+    let warned_for_mention = false;
+    compose.warn_if_mentioning_unsubscribed_user = (mentioned) => {
+        assert.equal(mentioned, othello);
+        warned_for_mention = true;
     };
 
     fake_this.query = '@oth';
@@ -340,6 +341,7 @@ run_test('content_typeahead_selected', () => {
     actual_value = ct.content_typeahead_selected.call(fake_this, othello);
     expected_value = '@**Othello, the Moor of Venice** ';
     assert.equal(actual_value, expected_value);
+    assert(warned_for_mention);
 
     fake_this.query = 'Hello @oth';
     fake_this.token = 'oth';
@@ -361,11 +363,8 @@ run_test('content_typeahead_selected', () => {
 
     // silent mention
     fake_this.completing = 'silent_mention';
-    let document_stub_trigger2_called = false;
-    $('document-stub').trigger = function (event, params) {
-        assert.equal(event, 'usermention_completed.zulip');
-        assert.deepEqual(params, { mentioned: hamlet, is_silent: true });
-        document_stub_trigger2_called = true;
+    compose.warn_if_mentioning_unsubscribed_user = () => {
+        throw Error('unexpected call for silent mentions');
     };
 
     fake_this.query = '@_kin';
@@ -393,11 +392,8 @@ run_test('content_typeahead_selected', () => {
     assert.equal(actual_value, expected_value);
 
     // user group mention
-    let document_stub_group_trigger_called = false;
-    $('document-stub').trigger = function (event, params) {
-        assert.equal(event, 'usermention_completed.zulip');
-        assert.deepEqual(params, { user_group: backend });
-        document_stub_group_trigger_called = true;
+    compose.warn_if_mentioning_unsubscribed_user = () => {
+        throw Error('unexpected call for user groups');
     };
 
     fake_this.query = '@back';
@@ -486,9 +482,6 @@ run_test('content_typeahead_selected', () => {
     assert(caret_called2);
     assert(autosize_called);
     assert(set_timeout_called);
-    assert(document_stub_trigger1_called);
-    assert(document_stub_group_trigger_called);
-    assert(document_stub_trigger2_called);
     assert(warned_for_stream_link);
 });
 
