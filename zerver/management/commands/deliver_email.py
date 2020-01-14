@@ -7,7 +7,6 @@ machines, as you may encounter multiple sends in a specific race
 condition.  (Alternatively, you can set `EMAIL_DELIVERER_DISABLED=True`
 on all but one machine to make the command have no effect.)
 """
-
 import logging
 import time
 from typing import Any

@@ -19,8 +19,6 @@ We extract and validate the target stream from information in the
 recipient address and retrieve, forward, and archive the message.
 
 """
-
-
 import email
 import logging
 from email.message import Message

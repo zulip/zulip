@@ -3,6 +3,7 @@ from typing import Any
 
 from zerver.lib.management import ZulipBaseCommand
 
+
 class Command(ZulipBaseCommand):
     help = """Show the admins in a realm."""
 

@@ -5,6 +5,7 @@ from typing import Any
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Realm
 
+
 class Command(ZulipBaseCommand):
     help = """List realms in the server and it's configuration settings(optional).
 

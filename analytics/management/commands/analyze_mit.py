@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand, CommandParser
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Message, Recipient
 
+
 def compute_stats(log_level: int) -> None:
     logger = logging.getLogger()
     logger.setLevel(log_level)

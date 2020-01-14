@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from analytics.lib.counts import do_drop_all_analytics_tables
 
+
 class Command(BaseCommand):
     help = """Clear analytics tables."""
 

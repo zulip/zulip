@@ -4,6 +4,7 @@ from typing import Any
 from zerver.lib.actions import do_scrub_realm
 from zerver.lib.management import ZulipBaseCommand
 
+
 class Command(ZulipBaseCommand):
     help = """Script to scrub a deactivated realm."""
 

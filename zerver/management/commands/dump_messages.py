@@ -8,6 +8,7 @@ from django.utils.timezone import utc as timezone_utc
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, Recipient, Stream
 
+
 class Command(ZulipBaseCommand):
     help = "Dump messages from public streams of a realm"
 

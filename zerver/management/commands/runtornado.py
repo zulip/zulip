@@ -3,8 +3,8 @@ import sys
 from typing import Any, Callable
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, \
-    CommandError, CommandParser
+from django.core.management.base import BaseCommand, CommandError, \
+    CommandParser
 from tornado import ioloop
 from tornado.log import app_log
 
@@ -24,7 +24,8 @@ from zerver.tornado.application import create_tornado_application, \
 from zerver.tornado.autoreload import start as zulip_autoreload_start
 from zerver.tornado.event_queue import add_client_gc_hook, \
     missedmessage_hook, process_notification, setup_event_queue
-from zerver.tornado.sharding import notify_tornado_queue_name, tornado_return_queue_name
+from zerver.tornado.sharding import notify_tornado_queue_name, \
+    tornado_return_queue_name
 from zerver.tornado.socket import respond_send_message
 
 if settings.USING_RABBITMQ:

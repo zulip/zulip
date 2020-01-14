@@ -1,10 +1,9 @@
 import logging
-
 from argparse import ArgumentParser
 from typing import Any, List
 
-from django.db import transaction
 from django.conf import settings
+from django.db import transaction
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import ZulipBaseCommand

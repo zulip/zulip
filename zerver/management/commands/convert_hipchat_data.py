@@ -21,9 +21,11 @@ spec:
     exporting-from-hipchat-server-or-data-center-for-data-portability-950821555.html
 '''
 
-from django.core.management.base import BaseCommand, CommandParser, CommandError
+from django.core.management.base import BaseCommand, CommandError, \
+    CommandParser
 
 from zerver.data_import.hipchat import do_convert_data
+
 
 class Command(BaseCommand):
     help = """Convert the Hipchat data into Zulip data format."""

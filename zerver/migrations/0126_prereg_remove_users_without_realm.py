@@ -6,6 +6,7 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def remove_prereg_users_without_realm(
         apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     prereg_model = apps.get_model("zerver", "PreregistrationUser")

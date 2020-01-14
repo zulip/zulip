@@ -6,6 +6,7 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import F
 
+
 def set_initial_value_of_is_private_flag(
         apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserMessage = apps.get_model("zerver", "UserMessage")

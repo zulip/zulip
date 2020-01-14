@@ -4,6 +4,7 @@ from typing import Any
 from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.management import ZulipBaseCommand
 
+
 class Command(ZulipBaseCommand):
     help = """Create a stream, and subscribe all active users (excluding bots).
 

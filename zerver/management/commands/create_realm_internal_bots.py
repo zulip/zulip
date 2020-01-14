@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 
+
 class Command(BaseCommand):
     help = """\
 Create realm internal bots if absent, in all realms.

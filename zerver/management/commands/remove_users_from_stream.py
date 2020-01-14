@@ -6,6 +6,7 @@ from zerver.lib.actions import bulk_remove_subscriptions
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import get_stream
 
+
 class Command(ZulipBaseCommand):
     help = """Remove some or all users in a realm from a stream."""
 

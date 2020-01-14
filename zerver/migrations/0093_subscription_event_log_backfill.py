@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
 from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
+
 
 def backfill_subscription_log_events(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     migration_time = timezone_now()

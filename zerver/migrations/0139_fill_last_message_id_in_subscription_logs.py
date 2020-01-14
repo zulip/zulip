@@ -5,6 +5,7 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def backfill_last_message_id(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     event_type = ['subscription_created', 'subscription_deactivated', 'subscription_activated']
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')

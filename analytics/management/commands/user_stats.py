@@ -7,6 +7,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.models import Message, Realm, Stream, UserProfile, get_realm
 
+
 class Command(BaseCommand):
     help = "Generate statistics on user activity."
 

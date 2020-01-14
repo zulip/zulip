@@ -28,7 +28,6 @@ Credit for the approach goes to:
 http://stackoverflow.com/questions/2090717
 
 """
-
 import glob
 import json
 import os

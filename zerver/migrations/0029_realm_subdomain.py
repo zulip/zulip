@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+
 
 def set_subdomain_of_default_realm(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     if settings.DEVELOPMENT:

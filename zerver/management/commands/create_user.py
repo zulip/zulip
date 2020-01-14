@@ -12,6 +12,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import email_to_username
 
+
 class Command(ZulipBaseCommand):
     help = """Create the specified user with a default initial password.
 

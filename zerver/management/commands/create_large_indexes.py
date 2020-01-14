@@ -4,6 +4,7 @@ from django.db import connection
 
 from zerver.lib.management import ZulipBaseCommand
 
+
 def create_indexes() -> None:
     #  Creating concurrent indexes is kind of a pain with current versions
     #  of Django/postgres, because you will get this error with seemingly

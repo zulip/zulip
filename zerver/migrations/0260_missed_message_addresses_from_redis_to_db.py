@@ -8,6 +8,7 @@ from django.db.migrations.state import StateApps
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.utils import generate_random_token
 
+
 def generate_missed_message_token() -> str:
     return 'mm' + generate_random_token(32)
 

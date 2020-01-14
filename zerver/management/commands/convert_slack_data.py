@@ -3,9 +3,11 @@ import os
 import tempfile
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandParser, CommandError
+from django.core.management.base import BaseCommand, CommandError, \
+    CommandParser
 
 from zerver.data_import.slack import do_convert_data
+
 
 class Command(BaseCommand):
     help = """Convert the Slack data into Zulip data format."""

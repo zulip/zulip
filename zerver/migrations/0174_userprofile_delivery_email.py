@@ -3,10 +3,10 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-from django.db.models import F
-
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from django.db.models import F
+
 
 def copy_email_field(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model('zerver', 'UserProfile')

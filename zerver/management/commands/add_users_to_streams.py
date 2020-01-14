@@ -5,6 +5,7 @@ from django.core.management.base import CommandParser
 from zerver.lib.actions import bulk_add_subscriptions, ensure_stream
 from zerver.lib.management import ZulipBaseCommand
 
+
 class Command(ZulipBaseCommand):
     help = """Add some or all users in a realm to a set of streams."""
 

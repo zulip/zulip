@@ -5,9 +5,10 @@ from typing import Any
 
 from django.core.management.base import CommandError
 
-from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.export import export_realm_wrapper
+from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, Reaction
+
 
 class Command(ZulipBaseCommand):
     help = """Exports all data from a Zulip realm

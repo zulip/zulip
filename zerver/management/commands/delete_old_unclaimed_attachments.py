@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand, CommandError
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
 from zerver.models import get_old_unclaimed_attachments
 
+
 class Command(BaseCommand):
     help = """Remove unclaimed attachments from storage older than a supplied
               numerical value indicating the limit of how old the attachment can be.

@@ -4,8 +4,9 @@ from typing import Any
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
-from zerver.models import Message, Realm, \
-    Recipient, Stream, Subscription, get_realm
+from zerver.models import Message, Realm, Recipient, Stream, Subscription, \
+    get_realm
+
 
 class Command(BaseCommand):
     help = "Generate statistics on the streams for a realm."

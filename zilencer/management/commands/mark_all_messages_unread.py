@@ -7,6 +7,7 @@ from django.db.models import F
 
 from zerver.models import UserMessage, UserProfile
 
+
 class Command(BaseCommand):
     help = """Script to mark all messages as unread."""
 

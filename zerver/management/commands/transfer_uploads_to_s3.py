@@ -1,9 +1,11 @@
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandParser, CommandError
 from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError, \
+    CommandParser
 
 from zerver.lib.transfer import transfer_uploads_to_s3
+
 
 class Command(BaseCommand):
     help = """Transfer uploads to S3 """

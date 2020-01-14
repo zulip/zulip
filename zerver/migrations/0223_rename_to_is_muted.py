@@ -7,6 +7,7 @@ from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Case, Value, When
 
+
 def set_initial_value_for_is_muted(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Subscription = apps.get_model("zerver", "Subscription")
     Subscription.objects.update(is_muted=Case(

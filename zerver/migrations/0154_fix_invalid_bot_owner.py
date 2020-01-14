@@ -6,6 +6,7 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def migrate_fix_invalid_bot_owner_values(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     """Fixes UserProfile objects that incorrectly had a bot_owner set"""
     UserProfile = apps.get_model('zerver', 'UserProfile')

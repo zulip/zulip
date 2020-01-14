@@ -6,8 +6,9 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
 from zerver.lib.domains import validate_domain
-from zerver.lib.management import ZulipBaseCommand, CommandError
+from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.models import RealmDomain, get_realm_domains
+
 
 class Command(ZulipBaseCommand):
     help = """Manage domains for the specified realm"""

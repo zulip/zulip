@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-from django.db import migrations, connection
+from django.db import connection, migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+
 from zerver.lib.migrate import do_batch_update
+
 
 def rebuild_pgroonga_index(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     with connection.cursor() as cursor:

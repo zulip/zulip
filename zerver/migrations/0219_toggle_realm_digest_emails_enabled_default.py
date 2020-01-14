@@ -6,6 +6,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def disable_realm_digest_emails_enabled(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
     realms = Realm.objects.filter(digest_emails_enabled=True)
