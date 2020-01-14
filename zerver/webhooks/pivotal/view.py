@@ -1,5 +1,4 @@
 """Webhooks for external integrations."""
-
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -11,9 +10,10 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.webhooks.common import check_send_webhook_message, \
-    UnexpectedWebhookEventType
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
+    check_send_webhook_message
 from zerver.models import UserProfile
+
 
 def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
     payload = xml_fromstring(request.body)

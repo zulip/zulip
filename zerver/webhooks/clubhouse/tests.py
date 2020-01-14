@@ -1,7 +1,9 @@
 import json
+
 from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
+
 
 class ClubhouseWebhookTest(WebhookTestCase):
     STREAM_NAME = 'clubhouse'

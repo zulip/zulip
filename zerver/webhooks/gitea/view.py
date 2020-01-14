@@ -12,7 +12,6 @@ from zerver.models import UserProfile
 # Gitea is a fork of Gogs, and so the webhook implementation is nearly the same.
 from zerver.webhooks.gogs.view import gogs_webhook_main
 
-
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITEA_EVENT")
 
 def format_pull_request_event(payload: Dict[str, Any],

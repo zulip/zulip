@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 from zerver.lib.test_classes import WebhookTestCase
+
 
 class BasecampHookTests(WebhookTestCase):
     STREAM_NAME = 'basecamp'

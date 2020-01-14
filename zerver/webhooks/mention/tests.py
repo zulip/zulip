@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 from zerver.lib.test_classes import WebhookTestCase
+
 
 class MentionHookTests(WebhookTestCase):
     STREAM_NAME = 'test'

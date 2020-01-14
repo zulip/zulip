@@ -4,6 +4,7 @@ from mock import MagicMock, patch
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 
+
 class GitlabHookTests(WebhookTestCase):
     STREAM_NAME = 'gitlab'
     URL_TEMPLATE = "/api/v1/external/gitlab?&api_key={api_key}&stream={stream}"

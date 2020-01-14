@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class IFTTTHookTests(WebhookTestCase):
     STREAM_NAME = 'ifttt'
     URL_TEMPLATE = "/api/v1/external/ifttt?stream={stream}&api_key={api_key}"

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class DialogflowHookTests(WebhookTestCase):
     URL_TEMPLATE = u"/api/v1/external/dialogflow?api_key={api_key}&email=AARON@zulip.com"
 

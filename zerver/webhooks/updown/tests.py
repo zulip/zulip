@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class UpdownHookTests(WebhookTestCase):
     STREAM_NAME = 'updown'
     URL_TEMPLATE = u"/api/v1/external/updown?stream={stream}&api_key={api_key}"

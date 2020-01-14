@@ -1,13 +1,14 @@
 from typing import Any, Dict
 
-from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
+from zerver.decorator import REQ, api_key_only_webhook_view, \
+    has_request_variables
 from zerver.lib.actions import send_rate_limited_pm_notification_to_bot_owner
-from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 MISCONFIGURED_PAYLOAD_ERROR_MESSAGE = """

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
 import mock
 from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
+
 
 class StripeHookTests(WebhookTestCase):
     STREAM_NAME = 'test'

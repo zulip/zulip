@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 from zerver.lib.test_classes import WebhookTestCase
+
 
 class SemaphoreHookTests(WebhookTestCase):
     STREAM_NAME = 'semaphore'

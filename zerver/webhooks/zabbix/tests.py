@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from zerver.lib.test_classes import WebhookTestCase
-
-from zerver.models import Recipient
 from zerver.lib.send_email import FromAddress
+from zerver.lib.test_classes import WebhookTestCase
+from zerver.models import Recipient
 from zerver.webhooks.zabbix.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
+
 
 class ZabbixHookTests(WebhookTestCase):
     STREAM_NAME = 'zabbix'

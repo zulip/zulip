@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 from zerver.lib.test_classes import WebhookTestCase
+
 
 class PivotalV3HookTests(WebhookTestCase):
     STREAM_NAME = 'pivotal'

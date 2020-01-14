@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class ZapierHookTests(WebhookTestCase):
     STREAM_NAME = 'zapier'
     URL_TEMPLATE = "/api/v1/external/zapier?stream={stream}&api_key={api_key}"

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class AirbrakeHookTests(WebhookTestCase):
     STREAM_NAME = 'airbrake'
     URL_TEMPLATE = u"/api/v1/external/airbrake?stream={stream}&api_key={api_key}"

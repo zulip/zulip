@@ -1,21 +1,22 @@
-from functools import partial
-from typing import Any, Dict, Optional
-from inspect import signature
 import re
+from functools import partial
+from inspect import signature
+from typing import Any, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header, UnexpectedWebhookEventType
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
+    check_send_webhook_message, validate_extract_webhook_http_header
 from zerver.lib.webhooks.git import EMPTY_SHA, \
-    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
-    get_commits_comment_action_message, get_issue_event_message, \
-    get_pull_request_event_message, get_push_commits_event_message, \
-    get_push_tag_event_message, get_remove_branch_event_message
+    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_commits_comment_action_message, \
+    get_issue_event_message, get_pull_request_event_message, \
+    get_push_commits_event_message, get_push_tag_event_message, \
+    get_remove_branch_event_message
 from zerver.models import UserProfile
+
 
 def fixture_to_headers(fixture_name: str) -> Dict[str, Any]:
     if fixture_name.startswith("build"):

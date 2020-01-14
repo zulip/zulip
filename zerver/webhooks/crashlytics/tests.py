@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class CrashlyticsHookTests(WebhookTestCase):
     STREAM_NAME = 'crashlytics'
     URL_TEMPLATE = u"/api/v1/external/crashlytics?stream={stream}&api_key={api_key}"

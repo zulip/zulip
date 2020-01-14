@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-from unittest.mock import patch
 from typing import Any
+from unittest.mock import patch
+
 from zerver.lib.test_classes import WebhookTestCase
+
 
 class BeeminderHookTests(WebhookTestCase):
     STREAM_NAME = 'beeminder'

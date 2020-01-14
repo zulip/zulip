@@ -1,5 +1,6 @@
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class BuildbotHookTests(WebhookTestCase):
     STREAM_NAME = "buildbot"
     URL_TEMPLATE = u"/api/v1/external/buildbot?api_key={api_key}&stream={stream}"
