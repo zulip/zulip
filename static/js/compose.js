@@ -796,9 +796,10 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
 };
 
 exports.warn_if_private_stream_is_linked = function (linked_stream) {
-    // For PMs, we don't warn about links to private streams, since
-    // you are often specifically encouraging somebody to subscribe
-    // to the stream over PMs.
+    // For PMs, we currently don't warn about links to private
+    // streams, since you are specifically sharing the existence of
+    // the private stream with someone.  One could imagine changing
+    // this policy if user feedback suggested it was useful.
     if (compose_state.get_message_type() !== 'stream') {
         return;
     }
@@ -812,16 +813,21 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
 
     // If the stream we're linking to is not invite-only, then it's
     // public, and there is no need to warn about it, since all
-    // users can already see all the public streams.
+    // members can already see all the public streams.
+    //
+    // Theoretically, we could still do a warning if there are any
+    // guest users subscribed to the stream we're posting to; we may
+    // change this policy if user feedback suggests it'd be an
+    // improvement.
     if (!linked_stream.invite_only) {
         return;
     }
 
     if (stream_data.is_subscriber_subset(compose_stream, linked_stream)) {
-        // Don't warn if subscribers list of current
-        // compose_stream is a subset of linked_stream's
-        // subscribers list, because everyone will be
-        // subscribed to the linked stream.
+        // Don't warn if subscribers list of current compose_stream is
+        // a subset of linked_stream's subscribers list, because
+        // everyone will be subscribed to the linked stream and so
+        // knows it exists.
         return;
     }
 
