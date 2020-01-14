@@ -5,10 +5,11 @@ from collections import defaultdict
 
 from django.conf import settings
 from django.db.models.query import QuerySet
+from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
 
 from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id, \
-    user_profile_by_id_cache_key
+    user_profile_by_id_cache_key, realm_user_dict_fields
 from zerver.lib.request import JsonableError
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.exceptions import OrganizationAdministratorRequired
@@ -326,23 +327,45 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
     return result
 
 def get_cross_realm_dicts() -> List[Dict[str, Any]]:
+
     users = bulk_get_users(list(settings.CROSS_REALM_BOT_EMAILS), None,
                            base_query=UserProfile.objects.filter(
-                               realm__string_id=settings.SYSTEM_BOT_REALM)).values()
-    return [{'email': user.email,
-             'user_id': user.id,
-             'is_admin': user.is_realm_admin,
-             'is_bot': user.is_bot,
-             'avatar_url': avatar_url(user),
-             'timezone': user.timezone,
-             'date_joined': user.date_joined.isoformat(),
-             'bot_owner_id': None,
-             'full_name': user.full_name}
-            for user in users
-            # Important: We filter here, is addition to in
-            # `base_query`, because of how bulk_get_users shares its
-            # cache with other UserProfile caches.
-            if user.realm.string_id == settings.SYSTEM_BOT_REALM]
+                           realm__string_id=settings.SYSTEM_BOT_REALM)).values()
+    result = []
+    for user in users:
+        # Important: We filter here, is addition to in
+        # `base_query`, because of how bulk_get_users shares its
+        # cache with other UserProfile caches.
+        if user.realm.string_id != settings.SYSTEM_BOT_REALM:
+            continue
+
+        # What we're trying to do is simulate bulk_get_users returning
+        # `.values(*realm_user_dict_fields)` even though we fetched
+        # UserProfile objects.  This is messier than it seems.
+        #
+        # What we'd like to do is just call model_to_dict(user,
+        # fields=realm_user_dict_fields).  The problem with this is
+        # that model_to_dict has a different convention than
+        # `.values()` in its handling of foreign keys, naming them as
+        # e.g. `bot_owner`, not `bot_owner_id`; we work around that
+        # here.  And then, because we want to avoid clients dealing
+        # with the implementation detail that these bots are
+        # self-owned, we just set bot_owner_id=None.
+        #
+        # This could be potentially simplified in the future by
+        # changing realm_user_dict_fields to name the bot owner with
+        # the less readable `bot_owner` (instead of `bot_owner_id`).
+        user_row = model_to_dict(user,
+                                 fields=realm_user_dict_fields)
+        user_row['bot_owner_id'] = None
+
+        result.append(format_user_row(user.realm,
+                                      acting_user=user,
+                                      row=user_row,
+                                      client_gravatar=False,
+                                      custom_profile_field_data=None))
+
+    return result
 
 def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
     # TODO: Consider optimizing this query away with caching.
