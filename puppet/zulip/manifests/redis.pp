@@ -26,13 +26,7 @@ class zulip::redis {
     path    => '/bin',
     command => "bash -c \"(/bin/echo; /bin/echo '# Include Zulip-specific configuration'; /bin/echo '${line}') >> '${file}'\"",
     require => [Package[$redis],
-                File[$zulip_redisconf],
-                Exec['rediscleanup']],
-  }
-
-  exec { 'rediscleanup':
-    onlyif  => "echo '80a4cee76bac751576c3db8916fc50a6ea319428 ${file}' | sha1sum -c",
-    command => "head -n-3 ${file} | sponge ${file}",
+                File[$zulip_redisconf]],
   }
 
   $redis_password = zulipsecret('secrets', 'redis_password', '')
