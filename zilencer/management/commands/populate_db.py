@@ -50,10 +50,16 @@ def clear_database() -> None:
     # Hacky function only for use inside populate_db.  Designed to
     # allow running populate_db repeatedly in series to work without
     # flushing memcached or clearing the database manually.
-    pylibmc.Client(
-        [default_cache['LOCATION']],
-        behaviors=default_cache["OPTIONS"]  # type: ignore # settings not typed properly
-    ).flush_all()
+
+    # With `zproject.test_settings`, we aren't using real memcached
+    # and; we only need to flush memcached if we're populating a
+    # database that would be used with it (i.e. zproject.dev_settings).
+    if default_cache['BACKEND'] == 'django_pylibmc.memcached.PyLibMCCache':
+        pylibmc.Client(
+            [default_cache['LOCATION']],
+            behaviors=default_cache["OPTIONS"]  # type: ignore # settings not typed properly
+        ).flush_all()
+
     model = None  # type: Any # Hack because mypy doesn't know these are model classes
     for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,
