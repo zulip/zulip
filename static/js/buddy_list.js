@@ -28,8 +28,8 @@ function buddy_list_conf() {
     };
 
     conf.get_key_from_li = function (opts) {
-        const user_id = opts.li.expectOne().attr('data-user-id');
-        return parseInt(user_id, 10);
+        const str_user_id = opts.li.expectOne().attr('data-user-id');
+        return parseInt(str_user_id, 10);
     };
 
     conf.get_data_from_keys = function (opts) {
