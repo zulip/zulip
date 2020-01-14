@@ -145,6 +145,18 @@ exports.subscribe_myself = function (sub) {
     stream_info.set_true(sub.name, sub);
 };
 
+exports.is_subscriber_subset = function (sub1, sub2) {
+    if (sub1.subscribers && sub2.subscribers) {
+        const sub2_set = sub2.subscribers;
+
+        return _.every(sub1.subscribers.keys(), (key) => {
+            return sub2_set.has(key);
+        });
+    }
+
+    return false;
+};
+
 exports.unsubscribe_myself = function (sub) {
     // Remove user from subscriber's list
     const user_id = people.my_current_user_id();

@@ -850,6 +850,45 @@ run_test('filter inactives', () => {
     assert(stream_data.is_filtering_inactives());
 });
 
+run_test('is_subscriber_subset', () => {
+    function make_sub(user_ids) {
+        const sub = {};
+        stream_data.set_subscribers(sub, user_ids);
+        return sub;
+    }
+
+    const sub_a = make_sub([1, 2]);
+    const sub_b = make_sub([2, 3]);
+    const sub_c = make_sub([1, 2, 3]);
+
+    // The bogus case should not come up in normal
+    // use.
+    // We simply punt on any calculation if
+    // a stream has no subscriber info (like
+    // maybe Zephyr?).
+    const bogus = {}; // no subscribers
+
+    const matrix = [
+        [sub_a, sub_a, true],
+        [sub_a, sub_b, false],
+        [sub_a, sub_c, true],
+        [sub_b, sub_a, false],
+        [sub_b, sub_b, true],
+        [sub_b, sub_c, true],
+        [sub_c, sub_a, false],
+        [sub_c, sub_b, false],
+        [sub_c, sub_c, true],
+        [bogus, bogus, false],
+    ];
+
+    _.each(matrix, (row) => {
+        assert.equal(
+            stream_data.is_subscriber_subset(row[0], row[1]),
+            row[2]
+        );
+    });
+});
+
 run_test('invite_streams', () => {
     // add default stream
     const orie = {
