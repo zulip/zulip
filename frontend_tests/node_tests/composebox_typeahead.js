@@ -361,11 +361,11 @@ run_test('content_typeahead_selected', () => {
 
     // silent mention
     fake_this.completing = 'silent_mention';
-    let document_stub_trigger3_called = false;
+    let document_stub_trigger2_called = false;
     $('document-stub').trigger = function (event, params) {
         assert.equal(event, 'usermention_completed.zulip');
         assert.deepEqual(params, { mentioned: hamlet, is_silent: true });
-        document_stub_trigger3_called = true;
+        document_stub_trigger2_called = true;
     };
 
     fake_this.query = '@_kin';
@@ -420,11 +420,10 @@ run_test('content_typeahead_selected', () => {
 
     // stream
     fake_this.completing = 'stream';
-    let document_stub_trigger2_called = false;
-    $('document-stub').trigger = function (event, params) {
-        assert.equal(event, 'streamname_completed.zulip');
-        assert.deepEqual(params, { stream: sweden_stream });
-        document_stub_trigger2_called = true;
+    let warned_for_stream_link = false;
+    compose.warn_if_private_stream_is_linked = (linked_stream) => {
+        assert.equal(linked_stream, sweden_stream);
+        warned_for_stream_link = true;
     };
 
     fake_this.query = '#swed';
@@ -490,7 +489,7 @@ run_test('content_typeahead_selected', () => {
     assert(document_stub_trigger1_called);
     assert(document_stub_group_trigger_called);
     assert(document_stub_trigger2_called);
-    assert(document_stub_trigger3_called);
+    assert(warned_for_stream_link);
 });
 
 function sorted_names_from(subs) {

@@ -795,6 +795,48 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
     }
 };
 
+exports.warn_if_private_stream_is_linked = function (linked_stream) {
+    // For PMs, we don't warn about links to private streams, since
+    // you are often specifically encouraging somebody to subscribe
+    // to the stream over PMs.
+    if (compose_state.get_message_type() !== 'stream') {
+        return;
+    }
+
+    const compose_stream = stream_data.get_sub(compose_state.stream_name());
+    if (compose_stream === undefined) {
+        // We have an invalid stream name, don't warn about this here as
+        // we show an error to the user when they try to send the message.
+        return;
+    }
+
+    // If the stream we're linking to is not invite-only, then it's
+    // public, and there is no need to warn about it, since all
+    // users can already see all the public streams.
+    if (!linked_stream.invite_only) {
+        return;
+    }
+
+    if (compose_stream.subscribers && linked_stream.subscribers) {
+        const compose_stream_sub = compose_stream.subscribers.keys();
+        const mentioned_stream_sub = linked_stream.subscribers.keys();
+        // Don't warn if subscribers list of current compose_stream is a subset of
+        // mentioned_stream subscribers list.
+        if (_.difference(compose_stream_sub, mentioned_stream_sub).length === 0) {
+            return;
+        }
+    }
+
+    const stream_name = linked_stream.name;
+
+    const warning_area = $("#compose_private_stream_alert");
+    const context = { stream_name: stream_name };
+    const new_row = render_compose_private_stream_alert(context);
+
+    warning_area.append(new_row);
+    warning_area.show();
+};
+
 exports.initialize = function () {
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('keyup', update_fade);
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('change', update_fade);
@@ -955,55 +997,6 @@ exports.initialize = function () {
         if (all_invites.children().length === 0) {
             all_invites.hide();
         }
-    });
-
-    // Show a warning if a private stream is linked
-    $(document).on('streamname_completed.zulip', function (event, data) {
-        // For PMs, we don't warn about links to private streams, since
-        // you are often specifically encouraging somebody to subscribe
-        // to the stream over PMs.
-        if (compose_state.get_message_type() !== 'stream') {
-            return;
-        }
-
-        if (data === undefined || data.stream === undefined) {
-            blueslip.error('Invalid options passed into handler.');
-            return;
-        }
-
-        const compose_stream = stream_data.get_sub(compose_state.stream_name());
-        if (compose_stream === undefined) {
-            // We have an invalid stream name, don't warn about this here as
-            // we show an error to the user when they try to send the message.
-            return;
-        }
-
-        if (compose_stream.subscribers && data.stream.subscribers) {
-            const compose_stream_sub = compose_stream.subscribers.keys();
-            const mentioned_stream_sub = data.stream.subscribers.keys();
-            // Don't warn if subscribers list of current compose_stream is a subset of
-            // mentioned_stream subscribers list.
-            if (_.difference(compose_stream_sub, mentioned_stream_sub).length === 0) {
-                return;
-            }
-        }
-
-        // data.stream refers to the stream we're linking to in
-        // typeahead.  If it's not invite-only, then it's public, and
-        // there is no need to warn about it, since all users can already
-        // see all the public streams.
-        if (!data.stream.invite_only) {
-            return;
-        }
-
-        const stream_name = data.stream.name;
-
-        const warning_area = $("#compose_private_stream_alert");
-        const context = { stream_name: stream_name };
-        const new_row = render_compose_private_stream_alert(context);
-
-        warning_area.append(new_row);
-        warning_area.show();
     });
 
     $("#compose_private_stream_alert").on('click', '.compose_private_stream_alert_close', function (event) {
