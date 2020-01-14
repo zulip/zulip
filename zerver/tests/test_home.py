@@ -581,28 +581,40 @@ class HomeTest(ZulipTestCase):
 
         self.assertEqual(sorted(cross_bots, key=by_email), sorted([
             dict(
-                user_id=get_system_bot('emailgateway@zulip.com').id,
-                is_admin=False,
+                bot_owner_id=None,
+                bot_type=1,
                 email='emailgateway@zulip.com',
+                user_id=get_system_bot('emailgateway@zulip.com').id,
                 full_name='Email Gateway',
-                bot_owner_id=None,
-                is_bot=True
+                is_active=True,
+                is_bot=True,
+                is_admin=False,
+                is_cross_realm_bot=True,
+                is_guest=False
             ),
             dict(
-                user_id=notification_bot.id,
-                is_admin=False,
+                bot_owner_id=None,
+                bot_type=1,
                 email=notification_bot.email,
+                user_id=notification_bot.id,
                 full_name='Notification Bot',
-                bot_owner_id=None,
-                is_bot=True
+                is_active=True,
+                is_bot=True,
+                is_admin=False,
+                is_cross_realm_bot=True,
+                is_guest=False
             ),
             dict(
-                user_id=get_system_bot('welcome-bot@zulip.com').id,
-                is_admin=False,
-                email='welcome-bot@zulip.com',
-                full_name='Welcome Bot',
                 bot_owner_id=None,
-                is_bot=True
+                bot_type=1,
+                email='welcome-bot@zulip.com',
+                user_id=get_system_bot('welcome-bot@zulip.com').id,
+                full_name='Welcome Bot',
+                is_active=True,
+                is_bot=True,
+                is_admin=False,
+                is_cross_realm_bot=True,
+                is_guest=False
             ),
         ], key=by_email))
 

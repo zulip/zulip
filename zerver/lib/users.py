@@ -326,23 +326,39 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
     return result
 
 def get_cross_realm_dicts() -> List[Dict[str, Any]]:
+
     users = bulk_get_users(list(settings.CROSS_REALM_BOT_EMAILS), None,
                            base_query=UserProfile.objects.filter(
-                               realm__string_id=settings.SYSTEM_BOT_REALM)).values()
-    return [{'email': user.email,
-             'user_id': user.id,
-             'is_admin': user.is_realm_admin,
-             'is_bot': user.is_bot,
-             'avatar_url': avatar_url(user),
-             'timezone': user.timezone,
-             'date_joined': user.date_joined.isoformat(),
-             'bot_owner_id': None,
-             'full_name': user.full_name}
-            for user in users
-            # Important: We filter here, is addition to in
-            # `base_query`, because of how bulk_get_users shares its
-            # cache with other UserProfile caches.
-            if user.realm.string_id == settings.SYSTEM_BOT_REALM]
+                           realm__string_id=settings.SYSTEM_BOT_REALM)).values()
+    result = []
+    for user in users:
+        # Important: We filter here, is addition to in
+        # `base_query`, because of how bulk_get_users shares its
+        # cache with other UserProfile caches.
+        if user.realm.string_id == settings.SYSTEM_BOT_REALM:
+            result.append(format_user_row(user.realm,
+                                          acting_user=user,
+                                          row=dict(email=user.email,
+                                                   id=user.id,
+                                                   user_profile=user,
+                                                   realm=user.realm,
+                                                   is_bot=user.is_bot,
+                                                   bot_type=user.bot_type,
+                                                   bot_owner_id=None,
+                                                   full_name=user.full_name,
+                                                   timezone=user.timezone,
+                                                   is_active=user.is_active,
+                                                   date_joined=user.date_joined,
+                                                   delivery_email=user.delivery_email,
+                                                   avatar_source=user.avatar_source,
+                                                   avatar_version=user.avatar_version,
+                                                   role=user.role
+                                                   ),
+                                          client_gravatar=False,
+                                          custom_profile_field_data=None
+                                          ))
+
+    return result
 
 def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
     # TODO: Consider optimizing this query away with caching.
