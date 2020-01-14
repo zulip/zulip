@@ -288,7 +288,8 @@ exports.show_new_stream_modal = function () {
 
         $('#user-checkboxes label.checkbox').each(function () {
             const user_elem = $(this);
-            const user_id = user_elem.attr('data-user-id');
+            const str_user_id = user_elem.attr('data-user-id');
+            const user_id = parseInt(str_user_id, 10);
 
             if (subscriber_ids.has(user_id)) {
                 user_elem.find('input').prop('checked', checked);

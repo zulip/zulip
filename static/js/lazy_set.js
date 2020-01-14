@@ -53,18 +53,30 @@ exports.LazySet = function (vals) {
 
     self.has = function (v) {
         make_set();
-        return self.set.has(v);
+        const val = self._clean(v);
+        return self.set.has(val);
     };
 
     self.add = function (v) {
         make_set();
-        self.set.add(v);
+        const val = self._clean(v);
+        self.set.add(val);
     };
 
     self.del = function (v) {
         make_set();
-        self.set.delete(v);
+        const val = self._clean(v);
+        self.set.delete(val);
     };
+
+    self._clean = function (v) {
+        if (typeof v !== 'number') {
+            blueslip.error('not a number');
+            return parseInt(v, 10);
+        }
+        return v;
+    };
+
 
     return self;
 };
