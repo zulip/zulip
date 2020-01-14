@@ -16,6 +16,7 @@ const render_compose_private_stream_alert = require("../templates/compose_privat
 
 let user_acknowledged_all_everyone;
 let user_acknowledged_announce;
+let wildcard_mention;
 
 exports.all_everyone_warn_threshold = 15;
 exports.announce_warn_threshold = 60;
@@ -32,7 +33,7 @@ function make_uploads_relative(content) {
 function show_all_everyone_warnings() {
     const stream_count = stream_data.get_subscriber_count(compose_state.stream_name()) || 0;
 
-    const all_everyone_template = render_compose_all_everyone({count: stream_count});
+    const all_everyone_template = render_compose_all_everyone({count: stream_count, mention: wildcard_mention});
     const error_area_all_everyone = $("#compose-all-everyone");
 
     // only show one error for any number of @all or @everyone mentions
@@ -834,6 +835,7 @@ exports.initialize = function () {
 
             // warn if @all, @everyone or @stream is mentioned
             if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone' || data.mentioned.full_name === 'stream') {
+                wildcard_mention = data.mentioned.full_name;
                 return; // don't check if @all or @everyone is subscribed to a stream
             }
 
