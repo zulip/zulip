@@ -193,7 +193,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         (
                         {%- for stream in default_stream_group.streams.all() -%}
                             {{- comma() -}} <div class="stream_name inline-block">#{{ stream.name }}</div>
-                        {% endfor %}
+                        {%- endfor -%}
                         )
                     </label>
                 </div>
