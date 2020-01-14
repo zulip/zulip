@@ -23,6 +23,8 @@ is highly configurable. Two things are true under any configuration:
 | Delete your messages               | &#10004; | [3]     |
 | Delete others' messages            | &#10004; |         |
 
+&#10004; - Always
+
 1 - Controlled by **Allow message editing**.
 
 2 - Controlled by **Users can edit the topic of any message**.
