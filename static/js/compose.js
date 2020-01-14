@@ -849,8 +849,8 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
 
     const email = mentioned.email;
 
-    if (mentioned.full_name  === 'all' || mentioned.full_name === 'everyone' || mentioned.full_name === 'stream') {
-        return; // don't check if @all or @everyone is subscribed to a stream
+    if (mentioned.is_broadcast) {
+        return; // don't check if @all/@everyone/@stream
     }
 
     if (exports.needs_subscribe_warning(email)) {

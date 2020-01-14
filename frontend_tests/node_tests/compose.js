@@ -1104,17 +1104,18 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
 
     $('#compose_invite_users .compose_invite_user').length = 0;
 
-    function test_noop_case(msg_type, is_zephyr_mirror, mentioned_full_name) {
+    function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
+        const msg_type = is_private ? 'private' : 'stream';
         compose_state.set_message_type(msg_type);
         page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
-        mentioned.full_name = mentioned_full_name;
+        mentioned.is_broadcast = is_broadcast;
         compose.warn_if_mentioning_unsubscribed_user(mentioned);
         assert.equal($('#compose_invite_users').visible(), false);
     }
 
-    test_noop_case('private', true, 'everyone');
-    test_noop_case('stream', true, 'everyone');
-    test_noop_case('stream', false, 'everyone');
+    test_noop_case(true, false, false);
+    test_noop_case(false, true, false);
+    test_noop_case(false, false, true);
 
     // Test mentioning a user that should gets a warning.
 
