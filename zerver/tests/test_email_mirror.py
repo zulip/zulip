@@ -422,7 +422,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                                                    target_realm=user_profile.realm)
 
         message = most_recent_message(user_profile)
-        self.assertEqual(message.content, "Test body[image.png](https://test_url)")
+        self.assertEqual(message.content, "Test body\n[image.png](https://test_url)")
 
     def test_message_with_invalid_attachment(self) -> None:
         user_profile = self.example_user('hamlet')
