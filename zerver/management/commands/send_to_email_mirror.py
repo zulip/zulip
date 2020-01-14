@@ -105,12 +105,15 @@ Example:
     def _prepare_message(self, message: Message, realm: Realm, stream_name: str) -> None:
         stream = get_stream(stream_name, realm)
 
+        # The block below ensures that the imported email message doesn't have any recipient-like
+        # headers that are inconsistent with the recipient we want (the stream address).
         recipient_headers = ["X-Gm-Original-To", "Delivered-To",
-                             "Resent-To", "Resent-CC", "To", "CC"]
+                             "Resent-To", "Resent-CC", "CC"]
         for header in recipient_headers:
             if header in message:
                 del message[header]
                 message[header] = encode_email_address(stream)
-                return
 
+        if 'To' in message:
+            del message['To']
         message['To'] = encode_email_address(stream)
