@@ -7,11 +7,13 @@ from typing import Any, Callable, Dict, Iterable, List, \
 import ujson
 from datetime import datetime
 from django.conf import settings
+from django.contrib.sessions.models import Session
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import F, Max
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
+import pylibmc
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, \
     do_change_is_admin, do_send_messages, do_update_user_custom_profile_data_if_changed, \
@@ -28,7 +30,7 @@ from zerver.lib.user_groups import create_user_group
 from zerver.lib.utils import generate_api_key
 from zerver.models import CustomProfileField, DefaultStream, Message, Realm, RealmAuditLog, \
     RealmDomain, Recipient, Service, Stream, Subscription, \
-    UserMessage, UserPresence, UserProfile, clear_database, \
+    UserMessage, UserPresence, UserProfile, Huddle, Client, \
     email_to_username, get_client, get_huddle, get_realm, get_stream, \
     get_system_bot, get_user, get_user_profile_by_id
 from zerver.lib.types import ProfileFieldData
@@ -39,9 +41,25 @@ settings.TORNADO_SERVER = None
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
 # from `run-dev.py`.
+default_cache = settings.CACHES['default']
 settings.CACHES['default'] = {
     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
 }
+
+def clear_database() -> None:
+    # Hacky function only for use inside populate_db.  Designed to
+    # allow running populate_db repeatedly in series to work without
+    # flushing memcached or clearing the database manually.
+    pylibmc.Client(
+        [default_cache['LOCATION']],
+        behaviors=default_cache["OPTIONS"]  # type: ignore # settings not typed properly
+    ).flush_all()
+    model = None  # type: Any # Hack because mypy doesn't know these are model classes
+    for model in [Message, Stream, UserProfile, Recipient,
+                  Realm, Subscription, Huddle, UserMessage, Client,
+                  DefaultStream]:
+        model.objects.all().delete()
+    Session.objects.all().delete()
 
 # Suppress spammy output from the push notifications logger
 push_notifications_logger.disabled = True

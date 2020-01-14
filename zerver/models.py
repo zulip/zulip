@@ -23,7 +23,6 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
-from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
@@ -41,7 +40,6 @@ from bitfield import BitField
 from bitfield.types import BitHandler
 from collections import defaultdict
 from datetime import timedelta
-import pylibmc
 import re
 import sre_constants
 import time
@@ -2226,17 +2224,6 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
                               for user_profile_id in id_list]
             Subscription.objects.bulk_create(subs_to_create)
         return huddle
-
-def clear_database() -> None:  # nocoverage # Only used in populate_db
-    pylibmc.Client(
-        [settings.MEMCACHED_LOCATION], behaviors=settings.CACHES["default"]["OPTIONS"]
-    ).flush_all()
-    model = None  # type: Any
-    for model in [Message, Stream, UserProfile, Recipient,
-                  Realm, Subscription, Huddle, UserMessage, Client,
-                  DefaultStream]:
-        model.objects.all().delete()
-    Session.objects.all().delete()
 
 class UserActivity(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile

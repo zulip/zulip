@@ -11,5 +11,6 @@ from zproject import settings
 import pylibmc
 
 pylibmc.Client(
-    [settings.MEMCACHED_LOCATION], behaviors=settings.CACHES["default"]["OPTIONS"]
+    [settings.MEMCACHED_LOCATION],
+    behaviors=settings.CACHES["default"]["OPTIONS"]  # type: ignore # settings not typed properly
 ).flush_all()
