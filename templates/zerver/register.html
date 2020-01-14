@@ -173,16 +173,33 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             </section>
 
             {% if default_stream_groups %}
-            <div class="input-group m-10 inline-block">
-                <label for="default_stream_group">{{ _('What parts of the organization are you interested in?') }}</label>
+            <hr />
+            <div class="default-stream-groups">
+                <p class="margin">{{ _('What are you interested in?') }}</p>
                 {% for default_stream_group in default_stream_groups %}
-                <div class="input-group radio">
-                    <input class="inline-block" type="checkbox" name="default_stream_group" value="{{ default_stream_group.name }}"
-                      {% if "default_stream_group" in  form.data and default_stream_group.name in form.data.getlist('default_stream_group') %} checked {% endif %} />
-                    <label for="id_radio_{{ default_stream_group.name }}" class="inline-block">{{ default_stream_group.name }}</label>
+                <div class="input-group margin">
+                    <label for="id_default_stream_group__{{ default_stream_group.id }}"
+                      class="inline-block checkbox">
+                        <input class="inline-block" type="checkbox"
+                          name="default_stream_group"
+                          id="id_default_stream_group__{{ default_stream_group.id }}" value="{{ default_stream_group.name }}"
+                          {% if "default_stream_group" in form.data and default_stream_group.id in form.data.getlist('default_stream_group') %} checked {% endif %} />
+                        <span></span>
+                        {% set comma = joiner(", ") %}
+                        <div class="default_stream_group_name inline-block"
+                          title="{{ default_stream_group.description }}">
+                            {{ default_stream_group.name }}
+                        </div>
+                        (
+                        {%- for stream in default_stream_group.streams.all() -%}
+                            {{- comma() -}} <div class="stream_name inline-block">#{{ stream.name }}</div>
+                        {% endfor %}
+                        )
+                    </label>
                 </div>
                 {% endfor %}
             </div>
+            <hr />
             {% endif %}
 
             <div class="input-group margin terms-of-service">
