@@ -817,14 +817,12 @@ exports.warn_if_private_stream_is_linked = function (linked_stream) {
         return;
     }
 
-    if (compose_stream.subscribers && linked_stream.subscribers) {
-        const compose_stream_sub = compose_stream.subscribers.keys();
-        const mentioned_stream_sub = linked_stream.subscribers.keys();
-        // Don't warn if subscribers list of current compose_stream is a subset of
-        // mentioned_stream subscribers list.
-        if (_.difference(compose_stream_sub, mentioned_stream_sub).length === 0) {
-            return;
-        }
+    if (stream_data.is_subscriber_subset(compose_stream, linked_stream)) {
+        // Don't warn if subscribers list of current
+        // compose_stream is a subset of linked_stream's
+        // subscribers list, because everyone will be
+        // subscribed to the linked stream.
+        return;
     }
 
     const stream_name = linked_stream.name;
