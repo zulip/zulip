@@ -228,14 +228,9 @@ def filter_footer(text: str) -> str:
 
 def extract_and_upload_attachments(message: message.Message, realm: Realm) -> str:
     user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+
     attachment_links = []
-
-    payload = message.get_payload()
-    if not isinstance(payload, list):
-        # This is not a multipart message, so it can't contain attachments.
-        return ""
-
-    for part in payload:
+    for part in message.walk():
         content_type = part.get_content_type()
         filename = part.get_filename()
         if filename:
@@ -251,7 +246,7 @@ def extract_and_upload_attachments(message: message.Message, realm: Realm) -> st
                 logger.warning("Payload is not bytes (invalid attachment %s in message from %s)." %
                                (filename, message.get("From")))
 
-    return "\n".join(attachment_links)
+    return '\n'.join(attachment_links)
 
 def decode_stream_email_address(email: str) -> Tuple[Stream, Dict[str, bool]]:
     token, options = decode_email_address(email)
