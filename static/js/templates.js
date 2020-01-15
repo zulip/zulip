@@ -45,12 +45,20 @@ Handlebars.registerHelper({
     not: function (a) { return !a || Handlebars.Utils.isEmpty(a); },
 });
 
+const t_cache = new Map();
+
 Handlebars.registerHelper('t', function (i18n_key) {
+    const cache_result = t_cache.get(i18n_key);
+    if (cache_result !== undefined) {
+        return cache_result;
+    }
     // Marks a string for translation.
     // Example usage:
     //     {{t "some English text"}}
     const result = i18n.t(i18n_key);
-    return new Handlebars.SafeString(result);
+    const safe_result = new Handlebars.SafeString(result);
+    t_cache.set(i18n_key, safe_result);
+    return safe_result;
 });
 
 Handlebars.registerHelper('tr', function (context, options) {
