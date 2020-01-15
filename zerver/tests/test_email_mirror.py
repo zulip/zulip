@@ -62,10 +62,12 @@ from typing import Any, Callable, Dict, Mapping, Optional
 
 class TestEncodeDecode(ZulipTestCase):
     def _assert_options(self, options: Dict[str, bool], show_sender: bool=False,
-                        include_footer: bool=False, include_quotes: bool=False) -> None:
+                        include_footer: bool=False, include_quotes: bool=False,
+                        prefer_text: bool=True) -> None:
         self.assertEqual(show_sender, ('show_sender' in options) and options['show_sender'])
         self.assertEqual(include_footer, ('include_footer' in options) and options['include_footer'])
         self.assertEqual(include_quotes, ('include_quotes' in options) and options['include_quotes'])
+        self.assertEqual(prefer_text, options.get('prefer_text', True))
 
     def test_encode_decode(self) -> None:
         realm = get_realm('zulip')
@@ -160,6 +162,17 @@ class TestEncodeDecode(ZulipTestCase):
         token, options = decode_email_address(stream_to_address)
         self._assert_options(options, show_sender=True)
         self.assertEqual(token, stream.email_token)
+
+    def test_decode_prefer_text_options(self) -> None:
+        stream = get_stream("Denmark", get_realm("zulip"))
+        address_prefer_text = "Denmark.{}.prefer-text@testserver".format(stream.email_token)
+        address_prefer_html = "Denmark.{}.prefer-html@testserver".format(stream.email_token)
+
+        token, options = decode_email_address(address_prefer_text)
+        self._assert_options(options, prefer_text=True)
+
+        token, options = decode_email_address(address_prefer_html)
+        self._assert_options(options, prefer_text=False)
 
 class TestGetMissedMessageToken(ZulipTestCase):
     def test_get_missed_message_token(self) -> None:
@@ -486,6 +499,41 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             process_message(incoming_valid_message)
             mock_warn.assert_called_with("Payload is not bytes (invalid attachment %s in message from %s)." %
                                          ('some_attachment', self.example_email('hamlet')))
+
+    def test_receive_plaintext_and_html_prefer_text_html_options(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_address = "Denmark.{}@testserver".format(stream.email_token)
+        stream_address_prefer_html = "Denmark.{}.prefer-html@testserver".format(stream.email_token)
+
+        text = "Test message"
+        html = "<html><body><b>Test html message</b></body></html>"
+
+        incoming_valid_message = MIMEMultipart()
+        text_message = MIMEText(text)
+        html_message = MIMEText(html, 'html')
+        incoming_valid_message.attach(text_message)
+        incoming_valid_message.attach(html_message)
+
+        incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.content, "Test message")
+
+        del incoming_valid_message['To']
+        incoming_valid_message['To'] = stream_address_prefer_html
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.content, "**Test html message**")
 
 class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
     def test_receive_stream_email_messages_empty_body(self) -> None:
