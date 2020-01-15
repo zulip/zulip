@@ -10,6 +10,10 @@ While developing, it's helpful to watch the `run-dev.py` console
 output, which will show any errors your Zulip development server
 encounters.
 
+If you need to work more closely with authentication systems, or if you need
+to use the [Zulip REST API][rest-api], which requires an API key, this [detailed doc][authentication-dev-server]
+will help you get started.
+
 Here's what you need to do to see your changes take effect:
 
 * The main Django/Tornado server processes are run on top of Django's
@@ -65,6 +69,8 @@ development environment will be displayed as a large notice.
 See the mobile project's documentation on [using a development server
 for mobile development][mobile-dev-server].
 
+[rest-api]: https://zulipchat.com/api/rest
+[authentication-dev-server]: ./authentication.md
 [django-runserver]: https://docs.djangoproject.com/en/1.8/ref/django-admin/#runserver-port-or-address-port
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md
