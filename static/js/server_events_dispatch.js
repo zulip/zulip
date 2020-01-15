@@ -436,8 +436,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             // than requiring a reload or page resize.
         }
         if (event.setting_name === 'default_language') {
-            // TODO: Make this change the view immediately rather
-            // than requiring a reload or page resize.
+            // TODO: Make this change the view immediately rather than
+            // requiring a reload.  This is likely fairly difficult,
+            // because various i18n strings are rendered by the
+            // server; we may want to instead just trigger a page
+            // reload.
         }
         if (event.setting_name === 'emojiset') {
             settings_display.report_emojiset_change();
