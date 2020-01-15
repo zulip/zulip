@@ -112,7 +112,7 @@ exports.widget = function (parent_elem, my_stream_id) {
                 // after the first several topics with unread messages.
                 if (!is_active_topic && (topics_selected >= max_topics_with_unread ||
                                          muting.is_topic_muted(my_stream_id, topic_name))) {
-                    if (num_unread > 0) {
+                    if (num_unread > 0 && !muting.is_topic_muted(my_stream_id, topic_name)) {
                         more_topics_unreads += num_unread;
                     }
                     return;
@@ -232,6 +232,10 @@ exports.widget = function (parent_elem, my_stream_id) {
             // topics"; We need to update the "more topics" count
             // instead in that case; we do this by returning true to
             // notify the caller to accumulate these.
+            if (muting.is_topic_muted(my_stream_id, topic)) {
+                // But we don't count unreads in muted topics.
+                return false;
+            }
             return true;
         }
 
