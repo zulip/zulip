@@ -118,9 +118,11 @@ exports._build_private_messages_list = function () {
         display_messages.push(display_message);
     });
 
+    const finish = blueslip.start_timing('render pm list');
     const recipients_dom = render_sidebar_private_message_list({
         messages: display_messages,
     });
+    finish();
     return recipients_dom;
 };
 

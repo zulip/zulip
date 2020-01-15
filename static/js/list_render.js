@@ -92,6 +92,7 @@ exports.create = function ($container, list, opts) {
 
             const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
+            const finish = blueslip.start_timing('list_render ' + opts.name);
             const html = _.reduce(slice, function (acc, item) {
                 let _item = opts.modifier(item);
 
@@ -118,6 +119,8 @@ exports.create = function ($container, list, opts) {
                 // return the modified HTML or nothing if corrupt (null, undef, etc.).
                 return acc + (_item || "");
             }, "");
+
+            finish();
 
             $container.append($(html));
             meta.offset += load_count;
