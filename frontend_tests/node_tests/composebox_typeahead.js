@@ -235,8 +235,8 @@ const backend = {
     members: [],
 };
 
-global.user_groups.add(hamletcharacters);
-global.user_groups.add(backend);
+global.user_groups.add_in_realm(hamletcharacters);
+global.user_groups.add_in_realm(backend);
 
 const make_emoji = function (emoji_dict) {
     return { emoji_name: emoji_dict.name, emoji_code: emoji_dict.emoji_code };

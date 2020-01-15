@@ -117,9 +117,9 @@ const edgecase_group = {
     members: [],
 };
 
-global.user_groups.add(hamletcharacters);
-global.user_groups.add(backend);
-global.user_groups.add(edgecase_group);
+global.user_groups.add_in_realm(hamletcharacters);
+global.user_groups.add_in_realm(backend);
+global.user_groups.add_in_realm(edgecase_group);
 
 const stream_data = global.stream_data;
 const denmark = {

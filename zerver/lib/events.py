@@ -802,8 +802,9 @@ def apply_event(state: Dict[str, Any],
                     user_group['members'] = list(members - set(event['user_ids']))
                     user_group['members'].sort()
         elif event['op'] == 'remove':
-            state['realm_user_groups'] = [ug for ug in state['realm_user_groups']
-                                          if ug['id'] != event['group_id']]
+            for user_group in state['realm_user_groups']:
+                if user_group['id'] == event['group_id']:
+                    user_group['is_active'] = False
     elif event['type'] == 'user_status':
         user_id = event['user_id']
         user_status = state['user_status']
@@ -944,3 +945,11 @@ def post_process_state(user_profile: UserProfile, ret: Dict[str, Any],
         for stream_dict in ret['subscriptions'] + ret['unsubscribed']:
             handle_stream_notifications_compatibility(user_profile, stream_dict,
                                                       notification_settings_null)
+
+    if 'realm_user_groups' in ret:
+        total_realm_user_groups = ret['realm_user_groups'].copy()
+        ret['realm_user_groups'] = [group for group in total_realm_user_groups if group['is_active']]
+        ret['realm_non_active_user_groups'] = [group for group in total_realm_user_groups
+                                               if not group['is_active']]
+        for group in total_realm_user_groups:
+            group.pop('is_active')

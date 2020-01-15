@@ -1207,6 +1207,7 @@ class UserGroup(models.Model):
     members = models.ManyToManyField(UserProfile, through='UserGroupMembership')
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description = models.TextField(default=u'')  # type: str
+    is_active = models.BooleanField(default=True, db_index=True)
 
     class Meta:
         unique_together = (('realm', 'name'),)

@@ -2,12 +2,14 @@ const Dict = require('./dict').Dict;
 
 let user_group_name_dict;
 let user_group_by_id_dict;
+let active_user_group_by_id_dict;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
 exports.init = function () {
     user_group_name_dict = new Dict({fold_case: true});
     user_group_by_id_dict = new Dict();
+    active_user_group_by_id_dict = new Dict();
 };
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -20,9 +22,13 @@ exports.add = function (user_group) {
     user_group_by_id_dict.set(user_group.id, user_group);
 };
 
+exports.add_in_realm = function (user_group) {
+    active_user_group_by_id_dict.set(user_group.id, user_group);
+    exports.add(user_group);
+};
+
 exports.remove = function (user_group) {
-    user_group_name_dict.del(user_group.name);
-    user_group_by_id_dict.del(user_group.id);
+    active_user_group_by_id_dict.del(user_group.id);
 };
 
 exports.get_user_group_from_id = function (group_id, suppress_errors) {
@@ -33,6 +39,20 @@ exports.get_user_group_from_id = function (group_id, suppress_errors) {
         return;
     }
     return user_group_by_id_dict.get(group_id);
+};
+
+exports.get_active_user_group_from_id = function (group_id, suppress_errors) {
+    if (!active_user_group_by_id_dict.has(group_id)) {
+        if (suppress_errors === undefined) {
+            blueslip.error('Unknown group_id in get_active_user_group_from_id: ' + group_id);
+        }
+        return;
+    }
+    return active_user_group_by_id_dict.get(group_id);
+};
+
+exports.is_active_user_group = function (group) {
+    return active_user_group_by_id_dict.has(group.id);
 };
 
 exports.update = function (event) {
@@ -54,7 +74,7 @@ exports.get_user_group_from_name = function (name) {
 };
 
 exports.get_realm_user_groups = function () {
-    return user_group_by_id_dict.values().sort(function (a, b) {
+    return active_user_group_by_id_dict.values().sort(function (a, b) {
         return a.id - b.id;
     });
 };
@@ -84,10 +104,14 @@ exports.remove_members = function (user_group_id, user_ids) {
 
 exports.initialize = function () {
     _.each(page_params.realm_user_groups, function (user_group) {
+        exports.add_in_realm(user_group);
+    });
+    _.each(page_params.realm_non_active_user_groups, function (user_group) {
         exports.add(user_group);
     });
 
     delete page_params.realm_user_groups; // We are the only consumer of this.
+    delete page_params.realm_non_active_user_groups
 };
 
 exports.is_user_group = function (item) {

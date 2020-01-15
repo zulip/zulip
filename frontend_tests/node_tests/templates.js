@@ -1479,9 +1479,10 @@ run_test('user_group_info_popover', () => {
 });
 
 run_test('user_group_info_popover_content', () => {
-    const args = {
+    let args = {
         group_name: 'groupName',
         group_description: 'groupDescription',
+        is_group_active: true,
         members: [
             {
                 full_name: 'Active Alice',
@@ -1500,8 +1501,7 @@ run_test('user_group_info_popover_content', () => {
             },
         ],
     };
-
-    const html = render('user_group_info_popover_content', args);
+    let html = render('user_group_info_popover_content', args);
 
     const allUsers = $(html).find("li");
     assert.equal($(allUsers[0]).text().trim(), 'Active Alice');
@@ -1510,6 +1510,30 @@ run_test('user_group_info_popover_content', () => {
 
     assert.equal($(html).find('.group-name').text().trim(), 'groupName');
     assert.equal($(html).find('.group-description').text().trim(), 'groupDescription');
+
+    args = {
+        group_name: 'DeactivatedGroupName',
+        group_description: 'DeactivatedGroupDescription',
+        is_group_active: false,
+        members: [
+            {
+                full_name: 'Active Alice',
+                user_last_seen_time_status: 'time',
+                is_bot: false,
+            },
+            {
+                full_name: 'Bot Bob',
+                user_last_seen_time_status: 'time',
+                is_bot: true,
+            },
+        ],
+    };
+
+    html = render('user_group_info_popover_content', args);
+
+    assert.equal($(html).find('.group-name').length, 0);
+    assert.equal($(html).find('.member-list').length, 0);
+    assert.equal($(html).find('.group-description').text().trim(), 'This user group has been deleted');
 });
 
 run_test('no_arrow_popover', () => {

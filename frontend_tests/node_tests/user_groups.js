@@ -9,10 +9,22 @@ run_test('user_groups', () => {
         id: 0,
         members: [1, 2],
     };
+
+    const non_active_grp = {
+        name: 'Non_Active',
+        description: 'deactivated group',
+        id: 3,
+        members: [1, 2, 3],
+    };
+
     global.page_params.realm_user_groups = [students];
+    global.page_params.realm_non_active_user_groups = [non_active_grp];
 
     user_groups.initialize();
     assert.equal(user_groups.get_user_group_from_id(students.id), students);
+    assert.equal(user_groups.get_active_user_group_from_id(students.id), students);
+
+    assert.equal(user_groups.get_user_group_from_id(non_active_grp.id), non_active_grp);
 
     const admins = {
         name: 'Admins',
@@ -26,8 +38,9 @@ run_test('user_groups', () => {
         members: [1, 2, 3],
     };
 
-    user_groups.add(admins);
+    user_groups.add_in_realm(admins);
     assert.equal(user_groups.get_user_group_from_id(admins.id), admins);
+    assert.equal(user_groups.get_active_user_group_from_id(admins.id), admins);
 
     const update_name_event = {
         group_id: admins.id,
@@ -54,19 +67,24 @@ run_test('user_groups', () => {
 
     user_groups.remove(students);
 
-    blueslip.set_test_data('error', 'Unknown group_id in get_user_group_from_id: ' + students.id);
-    assert.equal(user_groups.get_user_group_from_id(students.id), undefined);
+    blueslip.set_test_data('error', 'Unknown group_id in get_active_user_group_from_id: ' + students.id);
+    assert.equal(user_groups.get_user_group_from_id(students.id), students);
+    assert.equal(user_groups.is_active_user_group(students), false);
+    assert.equal(user_groups.get_active_user_group_from_id(students.id), undefined);
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
+    let active_user_groups_array = user_groups.get_realm_user_groups();
+    assert.equal(active_user_groups_array.length, 1);
 
     assert.equal(user_groups.get_user_group_from_name(all.name), undefined);
     assert.equal(user_groups.get_user_group_from_name(admins.name).id, 1);
+    assert.equal(user_groups.get_active_user_group_from_id(admins.id), admins);
 
-    user_groups.add(all);
-    const user_groups_array = user_groups.get_realm_user_groups();
-    assert.equal(user_groups_array.length, 2);
-    assert.equal(user_groups_array[1].name, 'Everyone');
-    assert.equal(user_groups_array[0].name, 'new admins');
+    user_groups.add_in_realm(all);
+    active_user_groups_array = user_groups.get_realm_user_groups();
+    assert.equal(active_user_groups_array.length, 2);
+    assert.equal(active_user_groups_array[1].name, 'Everyone');
+    assert.equal(active_user_groups_array[0].name, 'new admins');
 
     assert(!user_groups.is_member_of(admins.id, 4));
     assert(user_groups.is_member_of(admins.id, 3));

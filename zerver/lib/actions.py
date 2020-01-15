@@ -5655,6 +5655,7 @@ def do_send_create_user_group_event(user_group: UserGroup, members: List[UserPro
                             members=[member.id for member in members],
                             description=user_group.description,
                             id=user_group.id,
+                            is_active=user_group.is_active
                             ),
                  )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -5832,7 +5833,10 @@ def do_send_delete_user_group_event(realm: Realm, user_group_id: int,
 
 def check_delete_user_group(user_group_id: int, user_profile: UserProfile) -> None:
     user_group = access_user_group_by_id(user_group_id, user_profile)
-    user_group.delete()
+    if not user_group.is_active:
+        return
+    user_group.is_active = False
+    user_group.save(update_fields=["is_active"])
     do_send_delete_user_group_event(user_profile.realm, user_group_id, user_profile.realm.id)
 
 def missing_any_realm_internal_bots() -> bool:

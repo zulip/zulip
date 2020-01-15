@@ -486,7 +486,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'user_group':
         if (event.op === 'add') {
-            user_groups.add(event.group);
+            user_groups.add_in_realm(event.group);
         } else if (event.op === 'add_members') {
             user_groups.add_members(event.group_id, event.user_ids);
         } else if (event.op === 'remove_members') {
