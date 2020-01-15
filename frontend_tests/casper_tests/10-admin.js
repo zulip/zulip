@@ -24,8 +24,10 @@ casper.then(function () {
 });
 
 function submit_notifications_stream_settings() {
-    casper.waitUntilVisible('#org-submit-notifications[data-status="unsaved"]', function () {
-        casper.test.assertSelectorHasText('#org-submit-notifications', 'Save');
+    casper.then(function () {
+        casper.waitUntilVisible('#org-submit-notifications[data-status="unsaved"]', function () {
+            casper.test.assertSelectorHasText('#org-submit-notifications', 'Save');
+        });
     });
     casper.then(function () {
         casper.click('#org-submit-notifications');
@@ -41,9 +43,11 @@ casper.then(function () {
         casper.sendKeys('#id_realm_notifications_stream .dropdown-search > input[type=text]', 'verona');
         casper.click("#id_realm_notifications_stream .dropdown-list-body li.stream_name");
     });
+});
 
-    submit_notifications_stream_settings();
+submit_notifications_stream_settings();
 
+casper.then(function () {
     casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
@@ -51,9 +55,11 @@ casper.then(function () {
 
 casper.then(function () {
     casper.click("#notifications_stream_disable");
+});
 
-    submit_notifications_stream_settings();
+submit_notifications_stream_settings();
 
+casper.then(function () {
     casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
@@ -68,9 +74,11 @@ casper.then(function () {
         casper.sendKeys('#id_realm_signup_notifications_stream .dropdown-search > input[type=text]', 'verona');
         casper.click("#id_realm_signup_notifications_stream .dropdown-list-body li.stream_name");
     });
+});
 
-    submit_notifications_stream_settings();
+submit_notifications_stream_settings();
 
+casper.then(function () {
     casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
@@ -78,9 +86,11 @@ casper.then(function () {
 
 casper.then(function () {
     casper.click("#signup_notifications_stream_disable");
+});
 
-    submit_notifications_stream_settings();
+submit_notifications_stream_settings();
 
+casper.then(function () {
     casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
