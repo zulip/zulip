@@ -134,8 +134,9 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
     return str(mm_address)
 
 def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bool=False,
-                         include_quotes: bool=False, include_footer: bool=False) -> str:
-    body = extract_body(message, include_quotes)
+                         include_quotes: bool=False, include_footer: bool=False,
+                         prefer_text: bool=True) -> str:
+    body = extract_body(message, include_quotes, prefer_text)
     # Remove null characters, since Zulip will reject
     body = body.replace("\x00", "")
     if not include_footer:
@@ -186,23 +187,21 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
     return None
 
 talon_initialized = False
-def extract_body(message: message.Message, include_quotes: bool=False) -> str:
+def extract_body(message: message.Message, include_quotes: bool=False, prefer_text: bool=True) -> str:
     import talon
     global talon_initialized
     if not talon_initialized:
         talon.init()
         talon_initialized = True
 
-    # If the message contains a plaintext version of the body, use
-    # that.
     plaintext_content = get_message_part_by_type(message, "text/plain")
-    if plaintext_content:
+    if prefer_text and plaintext_content:
         if include_quotes:
             return plaintext_content
         else:
             return talon.quotations.extract_from_plain(plaintext_content)
 
-    # If we only have an HTML version, try to make that look nice.
+    # If we have to use the HTML version, try to make that look nice.
     html_content = get_message_part_by_type(message, "text/html")
     if html_content:
         if include_quotes:

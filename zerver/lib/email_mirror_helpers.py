@@ -17,6 +17,8 @@ optional_address_tokens = {
     "show-sender": default_option_handler_factory("show-sender"),
     "include-footer": default_option_handler_factory("include-footer"),
     "include-quotes": default_option_handler_factory("include-quotes"),
+    "prefer-text": lambda options: options.update(prefer_text=True),
+    "prefer-html": lambda options: options.update(prefer_text=False),
 }
 
 class ZulipEmailForwardError(Exception):
