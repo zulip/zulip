@@ -301,7 +301,9 @@ function set_stream_unread_count(stream_id, count) {
 }
 
 exports.update_streams_sidebar = function () {
+    const finish = blueslip.start_timing('build_stream_list');
     exports.build_stream_list();
+    finish();
     exports.stream_cursor.redraw();
 
     if (!narrow_state.active()) {

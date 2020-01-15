@@ -79,5 +79,9 @@ exports.make_zblueslip = function (opts) {
         return ex.message;
     };
 
+    lib.start_timing = () => {
+        return () => {};
+    };
+
     return lib;
 };

@@ -9,6 +9,8 @@ set_global('Element', function () {
     return { };
 });
 
+set_global('blueslip', global.make_zblueslip());
+
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.
 // We'll simulate most other objects ourselves.

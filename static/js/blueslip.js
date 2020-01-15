@@ -258,6 +258,18 @@ exports.fatal = function blueslip_fatal(msg, more_info) {
     throw new BlueslipError(msg, more_info);
 };
 
+exports.timings = new Map();
+
+exports.start_timing = function (label) {
+    const t1 = performance.now();
+
+    return function () {
+        const t2 = performance.now();
+        const elapsed = t2 - t1;
+        exports.timings.set(label, elapsed);
+    };
+};
+
 // Produces an easy-to-read preview on an HTML element.  Currently
 // only used for including in error report emails; be sure to discuss
 // with other developers before using it in a user-facing context
