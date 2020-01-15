@@ -5,9 +5,19 @@ from django.utils.text import slugify
 
 from zerver.models import Stream
 
-from typing import Dict, Tuple
+from typing import Any, Callable, Dict, Tuple
 
-optional_address_tokens = ["show-sender", "include-footer", "include-quotes"]
+def default_option_handler_factory(address_option: str) -> Callable[[Dict[str, Any]], None]:
+    def option_setter(options_dict: Dict[str, Any]) -> None:
+        options_dict[address_option.replace('-', '_')] = True
+
+    return option_setter
+
+optional_address_tokens = {
+    "show-sender": default_option_handler_factory("show-sender"),
+    "include-footer": default_option_handler_factory("include-footer"),
+    "include-quotes": default_option_handler_factory("include-quotes"),
+}
 
 class ZulipEmailForwardError(Exception):
     pass
@@ -77,16 +87,15 @@ def decode_email_address(email: str) -> Tuple[str, Dict[str, bool]]:
     options = {}  # type: Dict[str, bool]
     for part in parts:
         if part in optional_address_tokens:
-            options[part.replace('-', '_')] = True
+            optional_address_tokens[part](options)
 
-    for key in options.keys():
-        parts.remove(key.replace('_', '-'))
+    remaining_parts = [part for part in parts if part not in optional_address_tokens]
 
-    # At this point, there should be one or two parts left:
+    # There should be one or two parts left:
     # [stream_name, email_token] or just [email_token]
-    if len(parts) == 1:
-        token = parts[0]
+    if len(remaining_parts) == 1:
+        token = remaining_parts[0]
     else:
-        token = parts[1]
+        token = remaining_parts[1]
 
     return token, options
