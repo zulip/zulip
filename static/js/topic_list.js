@@ -100,6 +100,9 @@ exports.widget = function (parent_elem, my_stream_id) {
             const is_active_topic = self.active_topic === topic_name.toLowerCase();
 
             if (!zoomed) {
+                // We unconditionally skip showing muted topics when
+                // not zoomed, even if they have unread messages.
+                //
                 // We limit the number of topics we show to at most
                 // max_topics_with_unread when not zoomed.
                 //
@@ -107,7 +110,8 @@ exports.widget = function (parent_elem, my_stream_id) {
                 // is in the set of those with unreads to avoid ending up with
                 // max_topics_with_unread + 1 total topics if the active topic comes
                 // after the first several topics with unread messages.
-                if (topics_selected >= max_topics_with_unread && !is_active_topic) {
+                if (!is_active_topic && (topics_selected >= max_topics_with_unread ||
+                                         muting.is_topic_muted(my_stream_id, topic_name))) {
                     if (num_unread > 0) {
                         more_topics_unreads += num_unread;
                     }
