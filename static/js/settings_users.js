@@ -128,7 +128,7 @@ function populate_users(realm_people_data) {
     let active_users = [];
     let deactivated_users = [];
     let bots = [];
-    _.each(realm_people_data.members, function (user) {
+    for (const user of realm_people_data.members) {
         user.is_active_human = user.is_active && !user.is_bot;
         if (user.is_bot) {
             // Convert bot type id to string for viewing to the users.
@@ -148,7 +148,7 @@ function populate_users(realm_people_data) {
         } else {
             deactivated_users.push(user);
         }
-    });
+    }
 
     active_users = _.sortBy(active_users, 'full_name');
     deactivated_users = _.sortBy(deactivated_users, 'full_name');

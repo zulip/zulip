@@ -15,8 +15,8 @@ exports.init = function () {
 exports.init();
 
 exports.add = function (user_group) {
-    // Reformat the user group members structure to be a dict.
-    user_group.members = Dict.from_array(user_group.members);
+    // Reformat the user group members structure to be a set.
+    user_group.members = new Set(user_group.members);
     user_group_name_dict.set(user_group.name, user_group);
     user_group_by_id_dict.set(user_group.id, user_group);
 };
@@ -72,14 +72,14 @@ exports.is_member_of = function (user_group_id, user_id) {
 exports.add_members = function (user_group_id, user_ids) {
     const user_group = user_group_by_id_dict.get(user_group_id);
     _.each(user_ids, function (user_id) {
-        user_group.members.set(user_id, true);
+        user_group.members.add(user_id);
     });
 };
 
 exports.remove_members = function (user_group_id, user_ids) {
     const user_group = user_group_by_id_dict.get(user_group_id);
     _.each(user_ids, function (user_id) {
-        user_group.members.del(user_id);
+        user_group.members.delete(user_id);
     });
 };
 

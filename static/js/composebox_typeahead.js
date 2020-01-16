@@ -1070,17 +1070,15 @@ exports.initialize = function () {
         },
         updater: function (item) {
             if (user_groups.is_user_group(item)) {
-                _.chain(item.members.keys())
-                    .map(function (user_id) {
-                        return people.get_person_from_user_id(user_id);
-                    }).filter(function (user) {
-                        // filter out inserted users and current user from pill insertion
-                        const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
-                        const current_user = people.is_current_user(user.email);
-                        return inserted_users.indexOf(user.user_id) === -1 && !current_user;
-                    }).each(function (user) {
+                for (const user_id of item.members) {
+                    const user = people.get_person_from_user_id(user_id);
+                    // filter out inserted users and current user from pill insertion
+                    const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
+                    const current_user = people.is_current_user(user.email);
+                    if (inserted_users.indexOf(user.user_id) === -1 && !current_user) {
                         compose_pm_pill.set_from_typeahead(user);
-                    });
+                    }
+                }
                 // clear input pill in the event no pills were added
                 const pill_widget = compose_pm_pill.widget;
                 if (pill_widget.clear_text !== undefined) {
