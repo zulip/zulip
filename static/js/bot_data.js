@@ -4,7 +4,7 @@ const bots = new IntDict();
 const bot_fields = ['api_key', 'avatar_url', 'default_all_public_streams',
                     'default_events_register_stream', 'default_sending_stream',
                     'email', 'full_name', 'is_active', 'owner', 'bot_type', 'user_id'];
-const services = {};
+const services = new IntDict();
 const services_fields = ['base_url', 'interface',
                          'config_data', 'service_name', 'token'];
 
@@ -29,7 +29,7 @@ exports.add = function bot_data__add(bot) {
     const clean_services = _.map(bot.services, function (service) {
         return _.pick(service, services_fields);
     });
-    services[bot.user_id] = clean_services;
+    services.set(bot.user_id, clean_services);
 
     send_change_event();
 };
@@ -41,7 +41,7 @@ exports.deactivate = function bot_data__deactivate(bot_id) {
 
 exports.del = function bot_data__del(bot_id) {
     bots.del(bot_id);
-    delete services[bot_id];
+    services.del(bot_id);
     send_change_event();
 };
 
@@ -51,7 +51,7 @@ exports.update = function bot_data__update(bot_id, bot_update) {
     set_can_admin(bot);
 
     // We currently only support one service per bot.
-    const service = services[bot_id][0];
+    const service = services.get(bot_id)[0];
     if (typeof bot_update.services !== 'undefined' && bot_update.services.length > 0) {
         _.extend(service, _.pick(bot_update.services[0], services_fields));
     }
@@ -79,7 +79,7 @@ exports.get_bot_owner_email = function (bot_id) {
 };
 
 exports.get_services = function bot_data__get_services(bot_id) {
-    return services[bot_id];
+    return services.get(bot_id);
 };
 
 exports.initialize = function () {
