@@ -502,18 +502,6 @@ Filter.prototype = {
         return sorted_terms;
     },
 
-    is_exactly: function () {
-        // TODO: in ES6 use spread operator
-        //
-        // Examples calls:
-        //     filter.is_exactly('stream', 'topic')
-        //     filter.is_exactly('pm-with')
-        const wanted_term_types = [].slice.call(arguments);
-        const term_types = this.sorted_term_types();
-
-        return _.isEqual(term_types, wanted_term_types);
-    },
-
     can_bucket_by: function () {
         // TODO: in ES6 use spread operator
         //
