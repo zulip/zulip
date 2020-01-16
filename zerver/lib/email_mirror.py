@@ -186,8 +186,31 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
 
     return None
 
-talon_initialized = False
 def extract_body(message: message.Message, include_quotes: bool=False, prefer_text: bool=True) -> str:
+    plaintext_content = extract_plaintext_body(message, include_quotes)
+    html_content = extract_html_body(message, include_quotes)
+
+    if plaintext_content is None and html_content is None:
+        logging.warning("Content types: %s" % ([part.get_content_type() for part in message.walk()],))
+        raise ZulipEmailForwardUserError("Unable to find plaintext or HTML message body")
+    if not plaintext_content and not html_content:
+        raise ZulipEmailForwardUserError("Email has no nonempty body sections; ignoring.")
+
+    if prefer_text:
+        if plaintext_content:
+            return plaintext_content
+        else:
+            assert html_content  # Needed for mypy. Ensured by the validating block above.
+            return html_content
+    else:
+        if html_content:
+            return html_content
+        else:
+            assert plaintext_content  # Needed for mypy. Ensured by the validating block above.
+            return plaintext_content
+
+talon_initialized = False
+def extract_plaintext_body(message: message.Message, include_quotes: bool=False) -> Optional[str]:
     import talon
     global talon_initialized
     if not talon_initialized:
@@ -195,25 +218,29 @@ def extract_body(message: message.Message, include_quotes: bool=False, prefer_te
         talon_initialized = True
 
     plaintext_content = get_message_part_by_type(message, "text/plain")
-    if prefer_text and plaintext_content:
+    if plaintext_content is not None:
         if include_quotes:
             return plaintext_content
         else:
             return talon.quotations.extract_from_plain(plaintext_content)
+    else:
+        return None
 
-    # If we have to use the HTML version, try to make that look nice.
+def extract_html_body(message: message.Message, include_quotes: bool=False) -> Optional[str]:
+    import talon
+    global talon_initialized
+    if not talon_initialized:  # nocoverage
+        talon.init()
+        talon_initialized = True
+
     html_content = get_message_part_by_type(message, "text/html")
-    if html_content:
+    if html_content is not None:
         if include_quotes:
             return convert_html_to_markdown(html_content)
         else:
             return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
-
-    if plaintext_content is not None or html_content is not None:
-        raise ZulipEmailForwardUserError("Email has no nonempty body sections; ignoring.")
-
-    logging.warning("Content types: %s" % ([part.get_content_type() for part in message.walk()],))
-    raise ZulipEmailForwardUserError("Unable to find plaintext or HTML message body")
+    else:
+        return None
 
 def filter_footer(text: str) -> str:
     # Try to filter out obvious footers.

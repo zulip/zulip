@@ -535,6 +535,34 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
         self.assertEqual(message.content, "**Test html message**")
 
+    def test_receive_only_plaintext_with_prefer_html_option(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_address_prefer_html = "Denmark.{}.prefer-html@testserver".format(stream.email_token)
+
+        text = "Test message"
+        # This should be correctly identified as empty html body:
+        html = "<html><body></body></html>"
+
+        incoming_valid_message = MIMEMultipart()
+        text_message = MIMEText(text)
+        html_message = MIMEText(html, 'html')
+        incoming_valid_message.attach(text_message)
+        incoming_valid_message.attach(html_message)
+
+        incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_address_prefer_html
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+
+        # HTML body is empty, so the plaintext content should be picked, despite prefer-html option.
+        self.assertEqual(message.content, "Test message")
+
 class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
     def test_receive_stream_email_messages_empty_body(self) -> None:
         # build dummy messages for stream
