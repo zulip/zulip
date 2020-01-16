@@ -19,8 +19,7 @@ exports.setup_subscriptions_tab_hash = function (tab_key_value) {
 };
 
 exports.settings_for_sub = function (sub) {
-    const id = sub.stream_id;
-    return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
+    return $("#subscription_overlay .subscription_settings[data-stream-id='" + sub.stream_id + "']");
 };
 
 exports.is_sub_settings_active = function (sub) {
@@ -96,8 +95,8 @@ function format_member_list_elem(email) {
 }
 
 function get_subscriber_list(sub_row) {
-    const id = sub_row.data("stream-id");
-    return $('.subscription_settings[data-stream-id="' + id + '"] .subscriber-list');
+    const stream_id_str = sub_row.data("stream-id");
+    return $('.subscription_settings[data-stream-id="' + stream_id_str + '"] .subscriber-list');
 }
 
 exports.update_stream_name = function (sub, new_name) {
