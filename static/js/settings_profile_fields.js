@@ -264,12 +264,12 @@ function set_up_choices_field_edit_form(profile_field, field_data) {
 }
 
 function open_edit_form(e) {
-    const field_id = $(e.currentTarget).attr("data-profile-field-id");
+    const field_id = parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
     const profile_field = get_profile_field_info(field_id);
 
     profile_field.row.hide();
     profile_field.form.show();
-    const field = get_profile_field(parseInt(field_id, 10));
+    const field = get_profile_field(field_id);
     // Set initial value in edit form
     profile_field.form.find('input[name=name]').val(field.name);
     profile_field.form.find('input[name=hint]').val(field.hint);
@@ -314,7 +314,7 @@ function open_edit_form(e) {
     profile_field.form.find(".edit_profile_field_choices_container").on("input", ".choice-row input", add_choice_row);
     profile_field.form.find(".edit_profile_field_choices_container").on("click", "button.delete-choice", delete_choice_row);
     $(".profile_field_external_accounts_edit select").on('change', function (e) {
-        const field_id = $(e.target).closest('.profile-field-form').attr('data-profile-field-id');
+        const field_id = parseInt($(e.target).closest('.profile-field-form').attr('data-profile-field-id'), 10);
         const field_form = get_profile_field_info(field_id);
         set_up_external_account_field_edit_form(field_form, "");
     });
