@@ -261,7 +261,7 @@ def validate_user_custom_profile_data(realm_id: int,
         if result is not None:
             raise JsonableError(result)
 
-def compute_show_invites_and_add_stream(user_profile: UserProfile):
+def compute_show_invites_and_add_stream(user_profile: UserProfile) -> List[bool]:
 
     show_invites = True
     show_add_streams = True
@@ -272,5 +272,5 @@ def compute_show_invites_and_add_stream(user_profile: UserProfile):
     if user_profile.is_guest:
         show_invites = False
         show_add_streams = False
-        
-    return show_invites, show_add_streams
+
+    return [show_invites, show_add_streams]

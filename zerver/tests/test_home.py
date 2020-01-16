@@ -4,13 +4,11 @@ import ujson
 
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
-from django.test import override_settings
 from mock import MagicMock, patch
 import urllib
 from typing import Any, Dict
-from zproject.backends import ZulipLDAPAuthBackend
 from zerver.lib.actions import (
-    do_create_user, do_change_logo_source, do_set_realm_property,
+    do_create_user, do_change_logo_source
 )
 from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.test_classes import ZulipTestCase
@@ -19,7 +17,6 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_runner import slow
-from zerver.lib.test_helpers import MockLDAP
 from zerver.lib.users import compute_show_invites_and_add_stream
 from zerver.models import (
     get_realm, get_stream, get_user, UserProfile,
@@ -959,7 +956,7 @@ class HomeTest(ZulipTestCase):
         realm.save()
 
         result = compute_show_invites_and_add_stream(user)
-        self.assertEqual(result,(True,True))
+        self.assertEqual(result, [True, True])
 
     def test_compute_show_invites_and_add_stream_require_admin(self) -> None:
         user = self.example_user("hamlet")
@@ -969,10 +966,10 @@ class HomeTest(ZulipTestCase):
         realm.save()
 
         result = compute_show_invites_and_add_stream(user)
-        self.assertEqual(result,(False,True))
+        self.assertEqual(result, [False, True])
 
     def test_compute_show_invites_and_add_stream_guest(self) -> None:
         user = self.example_user("polonius")
 
         result = compute_show_invites_and_add_stream(user)
-        self.assertEqual(result,(False,False))
+        self.assertEqual(result, [False, False])
