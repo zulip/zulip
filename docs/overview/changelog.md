@@ -7,6 +7,26 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.1.2 -- 2020-01-16
+
+- Corrected fix for CVE-2019-19775 (the original fix was affected by
+  an unfixed security bug in Python's urllib, CVE-2015-2104).
+- Migrated data for handling replies to missed-message emails from
+  semi-persistent redis to the fully persistent database.
+- Added authentication for redis and memcached even in configurations
+  where these are running on localhost, for add hardening against
+  attacks from malicious processes running on the Zulip server.
+- Improved logging for misconfigurations of LDAP authentication.
+- Improved error handling for invalid LDAP configurations.
+- Improved error tracebacks for invalid memcached keys.
+- Fixed support for using LDAP with email address visibility
+  limited to administrators.
+- Fixed styling of complex markup within /me messages.
+- Fixed left sidebar duplicating some group private message threads.
+- Fixed the "Mentions" narrow being unable to mark messages as read.
+- Fixed error handling bug preventing rerunning the installer.
+- Fixed a few minor issues with migrations for upgrading from 2.0.x.
+
 ### 2.1.1 -- 2019-12-13
 
 - Fixed upgrading to 2.1.x with the LDAP integration enabled in a
