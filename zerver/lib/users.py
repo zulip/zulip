@@ -260,3 +260,17 @@ def validate_user_custom_profile_data(realm_id: int,
         result = validate_user_custom_profile_field(realm_id, field, item['value'])
         if result is not None:
             raise JsonableError(result)
+
+def compute_show_invites_and_add_stream(user_profile: UserProfile):
+
+    show_invites = True
+    show_add_streams = True
+
+    # Some realms only allow admins to invite users
+    if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
+        show_invites = False
+    if user_profile.is_guest:
+        show_invites = False
+        show_add_streams = False
+        
+    return show_invites, show_add_streams

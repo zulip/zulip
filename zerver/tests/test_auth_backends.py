@@ -63,7 +63,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
     PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap, \
     get_external_method_dicts, AzureADAuthBackend, check_password_strength, \
-    ZulipLDAPUser, only_auth_enabled
+    ZulipLDAPUser
 
 from zerver.views.auth import (maybe_send_to_registration,
                                _subdomain_token_salt)
@@ -484,15 +484,6 @@ class AuthBackendTest(ZulipTestCase):
             backend.get_verified_emails = orig_get_verified_emails
             httpretty.disable()
             httpretty.reset()
-
-    def test_only_auth_enabled_ldap(self) -> None:
-        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',)):
-            self.assertTrue(only_auth_enabled(["LDAP"], None))
-
-    def test_only_auth_enabled_multiple(self) -> None:
-        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
-                                                    'zproject.backends.GitHubAuthBackend')):
-            self.assertFalse(only_auth_enabled(["GitHub"], None))
 
 class CheckPasswordStrengthTest(ZulipTestCase):
     def test_check_password_strength(self) -> None:

@@ -92,16 +92,6 @@ def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) ->
                 return True
     return False
 
-def only_auth_enabled(backends_to_check: List[str], realm: Optional[Realm]) -> bool:
-    enabled_method_dict = build_method_dict(realm)
-    for supported_backend in supported_auth_backends():
-        for backend_name in backends_to_check:
-            backend = AUTH_BACKEND_NAME_MAP[backend_name]
-            if not enabled_method_dict[backend_name] or not isinstance(supported_backend, backend):
-                return False
-    return True
-
-
 def ldap_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['LDAP'], realm)
 

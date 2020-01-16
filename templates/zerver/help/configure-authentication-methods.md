@@ -7,7 +7,9 @@ account, or your GitHub account. You can restrict users to logging in
 via only a subset of these methods.
 
 LDAP and various custom SSO login methods are currently restricted to
-self-hosted Zulips only.  SAML authentication is supported by Zulip
+self-hosted Zulips only. Please take a look at [inviting new users](/help/invite-new-users)
+on how to adjust the "who can invite" setting.
+SAML authentication is supported by Zulip
 Cloud but requires contacting support@zulipchat.com to configure it.
 
 **Note:** If you are running your own server,

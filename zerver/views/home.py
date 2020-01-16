@@ -24,9 +24,9 @@ from zerver.lib.i18n import get_language_list, get_language_name, \
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.users import compute_show_invites_and_add_stream
 from zerver.lib.utils import statsd, generate_random_token
 from two_factor.utils import default_device
-from zproject.backends import only_auth_enabled
 import calendar
 import logging
 import time
@@ -240,17 +240,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         page_params["enable_desktop_notifications"] = False
 
     statsd.incr('views.home')
-    show_invites = True
-    show_add_streams = True
-
-    # Some realms only allow admins to invite users
-    if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
-        show_invites = False
-    if user_profile.is_guest:
-        show_invites = False
-        show_add_streams = False
-    if only_auth_enabled(['LDAP'], user_profile.realm) and not user_profile.realm.invite_required:
-        show_invites = False
+    show_invites, show_add_streams = compute_show_invites_and_add_stream(user_profile)
 
     show_billing = False
     show_plans = False
