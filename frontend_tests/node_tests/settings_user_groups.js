@@ -5,8 +5,6 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 set_global('confirm_dialog', {});
 
-const Dict = zrequire('dict').Dict;
-
 const noop = function () {};
 
 const pills = {
@@ -97,7 +95,7 @@ run_test('populate_user_groups', () => {
         id: 1,
         name: 'Mobile',
         description: 'All mobile people',
-        members: Dict.from_array([2, 4]),
+        members: new Set([2, 4]),
     };
     const iago = {
         email: 'iago@zulip.com',
@@ -314,7 +312,7 @@ run_test('populate_user_groups', () => {
         global.patch_builtin('setTimeout', function (func) {
             func();
         });
-        realm_user_group.members = Dict.from_array([2, 31]);
+        realm_user_group.members = new Set([2, 31]);
         handler();
     };
 
@@ -339,7 +337,7 @@ run_test('with_external_user', () => {
         id: 1,
         name: 'Mobile',
         description: 'All mobile people',
-        members: Dict.from_array([2, 4]),
+        members: new Set([2, 4]),
     };
 
     user_groups.get_realm_user_groups = function () {
@@ -699,7 +697,7 @@ run_test('on_events', () => {
         const group_data = {
             name: 'translated: mobile',
             description: 'translated: All mobile members',
-            members: Dict.from_array([2, 31])};
+            members: new Set([2, 31])};
         user_groups.get_user_group_from_id = function () {
             return group_data;
         };
@@ -744,7 +742,7 @@ run_test('on_events', () => {
         sib_name.text(i18n.t('mobile'));
         sib_des.text(i18n.t('All mobile members'));
 
-        const group_data = {members: Dict.from_array([2, 31])};
+        const group_data = {members: new Set([2, 31])};
         user_groups.get_user_group_from_id = function () {
             return group_data;
         };
@@ -838,7 +836,7 @@ run_test('on_events', () => {
             id: 1,
             name: 'Mobile',
             description: 'All mobile people',
-            members: Dict.from_array([2, 4]),
+            members: new Set([2, 4]),
         };
 
         user_groups.get_user_group_from_id = function (id) {
