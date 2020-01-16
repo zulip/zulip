@@ -1120,7 +1120,7 @@ run_test('term_type', () => {
         };
     }
 
-    assert_term_type(term('streams', 'public'), 'streams');
+    assert_term_type(term('streams', 'public'), 'streams-public');
     assert_term_type(term('stream', 'whatever'), 'stream');
     assert_term_type(term('pm-with', 'whomever'), 'pm-with');
     assert_term_type(term('pm-with', 'whomever', true), 'not-pm-with');

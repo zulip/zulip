@@ -587,7 +587,7 @@ Filter.term_type = function (term) {
 
     result += operator;
 
-    if (_.contains(['is', 'has', 'in'], operator)) {
+    if (_.contains(['is', 'has', 'in', 'streams'], operator)) {
         result += '-' + operand;
     }
 
