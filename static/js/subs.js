@@ -15,7 +15,7 @@ exports.show_subs_pane = {
 };
 
 exports.check_button_for_sub = function (sub) {
-    const id = parseInt(sub.stream_id, 10);
+    const id = sub.stream_id;
     return $(".stream-row[data-stream-id='" + id + "'] .check");
 };
 
@@ -26,12 +26,12 @@ exports.row_for_stream_id = function (stream_id) {
 exports.settings_button_for_sub = function (sub) {
     // We don't do expectOne() here, because this button is only
     // visible if the user has that stream selected in the streams UI.
-    const id = parseInt(sub.stream_id, 10);
+    const id = sub.stream_id;
     return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
 };
 
 function get_row_data(row) {
-    const row_id = row.attr('data-stream-id');
+    const row_id = parseInt(row.attr('data-stream-id'), 10);
     if (row_id) {
         const row_object = stream_data.get_sub_by_id(row_id);
         return {
@@ -43,7 +43,7 @@ function get_row_data(row) {
 
 exports.get_active_data = function () {
     const active_row = $('div.stream-row.active');
-    const valid_active_id = active_row.attr('data-stream-id');
+    const valid_active_id = parseInt(active_row.attr('data-stream-id'), 10);
     const active_tab = $('.subscriptions-container').find('div.ind-tab.selected');
     return {
         row: active_row,
