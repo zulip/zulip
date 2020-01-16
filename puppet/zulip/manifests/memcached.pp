@@ -2,9 +2,18 @@ class zulip::memcached {
   include zulip::sasl_modules
   include zulip::systemd_daemon_reload
 
-  $memcached_packages = $::osfamily ? {
-    'debian' => [ 'memcached', 'sasl2-bin' ],
-    'redhat' => [ 'memcached' ],
+  case $::osfamily {
+    'debian': {
+      $memcached_packages = [ 'memcached', 'sasl2-bin' ]
+      $memcached_user = 'memcache'
+    }
+    'redhat': {
+      $memcached_packages = [ 'memcached' ]
+      $memcached_user = 'memcached'
+    }
+    default: {
+      fail('osfamily not supported')
+    }
   }
   package { $memcached_packages: ensure => 'installed' }
 
@@ -36,8 +45,8 @@ class zulip::memcached {
   }
   file { '/etc/sasl2/memcached-sasldb2':
     require => Exec[generate_memcached_sasldb2],
-    owner   => 'memcache',
-    group   => 'memcache',
+    owner   => $memcached_user,
+    group   => $memcached_user,
     mode    => '0600',
   }
   file { '/etc/sasl2/memcached.conf':
