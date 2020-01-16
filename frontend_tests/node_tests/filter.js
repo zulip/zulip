@@ -86,7 +86,8 @@ run_test('basics', () => {
     assert(!filter.contains_only_private_messages());
     assert(!filter.allow_use_first_unread_when_narrowing());
     assert(!filter.can_apply_locally());
-    assert(!filter.is_exactly('stream'));
+    assert(filter.can_bucket_by('stream'));
+    assert(filter.can_bucket_by('stream', 'topic'));
 
     // If our only stream operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a stream operator, because we don't
@@ -392,7 +393,7 @@ run_test('new_style_operators', () => {
     const filter = new Filter(operators);
 
     assert.deepEqual(filter.operands('stream'), ['foo']);
-    assert(filter.is_exactly('stream'));
+    assert(filter.can_bucket_by('stream'));
 });
 
 run_test('public_operators', () => {
@@ -404,7 +405,7 @@ run_test('public_operators', () => {
 
     let filter = new Filter(operators);
     assert_same_operators(filter.public_operators(), operators);
-    assert(!filter.is_exactly('stream'));
+    assert(filter.can_bucket_by('stream'));
 
     global.page_params.narrow_stream = 'default';
     operators = [
@@ -423,7 +424,7 @@ run_test('redundancies', () => {
         { operator: 'is', operand: 'private' },
     ];
     filter = new Filter(terms);
-    assert(filter.is_exactly('pm-with'));
+    assert(filter.can_bucket_by('pm-with'));
 
     terms = [
         { operator: 'pm-with',
@@ -433,7 +434,7 @@ run_test('redundancies', () => {
         { operator: 'is', operand: 'private' },
     ];
     filter = new Filter(terms);
-    assert(filter.is_exactly('is-private', 'not-pm-with'));
+    assert(filter.can_bucket_by('is-private', 'not-pm-with'));
 });
 
 run_test('canonicalizations', () => {
@@ -1025,14 +1026,14 @@ run_test('describe', () => {
     assert.equal(Filter.describe(narrow), string);
 });
 
-run_test('is_functions', () => {
+run_test('can_bucket_by', () => {
     let terms = [
         {operator: 'stream', operand: 'My Stream'},
     ];
     let filter = new Filter(terms);
-    assert.equal(filter.is_exactly('stream'), true);
-    assert.equal(filter.is_exactly('stream', 'topic'), false);
-    assert.equal(filter.is_exactly('pm-with'), false);
+    assert.equal(filter.can_bucket_by('stream'), true);
+    assert.equal(filter.can_bucket_by('stream', 'topic'), false);
+    assert.equal(filter.can_bucket_by('pm-with'), false);
 
     terms = [
         // try a non-orthodox ordering
@@ -1042,9 +1043,6 @@ run_test('is_functions', () => {
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by('stream'), true);
     assert.equal(filter.can_bucket_by('stream', 'topic'), true);
-    assert.equal(filter.is_exactly('stream'), false);
-    assert.equal(filter.is_exactly('stream', 'topic'), true);
-    assert.equal(filter.is_exactly('pm-with'), false);
     assert.equal(filter.can_bucket_by('pm-with'), false);
 
     terms = [
@@ -1054,49 +1052,45 @@ run_test('is_functions', () => {
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by('stream'), false);
     assert.equal(filter.can_bucket_by('stream', 'topic'), false);
-    assert.equal(filter.is_exactly('stream'), false);
-    assert.equal(filter.is_exactly('stream', 'topic'), false);
-    assert.equal(filter.is_exactly('pm-with'), false);
+    assert.equal(filter.can_bucket_by('pm-with'), false);
 
     terms = [
         {operator: 'pm-with', operand: 'foo@example.com', negated: true},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('stream'), false);
-    assert.equal(filter.is_exactly('stream', 'topic'), false);
-    assert.equal(filter.is_exactly('pm-with'), false);
+    assert.equal(filter.can_bucket_by('stream'), false);
+    assert.equal(filter.can_bucket_by('stream', 'topic'), false);
+    assert.equal(filter.can_bucket_by('pm-with'), false);
 
     terms = [
         {operator: 'pm-with', operand: 'foo@example.com,bar@example.com'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('stream'), false);
-    assert.equal(filter.is_exactly('stream', 'topic'), false);
-    assert.equal(filter.is_exactly('pm-with'), true);
-    assert.equal(filter.is_exactly('is-mentioned'), false);
-    assert.equal(filter.is_exactly('is-private'), false);
+    assert.equal(filter.can_bucket_by('stream'), false);
+    assert.equal(filter.can_bucket_by('stream', 'topic'), false);
+    assert.equal(filter.can_bucket_by('pm-with'), true);
+    assert.equal(filter.can_bucket_by('is-mentioned'), false);
+    assert.equal(filter.can_bucket_by('is-private'), false);
 
     terms = [
         {operator: 'is', operand: 'private'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('is-mentioned'), false);
-    assert.equal(filter.is_exactly('is-private'), true);
+    assert.equal(filter.can_bucket_by('is-mentioned'), false);
+    assert.equal(filter.can_bucket_by('is-private'), true);
 
     terms = [
         {operator: 'is', operand: 'mentioned'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('is-mentioned'), true);
-    assert.equal(filter.is_exactly('is-private'), false);
+    assert.equal(filter.can_bucket_by('is-mentioned'), true);
+    assert.equal(filter.can_bucket_by('is-private'), false);
 
     terms = [
         {operator: 'is', operand: 'mentioned'},
         {operator: 'is', operand: 'starred'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('is-mentioned'), false);
-    assert.equal(filter.is_exactly('is-private'), false);
     assert.equal(filter.can_bucket_by('is-mentioned'), true);
     assert.equal(filter.can_bucket_by('is-private'), false);
 
@@ -1109,8 +1103,8 @@ run_test('is_functions', () => {
         {operator: 'is', operand: 'mentioned', negated: true},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('is-mentioned'), false);
-    assert.equal(filter.is_exactly('is-private'), false);
+    assert.equal(filter.can_bucket_by('is-mentioned'), false);
+    assert.equal(filter.can_bucket_by('is-private'), false);
 });
 
 run_test('term_type', () => {
