@@ -1,4 +1,6 @@
-const bots = {};
+const IntDict = require('./int_dict').IntDict;
+
+const bots = new IntDict();
 const bot_fields = ['api_key', 'avatar_url', 'default_all_public_streams',
                     'default_events_register_stream', 'default_sending_stream',
                     'email', 'full_name', 'is_active', 'owner', 'bot_type', 'user_id'];
@@ -22,7 +24,7 @@ const set_can_admin = function bot_data__set_can_admin(bot) {
 
 exports.add = function bot_data__add(bot) {
     const clean_bot = _.pick(bot, bot_fields);
-    bots[bot.user_id] = clean_bot;
+    bots.set(bot.user_id, clean_bot);
     set_can_admin(clean_bot);
     const clean_services = _.map(bot.services, function (service) {
         return _.pick(service, services_fields);
@@ -33,18 +35,18 @@ exports.add = function bot_data__add(bot) {
 };
 
 exports.deactivate = function bot_data__deactivate(bot_id) {
-    bots[bot_id].is_active = false;
+    bots.get(bot_id).is_active = false;
     send_change_event();
 };
 
 exports.del = function bot_data__del(bot_id) {
-    delete bots[bot_id];
+    bots.del(bot_id);
     delete services[bot_id];
     send_change_event();
 };
 
 exports.update = function bot_data__update(bot_id, bot_update) {
-    const bot = bots[bot_id];
+    const bot = bots.get(bot_id);
     _.extend(bot, _.pick(bot_update, bot_fields));
     set_can_admin(bot);
 
@@ -57,23 +59,23 @@ exports.update = function bot_data__update(bot_id, bot_update) {
 };
 
 exports.get_all_bots_for_current_user = function bots_data__get_editable() {
-    return _.filter(bots, function (bot) {
+    return bots.filter_values(function (bot) {
         return people.is_current_user(bot.owner);
     });
 };
 
 exports.get_editable = function bots_data__get_editable() {
-    return _.filter(bots, function (bot) {
+    return bots.filter_values(function (bot) {
         return bot.is_active && people.is_current_user(bot.owner);
     });
 };
 
 exports.get = function bot_data__get(bot_id) {
-    return bots[bot_id];
+    return bots.get(bot_id);
 };
 
 exports.get_bot_owner_email = function (bot_id) {
-    return bots[bot_id].owner;
+    return bots.get(bot_id).owner;
 };
 
 exports.get_services = function bot_data__get_services(bot_id) {
