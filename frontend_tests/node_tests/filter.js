@@ -316,11 +316,28 @@ run_test('can_mark_messages_read', () => {
     const in_home = [
         { operator: 'in', operand: 'home' },
     ];
+    const in_home_negated = [
+        { operator: 'in', operand: 'home', negated: true },
+    ];
     filter = new Filter(in_home);
     assert(filter.can_mark_messages_read());
     assert_not_mark_read_with_is_operands(in_home);
     assert_not_mark_read_with_has_operands(in_home);
     assert_not_mark_read_when_searching(in_home);
+    filter = new Filter(in_home_negated);
+    assert(!filter.can_mark_messages_read());
+
+    // Do not mark messages as read when in an unsupported 'in:*' filter.
+    const in_random = [
+        { operator: 'in', operand: 'xxxxxxxxx' },
+    ];
+    const in_random_negated = [
+        { operator: 'in', operand: 'xxxxxxxxx', negated: true },
+    ];
+    filter = new Filter(in_random);
+    assert(!filter.can_mark_messages_read());
+    filter = new Filter(in_random_negated);
+    assert(!filter.can_mark_messages_read());
 });
 
 run_test('show_first_unread', () => {
