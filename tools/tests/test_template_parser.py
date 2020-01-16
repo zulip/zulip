@@ -191,11 +191,35 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
-    def test_validate_jinja2_whitespace_markers(self) -> None:
+    def test_validate_jinja2_whitespace_markers_1(self) -> None:
         my_html = '''
         {% if foo -%}
         this is foo
+        {% endif %}
+        '''
+        validate(text=my_html)
+
+    def test_validate_jinja2_whitespace_markers_2(self) -> None:
+        my_html = '''
+        {% if foo %}
+        this is foo
         {%- endif %}
+        '''
+        validate(text=my_html)
+
+    def test_validate_jinja2_whitespace_markers_3(self) -> None:
+        my_html = '''
+        {% if foo %}
+        this is foo
+        {% endif -%}
+        '''
+        validate(text=my_html)
+
+    def test_validate_jinja2_whitespace_markers_4(self) -> None:
+        my_html = '''
+        {%- if foo %}
+        this is foo
+        {% endif %}
         '''
         validate(text=my_html)
 
@@ -203,17 +227,9 @@ class ParserTest(unittest.TestCase):
         my_html = '''
         {% if foo %}
         this is foo
-        {%- endif %}
+        {%- if bar %}
         '''
         self._assert_validate_error('Missing end tag', text=my_html)
-
-    def test_validate_mismatch_jinja2_whitespace_markers_2(self) -> None:
-        my_html = '''
-        {% if foo -%}
-        this is foo
-        {% endif %}
-        '''
-        self._assert_validate_error('No start tag', text=my_html)
 
     def test_validate_jinja2_whitespace_type2_markers(self) -> None:
         my_html = '''
@@ -222,22 +238,6 @@ class ParserTest(unittest.TestCase):
         {% endif %}
         '''
         validate(text=my_html)
-
-    def test_validate_mismatch_jinja2_whitespace_type2_markers(self) -> None:
-        my_html = '''
-        {%- if foo -%}
-        this is foo
-        {%- endif %}
-        '''
-        self._assert_validate_error('Missing end tag', text=my_html)
-
-    def test_validate_incomplete_jinja2_whitespace_type2_markers(self) -> None:
-        my_html = '''
-        {%- if foo %}
-        this is foo
-        {% endif %}
-        '''
-        self._assert_validate_error('Tag missing "-%}" at Line 2 Col 9:"{%- if foo %}"', text=my_html)
 
     def test_tokenize(self) -> None:
         tag = '<meta whatever>bla'
