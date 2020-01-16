@@ -404,6 +404,10 @@ Filter.prototype = {
             return true;
         }
 
+        if (_.isEqual(term_types, ['is-mentioned'])) {
+            return true;
+        }
+
         if (_.isEqual(term_types, [])) {
             // All view
             return true;

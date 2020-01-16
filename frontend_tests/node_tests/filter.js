@@ -98,6 +98,7 @@ run_test('basics', () => {
     filter = new Filter(operators);
     assert(!filter.contains_only_private_messages());
     assert(!filter.has_operator('stream'));
+    assert(!filter.can_mark_messages_read());
 
     // Negated searches are just like positive searches for our purposes, since
     // the search logic happens on the back end and we need to have can_apply_locally()
@@ -109,6 +110,7 @@ run_test('basics', () => {
     assert(!filter.contains_only_private_messages());
     assert(filter.has_operator('search'));
     assert(!filter.can_apply_locally());
+    assert(!filter.can_mark_messages_read());
 
     // Similar logic applies to negated "has" searches.
     operators = [
@@ -118,6 +120,7 @@ run_test('basics', () => {
     assert(filter.has_operator('has'));
     assert(!filter.can_apply_locally());
     assert(!filter.includes_full_stream_history());
+    assert(!filter.can_mark_messages_read());
 
     operators = [
         {operator: 'streams', operand: 'public', negated: true},
@@ -125,6 +128,7 @@ run_test('basics', () => {
     filter = new Filter(operators);
     assert(!filter.contains_only_private_messages());
     assert(!filter.has_operator('streams'));
+    assert(!filter.can_mark_messages_read());
     assert(filter.has_negated_operand('streams', 'public'));
     assert(!filter.can_apply_locally());
 
@@ -134,6 +138,7 @@ run_test('basics', () => {
     filter = new Filter(operators);
     assert(!filter.contains_only_private_messages());
     assert(filter.has_operator('streams'));
+    assert(!filter.can_mark_messages_read());
     assert(!filter.has_negated_operand('streams', 'public'));
     assert(!filter.can_apply_locally());
     assert(filter.includes_full_stream_history());
@@ -143,6 +148,16 @@ run_test('basics', () => {
     ];
     filter = new Filter(operators);
     assert(filter.contains_only_private_messages());
+    assert(filter.can_mark_messages_read());
+    assert(!filter.has_operator('search'));
+    assert(filter.can_apply_locally());
+
+    operators = [
+        {operator: 'is', operand: 'mentioned'},
+    ];
+    filter = new Filter(operators);
+    assert(!filter.contains_only_private_messages());
+    assert(filter.can_mark_messages_read());
     assert(!filter.has_operator('search'));
     assert(filter.can_apply_locally());
 
@@ -201,7 +216,11 @@ function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
 
     is_operator = [{ operator: 'is', operand: 'mentioned' }];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert(!filter.can_mark_messages_read());
+    if (additional_operators_to_test.length === 0) {
+        assert(filter.can_mark_messages_read());
+    } else {
+        assert(!filter.can_mark_messages_read());
+    }
 
     is_operator = [{ operator: 'is', operand: 'mentioned', negated: true }];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
