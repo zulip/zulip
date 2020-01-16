@@ -720,19 +720,19 @@ exports.register_click_handlers = function () {
     });
 
     $("#main_div").on("click", ".user-mention", function (e) {
-        const id = $(this).attr('data-user-id');
+        const id_string = $(this).attr('data-user-id');
         // We fallback to email to handle legacy markdown that was rendered
         // before we cut over to using data-user-id
         const email = $(this).attr('data-user-email');
-        if (id === '*' || email === '*') {
+        if (id_string === '*' || email === '*') {
             return;
         }
         const row = $(this).closest(".message_row");
         e.stopPropagation();
         const message = current_msg_list.get(rows.id(row));
         let user;
-        if (id) {
-            const user_id = parseInt(id, 10);
+        if (id_string) {
+            const user_id = parseInt(id_string, 10);
             user = people.get_person_from_user_id(user_id);
         } else {
             user = people.get_by_email(email);
@@ -741,7 +741,7 @@ exports.register_click_handlers = function () {
     });
 
     $("#main_div").on("click", ".user-group-mention", function (e) {
-        const id = $(this).attr('data-user-group-id');
+        const id = parseInt($(this).attr('data-user-group-id'), 10);
         const row = $(this).closest(".message_row");
         e.stopPropagation();
         const message = current_msg_list.get(rows.id(row));
