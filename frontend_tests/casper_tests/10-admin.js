@@ -51,6 +51,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 casper.then(function () {
@@ -63,6 +64,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test changing signup notifications stream
@@ -82,6 +84,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 casper.then(function () {
@@ -94,6 +97,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test permissions setting
@@ -122,6 +126,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting create streams policy to 'members and admins'.
@@ -140,6 +145,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting create streams policy to 'full members'.
@@ -158,6 +164,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting invite to streams policy to 'admins only'.
@@ -176,6 +183,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting invite to streams policy to 'members and admins'.
@@ -194,6 +202,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting invite to streams policy to 'full members'.
@@ -212,6 +221,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting new user threshold to three days.
@@ -231,6 +241,7 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
         casper.test.assertNotVisible('#id_realm_waiting_period_threshold');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting new user threshold to N days.
@@ -250,6 +261,7 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
         casper.test.assertVisible('#id_realm_waiting_period_threshold');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 casper.then(function () {
