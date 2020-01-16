@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-13 04:30+0000\n"
+"POT-Creation-Date: 2020-01-16 19:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: analytics/views.py:80 zerver/decorator.py:522 zerver/decorator.py:531
+#: analytics/views.py:80 zerver/decorator.py:525 zerver/decorator.py:534
 msgid "Not allowed for guest users"
 msgstr ""
 
@@ -1335,7 +1335,7 @@ msgstr ""
 msgid "Organization permissions"
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1769
+#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:1767
 msgid "Custom emoji"
 msgstr ""
 
@@ -2925,35 +2925,35 @@ msgstr ""
 msgid "Account is not associated with this subdomain"
 msgstr ""
 
-#: zerver/decorator.py:471 zerver/decorator.py:533
+#: zerver/decorator.py:474 zerver/decorator.py:536
 msgid "This endpoint does not accept bot requests."
 msgstr ""
 
-#: zerver/decorator.py:513
+#: zerver/decorator.py:516
 msgid "Must be an server administrator"
 msgstr ""
 
-#: zerver/decorator.py:588
+#: zerver/decorator.py:591
 msgid "This endpoint requires HTTP basic authentication."
 msgstr ""
 
-#: zerver/decorator.py:591
+#: zerver/decorator.py:594
 msgid "Invalid authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:593
+#: zerver/decorator.py:596
 msgid "Missing authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:670
+#: zerver/decorator.py:673
 msgid "Not logged in"
 msgstr ""
 
-#: zerver/decorator.py:681
+#: zerver/decorator.py:684
 msgid "Webhook bots can only access webhooks"
 msgstr ""
 
-#: zerver/decorator.py:740
+#: zerver/decorator.py:743
 msgid "Access denied"
 msgstr ""
 
@@ -3376,7 +3376,7 @@ msgstr ""
 msgid "Must be an organization administrator or emoji author"
 msgstr ""
 
-#: zerver/lib/emoji.py:109 zerver/models.py:601
+#: zerver/lib/emoji.py:109 zerver/models.py:599
 msgid "Invalid characters in emoji name"
 msgstr ""
 
@@ -3428,7 +3428,11 @@ msgstr ""
 msgid "Invalid API key"
 msgstr ""
 
-#: zerver/lib/exceptions.py:229
+#: zerver/lib/exceptions.py:222
+msgid "Malformed API key"
+msgstr ""
+
+#: zerver/lib/exceptions.py:234
 #, python-brace-format
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
@@ -3870,71 +3874,71 @@ msgstr ""
 msgid "API usage exceeded rate limit"
 msgstr ""
 
-#: zerver/models.py:255
+#: zerver/models.py:253
 msgid "stream events"
 msgstr ""
 
-#: zerver/models.py:274
+#: zerver/models.py:272
 msgid "Available on Zulip Standard. Upgrade to access."
 msgstr ""
 
-#: zerver/models.py:664
+#: zerver/models.py:662
 #, python-format
 msgid "Invalid filter pattern.  Valid characters are %s."
 msgstr ""
 
-#: zerver/models.py:680
+#: zerver/models.py:678
 msgid "Invalid URL format string."
 msgstr ""
 
-#: zerver/models.py:1768
+#: zerver/models.py:1766
 msgid "Unicode emoji"
 msgstr ""
 
-#: zerver/models.py:1770
+#: zerver/models.py:1768
 msgid "Zulip extra emoji"
 msgstr ""
 
-#: zerver/models.py:2676
+#: zerver/models.py:2690
 #, python-format
 msgid "Invalid user ID: %d"
 msgstr ""
 
-#: zerver/models.py:2680
+#: zerver/models.py:2694
 #, python-format
 msgid "User with ID %d is deactivated"
 msgstr ""
 
-#: zerver/models.py:2683
+#: zerver/models.py:2697
 #, python-format
 msgid "User with ID %d is a bot"
 msgstr ""
 
-#: zerver/models.py:2713
+#: zerver/models.py:2727
 msgid "List of options"
 msgstr ""
 
-#: zerver/models.py:2716
+#: zerver/models.py:2730
 msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:2728
+#: zerver/models.py:2742
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:2729
+#: zerver/models.py:2743
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:2730
+#: zerver/models.py:2744
 msgid "Date picker"
 msgstr ""
 
-#: zerver/models.py:2731
+#: zerver/models.py:2745
 msgid "Link"
 msgstr ""
 
-#: zerver/models.py:2732
+#: zerver/models.py:2746
 msgid "External account"
 msgstr ""
 

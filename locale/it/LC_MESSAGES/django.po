@@ -4,17 +4,17 @@
 # 
 # Translators:
 # Alessio Schreiber <alessio.schreiber@gmail.com>, 2019
-# Andrea <andrea.soccal@elmospa.com>, 2018-2019
+# Andrea <andrea.soccal@elmospa.com>, 2018-2020
 # Biagio Laquale <infingerprinting@gmail.com>, 2019
-# Marcello Nuccio <marcello.nuccio@nuccioservizi.it>, 2019
+# 8d821b430c6446b8644f76c07c39dc73, 2019
 # Paolo Midali <pmidali@latek.it>, 2018-2019
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-12-13 03:00+0000\n"
-"PO-Revision-Date: 2019-12-13 03:01+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2020-01-15 15:02+0000\n"
+"Last-Translator: Andrea <andrea.soccal@elmospa.com>\n"
 "Language-Team: Italian (http://www.transifex.com/zulip/zulip/language/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -334,7 +334,7 @@ msgstr "Si, Grazie!"
 
 #: templates/zerver/app/bankruptcy.html:15
 msgid "No, I'll catch up."
-msgstr "No, mi raggiungo."
+msgstr "No grazie, me li guardo tutti."
 
 #: templates/zerver/app/compose.html:12 templates/zerver/app/compose.html:13
 #: templates/zerver/app/compose.html:108
@@ -800,11 +800,11 @@ msgstr "Limitando"
 
 #: templates/zerver/app/keyboard_shortcuts.html:155
 msgid "Narrow to stream"
-msgstr ""
+msgstr "Limita al canale"
 
 #: templates/zerver/app/keyboard_shortcuts.html:159
 msgid "Narrow to topic or PM conversation"
-msgstr ""
+msgstr "Limita al canale o alle conversazioni dei messaggi privati"
 
 #: templates/zerver/app/keyboard_shortcuts.html:163
 msgid "Narrow to all private messages"
@@ -1198,7 +1198,7 @@ msgstr "Limita per ID di messaggio"
 
 #: templates/zerver/app/search_operators.html:45
 msgid "Search all public streams in the organization."
-msgstr ""
+msgstr "Cerca in tutti i canali dell'organizzazione."
 
 #: templates/zerver/app/search_operators.html:49
 msgid "Narrow to messages with alert words."
@@ -1368,11 +1368,11 @@ msgstr "Inviti"
 
 #: templates/zerver/app/settings_overlay.html:150
 msgid "Data exports"
-msgstr ""
+msgstr "Esportazioni di dati"
 
 #: templates/zerver/app/settings_overlay.html:156
 msgid "Show more"
-msgstr ""
+msgstr "Mostra di più"
 
 #: templates/zerver/config_error.html:14
 msgid ""
@@ -1517,7 +1517,7 @@ msgstr "Se non hai richiesto questo cambiamento, ti preghiamo di contattarci imm
 #: templates/zerver/emails/invitation.source.html:4
 #: templates/zerver/emails/realm_reactivation.source.html:4
 msgid "Turtle with envelope"
-msgstr ""
+msgstr "Tartaruga con busta"
 
 #: templates/zerver/emails/compiled/confirm_registration.html:10
 #: templates/zerver/emails/confirm_registration.source.html:9
@@ -1552,7 +1552,7 @@ msgstr "Contattaci in qualsiasi momento a<a href=\"mailto:%(support_email)s\" st
 #: templates/zerver/emails/compiled/email_base_default.html:87
 #: templates/zerver/emails/email_base_default.source.html:30
 msgid "Swimming fish"
-msgstr ""
+msgstr "Pesce che nuota"
 
 #: templates/zerver/emails/compiled/find_team.html:11
 #: templates/zerver/emails/find_team.source.html:10
@@ -1687,7 +1687,7 @@ msgstr "PS: Seguici su <a href=\"https://twitter.com/zulip\" style=\"color:#46aa
 #: templates/zerver/emails/compiled/followup_day2.html:4
 #: templates/zerver/emails/followup_day2.source.html:4
 msgid "Octopus box with heart"
-msgstr ""
+msgstr "Scatola di polpo con cuore"
 
 #: templates/zerver/emails/compiled/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.source.html:8
@@ -1706,7 +1706,7 @@ msgstr "Volevo condividere un'ultima cosa con te: alcuni suggerimenti sugli argo
 #: templates/zerver/emails/compiled/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.source.html:12
 msgid "Examples of short topics"
-msgstr ""
+msgstr "Esempi di brevi argomenti"
 
 #: templates/zerver/emails/compiled/followup_day2.html:15
 msgid ""
@@ -1732,7 +1732,7 @@ msgstr "Non consigliati: \"Cosa pensa la gente di questo nuovo modello di design
 #: templates/zerver/emails/compiled/followup_day2.html:22
 #: templates/zerver/emails/followup_day2.source.html:21
 msgid "Example of a topic that is too long"
-msgstr ""
+msgstr "Esempio di argomento troppo lungo"
 
 #: templates/zerver/emails/compiled/followup_day2.html:24
 msgid ""
@@ -1800,7 +1800,7 @@ msgstr "Per iniziare, clicca sul bottone sotto."
 #: templates/zerver/emails/compiled/invitation_reminder.html:4
 #: templates/zerver/emails/invitation_reminder.source.html:4
 msgid "Mailbox with envelope"
-msgstr ""
+msgstr "Cassetta postale con busta"
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:9
 #: templates/zerver/emails/invitation_reminder.source.html:8
@@ -2434,7 +2434,7 @@ msgstr "La migliore chat per luoghi di lavoro"
 
 #: templates/zerver/for-open-source.html:23
 msgid "Zulip for open source"
-msgstr ""
+msgstr "Zulip per open source"
 
 #: templates/zerver/for-working-groups-and-communities.html:18
 msgid "The best chat for working groups and communities"
@@ -2542,7 +2542,7 @@ msgstr "Integrazioni personalizzate"
 #: templates/zerver/integrations/index.html:64
 #: templates/zerver/integrations/index.html:91
 msgid "Incoming webhooks"
-msgstr ""
+msgstr "Webhook in arrivo"
 
 #: templates/zerver/integrations/index.html:67
 #: templates/zerver/integrations/index.html:94 zerver/lib/integrations.py:46
@@ -2552,7 +2552,7 @@ msgstr "Bots interattivi"
 #: templates/zerver/integrations/index.html:70
 #: templates/zerver/integrations/index.html:97
 msgid "REST API"
-msgstr ""
+msgstr "REST API"
 
 #: templates/zerver/integrations/index.html:77
 msgid "Categories"
@@ -3431,11 +3431,11 @@ msgstr "L'evento '{event_type}' non è attualmente supportato dal webhook {webho
 
 #: zerver/lib/external_accounts.py:47
 msgid "Custom external account must define url pattern"
-msgstr ""
+msgstr "L'account esterno personalizzato deve definire il modello di URL"
 
 #: zerver/lib/external_accounts.py:49
 msgid "Invalid external account type"
-msgstr ""
+msgstr "Tipo di account esterno non valido"
 
 #: zerver/lib/hotspots.py:12
 msgid "Reply to a message"
@@ -3558,12 +3558,12 @@ msgstr "Token inesistente"
 #: zerver/lib/push_notifications.py:595
 #, python-format
 msgid "%(full_name)s mentioned you:"
-msgstr ""
+msgstr "%(full_name)sti ha menzionato:"
 
 #: zerver/lib/push_notifications.py:597
 #, python-format
 msgid "%(full_name)s mentioned everyone:"
-msgstr ""
+msgstr "%(full_name)sha menzionato tutti:"
 
 #: zerver/lib/remote_server.py:80
 #, python-format
@@ -3678,16 +3678,16 @@ msgstr "Nome o nome utente non buono"
 #: zerver/lib/users.py:62
 #, python-format
 msgid "Invalid integration '%s'."
-msgstr ""
+msgstr "Integrazione non valida '%s'."
 
 #: zerver/lib/users.py:66
 #, python-format
 msgid "Missing configuration parameters: %s"
-msgstr ""
+msgstr "Parametri di configurazione mancanti: %s"
 
 #: zerver/lib/users.py:73
 msgid "Invalid {} value {} ({})"
-msgstr ""
+msgstr "Non valido  {} valore {} ({})"
 
 #: zerver/lib/users.py:88
 msgid "Invalid configuration data!"
@@ -3757,7 +3757,7 @@ msgstr "%s non è un numero intero"
 #: zerver/lib/validator.py:101
 #, python-format
 msgid "Invalid %s"
-msgstr ""
+msgstr "%snon valido"
 
 #: zerver/lib/validator.py:108
 #, python-format
@@ -3816,7 +3816,7 @@ msgstr "%snon è  un url"
 
 #: zerver/lib/validator.py:249
 msgid "Malformed URL pattern."
-msgstr ""
+msgstr "Pattern URL non valido."
 
 #: zerver/lib/validator.py:269
 #, python-brace-format
@@ -3831,12 +3831,12 @@ msgstr "'{value}' non è una scelta valida per '{field_name}'."
 #: zerver/lib/validator.py:348
 #, python-format
 msgid "%s is not a string or an integer list"
-msgstr ""
+msgstr "%snon è una stringa o un elenco intero"
 
 #: zerver/lib/validator.py:356
 #, python-format
 msgid "%s is not a string or integer"
-msgstr ""
+msgstr "%snon è una stringa o un numero intero"
 
 #: zerver/lib/webhooks/common.py:51
 #, python-brace-format
@@ -3867,11 +3867,11 @@ msgstr "L'utilizzo dell'API ha superato il limite di velocità"
 
 #: zerver/models.py:255
 msgid "stream events"
-msgstr ""
+msgstr "Eventi di canale"
 
 #: zerver/models.py:274
 msgid "Available on Zulip Standard. Upgrade to access."
-msgstr ""
+msgstr "Disponibile su Zulip Standard. Aggiorna per accedere."
 
 #: zerver/models.py:664
 #, python-format
@@ -3960,12 +3960,12 @@ msgstr "Non sei autorizzato a ricevere eventi da questa coda"
 #: zerver/tornado/event_queue.py:536
 #, python-format
 msgid "An event newer than %s has already been pruned!"
-msgstr ""
+msgstr "Un evento più recente di %s è già stato eliminato!"
 
 #: zerver/tornado/event_queue.py:542
 #, python-format
 msgid "Event %s was not in this queue"
-msgstr ""
+msgstr "L'evento %s non era in questa coda"
 
 #: zerver/tornado/exceptions.py:14
 #, python-brace-format
@@ -4067,7 +4067,7 @@ msgstr "User-Agent header mancante dalla richiesta"
 
 #: zerver/views/custom_profile_fields.py:37
 msgid "Label cannot be blank."
-msgstr ""
+msgstr "L'etichetta non può essere vuota."
 
 #: zerver/views/custom_profile_fields.py:53
 msgid "Field must have at least one choice."
@@ -4080,11 +4080,11 @@ msgstr "Tipo campo non valido."
 #: zerver/views/custom_profile_fields.py:112
 #: zerver/views/custom_profile_fields.py:150
 msgid "A field with that label already exists."
-msgstr ""
+msgstr "Un campo con quell'etichetta esiste già."
 
 #: zerver/views/custom_profile_fields.py:143
 msgid "Default custom field cannot be updated."
-msgstr ""
+msgstr "Il campo personalizzato predefinito non può essere aggiornato."
 
 #: zerver/views/hotspots.py:17
 #, python-format
@@ -4268,7 +4268,7 @@ msgstr "Almeno un metodo di autenticazione deve essere abilitato."
 
 #: zerver/views/realm.py:95
 msgid "Invalid video_chat_provider {}"
-msgstr ""
+msgstr "video_chat_provider {}non valido"
 
 #: zerver/views/realm.py:100 zerver/views/realm_domains.py:28
 msgid "Invalid domain: {}"
@@ -4322,16 +4322,16 @@ msgstr "Caricamento immagine fallito."
 
 #: zerver/views/realm_export.py:40
 msgid "Exceeded rate limit."
-msgstr ""
+msgstr "Limite di velocità superato."
 
 #: zerver/views/realm_export.py:47
 #, python-format
 msgid "Please request a manual export from %s."
-msgstr ""
+msgstr "Si prega di richiedere un'esportazione manuale da %s."
 
 #: zerver/views/realm_export.py:76
 msgid "Invalid data export ID"
-msgstr ""
+msgstr "ID esportazione dati non valido"
 
 #: zerver/views/realm_export.py:80
 msgid "Export already deleted"
@@ -4505,7 +4505,7 @@ msgstr "Password errata!"
 
 #: zerver/views/user_settings.py:75
 msgid "New password is too weak!"
-msgstr ""
+msgstr "La nuova password è troppo semplice!"
 
 #: zerver/views/user_settings.py:104
 msgid "Check your email for a confirmation link. "
@@ -4626,7 +4626,7 @@ msgstr "Input JSON rovinato"
 
 #: zerver/webhooks/papertrail/view.py:25
 msgid "Missing expected keys"
-msgstr ""
+msgstr "Chiavi previste mancanti"
 
 #: zerver/webhooks/pivotal/view.py:178
 msgid "Unable to handle Pivotal payload"
@@ -4675,4 +4675,4 @@ msgstr "I dati sono fuori servizio."
 
 #: zilencer/views.py:181
 msgid "Invalid data."
-msgstr ""
+msgstr "Dati non validi."
