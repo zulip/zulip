@@ -1,3 +1,5 @@
+\connect postgres
+DROP DATABASE IF EXISTS zulip;
 DO $$BEGIN
     CREATE USER zulip;
 EXCEPTION WHEN duplicate_object THEN
