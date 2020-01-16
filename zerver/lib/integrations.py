@@ -270,6 +270,7 @@ WEBHOOK_INTEGRATIONS = [
         stream_name='desk'
     ),
     WebhookIntegration('dropbox', ['productivity'], display_name='Dropbox'),
+    WebhookIntegration('errbit', ['monitoring'], display_name='Errbit'),
     WebhookIntegration('flock', ['customer-support'], display_name='Flock'),
     WebhookIntegration('freshdesk', ['customer-support']),
     WebhookIntegration('front', ['customer-support'], display_name='Front'),
