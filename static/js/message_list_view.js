@@ -20,17 +20,17 @@ function MessageListView(list, table_name, collapse_messages) {
 }
 
 function get_user_id_for_mention_button(elem) {
-    const user_id = $(elem).attr('data-user-id');
+    const user_id_string = $(elem).attr('data-user-id');
     // Handle legacy markdown that was rendered before we cut
     // over to using data-user-id.
     const email = $(elem).attr('data-user-email');
 
-    if (user_id === "*" || email === "*") {
+    if (user_id_string === "*" || email === "*") {
         return "*";
     }
 
-    if (user_id) {
-        return parseInt(user_id, 10);
+    if (user_id_string) {
+        return parseInt(user_id_string, 10);
     }
 
     if (email) {

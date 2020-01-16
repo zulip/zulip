@@ -341,7 +341,7 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "button.delete_bot", function (e) {
-        const bot_id = $(e.currentTarget).attr('data-user-id');
+        const bot_id = parseInt($(e.currentTarget).attr('data-user-id'), 10);
 
         channel.del({
             url: '/json/bots/' + encodeURIComponent(bot_id),
@@ -356,7 +356,7 @@ exports.set_up = function () {
     });
 
     $("#inactive_bots_list").on("click", "button.reactivate_bot", function (e) {
-        const user_id = $(e.currentTarget).attr('data-user-id');
+        const user_id = parseInt($(e.currentTarget).attr('data-user-id'), 10);
 
         channel.post({
             url: '/json/users/' + encodeURIComponent(user_id) + "/reactivate",
@@ -367,7 +367,7 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
-        const bot_id = $(e.currentTarget).attr('data-user-id');
+        const bot_id = parseInt($(e.currentTarget).attr('data-user-id'), 10);
         channel.post({
             url: '/json/bots/' + encodeURIComponent(bot_id) + '/api_key/regenerate',
             idempotent: true,
@@ -387,7 +387,7 @@ exports.set_up = function () {
 
     $("#active_bots_list").on("click", "button.open_edit_bot_form", function (e) {
         const li = $(e.currentTarget).closest('li');
-        const bot_id = li.find('.bot_info').attr('data-user-id').valueOf();
+        const bot_id = parseInt(li.find('.bot_info').attr('data-user-id'), 10);
         const bot = bot_data.get(bot_id);
         const users_list = people.get_active_human_persons();
         $("#edit_bot").empty();
@@ -422,7 +422,7 @@ exports.set_up = function () {
                 errors.hide();
             },
             submitHandler: function () {
-                const bot_id = form.attr('data-user-id');
+                const bot_id = parseInt(form.attr('data-user-id'), 10);
                 const type = form.attr('data-type');
 
                 const full_name = form.find('.edit_bot_name').val();
@@ -485,7 +485,7 @@ exports.set_up = function () {
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
         const bot_info = $(this).closest(".bot-information-box").find(".bot_info");
-        const bot_id = bot_info.attr("data-user-id");
+        const bot_id = parseInt(bot_info.attr("data-user-id"), 10);
         $(this).attr("href", exports.generate_zuliprc_uri(bot_id));
     });
 

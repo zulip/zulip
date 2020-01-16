@@ -371,7 +371,7 @@ exports.on_load_success = function (realm_people_data) {
 
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
-        const bot_id = row.attr("data-user-id");
+        const bot_id = parseInt(row.attr("data-user-id"), 10);
         const url = '/json/bots/' + encodeURIComponent(bot_id);
 
         const opts = {
@@ -393,7 +393,7 @@ exports.on_load_success = function (realm_people_data) {
         // Go up the tree until we find the user row, then grab the email element
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
-        const user_id = row.attr("data-user-id");
+        const user_id = parseInt(row.attr("data-user-id"), 10);
         const url = '/json/users/' + encodeURIComponent(user_id) + "/reactivate";
         const data = {};
         const status = get_status_field();
