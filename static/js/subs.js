@@ -15,8 +15,7 @@ exports.show_subs_pane = {
 };
 
 exports.check_button_for_sub = function (sub) {
-    const id = sub.stream_id;
-    return $(".stream-row[data-stream-id='" + id + "'] .check");
+    return $(".stream-row[data-stream-id='" + sub.stream_id + "'] .check");
 };
 
 exports.row_for_stream_id = function (stream_id) {
@@ -26,8 +25,7 @@ exports.row_for_stream_id = function (stream_id) {
 exports.settings_button_for_sub = function (sub) {
     // We don't do expectOne() here, because this button is only
     // visible if the user has that stream selected in the streams UI.
-    const id = sub.stream_id;
-    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
+    return $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] .subscribe-button");
 };
 
 function get_row_data(row) {
