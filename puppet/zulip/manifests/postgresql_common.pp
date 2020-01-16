@@ -39,6 +39,10 @@ class zulip::postgresql_common {
       exec {'pip3_deps':
         command => 'python3 -m pip install python-dateutil',
       }
+      file { '/usr/bin/psql':
+        ensure => 'link',
+        target => "/usr/pgsql-${version}/bin/psql"
+      }
       group { 'ssl-cert':
         ensure => present,
       }
