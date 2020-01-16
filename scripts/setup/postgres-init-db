@@ -44,10 +44,6 @@ source "$(dirname "$0")/terminate-psql-sessions" postgres zulip zulip_base
 # Make sure the current working directory is readable by postgres
 cd /
 
-su "$POSTGRES_USER" -c 'psql -v ON_ERROR_STOP=1 -e' <<EOF
-DROP DATABASE IF EXISTS zulip;
-EOF
-
 su "$POSTGRES_USER" -c 'psql -v ON_ERROR_STOP=1 -e' < "$(dirname "$0")/create-db.sql"
 )
 
