@@ -467,11 +467,11 @@ exports.on_load_success = function (realm_people_data) {
                     }
                 });
                 // Append user type field values also
-                _.each(fields_user_pills, function (field_pills, field_id) {
+                fields_user_pills.each(function (field_pills, field_id) {
                     if (field_pills) {
                         const user_ids = user_pill.get_user_ids(field_pills);
                         new_profile_data.push({
-                            id: parseInt(field_id, 10),
+                            id: field_id,
                             value: user_ids,
                         });
                     }
