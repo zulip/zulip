@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import utc as timezone_utc
 
-from analytics.lib.counts import COUNT_STATS, CountStat, \
+from analytics.lib.counts import COUNT_STATS, CountStat, get_count_stats, \
     DependentCountStat, LoggingCountStat, do_aggregate_to_summary_table, \
     do_drop_all_analytics_tables, do_drop_single_stat, \
     do_fill_count_stat_at_hour, do_increment_logging_stat, \
@@ -363,6 +363,30 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(UserCount, [], [])
         self.assertTableState(StreamCount, [], [])
 
+    def test_active_users_by_is_bot_for_realm_constraint(self) -> None:
+        # For single Realm
+
+        COUNT_STATS = get_count_stats(self.default_realm)
+        stat = COUNT_STATS['active_users:is_bot:day']
+        self.current_property = stat.property
+
+        # To be included
+        self.create_user(is_bot=True, date_joined=self.TIME_ZERO-25*self.HOUR)
+        self.create_user(is_bot=False)
+
+        # To be excluded
+        self.create_user(email='test@second.analytics',
+                         realm=self.second_realm, date_joined=self.TIME_ZERO-2*self.DAY)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
+        self.assertTableState(RealmCount, ['value', 'subgroup'],
+                              [[1, 'true'], [1, 'false']])
+        self.assertTableState(InstallationCount,
+                              ['value', 'subgroup'],
+                              [[1, 'true'], [1, 'false']])
+        self.assertTableState(UserCount, [], [])
+        self.assertTableState(StreamCount, [], [])
+
     def test_messages_sent_by_is_bot(self) -> None:
         stat = COUNT_STATS['messages_sent:is_bot:hour']
         self.current_property = stat.property
@@ -390,6 +414,46 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
                               [[2, 'false'], [3, 'true'], [1, 'false', self.second_realm]])
         self.assertTableState(InstallationCount, ['value', 'subgroup'], [[3, 'false'], [3, 'true']])
+        self.assertTableState(StreamCount, [], [])
+
+    def test_messages_sent_by_is_bot_realm_constraint(self) -> None:
+        # For single Realm
+
+        COUNT_STATS = get_count_stats(self.default_realm)
+        stat = COUNT_STATS['messages_sent:is_bot:hour']
+        self.current_property = stat.property
+
+        bot = self.create_user(is_bot=True)
+        human1 = self.create_user()
+        human2 = self.create_user()
+        recipient_human1 = Recipient.objects.get(type_id=human1.id,
+                                                 type=Recipient.PERSONAL)
+
+        recipient_stream = self.create_stream_with_recipient()[1]
+        recipient_huddle = self.create_huddle_with_recipient()[1]
+
+        # To be included
+        self.create_message(bot, recipient_human1)
+        self.create_message(bot, recipient_stream)
+        self.create_message(bot, recipient_huddle)
+        self.create_message(human1, recipient_human1)
+        self.create_message(human2, recipient_human1)
+
+        # To be excluded
+        self.create_message(self.hourly_user, recipient_human1)
+        self.create_message(self.hourly_user, recipient_stream)
+        self.create_message(self.hourly_user, recipient_huddle)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
+
+        self.assertTableState(UserCount, ['value', 'subgroup', 'user'],
+                              [[1, 'false', human1], [1, 'false', human2],
+                               [3, 'true', bot]])
+        self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
+                              [[2, 'false', self.default_realm],
+                               [3, 'true', self.default_realm]])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'],
+                                                 [[2, 'false'], [3, 'true']])
         self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_by_message_type(self) -> None:
@@ -454,6 +518,44 @@ class TestCountStats(AnalyticsTestCase):
                                [2, 'huddle_message']])
         self.assertTableState(StreamCount, [], [])
 
+    def test_messages_sent_by_message_type_realm_constraint(self) -> None:
+        # For single Realm
+
+        COUNT_STATS = get_count_stats(self.default_realm)
+        stat = COUNT_STATS['messages_sent:message_type:day']
+        self.current_property = stat.property
+
+        user = self.create_user()
+        user_recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
+        private_stream_recipient = self.create_stream_with_recipient(invite_only=True)[1]
+        stream_recipient = self.create_stream_with_recipient()[1]
+        huddle_recipient = self.create_huddle_with_recipient()[1]
+
+        # To be included
+        self.create_message(user, user_recipient)
+        self.create_message(user, private_stream_recipient)
+        self.create_message(user, stream_recipient)
+        self.create_message(user, huddle_recipient)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
+
+        # To be excluded
+        self.create_message(self.hourly_user, user_recipient)
+        self.create_message(self.hourly_user, private_stream_recipient)
+        self.create_message(self.hourly_user, stream_recipient)
+        self.create_message(self.hourly_user, huddle_recipient)
+
+        self.assertTableState(UserCount, ['value', 'subgroup', 'user'],
+                              [[1, 'private_message', user], [1, 'private_stream', user],
+                               [1, 'huddle_message', user], [1, 'public_stream', user]])
+        self.assertTableState(RealmCount, ['value', 'subgroup'],
+                              [[1, 'private_message'], [1, 'private_stream'],
+                               [1, 'public_stream'], [1, 'huddle_message']])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'],
+                              [[1, 'private_message'], [1, 'private_stream'],
+                               [1, 'public_stream'], [1, 'huddle_message']])
+        self.assertTableState(StreamCount, [], [])
+
     def test_messages_sent_to_recipients_with_same_id(self) -> None:
         stat = COUNT_STATS['messages_sent:message_type:day']
         self.current_property = stat.property
@@ -508,6 +610,42 @@ class TestCountStats(AnalyticsTestCase):
                               [[4, website_client_id], [3, client2_id]])
         self.assertTableState(StreamCount, [], [])
 
+    def test_messages_sent_by_client_realm_constraint(self) -> None:
+        # For single Realm
+
+        COUNT_STATS = get_count_stats(self.default_realm)
+        stat = COUNT_STATS['messages_sent:client:day']
+        self.current_property = stat.property
+
+        user1 = self.create_user(is_bot=True)
+        user2 = self.create_user()
+        recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
+
+        client2 = Client.objects.create(name='client2')
+
+        # TO be included
+        self.create_message(user1, recipient_user2, sending_client=client2)
+        self.create_message(user2, recipient_user2, sending_client=client2)
+        self.create_message(user2, recipient_user2)
+
+        # To be excluded
+        self.create_message(self.hourly_user, recipient_user2, sending_client=client2)
+        self.create_message(self.hourly_user, recipient_user2, sending_client=client2)
+        self.create_message(self.hourly_user, recipient_user2)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
+
+        client2_id = str(client2.id)
+        website_client_id = str(get_client('website').id)  # default for self.create_message
+        self.assertTableState(UserCount, ['value', 'subgroup', 'user'],
+                              [[1, client2_id, user1], [1, client2_id, user2],
+                               [1, website_client_id, user2]])
+        self.assertTableState(RealmCount, ['value', 'subgroup'],
+                              [[1, website_client_id], [2, client2_id]])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'],
+                              [[1, website_client_id], [2, client2_id]])
+        self.assertTableState(StreamCount, [], [])
+
     def test_messages_sent_to_stream_by_is_bot(self) -> None:
         stat = COUNT_STATS['messages_in_stream:is_bot:day']
         self.current_property = stat.property
@@ -543,6 +681,38 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
                               [[3, 'false'], [2, 'true'], [2, 'false', self.second_realm]])
         self.assertTableState(InstallationCount, ['value', 'subgroup'], [[5, 'false'], [2, 'true']])
+        self.assertTableState(UserCount, [], [])
+
+    def test_messages_sent_to_stream_by_is_bot_realm_constraint(self) -> None:
+        # For single Realm
+
+        COUNT_STATS = get_count_stats(self.default_realm)
+        stat = COUNT_STATS['messages_in_stream:is_bot:day']
+        self.current_property = stat.property
+
+        human1 = self.create_user()
+        bot = self.create_user(is_bot=True)
+
+        realm = {'realm': self.second_realm}
+        stream1, recipient_stream1 = self.create_stream_with_recipient()
+        stream2, recipient_stream2 = self.create_stream_with_recipient(**realm)
+
+        # To be included
+        self.create_message(human1, recipient_stream1)
+        self.create_message(bot, recipient_stream1)
+
+        # To be excluded
+        self.create_message(self.hourly_user, recipient_stream2)
+        self.create_message(self.daily_user, recipient_stream2)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
+
+        self.assertTableState(StreamCount, ['value', 'subgroup', 'stream'],
+                              [[1, 'false', stream1],
+                               [1, 'true', stream1]])
+        self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
+                              [[1, 'false'], [1, 'true']])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'], [[1, 'false'], [1, 'true']])
         self.assertTableState(UserCount, [], [])
 
     def create_interval(self, user: UserProfile, start_offset: timedelta,
@@ -594,6 +764,33 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(InstallationCount, ['value'], [[6]])
         self.assertTableState(StreamCount, [], [])
 
+    def test_1day_actives_realm_constraint(self) -> None:
+        # For single Realm
+
+        COUNT_STATS = get_count_stats(self.default_realm)
+        stat = COUNT_STATS['1day_actives::day']
+        self.current_property = stat.property
+
+        _1day = 1*self.DAY - UserActivityInterval.MIN_INTERVAL_LENGTH
+        user1 = self.create_user()
+        user2 = self.create_user()
+
+        # To be included
+        self.create_interval(user1, 20*self.HOUR, 19*self.HOUR)
+        self.create_interval(user2, _1day + self.DAY, _1day)
+
+        # To be excluded
+        user3 = self.create_user(realm=self.second_realm)
+        self.create_interval(user3, 20*self.MINUTE, 19*self.MINUTE)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
+        self.assertTableState(UserCount, ['value', 'user'],
+                              [[1, user2], [1, user2]])
+        self.assertTableState(RealmCount, ['value', 'realm'],
+                              [[2, self.default_realm]])
+        self.assertTableState(InstallationCount, ['value'], [[2]])
+        self.assertTableState(StreamCount, [], [])
+
     def test_15day_actives(self) -> None:
         stat = COUNT_STATS['15day_actives::day']
         self.current_property = stat.property
@@ -637,6 +834,35 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(InstallationCount, ['value'], [[6]])
         self.assertTableState(StreamCount, [], [])
 
+    def test_15day_actives_realm_constraint(self) -> None:
+        # For single Realm
+
+        COUNT_STATS = get_count_stats(self.default_realm)
+        stat = COUNT_STATS['15day_actives::day']
+        self.current_property = stat.property
+
+        _15day = 15*self.DAY - UserActivityInterval.MIN_INTERVAL_LENGTH
+
+        user1 = self.create_user()
+        user2 = self.create_user()
+        user3 = self.create_user(realm=self.second_realm)
+
+        # To be included
+        self.create_interval(user1, _15day + self.DAY, _15day)
+        self.create_interval(user2, 20*self.HOUR, 19*self.HOUR)
+
+        # To be excluded
+        self.create_interval(user3, 20*self.HOUR, 19*self.HOUR)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
+
+        self.assertTableState(UserCount, ['value', 'user'],
+                              [[1, user1], [1, user2]])
+        self.assertTableState(RealmCount, ['value', 'realm'],
+                              [[2, self.default_realm]])
+        self.assertTableState(InstallationCount, ['value'], [[2]])
+        self.assertTableState(StreamCount, [], [])
+
     def test_minutes_active(self) -> None:
         stat = COUNT_STATS['minutes_active::day']
         self.current_property = stat.property
@@ -677,6 +903,34 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(RealmCount, ['value', 'realm'],
                               [[61 + 121 + 24*60, self.default_realm], [1, self.second_realm]])
         self.assertTableState(InstallationCount, ['value'], [[61 + 121 + 24*60 + 1]])
+        self.assertTableState(StreamCount, [], [])
+
+    def test_minutes_active_realm_constraint(self) -> None:
+        # For single Realm
+
+        COUNT_STATS = get_count_stats(self.default_realm)
+        stat = COUNT_STATS['minutes_active::day']
+        self.current_property = stat.property
+
+        # Outside time range, should not appear. Also testing for intervals
+        # starting and ending on boundary
+        user1 = self.create_user()
+        user2 = self.create_user()
+        user3 = self.create_user(realm=self.second_realm)
+
+        # To be included
+        self.create_interval(user1, 20*self.HOUR, 19*self.HOUR)
+        self.create_interval(user2, 20*self.MINUTE, 19*self.MINUTE)
+
+        # To be excluded
+        self.create_interval(user3, 20*self.MINUTE, 19*self.MINUTE)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
+        self.assertTableState(UserCount, ['value', 'user'],
+                              [[60, user1], [1, user2]])
+        self.assertTableState(RealmCount, ['value', 'realm'],
+                              [[60 + 1, self.default_realm]])
+        self.assertTableState(InstallationCount, ['value'], [[60 + 1]])
         self.assertTableState(StreamCount, [], [])
 
 class TestDoAggregateToSummaryTable(AnalyticsTestCase):
