@@ -126,7 +126,6 @@ class ZulipTestCase(TestCase):
     django_client to fool the regext.
     '''
     DEFAULT_SUBDOMAIN = "zulip"
-    DEFAULT_REALM = Realm.objects.get(string_id='zulip')
     TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
 
     def set_http_host(self, kwargs: Dict[str, Any]) -> None:
@@ -607,7 +606,7 @@ class ZulipTestCase(TestCase):
                     invite_only: Optional[bool]=False,
                     history_public_to_subscribers: Optional[bool]=None) -> Stream:
         if realm is None:
-            realm = self.DEFAULT_REALM
+            realm = get_realm('zulip')
 
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             realm, invite_only, history_public_to_subscribers)
