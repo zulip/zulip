@@ -1,5 +1,5 @@
 const render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');
-const Dict = require('./dict').Dict;
+const IntDict = require('./int_dict').IntDict;
 
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
@@ -61,7 +61,7 @@ exports.render_typeahead_item = function (args) {
     return render_typeahead_list_item(args);
 };
 
-const rendered = { persons: new Dict(), streams: new Dict(), user_groups: new Dict() };
+const rendered = { persons: new IntDict(), streams: new IntDict(), user_groups: new IntDict() };
 
 exports.render_person = function (person) {
     if (person.special_item_text) {
