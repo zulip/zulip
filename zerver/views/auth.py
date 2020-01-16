@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
+from django.contrib.auth import login as django_login
 from django.contrib.auth.views import password_reset as django_password_reset
 from django.urls import reverse
 from zerver.decorator import require_post, \
@@ -903,6 +904,15 @@ def password_reset(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                                  template_name='zerver/reset.html',
                                  password_reset_form=ZulipPasswordResetForm,
                                  post_reset_redirect='/accounts/password/reset/done/')
+
+@has_request_variables
+def auth_session_with_api_key(request: HttpRequest, user_profile: UserProfile,
+                              next: str=REQ(default='')) -> HttpResponse:
+    django_login(request, user_profile, 'zproject.backends.ZulipDummyBackend')
+    if next:
+        return HttpResponseRedirect(next)
+    else:
+        return HttpResponseRedirect('/')
 
 @csrf_exempt
 def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # nocoverage
