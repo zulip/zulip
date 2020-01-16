@@ -187,15 +187,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         # We do a bit of hackery here to the API_KEYS cache just to
         # make the code simple for sending an incorrect API key.
-        from zerver.lib.test_classes import API_KEYS
-        API_KEYS[self.server_uuid] = 'invalid'
+        self.API_KEYS[self.server_uuid] = 'invalid'
         result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id,
                                                             'token_kind': token_kind,
                                                             'token': token})
         self.assert_json_error(result, "Zulip server auth failure: key does not match role 1234-abcd",
                                status_code=401)
 
-        del API_KEYS[self.server_uuid]
+        del self.API_KEYS[self.server_uuid]
 
         credentials = "%s:%s" % ("5678-efgh", 'invalid')
         api_auth = 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')

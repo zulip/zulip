@@ -73,12 +73,6 @@ import urllib
 import shutil
 import tempfile
 
-API_KEYS = {}  # type: Dict[str, str]
-
-def flush_caches_for_testing() -> None:
-    global API_KEYS
-    API_KEYS = {}
-
 class UploadSerializeMixin(SerializeMixin):
     """
     We cannot use override_settings to change upload directory because
@@ -100,6 +94,10 @@ class UploadSerializeMixin(SerializeMixin):
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
     maxDiff = None  # type: Optional[int]
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.API_KEYS = {}  # type: Dict[str, str]
 
     def tearDown(self) -> None:
         super().tearDown()
@@ -409,15 +407,15 @@ class ZulipTestCase(TestCase):
         """
         identifier: Can be an email or a remote server uuid.
         """
-        if identifier in API_KEYS:
-            api_key = API_KEYS[identifier]
+        if identifier in self.API_KEYS:
+            api_key = self.API_KEYS[identifier]
         else:
             if is_remote_server(identifier):
                 api_key = get_remote_server_by_uuid(identifier).api_key
             else:
                 user = get_user(identifier, get_realm(realm))
                 api_key = get_api_key(user)
-            API_KEYS[identifier] = api_key
+            self.API_KEYS[identifier] = api_key
 
         credentials = "%s:%s" % (identifier, api_key)
         return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
