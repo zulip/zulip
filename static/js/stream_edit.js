@@ -19,7 +19,7 @@ exports.setup_subscriptions_tab_hash = function (tab_key_value) {
 };
 
 exports.settings_for_sub = function (sub) {
-    const id = parseInt(sub.stream_id, 10);
+    const id = sub.stream_id;
     return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
 };
 

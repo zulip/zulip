@@ -59,7 +59,7 @@ exports.set_colorpicker_color = function (colorpicker, color) {
 exports.update_stream_color = function (sub, color, opts) {
     opts = _.defaults({}, opts, {update_historical: false});
     sub.color = color;
-    const id = parseInt(sub.stream_id, 10);
+    const id = sub.stream_id;
     // The swatch in the subscription row header.
     $(".stream-row[data-stream-id='" + id + "'] .icon").css('background-color', color);
     // The swatch in the color picker.

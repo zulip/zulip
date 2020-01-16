@@ -1020,7 +1020,7 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.popover_mute_topic', function (e) {
-        const stream_id = $(e.currentTarget).attr('data-msg-stream-id');
+        const stream_id = parseInt($(e.currentTarget).attr('data-msg-stream-id'), 10);
         const topic = $(e.currentTarget).attr('data-msg-topic');
 
         exports.hide_actions_popover();
@@ -1030,7 +1030,7 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.popover_unmute_topic', function (e) {
-        const stream_id = $(e.currentTarget).attr('data-msg-stream-id');
+        const stream_id = parseInt($(e.currentTarget).attr('data-msg-stream-id'), 10);
         const topic = $(e.currentTarget).attr('data-msg-topic');
 
         exports.hide_actions_popover();
