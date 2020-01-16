@@ -245,7 +245,6 @@ exports.get_user_time = function (user_id) {
 };
 
 exports.get_user_type = function (user_id) {
-    user_id = parseInt(user_id, 10);
     const user_profile = exports.get_person_from_user_id(user_id);
 
     if (user_profile.is_admin) {
