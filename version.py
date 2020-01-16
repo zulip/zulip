@@ -10,7 +10,7 @@ if os.path.exists(zulip_git_version_file):
             ZULIP_VERSION = version
 
 LATEST_MAJOR_VERSION = "2.1"
-LATEST_RELEASE_VERSION = "2.1.1"
+LATEST_RELEASE_VERSION = "2.1.2"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2019/12/13/zulip-2-1-released/"
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
