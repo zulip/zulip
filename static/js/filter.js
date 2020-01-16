@@ -409,14 +409,8 @@ Filter.prototype = {
             return true;
         }
 
-        if (this._operators.length === 1) {
-            const elem = this._operators[0];
-
-            if (elem.operator === 'in' && !elem.negated) {
-                if (elem.operand === 'home' || elem.operand === 'all') {
-                    return true;
-                }
-            }
+        if (term_types.length === 1 && _.contains(['in-home', 'in-all'], term_types[0])) {
+            return true;
         }
 
         return false;
@@ -605,7 +599,7 @@ Filter.term_type = function (term) {
 
     result += operator;
 
-    if (_.contains(['is', 'has'], operator)) {
+    if (_.contains(['is', 'has', 'in'], operator)) {
         result += '-' + operand;
     }
 
@@ -614,6 +608,7 @@ Filter.term_type = function (term) {
 
 Filter.sorted_term_types = function (term_types) {
     const levels = [
+        'in',
         'streams',
         'stream', 'topic',
         'pm-with', 'group-pm-with', 'sender',
