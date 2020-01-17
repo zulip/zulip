@@ -83,9 +83,9 @@ exports.set_count = function (stream_id, topic, count) {
 
 exports.widget = function (parent_elem, my_stream_id) {
     const self = {};
+    const max_topics = 5;
 
-    self.build_list = function () {
-        self.topic_items = new FoldDict();
+    self.get_list_info = function () {
         let topics_selected = 0;
         let more_topics_unreads = 0;
 
@@ -95,11 +95,10 @@ exports.widget = function (parent_elem, my_stream_id) {
             active_topic = active_topic.toLowerCase();
         }
 
-        const max_topics = 5;
         const max_topics_with_unread = 8;
         const topic_names = topic_data.get_recent_names(my_stream_id);
 
-        const ul = $('<ul class="topic-list">');
+        const items = [];
 
         _.each(topic_names, function (topic_name, idx) {
             const num_unread = unread.num_unread_for_topic(my_stream_id, topic_name);
@@ -171,8 +170,33 @@ exports.widget = function (parent_elem, my_stream_id) {
                 is_active_topic: is_active_topic,
                 url: hash_util.by_stream_topic_uri(my_stream_id, topic_name),
             };
+
+            items.push(topic_info);
+        });
+
+        return {
+            items: items,
+            num_possible_topics: topic_names.length,
+            more_topics_unreads: more_topics_unreads,
+        };
+    };
+
+    self.build_list = function () {
+        const list_info = self.get_list_info();
+        const num_possible_topics = list_info.num_possible_topics;
+        const more_topics_unreads = list_info.more_topics_unreads;
+
+        const ul = $('<ul class="topic-list">');
+
+        self.topic_items = new FoldDict();
+
+        // This is the main list of topics:
+        //    topic1
+        //    topic2
+        //    topic3
+        _.each(list_info.items, (topic_info) => {
             const li = $(render_topic_list_item(topic_info));
-            self.topic_items.set(topic_name, li);
+            self.topic_items.set(topic_info.topic_name, li);
             ul.append(li);
         });
 
@@ -183,7 +207,7 @@ exports.widget = function (parent_elem, my_stream_id) {
         const show_more = self.build_more_topics_section(more_topics_unreads);
         const sub = stream_data.get_sub_by_id(my_stream_id);
 
-        if (topic_names.length > max_topics || !stream_data.all_topics_in_cache(sub)) {
+        if (num_possible_topics > max_topics || !stream_data.all_topics_in_cache(sub)) {
             ul.append(show_more);
         }
         return ul;
