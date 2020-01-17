@@ -247,6 +247,7 @@ ANALYTICS_TABLES = {
 DATE_FIELDS = {
     'zerver_attachment': ['create_time'],
     'zerver_message': ['last_edit_time', 'date_sent'],
+    'zerver_mutedtopic': ['date_muted'],
     'zerver_realm': ['date_created'],
     'zerver_stream': ['date_created'],
     'zerver_useractivity': ['last_visit'],
