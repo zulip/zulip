@@ -162,6 +162,7 @@ exports.widget = function (parent_elem, my_stream_id) {
                 unread: num_unread,
                 is_zero: num_unread === 0,
                 is_muted: is_topic_muted,
+                is_active_topic: is_active_topic,
                 url: hash_util.by_stream_topic_uri(my_stream_id, topic_name),
             };
             const li = $(render_topic_list_item(topic_info));
@@ -275,13 +276,6 @@ exports.widget = function (parent_elem, my_stream_id) {
         return false;
     };
 
-    self.activate_topic = function () {
-        const li = self.topic_items.get(self.active_topic);
-        if (li) {
-            li.addClass('active-sub-filter');
-        }
-    };
-
     self.show_spinner = function () {
         // The spinner will go away once we get results and redraw
         // the whole list.
@@ -313,10 +307,6 @@ exports.widget = function (parent_elem, my_stream_id) {
         // the initial zooming.
         if (no_more_topics) {
             self.show_no_more_topics();
-        }
-
-        if (active_topic) {
-            self.activate_topic();
         }
     };
 
