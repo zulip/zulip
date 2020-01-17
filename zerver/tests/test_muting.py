@@ -1,3 +1,5 @@
+from django.utils.timezone import now as timezone_now
+from datetime import timedelta
 from typing import Any, Dict
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -7,6 +9,7 @@ from zerver.models import (
     get_stream,
     get_stream_recipient,
     UserProfile,
+    MutedTopic
 )
 
 from zerver.lib.topic_mutes import (
@@ -39,15 +42,21 @@ class MutedTopicsTests(ZulipTestCase):
                 stream_id=stream.id,
                 recipient_id=recipient.id,
                 topic_name='test TOPIC',
+                date_muted=timezone_now(),
             )
 
         mute_user(hamlet)
         user_ids = stream_topic_target.user_ids_muting_topic()
         self.assertEqual(user_ids, {hamlet.id})
+        hamlet_date_muted = MutedTopic.objects.filter(user_profile=hamlet)[0].date_muted
+        self.assertTrue(timezone_now() - hamlet_date_muted <= timedelta(seconds=2))
 
         mute_user(cordelia)
         user_ids = stream_topic_target.user_ids_muting_topic()
         self.assertEqual(user_ids, {hamlet.id, cordelia.id})
+        cordelia_date_muted = MutedTopic.objects.filter(user_profile=cordelia)[0].date_muted
+        self.assertTrue(timezone_now() - cordelia_date_muted <= timedelta(seconds=2))
+        self.assertTrue(timezone_now() - cordelia_date_muted <= timezone_now() - hamlet_date_muted)
 
     def test_add_muted_topic(self) -> None:
         user = self.example_user('hamlet')
@@ -98,6 +107,7 @@ class MutedTopicsTests(ZulipTestCase):
                 stream_id=stream.id,
                 recipient_id=recipient.id,
                 topic_name='Verona3',
+                date_muted=timezone_now(),
             )
             self.assertIn([stream.name, 'Verona3'], get_topic_mutes(user))
 
@@ -120,6 +130,7 @@ class MutedTopicsTests(ZulipTestCase):
             stream_id=stream.id,
             recipient_id=recipient.id,
             topic_name=u'Verona3',
+            date_muted=timezone_now(),
         )
 
         url = '/api/v1/users/me/subscriptions/muted_topics'

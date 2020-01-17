@@ -1434,12 +1434,16 @@ class MutedTopic(models.Model):
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
     topic_name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+    date_muted = models.DateTimeField(default=datetime.datetime(2020, 1, 1, 0, 0, 0, 0))
 
     class Meta:
         unique_together = ('user_profile', 'stream', 'topic_name')
 
     def __str__(self) -> str:
-        return "<MutedTopic: (%s, %s, %s)>" % (self.user_profile.email, self.stream.name, self.topic_name)
+        return ("<MutedTopic: (%s, %s, %s, %s)>" % (self.user_profile.email,
+                                                    self.stream.name,
+                                                    self.topic_name,
+                                                    self.date_muted))
 
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)  # type: str
