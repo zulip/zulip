@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Tuple, List
+from typing import Any, Dict, Optional, Tuple, List
 
 import logging
 import re
@@ -9,6 +9,8 @@ import email.message as message
 
 from django.conf import settings
 from django.utils.timezone import timedelta, now as timezone_now
+
+from importlib import import_module
 
 from zerver.lib.actions import internal_send_message, internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message, \
@@ -186,6 +188,15 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
 
     return None
 
+# Talon is somewhat slow to import and init and we only use it here,
+# so we have the block below to handle importing it only on demand.
+talon = None  # type: Any  # mypy doesn't handle using import_module.
+def ensure_talon() -> None:
+    global talon
+    if talon is None:
+        talon = import_module('talon')
+        talon.init()
+
 def extract_body(message: message.Message, include_quotes: bool=False, prefer_text: bool=True) -> str:
     plaintext_content = extract_plaintext_body(message, include_quotes)
     html_content = extract_html_body(message, include_quotes)
@@ -209,13 +220,8 @@ def extract_body(message: message.Message, include_quotes: bool=False, prefer_te
             assert plaintext_content  # Needed for mypy. Ensured by the validating block above.
             return plaintext_content
 
-talon_initialized = False
 def extract_plaintext_body(message: message.Message, include_quotes: bool=False) -> Optional[str]:
-    import talon
-    global talon_initialized
-    if not talon_initialized:
-        talon.init()
-        talon_initialized = True
+    ensure_talon()
 
     plaintext_content = get_message_part_by_type(message, "text/plain")
     if plaintext_content is not None:
@@ -227,11 +233,7 @@ def extract_plaintext_body(message: message.Message, include_quotes: bool=False)
         return None
 
 def extract_html_body(message: message.Message, include_quotes: bool=False) -> Optional[str]:
-    import talon
-    global talon_initialized
-    if not talon_initialized:  # nocoverage
-        talon.init()
-        talon_initialized = True
+    ensure_talon()
 
     html_content = get_message_part_by_type(message, "text/html")
     if html_content is not None:
