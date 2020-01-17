@@ -914,6 +914,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         bulk_import_model(data, UserHotspot)
 
     if 'zerver_mutedtopic' in data:
+        fix_datetime_fields(data, 'zerver_mutedtopic')
         re_map_foreign_keys(data, 'zerver_mutedtopic', 'user_profile', related_table='user_profile')
         re_map_foreign_keys(data, 'zerver_mutedtopic', 'stream', related_table='stream')
         re_map_foreign_keys(data, 'zerver_mutedtopic', 'recipient', related_table='recipient')
