@@ -89,6 +89,12 @@ exports.widget = function (parent_elem, my_stream_id) {
         let topics_selected = 0;
         let more_topics_unreads = 0;
 
+        let active_topic = narrow_state.topic();
+
+        if (active_topic) {
+            active_topic = active_topic.toLowerCase();
+        }
+
         const max_topics = 5;
         const max_topics_with_unread = 8;
         const topic_names = topic_data.get_recent_names(my_stream_id);
@@ -97,7 +103,7 @@ exports.widget = function (parent_elem, my_stream_id) {
 
         _.each(topic_names, function (topic_name, idx) {
             const num_unread = unread.num_unread_for_topic(my_stream_id, topic_name);
-            const is_active_topic = self.active_topic === topic_name.toLowerCase();
+            const is_active_topic = active_topic === topic_name.toLowerCase();
             const is_topic_muted = muting.is_topic_muted(my_stream_id, topic_name);
 
             if (!zoomed) {
@@ -283,14 +289,8 @@ exports.widget = function (parent_elem, my_stream_id) {
         spinner.show();
     };
 
-    self.build = function (active_topic) {
-        if (active_topic) {
-            active_topic = active_topic.toLowerCase();
-        }
-        self.active_topic = active_topic;
-
+    self.build = function () {
         self.dom = self.build_list();
-
         parent_elem.append(self.dom);
     };
 
@@ -319,11 +319,9 @@ exports.get_stream_li = function () {
 };
 
 exports.rebuild = function (stream_li, stream_id) {
-    const active_topic = narrow_state.topic();
-
     exports.remove_expanded_topics();
     const widget = exports.widget(stream_li, stream_id);
-    widget.build(active_topic);
+    widget.build();
 
     active_widgets.set(stream_id, widget);
 };
