@@ -27,24 +27,24 @@
                 <tr>
                     <td><a href="/coverage/index.html">/coverage/index.html</a></td>
                     <td><code>./tools/test-backend --coverage</code></td>
-                    <td>View backend coverage report</td>
+                    <td>Backend (Django) test coverage report</td>
                 </tr>
                 <tr>
                     <td><a href="/node-coverage/index.html">/node-coverage/index.html</a></td>
                     <td><code>./tools/test-js-with-node --coverage</code></td>
-                    <td>View node coverage report</td>
+                    <td>Frontend (node) test coverage report</td>
                 </tr>
                 <tr>
                     <td><a href="/docs/index.html">/docs/index.html</a></td>
                     <td><code>./tools/build-docs</code></td>
-                    <td>View Zulip documentation</td>
+                    <td>Developer documentation (ReadTheDocs) built locally</td>
                 </tr>
                 <tr>
                     <td><a href="/emails">/emails</a></td>
                     <td><code>./scripts/setup/inline-email-css</code><br/>
                         Run the command if you made changes to source.html email templates.
                     </td>
-                    <td>Preview all email templates.</td>
+                    <td>View outgoing and example emails.</td>
                 </tr>
                 <tr>
                     <td><a href="/stats/realm/analytics/">/stats/realm/analytics/</a></td>
@@ -90,6 +90,7 @@
                 </tr>
             </tbody>
         </table>
+        <h2>Useful management commands</h2>
         <p>Development-specific management commands live in <code>zilencer/management/commands</code>.  Highlights include:
             <ul>
                 <li><code>./manage.py populate_db</code>: Rebuilds database.  Has options to e.g. create 3K users for testing.</li>
