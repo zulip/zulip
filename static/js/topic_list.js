@@ -283,15 +283,7 @@ exports.widget = function (parent_elem, my_stream_id) {
         spinner.show();
     };
 
-    self.show_no_more_topics = function () {
-        const elem = self.dom.find('.no-more-topics-found');
-        elem.show();
-        self.no_more_topics = true;
-    };
-
-    self.build = function (active_topic, no_more_topics) {
-        self.no_more_topics = false; // for now
-
+    self.build = function (active_topic) {
         if (active_topic) {
             active_topic = active_topic.toLowerCase();
         }
@@ -300,14 +292,6 @@ exports.widget = function (parent_elem, my_stream_id) {
         self.dom = self.build_list();
 
         parent_elem.append(self.dom);
-
-        // We often rebuild an entire topic list, and the
-        // caller will pass us in no_more_topics as true
-        // if we were showing "No more topics found" from
-        // the initial zooming.
-        if (no_more_topics) {
-            self.show_no_more_topics();
-        }
     };
 
     return self;
@@ -334,31 +318,12 @@ exports.get_stream_li = function () {
     return stream_li;
 };
 
-exports.need_to_show_no_more_topics = function (stream_id) {
-    // This function is important, and the use case here is kind of
-    // subtle.  We do complete redraws of the topic list when new
-    // messages come in, and we don't want to overwrite the
-    // "no more topics" error message.
-    if (!zoomed) {
-        return false;
-    }
-
-    if (!active_widgets.has(stream_id)) {
-        return false;
-    }
-
-    const widget = active_widgets.get(stream_id);
-
-    return widget.no_more_topics;
-};
-
 exports.rebuild = function (stream_li, stream_id) {
     const active_topic = narrow_state.topic();
-    const no_more_topics = exports.need_to_show_no_more_topics(stream_id);
 
     exports.remove_expanded_topics();
     const widget = exports.widget(stream_li, stream_id);
-    widget.build(active_topic, no_more_topics);
+    widget.build(active_topic);
 
     active_widgets.set(stream_id, widget);
 };
@@ -375,8 +340,6 @@ exports.zoom_in = function () {
     }
 
     const active_widget = active_widgets.get(stream_id);
-
-    const before_count = active_widget.num_items();
 
     function on_success() {
         if (!active_widgets.has(stream_id)) {
@@ -396,12 +359,6 @@ exports.zoom_in = function () {
         const widget = active_widgets.get(stream_id);
 
         exports.rebuild(widget.get_parent(), stream_id);
-
-        const after_count = widget.num_items();
-
-        if (after_count === before_count) {
-            widget.show_no_more_topics();
-        }
     }
 
     ui.get_scroll_element($('#stream-filters-container')).scrollTop(0);
