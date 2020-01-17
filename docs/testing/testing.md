@@ -1,62 +1,63 @@
 # Testing and writing tests
 
-## Overview
+Zulip takes pride in its extensive, carefully designed test suites.
+For example, `test-backend` runs a complete test suite (~98% test
+coverage; 100% on core code) for the Zulip server in under a minute on
+a fast laptop; very few webapps of similar scope can say something
+similar.
 
-Zulip has a full test suite that includes many components.  The most
-important components are documented in depth in their own sections:
+This page focused on the mechanics of running automated tests in a
+[development environment](../development/overview.md); you may also
+want to read about our [testing philosophy](../testing/philosophy.md)
+and [continuous integration
+setup](../testing/continuous-integration.md).
 
-- [Django](../testing/testing-with-django.md): backend Python tests
-- [Casper](../testing/testing-with-casper.md): end-to-end UI tests
-- [Node](../testing/testing-with-node.md): unit tests for JS front end code
-- [Linters](../testing/linters.md): Our parallel linter suite
-- [CI details](continuous-integration.md): How all of these run in CI
-- [Other test suites](#other-test-suites): Our various smaller test suites.
-
-This document covers more general testing issues, such as how to run the
-entire test suite, how to troubleshoot database issues, how to manually
-test the front end, etc.
-
-We also document [how to manually test the app](manual-testing.md).
+Manual testing with a web browser is primarily discussed in the docs
+on [using the development environment](../development/using.md).
 
 ## Running tests
 
 Zulip tests must be run inside a Zulip development environment; if
-you're using Vagrant, you will need to enter the Vagrant environment
-before running the tests:
+you're using Vagrant, you may need to enter it with `vagrant ssh`.
 
-```
-vagrant ssh
-cd /srv/zulip
-```
+You can run all of the test suites (similar to our continuous integration)
+as follows:
 
-Then, to run the full Zulip test suite, do this:
 ```
 ./tools/test-all
 ```
 
-This runs the linter (`tools/lint`) plus all of our test suites;
-they can all be run separately (just read `tools/test-all` to see
-them).  You can also run individual tests which can save you a lot of
-time debugging a test failure, e.g.:
+However, you will rarely want to do this while actively developing,
+because it takes a long time.  Instead, your edit/refresh cycle will
+typically involve running subsets of the tests with commands like these:
 
 ```
-./tools/lint # Runs all the linters in parallel
+./tools/lint zerver/lib/actions.py # Lint the file you just changed
 ./tools/test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube
 ./tools/test-backend BugdownTest # Run `test-backend --help` for more options
 ./tools/test-js-with-casper 09-navigation.js
 ./tools/test-js-with-node utils.js
 ```
-The above setup instructions include the first-time setup of test
-databases, but you may need to rebuild the test database occasionally
-if you're working on new database migrations.  To do this, run:
 
-```
-./tools/do-destroy-rebuild-test-database
-```
+The commands above will all run in just a few seconds.  Many more
+useful options are discussed in each tool's documentation (e.g.
+`./tools/test-backend --help`).
+
+## Major test suites
+
+Zulip has a handful of major tests suite that every developer will
+eventually work with, each with its own page detailing how it works:
+
+- [Linters](../testing/linters.md): Our dozen or so linters run in parallel.
+- [Django](../testing/testing-with-django.md): Server/backend Python tests.
+- [Node](../testing/testing-with-node.md): JavaScript tests for the
+  frontend run via node.js.
+- [Casper (deprecated)](../testing/testing-with-casper.md): End-to-end
+  UI tests run via a browser.
 
 ## Other test suites
 
-Zulip also has about a dozen smaller tests suites:
+Additionally, Zulip also has about a dozen smaller tests suites:
 
 - `tools/test-migrations`: Checks whether the `zerver/migrations`
   migration content the models defined in `zerver/models.py`.  See our
@@ -100,40 +101,7 @@ things to the environment) why they are not part of the handful of
 major test suites like `test-backend`, but they all contribute
 something valuable to helping keep Zulip bug-free.
 
-### Possible testing issues
-
-- When running the test suite, if you get an error involving Git that looks like this:
-
-  ```
-      gitlint| An error occurred while executing '/usr/bin/git rev-list --max-count=-1 upstream/master..HEAD': b"fatal: ambiguous argument 'upstream/master..HEAD': unknown revision or path not in the working tree.\nUse '--' to separate paths from revisions, like this:\n'git <command> [<revision>...] -- [<file>...]'"
-  ```
-
-  ... then you may need to connect the Zulip upstream repository with the following command:
-
-  ```
-    git remote add -f upstream https://github.com/zulip/zulip.git
-  ```
-
-- When running casper tests (`./tools/test-js-with-casper`), if you
-get an error like this:
-
-```
-Running node_modules/.bin/casperjs  test /srv/zulip/frontend_tests/casper_tests/00-realm-creation.js
-internal/child_process.js:289
-  var err = this._handle.spawn(options);
-                        ^
-
-TypeError: Bad argument
-```
-... it means that phantomjs is not installed. You can install it by running
-the following commands.
-
-```bash
-cd node_modules/phantomjs-prebuilt
-node install.js
-```
-
-### Internet access inside test suites
+## Internet access inside test suites
 
 As a policy matter, the Zulip test suites should never make outgoing
 HTTP or other network requests.  This is important for 2 major
@@ -185,73 +153,7 @@ The one exception to this policy is our documentation tests, which
 will attempt to verify that the links included in our documentation
 aren't broken.  Those tests end up failing nondeterministically fairly
 often, which is unfortunate, but there's simply no other correct way
-to verify links other than attempting to access them.
-
-## Schema and initial data changes
-
-If you change the database schema or change the initial test data, you
-have to regenerate the pristine test database by running
-`tools/do-destroy-rebuild-test-database`.
-
-## Wiping the test databases
-
-You should first try running: `tools/do-destroy-rebuild-test-database`
-
-If that fails you should try to do:
-
-    sudo -u postgres psql
-    > DROP DATABASE zulip_test;
-    > DROP DATABASE zulip_test_template;
-
-and then run `tools/do-destroy-rebuild-test-database`
-
-### Recreating the postgres cluster
-
-```eval_rst
-.. warning::
-    This is irreversible! Do it with care and never do this anywhere
-    in production.
-```
-
-If your postgres cluster (collection of databases) gets totally trashed
-permissions-wise, and you can't otherwise repair it, you can recreate
-it. On Ubuntu:
-
-    sudo pg_dropcluster --stop 9.1 main
-    sudo pg_createcluster --locale=en_US.utf8 --start 9.1 main
-
-## Local browser testing (local app + web browser)
-
-This section is about troubleshooting your local development environment.
-
-There is a [separate manual testing doc](manual-testing.md) that
-enumerates things you can test as part of manual QA.
-
-### Clearing the development database
-
-You can use:
-
-    ./tools/do-destroy-rebuild-database
-
-to drop the database on your development environment and repopulate
-your it with the Shakespeare characters and some test messages between
-them.  This is run automatically as part of the development
-environment setup process, but is occasionally useful when you want to
-return to a clean state for testing.
-
-### JavaScript manual testing
-
-`debug.js` has some tools for profiling JavaScript code, including:
-
--   \`print\_elapsed\_time\`: Wrap a function with it to print the time
-    that function takes to the JavaScript console.
--   \`IterationProfiler\`: Profile part of looping constructs (like a
-    for loop or \$.each). You mark sections of the iteration body and
-    the IterationProfiler will sum the costs of those sections over all
-    iterations.
-
-Chrome has a very good debugger and inspector in its developer tools.
-Firebug for Firefox is also pretty good. They both have profilers, but
-Chrome's is a sampling profiler while Firebug's is an instrumenting
-profiler. Using them both can be helpful because they provide different
-information.
+to verify links other than attempting to access them.  The compromise
+we've implemented is that in CI, these tests only verify links to
+websites controlled by the Zulip project (zulipchat.com, our GitHub,
+our ReadTheDocs), and not links to third-party websites.
