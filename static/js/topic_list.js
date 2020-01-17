@@ -98,45 +98,75 @@ exports.widget = function (parent_elem, my_stream_id) {
         _.each(topic_names, function (topic_name, idx) {
             const num_unread = unread.num_unread_for_topic(my_stream_id, topic_name);
             const is_active_topic = self.active_topic === topic_name.toLowerCase();
+            const is_topic_muted = muting.is_topic_muted(my_stream_id, topic_name);
 
             if (!zoomed) {
-                // We unconditionally skip showing muted topics when
-                // not zoomed, even if they have unread messages.
-                //
-                // We limit the number of topics we show to at most
-                // max_topics_with_unread when not zoomed.
-                //
-                // Ideally, this logic would first check whether the active topic
-                // is in the set of those with unreads to avoid ending up with
-                // max_topics_with_unread + 1 total topics if the active topic comes
-                // after the first several topics with unread messages.
-                if (!is_active_topic && (topics_selected >= max_topics_with_unread ||
-                                         muting.is_topic_muted(my_stream_id, topic_name))) {
-                    if (num_unread > 0 && !muting.is_topic_muted(my_stream_id, topic_name)) {
+                function should_show_topic() {
+                    // This function exists just for readability, to
+                    // avoid long chained conditionals to determine
+                    // which topics to include.
+
+                    // We always show the active topic.  Ideally, this
+                    // logic would first check whether the active
+                    // topic is in the set of those with unreads to
+                    // avoid ending up with max_topics_with_unread + 1
+                    // total topics if the active topic comes after
+                    // the first several topics with unread messages.
+                    if (is_active_topic) {
+                        return true;
+                    }
+
+                    // We unconditionally skip showing muted topics
+                    // when not zoomed, even if they have unread
+                    // messages.
+                    if (is_topic_muted) {
+                        return false;
+                    }
+
+                    // We include the most recent max_topics topics,
+                    // even if there are no unread messages.
+                    if (idx < max_topics) {
+                        return true;
+                    }
+
+                    // We include older topics with unread messages up
+                    // until max_topics_with_unread total topics have
+                    // been included.
+                    if (num_unread > 0 && topics_selected < max_topics_with_unread) {
+                        return true;
+                    }
+
+                    // Otherwise, we don't show the topic in the
+                    // unzoomed view.  We might display its unread
+                    // count in in "more topics" if it is not muted.
+                    return false;
+                }
+
+                const show_topic = should_show_topic();
+                if (!show_topic) {
+                    if (!is_topic_muted) {
+                        // The "more topics" unread count, like
+                        // stream-level counts, only counts messages
+                        // on unmuted topics.
                         more_topics_unreads += num_unread;
                     }
                     return;
                 }
-
-                // Show the most recent topics, as well as any with unread messages
-                const show_topic = idx < max_topics || num_unread > 0 || is_active_topic;
-
-                if (!show_topic) {
-                    return;
-                }
+                topics_selected += 1;
+                // We fall through to rendering the topic, using the
+                // same code we do when zoomed.
             }
 
             const topic_info = {
                 topic_name: topic_name,
                 unread: num_unread,
                 is_zero: num_unread === 0,
-                is_muted: muting.is_topic_muted(my_stream_id, topic_name),
+                is_muted: is_topic_muted,
                 url: hash_util.by_stream_topic_uri(my_stream_id, topic_name),
             };
             const li = $(render_topic_list_item(topic_info));
             self.topic_items.set(topic_name, li);
             ul.append(li);
-            topics_selected += 1;
         });
 
         // Now, we decide whether we need to show the "more topics"
