@@ -1074,11 +1074,14 @@ def social_auth_finish(backend: Any,
     full_name_validated = backend.full_name_validated
     email_address = return_data['validated_email']
     full_name = return_data['full_name']
-    is_signup = strategy.session_get('is_signup') == '1'
     redirect_to = strategy.session_get('next')
     realm = Realm.objects.get(id=return_data["realm_id"])
     multiuse_object_key = strategy.session_get('multiuse_object_key', '')
     mobile_flow_otp = strategy.session_get('mobile_flow_otp')
+    if user_profile is None or user_profile.is_mirror_dummy:
+        is_signup = strategy.session_get('is_signup') == '1'
+    else:
+        is_signup = False
 
     # At this point, we have now confirmed that the user has
     # demonstrated control over the target email address.
