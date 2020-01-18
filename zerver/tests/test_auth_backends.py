@@ -2418,15 +2418,6 @@ class TestJWTLogin(ZulipTestCase):
             self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
             self.assert_logged_in_user_id(None)
 
-            # The /accounts/login/jwt/ endpoint should also handle the case
-            # where the authentication attempt throws UserProfile.DoesNotExist.
-            with mock.patch(
-                    'zerver.views.auth.authenticate',
-                    side_effect=UserProfile.DoesNotExist("Do not exist")):
-                result = self.client_post('/accounts/login/jwt/', data)
-            self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
-            self.assert_logged_in_user_id(None)
-
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}
         with self.settings(JWT_AUTH_KEYS={'acme': 'key'}):
