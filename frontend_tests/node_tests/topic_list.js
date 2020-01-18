@@ -142,6 +142,33 @@ run_test('get_list_info unreads', () => {
             'topic 7',
             'topic 8',
         ]);
+
+    unread_cnt['topic 4'] = 4;
+    unread_cnt['topic 5'] = 5;
+    unread_cnt['topic 13'] = 13;
+
+    muting.is_topic_muted = (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return topic_name === 'topic 4';
+    };
+
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 8);
+    assert.equal(list_info.more_topics_unreads, 9 + 13);
+    assert.equal(list_info.num_possible_topics, 15);
+
+    assert.deepEqual(
+        _.map(list_info.items, (li) => li.topic_name),
+        [
+            'topic 0',
+            'topic 1',
+            'topic 2',
+            'topic 3',
+            'topic 5',
+            'topic 6',
+            'topic 7',
+            'topic 8',
+        ]);
 });
 
 run_test('topic_list_build_widget', () => {
