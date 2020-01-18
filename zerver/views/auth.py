@@ -225,38 +225,41 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
     # account, and we need to do the right thing depending whether
     # or not they're using the mobile OTP flow or want a browser session.
     if mobile_flow_otp is not None:
-        # For the mobile Oauth flow, we send the API key and other
-        # necessary details in a redirect to a zulip:// URI scheme.
-        api_key = get_api_key(user_profile)
-        params = {
-            'otp_encrypted_api_key': otp_encrypt_api_key(api_key, mobile_flow_otp),
-            'email': user_profile.delivery_email,
-            'realm': user_profile.realm.uri,
-        }
-        # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
-        response = HttpResponse(status=302)
-        response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
-
-        # Since we are returning an API key instead of going through
-        # the Django login() function (which creates a browser
-        # session, etc.), the "new login" signal handler (which
-        # triggers an email notification new logins) will not run
-        # automatically.  So we call it manually here.
-        #
-        # Arguably, sending a fake 'user_logged_in' signal would be a better approach:
-        #   user_logged_in.send(sender=user_profile.__class__, request=request, user=user_profile)
-        email_on_new_login(sender=user_profile.__class__, request=request, user=user_profile)
-
-        # Mark this request as having a logged-in user for our server logs.
-        process_client(request, user_profile)
-        request._email = user_profile.delivery_email
-
-        return response
+        return finish_mobile_flow(request, user_profile, mobile_flow_otp)
 
     do_login(request, user_profile)
 
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
+
+def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
+    # For the mobile Oauth flow, we send the API key and other
+    # necessary details in a redirect to a zulip:// URI scheme.
+    api_key = get_api_key(user_profile)
+    params = {
+        'otp_encrypted_api_key': otp_encrypt_api_key(api_key, otp),
+        'email': user_profile.delivery_email,
+        'realm': user_profile.realm.uri,
+    }
+    # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
+    response = HttpResponse(status=302)
+    response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
+
+    # Since we are returning an API key instead of going through
+    # the Django login() function (which creates a browser
+    # session, etc.), the "new login" signal handler (which
+    # triggers an email notification new logins) will not run
+    # automatically.  So we call it manually here.
+    #
+    # Arguably, sending a fake 'user_logged_in' signal would be a better approach:
+    #   user_logged_in.send(sender=user_profile.__class__, request=request, user=user_profile)
+    email_on_new_login(sender=user_profile.__class__, request=request, user=user_profile)
+
+    # Mark this request as having a logged-in user for our server logs.
+    process_client(request, user_profile)
+    request._email = user_profile.delivery_email
+
+    return response
 
 @log_view_func
 @has_request_variables
