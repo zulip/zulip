@@ -7,7 +7,7 @@ from django.contrib.auth import login as django_login
 from django.contrib.auth.views import password_reset as django_password_reset
 from django.urls import reverse
 from zerver.decorator import require_post, \
-    process_client, do_login, log_view_func
+    process_client, do_login, log_view_func, get_client_name, validate_api_key
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
     HttpResponseServerError
 from django.template.response import SimpleTemplateResponse
@@ -906,8 +906,15 @@ def password_reset(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                                  post_reset_redirect='/accounts/password/reset/done/')
 
 @has_request_variables
-def auth_session_with_api_key(request: HttpRequest, user_profile: UserProfile,
+def auth_session_with_api_key(request: HttpRequest,
+                              email: str=REQ(), api_key: str=REQ(),
                               next: str=REQ(default='')) -> HttpResponse:
+    client_name = get_client_name(request, is_browser_view=True)
+    user_profile = validate_api_key(request, None, api_key,
+                                    is_webhook=False,
+                                    client_name=client_name)
+    if user_profile is None:
+        raise JsonableError("Authentication failed.")
     django_login(request, user_profile, 'zproject.backends.ZulipDummyBackend')
     if next:
         return HttpResponseRedirect(next)

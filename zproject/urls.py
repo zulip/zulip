@@ -655,8 +655,7 @@ for incoming_webhook in WEBHOOK_INTEGRATIONS:
 urls += [
     url(r'^json/fetch_api_key$', rest_dispatch,
         {'POST': 'zerver.views.auth.json_fetch_api_key'}),
-    url(r'^api/v1/auth_session_with_api_key$', rest_dispatch,
-        {'GET': 'zerver.views.auth.auth_session_with_api_key'})
+    url(r'^auth_session_with_api_key$', zerver.views.auth.auth_session_with_api_key)
 ]
 
 # Mobile-specific authentication URLs
