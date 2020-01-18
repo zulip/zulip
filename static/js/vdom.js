@@ -164,6 +164,39 @@ exports.update = (container, new_dom, old_dom) => {
         const rendered_dom = new_node.render();
         child_elems.eq(i).replaceWith(rendered_dom);
     });
+
+    exports.update_attrs(
+        container.find(tag_name),
+        new_opts.attrs,
+        old_opts.attrs
+    );
+};
+
+exports.update_attrs = (elem, new_attrs, old_attrs) => {
+    function make_dict(attrs) {
+        const dict = {};
+        _.each(attrs, (attr) => {
+            const k = attr[0];
+            const v = attr[1];
+            dict[k] = v;
+        });
+        return dict;
+    }
+
+    const new_dict = make_dict(new_attrs);
+    const old_dict = make_dict(old_attrs);
+
+    _.each(new_dict, (v, k) => {
+        if (v !== old_dict[k]) {
+            elem.attr(k, v);
+        }
+    });
+
+    _.each(old_dict, (v, k) => {
+        if (new_dict[k] === undefined) {
+            elem.removeAttr(k);
+        }
+    });
 };
 
 window.vdom = exports;
