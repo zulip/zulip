@@ -3,7 +3,7 @@ import mock
 from zerver.lib.test_classes import ZulipTestCase
 from typing import Dict
 
-class TestFeedbackBot(ZulipTestCase):
+class TestVideoCall(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         user_profile = self.example_user('hamlet')
