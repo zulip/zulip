@@ -2,6 +2,7 @@ const render_more_topics = require('../templates/more_topics.hbs');
 const render_topic_list_item = require('../templates/topic_list_item.hbs');
 const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
+const topic_list_data = require('./topic_list_data');
 
 /*
     Track all active widgets with a Dict.
@@ -85,104 +86,10 @@ exports.widget = function (parent_elem, my_stream_id) {
     const self = {};
     const max_topics = 5;
 
-    self.get_list_info = function () {
-        let topics_selected = 0;
-        let more_topics_unreads = 0;
-
-        let active_topic = narrow_state.topic();
-
-        if (active_topic) {
-            active_topic = active_topic.toLowerCase();
-        }
-
-        const max_topics_with_unread = 8;
-        const topic_names = topic_data.get_recent_names(my_stream_id);
-
-        const items = [];
-
-        _.each(topic_names, function (topic_name, idx) {
-            const num_unread = unread.num_unread_for_topic(my_stream_id, topic_name);
-            const is_active_topic = active_topic === topic_name.toLowerCase();
-            const is_topic_muted = muting.is_topic_muted(my_stream_id, topic_name);
-
-            if (!zoomed) {
-                function should_show_topic() {
-                    // This function exists just for readability, to
-                    // avoid long chained conditionals to determine
-                    // which topics to include.
-
-                    // We always show the active topic.  Ideally, this
-                    // logic would first check whether the active
-                    // topic is in the set of those with unreads to
-                    // avoid ending up with max_topics_with_unread + 1
-                    // total topics if the active topic comes after
-                    // the first several topics with unread messages.
-                    if (is_active_topic) {
-                        return true;
-                    }
-
-                    // We unconditionally skip showing muted topics
-                    // when not zoomed, even if they have unread
-                    // messages.
-                    if (is_topic_muted) {
-                        return false;
-                    }
-
-                    // We include the most recent max_topics topics,
-                    // even if there are no unread messages.
-                    if (idx < max_topics) {
-                        return true;
-                    }
-
-                    // We include older topics with unread messages up
-                    // until max_topics_with_unread total topics have
-                    // been included.
-                    if (num_unread > 0 && topics_selected < max_topics_with_unread) {
-                        return true;
-                    }
-
-                    // Otherwise, we don't show the topic in the
-                    // unzoomed view.  We might display its unread
-                    // count in in "more topics" if it is not muted.
-                    return false;
-                }
-
-                const show_topic = should_show_topic();
-                if (!show_topic) {
-                    if (!is_topic_muted) {
-                        // The "more topics" unread count, like
-                        // stream-level counts, only counts messages
-                        // on unmuted topics.
-                        more_topics_unreads += num_unread;
-                    }
-                    return;
-                }
-                topics_selected += 1;
-                // We fall through to rendering the topic, using the
-                // same code we do when zoomed.
-            }
-
-            const topic_info = {
-                topic_name: topic_name,
-                unread: num_unread,
-                is_zero: num_unread === 0,
-                is_muted: is_topic_muted,
-                is_active_topic: is_active_topic,
-                url: hash_util.by_stream_topic_uri(my_stream_id, topic_name),
-            };
-
-            items.push(topic_info);
-        });
-
-        return {
-            items: items,
-            num_possible_topics: topic_names.length,
-            more_topics_unreads: more_topics_unreads,
-        };
-    };
-
     self.build_list = function () {
-        const list_info = self.get_list_info();
+        const list_info = topic_list_data.get_list_info(
+            my_stream_id, max_topics, zoomed);
+
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
 

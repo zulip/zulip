@@ -53,6 +53,7 @@ import "../rows.js";
 import "../people.js";
 import "../user_groups.js";
 import "../unread.js";
+import "../topic_list_data.js";
 import "../topic_list.js";
 import "../pm_list.js";
 import "../pm_conversations.js";
