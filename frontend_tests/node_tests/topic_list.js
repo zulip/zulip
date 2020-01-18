@@ -1,10 +1,6 @@
-set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
-
 set_global('narrow_state', {});
 set_global('unread', {});
 set_global('muting', {});
-set_global('stream_popover', {});
 set_global('message_list', {});
 
 zrequire('hash_util');
@@ -13,23 +9,16 @@ zrequire('unread');
 zrequire('topic_data');
 zrequire('topic_list');
 
-const devel = {
-    stream_id: 555,
-    name: 'devel',
-};
-
 const general = {
     stream_id: 556,
     name: 'general',
 };
 
-stream_data.add_sub('devel', devel);
 stream_data.add_sub('general', general);
 
 function clear() {
     narrow_state.topic = () => undefined;
     topic_data.reset();
-    stream_popover.hide_topic_popover = function () {};
     muting.is_topic_muted = () => false;
 }
 
@@ -169,81 +158,4 @@ run_test('get_list_info unreads', () => {
             'topic 7',
             'topic 8',
         ]);
-});
-
-run_test('topic_list_build_widget', () => {
-    clear();
-
-    topic_data.get_recent_names = () => {
-        return ['coding'];
-    };
-
-    narrow_state.topic = function () {
-        return 'testing';
-    };
-
-    unread.num_unread_for_topic = function () {
-        return 3;
-    };
-
-    let checked_mutes;
-    let rendered;
-
-    global.stub_templates(function (name, info) {
-        assert.equal(name, 'topic_list_item');
-        const expected = {
-            topic_name: 'coding',
-            unread: 3,
-            is_zero: false,
-            is_muted: false,
-            is_active_topic: false,
-            url: '#narrow/stream/555-devel/topic/coding',
-        };
-        assert.deepEqual(info, expected);
-        rendered = true;
-        return '<topic list item>';
-    });
-
-    muting.is_topic_muted = function (stream_id, topic_name) {
-        assert.equal(stream_id, devel.stream_id);
-        assert.equal(topic_name, 'coding');
-        checked_mutes = true;
-        return false;
-    };
-
-    const ul = $('<ul class="topic-list">');
-
-    const list_items = [];
-
-    ul.append = function (item) {
-        list_items.push(item);
-    };
-
-    const parent_elem = $.create('parent_elem');
-    let attached_to_parent;
-
-    parent_elem.append = function (child) {
-        assert.equal(child, ul);
-        attached_to_parent = true;
-    };
-
-    assert.equal(topic_list.active_stream_id(), undefined);
-
-    const widget = topic_list.widget(parent_elem, devel.stream_id);
-
-    widget.build_more_topics_section = function () {
-        return $('<more topics>');
-    };
-
-    widget.build();
-
-    assert(widget.get_stream_id(), devel.stream_id);
-    assert.equal(widget.get_parent(), parent_elem);
-
-    assert(checked_mutes);
-    assert(rendered);
-    assert.equal(list_items[0].html(), '<topic list item>');
-    assert.equal(list_items[1].html(), '<more topics>');
-    assert(attached_to_parent);
-
 });
