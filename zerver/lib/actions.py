@@ -1516,16 +1516,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 'urls': links_for_embed}
             queue_json_publish('embed_links', event_data)
 
-        if (settings.ENABLE_FEEDBACK and settings.FEEDBACK_BOT and
-                message['message'].recipient.type == Recipient.PERSONAL):
-
-            feedback_bot_id = get_system_bot(email=settings.FEEDBACK_BOT).id
-            if feedback_bot_id in message['active_user_ids']:
-                queue_json_publish(
-                    'feedback_messages',
-                    wide_message_dict,
-                )
-
         if message['message'].recipient.type == Recipient.PERSONAL:
             welcome_bot_id = get_system_bot(settings.WELCOME_BOT).id
             if (welcome_bot_id in message['active_user_ids'] and

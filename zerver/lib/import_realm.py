@@ -1066,8 +1066,6 @@ def do_import_system_bots(realm: Any) -> None:
     internal_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
                      for bot in settings.INTERNAL_BOTS]
     create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
-    names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
-    create_users(realm, names, bot_type=UserProfile.DEFAULT_BOT)
     print("Finished importing system bots.")
 
 def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],

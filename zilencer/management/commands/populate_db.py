@@ -613,9 +613,6 @@ def create_internal_realm() -> None:
 
     internal_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
                            for bot in settings.INTERNAL_BOTS]
-    internal_realm_bots += [
-        ("Zulip Feedback Bot", "feedback@zulip.com"),
-    ]
     create_users(internal_realm, internal_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
     # Initialize the email gateway bot as an API Super User

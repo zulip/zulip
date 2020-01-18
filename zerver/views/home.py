@@ -295,7 +295,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'night_mode': user_profile.night_mode,
                                'navbar_logo_url': navbar_logo_url,
                                'show_webathena': user_profile.realm.webathena_enabled,
-                               'enable_feedback': settings.ENABLE_FEEDBACK,
                                'embedded': narrow_stream is not None,
                                'invite_as': PreregistrationUser.INVITE_AS,
                                'max_file_upload_size': settings.MAX_FILE_UPLOAD_SIZE,
