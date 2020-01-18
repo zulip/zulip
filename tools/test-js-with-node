@@ -80,6 +80,7 @@ enforce_fully_covered = {
     'static/js/stream_sort.js',
     'static/js/top_left_corner.js',
     'static/js/topic_data.js',
+    'static/js/topic_list_data.js',
     'static/js/topic_generator.js',
     'static/js/transmit.js',
     'static/js/typeahead_helper.js',
