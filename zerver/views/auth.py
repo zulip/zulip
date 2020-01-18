@@ -179,6 +179,19 @@ def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
     redirect_url = login_url + '?subdomain=1'
     return HttpResponseRedirect(redirect_url)
 
+def register_remote_user(request: HttpRequest, remote_username: str,
+                         full_name: str='',
+                         is_signup: bool=False,
+                         multiuse_object_key: str='',
+                         full_name_validated: bool=False) -> HttpResponse:
+    email = remote_user_to_email(remote_username)
+    # We have verified the user controls an email address, but
+    # there's no associated Zulip user account.  Consider sending
+    # the request to registration.
+    return maybe_send_to_registration(request, email, full_name, password_required=False,
+                                      is_signup=is_signup, multiuse_object_key=multiuse_object_key,
+                                      full_name_validated=full_name_validated)
+
 def login_or_register_remote_user(request: HttpRequest, remote_username: str,
                                   user_profile: Optional[UserProfile], full_name: str='',
                                   mobile_flow_otp: Optional[str]=None,
@@ -203,14 +216,10 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
     * A zulip:// URL to send control back to the mobile apps if they
       are doing authentication using the mobile_flow_otp flow.
     """
-    email = remote_user_to_email(remote_username)
     if user_profile is None or user_profile.is_mirror_dummy:
-        # We have verified the user controls an email address, but
-        # there's no associated Zulip user account.  Consider sending
-        # the request to registration.
-        return maybe_send_to_registration(request, email, full_name, password_required=False,
-                                          is_signup=is_signup, multiuse_object_key=multiuse_object_key,
-                                          full_name_validated=full_name_validated)
+        return register_remote_user(request, remote_username, full_name,
+                                    is_signup=is_signup, multiuse_object_key=multiuse_object_key,
+                                    full_name_validated=full_name_validated)
 
     # Otherwise, the user has successfully authenticated to an
     # account, and we need to do the right thing depending whether
@@ -221,7 +230,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
         api_key = get_api_key(user_profile)
         params = {
             'otp_encrypted_api_key': otp_encrypt_api_key(api_key, mobile_flow_otp),
-            'email': email,
+            'email': user_profile.delivery_email,
             'realm': user_profile.realm.uri,
         }
         # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
