@@ -207,7 +207,11 @@ exports.widget = function (parent_elem, my_stream_id) {
         const show_more = self.build_more_topics_section(more_topics_unreads);
         const sub = stream_data.get_sub_by_id(my_stream_id);
 
-        if (num_possible_topics > max_topics || !stream_data.all_topics_in_cache(sub)) {
+        const is_showing_all_possible_topics =
+            list_info.items.length === num_possible_topics &&
+            stream_data.all_topics_in_cache(sub);
+
+        if (!is_showing_all_possible_topics) {
             ul.append(show_more);
         }
         return ul;
