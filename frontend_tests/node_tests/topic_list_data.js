@@ -32,6 +32,7 @@ function get_list_info(zoomed) {
 run_test('get_list_info w/real topic_data', () => {
     clear();
 
+    let list_info;
     const empty_list_info = get_list_info();
 
     assert.deepEqual(empty_list_info, {
@@ -49,19 +50,28 @@ run_test('get_list_info w/real topic_data', () => {
         });
     });
 
-    const list_info = get_list_info();
+    narrow_state.topic = () => 'topic 6';
+
+    list_info = get_list_info();
     assert.equal(list_info.items.length, 5);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.num_possible_topics, 7);
 
     assert.deepEqual(list_info.items[0], {
-        is_active_topic: false,
+        is_active_topic: true,
         is_muted: false,
         is_zero: true,
         topic_name: 'topic 6',
         unread: 0,
         url: '#narrow/stream/556-general/topic/topic.206',
     });
+
+    // If we zoom in, we'll show all 7 topics.
+    const zoomed = true;
+    list_info = get_list_info(zoomed);
+    assert.equal(list_info.items.length, 7);
+    assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.num_possible_topics, 7);
 });
 
 run_test('get_list_info unreads', () => {
