@@ -240,7 +240,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
 
         # Mark this request as having a logged-in user for our server logs.
         process_client(request, user_profile)
-        request._email = user_profile.email
+        request._email = user_profile.delivery_email
 
         return response
 
@@ -805,7 +805,7 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    request._email = user_profile.email
+    request._email = user_profile.delivery_email
 
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})
