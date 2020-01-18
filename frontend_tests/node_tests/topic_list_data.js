@@ -7,7 +7,7 @@ zrequire('hash_util');
 zrequire('stream_data');
 zrequire('unread');
 zrequire('topic_data');
-zrequire('topic_list');
+const topic_list_data = zrequire('topic_list_data');
 
 const general = {
     stream_id: 556,
@@ -22,10 +22,11 @@ function clear() {
     muting.is_topic_muted = () => false;
 }
 
-function get_list_info() {
+function get_list_info(zoomed) {
     const stream_id = general.stream_id;
-    const widget = topic_list.widget(undefined, stream_id);
-    return widget.get_list_info();
+    const max_topics = 5;
+    return topic_list_data.get_list_info(
+        stream_id, max_topics, zoomed);
 }
 
 run_test('get_list_info w/real topic_data', () => {
