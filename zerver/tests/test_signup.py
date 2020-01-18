@@ -891,27 +891,6 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(email2))
         self.check_sent_emails([email, email2])
 
-    def test_successful_invite_user_with_notifications_stream(self) -> None:
-        """
-        A call to /json/invites with valid parameters unconditionally
-        subscribes the invitee to the notifications stream if it exists and is
-        public.
-        """
-        realm = get_realm('zulip')
-        notifications_stream = get_stream('Verona', realm)
-        realm.notifications_stream_id = notifications_stream.id
-        realm.save()
-
-        self.login(self.example_email("hamlet"))
-        invitee = 'alice-test@zulip.com'
-        self.assert_json_success(self.invite(invitee, ['Denmark']))
-        self.assertTrue(find_key_by_email(invitee))
-        self.check_sent_emails([invitee])
-
-        prereg_user = PreregistrationUser.objects.get(email=invitee)
-        stream_ids = [stream.id for stream in prereg_user.streams.all()]
-        self.assertTrue(notifications_stream.id in stream_ids)
-
     def test_invite_user_signup_initial_history(self) -> None:
         """
         Test that a new user invited to a stream receives some initial

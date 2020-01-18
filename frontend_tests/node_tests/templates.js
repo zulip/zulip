@@ -806,7 +806,7 @@ run_test('invite_subscription', () => {
     const html = render('invite_subscription', args);
 
     const input = $(html).find("label").first();
-    assert.equal(input.text().trim(), "devel");
+    assert.equal(input.text().trim(), "#devel");
 });
 
 run_test('single_message', () => {
