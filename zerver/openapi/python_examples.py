@@ -978,13 +978,13 @@ def remove_alert_words(client):
 @openapi_test_function("/user_groups/create:post")
 def create_user_group(client):
     # type: (Client) -> None
-    ensure_users([7, 8, 9, 10], ['aaron', 'zoe', 'cordelia', 'hamlet'])
+    ensure_users([6, 7, 8, 9], ['aaron', 'zoe', 'cordelia', 'hamlet'])
 
     # {code_example|start}
     request = {
         'name': 'marketing',
         'description': 'The marketing team.',
-        'members': [7, 8, 9, 10],
+        'members': [6, 7, 8, 9],
     }
 
     result = client.create_user_group(request)
@@ -1020,12 +1020,12 @@ def remove_user_group(client, group_id):
 @openapi_test_function("/user_groups/{group_id}/members:post")
 def update_user_group_members(client, group_id):
     # type: (Client, int) -> None
-    ensure_users([9, 10, 11], ['cordelia', 'hamlet', 'iago'])
+    ensure_users([8, 9, 10], ['cordelia', 'hamlet', 'iago'])
 
     request = {
         'group_id': group_id,
-        'delete': [9, 10],
-        'add': [11]
+        'delete': [8, 9],
+        'add': [10]
     }
 
     result = client.update_user_group_members(request)

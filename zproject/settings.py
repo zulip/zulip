@@ -1055,7 +1055,6 @@ if PRODUCTION:
 PROFILE_ALL_REQUESTS = False
 
 CROSS_REALM_BOT_EMAILS = {
-    'feedback@zulip.com',
     'notification-bot@zulip.com',
     'welcome-bot@zulip.com',
     'emailgateway@zulip.com',

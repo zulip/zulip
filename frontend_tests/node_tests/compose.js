@@ -263,15 +263,15 @@ run_test('validate', () => {
 });
 
 run_test('get_invalid_recipient_emails', () => {
-    const feedback_bot = {
-        email: 'feedback@example.com',
+    const welcome_bot = {
+        email: 'welcome-bot@example.com',
         user_id: 124,
-        full_name: 'Feedback Bot',
+        full_name: 'Welcome Bot',
     };
-    page_params.cross_realm_bots = [feedback_bot];
+    page_params.cross_realm_bots = [welcome_bot];
     page_params.user_id = 30;
     people.initialize();
-    compose_state.private_message_recipient('feedback@example.com');
+    compose_state.private_message_recipient('welcome-bot@example.com');
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
 

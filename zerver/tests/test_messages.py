@@ -349,7 +349,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         return get_user(email, get_realm(subdomain))
 
     @slow("Sends a large number of messages")
-    @override_settings(CROSS_REALM_BOT_EMAILS=['feedback@zulip.com',
+    @override_settings(CROSS_REALM_BOT_EMAILS=['notification-bot@zulip.com',
                                                'welcome-bot@zulip.com',
                                                'support@3.example.com'])
     def test_realm_scenarios(self) -> None:
@@ -370,15 +370,15 @@ class TestCrossRealmPMs(ZulipTestCase):
         user1a_email = 'user1a@1.example.com'
         user2_email = 'user2@2.example.com'
         user3_email = 'user3@3.example.com'
-        feedback_email = 'feedback@zulip.com'
+        notification_bot_email = 'notification-bot@zulip.com'
         support_email = 'support@3.example.com'  # note: not zulip.com
 
         user1 = self.create_user(user1_email)
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
         self.create_user(user3_email)
-        feedback_bot = get_system_bot(feedback_email)
-        with self.settings(CROSS_REALM_BOT_EMAILS=['feedback@zulip.com', 'welcome-bot@zulip.com']):
+        notification_bot = get_system_bot(notification_bot_email)
+        with self.settings(CROSS_REALM_BOT_EMAILS=['notification-bot@zulip.com', 'welcome-bot@zulip.com']):
             # HACK: We should probably be creating this "bot" user another
             # way, but since you can't register a user with a
             # cross-realm email, we need to hide this for now.
@@ -396,15 +396,15 @@ class TestCrossRealmPMs(ZulipTestCase):
         # (They need lower level APIs to do this.)
         internal_send_private_message(
             realm=r2,
-            sender=get_system_bot(feedback_email),
+            sender=get_system_bot(notification_bot_email),
             recipient_user=get_user(user2_email, r2),
             content='bla',
         )
-        assert_message_received(user2, feedback_bot)
+        assert_message_received(user2, notification_bot)
 
         # All users can PM cross-realm bots in the zulip.com realm
-        self.send_personal_message(user1_email, feedback_email, sender_realm="1.example.com")
-        assert_message_received(feedback_bot, user1)
+        self.send_personal_message(user1_email, notification_bot_email, sender_realm="1.example.com")
+        assert_message_received(notification_bot, user1)
 
         # Users can PM cross-realm bots on non-zulip realms.
         # (The support bot represents some theoretical bot that we may
@@ -417,9 +417,9 @@ class TestCrossRealmPMs(ZulipTestCase):
         # already individually send PMs to cross-realm bots, we shouldn't
         # prevent them from sending multiple bots at once.  We may revisit
         # this if it's a nuisance for huddles.)
-        self.send_huddle_message(user1_email, [feedback_email, support_email],
+        self.send_huddle_message(user1_email, [notification_bot_email, support_email],
                                  sender_realm="1.example.com")
-        assert_message_received(feedback_bot, user1)
+        assert_message_received(notification_bot, user1)
         assert_message_received(support_bot, user1)
 
         # Prevent old loophole where I could send PMs to other users as long
@@ -431,11 +431,11 @@ class TestCrossRealmPMs(ZulipTestCase):
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
         with assert_invalid_email():
-            self.send_huddle_message(user1_email, [user2_email, feedback_email],
+            self.send_huddle_message(user1_email, [user2_email, notification_bot_email],
                                      sender_realm="1.example.com")
 
         with assert_invalid_email():
-            self.send_huddle_message(feedback_email, [user1_email, user2_email],
+            self.send_huddle_message(notification_bot_email, [user1_email, user2_email],
                                      sender_realm=settings.SYSTEM_BOT_REALM)
 
         # Users on the different realms cannot PM each other
