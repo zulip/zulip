@@ -333,18 +333,7 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     except Realm.DoesNotExist:
         raise JsonableError(_("Wrong subdomain"))
 
-    try:
-        # We do all the authentication we need here (otherwise we'd have to
-        # duplicate work), but we need to call authenticate with some backend so
-        # that the request.backend attribute gets set.
-        return_data = {}  # type: Dict[str, bool]
-        user_profile = authenticate(username=email,
-                                    realm=realm,
-                                    return_data=return_data,
-                                    use_dummy_backend=True)
-    except UserProfile.DoesNotExist:
-        user_profile = None
-
+    user_profile = authenticate_remote_user(realm, email)
     return login_or_register_remote_user(request, email, user_profile, remote_user)
 
 def oauth_redirect_to_root(request: HttpRequest, url: str,
