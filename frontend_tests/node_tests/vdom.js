@@ -22,6 +22,65 @@ run_test('basics', () => {
     );
 });
 
+run_test('attributes', () => {
+    const opts = {
+        keyed_nodes: [],
+        attrs: [
+            ['class', 'same'],
+            ['color', 'blue'],
+            ['id', '101'],
+        ],
+    };
+
+    const ul = vdom.ul(opts);
+
+    const html = vdom.render_tag(ul);
+
+    assert.equal(
+        html,
+        '<ul class="same" color="blue" id="101">\n\n' +
+        '</ul>'
+    );
+
+    let updated;
+    let removed;
+
+    const container = {
+        find: (tag_name) => {
+            assert.equal(tag_name, 'ul');
+            return {
+                children: () => [],
+
+                attr: (k, v) => {
+                    assert.equal(k, 'color');
+                    assert.equal(v, 'red');
+                    updated = true;
+                },
+
+                removeAttr: (k) => {
+                    assert.equal(k, 'id');
+                    removed = true;
+                },
+            };
+        },
+    };
+
+    const new_opts = {
+        keyed_nodes: [],
+        attrs: [
+            ['class', 'same'], // unchanged
+            ['color', 'red'],
+        ],
+    };
+
+    const new_ul = vdom.ul(new_opts);
+
+    vdom.update(container, new_ul, ul);
+
+    assert(updated);
+    assert(removed);
+});
+
 function make_child(i, name) {
     const render = () => {
         return '<li>' + name + '</li>';
