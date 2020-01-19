@@ -59,9 +59,7 @@ links to any alternative endpoints the user might want to consider.
 These sections should almost always contain a link to the
 documentation of the relevant feature in `/help/`.
 
-We plan to migrate to storing this description content in the
-`description` field in `zulip.yaml`; currently, the `description`
-section in `zulip.yaml` is not used for anything.
+The description content is stored in the `description` field in the `zulip.yaml` file; which is then taken and displayed under each endpoint.
 
 ### Usage examples
 
