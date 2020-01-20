@@ -455,21 +455,22 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
         logging.warning('Subdomain cookie: Bad signature.')
         return HttpResponse(status=400)
 
+    # We extract fields provided by the caller via the data object.
+    # The only fields that are required are email and subdomain (if we
+    # are simply doing login); more fields are expected if this is a
+    # new account registration flow or we're going to a specific
+    # narrow after login.
     subdomain = get_subdomain(request)
     if data['subdomain'] != subdomain:
         logging.warning('Login attempt on invalid subdomain')
         return HttpResponse(status=400)
-
     email_address = data['email']
-    full_name = data['name']
-    is_signup = data['is_signup']
-    redirect_to = data['next']
-    full_name_validated = data.get('full_name_validated', False)
 
-    if 'multiuse_object_key' in data:
-        multiuse_object_key = data['multiuse_object_key']
-    else:
-        multiuse_object_key = ''
+    full_name = data.get('name', '')
+    is_signup = data.get('is_signup', False)
+    redirect_to = data.get('next', '')
+    full_name_validated = data.get('full_name_validated', False)
+    multiuse_object_key = data.get('multiuse_object_key', '')
 
     # We cannot pass the actual authenticated user_profile object that
     # was fetched by the original authentication backend and passed
