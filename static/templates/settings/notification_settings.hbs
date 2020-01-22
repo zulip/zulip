@@ -70,9 +70,7 @@
             <div class="input-group">
                 <label for="desktop_icon_count_display" class="dropdown-title">{{ settings_label.desktop_icon_count_display }}</label>
                 <select name="desktop_icon_count_display" id="desktop_icon_count_display" class="prop-element">
-                    {{#each desktop_icon_count_display_values}}
-                    <option value="{{this.code}}">{{this.description}}</option>
-                    {{/each}}
+                    {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
                 </select>
             </div>
 
