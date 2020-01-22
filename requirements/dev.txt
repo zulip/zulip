@@ -307,8 +307,6 @@ html2text==2019.9.26 \
 httplib2==0.14.0 \
     --hash=sha256:34537dcdd5e0f2386d29e0e2c6d4a1703a3b982d34c198a5102e6e5d6194b107 \
     --hash=sha256:409fa5509298f739b34d5a652df762cb0042507dc93f6633e306b11289d6249d
-httpretty==0.9.7 \
-    --hash=sha256:66216f26b9d2c52e81808f3e674a6fb65d4bf719721394a1a9be926177e55fbe
 hypchat==0.21 \
     --hash=sha256:ef37a9cd8103bb13ad772b28ba9223ca9d4278371e374450c3ea2918df70a8e9
 hyper==0.7.0 \
@@ -722,8 +720,7 @@ requests[security]==2.22.0 \
     # via docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, transifex-client, twilio
 responses==0.10.7 \
     --hash=sha256:46d4e546a19fc6106bc7e804edd4551ef04690405e41e7e750ebc295d042623b \
-    --hash=sha256:93b1e0f2f960c0f3304ca4436856241d64c33683ef441431b9caf1d05d9d9e23 \
-    # via moto
+    --hash=sha256:93b1e0f2f960c0f3304ca4436856241d64c33683ef441431b9caf1d05d9d9e23
 rsa==4.0 \
     --hash=sha256:14ba45700ff1ec9eeb206a2ce76b32814958a98e372006c8fb76ba820211be66 \
     --hash=sha256:1a836406405730121ae9823e19c6e806c62bbad73f890574fff50efa4122c487 \
