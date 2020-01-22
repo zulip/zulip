@@ -71,9 +71,9 @@ def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> mock.Mock:
         def json(self) -> Dict[str, Any]:
             return self.json_data
 
-    if args[0] == 'https://slack.com/api/users.list?token=valid-token':
-        return MockResponse({"members": "user_data"}, 200)
-    elif args[0] == 'https://slack.com/api/users.list?token=invalid-token':
+    if args[0] == 'https://slack.com/api/users.list?token=xoxp-valid-token':
+        return MockResponse({"ok": True, "members": "user_data"}, 200)
+    elif args[0] == 'https://slack.com/api/users.list?token=xoxp-invalid-token':
         return MockResponse({"ok": False, "error": "invalid_auth"}, 200)
     else:
         return MockResponse(None, 404)
@@ -85,24 +85,29 @@ class SlackImporter(ZulipTestCase):
 
     @mock.patch('requests.get', side_effect=mocked_requests_get)
     def test_get_slack_api_data(self, mock_get: mock.Mock) -> None:
-        token = 'valid-token'
+        token = 'xoxp-valid-token'
         slack_user_list_url = "https://slack.com/api/users.list"
         self.assertEqual(get_slack_api_data(slack_user_list_url, "members", token=token),
                          "user_data")
-        token = 'invalid-token'
+        token = 'xoxp-invalid-token'
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_user_list_url, "members", token=token)
-        self.assertEqual(invalid.exception.args, ('Enter a valid token!',),)
+        self.assertEqual(invalid.exception.args, ('Error accessing Slack API: invalid_auth',),)
+
+        token = 'xoxe-invalid-token'
+        with self.assertRaises(Exception) as invalid:
+            get_slack_api_data(slack_user_list_url, "members", token=token)
+        self.assertTrue(invalid.exception.args[0].startswith("Invalid Slack legacy token.\n"))
 
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_user_list_url, "members")
-        self.assertEqual(invalid.exception.args, ('Pass slack token in kwargs',),)
+        self.assertEqual(invalid.exception.args, ('Slack token missing in kwargs',),)
 
-        token = 'status404'
+        token = 'xoxp-status404'
         wrong_url = "https://slack.com/api/wrong"
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(wrong_url, "members", token=token)
-        self.assertEqual(invalid.exception.args, ('Something went wrong. Please try again!',),)
+        self.assertEqual(invalid.exception.args, ('HTTP error accessing the Slack API.',),)
 
     def test_build_zerver_realm(self) -> None:
         realm_id = 2
