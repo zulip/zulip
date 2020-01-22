@@ -50,7 +50,7 @@ function get_new_heights() {
     const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
     const invite_user_link_height = $("#invite-user-link").safeOuterHeight(true) || 0;
 
-    res.bottom_whitespace_height = viewport_height * 0.4;
+    res.bottom_whitespace_height = viewport_height * 0.05;
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
@@ -104,7 +104,7 @@ function left_userlist_get_new_heights() {
 
     // main div
     const top_navbar_height = $(".header").safeOuterHeight(true);
-    res.bottom_whitespace_height = viewport_height * 0.4;
+    res.bottom_whitespace_height = viewport_height * 0.05;
     res.main_div_min_height = viewport_height - top_navbar_height;
 
 
