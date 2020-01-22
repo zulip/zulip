@@ -1054,7 +1054,7 @@ def get_slack_api_data(slack_api_url: str, get_param: str, **kwargs: Any) -> Any
 
     if data.status_code == requests.codes.ok:
         if 'error' in data.json():
-            raise Exception('Enter a valid token!')
+            raise Exception('Invalid Authorization - You must have a legacy token for your Workspace - see https://api.slack.com/custom-integrations/legacy-tokens')
         json_data = data.json()[get_param]
         return json_data
     else:
