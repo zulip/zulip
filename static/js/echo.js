@@ -39,7 +39,7 @@ function resend_message(message, row) {
     transmit.send_message(message, on_success, on_error);
 }
 
-function insert_local_message(message_request, local_id) {
+exports.insert_local_message = function (message_request, local_id) {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
@@ -104,7 +104,7 @@ function insert_local_message(message_request, local_id) {
     local_message.insert_message(message);
 
     return message.local_id.toString();
-}
+};
 
 exports.is_slash_command = function (content) {
     return !content.startsWith('/me') && content.startsWith('/');
@@ -131,7 +131,7 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
         return;
     }
 
-    return insert_local_message(message_request, next_local_id);
+    return exports.insert_local_message(message_request, next_local_id);
 };
 
 exports.edit_locally = function edit_locally(message, request) {
