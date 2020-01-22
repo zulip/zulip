@@ -1047,15 +1047,20 @@ def get_data_file(path: str) -> Any:
         return data
 
 def get_slack_api_data(slack_api_url: str, get_param: str, **kwargs: Any) -> Any:
+    if not kwargs.get("token"):
+        raise AssertionError("Slack token missing in kwargs")
+    token = kwargs["token"]
+    if not token.startswith("xoxp-"):
+        raise Exception('Invalid Slack legacy token.\n'
+                        '  You must pass a Slack "legacy token" starting with "xoxp-".\n'
+                        '  Create one at https://api.slack.com/custom-integrations/legacy-tokens')
+
     data = requests.get("{}?{}".format(slack_api_url, urlencode(kwargs)))
 
-    if not kwargs.get("token"):
-        raise Exception("Pass slack token in kwargs")
-
     if data.status_code == requests.codes.ok:
-        if 'error' in data.json():
-            raise Exception('Enter a valid token!')
-        json_data = data.json()[get_param]
-        return json_data
-    else:
-        raise Exception('Something went wrong. Please try again!')
+        result = data.json()
+        if not result['ok']:
+            raise Exception('Error accessing Slack API: %s' % (result['error'],))
+        return result[get_param]
+
+    raise Exception('HTTP error accessing the Slack API.')
