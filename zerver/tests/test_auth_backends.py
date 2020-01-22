@@ -11,7 +11,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from django.core import signing
 from django.urls import reverse
 
-import httpretty
+import responses
 
 import ldap
 import jwt
@@ -384,38 +384,15 @@ class AuthBackendTest(ZulipTestCase):
         backends_to_test = {
             'google': {
                 'urls': [
-                    {
-                        'url': "https://accounts.google.com/o/oauth2/token",
-                        'method': httpretty.POST,
-                        'status': 200,
-                        'body': json.dumps(token_data_dict),
-                    },
-                    {
-                        'url': "https://www.googleapis.com/oauth2/v3/userinfo",
-                        'method': httpretty.GET,
-                        'status': 200,
-                        'body': json.dumps(google_email_data),
-                    },
+                    # The limited process that we test here doesn't require mocking any urls.
                 ],
                 'backend': GoogleAuthBackend,
             },
             'github': {
                 'urls': [
                     {
-                        'url': "https://github.com/login/oauth/access_token",
-                        'method': httpretty.POST,
-                        'status': 200,
-                        'body': json.dumps(token_data_dict),
-                    },
-                    {
-                        'url': "https://api.github.com/user",
-                        'method': httpretty.GET,
-                        'status': 200,
-                        'body': json.dumps(dict(email=user.email, name=user.full_name)),
-                    },
-                    {
                         'url': "https://api.github.com/user/emails",
-                        'method': httpretty.GET,
+                        'method': responses.GET,
                         'status': 200,
                         'body': json.dumps(github_email_data),
                     },
@@ -448,42 +425,40 @@ class AuthBackendTest(ZulipTestCase):
             return google_email_data['email']
 
         for backend_name in backends_to_test:
-            httpretty.enable(allow_net_connect=False)
-            urls = backends_to_test[backend_name]['urls']   # type: List[Dict[str, Any]]
-            for details in urls:
-                httpretty.register_uri(
-                    details['method'],
-                    details['url'],
-                    status=details['status'],
-                    body=details['body'])
-            backend_class = backends_to_test[backend_name]['backend']
-            backend = backend_class()
-            backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
+            with responses.RequestsMock(assert_all_requests_are_fired=True) as requests_mock:
+                urls = backends_to_test[backend_name]['urls']   # type: List[Dict[str, Any]]
+                for details in urls:
+                    requests_mock.add(
+                        details['method'],
+                        details['url'],
+                        status=details['status'],
+                        body=details['body'])
+                backend_class = backends_to_test[backend_name]['backend']
+                backend = backend_class()
+                backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
 
-            orig_authenticate = backend_class.authenticate
-            backend.authenticate = patched_authenticate
-            orig_get_verified_emails = backend_class.get_verified_emails
-            if backend_name == "google":
-                backend.get_verified_emails = patched_get_verified_emails
+                orig_authenticate = backend_class.authenticate
+                backend.authenticate = patched_authenticate
+                orig_get_verified_emails = backend_class.get_verified_emails
+                if backend_name == "google":
+                    backend.get_verified_emails = patched_get_verified_emails
 
-            good_kwargs = dict(backend=backend, strategy=backend.strategy,
-                               storage=backend.strategy.storage,
-                               response=token_data_dict,
-                               subdomain='zulip')
-            bad_kwargs = dict(subdomain='acme')
-            with mock.patch('zerver.views.auth.redirect_and_log_into_subdomain',
-                            return_value=user):
-                self.verify_backend(backend,
-                                    good_kwargs=good_kwargs,
-                                    bad_kwargs=bad_kwargs)
-                bad_kwargs['subdomain'] = "zephyr"
-                self.verify_backend(backend,
-                                    good_kwargs=good_kwargs,
-                                    bad_kwargs=bad_kwargs)
-            backend.authenticate = orig_authenticate
-            backend.get_verified_emails = orig_get_verified_emails
-            httpretty.disable()
-            httpretty.reset()
+                good_kwargs = dict(backend=backend, strategy=backend.strategy,
+                                   storage=backend.strategy.storage,
+                                   response=token_data_dict,
+                                   subdomain='zulip')
+                bad_kwargs = dict(subdomain='acme')
+                with mock.patch('zerver.views.auth.redirect_and_log_into_subdomain',
+                                return_value=user):
+                    self.verify_backend(backend,
+                                        good_kwargs=good_kwargs,
+                                        bad_kwargs=bad_kwargs)
+                    bad_kwargs['subdomain'] = "zephyr"
+                    self.verify_backend(backend,
+                                        good_kwargs=good_kwargs,
+                                        bad_kwargs=bad_kwargs)
+                backend.authenticate = orig_authenticate
+                backend.get_verified_emails = orig_get_verified_emails
 
 class CheckPasswordStrengthTest(ZulipTestCase):
     def test_check_password_strength(self) -> None:
@@ -530,7 +505,7 @@ class SocialAuthBase(ZulipTestCase):
         from social_core.backends.utils import load_backends
         load_backends(settings.AUTHENTICATION_BACKENDS, force_load=True)
 
-    def register_extra_endpoints(self,
+    def register_extra_endpoints(self, requests_mock: responses.RequestsMock,
                                  account_data_dict: Dict[str, str],
                                  **extra_data: Any) -> None:
         pass
@@ -602,66 +577,50 @@ class SocialAuthBase(ZulipTestCase):
 
         # We register callbacks for the key URLs on Identity Provider that
         # auth completion url will call
-        httpretty.enable(allow_net_connect=False)
-        httpretty.register_uri(
-            httpretty.POST,
-            self.ACCESS_TOKEN_URL,
-            match_querystring=False,
-            status=200,
-            body=json.dumps(token_data_dict))
-        httpretty.register_uri(
-            httpretty.GET,
-            self.USER_INFO_URL,
-            status=200,
-            body=json.dumps(account_data_dict)
-        )
-        self.register_extra_endpoints(account_data_dict, **extra_data)
-
-        parsed_url = urllib.parse.urlparse(result.url)
-        csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
-        result = self.client_get(self.AUTH_FINISH_URL,
-                                 dict(state=csrf_state), **headers)
-
-        if expect_choose_email_screen and result.status_code == 200:
-            # For authentication backends such as GitHub that
-            # successfully authenticate multiple email addresses,
-            # we'll have an additional screen where the user selects
-            # which email address to login using (this screen is a
-            # "partial" state of the python-social-auth pipeline).
-            #
-            # TODO: Generalize this testing code for use with other
-            # authentication backends; for now, we just assert that
-            # it's definitely the GitHub authentication backend.
-            self.assert_in_success_response(["Select account"], result)
-            assert self.AUTH_FINISH_URL == "/complete/github/"
-
-            # Testing hack: When the pipeline goes to the partial
-            # step, the below given URL is called again in the same
-            # test. If the below URL is not registered again as done
-            # below, the URL returns emails from previous tests. e.g
-            # email = 'invalid' may be one of the emails in the list
-            # in a test function followed by it. This is probably a
-            # bug in httpretty.
-            httpretty.disable()
-            httpretty.enable()
-            httpretty.register_uri(
-                httpretty.GET,
-                "https://api.github.com/user/emails",
+        with responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock:
+            requests_mock.add(
+                requests_mock.POST,
+                self.ACCESS_TOKEN_URL,
+                match_querystring=False,
                 status=200,
-                body=json.dumps(self.email_data)
+                body=json.dumps(token_data_dict))
+            requests_mock.add(
+                requests_mock.GET,
+                self.USER_INFO_URL,
+                status=200,
+                body=json.dumps(account_data_dict)
             )
-            result = self.client_get(self.AUTH_FINISH_URL,
-                                     dict(state=csrf_state, email=account_data_dict['email']), **headers)
-        elif self.AUTH_FINISH_URL == "/complete/github/":
-            # We want to be explicit about when we expect a test to
-            # use the "choose email" screen, but of course we should
-            # only check for that screen with the GitHub backend,
-            # because this test code is shared with other
-            # authentication backends that structurally will never use
-            # that screen.
-            assert not expect_choose_email_screen
+            self.register_extra_endpoints(requests_mock, account_data_dict, **extra_data)
 
-        httpretty.disable()
+            parsed_url = urllib.parse.urlparse(result.url)
+            csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
+            result = self.client_get(self.AUTH_FINISH_URL,
+                                     dict(state=csrf_state), **headers)
+
+            if expect_choose_email_screen and result.status_code == 200:
+                # For authentication backends such as GitHub that
+                # successfully authenticate multiple email addresses,
+                # we'll have an additional screen where the user selects
+                # which email address to login using (this screen is a
+                # "partial" state of the python-social-auth pipeline).
+                #
+                # TODO: Generalize this testing code for use with other
+                # authentication backends; for now, we just assert that
+                # it's definitely the GitHub authentication backend.
+                self.assert_in_success_response(["Select account"], result)
+                assert self.AUTH_FINISH_URL == "/complete/github/"
+
+                result = self.client_get(self.AUTH_FINISH_URL,
+                                         dict(state=csrf_state, email=account_data_dict['email']), **headers)
+            elif self.AUTH_FINISH_URL == "/complete/github/":
+                # We want to be explicit about when we expect a test to
+                # use the "choose email" screen, but of course we should
+                # only check for that screen with the GitHub backend,
+                # because this test code is shared with other
+                # authentication backends that structurally will never use
+                # that screen.
+                assert not expect_choose_email_screen
+
         return result
 
     def test_social_auth_no_key(self) -> None:
@@ -1340,7 +1299,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     AUTH_FINISH_URL = "/complete/github/"
     CONFIG_ERROR_URL = "/config-error/github"
 
-    def register_extra_endpoints(self,
+    def register_extra_endpoints(self, requests_mock: responses.RequestsMock,
                                  account_data_dict: Dict[str, str],
                                  **extra_data: Any) -> None:
         # Keeping a verified email before the primary email makes sure
@@ -1358,15 +1317,15 @@ class GitHubAuthBackendTest(SocialAuthBase):
         ]
         email_data = extra_data.get("email_data", email_data)
 
-        httpretty.register_uri(
-            httpretty.GET,
+        requests_mock.add(
+            requests_mock.GET,
             "https://api.github.com/user/emails",
             status=200,
             body=json.dumps(email_data)
         )
 
-        httpretty.register_uri(
-            httpretty.GET,
+        requests_mock.add(
+            requests_mock.GET,
             "https://api.github.com/teams/zulip-webapp/members/None",
             status=200,
             body=json.dumps(email_data)

@@ -4,18 +4,18 @@
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-from typing import List, Any
+from typing import List, Iterator
 import glob
 import argparse
+import contextlib
+import mock
 import os
 import shlex
 import sys
 import subprocess
 import tempfile
 import ujson
-import httplib2
-import httpretty
-import requests
+import responses
 
 import django
 from django.conf import settings
@@ -154,32 +154,27 @@ def write_failed_tests(failed_tests: List[str]) -> None:
         with open(FAILED_TEST_PATH, 'w') as f:
             ujson.dump(failed_tests, f)
 
-def block_internet() -> None:
-    # We are blocking internet currently by assuming mostly any test would use
-    # httplib2 to access internet.
-    requests_orig = requests.request
+@contextlib.contextmanager
+def block_internet() -> Iterator[None]:
+    # Monkey-patching - responses library raises requests.ConnectionError when access to an unregistered URL
+    # is attempted. We want to replace that with our own exception, so that it propagates all the way:
+    with mock.patch.object(responses, 'ConnectionError', new=ZulipInternetBlockedError):
+        # We'll run all tests in this context manager. It'll cause an error to be raised (see above comment),
+        # if any code attempts to access the internet.
+        with responses.RequestsMock():
+            yield
 
-    def internet_guard_requests(*args: Any, **kwargs: Any) -> Any:
-        if httpretty.is_enabled():
-            return requests_orig(*args, **kwargs)
-        raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
-                        "More details and advice are available here:"
-                        "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
-
-    requests.request = internet_guard_requests
-
-    http2lib_request_orig = httplib2.Http.request
-
-    def internet_guard_httplib2(*args: Any, **kwargs: Any) -> Any:
-        if httpretty.is_enabled():
-            return http2lib_request_orig(*args, **kwargs)
-        raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
-                        "More details and advice are available here:"
-                        "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
-    httplib2.Http.request = internet_guard_httplib2
+class ZulipInternetBlockedError(Exception):
+    def __init__(self, original_msg: str) -> None:
+        zulip_msg = (
+            "Outgoing network requests are not allowed in the Zulip tests. "
+            "More details and advice are available here:"
+            "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites"
+        )
+        msg = "{}\nResponses library error message: {}".format(zulip_msg, original_msg)
+        super().__init__(msg)
 
 def main() -> None:
-    block_internet()
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -381,11 +376,12 @@ def main() -> None:
     else:
         print("-- Running tests in serial mode.", flush=True)
 
-    test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
-                             parallel=parallel, reverse=options.reverse,
-                             keepdb=True)
-    failures, failed_tests = test_runner.run_tests(suites, full_suite=full_suite,
-                                                   include_webhooks=include_webhooks)
+    with block_internet():
+        test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
+                                 parallel=parallel, reverse=options.reverse,
+                                 keepdb=True)
+        failures, failed_tests = test_runner.run_tests(suites, full_suite=full_suite,
+                                                       include_webhooks=include_webhooks)
     write_failed_tests(failed_tests)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
