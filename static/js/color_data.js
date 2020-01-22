@@ -1,5 +1,3 @@
-const Dict = require('./dict').Dict;
-
 // These colors are used now for streams.
 const stream_colors = [
     "#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
@@ -35,17 +33,8 @@ exports.claim_color = function (color) {
 };
 
 exports.claim_colors = function (subs) {
-    const used_colors = new Dict();
-
-    _.each(subs, function (sub) {
-        if (sub.color) {
-            used_colors.set(sub.color, true);
-        }
-    });
-
-    _.each(used_colors.keys(), function (color) {
-        exports.claim_color(color);
-    });
+    const colors = new Set(_.pluck(subs, 'color'));
+    colors.forEach(exports.claim_color);
 };
 
 exports.pick_color = function () {

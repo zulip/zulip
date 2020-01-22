@@ -34,6 +34,9 @@ can toggle whether you receive notifications for wildcard mentions:
 
 {end_tabs}
 
+Additionally, you can override this configuration for individual
+streams in your [Stream settings](/help/stream-notifications).
+
 ## Related articles
 
 * [Add an alert word](/help/add-an-alert-word)

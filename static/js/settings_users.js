@@ -128,22 +128,17 @@ function populate_users(realm_people_data) {
     let active_users = [];
     let deactivated_users = [];
     let bots = [];
-    _.each(realm_people_data.members, function (user) {
+    for (const user of realm_people_data.members) {
         user.is_active_human = user.is_active && !user.is_bot;
         if (user.is_bot) {
             // Convert bot type id to string for viewing to the users.
             user.bot_type = settings_bots.type_id_to_string(user.bot_type);
 
-            // TODO: This is a messy way to handle bot owners.
-            // Ideally, we'd send the user ID to the template, render
-            // owner names as a link, and have that link take the
-            // browser to that user's profile.  But showing the user's
-            // full name is simpler and doesn't look broken, so we do
-            // that for now.
             if (user.bot_owner_id !== null) {
                 user.bot_owner_full_name = people.get_person_from_user_id(
                     user.bot_owner_id).full_name;
             } else {
+                user.no_owner = true;
                 user.bot_owner_full_name = i18n.t("No owner");
             }
             bots.push(user);
@@ -153,7 +148,7 @@ function populate_users(realm_people_data) {
         } else {
             deactivated_users.push(user);
         }
-    });
+    }
 
     active_users = _.sortBy(active_users, 'full_name');
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
@@ -172,13 +167,13 @@ function populate_users(realm_people_data) {
             return render_admin_user_list({
                 can_modify: page_params.is_admin,
                 // It's always safe to show the fake email addresses for bot users
-                show_email: true,
+                display_email: item.email,
                 user: item,
             });
         },
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 return (
                     item.full_name.toLowerCase().indexOf(value) >= 0 ||
                     item.email.toLowerCase().indexOf(value) >= 0
@@ -192,10 +187,10 @@ function populate_users(realm_people_data) {
     bot_list.sort("alphabetic", "full_name");
 
     bot_list.add_sort_function("bot_owner", function (a, b) {
-        if (!a.bot_owner) { return 1; }
-        if (!b.bot_owner) { return -1; }
+        if (!a.bot_owner_id) { return 1; }
+        if (!b.bot_owner_id) { return -1; }
 
-        return compare_a_b(a.bot_owner, b.bot_owner);
+        return compare_a_b(a.bot_owner_id, b.bot_owner_id);
     });
 
     function get_rendered_last_activity(item) {
@@ -217,7 +212,7 @@ function populate_users(realm_people_data) {
             const $row = $(render_admin_user_list({
                 can_modify: page_params.is_admin,
                 is_current_user: people.is_my_user_id(item.user_id),
-                show_email: settings_org.show_email(),
+                display_email: people.email_for_user_settings(item),
                 user: item,
             }));
             $row.find(".last_active").append(get_rendered_last_activity(item));
@@ -225,17 +220,7 @@ function populate_users(realm_people_data) {
         },
         filter: {
             element: $users_table.closest(".settings-section").find(".search"),
-            callback: function (item, value) {
-                let email = item.email;
-                if (page_params.is_admin) {
-                    email = item.delivery_email;
-                }
-
-                return (
-                    item.full_name.toLowerCase().indexOf(value) >= 0 ||
-                    email.toLowerCase().indexOf(value) >= 0
-                );
-            },
+            filterer: people.filter_for_user_settings_search,
             onupdate: reset_scrollbar($users_table),
         },
         parent_container: $("#admin-user-list").expectOne(),
@@ -263,23 +248,13 @@ function populate_users(realm_people_data) {
         modifier: function (item) {
             return render_admin_user_list({
                 user: item,
-                show_email: settings_org.show_email(),
+                display_email: people.email_for_user_settings(item),
                 can_modify: page_params.is_admin,
             });
         },
         filter: {
             element: $deactivated_users_table.closest(".settings-section").find(".search"),
-            callback: function (item, value) {
-                let email = item.email;
-                if (page_params.is_admin) {
-                    email = item.delivery_email;
-                }
-
-                return (
-                    item.full_name.toLowerCase().indexOf(value) >= 0 ||
-                    email.toLowerCase().indexOf(value) >= 0
-                );
-            },
+            filterer: people.filter_for_user_settings_search,
             onupdate: reset_scrollbar($deactivated_users_table),
         },
         parent_container: $("#admin-deactivated-users-list").expectOne(),
@@ -396,7 +371,7 @@ exports.on_load_success = function (realm_people_data) {
 
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
-        const bot_id = row.attr("data-user-id");
+        const bot_id = parseInt(row.attr("data-user-id"), 10);
         const url = '/json/bots/' + encodeURIComponent(bot_id);
 
         const opts = {
@@ -418,7 +393,7 @@ exports.on_load_success = function (realm_people_data) {
         // Go up the tree until we find the user row, then grab the email element
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
-        const user_id = row.attr("data-user-id");
+        const user_id = parseInt(row.attr("data-user-id"), 10);
         const url = '/json/users/' + encodeURIComponent(user_id) + "/reactivate";
         const data = {};
         const status = get_status_field();
@@ -435,8 +410,16 @@ exports.on_load_success = function (realm_people_data) {
         settings_ui.do_settings_change(channel.post, url, data, status, opts);
     });
 
+    $('.admin_bot_table').on('click', '.user_row .view_user_profile', function (e) {
+        const owner_id = $(e.target).attr('data-owner-id');
+        const owner = people.get_person_from_user_id(owner_id);
+        popovers.show_user_profile(owner);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
-        const user_id = $(e.currentTarget).attr("data-user-id");
+        const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const person = people.get_person_from_user_id(user_id);
 
         if (!person) {
@@ -484,11 +467,11 @@ exports.on_load_success = function (realm_people_data) {
                     }
                 });
                 // Append user type field values also
-                _.each(fields_user_pills, function (field_pills, field_id) {
+                fields_user_pills.each(function (field_pills, field_id) {
                     if (field_pills) {
                         const user_ids = user_pill.get_user_ids(field_pills);
                         new_profile_data.push({
-                            id: parseInt(field_id, 10),
+                            id: field_id,
                             value: user_ids,
                         });
                     }

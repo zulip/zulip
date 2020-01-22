@@ -9,6 +9,8 @@ set_global('Element', function () {
     return { };
 });
 
+set_global('blueslip', global.make_zblueslip());
+
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.
 // We'll simulate most other objects ourselves.
@@ -109,6 +111,9 @@ run_test('list_render', () => {
     const opts = {
         filter: {
             element: search_input,
+            predicate: (item, value) => {
+                return _.contains(item, value);
+            },
         },
         load_count: 2,
         modifier: (item) => div(item),
@@ -207,6 +212,34 @@ function sort_button(opts) {
     return button;
 }
 
+run_test('filtering', () => {
+    const lst = [
+        'alexander',
+        'alice',
+        'benedict',
+        'JESSE',
+        'scott',
+        'Stephanie',
+        'Xavier',
+    ];
+
+    const opts = {
+        filter: {
+            predicate: (item, value) => {
+                return item.length === value;
+            },
+        },
+    };
+
+    const custom_result = list_render.filter(5, lst, opts);
+    assert.deepEqual(custom_result, [
+        'alice',
+        'JESSE',
+        'scott',
+    ]);
+
+});
+
 run_test('sorting', () => {
     const {container} = make_containers();
 
@@ -228,6 +261,9 @@ run_test('sorting', () => {
         load_count: 2,
         modifier: (item) => {
             return div(item.name) + div(item.salary);
+        },
+        filter: {
+            predicate: () => true,
         },
     };
 

@@ -1,9 +1,10 @@
 from argparse import ArgumentParser
 from typing import Any, List
 
-from zerver.lib.actions import ensure_stream, do_create_multiuse_invite_link
+from zerver.lib.actions import do_create_multiuse_invite_link, ensure_stream
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Stream, PreregistrationUser
+from zerver.models import PreregistrationUser, Stream
+
 
 class Command(ZulipBaseCommand):
     help = "Generates invite link that can be used for inviting multiple users"

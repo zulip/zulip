@@ -1,3 +1,5 @@
+const IntDict = require("./int_dict").IntDict;
+
 const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
 const render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
 const render_settings_api_key_modal = require('../templates/settings/api_key_modal.hbs');
@@ -176,11 +178,11 @@ exports.initialize_custom_date_type_fields = function (element_id) {
 exports.initialize_custom_user_type_fields = function (element_id, user_id, is_editable,
                                                        set_handler_on_update) {
     const field_types = page_params.custom_profile_field_types;
-    const user_pills = {};
+    const user_pills = new IntDict();
 
     const person = people.get_person_from_user_id(user_id);
     if (person.is_bot) {
-        return [];
+        return user_pills;
     }
 
     page_params.custom_profile_fields.forEach(function (field) {
@@ -230,7 +232,7 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
                     user_pill.set_up_typeahead_on_pills(input, pills, function () {});
                 }
             }
-            user_pills[field.id] = pills;
+            user_pills.set(field.id, pills);
         }
     });
 

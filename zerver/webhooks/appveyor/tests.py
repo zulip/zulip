@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class AppveyorHookTests(WebhookTestCase):
     STREAM_NAME = 'appveyor'
     URL_TEMPLATE = "/api/v1/external/appveyor?api_key={api_key}&stream={stream}"

@@ -73,13 +73,6 @@ INLINE_MIME_TYPES = [
 class RealmUploadQuotaError(JsonableError):
     code = ErrorCode.REALM_UPLOAD_QUOTA
 
-attachment_url_re = re.compile(r'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
-
-def attachment_url_to_path_id(attachment_url: str) -> str:
-    path_id_raw = re.sub(r'[/\-]user[\-_]uploads[/\.-]', '', attachment_url)
-    # Remove any extra '.' after file extension. These are probably added by the user
-    return re.sub('[.]+$', '', path_id_raw, re.M)
-
 def sanitize_name(value: str) -> str:
     """
     Sanitizes a value to be safe to store in a Linux filesystem, in

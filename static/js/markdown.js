@@ -70,8 +70,9 @@ exports.apply_markdown = function (message) {
             const id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
             const match = id_regex.exec(name);
             if (match) {
-                if (people.is_known_user_id(match[2])) {
-                    person = people.get_person_from_user_id(match[2]);
+                const user_id = parseInt(match[2], 10);
+                if (people.is_known_user_id(user_id)) {
+                    person = people.get_person_from_user_id(user_id);
                     if (person.full_name !== match[1]) { // Invalid Syntax
                         return;
                     }
@@ -129,7 +130,7 @@ exports.apply_markdown = function (message) {
     };
     // Our python-markdown processor appends two \n\n to input
     message.content = marked(message.raw_content + '\n\n', options).trim();
-    message.is_me_message = exports.is_status_message(message.raw_content, message.content);
+    message.is_me_message = exports.is_status_message(message.raw_content);
 };
 
 exports.add_topic_links = function (message) {
@@ -168,10 +169,8 @@ exports.add_topic_links = function (message) {
     util.set_topic_links(message, links);
 };
 
-exports.is_status_message = function (raw_content, content) {
-    return raw_content.indexOf('/me ') === 0 &&
-            content.indexOf('<p>') === 0 &&
-            content.indexOf('</p>') !== -1;
+exports.is_status_message = function (raw_content) {
+    return raw_content.indexOf('/me ') === 0;
 };
 
 function make_emoji_span(codepoint, title, alt_text) {

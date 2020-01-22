@@ -18,7 +18,7 @@ zrequire("people");
 run_test('insert_recent_private_message', () => {
     set_global('page_params', {
         recent_private_conversations: [
-            {user_ids: [1, 2],
+            {user_ids: [11, 2],
              max_message_id: 150,
             },
             {user_ids: [1],
@@ -33,24 +33,24 @@ run_test('insert_recent_private_message', () => {
     pmc.recent.initialize();
 
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: '1,2', max_message_id: 150},
+        {user_ids_string: '2,11', max_message_id: 150},
         {user_ids_string: '1', max_message_id: 111},
         {user_ids_string: '15', max_message_id: 7},
     ]);
 
-    pmc.recent.insert('1', 1001);
-    pmc.recent.insert('2', 2001);
-    pmc.recent.insert('1', 3001);
+    pmc.recent.insert([1], 1001);
+    pmc.recent.insert([2], 2001);
+    pmc.recent.insert([1], 3001);
 
     // try to backdate user1's latest message
-    pmc.recent.insert('1', 555);
+    pmc.recent.insert([1], 555);
 
     assert.deepEqual(pmc.recent.get(), [
         {user_ids_string: '1', max_message_id: 3001},
         {user_ids_string: '2', max_message_id: 2001},
-        {user_ids_string: '1,2', max_message_id: 150},
+        {user_ids_string: '2,11', max_message_id: 150},
         {user_ids_string: '15', max_message_id: 7},
     ]);
 
-    assert.deepEqual(pmc.recent.get_strings(), ['1', '2', '1,2', '15']);
+    assert.deepEqual(pmc.recent.get_strings(), ['1', '2', '2,11', '15']);
 });

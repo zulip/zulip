@@ -5,6 +5,7 @@ from zerver.lib.actions import ensure_stream
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import DefaultStreamGroup
 
+
 class Command(ZulipBaseCommand):
     help = """
 Create default stream groups which the users can choose during sign up.

@@ -1,6 +1,8 @@
 set_global('$', global.make_zjquery());
 set_global('blueslip', global.make_zblueslip());
 
+const Dict = zrequire('dict').Dict;
+
 let filter_key_handlers;
 
 const _page_params = {
@@ -332,14 +334,10 @@ reset_setup();
 
 run_test('presence_list_full_update', () => {
     $('.user-list-filter').focus();
-    compose_state.recipient = () => fred.email;
+    compose_state.private_message_recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
 
-    let user_ids = activity.build_user_sidebar();
-
-    user_ids = _.map(user_ids, function (user_id) {
-        return parseInt(user_id, 10);
-    });
+    const user_ids = activity.build_user_sidebar();
 
     assert.deepEqual(user_ids, [
         me.user_id,

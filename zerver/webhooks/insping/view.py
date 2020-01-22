@@ -1,14 +1,13 @@
-from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.decorator import REQ, has_request_variables, \
-    api_key_only_webhook_view
-
-from zerver.models import UserProfile
+import time
+from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, Any
 
-import time
+from zerver.decorator import REQ, api_key_only_webhook_view, \
+    has_request_variables
+from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.models import UserProfile
 
 MESSAGE_TEMPLATE = """
 State changed to **{state}**:

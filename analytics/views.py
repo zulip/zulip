@@ -40,7 +40,7 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.views.invite import get_invitee_emails_set
 from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.lib.actions import do_change_plan_type, do_deactivate_realm, \
-    do_reactivate_realm, do_scrub_realm
+    do_send_realm_reactivation_email, do_scrub_realm
 from confirmation.settings import STATUS_ACTIVE
 
 if settings.BILLING_ENABLED:
@@ -1098,8 +1098,8 @@ def support(request: HttpRequest) -> HttpResponse:
         status = request.POST.get("status", None)
         if status is not None:
             if status == "active":
-                do_reactivate_realm(realm)
-                context["message"] = "{} reactivated.".format(realm.name)
+                do_send_realm_reactivation_email(realm)
+                context["message"] = "Realm reactivation email sent to admins of {}.".format(realm.name)
             elif status == "deactivated":
                 do_deactivate_realm(realm, request.user)
                 context["message"] = "{} deactivated.".format(realm.name)

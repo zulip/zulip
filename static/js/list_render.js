@@ -4,6 +4,23 @@ const DEFAULTS = {
     instances: {},
 };
 
+exports.filter = (value, list, opts) => {
+    /*
+        This is used by the main object (see `create`),
+        but we split it out to make it a bit easier
+        to test.
+    */
+    if (opts.filter.filterer) {
+        return opts.filter.filterer(list, value);
+    }
+
+    const predicate = opts.filter.predicate;
+
+    return list.filter(function (item) {
+        return predicate(item, value);
+    });
+};
+
 // @params
 // container: jQuery object to append to.
 // list: The list of items to progressively append.
@@ -35,25 +52,30 @@ exports.create = function ($container, list, opts) {
         list: list,
         filtered_list: list,
 
-        filter_list: function (value, callback) {
-            this.filtered_list = this.list.filter(function (item) {
-                if (typeof callback === "function") {
-                    return callback(item, value);
-                }
-
-                return !!(item.toLocaleLowerCase().indexOf(value) >= 0);
-            });
-        },
     };
+
+    function filter_list(value) {
+        meta.filtered_list = exports.filter(value, meta.list, opts);
+    }
 
     if (!opts) {
         return;
     }
 
-    // we want to assume below that `opts.filter` exists, but may not necessarily
-    // have any defined specs.
-    if (!opts.filter) {
-        opts.filter = {};
+    if (opts.filter.predicate) {
+        if (typeof opts.filter.predicate !== 'function') {
+            blueslip.error('Filter predicate function is missing.');
+            return;
+        }
+        if (opts.filter.filterer) {
+            blueslip.error('Filterer and predicate are mutually exclusive.');
+            return;
+        }
+    } else {
+        if (typeof opts.filter.filterer !== 'function') {
+            blueslip.error('Filter filterer function is missing.');
+            return;
+        }
     }
 
     const prototype = {
@@ -70,6 +92,7 @@ exports.create = function ($container, list, opts) {
 
             const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
+            const finish = blueslip.start_timing('list_render ' + opts.name);
             const html = _.reduce(slice, function (acc, item) {
                 let _item = opts.modifier(item);
 
@@ -96,6 +119,8 @@ exports.create = function ($container, list, opts) {
                 // return the modified HTML or nothing if corrupt (null, undef, etc.).
                 return acc + (_item || "");
             }, "");
+
+            finish();
 
             $container.append($(html));
             meta.offset += load_count;
@@ -132,7 +157,7 @@ exports.create = function ($container, list, opts) {
 
                 if (opts.filter && opts.filter.element) {
                     const value = $(opts.filter.element).val().toLocaleLowerCase();
-                    meta.filter_list(value, opts.filter.callback);
+                    filter_list(value);
                 }
 
                 prototype.clear();
@@ -270,7 +295,7 @@ exports.create = function ($container, list, opts) {
                     // pass `true`), because it will update regardless below at
                     // `prototype.init()`.
                     prototype.sort(undefined, meta.prop, true);
-                    meta.filter_list(value, opts.filter.callback);
+                    filter_list(value);
 
                     // clear and re-initialize the list with the newly filtered subset
                     // of items.

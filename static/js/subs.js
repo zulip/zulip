@@ -15,8 +15,7 @@ exports.show_subs_pane = {
 };
 
 exports.check_button_for_sub = function (sub) {
-    const id = parseInt(sub.stream_id, 10);
-    return $(".stream-row[data-stream-id='" + id + "'] .check");
+    return $(".stream-row[data-stream-id='" + sub.stream_id + "'] .check");
 };
 
 exports.row_for_stream_id = function (stream_id) {
@@ -26,12 +25,11 @@ exports.row_for_stream_id = function (stream_id) {
 exports.settings_button_for_sub = function (sub) {
     // We don't do expectOne() here, because this button is only
     // visible if the user has that stream selected in the streams UI.
-    const id = parseInt(sub.stream_id, 10);
-    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
+    return $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] .subscribe-button");
 };
 
 function get_row_data(row) {
-    const row_id = row.attr('data-stream-id');
+    const row_id = parseInt(row.attr('data-stream-id'), 10);
     if (row_id) {
         const row_object = stream_data.get_sub_by_id(row_id);
         return {
@@ -43,7 +41,7 @@ function get_row_data(row) {
 
 exports.get_active_data = function () {
     const active_row = $('div.stream-row.active');
-    const valid_active_id = active_row.attr('data-stream-id');
+    const valid_active_id = parseInt(active_row.attr('data-stream-id'), 10);
     const active_tab = $('.subscriptions-container').find('div.ind-tab.selected');
     return {
         row: active_row,
@@ -381,10 +379,15 @@ function get_stream_id_buckets(stream_ids, query) {
 
 exports.populate_stream_settings_left_panel = function () {
     const sub_rows = stream_data.get_updated_unsorted_subs();
+
     const template_data = {
         subscriptions: sub_rows,
     };
+
+    const finish = blueslip.start_timing('render_subscriptions');
     const html = render_subscriptions(template_data);
+    finish();
+
     ui.get_content_element($('#subscriptions_table .streams-list')).html(html);
 };
 
@@ -393,12 +396,16 @@ exports.populate_stream_settings_left_panel = function () {
 exports.filter_table = function (query) {
     exports.show_active_stream_in_left_panel();
 
+    function stream_id_for_row(row) {
+        return parseInt($(row).attr('data-stream-id'), 10);
+    }
+
     const widgets = {};
     const streams_list_scrolltop = ui.get_scroll_element($(".streams-list")).scrollTop();
 
     const stream_ids = [];
     _.each($("#subscriptions_table .stream-row"), function (row) {
-        const stream_id = $(row).attr('data-stream-id');
+        const stream_id = stream_id_for_row(row);
         stream_ids.push(stream_id);
     });
 
@@ -412,7 +419,7 @@ exports.filter_table = function (query) {
     });
 
     _.each($("#subscriptions_table .stream-row"), function (row) {
-        const stream_id = $(row).attr('data-stream-id');
+        const stream_id = stream_id_for_row(row);
 
         // Below code goes away if we don't do sort-DOM-in-place.
         if (hidden_ids[stream_id]) {
@@ -506,6 +513,9 @@ exports.setup_page = function (callback) {
     // continue the strategy that we re-render everything from scratch.
     // Also, we'll always go back to the "Subscribed" tab.
     function initialize_components() {
+        // Reset our internal state to reflect that we're initially in
+        // the "Subscribed" tab if we're reopening "Manage streams".
+        subscribed_only = true;
         exports.toggler = components.toggle({
             child_wants_focus: true,
             values: [

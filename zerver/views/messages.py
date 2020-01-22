@@ -51,9 +51,9 @@ from zerver.lib.validator import \
     check_string_or_int_list, check_string_or_int
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
-    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
+    Realm, RealmDomain, Recipient, UserMessage, \
     email_to_domain, get_realm, get_active_streams, get_user_including_cross_realm, \
-    get_user_by_id_in_realm_including_cross_realm, get_stream_recipient
+    get_user_by_id_in_realm_including_cross_realm
 
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
@@ -255,12 +255,11 @@ class NarrowBuilder:
 
             matching_streams = get_active_streams(self.user_profile.realm).filter(
                 name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
-            matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
-            recipients_map = bulk_get_recipients(Recipient.STREAM, matching_stream_ids)
-            cond = column("recipient_id").in_([recipient.id for recipient in recipients_map.values()])
+            recipient_ids = [matching_stream.recipient_id for matching_stream in matching_streams]
+            cond = column("recipient_id").in_(recipient_ids)
             return query.where(maybe_negate(cond))
 
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
         cond = column("recipient_id") == recipient.id
         return query.where(maybe_negate(cond))
 
@@ -391,9 +390,9 @@ class NarrowBuilder:
             # the thread (the sender), we need to do a somewhat
             # complex query to get messages between these two users
             # with either of them as the sender.
-            self_recipient = get_personal_recipient(self.user_profile.id)
+            self_recipient_id = self.user_profile.recipient_id
             cond = or_(and_(column("sender_id") == other_participant.id,
-                            column("recipient_id") == self_recipient.id),
+                            column("recipient_id") == self_recipient_id),
                        and_(column("sender_id") == self.user_profile.id,
                             column("recipient_id") == recipient.id))
             return query.where(maybe_negate(cond))
@@ -1499,12 +1498,17 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     links_for_embed = set()  # type: Set[str]
     prior_mention_user_ids = set()  # type: Set[int]
     mention_user_ids = set()  # type: Set[int]
+    mention_data = None  # type: Optional[bugdown.MentionData]
     if content is not None:
         content = content.strip()
         if content == "":
             content = "(deleted)"
         content = truncate_body(content)
 
+        mention_data = bugdown.MentionData(
+            realm_id=user_profile.realm.id,
+            content=content,
+        )
         user_info = get_user_info_for_message_updates(message.id)
         prior_mention_user_ids = user_info['mention_user_ids']
 
@@ -1515,7 +1519,8 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         rendered_content = render_incoming_message(message,
                                                    content,
                                                    user_info['message_user_ids'],
-                                                   user_profile.realm)
+                                                   user_profile.realm,
+                                                   mention_data=mention_data)
         links_for_embed |= message.links_for_preview
 
         mention_user_ids = message.mentions_user_ids
@@ -1523,7 +1528,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     number_changed = do_update_message(user_profile, message, topic_name,
                                        propagate_mode, content, rendered_content,
                                        prior_mention_user_ids,
-                                       mention_user_ids)
+                                       mention_user_ids, mention_data)
 
     # Include the number of messages changed in the logs
     request._log_data['extra'] = "[%s]" % (number_changed,)

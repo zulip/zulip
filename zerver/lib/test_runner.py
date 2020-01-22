@@ -14,10 +14,9 @@ from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
 
-from zerver.lib import test_classes, test_helpers
+from zerver.lib import test_helpers
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
-from zerver.lib.test_classes import flush_caches_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
     write_instrumentation_reports,
@@ -121,8 +120,6 @@ def run_test(test: TestCase, result: TestResult) -> bool:
 
     bounce_key_prefix_for_testing(test_name)
     bounce_redis_key_prefix_for_testing(test_name)
-
-    flush_caches_for_testing()
 
     if not hasattr(test, "_pre_setup"):
         msg = "Test doesn't have _pre_setup; something is wrong."
@@ -294,8 +291,6 @@ def init_worker(counter: Synchronized) -> None:
     """
     You can now use _worker_id.
     """
-
-    test_classes.API_KEYS = {}
 
     # Clear the cache
     from zerver.lib.cache import get_cache_backend

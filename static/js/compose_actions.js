@@ -190,7 +190,7 @@ function same_recipient_as_before(msg_type, opts) {
               opts.stream === compose_state.stream_name() &&
               opts.topic === compose_state.topic() ||
              msg_type === "private" &&
-              opts.private_message_recipient === compose_state.recipient());
+              opts.private_message_recipient === compose_state.private_message_recipient());
 }
 
 exports.update_placeholder_text = function (opts) {
@@ -227,11 +227,18 @@ exports.start = function (msg_type, opts) {
         clear_box();
     }
 
+    // We set the stream/topic/private_message_recipient
+    // unconditionally here, which assumes the caller will have passed
+    // '' or undefined for these values if they are not appropriate
+    // for this message.
+    //
+    // TODO: Move these into a conditional on message_type, using an
+    // explicit "clear" function for compose_state.
     compose_state.stream_name(opts.stream);
     compose_state.topic(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.
-    compose_state.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
+    compose_state.private_message_recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
 
     // If the user opens the compose box, types some text, and then clicks on a
     // different stream/topic, we want to keep the text in the compose box
@@ -313,15 +320,23 @@ exports.respond_to_message = function (opts) {
         unread_ops.notify_server_message_read(message);
     }
 
-    let stream = '';
-    let topic = '';
-    if (message.type === "stream") {
-        stream = message.stream;
-        topic = util.get_message_topic(message);
+    // Important note: A reply_type of 'personal' is for the R hotkey
+    // (replying to a message's sender with a private message).  All
+    // other replies can just copy message.type.
+    if (opts.reply_type === 'personal' || message.type === 'private') {
+        msg_type = 'private';
+    } else {
+        msg_type = message.type;
     }
 
-    let pm_recipient = message.reply_to;
-    if (message.type === "private") {
+    let stream = '';
+    let topic = '';
+    let pm_recipient = '';
+    if (msg_type === "stream") {
+        stream = message.stream;
+        topic = util.get_message_topic(message);
+    } else {
+        pm_recipient = message.reply_to;
         if (opts.reply_type === "personal") {
             // reply_to for private messages is everyone involved, so for
             // personals replies we need to set the private message
@@ -331,11 +346,7 @@ exports.respond_to_message = function (opts) {
             pm_recipient = people.pm_reply_to(message);
         }
     }
-    if (opts.reply_type === 'personal' || message.type === 'private') {
-        msg_type = 'private';
-    } else {
-        msg_type = message.type;
-    }
+
     exports.start(msg_type, {stream: stream, topic: topic,
                              private_message_recipient: pm_recipient,
                              trigger: opts.trigger});

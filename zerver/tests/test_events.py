@@ -104,6 +104,7 @@ from zerver.lib.actions import (
     check_delete_user_group,
     do_update_user_custom_profile_data_if_changed,
 )
+from zerver.lib.bugdown import MentionData
 from zerver.lib.events import (
     apply_events,
     fetch_initial_state_data,
@@ -733,12 +734,16 @@ class EventsRegisterTest(ZulipTestCase):
         rendered_content = render_markdown(message, content)
         prior_mention_user_ids = set()  # type: Set[int]
         mentioned_user_ids = set()  # type: Set[int]
+        mention_data = MentionData(
+            realm_id=self.user_profile.realm_id,
+            content=content,
+        )
 
         events = self.do_test(
             lambda: do_update_message(self.user_profile, message, topic,
                                       propagate_mode, content, rendered_content,
                                       prior_mention_user_ids,
-                                      mentioned_user_ids),
+                                      mentioned_user_ids, mention_data),
             state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])
@@ -1039,11 +1044,11 @@ class EventsRegisterTest(ZulipTestCase):
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
         do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
-        prereg_users = PreregistrationUser.objects.get(email="foo@zulip.com")
+        prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
 
         events = self.do_test(
             lambda: do_create_user('foo@zulip.com', 'password', self.user_profile.realm,
-                                   'full name', 'short name', prereg_user=prereg_users),
+                                   'full name', 'short name', prereg_user=prereg_user),
             state_change_expected=True,
             num_events=5,
         )
@@ -1601,6 +1606,7 @@ class EventsRegisterTest(ZulipTestCase):
             waiting_period_threshold=[10, 20],
             create_stream_policy=[3, 2, 1],
             invite_to_stream_policy=[3, 2, 1],
+            private_message_policy=[2, 1],
             user_group_edit_policy=[1, 2],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
@@ -2490,6 +2496,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('pin_to_top', check_bool),
             ('stream_weekly_traffic', check_none_or(check_int)),
             ('is_old_stream', check_bool),
+            ('wildcard_mentions_notify', check_none_or(check_bool)),
         ]
         if include_subscribers:
             subscription_fields.append(('subscribers', check_list(check_int)))
@@ -2756,8 +2763,9 @@ class EventsRegisterTest(ZulipTestCase):
             ('upload_space_used', equals(6)),
         ])
 
-        self.subscribe(self.example_user("hamlet"), "Denmark")
-        body = "First message ...[zulip.txt](http://localhost:9991" + data['uri'] + ")"
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
+        body = "First message ...[zulip.txt](http://{}".format(hamlet.realm.host) + data['uri'] + ")"
         events = self.do_test(
             lambda: self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test"),
             num_events=2)
@@ -3500,7 +3508,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 33)
+        self.assert_length(queries, 31)
 
         expected_counts = dict(
             alert_words=0,
@@ -3521,11 +3529,11 @@ class FetchQueriesTest(ZulipTestCase):
             realm_filters=1,
             realm_user=3,
             realm_user_groups=2,
-            recent_private_conversations=2,
+            recent_private_conversations=1,
             starred_messages=1,
             stream=2,
             stop_words=0,
-            subscription=6,
+            subscription=5,
             update_display_settings=0,
             update_global_notifications=0,
             update_message_flags=5,

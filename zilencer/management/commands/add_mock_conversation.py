@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-
 from typing import Any, Dict, List
 
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import bulk_add_subscriptions, \
-    ensure_stream, do_add_reaction, do_change_avatar_fields, \
-    do_create_user, do_send_messages, internal_prep_stream_message
+from zerver.lib.actions import bulk_add_subscriptions, do_add_reaction, \
+    do_change_avatar_fields, do_create_user, do_send_messages, ensure_stream, \
+    internal_prep_stream_message
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import Message, UserProfile, get_realm
+
 
 class Command(BaseCommand):
     help = """Add a mock conversation to the development environment.

@@ -21,7 +21,13 @@ First, export your data from Slack.
 
 {start_tabs}
 
-1. [Export your Slack data](https://my.slack.com/services/export). You will
+1. [Generate a Slack Legacy API
+   token](https://api.slack.com/custom-integrations/legacy-tokens).
+   It will be a long string starting with `xoxp-`.  It is required to
+   fetch data that Slack doesn't include in their data exports, like
+   email addresses.
+
+2. [Export your Slack data](https://my.slack.com/services/export). You will
    receive a zip file `slack_data.zip`.
 
     !!! warn ""
@@ -30,7 +36,8 @@ First, export your data from Slack.
         [guide to data exports](https://get.slack.help/hc/en-us/articles/201658943-Export-data-and-message-history)
         for more information.
 
-2. [Generate a Slack API token](https://api.slack.com/custom-integrations/legacy-tokens).
+    This step will also generate a different token starting with
+    `xoxe-`; you don't need it.
 
 {end_tabs}
 

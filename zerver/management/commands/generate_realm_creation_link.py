@@ -3,8 +3,9 @@ from typing import Any
 from django.db import ProgrammingError
 
 from confirmation.models import generate_realm_creation_url
-from zerver.lib.management import ZulipBaseCommand, CommandError
+from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.models import Realm
+
 
 class Command(ZulipBaseCommand):
     help = """

@@ -1,12 +1,14 @@
 # Webhooks for external integrations.
-from typing import Dict, Any
+import time
+from typing import Any, Dict
+
 from django.http import HttpRequest, HttpResponse
+
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
-import time
 
 MESSAGE_TEMPLATE = ("You are going to derail from goal **{goal_name}** in **{time:0.1f} hours**. "
                     "You need **{limsum}** to avoid derailing.\n"

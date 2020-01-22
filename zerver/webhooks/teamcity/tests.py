@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import ujson
 
-from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.send_email import FromAddress
-from zerver.models import Recipient, get_user_by_delivery_email, get_realm
-from zerver.webhooks.teamcity.view import MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE
+from zerver.lib.test_classes import WebhookTestCase
+from zerver.models import Recipient, get_realm, get_user_by_delivery_email
+from zerver.webhooks.teamcity.view import \
+    MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE
+
 
 class TeamcityHookTests(WebhookTestCase):
     STREAM_NAME = 'teamcity'

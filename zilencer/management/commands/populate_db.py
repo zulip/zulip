@@ -7,11 +7,13 @@ from typing import Any, Callable, Dict, Iterable, List, \
 import ujson
 from datetime import datetime
 from django.conf import settings
+from django.contrib.sessions.models import Session
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import F, Max
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
+import pylibmc
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, \
     do_change_is_admin, do_send_messages, do_update_user_custom_profile_data_if_changed, \
@@ -28,7 +30,7 @@ from zerver.lib.user_groups import create_user_group
 from zerver.lib.utils import generate_api_key
 from zerver.models import CustomProfileField, DefaultStream, Message, Realm, RealmAuditLog, \
     RealmDomain, Recipient, Service, Stream, Subscription, \
-    UserMessage, UserPresence, UserProfile, clear_database, \
+    UserMessage, UserPresence, UserProfile, Huddle, Client, \
     email_to_username, get_client, get_huddle, get_realm, get_stream, \
     get_system_bot, get_user, get_user_profile_by_id
 from zerver.lib.types import ProfileFieldData
@@ -39,9 +41,34 @@ settings.TORNADO_SERVER = None
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
 # from `run-dev.py`.
+default_cache = settings.CACHES['default']
 settings.CACHES['default'] = {
     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
 }
+
+def clear_database() -> None:
+    # Hacky function only for use inside populate_db.  Designed to
+    # allow running populate_db repeatedly in series to work without
+    # flushing memcached or clearing the database manually.
+
+    # With `zproject.test_settings`, we aren't using real memcached
+    # and; we only need to flush memcached if we're populating a
+    # database that would be used with it (i.e. zproject.dev_settings).
+    if default_cache['BACKEND'] == 'django_pylibmc.memcached.PyLibMCCache':
+        pylibmc.Client(
+            [default_cache['LOCATION']],
+            binary=True,
+            username=default_cache["USERNAME"],
+            password=default_cache["PASSWORD"],
+            behaviors=default_cache["OPTIONS"],
+        ).flush_all()
+
+    model = None  # type: Any # Hack because mypy doesn't know these are model classes
+    for model in [Message, Stream, UserProfile, Recipient,
+                  Realm, Subscription, Huddle, UserMessage, Client,
+                  DefaultStream]:
+        model.objects.all().delete()
+    Session.objects.all().delete()
 
 # Suppress spammy output from the push notifications logger
 push_notifications_logger.disabled = True
@@ -209,8 +236,41 @@ class Command(BaseCommand):
                 ("aaron", "AARON@zulip.com"),
                 ("Polonius", "polonius@zulip.com"),
             ]
-            for i in range(options["extra_users"]):
-                names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
+
+            # For testing really large batches:
+            # Create extra users with semi realistic names to make search
+            # functions somewhat realistic.  We'll still create 1000 users
+            # like Extra222 User for some predicability.
+            num_names = options['extra_users']
+            num_boring_names = 1000
+
+            for i in range(min(num_names, num_boring_names)):
+                full_name = 'Extra%03d User' % (i,)
+                names.append((full_name, 'extrauser%d@zulip.com' % (i,)))
+
+            if num_names > num_boring_names:
+                fnames = ['Amber', 'Arpita', 'Bob', 'Cindy', 'Daniela', 'Dan', 'Dinesh',
+                          'Faye', 'François', 'George', 'Hank', 'Irene',
+                          'James', 'Janice', 'Jenny', 'Jill', 'John',
+                          'Kate', 'Katelyn', 'Kobe', 'Lexi', 'Manish', 'Mark', 'Matt', 'Mayna',
+                          'Michael', 'Pete', 'Peter', 'Phil', 'Phillipa', 'Preston',
+                          'Sally', 'Scott', 'Sandra', 'Steve', 'Stephanie',
+                          'Vera']
+                mnames = ['de', 'van', 'von', 'Shaw', 'T.']
+                lnames = ['Adams', 'Agarwal', 'Beal', 'Benson', 'Bonita', 'Davis',
+                          'George', 'Harden', 'James', 'Jones', 'Johnson', 'Jordan',
+                          'Lee', 'Leonard', 'Singh', 'Smith', 'Patel', 'Towns', 'Wall']
+
+            for i in range(num_boring_names, num_names):
+                fname = random.choice(fnames) + str(i)
+                full_name = fname
+                if random.random() < 0.7:
+                    if random.random() < 0.5:
+                        full_name += ' ' + random.choice(mnames)
+                    full_name += ' ' + random.choice(lnames)
+                email = fname.lower() + '@zulip.com'
+                names.append((full_name, email))
+
             create_users(zulip_realm, names)
 
             iago = get_user("iago@zulip.com", zulip_realm)
@@ -302,10 +362,14 @@ class Command(BaseCommand):
                         r = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                         subscriptions_list.append((profile, r))
             else:
+                num_streams = len(recipient_streams)
+                num_users = len(profiles)
                 for i, profile in enumerate(profiles):
                     # Subscribe to some streams.
-                    for type_id in recipient_streams[:int(len(recipient_streams) *
-                                                          float(i)/len(profiles)) + 1]:
+                    fraction = float(i) / num_users
+                    num_recips = int(num_streams * fraction) + 1
+
+                    for type_id in recipient_streams[:num_recips]:
                         r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
                         subscriptions_list.append((profile, r))
 

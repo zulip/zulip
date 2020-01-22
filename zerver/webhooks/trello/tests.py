@@ -3,6 +3,7 @@ from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class TrelloHookTests(WebhookTestCase):
     STREAM_NAME = 'trello'
     URL_TEMPLATE = u"/api/v1/external/trello?stream={stream}&api_key={api_key}"

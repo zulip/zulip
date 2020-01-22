@@ -70,6 +70,8 @@ function test_with(fixture) {
 }
 
 run_test('near after unreads', () => {
+    // Current near: behavior is to ignore the unreads and take you
+    // to the target message, with reading disabled.
     const fixture = {
         filter_terms: [
             {operator: 'near', operand: 42},
@@ -87,8 +89,8 @@ run_test('near after unreads', () => {
         ],
         expected_id_info: {
             target_id: 42,
-            final_select_id: 37,
-            local_select_id: 37,
+            final_select_id: 42,
+            local_select_id: 42,
         },
         expected_msg_ids: [37, 42, 44],
     };
@@ -97,6 +99,8 @@ run_test('near after unreads', () => {
 });
 
 run_test('near not in message list', () => {
+    // Current behavior is to ignore the unreads and take you
+    // to the closest messages, with reading disabled.
     const fixture = {
         filter_terms: [
             {operator: 'near', operand: 42},
@@ -108,6 +112,7 @@ run_test('near not in message list', () => {
         },
         has_found_newest: false,
         all_messages: [
+            {id: 41, topic: 'whatever'},
             {id: 45, topic: 'whatever'},
             {id: 46, topic: 'whatever'},
         ],
@@ -116,7 +121,7 @@ run_test('near not in message list', () => {
             final_select_id: 42,
             local_select_id: undefined,
         },
-        expected_msg_ids: [45, 46],
+        expected_msg_ids: [41, 45, 46],
     };
 
     test_with(fixture);

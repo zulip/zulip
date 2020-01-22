@@ -8,7 +8,6 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-
 IS_AWAITING_SIGNATURE = "is awaiting the signature of {awaiting_recipients}"
 WAS_JUST_SIGNED_BY = "was just signed by {signed_recipients}"
 BODY = "The `{contract_title}` document {actions}."

@@ -5,6 +5,7 @@ from zerver.lib.actions import do_rename_stream
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import get_stream
 
+
 class Command(ZulipBaseCommand):
     help = """Change the stream name for a realm."""
 

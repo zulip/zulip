@@ -160,7 +160,7 @@ def tokenize(text):
                 tag = s[7:-3]
                 kind = 'jinja2_whitespace_stripped_end'
             elif looking_at_jinja2_start_whitespace_stripped_type2():
-                s = get_jinja2_whitespace_stripped_tag(text, state.i)
+                s = get_django_tag(text, state.i, stripped=True)
                 tag = s[3:-3].split()[0]
                 kind = 'jinja2_whitespace_stripped_type2_start'
             else:
@@ -175,7 +175,7 @@ def tokenize(text):
         token = Token(
             kind=kind,
             s=s,
-            tag=tag,
+            tag=tag.strip(),
             line=state.line,
             col=state.col,
             line_span=line_span
@@ -295,11 +295,11 @@ def validate(fn=None, text=None, check_indent=True):
         elif kind == 'handlebars_end':
             state.matcher(token)
 
-        elif kind in {'django_start',
+        elif kind in {'django_start', 'jinja2_whitespace_stripped_start',
                       'jinja2_whitespace_stripped_type2_start'}:
             if is_django_block_tag(tag):
                 start_tag_matcher(token)
-        elif kind == 'django_end':
+        elif kind in {'django_end', 'jinja2_whitespace_stripped_end'}:
             state.matcher(token)
 
     if state.depth != 0:
@@ -354,23 +354,15 @@ def get_handlebars_tag(text, i):
     s = text[i:end+2]
     return s
 
-def get_django_tag(text, i):
-    # type: (str, int) -> str
+def get_django_tag(text, i, stripped=False):
+    # type: (str, int, bool) -> str
     end = i + 2
+    if stripped:
+        end += 1
     while end < len(text) - 1 and text[end] != '%':
         end += 1
     if text[end] != '%' or text[end+1] != '}':
         raise TokenizationException('Tag missing "%}"', text[i:end+2])
-    s = text[i:end+2]
-    return s
-
-def get_jinja2_whitespace_stripped_tag(text, i):
-    # type: (str, int) -> str
-    end = i + 3
-    while end < len(text) - 1 and text[end] != '%':
-        end += 1
-    if text[end-1] != '-' or text[end] != '%' or text[end+1] != '}':
-        raise TokenizationException('Tag missing "-%}"', text[i:end+2])
     s = text[i:end+2]
     return s
 

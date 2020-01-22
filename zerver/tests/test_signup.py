@@ -517,7 +517,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 80)
+        self.assertEqual(len(queries), 79)
         user_profile = self.nonreg_user('test')
         self.assert_logged_in_user_id(user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -1451,9 +1451,9 @@ class InvitationsTestCase(InviteUserBase):
         self.check_sent_emails([invitee], custom_from_name="Zulip")
 
     def test_accessing_invites_in_another_realm(self) -> None:
-        invitor = UserProfile.objects.exclude(realm=get_realm('zulip')).first()
+        inviter = UserProfile.objects.exclude(realm=get_realm('zulip')).first()
         prereg_user = PreregistrationUser.objects.create(
-            email='email', referred_by=invitor, realm=invitor.realm)
+            email='email', referred_by=inviter, realm=inviter.realm)
         self.login(self.example_email("iago"))
         error_result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
         self.assert_json_error(error_result, "No such invitation")
@@ -2991,9 +2991,29 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
             self.assertFalse(UserProfile.objects.filter(email=email).exists())
 
-        # If the user's email is not in the LDAP directory, though, we
-        # successfully create an account with a password in the Zulip
-        # database.
+        # For the rest of the test we delete the user from ldap.
+        del self.mock_ldap.directory["uid=newuser,ou=users,dc=zulip,dc=com"]
+
+        # If the user's email is not in the LDAP directory, but fits LDAP_APPEND_DOMAIN,
+        # we refuse to create the account.
+        with self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+        ):
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   full_name="Non-LDAP Full Name",
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            self.assertEqual(result.status_code, 302)
+            # We get redirected back to the login page because emails matching LDAP_APPEND_DOMAIN,
+            # aren't allowed to create non-ldap accounts.
+            self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
+            self.assertFalse(UserProfile.objects.filter(email=email).exists())
+
+        # If the email is outside of LDAP_APPEND_DOMAIN, we succesfully create a non-ldap account,
+        # with the password managed in the zulip database.
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
                 LDAP_APPEND_DOMAIN='example.com',

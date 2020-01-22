@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.users import get_api_key
+
 
 class DropboxHookTests(WebhookTestCase):
     STREAM_NAME = 'test'

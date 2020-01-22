@@ -39,7 +39,7 @@ from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
     AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled, SAMLAuthBackend, \
-    redirect_to_config_error
+    redirect_to_config_error, ZulipRemoteUserBackend
 from version import ZULIP_VERSION
 
 import jwt
@@ -111,15 +111,21 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
         # Confirmation objects, and then send the user to account
         # creation or confirm-continue-registration depending on
         # is_signup.
-        prereg_user = None
-        if settings.ONLY_SSO:
-            try:
-                prereg_user = PreregistrationUser.objects.filter(
-                    email__iexact=email, realm=realm).latest("invited_at")
-            except PreregistrationUser.DoesNotExist:
-                prereg_user = create_preregistration_user(email, request,
-                                                          password_required=password_required)
-        else:
+        try:
+            prereg_user = PreregistrationUser.objects.filter(
+                email__iexact=email, realm=realm).latest("invited_at")
+
+            # password_required and full_name data passed here as argument should take precedence
+            # over the defaults with which the existing PreregistrationUser that we've just fetched
+            # was created.
+            prereg_user.password_required = password_required
+            update_fields = ["password_required"]
+            if full_name:
+                prereg_user.full_name = full_name
+                prereg_user.full_name_validated = full_name_validated
+                update_fields.extend(["full_name", "full_name_validated"])
+            prereg_user.save(update_fields=update_fields)
+        except PreregistrationUser.DoesNotExist:
             prereg_user = create_preregistration_user(
                 email, request,
                 password_required=password_required,
@@ -247,12 +253,19 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
 @has_request_variables
 def remote_user_sso(request: HttpRequest,
                     mobile_flow_otp: Optional[str]=REQ(default=None)) -> HttpResponse:
+    subdomain = get_subdomain(request)
+    try:
+        realm = get_realm(subdomain)  # type: Optional[Realm]
+    except Realm.DoesNotExist:
+        realm = None
+
+    if not auth_enabled_helper([ZulipRemoteUserBackend.auth_backend_name], realm):
+        return redirect_to_config_error("remoteuser/backend_disabled")
+
     try:
         remote_user = request.META["REMOTE_USER"]
     except KeyError:
-        # TODO: Arguably the JsonableError values here should be
-        # full-page HTML configuration errors instead.
-        raise JsonableError(_("No REMOTE_USER set."))
+        return redirect_to_config_error("remoteuser/remote_user_header_missing")
 
     # Django invokes authenticate methods by matching arguments, and this
     # authentication flow will not invoke LDAP authentication because of
@@ -268,9 +281,7 @@ def remote_user_sso(request: HttpRequest,
             raise JsonableError(_("Invalid OTP"))
 
     subdomain = get_subdomain(request)
-    try:
-        realm = get_realm(subdomain)
-    except Realm.DoesNotExist:
+    if realm is None:
         user_profile = None
     else:
         user_profile = authenticate(remote_user=remote_user, realm=realm)

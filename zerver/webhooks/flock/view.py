@@ -1,10 +1,13 @@
 # Webhooks for external integrations.
+from typing import Any, Dict
+
+from django.http import HttpRequest, HttpResponse
+
+from zerver.decorator import REQ, api_key_only_webhook_view, \
+    has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
-from django.http import HttpRequest, HttpResponse
-from typing import Dict, Any
 
 CHECK_IS_REPLY = "in reply to"
 

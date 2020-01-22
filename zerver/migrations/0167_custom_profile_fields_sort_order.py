@@ -3,9 +3,10 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-from django.db.models import F
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from django.db.models import F
+
 
 def migrate_set_order_value(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     CustomProfileField = apps.get_model('zerver', 'CustomProfileField')

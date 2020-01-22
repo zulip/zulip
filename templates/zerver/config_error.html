@@ -93,6 +93,18 @@
                         </p>
                         {% endif %}
                     {% endif %}
+
+                    {% if remoteuser_error_backend_disabled %}
+                    <p>
+                        Authentication via the REMOTE_USER header is
+                        disabled in `/etc/zulip/settings.py`.
+                    </p>
+                    {% endif %}
+                    {% if remoteuser_error_remote_user_header_missing %}
+                    <p>
+                        The REMOTE_USER header is not set.
+                    </p>
+                    {% endif %}
                     <p>After making your changes, remember to restart
                     the Zulip server.</p>
                 </div>

@@ -113,6 +113,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             name: notifications.redraw_title,
             name_changes_disabled: settings_account.update_name_change_display,
             notifications_stream_id: noop,
+            private_message_policy: noop,
             send_welcome_emails: noop,
             message_content_allowed_in_email_notifications: noop,
             signup_notifications_stream_id: noop,
@@ -141,12 +142,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 }
             } else if (event.property === 'notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(
-                    page_params.realm_notifications_stream_id,
-                    $('#realm_notifications_stream_name'));
+                    page_params.realm_notifications_stream_id, 'notifications');
             } else if (event.property === 'signup_notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(
-                    page_params.realm_signup_notifications_stream_id,
-                    $('#realm_signup_notifications_stream_name'));
+                    page_params.realm_signup_notifications_stream_id, 'signup_notifications');
             }
 
             if (event.property === 'name' && window.electron_bridge !== undefined) {
@@ -292,14 +291,12 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {
                     page_params.realm_notifications_stream_id = -1;
                     settings_org.render_notifications_stream_ui(
-                        page_params.realm_notifications_stream_id,
-                        $('#realm_notifications_stream_name'));
+                        page_params.realm_notifications_stream_id, 'notifications');
                 }
                 if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
                     page_params.realm_signup_notifications_stream_id = -1;
                     settings_org.render_notifications_stream_ui(
-                        page_params.realm_signup_notifications_stream_id,
-                        $('#realm_signup_notifications_stream_name'));
+                        page_params.realm_signup_notifications_stream_id, 'signup_notifications');
                 }
             });
         }
@@ -409,6 +406,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         if (event.setting_name === 'demote_inactive_streams') {
             stream_list.update_streams_sidebar();
+            stream_data.set_filter_out_inactives();
         }
         if (event.setting_name === 'dense_mode') {
             $("body").toggleClass("less_dense_mode");
@@ -438,8 +436,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             // than requiring a reload or page resize.
         }
         if (event.setting_name === 'default_language') {
-            // TODO: Make this change the view immediately rather
-            // than requiring a reload or page resize.
+            // TODO: Make this change the view immediately rather than
+            // requiring a reload.  This is likely fairly difficult,
+            // because various i18n strings are rendered by the
+            // server; we may want to instead just trigger a page
+            // reload.
         }
         if (event.setting_name === 'emojiset') {
             settings_display.report_emojiset_change();

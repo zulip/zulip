@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class GoogleCodeInTests(WebhookTestCase):
     STREAM_NAME = 'gci'
     URL_TEMPLATE = "/api/v1/external/gci?&api_key={api_key}&stream={stream}"

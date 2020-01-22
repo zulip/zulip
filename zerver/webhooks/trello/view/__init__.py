@@ -1,18 +1,21 @@
 # Webhooks for external integrations.
+from typing import Any, Mapping, Optional, Tuple
+
 import ujson
-from typing import Mapping, Any, Tuple, Optional
 from django.http import HttpRequest, HttpResponse
-from zerver.decorator import api_key_only_webhook_view, return_success_on_head_request
-from zerver.lib.response import json_success
+
+from zerver.decorator import api_key_only_webhook_view, \
+    return_success_on_head_request
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.webhooks.common import check_send_webhook_message, \
-    UnexpectedWebhookEventType
+from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
+    check_send_webhook_message
 from zerver.models import UserProfile
 
-from .card_actions import SUPPORTED_CARD_ACTIONS, \
-    IGNORED_CARD_ACTIONS, process_card_action
 from .board_actions import SUPPORTED_BOARD_ACTIONS, process_board_action
-from .exceptions import UnsupportedAction
+from .card_actions import IGNORED_CARD_ACTIONS, SUPPORTED_CARD_ACTIONS, \
+    process_card_action
+
 
 @api_key_only_webhook_view('Trello')
 @return_success_on_head_request
@@ -28,7 +31,7 @@ def api_trello_webhook(request: HttpRequest,
             return json_success()
         else:
             subject, body = message
-    except UnsupportedAction:
+    except UnexpectedWebhookEventType:
         if action_type in IGNORED_CARD_ACTIONS:
             return json_success()
 
@@ -43,4 +46,4 @@ def get_subject_and_body(payload: Mapping[str, Any], action_type: str) -> Option
     if action_type in SUPPORTED_BOARD_ACTIONS:
         return process_board_action(payload, action_type)
 
-    raise UnsupportedAction('{} is not supported'.format(action_type))
+    raise UnexpectedWebhookEventType("Trello", '{} is not supported'.format(action_type))

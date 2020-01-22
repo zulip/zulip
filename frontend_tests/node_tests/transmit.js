@@ -1,18 +1,11 @@
 const noop = function () {};
 
 set_global('$', global.make_zjquery());
-set_global('page_params', {
-    use_websockets: true,
-});
-
+set_global('page_params', {});
 set_global('channel', {});
 set_global('navigator', {});
 set_global('reload', {});
 set_global('reload_state', {});
-set_global('socket', {});
-set_global('Socket', function () {
-    return global.socket;
-});
 set_global('sent_messages', {
     start_tracking_message: noop,
     report_server_ack: noop,
@@ -22,78 +15,6 @@ set_global('blueslip', global.make_zblueslip());
 zrequire('people');
 zrequire('util');
 zrequire('transmit');
-
-function test_with_mock_socket(test_params) {
-    transmit.initialize();
-    let socket_send_called;
-    const send_args = {};
-
-    global.socket.send = function (request, success, error) {
-        global.socket.send = undefined;
-        socket_send_called = true;
-
-        // Save off args for check_send_args callback.
-        send_args.request = request;
-        send_args.success = success;
-        send_args.error = error;
-    };
-
-    // Run the actual code here.
-    test_params.run_code();
-
-    assert(socket_send_called);
-    test_params.check_send_args(send_args);
-}
-
-run_test('transmit_message_sockets', () => {
-    page_params.use_websockets = true;
-    global.navigator.userAgent = 'unittest_transmit_message';
-
-    // Our request is mostly unimportant, except that the
-    // socket_user_agent field will be added.
-    const request = {foo: 'bar'};
-
-    let success_func_checked = false;
-    const success = function () {
-        success_func_checked = true;
-    };
-
-    // Our error function gets wrapped, so we set up a real
-    // function to test the wrapping mechanism.
-    let error_func_checked = false;
-    const error = function (error_msg) {
-        assert.equal(error_msg, 'Error sending message: simulated_error');
-        error_func_checked = true;
-    };
-
-    test_with_mock_socket({
-        run_code: function () {
-            transmit.send_message(request, success, error);
-        },
-        check_send_args: function (send_args) {
-            // The real code patches new data on the request, rather
-            // than making a copy, so we test both that it didn't
-            // clone the object and that it did add a field.
-            assert.equal(send_args.request, request);
-            assert.deepEqual(send_args.request, {
-                foo: 'bar',
-                socket_user_agent: 'unittest_transmit_message',
-            });
-
-            send_args.success({});
-            assert(success_func_checked);
-
-            // Our error function does get wrapped, so we test by
-            // using socket.send's error callback, which should
-            // invoke our test error function via a wrapper
-            // function in the real code.
-            send_args.error('response', {msg: 'simulated_error'});
-            assert(error_func_checked);
-        },
-    });
-});
-
-page_params.use_websockets = false;
 
 run_test('transmit_message_ajax', () => {
 
@@ -224,7 +145,7 @@ run_test('reply_message_private', () => {
     const pm_message = {
         type: 'private',
         display_recipient: [
-            {user_id: fred.user_id},
+            {id: fred.user_id},
         ],
     };
 

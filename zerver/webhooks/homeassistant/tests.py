@@ -1,5 +1,6 @@
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class HomeAssistantHookTests(WebhookTestCase):
     STREAM_NAME = 'homeassistant'
     URL_TEMPLATE = "/api/v1/external/homeassistant?&api_key={api_key}&stream={stream}"

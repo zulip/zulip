@@ -3,6 +3,7 @@ from django.core.management.base import CommandParser
 from zerver.lib.actions import do_change_notification_settings
 from zerver.lib.management import ZulipBaseCommand
 
+
 class Command(ZulipBaseCommand):
     help = """Turn off digests for a subdomain/string_id or specified set of email addresses."""
 

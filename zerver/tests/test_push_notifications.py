@@ -65,7 +65,7 @@ from zerver.lib.push_notifications import (
     send_to_push_bouncer,
 )
 from zerver.lib.remote_server import send_analytics_to_remote_server, \
-    build_analytics_data, PushNotificationBouncerException
+    build_analytics_data, PushNotificationBouncerException, PushNotificationBouncerRetryLaterError
 from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import (
     TestCase, ZulipTestCase,
@@ -187,15 +187,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         # We do a bit of hackery here to the API_KEYS cache just to
         # make the code simple for sending an incorrect API key.
-        from zerver.lib.test_classes import API_KEYS
-        API_KEYS[self.server_uuid] = 'invalid'
+        self.API_KEYS[self.server_uuid] = 'invalid'
         result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id,
                                                             'token_kind': token_kind,
                                                             'token': token})
         self.assert_json_error(result, "Zulip server auth failure: key does not match role 1234-abcd",
                                status_code=401)
 
-        del API_KEYS[self.server_uuid]
+        del self.API_KEYS[self.server_uuid]
 
         credentials = "%s:%s" % ("5678-efgh", 'invalid')
         api_auth = 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
@@ -262,7 +261,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_json_error(result, 'Invalid APNS token')
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_push_bouncer_api(self, mock_request: Any) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
@@ -279,7 +278,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         ]
 
         # Test error handling
-        for endpoint, _, kind in endpoints:
+        for endpoint, token, kind in endpoints:
             # Try adding/removing tokens that are too big...
             broken_token = "a" * 5000  # too big
             result = self.client_post(endpoint, {'token': broken_token,
@@ -297,6 +296,19 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                                    'token_kind': kind},
                                         subdomain="zulip")
             self.assert_json_error(result, 'Token does not exist')
+
+            with mock.patch('zerver.lib.remote_server.requests.request',
+                            side_effect=requests.ConnectionError):
+                result = self.client_post(endpoint, {'token': token},
+                                          subdomain="zulip")
+                self.assert_json_error(
+                    result, "ConnectionError while trying to connect to push notification bouncer", 502)
+
+            with mock.patch('zerver.lib.remote_server.requests.request',
+                            return_value=Result(status=500)):
+                result = self.client_post(endpoint, {'token': token},
+                                          subdomain="zulip")
+                self.assert_json_error(result, "Received 500 from push notification bouncer", 502)
 
         # Add tokens
         for endpoint, token, kind in endpoints:
@@ -338,7 +350,20 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                                            server=server))
         self.assertEqual(len(tokens), 2)
 
-        # Remove it using the bouncer after an API key change
+        # Now we want to remove them using the bouncer after an API key change.
+        # First we test error handling in case of issues with the bouncer:
+        with mock.patch('zerver.worker.queue_processors.clear_push_device_tokens',
+                        side_effect=PushNotificationBouncerRetryLaterError("test")), \
+                mock.patch('zerver.worker.queue_processors.retry_event') as mock_retry:
+            do_regenerate_api_key(user, user)
+            mock_retry.assert_called()
+
+            # We didn't manage to communicate with the bouncer, to the tokens are still there:
+            tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id,
+                                                               server=server))
+            self.assertEqual(len(tokens), 2)
+
+        # Now we succesfully remove them:
         do_regenerate_api_key(user, user)
         tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id,
                                                            server=server))
@@ -348,7 +373,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
     TIME_ZERO = datetime.datetime(1988, 3, 14).replace(tzinfo=timezone_utc)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_analytics_api(self, mock_request: Any) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
@@ -356,6 +381,13 @@ class AnalyticsBouncerTest(BouncerTestCase):
         mock_request.side_effect = self.bounce_request
         user = self.example_user('hamlet')
         end_time = self.TIME_ZERO
+
+        with mock.patch('zerver.lib.remote_server.requests.request',
+                        side_effect=requests.ConnectionError), \
+                mock.patch('zerver.lib.remote_server.logging.warning') as mock_warning:
+            send_analytics_to_remote_server()
+            mock_warning.assert_called_once_with(
+                "ConnectionError while trying to connect to push notification bouncer")
 
         # Send any existing data over, so that we can start the test with a "clean" slate
         audit_log_max_id = RealmAuditLog.objects.all().order_by('id').last().id
@@ -457,7 +489,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             self.assert_json_error(result, "Invalid data.")
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_analytics_api_invalid(self, mock_request: Any) -> None:
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
@@ -481,7 +513,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
     # Servers on Zulip 2.0.6 and earlier only send realm_counts and installation_counts data,
     # and don't send realmauditlog_rows. Make sure that continues to work.
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_old_two_table_format(self, mock_request: Any) -> None:
         mock_request.side_effect = self.bounce_request
         # Send fixture generated with Zulip 2.0 code
@@ -496,7 +528,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
     # Make sure we aren't sending data we don't mean to, even if we don't store it.
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_only_sending_intended_realmauditlog_data(self, mock_request: Any) -> None:
         mock_request.side_effect = self.bounce_request
         user = self.example_user('hamlet')
@@ -529,7 +561,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             send_analytics_to_remote_server()
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
-    @mock.patch('zerver.lib.push_notifications.requests.request')
+    @mock.patch('zerver.lib.remote_server.requests.request')
     def test_realmauditlog_data_mapping(self, mock_request: Any) -> None:
         mock_request.side_effect = self.bounce_request
         user = self.example_user('hamlet')
@@ -647,7 +679,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             'trigger': 'private_message',
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
-                mock.patch('zerver.lib.push_notifications.requests.request',
+                mock.patch('zerver.lib.remote_server.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications.gcm_client') as mock_gcm, \
                 self.mock_apns() as mock_apns, \
@@ -684,7 +716,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                     (token, "Unregistered"))
             self.assertEqual(RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
 
-    def test_end_to_end_connection_error(self) -> None:
+    def test_connection_error(self) -> None:
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
 
@@ -694,23 +726,17 @@ class HandlePushNotificationTest(PushNotificationTest):
             message=message
         )
 
-        def retry(queue_name: Any, event: Any, processor: Any) -> None:
-            handle_push_notification(event['user_profile_id'], event)
-
         missed_message = {
             'user_profile_id': self.user_profile.id,
             'message_id': message.id,
             'trigger': 'private_message',
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
-                mock.patch('zerver.lib.push_notifications.requests.request',
+                mock.patch('zerver.lib.remote_server.requests.request',
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications.gcm_client') as mock_gcm, \
-                mock.patch('zerver.lib.push_notifications.send_notifications_to_bouncer',
-                           side_effect=requests.ConnectionError), \
-                mock.patch('zerver.lib.queue.queue_json_publish',
-                           side_effect=retry) as mock_retry, \
-                mock.patch('zerver.lib.push_notifications.logger.warning') as mock_warn:
+                mock.patch('zerver.lib.remote_server.requests.request',
+                           side_effect=requests.ConnectionError):
             gcm_devices = [
                 (b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(
@@ -718,11 +744,8 @@ class HandlePushNotificationTest(PushNotificationTest):
             ]
             mock_gcm.json_request.return_value = {
                 'success': {gcm_devices[0][2]: message.id}}
-            handle_push_notification(self.user_profile.id, missed_message)
-            self.assertEqual(mock_retry.call_count, 3)
-            mock_warn.assert_called_with("Maximum retries exceeded for "
-                                         "trigger:%s event:"
-                                         "push_notification" % (self.user_profile.id,))
+            with self.assertRaises(PushNotificationBouncerRetryLaterError):
+                handle_push_notification(self.user_profile.id, missed_message)
 
     @mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True)
     def test_disabled_notifications(self, mock_push_notifications: mock.MagicMock) -> None:
@@ -1005,14 +1028,16 @@ class TestAPNs(PushNotificationTest):
         """
         import zerver.lib.push_notifications
         zerver.lib.push_notifications._apns_client_initialized = False
-        with self.settings(APNS_CERT_FILE='/foo.pem'), \
-                mock.patch('apns2.client.APNsClient') as mock_client:
-            client = get_apns_client()
-            self.assertEqual(mock_client.return_value, client)
-        # Reset the values set by `get_apns_client` so that we don't
-        # leak changes to the rest of the world.
-        zerver.lib.push_notifications._apns_client_initialized = False
-        zerver.lib.push_notifications._apns_client = None
+        try:
+            with self.settings(APNS_CERT_FILE='/foo.pem'), \
+                    mock.patch('apns2.client.APNsClient') as mock_client:
+                client = get_apns_client()
+                self.assertEqual(mock_client.return_value, client)
+        finally:
+            # Reset the values set by `get_apns_client` so that we don't
+            # leak changes to the rest of the world.
+            zerver.lib.push_notifications._apns_client_initialized = False
+            zerver.lib.push_notifications._apns_client = None
 
     def test_not_configured(self) -> None:
         with mock.patch('zerver.lib.push_notifications.get_apns_client') as mock_get, \
@@ -1458,9 +1483,8 @@ class TestSendToPushBouncer(ZulipTestCase):
     @mock.patch('requests.request', return_value=Result(status=500))
     @mock.patch('logging.warning')
     def test_500_error(self, mock_request: mock.MagicMock, mock_warning: mock.MagicMock) -> None:
-        result, failed = send_to_push_bouncer('register', 'register', {'data': True})
-        self.assertEqual(result, {})
-        self.assertEqual(failed, True)
+        with self.assertRaises(PushNotificationBouncerRetryLaterError):
+            result, failed = send_to_push_bouncer('register', 'register', {'data': True})
         mock_warning.assert_called_once()
 
     @mock.patch('requests.request', return_value=Result(status=400))

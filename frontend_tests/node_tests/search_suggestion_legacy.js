@@ -1,6 +1,10 @@
 set_global('page_params', {
     search_pills_enabled: false,
 });
+set_global('message_store', {
+    user_ids: () => [],
+});
+
 zrequire('util');
 zrequire('typeahead_helper');
 set_global('Handlebars', global.make_handlebars());
@@ -12,6 +16,8 @@ zrequire('people');
 zrequire('unread');
 zrequire('common');
 const search = zrequire('search_suggestion');
+
+search.max_num_of_search_results = 15;
 
 const bob = {
     email: 'bob@zulip.com',

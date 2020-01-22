@@ -9,6 +9,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+
 def get_message_data(payload: Dict[str, Any]) -> Tuple[str, str, str, str]:
     link = "https://app.frontapp.com/open/" + payload['target']['data']['id']
     outbox = payload['conversation']['recipient']['handle']

@@ -6,6 +6,9 @@ zrequire('stream_data');
 zrequire('util');
 zrequire('unread');
 zrequire('settings_notifications');
+const Dict = zrequire('dict').Dict;
+const FoldDict = zrequire('fold_dict').FoldDict;
+const IntDict = zrequire('int_dict').IntDict;
 
 set_global('page_params', {});
 set_global('blueslip', {});
@@ -34,8 +37,8 @@ const zero_counts = {
     private_message_count: 0,
     home_unread_messages: 0,
     mentioned_message_count: 0,
-    stream_count: new Dict(),
-    topic_count: new Dict(),
+    stream_count: new IntDict(),
+    topic_count: new IntDict(),
     pm_count: new Dict(),
 };
 
@@ -285,7 +288,7 @@ run_test('num_unread_for_topic', () => {
     msg_ids = unread.get_msg_ids_for_stream(stream_id);
     assert.deepEqual(msg_ids, _.range(1, 501));
 
-    const topic_dict = new Dict({fold_case: true});
+    const topic_dict = new FoldDict();
 
     let missing_topics = unread.get_missing_topics({
         stream_id: stream_id,
@@ -406,7 +409,7 @@ run_test('private_messages', () => {
         id: 15,
         type: 'private',
         display_recipient: [
-            {user_id: anybody.user_id},
+            {id: anybody.user_id},
             {id: me.user_id},
         ],
         unread: true,

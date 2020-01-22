@@ -11,6 +11,10 @@ const autosize = require('autosize');
 // highlighter that escapes (i.e. one that calls
 // typeahead_helper.highlight_with_escaping).
 
+// This is what we use for PM/compose typeaheads.
+// We export it to allow tests to mock it.
+exports.max_num_items = 5;
+
 exports.emoji_collection = [];
 
 exports.update_emoji_data = function () {
@@ -42,19 +46,33 @@ exports.topics_seen_for = function (stream_name) {
     return topic_names;
 };
 
-function query_matches_language(query, lang) {
+function get_language_matcher(query) {
     query = query.toLowerCase();
-    return lang.indexOf(query) !== -1;
+    return function (lang) {
+        return lang.indexOf(query) !== -1;
+    };
 }
 
-function query_matches_string(query, source_str, split_char) {
-    source_str = people.remove_diacritics(source_str);
+function clean_query(query) {
     query = people.remove_diacritics(query);
     // When `abc ` with a space at the end is typed in a
     // contenteditable widget such as the composebox PM section, the
     // space at the end was a `no break-space (U+00A0)` instead of
     // `space (U+0020)`, which lead to no matches in those cases.
     query = query.replace(/\u00A0/g, String.fromCharCode(32));
+
+    return query;
+}
+
+exports.clean_query_lowercase = function (query) {
+    query = query.toLowerCase();
+    query = clean_query(query);
+    return query;
+};
+
+function query_matches_string(query, source_str, split_char) {
+    source_str = people.remove_diacritics(source_str);
+
     // If query doesn't contain a separator, we just want an exact
     // match where query is a substring of one of the target characters.
     if (query.indexOf(split_char) > 0) {
@@ -99,45 +117,51 @@ function query_matches_source_attrs(query, source, match_attrs, split_char) {
     });
 }
 
-function query_matches_person(query, person) {
-    // Case-insensitive.
-    query = query.toLowerCase();
+exports.query_matches_person = function (query, person) {
     return query_matches_source_attrs(query, person, ["full_name", "email"], " ");
-}
+};
 
-function query_matches_user_group_or_stream(query, user_group_or_stream) {
-    // Case-insensitive.
-    query = query.toLowerCase();
+function query_matches_name_description(query, user_group_or_stream) {
     return query_matches_source_attrs(query, user_group_or_stream, ["name", "description"], " ");
 }
 
-function query_matches_person_or_user_group(query, item) {
-    if (user_groups.is_user_group(item)) {
-        return query_matches_user_group_or_stream(query, item);
-    }
+function get_stream_or_user_group_matcher(query) {
+    // Case-insensitive.
+    query = exports.clean_query_lowercase(query);
 
-    return query_matches_person(query, item);
-}
-
-function query_matches_slash_commmand(query, item) {
-    query = query.toLowerCase();
-    return query_matches_source_attrs(query, item, ["name"], " ");
-}
-
-// Case-insensitive
-function query_matches_emoji(query, emoji) {
-    // replaces spaces with underscores
-    query = query.toLowerCase();
-    query = query.split(" ").join("_");
-    return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
-}
-
-function query_matches_topic(query, topic) {
-    const obj = {
-        topic: topic,
+    return function (user_group_or_stream) {
+        return query_matches_name_description(query, user_group_or_stream);
     };
-    query = query.toLowerCase();
-    return query_matches_source_attrs(query, obj, ['topic'], ' ');
+}
+
+function get_slash_matcher(query) {
+    query = exports.clean_query_lowercase(query);
+
+    return function (item) {
+        return query_matches_source_attrs(query, item, ["name"], " ");
+    };
+}
+
+function get_emoji_matcher(query) {
+    // replaces spaces with underscores for emoji matching
+    query = query.split(" ").join("_");
+    query = exports.clean_query_lowercase(query);
+
+    return function (emoji) {
+        return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
+    };
+}
+
+function get_topic_matcher(query) {
+    query = exports.clean_query_lowercase(query);
+
+    return function (topic) {
+        const obj = {
+            topic: topic,
+        };
+
+        return query_matches_source_attrs(query, obj, ['topic'], ' ');
+    };
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
@@ -373,28 +397,21 @@ exports.tokenize_compose_str = function (s) {
     return '';
 };
 
-function get_mention_candidates_data(is_silent) {
-    let all_items = [];
-    let groups = [];
-
-    if (!is_silent) {
-        all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
-            return {
-                special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                          {wildcard_mention_token: mention}),
-                email: mention,
-                // Always sort above, under the assumption that names will
-                // be longer and only contain "all" as a substring.
-                pm_recipient_count: Infinity,
-                full_name: mention,
-            };
-        });
-        groups = user_groups.get_realm_user_groups();
-    }
-
-    const persons = people.get_realm_persons();
-    return [].concat(persons, all_items, groups);
-}
+exports.broadcast_mentions = function () {
+    return _.map(['all', 'everyone', 'stream'], function (mention, idx) {
+        return {
+            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
+                                      {wildcard_mention_token: mention}),
+            email: mention,
+            // Always sort above, under the assumption that names will
+            // be longer and only contain "all" as a substring.
+            pm_recipient_count: Infinity,
+            full_name: mention,
+            is_broadcast: true,
+            idx: idx, // used for sorting
+        };
+    });
+};
 
 function filter_mention_name(current_token) {
     if (current_token.startsWith('**')) {
@@ -439,7 +456,166 @@ exports.slash_commands = [
     },
 ];
 
-exports.compose_content_begins_typeahead = function (query) {
+exports.filter_and_sort_mentions = function (is_silent, query) {
+    const opts = {
+        want_broadcast: !is_silent,
+        want_groups: !is_silent,
+        filter_pills: false,
+    };
+    return exports.get_person_suggestions(query, opts);
+};
+
+exports.get_pm_people = function (query) {
+    const opts = {
+        want_broadcast: false,
+        want_groups: true,
+        filter_pills: true,
+    };
+    return exports.get_person_suggestions(query, opts);
+};
+
+exports.get_person_suggestions = function (query, opts) {
+    query = exports.clean_query_lowercase(query);
+
+    const person_matcher = (item) => {
+        return exports.query_matches_person(query, item);
+    };
+
+    const group_matcher = (item) => {
+        return query_matches_name_description(query, item);
+    };
+
+    function filter_persons(all_persons) {
+        let persons;
+
+        if (opts.filter_pills) {
+            persons = compose_pm_pill.filter_taken_users(all_persons);
+        } else {
+            persons = all_persons;
+        }
+
+        if (opts.want_broadcast) {
+            persons = persons.concat(exports.broadcast_mentions());
+        }
+        return _.filter(persons, person_matcher);
+    }
+
+    let groups;
+
+    if (opts.want_groups) {
+        groups = user_groups.get_realm_user_groups();
+    } else {
+        groups = [];
+    }
+
+    const filtered_groups = _.filter(groups, group_matcher);
+
+    /*
+        Let's say you're on a big realm and type
+        "st" in a typeahead.  Maybe there are like
+        30 people named Steve/Stephanie/etc.  We don't
+        want those search results to squeeze out
+        groups like "staff", and we also want to
+        prefer Steve Yang over Stan Adams if the
+        former has sent messages recently, despite
+        the latter being first alphabetically.
+
+        Also, from a performance standpoint, we can
+        save some expensive work if we get enough
+        matches from the more selective group of
+        people.
+
+        Note that we don't actually guarantee that we
+        won't squeeze out groups here, but we make it
+        less likely by removing some users from
+        consideration.  (The sorting step will favor
+        persons who match on prefix to groups who
+        match on prefix.)
+    */
+    const cutoff_length = exports.max_num_items;
+
+    const filtered_message_persons = filter_persons(
+        people.get_message_people()
+    );
+
+    let filtered_persons;
+
+    if (filtered_message_persons.length >= cutoff_length) {
+        filtered_persons = filtered_message_persons;
+    } else {
+        filtered_persons = filter_persons(
+            people.get_realm_persons()
+        );
+    }
+
+    return typeahead_helper.sort_recipients(
+        filtered_persons,
+        query,
+        compose_state.stream_name(),
+        compose_state.topic(),
+        filtered_groups,
+        exports.max_num_items
+    );
+};
+
+exports.get_sorted_filtered_items = function (query) {
+    /*
+        This is just a "glue" function to work
+        around bootstrap.  We want to control these
+        three steps ourselves:
+
+            - get data
+            - filter data
+            - sort data
+
+        If we do it ourselves, we can convert some
+        O(N) behavior to just O(1) time.
+
+        For example, we want to avoid dispatching
+        on completing every time through the loop, plus
+        doing the same token cleanup every time.
+
+        It's also a bit easier to debug typeahead when
+        it's all one step, instead of three callbacks.
+
+        (We did the same thing for search suggestions
+        several years ago.)
+    */
+
+    const hacky_this = this;
+    const fetcher = exports.get_candidates.bind(hacky_this);
+    const big_results = fetcher(query);
+
+    if (!big_results) {
+        return false;
+    }
+
+    // We are still hacking info onto the "this" from
+    // bootstrap.  Yuck.
+    const completing = hacky_this.completing;
+    const token = hacky_this.token;
+
+    if (completing === 'mention' || completing === 'silent_mention') {
+        return exports.filter_and_sort_mentions(
+            big_results.is_silent, token);
+    }
+
+    return exports.filter_and_sort_candidates(completing, big_results, token);
+};
+
+exports.filter_and_sort_candidates = function (completing, candidates, token) {
+    const matcher = exports.compose_content_matcher(completing, token);
+
+    const small_results = _.filter(candidates, function (item) {
+        return matcher(item);
+    });
+
+    const sorted_results = exports.sort_results(completing, small_results, token);
+
+    return sorted_results;
+};
+
+exports.get_candidates = function (query) {
     const split = exports.split_at_cursor(query, this.$element);
     let current_token = exports.tokenize_compose_str(split[0]);
     if (current_token === '') {
@@ -516,7 +692,7 @@ exports.compose_content_begins_typeahead = function (query) {
             return false;
         }
         this.token = current_token;
-        return get_mention_candidates_data(is_silent);
+        return {is_silent: is_silent};
     }
 
     function get_slash_commands_data() {
@@ -632,11 +808,17 @@ exports.content_typeahead_selected = function (item, event) {
         }
         if (user_groups.is_user_group(item)) {
             beginning += '@*' + item.name + '* ';
-            $(document).trigger('usermention_completed.zulip', {user_group: item});
+            // We could theoretically warn folks if they are
+            // mentioning a user group that literally has zero
+            // members where we are posting to, but we don't have
+            // that functionality yet, and we haven't gotten much
+            // feedback on this being an actual pitfall.
         } else {
             const mention_text = people.get_mention_syntax(item.full_name, item.user_id, is_silent);
             beginning += mention_text + ' ';
-            $(document).trigger('usermention_completed.zulip', {mentioned: item, is_silent: is_silent});
+            if (!is_silent) {
+                compose.warn_if_mentioning_unsubscribed_user(item);
+            }
         }
     } else if (this.completing === 'slash') {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1) + "/" + item.name + " ";
@@ -654,7 +836,7 @@ exports.content_typeahead_selected = function (item, event) {
         } else {
             beginning += '** ';
         }
-        $(document).trigger('streamname_completed.zulip', {stream: item});
+        compose.warn_if_private_stream_is_linked(item);
     } else if (this.completing === 'syntax') {
         // Isolate the end index of the triple backticks/tildes, including
         // possibly a space afterward
@@ -695,41 +877,44 @@ exports.content_typeahead_selected = function (item, event) {
     return beginning + rest;
 };
 
-exports.compose_content_matcher = function (item) {
-    if (this.completing === 'emoji') {
-        return query_matches_emoji(this.token, item);
-    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
-        return query_matches_person_or_user_group(this.token, item);
-    } else if (this.completing === 'slash') {
-        return query_matches_slash_commmand(this.token, item);
-    } else if (this.completing === 'stream') {
-        return query_matches_user_group_or_stream(this.token, item);
-    } else if (this.completing === 'syntax') {
-        return query_matches_language(this.token, item);
-    } else if (this.completing === 'topic_jump') {
-        // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
-        return true;
-    } else if (this.completing === 'topic_list') {
-        return query_matches_topic(this.token, item);
+exports.compose_content_matcher = function (completing, token) {
+    switch (completing) {
+    case 'emoji':
+        return get_emoji_matcher(token);
+    case 'slash':
+        return get_slash_matcher(token);
+    case 'stream':
+        return get_stream_or_user_group_matcher(token);
+    case 'syntax':
+        return get_language_matcher(token);
+    case 'topic_list':
+        return get_topic_matcher(token);
     }
+
+    return function () {
+        switch (completing) {
+        case 'topic_jump':
+            // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
+            return true;
+        }
+    };
 };
 
-exports.compose_matches_sorter = function (matches) {
-    if (this.completing === 'emoji') {
-        return typeahead_helper.sort_emojis(matches, this.token);
-    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
-        return typeahead_helper.sort_people_and_user_groups(this.token, matches);
-    } else if (this.completing === 'slash') {
-        return typeahead_helper.sort_slash_commands(matches, this.token);
-    } else if (this.completing === 'stream') {
-        return typeahead_helper.sort_streams(matches, this.token);
-    } else if (this.completing === 'syntax') {
-        return typeahead_helper.sort_languages(matches, this.token);
-    } else if (this.completing === 'topic_jump') {
+exports.sort_results = function (completing, matches, token) {
+    switch (completing) {
+    case 'emoji':
+        return typeahead_helper.sort_emojis(matches, token);
+    case 'slash':
+        return typeahead_helper.sort_slash_commands(matches, token);
+    case 'stream':
+        return typeahead_helper.sort_streams(matches, token);
+    case 'syntax':
+        return typeahead_helper.sort_languages(matches, token);
+    case 'topic_jump':
         // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
         return matches;
-    } else if (this.completing === 'topic_list') {
-        return typeahead_helper.sorter(this.token, matches, function (x) {return x;});
+    case 'topic_list':
+        return typeahead_helper.sorter(token, matches, function (x) {return x;});
     }
 };
 
@@ -774,13 +959,21 @@ exports.initialize_compose_typeahead = function (selector) {
     };
 
     $(selector).typeahead({
-        items: 5,
+        items: exports.max_num_items,
         dropup: true,
         fixed: true,
-        source: exports.compose_content_begins_typeahead,
+        // Performance note: We have trivial matcher/sorters to do
+        // matching and sorting inside the `source` field to avoid
+        // O(n) behavior in the number of users in the organization
+        // inside the typeahead library.
+        source: exports.get_sorted_filtered_items,
         highlighter: exports.content_highlighter,
-        matcher: exports.compose_content_matcher,
-        sorter: exports.compose_matches_sorter,
+        matcher: function () {
+            return true;
+        },
+        sorter: function (items) {
+            return items;
+        },
         updater: exports.content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a tab or enter
         completions: completions,
@@ -862,36 +1055,30 @@ exports.initialize = function () {
     });
 
     $("#private_message_recipient").typeahead({
-        source: function () {
-            const people = compose_pm_pill.get_typeahead_items();
-            const groups = user_groups.get_realm_user_groups();
-            return people.concat(groups);
-        },
-        items: 5,
+        source: exports.get_pm_people,
+        items: exports.max_num_items,
         dropup: true,
         fixed: true,
         highlighter: function (item) {
             return typeahead_helper.render_person_or_user_group(item);
         },
-        matcher: function (item) {
-            return query_matches_person_or_user_group(this.query, item);
+        matcher: function () {
+            return true;
         },
-        sorter: function (matches) {
-            return typeahead_helper.sort_people_and_user_groups(this.query, matches);
+        sorter: function (items) {
+            return items;
         },
         updater: function (item) {
             if (user_groups.is_user_group(item)) {
-                _.chain(item.members.keys())
-                    .map(function (user_id) {
-                        return people.get_person_from_user_id(user_id);
-                    }).filter(function (user) {
-                        // filter out inserted users and current user from pill insertion
-                        const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
-                        const current_user = people.is_current_user(user.email);
-                        return inserted_users.indexOf(user.user_id) === -1 && !current_user;
-                    }).each(function (user) {
+                for (const user_id of item.members) {
+                    const user = people.get_person_from_user_id(user_id);
+                    // filter out inserted users and current user from pill insertion
+                    const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
+                    const current_user = people.is_current_user(user.email);
+                    if (inserted_users.indexOf(user.user_id) === -1 && !current_user) {
                         compose_pm_pill.set_from_typeahead(user);
-                    });
+                    }
+                }
                 // clear input pill in the event no pills were added
                 const pill_widget = compose_pm_pill.widget;
                 if (pill_widget.clear_text !== undefined) {

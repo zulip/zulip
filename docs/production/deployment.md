@@ -64,13 +64,85 @@ of managing chat.zulip.org and zulipchat.com.
 
 ### Using Zulip with Amazon RDS as the database
 
-You cannot use most third-party database-as-a-service provides like
-Amazon RDS as the database provider with Zulip, because Zulip requires
-one of two different [full-text search postgres
-extensions](../subsystems/full-text-search.md) to power its search.
-Neither is available in Amazon RDS; there should be no issue with
-using Zulip with a different database-as-a-service provider as long as
-one of those postgres extensions is available.
+You can use DBaaS services like Amazon RDS for the Zulip database.
+The experience is slightly degraded, in that most DBaaS provides don't
+include useful dictionary files in their installations and don't
+provide a way to provide them yourself, resulting in a degraded
+[full-text search](../subsystems/full-text-search.md) experience
+around issues dictionary files are relevant (e.g. stemming).
+
+You also need to pass some extra options to the Zulip installer in
+order to avoid it throwing an error when Zulip attempts to configure
+the database's dictionary files for full-text search; the details are
+below.
+
+#### Step 1: Setup Zulip
+
+Follow the [standard instructions](../production/install.md), with one
+change.  When running the installer, pass the `--remote-postgres`
+flag, e.g.:
+
+```
+sudo -s  # If not already root
+./zulip-server-*/scripts/setup/install --certbot \
+    --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
+    --remote-postgres --postgres-missing-dictionaries
+```
+
+The script also installs and starts Postgres on the server by
+default. We don't need it, so run the following command to
+stop and disable the local Postgres server.
+
+```
+sudo service postgresql stop
+sudo update-rc.d postgresql disable
+```
+
+This complication will be removed in a future version.
+
+#### Step 2: Create the Postgres database
+
+Access an administrative `psql` shell on your postgres database, and
+run the commands in `scripts/setup/create-db.sql` to:
+
+* Create a database called `zulip`.
+* Create a user called `zulip`.
+* Now login with the `zulip` user to create a schema called
+  `zulip` in the `zulip` database. You might have to grant `create`
+  privileges first for the `zulip` user to do this.
+
+Depending on how authentication works for your postgres installation,
+you may also need to set a password for the Zulip user, generate a
+client certificate, or similar; consult the documentation for your
+database provider for the available options.
+
+#### Step 3: Configure Zulip to use the Postgres database
+
+In `/etc/zulip/settings.py` on your Zulip server, configure the
+following settings with details for how to connect to your postgres
+server.  Your database provider should provide these details.
+
+* `REMOTE_POSTGRES_HOST`: Name or IP address of the postgres server.
+* `REMOTE_POSTGRES_PORT`: Port on the postgres server.
+* `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server.
+
+If you're using password authentication, you should specify the
+password of the `zulip` user in /etc/zulip/zulip-secrets.conf as
+follows:
+
+```
+postgres_password = abcd1234
+```
+
+Now complete the installation by running the following commands.
+
+```
+# Ask Zulip installer to initialize the postgres database.
+su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
+
+# And then generate a realm creation link:
+su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
+```
 
 ## Using an alternate port
 

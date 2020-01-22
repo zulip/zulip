@@ -175,7 +175,7 @@ def create_test_data() -> None:
     write_file(paragraphs, os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
                                         "test_messages.json"))
 
-config = load_config()  # type: Dict[str, Any]
+config = load_config()
 
 if __name__ == "__main__":
-    create_test_data()  # type: () -> ()
+    create_test_data()

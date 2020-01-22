@@ -3,14 +3,23 @@
 class zulip::app_frontend_base {
   include zulip::common
   include zulip::nginx
+  include zulip::sasl_modules
   include zulip::supervisor
 
-  $web_packages = [
-    # Needed to access our database
-    "postgresql-client-${zulip::base::postgres_version}",
-    # Needed for Slack import
-    'unzip',
-  ]
+  if $::osfamily == 'debian' {
+    $web_packages = [
+      # This is not necessary on CentOS because $postgresql package already includes the client
+      # Needed to access our database
+      "postgresql-client-${zulip::base::postgres_version}",
+      # Needed for Slack import
+      'unzip',
+    ]
+  } else {
+      $web_packages = [
+        # Needed for Slack import
+        'unzip',
+      ]
+  }
   zulip::safepackage { $web_packages: ensure => 'installed' }
 
   file { '/etc/nginx/zulip-include/app':
@@ -73,14 +82,10 @@ class zulip::app_frontend_base {
   $queues_multiprocess = $zulip::base::total_memory_mb > 3500
   $queues = $zulip::base::normal_queues
   if $queues_multiprocess {
-    $message_sender_default_processes = 4
     $uwsgi_default_processes = 6
   } else {
-    $message_sender_default_processes = 2
     $uwsgi_default_processes = 4
   }
-  $message_sender_processes = zulipconf('application_server', 'message_sender_processes',
-                                        $message_sender_default_processes)
   file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
     require => Package[supervisor],
@@ -148,5 +153,16 @@ class zulip::app_frontend_base {
     group   => 'root',
     mode    => '0755',
     source  => 'puppet:///modules/zulip/nagios_plugins/zulip_app_frontend',
+  }
+
+  if $::osfamily == 'debian' {
+    # The pylibmc wheel looks for SASL plugins in the wrong place.
+    file { '/usr/lib64':
+      ensure => directory,
+    }
+    file { '/usr/lib64/sasl2':
+      ensure => link,
+      target => "/usr/lib/${::rubyplatform}/sasl2",
+    }
   }
 }

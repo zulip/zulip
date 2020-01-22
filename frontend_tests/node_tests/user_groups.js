@@ -73,11 +73,11 @@ run_test('user_groups', () => {
 
     user_groups.add_members(all.id, [5, 4]);
     assert.deepEqual(user_groups.get_user_group_from_id(all.id).members,
-                     Dict.from_array([1, 2, 3, 5, 4]));
+                     new Set([1, 2, 3, 5, 4]));
 
     user_groups.remove_members(all.id, [1, 4]);
     assert.deepEqual(user_groups.get_user_group_from_id(all.id).members,
-                     Dict.from_array([2, 3, 5]));
+                     new Set([2, 3, 5]));
 
     assert(user_groups.is_user_group(admins));
     const object = {

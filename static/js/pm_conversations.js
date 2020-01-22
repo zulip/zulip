@@ -1,4 +1,5 @@
 const Dict = require('./dict').Dict;
+const FoldDict = require('./fold_dict').FoldDict;
 
 const partners = new Dict();
 
@@ -15,16 +16,17 @@ exports.recent = (function () {
     // recent conversations with, sorted by time (implemented via
     // `message_id` sorting, since that's how we time-sort messages).
     const self = {};
-    const recent_message_ids = new Dict({fold_case: true}); // key is user_ids_string
+    const recent_message_ids = new FoldDict(); // key is user_ids_string
     const recent_private_messages = [];
 
-    self.insert = function (user_ids_string, message_id) {
-        if (user_ids_string === '') {
-            // The API uses '' for self-PMs; convert it to the string
-            // containing the current user's ID, which is the format
-            // the webapp expects.
-            user_ids_string = people.my_current_user_id().toString();
+    self.insert = function (user_ids, message_id) {
+        if (user_ids.length === 0) {
+            // The server sends [] for self-PMs.
+            user_ids = [people.my_current_user_id()];
         }
+        user_ids.sort((a, b) => a - b);
+
+        const user_ids_string = user_ids.join(',');
         let conversation = recent_message_ids.get(user_ids_string);
 
         if (conversation === undefined) {
@@ -71,8 +73,7 @@ exports.recent = (function () {
 
     self.initialize = function () {
         _.each(page_params.recent_private_conversations, function (conversation) {
-            const user_ids_string = conversation.user_ids.join(",");
-            self.insert(user_ids_string, conversation.max_message_id);
+            self.insert(conversation.user_ids, conversation.max_message_id);
         });
         delete page_params.recent_private_messages;
     };

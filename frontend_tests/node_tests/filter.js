@@ -68,9 +68,9 @@ run_test('basics', () => {
     assert(!filter.has_operand('stream', 'nada'));
 
     assert(!filter.is_search());
-    assert(filter.can_mark_messages_read());
+    assert(!filter.can_mark_messages_read());
     assert(!filter.contains_only_private_messages());
-    assert(filter.allow_use_first_unread_when_narrowing());
+    assert(!filter.allow_use_first_unread_when_narrowing());
     assert(filter.includes_full_stream_history());
     assert(filter.can_apply_locally());
 
@@ -86,7 +86,8 @@ run_test('basics', () => {
     assert(!filter.contains_only_private_messages());
     assert(!filter.allow_use_first_unread_when_narrowing());
     assert(!filter.can_apply_locally());
-    assert(!filter.is_exactly('stream'));
+    assert(filter.can_bucket_by('stream'));
+    assert(filter.can_bucket_by('stream', 'topic'));
 
     // If our only stream operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a stream operator, because we don't
@@ -97,6 +98,7 @@ run_test('basics', () => {
     filter = new Filter(operators);
     assert(!filter.contains_only_private_messages());
     assert(!filter.has_operator('stream'));
+    assert(!filter.can_mark_messages_read());
 
     // Negated searches are just like positive searches for our purposes, since
     // the search logic happens on the back end and we need to have can_apply_locally()
@@ -108,6 +110,7 @@ run_test('basics', () => {
     assert(!filter.contains_only_private_messages());
     assert(filter.has_operator('search'));
     assert(!filter.can_apply_locally());
+    assert(!filter.can_mark_messages_read());
 
     // Similar logic applies to negated "has" searches.
     operators = [
@@ -117,6 +120,7 @@ run_test('basics', () => {
     assert(filter.has_operator('has'));
     assert(!filter.can_apply_locally());
     assert(!filter.includes_full_stream_history());
+    assert(!filter.can_mark_messages_read());
 
     operators = [
         {operator: 'streams', operand: 'public', negated: true},
@@ -124,6 +128,7 @@ run_test('basics', () => {
     filter = new Filter(operators);
     assert(!filter.contains_only_private_messages());
     assert(!filter.has_operator('streams'));
+    assert(!filter.can_mark_messages_read());
     assert(filter.has_negated_operand('streams', 'public'));
     assert(!filter.can_apply_locally());
 
@@ -133,6 +138,7 @@ run_test('basics', () => {
     filter = new Filter(operators);
     assert(!filter.contains_only_private_messages());
     assert(filter.has_operator('streams'));
+    assert(!filter.can_mark_messages_read());
     assert(!filter.has_negated_operand('streams', 'public'));
     assert(!filter.can_apply_locally());
     assert(filter.includes_full_stream_history());
@@ -142,6 +148,16 @@ run_test('basics', () => {
     ];
     filter = new Filter(operators);
     assert(filter.contains_only_private_messages());
+    assert(filter.can_mark_messages_read());
+    assert(!filter.has_operator('search'));
+    assert(filter.can_apply_locally());
+
+    operators = [
+        {operator: 'is', operand: 'mentioned'},
+    ];
+    filter = new Filter(operators);
+    assert(!filter.contains_only_private_messages());
+    assert(filter.can_mark_messages_read());
     assert(!filter.has_operator('search'));
     assert(filter.can_apply_locally());
 
@@ -161,6 +177,189 @@ run_test('basics', () => {
     assert(!filter.has_operator('search'));
     assert(filter.can_apply_locally());
 });
+
+function assert_not_mark_read_with_has_operands(additional_operators_to_test) {
+    additional_operators_to_test = additional_operators_to_test || [];
+    let has_operator = [{ operator: 'has', operand: 'link' }];
+    let filter = new Filter(additional_operators_to_test.concat(has_operator));
+    assert(!filter.can_mark_messages_read());
+
+    has_operator = [{ operator: 'has', operand: 'link', negated: true }];
+    filter = new Filter(additional_operators_to_test.concat(has_operator));
+    assert(!filter.can_mark_messages_read());
+
+    has_operator = [{ operator: 'has', operand: 'image' }];
+    filter = new Filter(additional_operators_to_test.concat(has_operator));
+    assert(!filter.can_mark_messages_read());
+
+    has_operator = [{ operator: 'has', operand: 'image', negated: true }];
+    filter = new Filter(additional_operators_to_test.concat(has_operator));
+    assert(!filter.can_mark_messages_read());
+
+    has_operator = [{ operator: 'has', operand: 'attachment', negated: true }];
+    filter = new Filter(additional_operators_to_test.concat(has_operator));
+    assert(!filter.can_mark_messages_read());
+
+    has_operator = [{ operator: 'has', operand: 'attachment' }];
+    filter = new Filter(additional_operators_to_test.concat(has_operator));
+    assert(!filter.can_mark_messages_read());
+}
+function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
+    additional_operators_to_test = additional_operators_to_test || [];
+    let is_operator = [{ operator: 'is', operand: 'starred' }];
+    let filter = new Filter(additional_operators_to_test.concat(is_operator));
+    assert(!filter.can_mark_messages_read());
+
+    is_operator = [{ operator: 'is', operand: 'starred', negated: true }];
+    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    assert(!filter.can_mark_messages_read());
+
+    is_operator = [{ operator: 'is', operand: 'mentioned' }];
+    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    if (additional_operators_to_test.length === 0) {
+        assert(filter.can_mark_messages_read());
+    } else {
+        assert(!filter.can_mark_messages_read());
+    }
+
+    is_operator = [{ operator: 'is', operand: 'mentioned', negated: true }];
+    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    assert(!filter.can_mark_messages_read());
+
+    is_operator = [{ operator: 'is', operand: 'alerted' }];
+    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    assert(!filter.can_mark_messages_read());
+
+    is_operator = [{ operator: 'is', operand: 'alerted', negated: true }];
+    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    assert(!filter.can_mark_messages_read());
+
+    is_operator = [{ operator: 'is', operand: 'unread' }];
+    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    assert(!filter.can_mark_messages_read());
+
+    is_operator = [{ operator: 'is', operand: 'unread', negated: true }];
+    filter = new Filter(additional_operators_to_test.concat(is_operator));
+    assert(!filter.can_mark_messages_read());
+}
+
+function assert_not_mark_read_when_searching(additional_operators_to_test) {
+    additional_operators_to_test = additional_operators_to_test || [];
+    let search_op = [{ operator: 'search', operand: 'keyword' }];
+    let filter = new Filter(additional_operators_to_test.concat(search_op));
+    assert(!filter.can_mark_messages_read());
+
+    search_op = [{ operator: 'search', operand: 'keyword', negated: true }];
+    filter = new Filter(additional_operators_to_test.concat(search_op));
+    assert(!filter.can_mark_messages_read());
+}
+
+run_test('can_mark_messages_read', () => {
+    assert_not_mark_read_with_has_operands();
+    assert_not_mark_read_with_is_operands();
+    assert_not_mark_read_when_searching();
+
+    const stream_operator = [
+        { operator: 'stream', operand: 'foo' },
+    ];
+    let filter = new Filter(stream_operator);
+    assert(filter.can_mark_messages_read());
+    assert_not_mark_read_with_has_operands(stream_operator);
+    assert_not_mark_read_with_is_operands(stream_operator);
+    assert_not_mark_read_when_searching(stream_operator);
+
+    const stream_negated_operator = [
+        { operator: 'stream', operand: 'foo', negated: true },
+    ];
+    filter = new Filter(stream_negated_operator);
+    assert(!filter.can_mark_messages_read());
+
+    const stream_topic_operators = [
+        { operator: 'stream', operand: 'foo' },
+        { operator: 'topic', operand: 'bar' },
+    ];
+    filter = new Filter(stream_topic_operators);
+    assert(filter.can_mark_messages_read());
+    assert_not_mark_read_with_has_operands(stream_topic_operators);
+    assert_not_mark_read_with_is_operands(stream_topic_operators);
+    assert_not_mark_read_when_searching(stream_topic_operators);
+
+    const stream_negated_topic_operators = [
+        { operator: 'stream', operand: 'foo' },
+        { operator: 'topic', operand: 'bar', negated: true},
+    ];
+    filter = new Filter(stream_negated_topic_operators);
+    assert(!filter.can_mark_messages_read());
+
+    const pm_with = [
+        { operator: 'pm-with', operand: 'joe@example.com,' },
+    ];
+
+    const pm_with_negated = [
+        { operator: 'pm-with', operand: 'joe@example.com,', negated: true},
+    ];
+
+    const group_pm = [
+        { operator: 'pm-with', operand: 'joe@example.com,STEVE@foo.com' },
+    ];
+    filter = new Filter(pm_with);
+    assert(filter.can_mark_messages_read());
+    filter = new Filter(pm_with_negated);
+    assert(!filter.can_mark_messages_read());
+    filter = new Filter(group_pm);
+    assert(filter.can_mark_messages_read());
+    assert_not_mark_read_with_is_operands(group_pm);
+    assert_not_mark_read_with_is_operands(pm_with);
+    assert_not_mark_read_with_has_operands(group_pm);
+    assert_not_mark_read_with_has_operands(pm_with);
+    assert_not_mark_read_when_searching(group_pm);
+    assert_not_mark_read_when_searching(pm_with);
+
+    const is_private = [
+        { operator: 'is', operand: 'private' },
+    ];
+    filter = new Filter(is_private);
+    assert(filter.can_mark_messages_read());
+    assert_not_mark_read_with_is_operands(is_private);
+    assert_not_mark_read_with_has_operands(is_private);
+    assert_not_mark_read_when_searching(is_private);
+
+    const in_all = [
+        { operator: 'in', operand: 'all' },
+    ];
+    filter = new Filter(in_all);
+    assert(filter.can_mark_messages_read());
+    assert_not_mark_read_with_is_operands(in_all);
+    assert_not_mark_read_with_has_operands(in_all);
+    assert_not_mark_read_when_searching(in_all);
+
+    const in_home = [
+        { operator: 'in', operand: 'home' },
+    ];
+    const in_home_negated = [
+        { operator: 'in', operand: 'home', negated: true },
+    ];
+    filter = new Filter(in_home);
+    assert(filter.can_mark_messages_read());
+    assert_not_mark_read_with_is_operands(in_home);
+    assert_not_mark_read_with_has_operands(in_home);
+    assert_not_mark_read_when_searching(in_home);
+    filter = new Filter(in_home_negated);
+    assert(!filter.can_mark_messages_read());
+
+    // Do not mark messages as read when in an unsupported 'in:*' filter.
+    const in_random = [
+        { operator: 'in', operand: 'xxxxxxxxx' },
+    ];
+    const in_random_negated = [
+        { operator: 'in', operand: 'xxxxxxxxx', negated: true },
+    ];
+    filter = new Filter(in_random);
+    assert(!filter.can_mark_messages_read());
+    filter = new Filter(in_random_negated);
+    assert(!filter.can_mark_messages_read());
+});
+
 run_test('show_first_unread', () => {
     let operators = [
         {operator: 'is', operand: 'any'},
@@ -213,7 +412,7 @@ run_test('new_style_operators', () => {
     const filter = new Filter(operators);
 
     assert.deepEqual(filter.operands('stream'), ['foo']);
-    assert(filter.is_exactly('stream'));
+    assert(filter.can_bucket_by('stream'));
 });
 
 run_test('public_operators', () => {
@@ -225,7 +424,7 @@ run_test('public_operators', () => {
 
     let filter = new Filter(operators);
     assert_same_operators(filter.public_operators(), operators);
-    assert(!filter.is_exactly('stream'));
+    assert(filter.can_bucket_by('stream'));
 
     global.page_params.narrow_stream = 'default';
     operators = [
@@ -233,6 +432,28 @@ run_test('public_operators', () => {
     ];
     filter = new Filter(operators);
     assert_same_operators(filter.public_operators(), []);
+});
+
+run_test('redundancies', () => {
+    let terms;
+    let filter;
+
+    terms = [
+        { operator: 'pm-with', operand: 'joe@example.com,' },
+        { operator: 'is', operand: 'private' },
+    ];
+    filter = new Filter(terms);
+    assert(filter.can_bucket_by('pm-with'));
+
+    terms = [
+        { operator: 'pm-with',
+          operand: 'joe@example.com,',
+          negated: true,
+        },
+        { operator: 'is', operand: 'private' },
+    ];
+    filter = new Filter(terms);
+    assert(filter.can_bucket_by('is-private', 'not-pm-with'));
 });
 
 run_test('canonicalizations', () => {
@@ -385,25 +606,25 @@ run_test('predicate_basics', () => {
     }));
     assert(!predicate({
         type: 'private',
-        display_recipient: [{user_id: steve.user_id}],
+        display_recipient: [{id: steve.user_id}],
     }));
     assert(!predicate({
         type: 'private',
-        display_recipient: [{user_id: 999999}],
+        display_recipient: [{id: 999999}],
     }));
     assert(!predicate({type: 'stream'}));
 
     predicate = get_predicate([['pm-with', 'Joe@example.com,steve@foo.com']]);
     assert(predicate({
         type: 'private',
-        display_recipient: [{user_id: joe.user_id}, {user_id: steve.user_id}],
+        display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
     }));
 
     // Make sure your own email is ignored
     predicate = get_predicate([['pm-with', 'Joe@example.com,steve@foo.com,me@example.com']]);
     assert(predicate({
         type: 'private',
-        display_recipient: [{user_id: joe.user_id}, {user_id: steve.user_id}],
+        display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
     }));
 
     predicate = get_predicate([['pm-with', 'nobody@example.com']]);
@@ -824,14 +1045,14 @@ run_test('describe', () => {
     assert.equal(Filter.describe(narrow), string);
 });
 
-run_test('is_functions', () => {
+run_test('can_bucket_by', () => {
     let terms = [
         {operator: 'stream', operand: 'My Stream'},
     ];
     let filter = new Filter(terms);
-    assert.equal(filter.is_exactly('stream'), true);
-    assert.equal(filter.is_exactly('stream', 'topic'), false);
-    assert.equal(filter.is_exactly('pm-with'), false);
+    assert.equal(filter.can_bucket_by('stream'), true);
+    assert.equal(filter.can_bucket_by('stream', 'topic'), false);
+    assert.equal(filter.can_bucket_by('pm-with'), false);
 
     terms = [
         // try a non-orthodox ordering
@@ -841,9 +1062,6 @@ run_test('is_functions', () => {
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by('stream'), true);
     assert.equal(filter.can_bucket_by('stream', 'topic'), true);
-    assert.equal(filter.is_exactly('stream'), false);
-    assert.equal(filter.is_exactly('stream', 'topic'), true);
-    assert.equal(filter.is_exactly('pm-with'), false);
     assert.equal(filter.can_bucket_by('pm-with'), false);
 
     terms = [
@@ -853,49 +1071,45 @@ run_test('is_functions', () => {
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by('stream'), false);
     assert.equal(filter.can_bucket_by('stream', 'topic'), false);
-    assert.equal(filter.is_exactly('stream'), false);
-    assert.equal(filter.is_exactly('stream', 'topic'), false);
-    assert.equal(filter.is_exactly('pm-with'), false);
+    assert.equal(filter.can_bucket_by('pm-with'), false);
 
     terms = [
         {operator: 'pm-with', operand: 'foo@example.com', negated: true},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('stream'), false);
-    assert.equal(filter.is_exactly('stream', 'topic'), false);
-    assert.equal(filter.is_exactly('pm-with'), false);
+    assert.equal(filter.can_bucket_by('stream'), false);
+    assert.equal(filter.can_bucket_by('stream', 'topic'), false);
+    assert.equal(filter.can_bucket_by('pm-with'), false);
 
     terms = [
         {operator: 'pm-with', operand: 'foo@example.com,bar@example.com'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('stream'), false);
-    assert.equal(filter.is_exactly('stream', 'topic'), false);
-    assert.equal(filter.is_exactly('pm-with'), true);
-    assert.equal(filter.is_exactly('is-mentioned'), false);
-    assert.equal(filter.is_exactly('is-private'), false);
+    assert.equal(filter.can_bucket_by('stream'), false);
+    assert.equal(filter.can_bucket_by('stream', 'topic'), false);
+    assert.equal(filter.can_bucket_by('pm-with'), true);
+    assert.equal(filter.can_bucket_by('is-mentioned'), false);
+    assert.equal(filter.can_bucket_by('is-private'), false);
 
     terms = [
         {operator: 'is', operand: 'private'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('is-mentioned'), false);
-    assert.equal(filter.is_exactly('is-private'), true);
+    assert.equal(filter.can_bucket_by('is-mentioned'), false);
+    assert.equal(filter.can_bucket_by('is-private'), true);
 
     terms = [
         {operator: 'is', operand: 'mentioned'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('is-mentioned'), true);
-    assert.equal(filter.is_exactly('is-private'), false);
+    assert.equal(filter.can_bucket_by('is-mentioned'), true);
+    assert.equal(filter.can_bucket_by('is-private'), false);
 
     terms = [
         {operator: 'is', operand: 'mentioned'},
         {operator: 'is', operand: 'starred'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('is-mentioned'), false);
-    assert.equal(filter.is_exactly('is-private'), false);
     assert.equal(filter.can_bucket_by('is-mentioned'), true);
     assert.equal(filter.can_bucket_by('is-private'), false);
 
@@ -908,8 +1122,8 @@ run_test('is_functions', () => {
         {operator: 'is', operand: 'mentioned', negated: true},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_exactly('is-mentioned'), false);
-    assert.equal(filter.is_exactly('is-private'), false);
+    assert.equal(filter.can_bucket_by('is-mentioned'), false);
+    assert.equal(filter.can_bucket_by('is-private'), false);
 });
 
 run_test('term_type', () => {
@@ -925,7 +1139,7 @@ run_test('term_type', () => {
         };
     }
 
-    assert_term_type(term('streams', 'public'), 'streams');
+    assert_term_type(term('streams', 'public'), 'streams-public');
     assert_term_type(term('stream', 'whatever'), 'stream');
     assert_term_type(term('pm-with', 'whomever'), 'pm-with');
     assert_term_type(term('pm-with', 'whomever', true), 'not-pm-with');

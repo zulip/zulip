@@ -34,7 +34,6 @@ from version import ZULIP_VERSION
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'recommonmark',
 ]  # type: List[str]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -302,14 +301,23 @@ from recommonmark.transform import AutoStructify
 
 # The suffix(es) of source filenames. You can specify multiple suffix
 # as a dictionary mapping file extensions to file types
-# https://www.sphinx-doc.org/en/master/usage/markdown.html:
+# https://www.sphinx-doc.org/en/master/usage/markdown.html
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',
 }
 
+# Temporary workaround to remove multiple build warnings caused by upstream bug.
+# See https://github.com/zulip/zulip/issues/13263 for details.
+from recommonmark.parser import CommonMarkParser
+
+class CustomCommonMarkParser(CommonMarkParser):
+    def visit_document(self, node):
+        pass
+
 def setup(app: Any) -> None:
 
+    app.add_source_parser(CustomCommonMarkParser)
     app.add_config_value('recommonmark_config', {
         'enable_eval_rst': True,
         # Turn off recommonmark features we aren't using.

@@ -15,9 +15,9 @@ babel==2.7.0 \
     --hash=sha256:af92e6106cb7c55286b25b38ad7695f8b4efb36a90ba483d7f7a6628c46158ab \
     --hash=sha256:e86135ae101e31e2c8ec20a4e0c5220f4eed12487d5cf3f78be7e98d3a57fc28 \
     # via sphinx
-certifi==2019.9.11 \
-    --hash=sha256:e4f3620cfea4f83eedc95b24abd9cd56f3c4b146dd0177e83a21b4eb49e21e50 \
-    --hash=sha256:fd7c7c74727ddcf00e9acd26bba8da604ffec95bf1c2144e67aff7a8b50e6cef \
+certifi==2019.11.28 \
+    --hash=sha256:017c25db2a153ce562900032d5bc68e9f191e44e9a0f762f373977de9df1fbb3 \
+    --hash=sha256:25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f \
     # via requests
 chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
@@ -78,9 +78,9 @@ packaging==19.2 \
     --hash=sha256:28b924174df7a2fa32c1953825ff29c61e2f5e082343165438812f00d3a7fc47 \
     --hash=sha256:d9551545c6d761f3def1677baf08ab2a3ca17c56879e70fecba2fc4dde4ed108 \
     # via sphinx
-pygments==2.4.2 \
-    --hash=sha256:71e430bc85c88a430f000ac1d9b331d2407f681d6f6aec95e8bcfbc3df5b0127 \
-    --hash=sha256:881c4c157e45f30af185c1ffe8d549d48ac9127433f2c380c24b84572ad66297 \
+pygments==2.5.2 \
+    --hash=sha256:2a3fe295e54a20164a9df49c75fa58526d3be48e14aceba6d6b1e8ac0bfd6f1b \
+    --hash=sha256:98c8aa5a9f778fcd1026a17361ddaf7330d1b7c62ae97c3bb0ae73e0b9b6b0fe \
     # via sphinx
 pyparsing==2.4.5 \
     --hash=sha256:20f995ecd72f2a1f4bf6b072b63b22e2eb457836601e76d6e5dfcd75436acc1f \
@@ -108,9 +108,9 @@ snowballstemmer==2.0.0 \
 sphinx-rtd-theme==0.4.3 \
     --hash=sha256:00cf895504a7895ee433807c62094cf1e95f065843bf3acd17037c3e9a2becd4 \
     --hash=sha256:728607e34d60456d736cc7991fd236afb828b21b82f956c5ea75f94c8414040a
-sphinx==2.2.1 \
-    --hash=sha256:31088dfb95359384b1005619827eaee3056243798c62724fd3fa4b84ee4d71bd \
-    --hash=sha256:52286a0b9d7caa31efee301ec4300dbdab23c3b05da1c9024b4e84896fb73d79
+sphinx==2.2.2 \
+    --hash=sha256:3b16e48e791a322d584489ab28d8800652123d1fbfdd173e2965a31d40bf22d7 \
+    --hash=sha256:559c1a8ed1365a982f77650720b41114414139a635692a23c2990824d0a84cf2
 sphinxcontrib-applehelp==1.0.1 \
     --hash=sha256:edaa0ab2b2bc74403149cb0209d6775c96de797dfd5b5e2a71981309efab3897 \
     --hash=sha256:fb8dee85af95e5c30c91f10e7eb3c8967308518e0f7488a2828ef7bc191d0d5d \
@@ -141,7 +141,7 @@ urllib3==1.25.7 \
     # via requests
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==41.6.0 \
-    --hash=sha256:3e8e8505e563631e7cb110d9ad82d135ee866b8146d5efe06e42be07a72db20a \
-    --hash=sha256:6afa61b391dcd16cb8890ec9f66cc4015a8a31a6e1c2b4e0c464514be1a3d722 \
+setuptools==42.0.2 \
+    --hash=sha256:c5b372090d7c8709ce79a6a66872a91e518f7d65af97fca78135e1cb10d4b940 \
+    --hash=sha256:c8abd0f3574bc23afd2f6fd2c415ba7d9e097c8a99b845473b0d957ba1e2dac6 \
     # via sphinx

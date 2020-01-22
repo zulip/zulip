@@ -5,8 +5,9 @@ from zerver.lib.actions import bulk_add_subscriptions, \
     bulk_remove_subscriptions, do_deactivate_stream
 from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Message, Subscription, \
-    get_stream, get_stream_recipient
+from zerver.models import Message, Subscription, get_stream, \
+    get_stream_recipient
+
 
 def bulk_delete_cache_keys(message_ids_to_clear: List[int]) -> None:
     while len(message_ids_to_clear) > 0:

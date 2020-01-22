@@ -15,7 +15,6 @@ from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 import gcm
-import requests
 import ujson
 
 from zerver.decorator import statsd_increment
@@ -23,7 +22,6 @@ from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, \
     bulk_access_messages_expect_usermessage, huddle_users
-from zerver.lib.queue import retry_event
 from zerver.lib.remote_server import send_to_push_bouncer, send_json_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import PushDeviceToken, Message, Recipient, \
@@ -668,16 +666,10 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, message_ids)
 
     if uses_notification_bouncer():
-        try:
-            send_notifications_to_bouncer(user_profile_id,
-                                          {},
-                                          gcm_payload,
-                                          gcm_options)
-        except requests.ConnectionError:  # nocoverage
-            def failure_processor(event: Dict[str, Any]) -> None:
-                logger.warning(
-                    "Maximum retries exceeded for trigger:%s event:push_notification" % (
-                        event['user_profile_id'],))
+        send_notifications_to_bouncer(user_profile_id,
+                                      {},
+                                      gcm_payload,
+                                      gcm_options)
     else:
         android_devices = list(PushDeviceToken.objects.filter(
             user=user_profile, kind=PushDeviceToken.GCM))
@@ -746,18 +738,10 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     logger.info("Sending push notifications to mobile clients for user %s" % (user_profile_id,))
 
     if uses_notification_bouncer():
-        try:
-            send_notifications_to_bouncer(user_profile_id,
-                                          apns_payload,
-                                          gcm_payload,
-                                          gcm_options)
-        except requests.ConnectionError:
-            def failure_processor(event: Dict[str, Any]) -> None:
-                logger.warning(
-                    "Maximum retries exceeded for trigger:%s event:push_notification" % (
-                        event['user_profile_id'],))
-            retry_event('missedmessage_mobile_notifications', missed_message,
-                        failure_processor)
+        send_notifications_to_bouncer(user_profile_id,
+                                      apns_payload,
+                                      gcm_payload,
+                                      gcm_options)
         return
 
     android_devices = list(PushDeviceToken.objects.filter(user=user_profile,

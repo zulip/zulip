@@ -1,6 +1,7 @@
 const render_more_topics = require('../templates/more_topics.hbs');
 const render_topic_list_item = require('../templates/topic_list_item.hbs');
 const Dict = require('./dict').Dict;
+const FoldDict = require('./fold_dict').FoldDict;
 
 /*
     Track all active widgets with a Dict.
@@ -84,7 +85,7 @@ exports.widget = function (parent_elem, my_stream_id) {
     const self = {};
 
     self.build_list = function () {
-        self.topic_items = new Dict({fold_case: true});
+        self.topic_items = new FoldDict();
         let topics_selected = 0;
         let more_topics_unreads = 0;
 
@@ -392,7 +393,8 @@ exports.initialize = function () {
         // In a more componentized world, we would delegate some
         // of this stuff back up to our parents.
 
-        const stream_id = $(e.target).parents('.narrow-filter').attr('data-stream-id');
+        const stream_row = $(e.target).parents('.narrow-filter');
+        const stream_id = parseInt(stream_row.attr('data-stream-id'), 10);
         const sub = stream_data.get_sub_by_id(stream_id);
         const topic = $(e.target).parents('li').attr('data-topic-name');
 

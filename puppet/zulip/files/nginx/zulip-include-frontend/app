@@ -40,12 +40,6 @@ location /api/v1/events {
 }
 
 
-# Send sockjs requests to Tornado
-location /sockjs {
-    proxy_pass http://tornado;
-    include /etc/nginx/zulip-include/location-sockjs;
-}
-
 # Send everything else to Django via uWSGI
 location / {
     include uwsgi_params;

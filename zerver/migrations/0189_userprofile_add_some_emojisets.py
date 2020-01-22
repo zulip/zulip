@@ -6,6 +6,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def change_emojiset_choice(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model('zerver', 'UserProfile')
     UserProfile.objects.filter(emojiset='google').update(emojiset='google-blob')

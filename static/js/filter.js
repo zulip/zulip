@@ -152,7 +152,7 @@ function Filter(operators) {
     if (operators === undefined) {
         this._operators = [];
     } else {
-        this._operators = this._canonicalize_operators(operators);
+        this._operators = this.fix_operators(operators);
     }
 }
 
@@ -382,7 +382,42 @@ Filter.prototype = {
     },
 
     can_mark_messages_read: function () {
-        return !this.has_operator('search');
+        const term_types = this.sorted_term_types();
+
+        if (_.isEqual(term_types, ['stream', 'topic'])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ['pm-with'])) {
+            return true;
+        }
+
+        // TODO: Some users really hate it when Zulip marks messages as read
+        // in interleaved views, so we will eventually have a setting
+        // that early-exits before the subsequent checks.
+
+        if (_.isEqual(term_types, ['stream'])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ['is-private'])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ['is-mentioned'])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, [])) {
+            // All view
+            return true;
+        }
+
+        if (term_types.length === 1 && _.contains(['in-home', 'in-all'], term_types[0])) {
+            return true;
+        }
+
+        return false;
     },
 
     allow_use_first_unread_when_narrowing: function () {
@@ -423,6 +458,26 @@ Filter.prototype = {
         return true;
     },
 
+    fix_operators: function (operators) {
+        operators = this._canonicalize_operators(operators);
+        operators = this._fix_redundant_is_private(operators);
+        return operators;
+    },
+
+    _fix_redundant_is_private: function (terms) {
+        const is_pm_with = (term) => {
+            return Filter.term_type(term) === 'pm-with';
+        };
+
+        if (!_.any(terms, is_pm_with)) {
+            return terms;
+        }
+
+        return _.reject(terms, (term) => {
+            return Filter.term_type(term) === 'is-private';
+        });
+    },
+
     _canonicalize_operators: function (operators_mixed_case) {
         return _.map(operators_mixed_case, function (tuple) {
             return Filter.canonicalize_term(tuple);
@@ -449,37 +504,6 @@ Filter.prototype = {
         const term_types = _.map(terms, Filter.term_type);
         const sorted_terms = Filter.sorted_term_types(term_types);
         return sorted_terms;
-    },
-
-    is_exactly: function () {
-        // TODO: in ES6 use spread operator
-        //
-        // Examples calls:
-        //     filter.is_exactly('stream', 'topic')
-        //     filter.is_exactly('pm-with')
-        const wanted_term_types = [].slice.call(arguments);
-        const term_types = this.sorted_term_types();
-
-        return _.isEqual(term_types, wanted_term_types);
-    },
-
-    is_reading_mode: function () {
-        // We only turn on "reading mode" for filters that
-        // have contiguous messages for a narrow, as opposed
-        // to "random access" queries like search:<keyword>
-        // or id:<number> that jump you to parts of the message
-        // view where you might only care about reading the
-        // current message.
-        const term_types = this.sorted_term_types();
-        const wanted_list = [
-            ['stream'],
-            ['stream', 'topic'],
-            ['is-private'],
-            ['pm-with'],
-        ];
-        return _.any(wanted_list, function (wanted_types) {
-            return _.isEqual(wanted_types, term_types);
-        });
     },
 
     can_bucket_by: function () {
@@ -567,7 +591,7 @@ Filter.term_type = function (term) {
 
     result += operator;
 
-    if (_.contains(['is', 'has'], operator)) {
+    if (_.contains(['is', 'has', 'in', 'streams'], operator)) {
         result += '-' + operand;
     }
 
@@ -576,6 +600,7 @@ Filter.term_type = function (term) {
 
 Filter.sorted_term_types = function (term_types) {
     const levels = [
+        'in',
         'streams',
         'stream', 'topic',
         'pm-with', 'group-pm-with', 'sender',

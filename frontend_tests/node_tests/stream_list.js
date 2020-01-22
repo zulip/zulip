@@ -1,6 +1,9 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
+set_global('blueslip', global.make_zblueslip());
 
+const Dict = zrequire('dict').Dict;
+const FoldDict = zrequire('fold_dict').FoldDict;
 zrequire('unread_ui');
 zrequire('Filter', 'js/filter');
 zrequire('util');
@@ -670,7 +673,7 @@ run_test('update_count_in_dom', () => {
         };
     };
 
-    const topic_count = new Dict({fold_case: true});
+    const topic_count = new FoldDict();
     topic_count.set('lunch', '555');
     counts.topic_count.set(stream_id, topic_count);
 

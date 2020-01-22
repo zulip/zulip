@@ -7,6 +7,7 @@ from django.core.management.commands import sendtestemail
 
 from zerver.lib.send_email import FromAddress
 
+
 class Command(sendtestemail.Command):
     def handle(self, *args: Any, **kwargs: str) -> None:
         if settings.WARN_NO_EMAIL:

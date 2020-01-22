@@ -73,12 +73,6 @@ import urllib
 import shutil
 import tempfile
 
-API_KEYS = {}  # type: Dict[str, str]
-
-def flush_caches_for_testing() -> None:
-    global API_KEYS
-    API_KEYS = {}
-
 class UploadSerializeMixin(SerializeMixin):
     """
     We cannot use override_settings to change upload directory because
@@ -100,6 +94,10 @@ class UploadSerializeMixin(SerializeMixin):
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
     maxDiff = None  # type: Optional[int]
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.API_KEYS = {}  # type: Dict[str, str]
 
     def tearDown(self) -> None:
         super().tearDown()
@@ -128,7 +126,6 @@ class ZulipTestCase(TestCase):
     django_client to fool the regext.
     '''
     DEFAULT_SUBDOMAIN = "zulip"
-    DEFAULT_REALM = Realm.objects.get(string_id='zulip')
     TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
 
     def set_http_host(self, kwargs: Dict[str, Any]) -> None:
@@ -409,15 +406,15 @@ class ZulipTestCase(TestCase):
         """
         identifier: Can be an email or a remote server uuid.
         """
-        if identifier in API_KEYS:
-            api_key = API_KEYS[identifier]
+        if identifier in self.API_KEYS:
+            api_key = self.API_KEYS[identifier]
         else:
             if is_remote_server(identifier):
                 api_key = get_remote_server_by_uuid(identifier).api_key
             else:
                 user = get_user(identifier, get_realm(realm))
                 api_key = get_api_key(user)
-            API_KEYS[identifier] = api_key
+            self.API_KEYS[identifier] = api_key
 
         credentials = "%s:%s" % (identifier, api_key)
         return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
@@ -609,7 +606,7 @@ class ZulipTestCase(TestCase):
                     invite_only: Optional[bool]=False,
                     history_public_to_subscribers: Optional[bool]=None) -> Stream:
         if realm is None:
-            realm = self.DEFAULT_REALM
+            realm = get_realm('zulip')
 
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             realm, invite_only, history_public_to_subscribers)
@@ -628,7 +625,9 @@ class ZulipTestCase(TestCase):
                 Please call make_stream with a stream name
                 that is not already in use.''' % (stream_name,))
 
-        Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        stream.recipient = recipient
+        stream.save(update_fields=["recipient"])
         return stream
 
     INVALID_STREAM_ID = 999999

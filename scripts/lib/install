@@ -13,6 +13,8 @@ Other options:
   --no-init-db
   --cacert
   --no-dist-upgrade
+  --postgres-missing-dictionaries
+  --remote-postgres
 
 The --hostname and --email options are required,
 unless --no-init-db is set and --certbot is not.
@@ -22,7 +24,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,no-init-db,no-dist-upgrade,no-overwrite-settings,self-signed-cert,certbot,hostname:,email:,cacert: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,no-init-db,no-dist-upgrade,no-overwrite-settings,self-signed-cert,certbot,postgres-missing-dictionaries,remote-postgres,hostname:,email:,cacert: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -35,6 +37,8 @@ while true; do
         --no-overwrite-settings) NO_OVERWRITE_SETTINGS=1; shift;;
         --no-init-db) NO_INIT_DB=1; shift;;
         --no-dist-upgrade) NO_DIST_UPGRADE=1; shift;;
+        --postgres-missing-dictionaries) POSTGRES_MISSING_DICTIONARIES=1; shift;;
+        --remote-postgres) REMOTE_POSTGRES=1; shift;;
         --) shift; break;;
     esac
 done
@@ -48,7 +52,7 @@ fi
 #
 # Specify options for apt.
 read -r -a APT_OPTIONS <<< "${APT_OPTIONS:-}"
-# Install additional packages using apt.
+# Install additional packages.
 read -r -a ADDITIONAL_PACKAGES <<< "${ADDITIONAL_PACKAGES:-}"
 # Deployment type is almost always voyager.
 DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
@@ -95,17 +99,18 @@ export LANG="en_US.UTF-8"
 export LANGUAGE="en_US.UTF-8"
 
 # Check for a supported OS release.
-apt-get install -y lsb-release
-os_info="$(lsb_release --short --id --release --codename)"
-{ read -r os_id; read -r os_release; read -r os_codename; } <<< "$os_info"
+if [ -f /etc/os-release ]; then
+    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$ID_LIKE" "$VERSION_ID" "$VERSION_CODENAME")"
+    { read -r os_id; read -r os_id_like; read -r os_version_id; read -r os_version_codename; } <<< "$os_info"
+fi
 
-case "$os_codename" in
-    xenial|stretch|bionic|buster) ;;
+case "$os_id$os_version_id" in
+    ubuntu16.04|ubuntu18.04|debian9|debian10) ;;
     *)
         set +x
         cat <<EOF
 
-Unsupported OS release: $os_codename
+Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
  - Debian 9 "stretch"
@@ -119,8 +124,8 @@ EOF
         exit 1
 esac
 
-if [ "$os_id" = Ubuntu ] && ! apt-cache policy |
-           grep -q "^     release v=$os_release,o=Ubuntu,a=$os_codename,n=$os_codename,l=Ubuntu,c=universe"; then
+if [ "$os_id" = ubuntu ] && ! apt-cache policy |
+           grep -q "^     release v=$os_version_id,o=Ubuntu,a=$os_version_codename,n=$os_version_codename,l=Ubuntu,c=universe"; then
     set +x
     cat <<'EOF'
 
@@ -149,8 +154,16 @@ if [ "$mem_kb" -lt 1900000 ]; then
     exit 1
 fi
 
-# setup-apt-repo does an `apt-get update`
-"$ZULIP_PATH"/scripts/lib/setup-apt-repo
+# Do package update, e.g. do `apt-get update` on Debian
+case " $os_id $os_id_like " in
+    *' debian '*)
+        # setup-apt-repo does an `apt-get update`
+        "$ZULIP_PATH"/scripts/lib/setup-apt-repo
+        ;;
+    *' rhel '*)
+        "$ZULIP_PATH"/scripts/lib/setup-yum-repo
+        ;;
+esac
 
 # Handle issues around upstart on Ubuntu Xenial
 "$ZULIP_PATH"/scripts/lib/check-upstart
@@ -182,20 +195,43 @@ fi
 # don't run dist-upgrade in one click apps to make the
 # installation process more seamless.
 if [ -z "$NO_DIST_UPGRADE" ]; then
-    apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
+    case " $os_id $os_id_like " in
+        *' debian '*)
+            apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
+            ;;
+        # On CentOS, there is no need to do `yum -y upgrade` because `yum -y
+        # update` already does the same thing.
+    esac
 fi
 
-if ! apt-get install -y \
-    puppet git curl wget jq \
-    python python3 python-six python3-six crudini \
-    "${ADDITIONAL_PACKAGES[@]}"; then
-    set +x
-    echo -e '\033[0;31m' >&2
-    echo "Installing packages failed; is network working and (on Ubuntu) the universe repository enabled?" >&2
-    echo >&2
-    echo -e '\033[0m' >&2
-    exit 1
-fi
+case " $os_id $os_id_like " in
+    *' debian '*)
+        if ! apt-get install -y \
+            puppet git curl wget jq \
+            python python3 python-six python3-six crudini \
+            "${ADDITIONAL_PACKAGES[@]}"; then
+            set +x
+            echo -e '\033[0;31m' >&2
+            echo "Installing packages failed; is network working and (on Ubuntu) the universe repository enabled?" >&2
+            echo >&2
+            echo -e '\033[0m' >&2
+            exit 1
+        fi
+        ;;
+    *' rhel '*)
+        if ! yum install -y \
+            puppet git curl wget jq \
+            python python3 python-six python3-six crudini \
+            "${ADDITIONAL_PACKAGES[@]}"; then
+            set +x
+            echo -e '\033[0;31m' >&2
+            echo "Installing packages failed; is network working?" >&2
+            echo >&2
+            echo -e '\033[0m' >&2
+            exit 1
+        fi
+        ;;
+esac
 
 if [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/setup-certbot \
@@ -255,11 +291,26 @@ EOF
     fi
 ) > /etc/zulip/zulip.conf
 
+case ",$PUPPET_CLASSES," in
+    *,zulip::voyager,* | *,zulip::dockervoyager,* | *,zulip::app_frontend,*)
+        if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/settings.py" ]; then
+            cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
+            if [ -n "$EXTERNAL_HOST" ]; then
+                sed -i "s/^EXTERNAL_HOST =.*/EXTERNAL_HOST = '$EXTERNAL_HOST'/" /etc/zulip/settings.py
+            fi
+            if [ -n "$ZULIP_ADMINISTRATOR" ]; then
+                sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
+            fi
+        fi
+        ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
+        "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
+        ;;
+esac
+
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
 # Detect which features were selected for the below
 set +e
-[ -e "/etc/init.d/camo" ]; has_camo=$?
 [ -e "/etc/init.d/nginx" ]; has_nginx=$?
 [ -e "/etc/supervisor/conf.d/zulip.conf" ]; has_appserver=$?
 [ -e "/etc/cron.d/rabbitmq-numconsumers" ]; has_rabbit=$?
@@ -268,15 +319,29 @@ set -e
 
 # Docker service setup is done in the docker config, not here
 if [ "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
-    has_camo=1
     has_nginx=1
     has_appserver=0
     has_rabbit=1
     has_postgres=1
 fi
 
+if [ -n "$POSTGRES_MISSING_DICTIONARIES" ]; then
+    crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
+fi
+
+if [ -n "$REMOTE_POSTGRES" ]; then
+  has_postgres=1
+fi
+
 # These server restarting bits should be moveable into puppet-land, ideally
-apt-get -y upgrade
+case " $os_id $os_id_like " in
+    *' debian '*)
+        apt-get -y upgrade
+        ;;
+    *' rhel '*)
+        # No action is required because `yum update` already does upgrade.
+        ;;
+esac
 
 if [ "$has_nginx" = 0 ]; then
     # Check nginx was configured properly now that we've installed it.
@@ -296,29 +361,6 @@ EOF
         exit 1
     )
     service nginx restart
-fi
-
-if [ "$has_appserver" = 0 ]; then
-    "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
-    if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/settings.py" ]; then
-        cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
-        if [ -n "$EXTERNAL_HOST" ]; then
-            sed -i "s/^EXTERNAL_HOST =.*/EXTERNAL_HOST = '$EXTERNAL_HOST'/" /etc/zulip/settings.py
-        fi
-        if [ -n "$ZULIP_ADMINISTRATOR" ]; then
-            sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
-        fi
-    fi
-    ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
-fi
-
-# Restart camo since generate_secrets.py likely replaced its secret key
-if [ "$has_camo" = 0 ]; then
-    # Cut off stdin because a bug in the Debian packaging for camo
-    # causes our stdin to leak to the daemon, which can cause tools
-    # invoking the installer to hang.
-    # TODO: fix in Debian too.
-    service camo restart </dev/null
 fi
 
 if [ "$has_rabbit" = 0 ]; then
@@ -364,15 +406,17 @@ if [ -e "/var/run/supervisor.sock" ]; then
     chown zulip:zulip /var/run/supervisor.sock
 fi
 
-if [ -n "$NO_INIT_DB" ]; then
+if [ -n "$NO_INIT_DB" ] || [ -n "$REMOTE_POSTGRES" ]; then
     set +x
     cat <<EOF
 
  Success!
 
- Stopping because --no-init-db was passed.  To complete the installation, run:
+ Stopping because --no-init-db or --remote-postgres was passed.
+ To complete the installation, configure postgres and then run:
 
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
+   su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 EOF
     exit 0
 fi

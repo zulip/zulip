@@ -1412,6 +1412,7 @@ with_overrides(function (override) {
 
     global.with_stub(function (stub) {
         event = event_fixtures.update_display_settings__demote_inactive_streams;
+        override('stream_data.set_filter_out_inactives', noop);
         override('stream_list.update_streams_sidebar', stub.f);
         page_params.demote_inactive_streams = 1;
         dispatch(event);

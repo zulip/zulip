@@ -254,7 +254,7 @@ exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
 
-    const all_users = people.get_rest_of_realm();
+    const all_users = people.get_people_for_stream_create();
     // Add current user on top of list
     all_users.unshift(people.get_person_from_user_id(page_params.user_id));
     const html = render_new_stream_users({
@@ -282,13 +282,13 @@ exports.show_new_stream_modal = function () {
 
     $("#stream-checkboxes label.checkbox").on('change', function (e) {
         const elem = $(this);
-        const stream_id = elem.attr('data-stream-id');
+        const stream_id = parseInt(elem.attr('data-stream-id'), 10);
         const checked = elem.find('input').prop('checked');
         const subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
 
         $('#user-checkboxes label.checkbox').each(function () {
             const user_elem = $(this);
-            const user_id = user_elem.attr('data-user-id');
+            const user_id = parseInt(user_elem.attr('data-user-id'), 10);
 
             if (subscriber_ids.has(user_id)) {
                 user_elem.find('input').prop('checked', checked);
@@ -352,7 +352,7 @@ exports.create_handlers_for_users = function (container) {
                 return;
             }
 
-            const users = people.get_rest_of_realm();
+            const users = people.get_people_for_stream_create();
             const filtered_users = people.filter_people_by_search_terms(users, search_terms);
 
             // Be careful about modifying the follow code.  A naive implementation
@@ -364,7 +364,7 @@ exports.create_handlers_for_users = function (container) {
             // implementation is merely sluggish.
             user_labels.each(function () {
                 const elem = $(this);
-                const user_id = elem.attr('data-user-id');
+                const user_id = parseInt(elem.attr('data-user-id'), 10);
                 const user_checked = filtered_users.has(user_id);
                 const display = user_checked ? "block" : "none";
                 elem.css({display: display});

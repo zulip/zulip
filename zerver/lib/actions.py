@@ -97,7 +97,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, \
     get_user_profile_by_id, PreregistrationUser, \
-    bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
+    get_stream_recipient, \
     email_allowed_for_realm, email_to_username, \
     get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
@@ -146,8 +146,8 @@ from zerver.lib.alert_words import add_user_alert_words, \
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
-from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
-    claim_attachment, delete_message_image, upload_emoji_image, delete_avatar_image, \
+from zerver.lib.upload import claim_attachment, delete_message_image, \
+    upload_emoji_image, delete_avatar_image, \
     delete_export_tarball
 from zerver.lib.video_calls import request_zoom_video_call_url
 from zerver.tornado.event_queue import send_event
@@ -320,9 +320,8 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     """
     one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
 
-    stream_ids = [stream.id for stream in streams if not stream.invite_only]
-    recipients = get_stream_recipients(stream_ids)
-    recent_messages = Message.objects.filter(recipient_id__in=recipients,
+    recipient_ids = [stream.recipient_id for stream in streams if not stream.invite_only]
+    recent_messages = Message.objects.filter(recipient_id__in=recipient_ids,
                                              date_sent__gt=one_week_ago).order_by("-id")
     message_ids_to_use = list(reversed(recent_messages.values_list(
         'id', flat=True)[0:ONBOARDING_TOTAL_MESSAGES]))
@@ -1338,13 +1337,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             sender_id=message['message'].sender_id,
             stream_topic=stream_topic,
             possibly_mentioned_user_ids=mention_data.get_user_ids(),
-            # TODO: We should improve the `mention_data` logic to
-            # populate the possible_wildcard_mention field based on
-            # whether wildcard mention syntax actually appears in the
-            # message, to avoid wasting resources computing
-            # wildcard_mention_user_ids for messages that could
-            # not possibly contain a wildcard mention.
-            possible_wildcard_mention=True,
+            possible_wildcard_mention=mention_data.message_has_wildcards(),
         )
 
         message['active_user_ids'] = info['active_user_ids']
@@ -1396,13 +1389,18 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
         message['um_eligible_user_ids'] |= mentioned_bot_user_ids
 
-        # Update calculated fields of the message
-        message['message'].update_calculated_fields()
-
     # Save the message receipts in the database
     user_message_flags = defaultdict(dict)  # type: Dict[int, Dict[int, List[str]]]
     with transaction.atomic():
         Message.objects.bulk_create([message['message'] for message in messages])
+
+        # Claim attachments in message
+        for message in messages:
+            if do_claim_attachments(message['message'],
+                                    message['message'].potential_attachment_path_ids):
+                message['message'].has_attachment = True
+                message['message'].save(update_fields=['has_attachment'])
+
         ums = []  # type: List[UserMessageLite]
         for message in messages:
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
@@ -1432,11 +1430,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             )
 
         bulk_insert_ums(ums)
-
-        # Claim attachments in message
-        for message in messages:
-            if Message.content_has_attachment(message['message'].content):
-                do_claim_attachments(message['message'])
 
         for message in messages:
             do_widget_post_save_actions(message)
@@ -1499,7 +1492,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             # messages are only associated to their subscribed users.
             if message['stream'] is None:
                 stream_id = message['message'].recipient.type_id
-                message['stream'] = Stream.objects.select_related("realm").get(id=stream_id)
+                message['stream'] = Stream.objects.select_related().get(id=stream_id)
             assert message['stream'] is not None  # assert needed because stubs for django are missing
             if message['stream'].is_public():
                 event['realm_id'] = message['stream'].realm_id
@@ -1865,9 +1858,12 @@ def create_stream_if_needed(realm: Realm,
     )
 
     if created:
+        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+
+        stream.recipient = recipient
         stream.rendered_description = render_stream_description(stream_description)
-        stream.save(update_fields=["rendered_description"])
-        Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        stream.save(update_fields=["recipient", "rendered_description"])
+
         if stream.is_public():
             send_stream_creation_event(stream, active_non_guest_user_ids(stream.realm_id))
         else:
@@ -1908,16 +1904,15 @@ def create_streams_if_needed(realm: Realm,
     return added_streams, existing_streams
 
 
-def get_recipient_from_user_ids(recipient_profile_ids: Set[int],
-                                forwarded_mirror_message: bool,
-                                forwarder_user_profile: Optional[UserProfile],
-                                sender: UserProfile) -> Recipient:
+def get_recipient_from_user_profiles(recipient_profiles: Sequence[UserProfile],
+                                     forwarded_mirror_message: bool,
+                                     forwarder_user_profile: Optional[UserProfile],
+                                     sender: UserProfile) -> Recipient:
 
-    # Avoid mutating the passed in set of recipient_profile_ids.
-    recipient_profile_ids = set(recipient_profile_ids)
-
-    # If the private message is just between the sender and
-    # another person, force it to be a personal internally
+    # Avoid mutating the passed in list of recipient_profiles.
+    recipient_profiles_map = {}
+    for user_profile in recipient_profiles:
+        recipient_profiles_map[user_profile.id] = user_profile
 
     if forwarded_mirror_message:
         # In our mirroring integrations with some third-party
@@ -1929,23 +1924,29 @@ def get_recipient_from_user_ids(recipient_profile_ids: Set[int],
         # for whether forwarder_user_profile is among the private
         # message recipients of the message.
         assert forwarder_user_profile is not None
-        if forwarder_user_profile.id not in recipient_profile_ids:
+        if forwarder_user_profile.id not in recipient_profiles_map:
             raise ValidationError(_("User not authorized for this query"))
 
-    if (len(recipient_profile_ids) == 2 and sender.id in recipient_profile_ids):
-        recipient_profile_ids.remove(sender.id)
+    # If the private message is just between the sender and
+    # another person, force it to be a personal internally
+    if (len(recipient_profiles_map) == 2 and sender.id in recipient_profiles_map):
+        del recipient_profiles_map[sender.id]
 
-    if len(recipient_profile_ids) > 1:
-        # Make sure the sender is included in huddle messages
-        recipient_profile_ids.add(sender.id)
-        return get_huddle_recipient(recipient_profile_ids)
-    else:
-        return get_personal_recipient(list(recipient_profile_ids)[0])
+    assert len(recipient_profiles_map) != 0
+    if len(recipient_profiles_map) == 1:
+        user_profile = list(recipient_profiles_map.values())[0]
+        return user_profile.recipient
+
+    # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages
+    recipient_profiles_map[sender.id] = sender
+
+    user_ids = set([user_id for user_id in recipient_profiles_map])  # type: Set[int]
+    return get_huddle_recipient(user_ids)
 
 def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
                                      sender: UserProfile,
-                                     allow_deactivated: bool=False) -> Set[int]:
-    recipient_profile_ids = set()
+                                     allow_deactivated: bool=False) -> Sequence[UserProfile]:
+    recipient_profiles_map = {}  # type: Dict[int, UserProfile]
 
     # We exempt cross-realm bots from the check that all the recipients
     # are in the same realm.
@@ -1957,14 +1958,14 @@ def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
         if (not user_profile.is_active and not user_profile.is_mirror_dummy and
                 not allow_deactivated) or user_profile.realm.deactivated:
             raise ValidationError(_("'%s' is no longer using Zulip.") % (user_profile.email,))
-        recipient_profile_ids.add(user_profile.id)
+        recipient_profiles_map[user_profile.id] = user_profile
         if not is_cross_realm_bot_email(user_profile.email):
             realms.add(user_profile.realm_id)
 
     if len(realms) > 1:
         raise ValidationError(_("You can't send private messages outside of your organization."))
 
-    return recipient_profile_ids
+    return list(recipient_profiles_map.values())
 
 def recipient_for_emails(emails: Iterable[str], forwarded_mirror_message: bool,
                          forwarder_user_profile: Optional[UserProfile],
@@ -2008,11 +2009,11 @@ def recipient_for_user_profiles(user_profiles: Sequence[UserProfile], forwarded_
                                 forwarder_user_profile: Optional[UserProfile],
                                 sender: UserProfile, allow_deactivated: bool=False) -> Recipient:
 
-    recipient_profile_ids = validate_recipient_user_profiles(user_profiles, sender,
-                                                             allow_deactivated=allow_deactivated)
+    recipient_profiles = validate_recipient_user_profiles(user_profiles, sender,
+                                                          allow_deactivated=allow_deactivated)
 
-    return get_recipient_from_user_ids(recipient_profile_ids, forwarded_mirror_message,
-                                       forwarder_user_profile, sender)
+    return get_recipient_from_user_profiles(recipient_profiles, forwarded_mirror_message,
+                                            forwarder_user_profile, sender)
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
     if message.recipient.type == Recipient.HUDDLE:
@@ -2318,6 +2319,17 @@ def validate_stream_id_with_pm_notification(stream_id: int, realm: Realm,
 
     return stream
 
+def check_private_message_policy(realm: Realm, sender: UserProfile,
+                                 user_profiles: Sequence[UserProfile]) -> None:
+    if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
+        if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
+            # We allow PMs only between users and bots, to avoid
+            # breaking the tutorial as well as automated
+            # notifications from system bots to users.
+            return
+
+        raise JsonableError(_("Private messages are disabled in this organization."))
+
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(sender: UserProfile, client: Client, addressee: Addressee,
@@ -2359,7 +2371,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             stream = addressee.stream()
         assert stream is not None
 
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
 
         # This will raise JsonableError if there are problems.
         validate_sender_can_write_to_stream(
@@ -2372,6 +2384,8 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         user_profiles = addressee.user_profiles()
         mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror",
                                                     "jabber_mirror", "JabberMirror"]
+
+        check_private_message_policy(realm, sender, user_profiles)
 
         # API Super-users who set the `forged` flag are allowed to
         # forge messages sent by any user, so we disable the
@@ -2670,6 +2684,8 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
     for stream_dict in stream_dicts:
+        stream_recipient.populate_with(stream_id=stream_dict["id"],
+                                       recipient_id=stream_dict["recipient_id"])
         try:
             validate_user_access_to_subscribers_helper(user_profile, stream_dict,
                                                        lambda: sub_dict[stream_dict["id"]])
@@ -2678,7 +2694,6 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
         target_stream_dicts.append(stream_dict)
 
     stream_ids = [stream['id'] for stream in target_stream_dicts]
-    stream_recipient.populate_for_stream_ids(stream_ids)
     recipient_ids = sorted([
         stream_recipient.recipient_id_for(stream_id)
         for stream_id in stream_ids
@@ -2784,6 +2799,7 @@ def notify_subscriptions_added(user_profile: UserProfile,
                     audible_notifications=subscription.audible_notifications,
                     push_notifications=subscription.push_notifications,
                     email_notifications=subscription.email_notifications,
+                    wildcard_mentions_notify=subscription.wildcard_mentions_notify,
                     description=stream.description,
                     rendered_description=stream.rendered_description,
                     pin_to_top=subscription.pin_to_top,
@@ -2867,12 +2883,12 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                            acting_user: Optional[UserProfile]=None) -> SubT:
     users = list(users)
 
-    recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])  # type: Mapping[int, Recipient]
-    recipients = [recipient.id for recipient in recipients_map.values()]  # type: List[int]
+    recipients_map = dict((stream.id, stream.recipient_id) for stream in streams)  # type: Dict[int, int]
+    recipient_ids = [recipient_id for recipient_id in recipients_map.values()]  # type: List[int]
 
     stream_map = {}  # type: Dict[int, Stream]
     for stream in streams:
-        stream_map[recipients_map[stream.id].id] = stream
+        stream_map[recipients_map[stream.id]] = stream
 
     subs_by_user = defaultdict(list)  # type: Dict[int, List[Subscription]]
     all_subs_query = get_stream_subscriptions_for_users(users).select_related('user_profile')
@@ -2885,7 +2901,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     subs_to_activate = []  # type: List[Tuple[Subscription, Stream]]
     new_subs = []  # type: List[Tuple[UserProfile, int, Stream]]
     for user_profile in users:
-        needs_new_sub = set(recipients)  # type: Set[int]
+        needs_new_sub = set(recipient_ids)  # type: Set[int]
         for sub in subs_by_user[user_profile.id]:
             if sub.recipient_id in needs_new_sub:
                 needs_new_sub.remove(sub.recipient_id)
@@ -3946,8 +3962,7 @@ def do_remove_default_stream_group(realm: Realm, group: DefaultStreamGroup) -> N
 
 def get_default_streams_for_realm(realm_id: int) -> List[Stream]:
     return [default.stream for default in
-            DefaultStream.objects.select_related("stream", "stream__realm").filter(
-                realm_id=realm_id)]
+            DefaultStream.objects.select_related().filter(realm_id=realm_id)]
 
 def get_default_subs(user_profile: UserProfile) -> List[Stream]:
     # Right now default streams are realm-wide.  This wrapper gives us flexibility
@@ -4190,7 +4205,7 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
         user_profile=user_profile
     )
 
-    recipient = get_stream_recipient(stream.id)
+    recipient = stream.recipient
     msgs = msgs.filter(message__recipient=recipient)
 
     if topic_name:
@@ -4442,7 +4457,7 @@ def do_update_embedded_data(user_profile: UserProfile,
 def do_update_message(user_profile: UserProfile, message: Message, topic_name: Optional[str],
                       propagate_mode: str, content: Optional[str],
                       rendered_content: Optional[str], prior_mention_user_ids: Set[int],
-                      mention_user_ids: Set[int]) -> int:
+                      mention_user_ids: Set[int], mention_data: Optional[bugdown.MentionData]=None) -> int:
     """
     The main function for message editing.  A message edit event can
     modify:
@@ -4477,6 +4492,9 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         assert rendered_content is not None
         update_user_message_flags(message, ums)
 
+        # mention_data is required if there's a content edit.
+        assert mention_data is not None
+
         # One could imagine checking realm.allow_edit_history here and
         # modifying the events based on that setting, but doing so
         # doesn't really make sense.  We need to send the edit event
@@ -4498,9 +4516,9 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         event['prev_rendered_content_version'] = message.rendered_content_version
         event['is_me_message'] = Message.is_status_message(content, rendered_content)
 
-        prev_content = edit_history_event['prev_content']
-        if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
-            check_attachment_reference_change(prev_content, message)
+        # message.has_image and message.has_link will have been
+        # already updated by bugdown rendering in the caller.
+        message.has_attachment = check_attachment_reference_change(message)
 
         if message.is_stream_message():
             if topic_name is not None:
@@ -4519,7 +4537,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
             recipient=message.recipient,
             sender_id=message.sender_id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=True,
+            possible_wildcard_mention=mention_data.message_has_wildcards(),
         )
 
         event['push_notify_user_ids'] = list(info['push_notify_user_ids'])
@@ -4734,7 +4752,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
         "recipient_id", "is_muted", "color", "desktop_notifications",
         "audible_notifications", "push_notifications", "email_notifications",
-        "active", "pin_to_top"
+        "wildcard_mentions_notify", "active", "pin_to_top"
     ).order_by("recipient_id")
 
     sub_dicts = list(sub_dicts)
@@ -4755,7 +4773,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "is_announcement_only", "realm_id",
                         "email_token", "description", "rendered_description", "date_created",
-                        "history_public_to_subscribers", "first_message_id", "is_web_public")
+                        "history_public_to_subscribers", "first_message_id", "is_web_public",
+                        "recipient_id")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
@@ -4820,6 +4839,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                        'audible_notifications': sub["audible_notifications"],
                        'push_notifications': sub["push_notifications"],
                        'email_notifications': sub["email_notifications"],
+                       'wildcard_mentions_notify': sub["wildcard_mentions_notify"],
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'first_message_id': stream["first_message_id"],
@@ -4929,16 +4949,30 @@ def get_active_presence_idle_user_ids(realm: Realm,
     return filter_presence_idle_user_ids(user_ids)
 
 def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
+    # Given a set of user IDs (the recipients of a message), accesses
+    # the UserPresence table to determine which of these users are
+    # currently idle and should potentially get email notifications
+    # (and push notifications with with
+    # user_profile.enable_online_push_notifications=False).
+    #
+    # We exclude any presence data from ZulipMobile for the purpose of
+    # triggering these notifications; the mobile app can more
+    # effectively do its own client-side filtering of notification
+    # sounds/etc. for the case that the user is actively doing a PM
+    # conversation in the app.
+
     if not user_ids:
         return []
 
-    # 140 seconds is consistent with presence.js:OFFLINE_THRESHOLD_SECS
-    recent = timezone_now() - datetime.timedelta(seconds=140)
+    # Matches presence.js constant
+    OFFLINE_THRESHOLD_SECS = 140
+
+    recent = timezone_now() - datetime.timedelta(seconds=OFFLINE_THRESHOLD_SECS)
     rows = UserPresence.objects.filter(
         user_profile_id__in=user_ids,
         status=UserPresence.ACTIVE,
         timestamp__gte=recent
-    ).distinct('user_profile_id').values('user_profile_id')
+    ).exclude(client__name="ZulipMobile").distinct('user_profile_id').values('user_profile_id')
     active_user_ids = {row['user_profile_id'] for row in rows}
     idle_user_ids = user_ids - active_user_ids
     return sorted(list(idle_user_ids))
@@ -4961,6 +4995,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
              'avatar_url': avatar_url(user),
              'timezone': user.timezone,
              'date_joined': user.date_joined.isoformat(),
+             'bot_owner_id': None,
              'full_name': user.full_name}
             for user in users
             # Important: We filter here, is addition to in
@@ -4999,40 +5034,42 @@ def validate_email_for_realm(target_realm: Realm, email: str) -> None:
             raise AssertionError("Mirror dummy user is already active!")
         # Other users should not already exist at all.
         raise ValidationError(_('%s already has an account') %
-                              (email,), code = _("Already has an account."))
+                              (email,), code = _("Already has an account."), params={'deactivated': False})
     elif not existing_user_profile.is_mirror_dummy:
         raise ValidationError('The account for %s has been deactivated' % (email,),
-                              code = _("Account has been deactivated."))
+                              code = _("Account has been deactivated."), params={'deactivated': True})
 
-def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str], Optional[str]]:
+def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str], Optional[str],
+                                                                   bool]:
     try:
         validators.validate_email(email)
     except ValidationError:
-        return _("Invalid address."), None
+        return _("Invalid address."), None, False
 
     try:
         email_allowed_for_realm(email, user_profile.realm)
     except DomainNotAllowedForRealmError:
-        return _("Outside your domain."), None
+        return _("Outside your domain."), None, False
     except DisposableEmailError:
-        return _("Please use your real email address."), None
+        return _("Please use your real email address."), None, False
     except EmailContainsPlusError:
-        return _("Email addresses containing + are not allowed."), None
+        return _("Email addresses containing + are not allowed."), None, False
 
     try:
         validate_email_for_realm(user_profile.realm, email)
     except ValidationError as error:
-        return None, (error.code)
+        return None, (error.code), (error.params['deactivated'])
 
-    return None, None
+    return None, None, False
 
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
     data_fields = ['errors', 'sent_invitations']
 
-    def __init__(self, msg: str, errors: List[Tuple[str, str]], sent_invitations: bool) -> None:
+    def __init__(self, msg: str, errors: List[Tuple[str, str, bool]],
+                 sent_invitations: bool) -> None:
         self._msg = msg  # type: str
-        self.errors = errors  # type: List[Tuple[str, str]]
+        self.errors = errors  # type: List[Tuple[str, str, bool]]
         self.sent_invitations = sent_invitations  # type: bool
 
 def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
@@ -5100,18 +5137,18 @@ def do_invite_users(user_profile: UserProfile,
                 [], sent_invitations=False)
 
     validated_emails = []  # type: List[str]
-    errors = []  # type: List[Tuple[str, str]]
-    skipped = []  # type: List[Tuple[str, str]]
+    errors = []  # type: List[Tuple[str, str, bool]]
+    skipped = []  # type: List[Tuple[str, str, bool]]
     for email in invitee_emails:
         if email == '':
             continue
-        email_error, email_skipped = validate_email(user_profile, email)
+        email_error, email_skipped, deactivated = validate_email(user_profile, email)
         if not (email_error or email_skipped):
             validated_emails.append(email)
         elif email_error:
-            errors.append((email, email_error))
+            errors.append((email, email_error, deactivated))
         elif email_skipped:
-            skipped.append((email, email_skipped))
+            skipped.append((email, email_skipped, deactivated))
 
     if errors:
         raise InvitationError(
@@ -5449,11 +5486,9 @@ def notify_attachment_update(user_profile: UserProfile, op: str,
     }
     send_event(user_profile.realm, event, [user_profile.id])
 
-def do_claim_attachments(message: Message) -> None:
-    attachment_url_list = attachment_url_re.findall(message.content)
-
-    for url in attachment_url_list:
-        path_id = attachment_url_to_path_id(url)
+def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> bool:
+    claimed = False
+    for path_id in potential_path_ids:
         user_profile = message.sender
         is_message_realm_public = False
         if message.is_stream_message():
@@ -5473,8 +5508,10 @@ def do_claim_attachments(message: Message) -> None:
                 user_profile.id, path_id, message.id))
             continue
 
+        claimed = True
         attachment = claim_attachment(user_profile, path_id, message, is_message_realm_public)
         notify_attachment_update(user_profile, "update", attachment.to_dict())
+    return claimed
 
 def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     old_unclaimed_attachments = get_old_unclaimed_attachments(weeks_ago)
@@ -5483,23 +5520,26 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
         delete_message_image(attachment.path_id)
         attachment.delete()
 
-def check_attachment_reference_change(prev_content: str, message: Message) -> None:
-    new_content = message.content
-    prev_attachments = set(attachment_url_re.findall(prev_content))
-    new_attachments = set(attachment_url_re.findall(new_content))
+def check_attachment_reference_change(message: Message) -> bool:
+    # For a unsaved message edit (message.* has been updated, but not
+    # saved to the database), adjusts Attachment data to correspond to
+    # the new content.
+    prev_attachments = set([a.path_id for a in message.attachment_set.all()])
+    new_attachments = set(message.potential_attachment_path_ids)
+
+    if new_attachments == prev_attachments:
+        return bool(prev_attachments)
 
     to_remove = list(prev_attachments - new_attachments)
-    path_ids = []
-    for url in to_remove:
-        path_id = attachment_url_to_path_id(url)
-        path_ids.append(path_id)
-
-    attachments_to_update = Attachment.objects.filter(path_id__in=path_ids).select_for_update()
-    message.attachment_set.remove(*attachments_to_update)
+    if len(to_remove) > 0:
+        attachments_to_update = Attachment.objects.filter(path_id__in=to_remove).select_for_update()
+        message.attachment_set.remove(*attachments_to_update)
 
     to_add = list(new_attachments - prev_attachments)
     if len(to_add) > 0:
-        do_claim_attachments(message)
+        do_claim_attachments(message, to_add)
+
+    return message.attachment_set.exists()
 
 def notify_realm_custom_profile_fields(realm: Realm, operation: str) -> None:
     fields = custom_profile_fields_for_realm(realm.id)

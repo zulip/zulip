@@ -27,6 +27,22 @@ zrequire('MessageListView', 'js/message_list_view');
 zrequire('message_list');
 zrequire('settings_display', 'js/settings_display');
 
+const me = {
+    email: 'me@zulip.com',
+    full_name: 'Current User',
+    user_id: 81,
+};
+
+// set up user data
+people.add(me);
+people.initialize_current_user(me.user_id);
+
+function contains_sub(subs, sub) {
+    return _.any(subs, function (s) {
+        return s.name === sub.name;
+    });
+}
+
 run_test('basics', () => {
     const denmark = {
         subscribed: false,
@@ -128,15 +144,6 @@ run_test('unsubscribe', () => {
     stream_data.clear_subscriptions();
 
     let sub = {name: 'devel', subscribed: false, stream_id: 1};
-    const me = {
-        email: 'me@zulip.com',
-        full_name: 'Current User',
-        user_id: 81,
-    };
-
-    // set up user data
-    people.add(me);
-    people.initialize_current_user(me.user_id);
 
     // set up our subscription
     stream_data.add_sub('devel', sub);
@@ -150,6 +157,8 @@ run_test('unsubscribe', () => {
     stream_data.unsubscribe_myself(sub);
     assert(!sub.subscribed);
     assert(!stream_data.is_subscribed('devel'));
+    assert(!contains_sub(stream_data.subscribed_subs(), sub));
+    assert(contains_sub(stream_data.unsubscribed_subs(), sub));
 
     // make sure subsequent calls work
     sub = stream_data.get_sub('devel');
@@ -295,6 +304,7 @@ run_test('is_active', () => {
 
     page_params.demote_inactive_streams =
         settings_display.demote_inactive_streams_values.automatic.code;
+    stream_data.set_filter_out_inactives();
 
     sub = {name: 'pets', subscribed: false, stream_id: 111};
     stream_data.add_sub('pets', sub);
@@ -303,6 +313,9 @@ run_test('is_active', () => {
 
     stream_data.subscribe_myself(sub);
     assert(stream_data.is_active(sub));
+
+    assert(contains_sub(stream_data.subscribed_subs(), sub));
+    assert(!contains_sub(stream_data.unsubscribed_subs(), sub));
 
     stream_data.unsubscribe_myself(sub);
     assert(stream_data.is_active(sub));
@@ -322,6 +335,7 @@ run_test('is_active', () => {
 
     page_params.demote_inactive_streams =
         settings_display.demote_inactive_streams_values.always.code;
+    stream_data.set_filter_out_inactives();
 
     sub = {name: 'pets', subscribed: false, stream_id: 111};
     stream_data.add_sub('pets', sub);
@@ -349,6 +363,7 @@ run_test('is_active', () => {
 
     page_params.demote_inactive_streams =
         settings_display.demote_inactive_streams_values.never.code;
+    stream_data.set_filter_out_inactives();
 
     sub = {name: 'pets', subscribed: false, stream_id: 111};
     stream_data.add_sub('pets', sub);
@@ -549,9 +564,8 @@ run_test('delete_sub', () => {
 
     // We had earlier disabled warnings, so we need to remake zblueslip.
     set_global('blueslip', global.make_zblueslip());
-    blueslip.set_test_data('warn', 'Failed to delete stream does_not_exist');
-    blueslip.set_test_data('warn', 'We got a get_subscriber_count count call for a non-existent stream.');
-    stream_data.delete_sub('does_not_exist');
+    blueslip.set_test_data('warn', 'Failed to delete stream 99999');
+    stream_data.delete_sub(99999);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
 });
@@ -601,6 +615,9 @@ run_test('notifications', () => {
         subscribed: true,
         desktop_notifications: null,
         audible_notifications: null,
+        email_notifications: null,
+        push_notifications: null,
+        wildcard_mentions_notify: null,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub('India', india);
@@ -629,6 +646,36 @@ run_test('notifications', () => {
     page_params.enable_stream_audible_notifications = true;
     assert(!stream_data.receives_notifications('India', "desktop_notifications"));
     assert(!stream_data.receives_notifications('India', "audible_notifications"));
+
+    page_params.wildcard_mentions_notify = true;
+    assert(stream_data.receives_notifications('India', "wildcard_mentions_notify"));
+    page_params.wildcard_mentions_notify = false;
+    assert(!stream_data.receives_notifications('India', "wildcard_mentions_notify"));
+    india.wildcard_mentions_notify = true;
+    assert(stream_data.receives_notifications('India', "wildcard_mentions_notify"));
+    page_params.wildcard_mentions_notify = true;
+    india.wildcard_mentions_notify = false;
+    assert(!stream_data.receives_notifications('India', "wildcard_mentions_notify"));
+
+    page_params.enable_stream_push_notifications = true;
+    assert(stream_data.receives_notifications('India', "push_notifications"));
+    page_params.enable_stream_push_notifications = false;
+    assert(!stream_data.receives_notifications('India', "push_notifications"));
+    india.push_notifications = true;
+    assert(stream_data.receives_notifications('India', "push_notifications"));
+    page_params.enable_stream_push_notifications = true;
+    india.push_notifications = false;
+    assert(!stream_data.receives_notifications('India', "push_notifications"));
+
+    page_params.enable_stream_email_notifications = true;
+    assert(stream_data.receives_notifications('India', "email_notifications"));
+    page_params.enable_stream_email_notifications = false;
+    assert(!stream_data.receives_notifications('India', "email_notifications"));
+    india.email_notifications = true;
+    assert(stream_data.receives_notifications('India', "email_notifications"));
+    page_params.enable_stream_email_notifications = true;
+    india.email_notifications = false;
+    assert(!stream_data.receives_notifications('India', "email_notifications"));
 });
 
 run_test('is_muted', () => {
@@ -728,17 +775,17 @@ run_test('initialize', () => {
     function initialize() {
         page_params.subscriptions = [{
             name: 'subscriptions',
-            stream_id: '2001',
+            stream_id: 2001,
         }];
 
         page_params.unsubscribed = [{
             name: 'unsubscribed',
-            stream_id: '2002',
+            stream_id: 2002,
         }];
 
         page_params.never_subscribed = [{
             name: 'never_subscribed',
-            stream_id: '2003',
+            stream_id: 2003,
         }];
     }
 
@@ -801,6 +848,45 @@ run_test('filter inactives', () => {
     });
     stream_data.initialize();
     assert(stream_data.is_filtering_inactives());
+});
+
+run_test('is_subscriber_subset', () => {
+    function make_sub(user_ids) {
+        const sub = {};
+        stream_data.set_subscribers(sub, user_ids);
+        return sub;
+    }
+
+    const sub_a = make_sub([1, 2]);
+    const sub_b = make_sub([2, 3]);
+    const sub_c = make_sub([1, 2, 3]);
+
+    // The bogus case should not come up in normal
+    // use.
+    // We simply punt on any calculation if
+    // a stream has no subscriber info (like
+    // maybe Zephyr?).
+    const bogus = {}; // no subscribers
+
+    const matrix = [
+        [sub_a, sub_a, true],
+        [sub_a, sub_b, false],
+        [sub_a, sub_c, true],
+        [sub_b, sub_a, false],
+        [sub_b, sub_b, true],
+        [sub_b, sub_c, true],
+        [sub_c, sub_a, false],
+        [sub_c, sub_b, false],
+        [sub_c, sub_c, true],
+        [bogus, bogus, false],
+    ];
+
+    _.each(matrix, (row) => {
+        assert.equal(
+            stream_data.is_subscriber_subset(row[0], row[1]),
+            row[2]
+        );
+    });
 });
 
 run_test('invite_streams', () => {

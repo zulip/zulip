@@ -33,8 +33,7 @@ function filter_streams_by_search(streams, search_term) {
     return filtered_streams;
 }
 
-exports.sort_groups = function (search_term) {
-    let streams = stream_data.subscribed_streams();
+exports.sort_groups = function (streams, search_term) {
     if (streams.length === 0) {
         return;
     }

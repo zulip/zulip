@@ -34,7 +34,7 @@ lxc-start -n "$CONTAINER_NAME"
 "$THIS_DIR"/lxc-wait -n "$CONTAINER_NAME"
 
 run() {
-    lxc-attach -n "$CONTAINER_NAME" -- "$@"
+    lxc-attach --clear-env -n "$CONTAINER_NAME" -- "$@"
 }
 
 run passwd -d root

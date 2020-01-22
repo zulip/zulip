@@ -16,7 +16,8 @@ import copy
 import logging
 import magic
 import ujson
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 from typing_extensions import TypedDict
 from zxcvbn import zxcvbn
 
@@ -38,7 +39,6 @@ from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, 
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.google import GoogleOAuth2
-from social_core.backends.oauth import BaseOAuth2
 from social_core.backends.saml import SAMLAuth
 from social_core.pipeline.partial import partial
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
@@ -54,7 +54,7 @@ from zerver.lib.utils import generate_random_token
 from zerver.lib.redis_utils import get_redis_client
 from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
-    email_allowed_for_realm, get_default_stream_groups, get_user_profile_by_id, remote_user_to_email, \
+    email_allowed_for_realm, get_user_profile_by_id, remote_user_to_email, \
     email_to_username, get_realm, get_user_by_delivery_email, supported_auth_backends
 
 redis_client = get_redis_client()
@@ -113,7 +113,7 @@ def any_social_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
     social_backend_names = [social_auth_subclass.auth_backend_name
-                            for social_auth_subclass in SOCIAL_AUTH_BACKENDS]
+                            for social_auth_subclass in EXTERNAL_AUTH_METHODS]
     return auth_enabled_helper(social_backend_names, realm)
 
 def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
@@ -244,25 +244,6 @@ class EmailAuthBackend(ZulipAuthMixin):
             return user_profile
         return None
 
-class ZulipRemoteUserBackend(RemoteUserBackend):
-    """Authentication backend that reads the Apache REMOTE_USER variable.
-    Used primarily in enterprise environments with an SSO solution
-    that has an Apache REMOTE_USER integration.  For manual testing, see
-
-      https://zulip.readthedocs.io/en/latest/production/authentication-methods.html
-
-    See also remote_user_sso in zerver/views/auth.py.
-    """
-    create_unknown_user = False
-
-    def authenticate(self, *, remote_user: str, realm: Realm,
-                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
-        if not auth_enabled_helper(["RemoteUser"], realm):
-            return None
-
-        email = remote_user_to_email(remote_user)
-        return common_get_active_user(email, realm, return_data=return_data)
-
 def is_valid_email(email: str) -> bool:
     try:
         validate_email(email)
@@ -305,7 +286,7 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     else:
         return False
 
-
+ldap_logger = logging.getLogger("zulip.ldap")
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     """Since this inherits from _LDAPUser.AuthenticationFailed, these will
     be caught and logged at debug level inside django-auth-ldap's authenticate()"""
@@ -387,7 +368,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         if _LDAPUser(self, result).attrs is None:
             # Check that there actually is an ldap entry matching the result username
             # we want to return. Otherwise, raise an exception.
-            raise ZulipLDAPExceptionNoMatchingLDAPUser()
+            error_message = "No ldap user matching django_to_ldap_username result: {}. Input username: {}"
+            raise ZulipLDAPExceptionNoMatchingLDAPUser(
+                error_message.format(result, username)
+            )
 
         return result
 
@@ -553,14 +537,15 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             return None
 
         try:
-            # We want to apss the user's LDAP username into
+            # We want to pass the user's LDAP username into
             # authenticate() below.  If an email address was entered
             # in the login form, we need to use
             # django_to_ldap_username to translate the email address
             # to the user's LDAP username before calling the
             # django-auth-ldap authenticate().
             username = self.django_to_ldap_username(username)
-        except ZulipLDAPExceptionNoMatchingLDAPUser:
+        except ZulipLDAPExceptionNoMatchingLDAPUser as e:
+            ldap_logger.debug("{}: {}".format(self.__class__.__name__, e))
             if return_data is not None:
                 return_data['no_matching_ldap_user'] = True
             return None
@@ -570,10 +555,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         # against the LDAP database, and assuming those are correct,
         # end up calling `self.get_or_build_user` with the
         # authenticated user's data from LDAP.
-        return ZulipLDAPAuthBackendBase.authenticate(self,
-                                                     request=None,
-                                                     username=username,
-                                                     password=password)
+        return super().authenticate(request=None, username=username, password=password)
 
     def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
         """The main function of our authentication backend extension of
@@ -649,7 +631,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']) or realm_creation
             opts['is_guest'] = invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']
             opts['realm_creation'] = realm_creation
-            opts['default_stream_groups'] = get_default_stream_groups(self._realm)
+            # TODO: Ideally, we should add a mechanism for the user
+            # entering which default stream groups they've selected in
+            # the LDAP flow.
+            opts['default_stream_groups'] = []
 
         user_profile = do_create_user(username, None, self._realm, full_name, short_name, **opts)
         self.sync_avatar_from_ldap(user_profile, ldap_user)
@@ -701,13 +686,13 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
             if user_disabled_in_ldap:
                 if user.is_active:
                     logging.info("Deactivating user %s because they are disabled in LDAP." %
-                                 (user.email,))
+                                 (user.delivery_email,))
                     do_deactivate_user(user)
                 # Do an early return to avoid trying to sync additional data.
                 return (user, built)
             elif not user.is_active:
                 logging.info("Reactivating user %s because they are not disabled in LDAP." %
-                             (user.email,))
+                             (user.delivery_email,))
                 do_reactivate_user(user)
 
         self.sync_avatar_from_ldap(user, ldap_user)
@@ -736,14 +721,14 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
 def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
     backend = ZulipLDAPUserPopulator()
     try:
-        ldap_username = backend.django_to_ldap_username(user_profile.email)
+        ldap_username = backend.django_to_ldap_username(user_profile.delivery_email)
     except ZulipLDAPExceptionNoMatchingLDAPUser:
         if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
             do_deactivate_user(user_profile)
-            logger.info("Deactivated non-matching user: %s" % (user_profile.email,))
+            logger.info("Deactivated non-matching user: %s" % (user_profile.delivery_email,))
             return True
         elif user_profile.is_active:
-            logger.warning("Did not find %s in LDAP." % (user_profile.email,))
+            logger.warning("Did not find %s in LDAP." % (user_profile.delivery_email,))
         return False
 
     # What one would expect to see like to do here is just a call to
@@ -763,7 +748,7 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
     # making this flow possible in a more directly supported fashion.
     updated_user = ZulipLDAPUser(backend, ldap_username, realm=user_profile.realm).populate_user()
     if updated_user:
-        logger.info("Updated %s." % (user_profile.email,))
+        logger.info("Updated %s." % (user_profile.delivery_email,))
         return True
 
     raise PopulateUserLDAPError("populate_user unexpectedly returned {}".format(updated_user))
@@ -775,8 +760,8 @@ def query_ldap(email: str) -> List[str]:
     if backend is not None:
         try:
             ldap_username = backend.django_to_ldap_username(email)
-        except ZulipLDAPExceptionNoMatchingLDAPUser:
-            values.append("No such user found")
+        except ZulipLDAPExceptionNoMatchingLDAPUser as e:
+            values.append("No such user found: {}".format(e))
             return values
 
         ldap_attrs = _LDAPUser(backend, ldap_username).attrs
@@ -801,6 +786,85 @@ class DevAuthBackend(ZulipAuthMixin):
         if not dev_auth_enabled(realm):
             return None
         return common_get_active_user(dev_auth_username, realm, return_data=return_data)
+
+ExternalAuthMethodDictT = TypedDict('ExternalAuthMethodDictT', {
+    'name': str,
+    'display_name': str,
+    'display_icon': Optional[str],
+    'login_url': str,
+    'signup_url': str,
+})
+
+class ExternalAuthMethod(ABC):
+    """
+    To register a backend as an external_authentication_method, it should
+    subclass ExternalAuthMethod and define its dict_representation
+    classmethod, and finally use the external_auth_method class decorator to
+    get added to the EXTERNAL_AUTH_METHODS list.
+    """
+    auth_backend_name = "undeclared"
+    name = "undeclared"
+    display_icon = None  # type: Optional[str]
+
+    # Used to determine how to order buttons on login form, backend with
+    # higher sort order are displayed first.
+    sort_order = 0
+
+    @classmethod
+    @abstractmethod
+    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+        """
+        Method returning dictionaries representing the authentication methods
+        corresponding to the backend that subclasses this. The documentation
+        for the external_authentication_methods field of the /server_settings endpoint
+        explains the details of these dictionaries.
+        This returns a list, because one backend can support configuring multiple methods,
+        that are all serviced by that backend - our SAML backend is an example of that.
+        """
+
+EXTERNAL_AUTH_METHODS = []  # type: List[Type[ExternalAuthMethod]]
+
+def external_auth_method(cls: Type[ExternalAuthMethod]) -> Type[ExternalAuthMethod]:
+    assert issubclass(cls, ExternalAuthMethod)
+
+    EXTERNAL_AUTH_METHODS.append(cls)
+    return cls
+
+@external_auth_method
+class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
+    """Authentication backend that reads the Apache REMOTE_USER variable.
+    Used primarily in enterprise environments with an SSO solution
+    that has an Apache REMOTE_USER integration.  For manual testing, see
+
+      https://zulip.readthedocs.io/en/latest/production/authentication-methods.html
+
+    See also remote_user_sso in zerver/views/auth.py.
+    """
+    auth_backend_name = "RemoteUser"
+    name = "remoteuser"
+    display_icon = None
+    sort_order = 9000  # If configured, this backend should have its button near the top of the list.
+
+    create_unknown_user = False
+
+    def authenticate(self, *, remote_user: str, realm: Realm,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+        if not auth_enabled_helper(["RemoteUser"], realm):
+            return None
+
+        email = remote_user_to_email(remote_user)
+        return common_get_active_user(email, realm, return_data=return_data)
+
+    @classmethod
+    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+        return [dict(
+            name=cls.name,
+            display_name="SSO",
+            display_icon=cls.display_icon,
+            # The user goes to the same URL for both login and signup:
+            login_url=reverse('login-sso'),
+            signup_url=reverse('login-sso'),
+        )]
 
 def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
@@ -1060,15 +1124,7 @@ def social_auth_finish(backend: Any,
         full_name_validated=full_name_validated
     )
 
-class SocialAuthMixin(ZulipAuthMixin):
-    auth_backend_name = "undeclared"
-    name = "undeclared"
-    display_icon = None  # type: Optional[str]
-
-    # Used to determine how to order buttons on login form, backend with
-    # higher sort order are displayed first.
-    sort_order = 0
-
+class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
     # Whether we expect that the full_name value obtained by the
     # social backend is definitely how the user should be referred to
     # in Zulip, which in turn determines whether we should always show
@@ -1104,6 +1160,17 @@ class SocialAuthMixin(ZulipAuthMixin):
             logging.warning(str(e))
             return None
 
+    @classmethod
+    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+        return [dict(
+            name=cls.name,
+            display_name=cls.auth_backend_name,
+            display_icon=cls.display_icon,
+            login_url=reverse('login-social', args=(cls.name,)),
+            signup_url=reverse('signup-social', args=(cls.name,)),
+        )]
+
+@external_auth_method
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     name = "github"
     auth_backend_name = "GitHub"
@@ -1170,12 +1237,14 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
         raise AssertionError("Invalid configuration")
 
+@external_auth_method
 class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     sort_order = 50
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"
     display_icon = "/static/images/landing-page/logos/azuread-icon.png"
 
+@external_auth_method
 class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
     sort_order = 150
     auth_backend_name = "Google"
@@ -1190,6 +1259,7 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
             verified_emails.append(details["email"])
         return verified_emails
 
+@external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     auth_backend_name = "SAML"
     standard_relay_params = ["subdomain", "multiuse_object_key", "mobile_flow_otp",
@@ -1335,51 +1405,32 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return None
 
-SocialBackendDictT = TypedDict('SocialBackendDictT', {
-    'name': str,
-    'display_name': str,
-    'display_icon': Optional[str],
-    'login_url': str,
-    'signup_url': str,
-})
+    @classmethod
+    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+        result = []  # type: List[ExternalAuthMethodDictT]
+        for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
+            saml_dict = dict(
+                name='saml:{}'.format(idp_name),
+                display_name=idp_dict.get('display_name', cls.auth_backend_name),
+                display_icon=idp_dict.get('display_icon', cls.display_icon),
+                login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
+                signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
+            )  # type: ExternalAuthMethodDictT
+            result.append(saml_dict)
 
-def create_standard_social_backend_dict(social_backend: SocialAuthMixin) -> SocialBackendDictT:
-    return dict(
-        name=social_backend.name,
-        display_name=social_backend.auth_backend_name,
-        display_icon=social_backend.display_icon,
-        login_url=reverse('login-social', args=(social_backend.name,)),
-        signup_url=reverse('signup-social', args=(social_backend.name,)),
-    )
+        return result
 
-def list_saml_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDictT]:
-    result = []  # type: List[SocialBackendDictT]
-    for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
-        saml_dict = dict(
-            name='saml:{}'.format(idp_name),
-            display_name=idp_dict.get('display_name', SAMLAuthBackend.auth_backend_name),
-            display_icon=idp_dict.get('display_icon', SAMLAuthBackend.display_icon),
-            login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
-            signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
-        )  # type: SocialBackendDictT
-        result.append(saml_dict)
-
-    return result
-
-def get_social_backend_dicts(realm: Optional[Realm]=None) -> List[SocialBackendDictT]:
+def get_external_method_dicts(realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
     """
     Returns a list of dictionaries that represent social backends, sorted
     in the order in which they should be displayed.
     """
-    result = []
-    for backend in SOCIAL_AUTH_BACKENDS:
-        # SOCIAL_AUTH_BACKENDS is already sorted in the correct order,
+    result = []  # type: List[ExternalAuthMethodDictT]
+    for backend in EXTERNAL_AUTH_METHODS:
+        # EXTERNAL_AUTH_METHODS is already sorted in the correct order,
         # so we don't need to worry about sorting here.
         if auth_enabled_helper([backend.auth_backend_name], realm):
-            if backend != SAMLAuthBackend:
-                result.append(create_standard_social_backend_dict(backend))
-            else:
-                result += list_saml_backend_dicts(realm)
+            result.extend(backend.dict_representation())
 
     return result
 
@@ -1387,16 +1438,12 @@ AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
     'Email': EmailAuthBackend,
     'LDAP': ZulipLDAPAuthBackend,
-    'RemoteUser': ZulipRemoteUserBackend,
 }  # type: Dict[str, Any]
-SOCIAL_AUTH_BACKENDS = []  # type: List[BaseOAuth2]
 
-# Authomatically add all of our social auth backends to relevant data structures.
-for social_auth_subclass in SocialAuthMixin.__subclasses__():
-    AUTH_BACKEND_NAME_MAP[social_auth_subclass.auth_backend_name] = social_auth_subclass
-    SOCIAL_AUTH_BACKENDS.append(social_auth_subclass)
+for external_method in EXTERNAL_AUTH_METHODS:
+    AUTH_BACKEND_NAME_MAP[external_method.auth_backend_name] = external_method
 
-SOCIAL_AUTH_BACKENDS = sorted(SOCIAL_AUTH_BACKENDS, key=lambda x: x.sort_order, reverse=True)
+EXTERNAL_AUTH_METHODS = sorted(EXTERNAL_AUTH_METHODS, key=lambda x: x.sort_order, reverse=True)
 
 # Provide this alternative name for backwards compatibility with
 # installations that had the old backend enabled.

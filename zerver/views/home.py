@@ -14,7 +14,6 @@ from zerver.forms import ToSForm
 from zerver.models import Message, UserProfile, \
     Realm, UserMessage, \
     PreregistrationUser, \
-    get_stream_recipient, \
     get_usermessage_by_message_id
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_tos_version, \
@@ -188,7 +187,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         max_file_upload_size  = settings.MAX_FILE_UPLOAD_SIZE,
         max_avatar_file_size  = settings.MAX_AVATAR_FILE_SIZE,
         server_generation     = settings.SERVER_GENERATION,
-        use_websockets        = settings.USE_WEBSOCKETS,
         save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
         warn_no_email         = settings.WARN_NO_EMAIL,
         server_inline_image_preview = settings.INLINE_IMAGE_PREVIEW,
@@ -226,7 +224,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message
-        recipient = get_stream_recipient(narrow_stream.id)
+        recipient = narrow_stream.recipient
         try:
             initial_pointer = Message.objects.filter(recipient=recipient).order_by('id').reverse()[0].id
         except IndexError:

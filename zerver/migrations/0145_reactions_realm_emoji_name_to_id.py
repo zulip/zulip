@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-
 from collections import defaultdict
+from typing import Any, Dict
+
 from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-from typing import Any, Dict
+
 
 def realm_emoji_name_to_id(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Reaction = apps.get_model('zerver', 'Reaction')

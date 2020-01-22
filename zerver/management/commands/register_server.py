@@ -1,9 +1,9 @@
-from argparse import ArgumentParser
 import json
-import requests
 import subprocess
+from argparse import ArgumentParser
 from typing import Any
 
+import requests
 from django.conf import settings
 from django.core.management.base import CommandError
 from django.utils.crypto import get_random_string

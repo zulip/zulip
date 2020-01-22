@@ -23,9 +23,6 @@ used for a variety of purposes:
 * Processing various errors, frontend tracebacks, and slow database
   queries in a batched fashion.
 
-* Doing markdown rendering for messages delivered to the Tornado via
-  websockets.
-
 Needless to say, the RabbitMQ-based queuing system is an important
 part of the overall Zulip architecture, since it's in critical code
 paths for everything from signing up for account, to rendering

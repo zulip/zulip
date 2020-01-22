@@ -64,7 +64,10 @@ if __name__ == '__main__':
         for file in file_index:
             migration_number = file[0:4]
             counter = file_index.count(migration_number)
-            if counter > 1 and file[0:4] not in stack:
+
+            # There are 2 migrations 0209 because of a security
+            # release requiring a migration.
+            if counter > 1 and file[0:4] not in stack and migration_number != "0209":
                 conflicts += [file_name for file_name in files_list if file_name.startswith(migration_number)]
                 stack.append(migration_number)
 

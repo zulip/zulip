@@ -6,6 +6,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def set_initial_value_for_invited_as(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
     for user in PreregistrationUser.objects.all():

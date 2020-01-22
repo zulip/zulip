@@ -4,6 +4,7 @@
         "es6": true
     },
     "parserOptions": {
+        "ecmaVersion": 2019,
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "module"
     },
@@ -18,8 +19,6 @@
         "MessageListData": false,
         "MessageListView": false,
         "Plotly": false,
-        "SockJS": false,
-        "Socket": false,
         "Sortable": false,
         "WinChan": false,
         "XDate": false,

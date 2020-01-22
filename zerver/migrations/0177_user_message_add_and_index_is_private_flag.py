@@ -3,11 +3,13 @@
 from __future__ import unicode_literals
 
 import sys
+
 import bitfield.models
 from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import F
+
 
 def reset_is_private_flag(
         apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:

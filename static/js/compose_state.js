@@ -41,7 +41,7 @@ exports.topic           = get_or_set('stream_message_recipient_topic');
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
 exports.message_content = get_or_set('compose-textarea', true);
-exports.recipient = function (value) {
+exports.private_message_recipient = function (value) {
     if (typeof value === "string") {
         compose_pm_pill.set_from_emails(value);
     } else {

@@ -20,7 +20,7 @@ from zerver.models import UserProfile, Recipient, Realm, \
     get_source_profile, get_system_bot, \
     ScheduledEmail, check_valid_user_ids, \
     get_user_by_id_in_realm_including_cross_realm, CustomProfileField, \
-    InvalidFakeEmailDomain, get_fake_email_domain
+    InvalidFakeEmailDomain, get_fake_email_domain, get_personal_recipient
 
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.exceptions import JsonableError
@@ -74,6 +74,33 @@ class PermissionTest(ZulipTestCase):
         # this should "fail" with an AssertionError
         with self.assertRaises(AssertionError):
             do_change_is_admin(user_profile, True, permission='totally-not-valid-perm')
+
+    def test_role_setters(self) -> None:
+        user_profile = self.example_user('hamlet')
+
+        user_profile.is_realm_admin = True
+        self.assertEqual(user_profile.is_realm_admin, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        user_profile.is_guest = False
+        self.assertEqual(user_profile.is_guest, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        user_profile.is_realm_admin = False
+        self.assertEqual(user_profile.is_realm_admin, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
+
+        user_profile.is_guest = True
+        self.assertEqual(user_profile.is_guest, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_GUEST)
+
+        user_profile.is_realm_admin = False
+        self.assertEqual(user_profile.is_guest, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_GUEST)
+
+        user_profile.is_guest = False
+        self.assertEqual(user_profile.is_guest, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
 
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -616,6 +643,9 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assertEqual(new_user.full_name, 'Romeo Montague')
         self.assertEqual(new_user.short_name, 'Romeo')
 
+        # Make sure the recipient field is set correctly.
+        self.assertEqual(new_user.recipient, get_personal_recipient(new_user.id))
+
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)
         self.assert_json_error(result,
@@ -999,6 +1029,16 @@ class RecipientInfoTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
         othello = self.example_user('othello')
+
+        # These tests were written with the old default for
+        # enable_online_push_notifications; that default is better for
+        # testing the full code path anyway.
+        hamlet.enable_online_push_notifications = False
+        cordelia.enable_online_push_notifications = False
+        othello.enable_online_push_notifications = False
+        hamlet.save()
+        cordelia.save()
+        othello.save()
 
         realm = hamlet.realm
 

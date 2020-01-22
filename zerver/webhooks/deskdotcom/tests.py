@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from zerver.lib.test_classes import WebhookTestCase
 
 # Tests for the Desk.com webhook integration.

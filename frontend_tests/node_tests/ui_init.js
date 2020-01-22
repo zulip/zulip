@@ -99,6 +99,7 @@ zrequire('upload');
 zrequire('compose');
 zrequire('composebox_typeahead');
 zrequire('narrow');
+zrequire('search_suggestion');
 zrequire('search');
 zrequire('tutorial');
 zrequire('notifications');

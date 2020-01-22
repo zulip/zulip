@@ -282,6 +282,7 @@ if DEVELOPMENT:
 elif REMOTE_POSTGRES_HOST != '':
     DATABASES['default'].update({
         'HOST': REMOTE_POSTGRES_HOST,
+        'PORT': REMOTE_POSTGRES_PORT
     })
     if get_secret("postgres_password") is not None:
         DATABASES['default'].update({
@@ -291,6 +292,8 @@ elif REMOTE_POSTGRES_HOST != '':
         DATABASES['default']['OPTIONS']['sslmode'] = REMOTE_POSTGRES_SSLMODE
     else:
         DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
+
+POSTGRES_MISSING_DICTIONARIES = bool(get_config('postgresql', 'missing_dictionaries', None))
 
 ########################################################################
 # RABBITMQ CONFIGURATION
@@ -310,13 +313,17 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 PYLIBMC_MIN_COMPRESS_LEN = 100 * 1024
 PYLIBMC_COMPRESS_LEVEL = 1
 
+MEMCACHED_PASSWORD = get_secret("memcached_password")
+
 CACHES = {
     'default': {
         'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
         'LOCATION': MEMCACHED_LOCATION,
         'TIMEOUT': 3600,
+        'BINARY': True,
+        'USERNAME': MEMCACHED_USERNAME,
+        'PASSWORD': MEMCACHED_PASSWORD,
         'OPTIONS': {
-            'verify_keys': True,
             'tcp_nodelay': True,
             'retry_timeout': 1,
         }
@@ -637,6 +644,7 @@ EMAIL_LOG_PATH = zulip_path("/var/log/zulip/send_email.log")
 EMAIL_MIRROR_LOG_PATH = zulip_path("/var/log/zulip/email_mirror.log")
 EMAIL_DELIVERER_LOG_PATH = zulip_path("/var/log/zulip/email-deliverer.log")
 EMAIL_CONTENT_LOG_PATH = zulip_path("/var/log/zulip/email_content.log")
+LDAP_LOG_PATH = zulip_path("/var/log/zulip/ldap.log")
 LDAP_SYNC_LOG_PATH = zulip_path("/var/log/zulip/sync_ldap_user_data.log")
 QUEUE_ERROR_DIR = zulip_path("/var/log/zulip/queue_error")
 DIGEST_LOG_PATH = zulip_path("/var/log/zulip/digest.log")
@@ -742,6 +750,12 @@ LOGGING = {
             'formatter': 'default',
             'filename': ERROR_FILE_LOG_PATH,
         },
+        'ldap_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'default',
+            'filename': LDAP_LOG_PATH,
+        },
     },
     'loggers': {
         # The Python logging module uses a hierarchy of logger names for config:
@@ -809,6 +823,11 @@ LOGGING = {
         # },
 
         # other libraries, alphabetized
+        'django_auth_ldap': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'ldap_file', 'errors_file'],
+            'propagate': False,
+        },
         'pika.adapters': {
             # pika is super chatty on INFO.
             'level': 'WARNING',
@@ -826,17 +845,6 @@ LOGGING = {
         'requests': {
             'level': 'WARNING',
         },
-        'tornado.general': {
-            # sockjs.tornado sends a lot of ERROR level logs to this
-            # logger.  These should not result in error emails/Zulips.
-            #
-            # TODO: Ideally, we'd do something that just filters the
-            # sockjs.tornado logging entirely, since other Tornado
-            # logging may be of interest.  Might require patching
-            # sockjs.tornado to do this correctly :(.
-            'handlers': ['console', 'file'],
-            'propagate': False,
-        },
 
         # our own loggers, alphabetized
         'zerver.lib.digest': {
@@ -850,6 +858,11 @@ LOGGING = {
         },
         'zerver.management.commands.deliver_scheduled_messages': {
             'level': 'DEBUG',
+        },
+        'zulip.ldap': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'ldap_file', 'errors_file'],
+            'propagate': False,
         },
         'zulip.management': {
             'handlers': ['file', 'errors_file'],

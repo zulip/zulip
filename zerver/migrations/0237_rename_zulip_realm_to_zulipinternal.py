@@ -4,6 +4,7 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def rename_zulip_realm_to_zulipinternal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     if not settings.PRODUCTION:
         return
@@ -16,6 +17,10 @@ def rename_zulip_realm_to_zulipinternal(apps: StateApps, schema_editor: Database
         return
 
     if Realm.objects.filter(string_id="zulipinternal").exists():
+        return
+    if not Realm.objects.filter(string_id="zulip").exists():
+        # If the user renamed the `zulip` system bot realm (or deleted
+        # it), there's nothing for us to do.
         return
 
     internal_realm = Realm.objects.get(string_id="zulip")

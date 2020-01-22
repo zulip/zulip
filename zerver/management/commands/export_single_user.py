@@ -8,6 +8,7 @@ from typing import Any
 from zerver.lib.export import do_export_user
 from zerver.lib.management import ZulipBaseCommand
 
+
 class Command(ZulipBaseCommand):
     help = """Exports message data from a Zulip user
 

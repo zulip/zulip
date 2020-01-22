@@ -81,7 +81,7 @@ exports.initialize = function () {
             return suggestions.strings;
         },
         fixed: true,
-        items: 12,
+        items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
         highlighter: function (item) {

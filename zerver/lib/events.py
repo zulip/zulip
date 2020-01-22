@@ -424,9 +424,9 @@ def apply_event(state: Dict[str, Any],
 
                 if recipient_id not in conversations:
                     conversations[recipient_id] = dict(
-                        user_ids=[user_dict['id'] for user_dict in
-                                  event['message']['display_recipient'] if
-                                  user_dict['id'] != user_profile.id]
+                        user_ids=sorted([user_dict['id'] for user_dict in
+                                         event['message']['display_recipient'] if
+                                         user_dict['id'] != user_profile.id])
                     )
                 conversations[recipient_id]['max_message_id'] = event['message']['id']
             return
@@ -647,7 +647,7 @@ def apply_event(state: Dict[str, Any],
             # Remove our user from the subscribers of the removed subscriptions.
             if include_subscribers:
                 for sub in removed_subs:
-                    sub['subscribers'] = [id for id in sub['subscribers'] if id != user_profile.id]
+                    sub['subscribers'].remove(user_profile.id)
 
             # We must effectively copy the removed subscriptions from subscriptions to
             # unsubscribe, since we only have the name in our data structure.

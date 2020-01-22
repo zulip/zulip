@@ -1,5 +1,24 @@
 const stored_messages = {};
 
+/*
+    We keep a set of user_ids for all people
+    who have sent stream messages or who have
+    been on PMs sent by the user.
+
+    We will use this in search to prevent really
+    large result sets for realms that have lots
+    of users who haven't sent messages recently.
+
+    We'll likely eventually want to replace this with
+    accessing some combination of data from recent_senders
+    and pm_conversations for better accuracy.
+*/
+const message_user_ids = new Set();
+
+exports.user_ids = function () {
+    return Array.from(message_user_ids);
+};
+
 exports.get = function get(message_id) {
     return stored_messages[message_id];
 };
@@ -54,9 +73,7 @@ exports.process_message_for_recent_private_messages = function (message) {
         pm_conversations.set_partner(user_id);
     });
 
-    const user_ids_string = user_ids.join(',');
-
-    pm_conversations.recent.insert(user_ids_string, message.id);
+    pm_conversations.recent.insert(user_ids, message.id);
 };
 
 exports.set_message_booleans = function (message) {
@@ -147,6 +164,7 @@ exports.add_message_metadata = function (message) {
         });
 
         recent_senders.process_message_for_senders(message);
+        message_user_ids.add(message.sender_id);
         break;
 
     case 'private':
@@ -158,6 +176,12 @@ exports.add_message_metadata = function (message) {
         message.to_user_ids = people.pm_reply_user_string(message);
 
         exports.process_message_for_recent_private_messages(message);
+
+        if (people.is_my_user_id(message.sender_id)) {
+            _.each(message.display_recipient, (recip) => {
+                message_user_ids.add(recip.id);
+            });
+        }
         break;
     }
 

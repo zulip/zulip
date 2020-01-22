@@ -19,6 +19,7 @@ from zerver.lib.actions import (
     create_mirror_user_if_needed,
     do_add_alert_words,
     do_change_stream_invite_only,
+    do_claim_attachments,
     do_create_user,
     do_deactivate_user,
     do_send_messages,
@@ -51,6 +52,7 @@ from zerver.lib.message import (
     get_recent_private_conversations,
     maybe_update_first_visible_message_id,
     messages_for_ids,
+    render_markdown,
     sew_messages_and_reactions,
     update_first_visible_message_id,
 )
@@ -106,6 +108,7 @@ from analytics.models import RealmCount
 
 import datetime
 import mock
+from operator import itemgetter
 import time
 import ujson
 from typing import Any, Dict, List, Optional, Set, Union
@@ -812,6 +815,22 @@ class PersonalMessagesTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
         self.assert_personal(self.example_email("hamlet"), self.example_email("othello"))
+
+    def test_private_message_policy(self) -> None:
+        """
+        Tests that PRIVATE_MESSAGE_POLICY_DISABLED works correctly.
+        """
+        user_profile = self.example_user("hamlet")
+        self.login(user_profile.email)
+        do_set_realm_property(user_profile.realm, "private_message_policy",
+                              Realm.PRIVATE_MESSAGE_POLICY_DISABLED)
+        with self.assertRaises(JsonableError):
+            self.send_personal_message(user_profile.email, self.example_email("cordelia"))
+
+        bot_profile = self.create_test_bot("testbot", user_profile)
+        self.send_personal_message(user_profile.email, settings.NOTIFICATION_BOT)
+        self.send_personal_message(user_profile.email, bot_profile.email)
+        self.send_personal_message(bot_profile.email, user_profile.email)
 
     def test_non_ascii_personal(self) -> None:
         """
@@ -2925,7 +2944,8 @@ class EditMessageTest(ZulipTestCase):
                 content=None,
                 rendered_content=None,
                 prior_mention_user_ids=set(),
-                mention_user_ids=set()
+                mention_user_ids=set(),
+                mention_data=None,
             )
 
             mock_send_event.assert_called_with(mock.ANY, mock.ANY, users_to_be_notified)
@@ -2971,6 +2991,42 @@ class EditMessageTest(ZulipTestCase):
         self.login(hamlet.email)
         users_to_be_notified = list(map(notify, [hamlet.id]))
         do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
+
+    @mock.patch("zerver.lib.actions.send_event")
+    def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Macbeth"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+        self.login(hamlet.email)
+        message_id = self.send_stream_message(hamlet.email, stream_name, "Hello everyone")
+
+        def notify(user_id: int) -> Dict[str, Any]:
+            return {
+                "id": user_id,
+                "flags": ["wildcard_mentioned"]
+            }
+
+        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        result = self.client_patch("/json/messages/" + str(message_id), {
+            'message_id': message_id,
+            'content': 'Hello @**everyone**',
+        })
+        self.assert_json_success(result)
+
+        # Extract the send_event call where event type is 'update_message'.
+        # Here we assert wildcard_mention_user_ids has been set properly.
+        called = False
+        for call_args in mock_send_event.call_args_list:
+            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            if arg_event['type'] == 'update_message':
+                self.assertEqual(arg_event['type'], 'update_message')
+                self.assertEqual(arg_event['wildcard_mention_user_ids'], [cordelia.id, hamlet.id])
+                self.assertEqual(sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified)
+                called = True
+        self.assertTrue(called)
 
     def test_propagate_topic_forward(self) -> None:
         self.login(self.example_email("hamlet"))
@@ -3531,33 +3587,9 @@ class MessageAccessTests(ZulipTestCase):
 
         self.assertEqual(len(filtered_messages), 2)
 
-class AttachmentTest(ZulipTestCase):
-    def test_basics(self) -> None:
-        zulip_realm = get_realm("zulip")
-        self.assertFalse(Message.content_has_attachment('whatever'))
-        self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
-        self.assertTrue(Message.content_has_attachment('yo\n https://staging.zulip.com/user_uploads/'))
-        self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo' % (
-            zulip_realm.id,)))
-
-        self.assertFalse(Message.content_has_image('whatever'))
-        self.assertFalse(Message.content_has_image('yo http://foo.com'))
-        self.assertFalse(Message.content_has_image('yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo' % (
-            zulip_realm.id,)))
-        for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp", ".JPG"]:
-            content = 'yo\n /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.%s foo' % (zulip_realm.id, ext)
-            self.assertTrue(Message.content_has_image(content))
-
-        self.assertFalse(Message.content_has_link('whatever'))
-        self.assertTrue(Message.content_has_link('yo\n http://foo.com'))
-        self.assertTrue(Message.content_has_link('yo\n https://example.com?spam=1&eggs=2'))
-        self.assertTrue(Message.content_has_link('yo /user_uploads/%s/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo' % (
-            zulip_realm.id,)))
-
-    def test_claim_attachment(self) -> None:
-
-        # Create dummy DB entry
-        user_profile = self.example_user('hamlet')
+class MessageHasKeywordsTest(ZulipTestCase):
+    '''Test for keywords like has_link, has_image, has_attachment.'''
+    def setup_dummy_attachments(self, user_profile: UserProfile) -> List[str]:
         sample_size = 10
         realm_id = user_profile.realm_id
         dummy_files = [
@@ -3569,18 +3601,174 @@ class AttachmentTest(ZulipTestCase):
         for file_name, path_id, size in dummy_files:
             create_attachment(file_name, path_id, user_profile, size)
 
+        # return path ids
+        return [x[1] for x in dummy_files]
+
+    def test_claim_attachment(self) -> None:
+        user_profile = self.example_user('hamlet')
+        dummy_path_ids = self.setup_dummy_attachments(user_profile)
+        dummy_urls = ["http://zulip.testserver/user_uploads/{}".format(x) for x in dummy_path_ids]
+
         # Send message referring the attachment
         self.subscribe(user_profile, "Denmark")
 
-        body = ("Some files here ...[zulip.txt](http://localhost:9991/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" +
-                "http://localhost:9991/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." +
-                "http://localhost:9991/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py").format(realm_id=realm_id)
-
-        self.send_stream_message(user_profile.email, "Denmark", body, "test")
-
-        for file_name, path_id, size in dummy_files:
+        def assert_attachment_claimed(path_id: str, claimed: bool) -> None:
             attachment = Attachment.objects.get(path_id=path_id)
-            self.assertTrue(attachment.is_claimed())
+            self.assertEqual(attachment.is_claimed(), claimed)
+
+        # This message should claim attachments 1 only because attachment 2
+        # is not being parsed as a link by Bugdown.
+        body = ("Some files here ...[zulip.txt]({})" +
+                "{}.... Some more...." +
+                "{}").format(dummy_urls[0], dummy_urls[1], dummy_urls[1])
+        self.send_stream_message(user_profile.email, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[0], True)
+        assert_attachment_claimed(dummy_path_ids[1], False)
+
+        # This message tries to claim the third attachment but fails because
+        # Bugdown would not set has_attachments = True here.
+        body = "Link in code: `{}`".format(dummy_urls[2])
+        self.send_stream_message(user_profile.email, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[2], False)
+
+        # Another scenario where we wouldn't parse the link.
+        body = "Link to not parse: .{}.`".format(dummy_urls[2])
+        self.send_stream_message(user_profile.email, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[2], False)
+
+        # Finally, claim attachment 3.
+        body = "Link: {}".format(dummy_urls[2])
+        self.send_stream_message(user_profile.email, "Denmark", body, "test")
+        assert_attachment_claimed(dummy_path_ids[2], True)
+        assert_attachment_claimed(dummy_path_ids[1], False)
+
+    def test_finds_all_links(self) -> None:
+        msg_ids = []
+        msg_contents = ["foo.org", "[bar](baz.gov)", "http://quux.ca"]
+        for msg_content in msg_contents:
+            msg_ids.append(self.send_stream_message(self.example_email('hamlet'),
+                                                    'Denmark', content=msg_content))
+        msgs = [Message.objects.get(id=id) for id in msg_ids]
+        self.assertTrue(all([msg.has_link for msg in msgs]))
+
+    def test_finds_only_links(self) -> None:
+        msg_ids = []
+        msg_contents = ["`example.org`", '``example.org```', '$$https://example.org$$', "foo"]
+        for msg_content in msg_contents:
+            msg_ids.append(self.send_stream_message(self.example_email('hamlet'),
+                                                    'Denmark', content=msg_content))
+        msgs = [Message.objects.get(id=id) for id in msg_ids]
+        self.assertFalse(all([msg.has_link for msg in msgs]))
+
+    def update_message(self, msg: Message, content: str) -> None:
+        hamlet = self.example_user('hamlet')
+        realm_id = hamlet.realm.id
+        rendered_content = render_markdown(msg, content)
+        mention_data = bugdown.MentionData(realm_id, content)
+        do_update_message(hamlet, msg, None, "change_one", content, rendered_content, set(), set(), mention_data=mention_data)
+
+    def test_finds_link_after_edit(self) -> None:
+        hamlet = self.example_user('hamlet')
+        msg_id = self.send_stream_message(hamlet.email, 'Denmark', content='a')
+        msg = Message.objects.get(id=msg_id)
+
+        self.assertFalse(msg.has_link)
+        self.update_message(msg, 'a http://foo.com')
+        self.assertTrue(msg.has_link)
+        self.update_message(msg, 'a')
+        self.assertFalse(msg.has_link)
+        # Check in blockquotes work
+        self.update_message(msg, '> http://bar.com')
+        self.assertTrue(msg.has_link)
+        self.update_message(msg, 'a `http://foo.com`')
+        self.assertFalse(msg.has_link)
+
+    def test_has_image(self) -> None:
+        msg_ids = []
+        msg_contents = ["Link: foo.org",
+                        "Image: https://www.google.com/images/srpr/logo4w.png",
+                        "Image: https://www.google.com/images/srpr/logo4w.pdf",
+                        "[Google Link](https://www.google.com/images/srpr/logo4w.png)"]
+        for msg_content in msg_contents:
+            msg_ids.append(self.send_stream_message(self.example_email('hamlet'),
+                                                    'Denmark', content=msg_content))
+        msgs = [Message.objects.get(id=id) for id in msg_ids]
+        self.assertEqual([False, True, False, True], [msg.has_image for msg in msgs])
+
+        self.update_message(msgs[0], 'https://www.google.com/images/srpr/logo4w.png')
+        self.assertTrue(msgs[0].has_image)
+        self.update_message(msgs[0], 'No Image Again')
+        self.assertFalse(msgs[0].has_image)
+
+    def test_has_attachment(self) -> None:
+        hamlet = self.example_user('hamlet')
+        dummy_path_ids = self.setup_dummy_attachments(hamlet)
+        dummy_urls = ["http://zulip.testserver/user_uploads/{}".format(x) for x in dummy_path_ids]
+        self.subscribe(hamlet, "Denmark")
+
+        body = ("Files ...[zulip.txt]({}) {} {}").format(dummy_urls[0], dummy_urls[1], dummy_urls[2])
+
+        msg_id = self.send_stream_message(hamlet.email, "Denmark", body, "test")
+        msg = Message.objects.get(id=msg_id)
+        self.assertTrue(msg.has_attachment)
+        self.update_message(msg, 'No Attachments')
+        self.assertFalse(msg.has_attachment)
+        self.update_message(msg, body)
+        self.assertTrue(msg.has_attachment)
+        self.update_message(msg, 'Link in code: `{}`'.format(dummy_urls[1]))
+        self.assertFalse(msg.has_attachment)
+        # Test blockquotes
+        self.update_message(msg, '> {}'.format(dummy_urls[1]))
+        self.assertTrue(msg.has_attachment)
+
+        # Additional test to check has_attachment is being set is due to the correct attachment.
+        self.update_message(msg, 'Outside: {}. In code: `{}`.'.format(dummy_urls[0], dummy_urls[1]))
+        self.assertTrue(msg.has_attachment)
+        self.assertTrue(msg.attachment_set.filter(path_id=dummy_path_ids[0]))
+        self.assertEqual(msg.attachment_set.count(), 1)
+
+        self.update_message(msg, 'Outside: {}. In code: `{}`.'.format(dummy_urls[1], dummy_urls[0]))
+        self.assertTrue(msg.has_attachment)
+        self.assertTrue(msg.attachment_set.filter(path_id=dummy_path_ids[1]))
+        self.assertEqual(msg.attachment_set.count(), 1)
+
+        self.update_message(msg, 'Both in code: `{} {}`.'.format(dummy_urls[1], dummy_urls[0]))
+        self.assertFalse(msg.has_attachment)
+        self.assertEqual(msg.attachment_set.count(), 0)
+
+    def test_potential_attachment_path_ids(self) -> None:
+        hamlet = self.example_user('hamlet')
+        self.subscribe(hamlet, "Denmark")
+        dummy_path_ids = self.setup_dummy_attachments(hamlet)
+
+        body = "Hello"
+        msg_id = self.send_stream_message(hamlet.email, "Denmark", body, "test")
+        msg = Message.objects.get(id=msg_id)
+
+        with mock.patch("zerver.lib.actions.do_claim_attachments",
+                        wraps=do_claim_attachments) as m:
+            self.update_message(msg, '[link](http://{}/user_uploads/{})'.format(
+                hamlet.realm.host, dummy_path_ids[0]))
+            self.assertTrue(m.called)
+            m.reset_mock()
+
+            self.update_message(msg, '[link](/user_uploads/{})'.format(dummy_path_ids[1]))
+            self.assertTrue(m.called)
+            m.reset_mock()
+
+            self.update_message(msg, '[new text link](/user_uploads/{})'.format(dummy_path_ids[1]))
+            self.assertFalse(m.called)
+            m.reset_mock()
+
+            # It's not clear this is correct behavior
+            self.update_message(msg, '[link](user_uploads/{})'.format(dummy_path_ids[2]))
+            self.assertFalse(m.called)
+            m.reset_mock()
+
+            self.update_message(msg, '[link](https://github.com/user_uploads/{})'.format(
+                dummy_path_ids[0]))
+            self.assertFalse(m.called)
+            m.reset_mock()
 
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:

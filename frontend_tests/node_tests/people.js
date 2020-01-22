@@ -4,7 +4,10 @@ zrequire('people');
 set_global('blueslip', global.make_zblueslip({
     error: false, // We check for errors in people_errors.js
 }));
+set_global('message_store', {});
 set_global('page_params', {});
+set_global('settings_org', {});
+set_global('typeahead_helper', {});
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
@@ -22,27 +25,35 @@ const me = {
 
 const isaac = {
     email: 'isaac@example.com',
+    delivery_email: 'isaac-delivery@example.com',
     user_id: 32,
     full_name: 'Isaac Newton',
 };
 
 function initialize() {
     people.init();
-    people.add(me);
+    people.add_in_realm(me);
     people.initialize_current_user(me.user_id);
 }
 
 initialize();
 
+function get_all_persons() {
+    return people.filter_all_persons(() => true);
+}
+
 run_test('basics', () => {
-    const persons = people.get_all_persons();
+    const persons = get_all_persons();
 
     assert.equal(_.size(persons), 1);
     assert.equal(persons[0].full_name, 'Me Myself');
 
     let realm_persons = people.get_realm_persons();
-    assert.equal(_.size(realm_persons), 0);
-    assert.equal(people.get_realm_count(), 0);
+    assert.equal(realm_persons[0].full_name, 'Me Myself');
+
+    realm_persons = people.get_realm_persons();
+    assert.equal(_.size(realm_persons), 1);
+    assert.equal(people.get_realm_count(), 1);
 
     const full_name = 'Isaac Newton';
     const email = 'isaac@example.com';
@@ -51,7 +62,7 @@ run_test('basics', () => {
     people.add(isaac);
 
     assert(people.is_known_user_id(32));
-    assert.equal(people.get_realm_count(), 0);
+    assert.equal(people.get_realm_count(), 1);
 
     let person = people.get_by_name(full_name);
     assert.equal(people.get_user_id(email), 32);
@@ -61,16 +72,15 @@ run_test('basics', () => {
     person = people.get_active_user_for_email(email);
     assert(!person);
     people.add_in_realm(isaac);
-    assert.equal(people.get_realm_count(), 1);
+    assert.equal(people.get_realm_count(), 2);
     person = people.get_active_user_for_email(email);
     assert.equal(person.email, email);
 
     realm_persons = people.get_realm_persons();
-    assert.equal(_.size(realm_persons), 1);
-    assert.equal(realm_persons[0].full_name, 'Isaac Newton');
+    assert.equal(_.size(realm_persons), 2);
 
-    const active_user_ids = people.get_active_user_ids();
-    assert.deepEqual(active_user_ids, [isaac.user_id]);
+    const active_user_ids = people.get_active_user_ids().sort();
+    assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
     assert(people.is_valid_email_for_compose(isaac.email));
 
@@ -78,7 +88,7 @@ run_test('basics', () => {
     people.deactivate(isaac);
     person = people.get_active_user_for_email(email);
     assert(!person);
-    assert.equal(people.get_realm_count(), 0);
+    assert.equal(people.get_realm_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), false);
 
@@ -117,8 +127,10 @@ run_test('basics', () => {
     // Reactivating issac
     people.add_in_realm(isaac);
     const active_human_persons = people.get_active_human_persons();
-    assert.equal(active_human_persons.length, 1);
-    assert.deepEqual(active_human_persons, [isaac]);
+    assert.equal(active_human_persons.length, 2);
+    assert.deepEqual(
+        active_human_persons.sort((p) => p.user_id),
+        [me, isaac]);
 });
 
 run_test('pm_lookup_key', () => {
@@ -262,7 +274,9 @@ run_test('set_custom_profile_field_data', () => {
     assert.equal(person.profile_data[field.id].rendered_value, '<p>Field value</p>');
 });
 
-run_test('get_rest_of_realm', () => {
+initialize();
+
+run_test('get_people_for_stream_create', () => {
     const alice1 = {
         email: 'alice1@example.com',
         user_id: 202,
@@ -281,9 +295,9 @@ run_test('get_rest_of_realm', () => {
     people.add_in_realm(alice1);
     people.add_in_realm(bob);
     people.add_in_realm(alice2);
-    assert.equal(people.get_realm_count(), 3);
+    assert.equal(people.get_realm_count(), 4);
 
-    const others = people.get_rest_of_realm();
+    const others = people.get_people_for_stream_create();
     const expected = [
         { email: 'alice1@example.com', user_id: 202, full_name: 'Alice' },
         { email: 'alice2@example.com', user_id: 203, full_name: 'Alice' },
@@ -345,7 +359,7 @@ run_test('filtered_users', () => {
     people.add_in_realm(plain_noah);
 
     const search_term = 'a';
-    const users = people.get_rest_of_realm();
+    const users = people.get_people_for_stream_create();
     let filtered_people = people.filter_people_by_search_terms(users, [search_term]);
     assert.equal(filtered_people.num_items(), 2);
     assert(filtered_people.has(ashton.user_id));
@@ -451,7 +465,7 @@ run_test('message_methods', () => {
         display_recipient: [
             {id: maria.user_id},
             {id: me.user_id},
-            {user_id: charles.user_id},
+            {id: charles.user_id},
         ],
         sender_id: charles.user_id,
     };
@@ -466,7 +480,7 @@ run_test('message_methods', () => {
         type: 'private',
         display_recipient: [
             {id: maria.user_id},
-            {user_id: me.user_id},
+            {id: me.user_id},
         ],
         avatar_url: 'legacy.png',
     };
@@ -497,7 +511,7 @@ run_test('message_methods', () => {
     message = {
         type: 'private',
         display_recipient: [
-            {user_id: me.user_id},
+            {id: me.user_id},
         ],
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/30-me');
@@ -607,17 +621,14 @@ run_test('maybe_incr_recipient_count', () => {
         user_id: 452,
         full_name: 'Maria Athens',
     };
-    people.add_in_realm(maria);
-
-    const unknown_user = {
-        email: 'unknown@example.com',
-        user_id: 500,
-        unknown_local_echo_user: true,
+    const maria_recip = {
+        id: maria.user_id,
     };
+    people.add_in_realm(maria);
 
     let message = {
         type: 'private',
-        display_recipient: [maria],
+        display_recipient: [maria_recip],
         sent_by_me: true,
     };
     assert.equal(people.get_recipient_count(maria), 0);
@@ -629,15 +640,21 @@ run_test('maybe_incr_recipient_count', () => {
     message = {
         type: 'private',
         sent_by_me: false,
-        display_recipient: [maria],
+        display_recipient: [maria_recip],
     };
     people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
 
+    const unknown_recip = {
+        email: 'unknown@example.com',
+        id: 500,
+        unknown_local_echo_user: true,
+    };
+
     message = {
         type: 'private',
         sent_by_me: true,
-        display_recipient: [unknown_user],
+        display_recipient: [unknown_recip],
     };
     people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
@@ -669,6 +686,37 @@ run_test('slugs', () => {
 
 initialize();
 
+run_test('get_people_for_search_bar', () => {
+    typeahead_helper.compare_by_pms = () => 0;
+    message_store.user_ids = () => [];
+
+    _.each(_.range(20), (i) => {
+        const person = {
+            email: 'whatever@email.com',
+            full_name: 'James Jones',
+            user_id: 1000 + i,
+        };
+        people.add_in_realm(person);
+    });
+
+    const big_results = people.get_people_for_search_bar('James');
+
+    assert.equal(big_results.length, 20);
+
+    message_store.user_ids = () => {
+        return [1001, 1002, 1003, 1004, 1005, 1006];
+    };
+
+    const small_results = people.get_people_for_search_bar('Jones');
+
+    // As long as there are 5+ results among the user_ids
+    // in message_store, we will get a small result and not
+    // seach all people.
+    assert.equal(small_results.length, 6);
+});
+
+initialize();
+
 run_test('updates', () => {
     const old_email = 'FOO@example.com';
     const new_email = 'bar@example.com';
@@ -696,7 +744,7 @@ run_test('updates', () => {
     assert.equal(people.get_active_user_for_email(new_email).user_id, user_id);
     assert (!people.is_cross_realm_email(new_email));
 
-    const all_people = people.get_all_persons();
+    const all_people = get_all_persons();
     assert.equal(all_people.length, 2);
 
     person = _.filter(all_people, function (p) {
@@ -852,6 +900,97 @@ run_test('initialize', () => {
     assert.equal(global.page_params.realm_users, undefined);
     assert.equal(global.page_params.cross_realm_bots, undefined);
     assert.equal(global.page_params.realm_non_active_users, undefined);
+});
+
+run_test('filter_for_user_settings_search', () => {
+    /*
+        This function calls matches_user_settings_search,
+        so that is where we do more thorough testing.
+        This test is just a sanity check for now.
+    */
+    settings_org.show_email = () => {
+        return false;
+    };
+
+    const fred_smith = {full_name: 'Fred Smith'};
+    const alice_lee = {full_name: 'Alice Lee'};
+    const jenny_franklin = {full_name: 'Jenny Franklin'};
+
+    const persons = [fred_smith, alice_lee, jenny_franklin];
+
+    assert.deepEqual(
+        people.filter_for_user_settings_search(persons, 'fr'),
+        [fred_smith, jenny_franklin]);
+
+    assert.deepEqual(
+        people.filter_for_user_settings_search(persons, 'le'),
+        [alice_lee]);
+});
+
+run_test('matches_user_settings_search', () => {
+    const match = people.matches_user_settings_search;
+
+    settings_org.show_email = () => {
+        return false;
+    };
+
+    assert.equal(match({email: 'fred@example.com'}, 'fred'), false);
+    assert.equal(match({full_name: 'Fred Smith'}, 'fr'), true);
+
+    settings_org.show_email = () => {
+        return true;
+    };
+
+    page_params.is_admin = true;
+    assert.equal(match({delivery_email: 'fred@example.com'}, 'fr'), true);
+    assert.equal(
+        match({delivery_email: 'bogus', email: 'fred@example.com'}, 'fr'),
+        false);
+
+    page_params.is_admin = false;
+    assert.equal(match({delivery_email: 'fred@example.com'}, 'fr'), false);
+    assert.equal(match({email: 'fred@example.com'}, 'fr'), true);
+
+    // test normal stuff
+    assert.equal(match({email: 'fred@example.com'}, 'st'), false);
+    assert.equal(match({full_name: 'Fred Smith'}, 'st'), false);
+    assert.equal(match({full_name: 'Joe Frederick'}, 'st'), false);
+
+    assert.equal(match({email: 'fred@example.com'}, 'fr'), true);
+    assert.equal(match({full_name: 'Fred Smith'}, 'fr'), true);
+    assert.equal(match({full_name: 'Joe Frederick'}, 'fr'), true);
+
+    // test in-string matches...we may want not to be so liberal
+    // here about matching, as it's noisy for large realms (who
+    // need search the most)
+    assert.equal(match({email: 'fred@example.com'}, 're'), true);
+    assert.equal(match({full_name: 'Fred Smith'}, 're'), true);
+    assert.equal(match({full_name: 'Joe Frederick'}, 're'), true);
+});
+
+run_test('email_for_user_settings', () => {
+    const email = people.email_for_user_settings;
+
+    settings_org.show_email = () => {
+        return false;
+    };
+
+    assert.equal(email(isaac), undefined);
+
+    settings_org.show_email = () => {
+        return true;
+    };
+
+    page_params.is_admin = true;
+    assert.equal(email(isaac), isaac.delivery_email);
+
+    // Fall back to email if delivery_email is not there.
+    assert.equal(
+        email({email: 'foo@example.com'}),
+        'foo@example.com');
+
+    page_params.is_admin = false;
+    assert.equal(email(isaac), isaac.email);
 });
 
 run_test('emails_strings_to_user_ids_array', function () {

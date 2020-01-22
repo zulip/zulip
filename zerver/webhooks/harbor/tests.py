@@ -3,6 +3,7 @@ from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class HarborHookTests(WebhookTestCase):
     STREAM_NAME = "harbor"
     URL_TEMPLATE = u"/api/v1/external/harbor?api_key={api_key}&stream={stream}"

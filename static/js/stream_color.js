@@ -59,24 +59,24 @@ exports.set_colorpicker_color = function (colorpicker, color) {
 exports.update_stream_color = function (sub, color, opts) {
     opts = _.defaults({}, opts, {update_historical: false});
     sub.color = color;
-    const id = parseInt(sub.stream_id, 10);
+    const stream_id = sub.stream_id;
     // The swatch in the subscription row header.
-    $(".stream-row[data-stream-id='" + id + "'] .icon").css('background-color', color);
+    $(".stream-row[data-stream-id='" + stream_id + "'] .icon").css('background-color', color);
     // The swatch in the color picker.
-    exports.set_colorpicker_color($("#subscription_overlay .subscription_settings[data-stream-id='" + id + "'] .colorpicker"), color);
-    $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "'] .large-icon").css("color", color);
+    exports.set_colorpicker_color($("#subscription_overlay .subscription_settings[data-stream-id='" + stream_id + "'] .colorpicker"), color);
+    $("#subscription_overlay .subscription_settings[data-stream-id='" + stream_id + "'] .large-icon").css("color", color);
 
     if (opts.update_historical) {
         update_historical_message_color(sub.name, color);
     }
-    update_stream_sidebar_swatch_color(id, color);
+    update_stream_sidebar_swatch_color(stream_id, color);
     if (!page_params.search_pills_enabled) {
         tab_bar.colorize_tab_bar();
     }
 };
 
 function picker_do_change_color(color) {
-    const stream_id = $(this).attr('stream_id');
+    const stream_id = parseInt($(this).attr('stream_id'), 10);
     const hex_color = color.toHexString();
     subs.set_color(stream_id, hex_color);
 }

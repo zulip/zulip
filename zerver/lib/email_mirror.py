@@ -8,6 +8,7 @@ from email.utils import getaddresses
 import email.message as message
 
 from django.conf import settings
+from django.utils.timezone import timedelta, now as timezone_now
 
 from zerver.lib.actions import internal_send_message, internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message, \
@@ -16,14 +17,13 @@ from zerver.lib.email_mirror_helpers import decode_email_address, \
     get_email_gateway_message_string_from_address, ZulipEmailForwardError
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.redis_utils import get_redis_client
-from zerver.lib.upload import upload_message_file
 from zerver.lib.utils import generate_random_token
+from zerver.lib.upload import upload_message_file
 from zerver.lib.send_email import FromAddress
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_entity
 from zerver.lib.exceptions import RateLimited
-from zerver.models import Stream, Recipient, \
-    get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
+from zerver.models import Stream, Recipient, MissedMessageEmailAddress, \
+    get_display_recipient, \
     Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
 
 from zproject.backends import is_user_active
@@ -46,7 +46,7 @@ def redact_email_address(error_message: str) -> str:
                                                      "{} <Missed message address>".format(email_address))
         else:
             try:
-                target_stream_id = extract_and_validate(email_address)[0].id
+                target_stream_id = decode_stream_email_address(email_address)[0].id
                 annotated_address = "{} <Address to stream id: {}>".format(email_address, target_stream_id)
                 redacted_message = error_message.replace(email_address, annotated_address)
             except ZulipEmailForwardError:
@@ -79,12 +79,8 @@ def log_and_report(email_message: message.Message, error_message: str, to: Optio
 
 # Temporary missed message addresses
 
-redis_client = get_redis_client()
-
-
-def missed_message_redis_key(token: str) -> str:
-    return 'missed_message:' + token
-
+def generate_missed_message_token() -> str:
+    return 'mm' + generate_random_token(32)
 
 def is_missed_message_address(address: str) -> bool:
     try:
@@ -107,8 +103,24 @@ def get_missed_message_token_from_address(address: str) -> str:
     if not is_mm_32_format(msg_string):
         raise ZulipEmailForwardError('Could not parse missed message address')
 
-    # strip off the 'mm' before returning the redis key
-    return msg_string[2:]
+    return msg_string
+
+def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress:
+    token = get_missed_message_token_from_address(address)
+    try:
+        mm_address = MissedMessageEmailAddress.objects.select_related().get(
+            email_token=token,
+            timestamp__gt=timezone_now() - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS)
+        )
+    except MissedMessageEmailAddress.DoesNotExist:
+        raise ZulipEmailForwardError("Missed message address expired or doesn't exist.")
+
+    if not mm_address.is_usable():
+        # Technical, this also checks whether the event is expired,
+        # but that case is excluded by the logic above.
+        raise ZulipEmailForwardError("Missed message address out of uses.")
+
+    return mm_address
 
 def create_missed_message_address(user_profile: UserProfile, message: Message) -> str:
     if settings.EMAIL_GATEWAY_PATTERN == '':
@@ -116,52 +128,22 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
                        "NOREPLY_EMAIL_ADDRESS in the 'from' field.")
         return FromAddress.NOREPLY
 
-    if message.recipient.type == Recipient.PERSONAL:
-        # We need to reply to the sender so look up their personal recipient_id
-        recipient_id = get_personal_recipient(message.sender_id).id
-    else:
-        recipient_id = message.recipient_id
-
-    data = {
-        'user_profile_id': user_profile.id,
-        'recipient_id': recipient_id,
-        'subject': message.topic_name().encode('utf-8'),
-    }
-
-    while True:
-        token = generate_random_token(32)
-        key = missed_message_redis_key(token)
-        if redis_client.hsetnx(key, 'uses_left', 1):
-            break
-
-    with redis_client.pipeline() as pipeline:
-        pipeline.hmset(key, data)
-        pipeline.expire(key, 60 * 60 * 24 * 5)
-        pipeline.execute()
-
-    address = 'mm' + token
-    return settings.EMAIL_GATEWAY_PATTERN % (address,)
-
-
-def mark_missed_message_address_as_used(address: str) -> None:
-    token = get_missed_message_token_from_address(address)
-    key = missed_message_redis_key(token)
-    with redis_client.pipeline() as pipeline:
-        pipeline.hincrby(key, 'uses_left', -1)
-        pipeline.expire(key, 60 * 60 * 24 * 5)
-        new_value = pipeline.execute()[0]
-    if new_value < 0:
-        redis_client.delete(key)
-        raise ZulipEmailForwardError('Missed message address has already been used')
+    mm_address = MissedMessageEmailAddress.objects.create(message=message,
+                                                          user_profile=user_profile,
+                                                          email_token=generate_missed_message_token())
+    return str(mm_address)
 
 def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bool=False,
-                         include_quotes: bool=False, include_footer: bool=False) -> str:
-    body = extract_body(message, include_quotes)
+                         include_quotes: bool=False, include_footer: bool=False,
+                         prefer_text: bool=True) -> str:
+    body = extract_body(message, include_quotes, prefer_text)
     # Remove null characters, since Zulip will reject
     body = body.replace("\x00", "")
     if not include_footer:
         body = filter_footer(body)
 
+    if not body.endswith('\n'):
+        body += '\n'
     body += extract_and_upload_attachments(message, realm)
     body = body.strip()
     if not body:
@@ -172,49 +154,6 @@ def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bo
         body = "From: %s\n%s" % (sender, body)
 
     return body
-
-def send_to_missed_message_address(address: str, message: message.Message) -> None:
-    token = get_missed_message_token_from_address(address)
-    key = missed_message_redis_key(token)
-    result = redis_client.hmget(key, 'user_profile_id', 'recipient_id', 'subject')
-    if not all(val is not None for val in result):
-        raise ZulipEmailForwardError('Missing missed message address data')
-    user_profile_id, recipient_id, subject_b = result  # type: (bytes, bytes, bytes)
-
-    user_profile = get_user_profile_by_id(user_profile_id)
-    if not is_user_active(user_profile):
-        logger.warning("Sending user is not active. Ignoring this missed message email.")
-        return
-    recipient = Recipient.objects.get(id=recipient_id)
-
-    body = construct_zulip_body(message, user_profile.realm)
-
-    if recipient.type == Recipient.STREAM:
-        stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
-        internal_send_stream_message(
-            user_profile.realm, user_profile, stream,
-            subject_b.decode('utf-8'), body
-        )
-        recipient_str = stream.name
-    elif recipient.type == Recipient.PERSONAL:
-        display_recipient = get_display_recipient(recipient)
-        assert not isinstance(display_recipient, str)
-        recipient_str = display_recipient[0]['email']
-        recipient_user = get_user(recipient_str, user_profile.realm)
-        internal_send_private_message(user_profile.realm, user_profile,
-                                      recipient_user, body)
-    elif recipient.type == Recipient.HUDDLE:
-        display_recipient = get_display_recipient(recipient)
-        assert not isinstance(display_recipient, str)
-        emails = [user_dict['email'] for user_dict in display_recipient]
-        recipient_str = ', '.join(emails)
-        internal_send_huddle_message(user_profile.realm, user_profile,
-                                     emails, body)
-    else:
-        raise AssertionError("Invalid recipient type!")
-
-    logger.info("Successfully processed email from user %s to %s" % (
-        user_profile.id, recipient_str))
 
 ## Sending the Zulip ##
 
@@ -247,36 +186,61 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
 
     return None
 
+def extract_body(message: message.Message, include_quotes: bool=False, prefer_text: bool=True) -> str:
+    plaintext_content = extract_plaintext_body(message, include_quotes)
+    html_content = extract_html_body(message, include_quotes)
+
+    if plaintext_content is None and html_content is None:
+        logging.warning("Content types: %s" % ([part.get_content_type() for part in message.walk()],))
+        raise ZulipEmailForwardUserError("Unable to find plaintext or HTML message body")
+    if not plaintext_content and not html_content:
+        raise ZulipEmailForwardUserError("Email has no nonempty body sections; ignoring.")
+
+    if prefer_text:
+        if plaintext_content:
+            return plaintext_content
+        else:
+            assert html_content  # Needed for mypy. Ensured by the validating block above.
+            return html_content
+    else:
+        if html_content:
+            return html_content
+        else:
+            assert plaintext_content  # Needed for mypy. Ensured by the validating block above.
+            return plaintext_content
+
 talon_initialized = False
-def extract_body(message: message.Message, include_quotes: bool=False) -> str:
+def extract_plaintext_body(message: message.Message, include_quotes: bool=False) -> Optional[str]:
     import talon
     global talon_initialized
     if not talon_initialized:
         talon.init()
         talon_initialized = True
 
-    # If the message contains a plaintext version of the body, use
-    # that.
     plaintext_content = get_message_part_by_type(message, "text/plain")
-    if plaintext_content:
+    if plaintext_content is not None:
         if include_quotes:
             return plaintext_content
         else:
             return talon.quotations.extract_from_plain(plaintext_content)
+    else:
+        return None
 
-    # If we only have an HTML version, try to make that look nice.
+def extract_html_body(message: message.Message, include_quotes: bool=False) -> Optional[str]:
+    import talon
+    global talon_initialized
+    if not talon_initialized:  # nocoverage
+        talon.init()
+        talon_initialized = True
+
     html_content = get_message_part_by_type(message, "text/html")
-    if html_content:
+    if html_content is not None:
         if include_quotes:
             return convert_html_to_markdown(html_content)
         else:
             return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
-
-    if plaintext_content is not None or html_content is not None:
-        raise ZulipEmailForwardUserError("Email has no nonempty body sections; ignoring.")
-
-    logging.warning("Content types: %s" % ([part.get_content_type() for part in message.walk()],))
-    raise ZulipEmailForwardUserError("Unable to find plaintext or HTML message body")
+    else:
+        return None
 
 def filter_footer(text: str) -> str:
     # Try to filter out obvious footers.
@@ -290,14 +254,9 @@ def filter_footer(text: str) -> str:
 
 def extract_and_upload_attachments(message: message.Message, realm: Realm) -> str:
     user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+
     attachment_links = []
-
-    payload = message.get_payload()
-    if not isinstance(payload, list):
-        # This is not a multipart message, so it can't contain attachments.
-        return ""
-
-    for part in payload:
+    for part in message.walk():
         content_type = part.get_content_type()
         filename = part.get_filename()
         if filename:
@@ -313,9 +272,9 @@ def extract_and_upload_attachments(message: message.Message, realm: Realm) -> st
                 logger.warning("Payload is not bytes (invalid attachment %s in message from %s)." %
                                (filename, message.get("From")))
 
-    return "\n".join(attachment_links)
+    return '\n'.join(attachment_links)
 
-def extract_and_validate(email: str) -> Tuple[Stream, Dict[str, bool]]:
+def decode_stream_email_address(email: str) -> Tuple[Stream, Dict[str, bool]]:
     token, options = decode_email_address(email)
 
     try:
@@ -362,7 +321,7 @@ def process_stream_message(to: str, message: message.Message) -> None:
     subject_header = str(make_header(decode_header(message.get("Subject", ""))))
     subject = strip_from_subject(subject_header) or "(no topic)"
 
-    stream, options = extract_and_validate(to)
+    stream, options = decode_stream_email_address(to)
     # Don't remove quotations if message is forwarded, unless otherwise specified:
     if 'include_quotes' not in options:
         options['include_quotes'] = is_forwarded(subject_header)
@@ -372,12 +331,53 @@ def process_stream_message(to: str, message: message.Message) -> None:
     logger.info("Successfully processed email to %s (%s)" % (
         stream.name, stream.realm.string_id))
 
-def process_missed_message(to: str, message: message.Message, pre_checked: bool) -> None:
-    if not pre_checked:
-        mark_missed_message_address_as_used(to)
-    send_to_missed_message_address(to, message)
+def process_missed_message(to: str, message: message.Message) -> None:
+    mm_address = get_usable_missed_message_address(to)
+    mm_address.increment_times_used()
 
-def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_checked: bool=False) -> None:
+    user_profile = mm_address.user_profile
+    topic = mm_address.message.topic_name()
+
+    if mm_address.message.recipient.type == Recipient.PERSONAL:
+        # We need to reply to the sender so look up their personal recipient_id
+        recipient = mm_address.message.sender.recipient
+    else:
+        recipient = mm_address.message.recipient
+
+    if not is_user_active(user_profile):
+        logger.warning("Sending user is not active. Ignoring this missed message email.")
+        return
+
+    body = construct_zulip_body(message, user_profile.realm)
+
+    if recipient.type == Recipient.STREAM:
+        stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
+        internal_send_stream_message(
+            user_profile.realm, user_profile, stream,
+            topic, body
+        )
+        recipient_str = stream.name
+    elif recipient.type == Recipient.PERSONAL:
+        display_recipient = get_display_recipient(recipient)
+        assert not isinstance(display_recipient, str)
+        recipient_str = display_recipient[0]['email']
+        recipient_user = get_user(recipient_str, user_profile.realm)
+        internal_send_private_message(user_profile.realm, user_profile,
+                                      recipient_user, body)
+    elif recipient.type == Recipient.HUDDLE:
+        display_recipient = get_display_recipient(recipient)
+        assert not isinstance(display_recipient, str)
+        emails = [user_dict['email'] for user_dict in display_recipient]
+        recipient_str = ', '.join(emails)
+        internal_send_huddle_message(user_profile.realm, user_profile,
+                                     emails, body)
+    else:
+        raise AssertionError("Invalid recipient type!")
+
+    logger.info("Successfully processed email from user %s to %s" % (
+        user_profile.id, recipient_str))
+
+def process_message(message: message.Message, rcpt_to: Optional[str]=None) -> None:
     to = None  # type: Optional[str]
 
     try:
@@ -387,7 +387,7 @@ def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_c
             to = find_emailgateway_recipient(message)
 
         if is_missed_message_address(to):
-            process_missed_message(to, message, pre_checked)
+            process_missed_message(to, message)
         else:
             process_stream_message(to, message)
     except ZulipEmailForwardError as e:
@@ -397,26 +397,22 @@ def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_c
         else:
             log_and_report(message, str(e), to)
 
+def validate_to_address(rcpt_to: str) -> None:
+    if is_missed_message_address(rcpt_to):
+        get_usable_missed_message_address(rcpt_to)
+    else:
+        decode_stream_email_address(rcpt_to)
+
 def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
     rcpt_to = data['recipient']
-    if is_missed_message_address(rcpt_to):
-        try:
-            mark_missed_message_address_as_used(rcpt_to)
-        except ZulipEmailForwardError:
-            return {
-                "status": "error",
-                "msg": "5.1.1 Bad destination mailbox address: "
-                       "Bad or expired missed message address."
-            }
-    else:
-        try:
-            extract_and_validate(rcpt_to)
-        except ZulipEmailForwardError:
-            return {
-                "status": "error",
-                "msg": "5.1.1 Bad destination mailbox address: "
-                       "Please use the address specified in your Streams page."
-            }
+    try:
+        validate_to_address(rcpt_to)
+    except ZulipEmailForwardError as e:
+        return {
+            "status": "error",
+            "msg": "5.1.1 Bad destination mailbox address: {}".format(e)
+        }
+
     queue_json_publish(
         "email_mirror",
         {

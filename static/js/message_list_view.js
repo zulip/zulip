@@ -20,17 +20,17 @@ function MessageListView(list, table_name, collapse_messages) {
 }
 
 function get_user_id_for_mention_button(elem) {
-    const user_id = $(elem).attr('data-user-id');
+    const user_id_string = $(elem).attr('data-user-id');
     // Handle legacy markdown that was rendered before we cut
     // over to using data-user-id.
     const email = $(elem).attr('data-user-email');
 
-    if (user_id === "*" || email === "*") {
+    if (user_id_string === "*" || email === "*") {
         return "*";
     }
 
-    if (user_id) {
-        return user_id;
+    if (user_id_string) {
+        return parseInt(user_id_string, 10);
     }
 
     if (email) {
@@ -586,7 +586,7 @@ MessageListView.prototype = {
         });
 
         content.find('a.stream').each(function () {
-            const stream_id = $(this).attr('data-stream-id');
+            const stream_id = parseInt($(this).attr('data-stream-id'), 10);
             if (stream_id && !$(this).find(".highlight").length) {
                 // Display the current name for stream if it is not
                 // being displayed in search highlight.
@@ -595,7 +595,7 @@ MessageListView.prototype = {
         });
 
         content.find('a.stream-topic').each(function () {
-            const stream_id = $(this).attr('data-stream-id');
+            const stream_id = parseInt($(this).attr('data-stream-id'), 10);
             if (stream_id && !$(this).find(".highlight").length) {
                 // Display the current name for stream if it is not
                 // being displayed in search highlight.

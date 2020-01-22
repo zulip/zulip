@@ -68,8 +68,6 @@ number of purposes:
      plaintext/markdown raw content or the rendered HTML (e.g. the
      `apply_markdown` and `client_gravatar` features in our
      [events API docs](https://zulipchat.com/api/register-queue)).
-* The webapp [uses websockets](#websockets) for client/server
-  interaction for sending messages.
 * Following our standard naming convention, input validation is done
   inside the `check_message` function, which is responsible for
   validating the user can send to the recipient,
@@ -100,32 +98,6 @@ number of purposes:
      unit-test this system for how many database and memcached queries
      it makes when sending messages with large numbers of recipients,
      to ensure its performance.
-
-### Websockets
-
-For the webapp only, we use WebSockets rather than standard HTTPS API
-requests for triggering message sending.  This is a design feature we
-are very ambivalent about; it has some slight latency benefits, but is
-also features extra complexity and some mostly-unmaintained
-dependencies (e.g. `sockjs-tornado`).  But in short, this system works
-as follows:
-* Requests are sent from the webapp to the backend via the `sockjs`
-library (on the frontend) and `sockjs-tornado` (on the backend).  This
-ends up calling a handler in our Tornado codebase
-(`zerver/tornado/socket.py`), which immediately puts the request into
-the `message_sender` queue.
-* The `message_sender` [queue processor](../subsystems/queuing.md)
-reformats the request into a Django `HttpRequest` object with a fake
-`SOCKET` HTTP method (which is why these requests appear as `SOCKET`
-in our server logs), calls the Django `get_response` method on that
-request, and returns the response to Tornado via the `tornado_return`
-queue.
-* Tornado then sends the result (success or error) back to the client
-via the relevant WebSocket connection.
-* `sockjs` automatically handles for us a fallback to longpolling in
-the event that a WebSockets connection cannot be opened successfully
-(which despite WebSockets being many years old is still a problem on
-some networks today!).
 
 ## Local echo
 
@@ -204,17 +176,15 @@ implementation was under 150 lines of code.
 This section just has a brief review of the sequence of steps all in
 one place:
 * User hits send in the compose box.
-* Compose box validation runs; if passes, it locally echoes the
-  message and sends websocket message to Tornado
-* Tornado converts websocket message to a `message_sender` queue item
-* `message_sender` queue processor turns the queue item into a Django
-`HttpRequest` and calls Django's main response handler
-* The Django URL routes and middleware run, and eventually calls the
+* Compose box validation runs; if it passes, the browser locally
+  echoes the message and then sends a request to the `POST /messages`
+  API endpoint.
+* The Django URL routes and middleware run, and eventually call the
   `send_message_backend` view function in `zerver/views/messages.py`.
-  (Alternatively, for an API request to send a message via the HTTP
-  API, things start here).
+  (Alternatively, for an API request to send a message via Zulip's
+   REST API, things start here).
 * `send_message_backend` does some validation before triggering the
-`check_message` + `do_send_messages` backend flow.
+  `check_message` + `do_send_messages` backend flow.
 * That backend flow saves the data to the database and triggers a
   `message` event in the `notify_tornado` queue (part of the events
   system).
@@ -228,28 +198,11 @@ one place:
     locally echoed message with the final message it received back
     from the server (it indicates this to the sender by adding a
     display timestamp to the message).
-* For an API client, the `send_message_backend` view function returns
+* The `send_message_backend` view function returns
   a 200 `HTTP` response; the client receives that response and mostly
   does nothing with it other than update some logging details.  (This
   may happen before or after the client receives the event notifying
   it about the new message via its event queue.)
-* For a browser (websockets sender), the client receives the
-  equivalent of the HTTP response via a websockets message from
-  Tornado (which, in turn, got that via the `tornado_return` queue).
-
-## Error handling
-
-When there's an error trying to send a message, it's important to not
-lose the text the user had composed.  Zulip handles this with a few
-approaches:
-
-* The data for a message in the process of being sent are stored in
-  browser local storage (see .e.g. `_save_localstorage_requests` in
-  `static/js/socket.js`), so that the client can retransmit as
-  appropriate, even if the browser reloads in the meantime.
-* Additionally, Zulip renders UI for editing/retransmitting/resending
-  messages that had been locally echoed on top of those messages, in
-  red.
 
 ## Message editing
 

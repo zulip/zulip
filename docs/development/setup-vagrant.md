@@ -51,7 +51,7 @@ a proxy to access the internet.)
 - **Ubuntu LTS**: 18.04 or 16.04 64-bit
   - or **Debian**: 9.0 "stretch" 64-bit
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
-  virtualization enabled (VT-X or AMD-V), administrator access.
+  virtualization enabled (VT-x or AMD-V), administrator access.
 
 Other Linux distributions work great too, but we don't maintain
 documentation for installing Vagrant and Docker on those systems, so
@@ -80,10 +80,6 @@ Jump to:
 
 #### macOS
 
-0. If you are running MacOS High Sierra, make sure you are not running
-   a version with a
-   [buggy NFS implementation](#importerror-no-module-named-on-macos-during-vagrant-provisioning).
-   Versions 10.13.2 and above have the bug fixed.
 1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [VirtualBox][vbox-dl] (latest).
 
@@ -165,7 +161,7 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 If you do, make sure to **install default required packages** along with
 **git**, **curl**, **openssh**, and **rsync** binaries.)
 
-Also, you must have hardware virtualization enabled (VT-X or AMD-V) in your
+Also, you must have hardware virtualization enabled (VT-x or AMD-V) in your
 computer's BIOS.
 
 #### Running Git BASH as an administrator
@@ -312,8 +308,8 @@ section.  If that doesn't help, please visit
 in the [Zulip development community server](../contributing/chat-zulip-org.md) for
 real-time help.
 
-On Windows, you will see `The system cannot find the path specified.` message
-several times. This is expected behavior and is not an error.
+On Windows, you will see the message `The system cannot find the path
+specified.` several times.  This is normal and is not a problem.
 
 Once `vagrant up` has completed, connect to the development
 environment with `vagrant ssh`:
@@ -447,15 +443,16 @@ guest); this should complete in about a minute.
 After provisioning, you'll want to
 [(re)start the Zulip development server](#step-3-start-the-development-environment).
 
-If you run into any trouble, the
-[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.md) for
-is a great place to ask for help.
+If you run into any trouble, [#provision
+help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
+[Zulip development community
+server](../contributing/chat-zulip-org.md) is a great place to ask for
+help.
 
 #### Rebuilding the development environment
 
 If you ever want to recreate your development environment again from
-scratch (e.g. to test as change you've made to the provisioning
+scratch (e.g. to test a change you've made to the provisioning
 process, or because you think something is broken), you can do so
 using `vagrant destroy` and then `vagrant up`.  This will usually be
 much faster than the original `vagrant up` since the base image is
@@ -676,6 +673,13 @@ some of the solutions mentioned
 [windows-uac]: https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
 [disable-uac]: https://stackoverflow.com/questions/15320550/why-is-secreatesymboliclinkprivilege-ignored-on-windows-8
 
+If you ran Git BASH as administrator but you already had VirtualBox
+running, you might still get this error because VirtualBox is not
+running as administrator.  In that case: close the Zulip VM with
+`vagrant halt`; close any other VirtualBox VMs that may be running;
+exit VirtualBox; and try again with `vagrant up --provision` from a
+Git BASH running as administrator.
+
 Second, VirtualBox does not enable symbolic links by default. Vagrant
 starting with version 1.6.0 enables symbolic links for VirtualBox shared
 folder.
@@ -835,90 +839,62 @@ warning fsevents@1.1.1: The platform "linux" is incompatible with this module.
 info "fsevents@1.1.1" is an optional dependency and failed compatibility check. Excluding it from installation.
 [3/4] Linking dependencies...
 [4/4] Building fresh packages...
-$ browserify node_modules/sockjs-client/lib/entry.js --standalone SockJS > node_modules/sockjs-client/sockjs.js
 Done in 23.50s.
 ```
 
 These are warnings produced by spammy third party JavaScript packages.
 It is okay to proceed and start the Zulip server.
 
-#### VT-X unavailability error
-
-Users who are unable to do "vagrant up" due to a VT-X unavailability error need to disable "Hyper-V" to get it to work.
-
-#### Mounting NFS fails on macOS Mojave
-
-If you see following error (or similar) when you run `vagrant up` on
-macOS Mojave:
-
- ```
-==> default: Configuring and enabling network interfaces...
-==> default: Exporting NFS shared folders...
-==> default: Preparing to edit /etc/exports. Administrator privileges will be required...
-Password:
-tee: /etc/exports: Operation not permitted
-tee: /etc/exports: Operation not permitted
-tee: /etc/exports: Operation not permitted
-The nfsd service does not appear to be running.
-Starting the nfsd service
-==> default: Mounting NFS shared folders...
-The following SSH command responded with a non-zero exit status.
-Vagrant assumes that this means the command failed!
- mount -o vers=3,udp 172.28.128.1:<zulip_path> /srv/zulip
- Stdout from the command:
- Stderr from the command:
- mount.nfs: mount to NFS server '172.28.128.1:<zulip_path>' failed: RPC Error: Unable to receive
-```
-
-This is usually because the Terminal instance you're using does not
-have "Full Disk Access" to edit /etc/exports. This privilege can be
-added here: `System Preferences`/`Security & Privacy`/`Full Disk
-Access`.
-
-#### ImportError: No module named '...' on MacOS during Vagrant provisioning
-
-If you see following error (or similar) when you try to provision
-Vagrant environment by `vagrant provision` (or during first run
-`vagrant up`):
+#### VBoxManage errors related to VT-x or WHvSetupPartition
 
 ```
-    default: ImportError: No module named 'zerver.lib.emoji'
-    default: Error running a subcommand of ./lib/provision.py: tools/do-destroy-rebuild-database
-    default: Actual error output for the subcommand is just above this.
-    default: Traceback (most recent call last):
-    default:   File "./lib/provision.py", line 413, in <module>
-    default:     sys.exit(main(options))
-    default:   File "./lib/provision.py", line 349, in main
-    default:     run(["tools/do-destroy-rebuild-database"])
-    default:   File "/srv/zulip/scripts/lib/zulip_tools.py", line 163, in run
-    default:     subprocess.check_call(args, **kwargs)
-    default:   File "/usr/lib/python3.4/subprocess.py", line 561, in check_call
-    default:     raise CalledProcessError(retcode, cmd)
-    default: subprocess.CalledProcessError: Command '['tools/do-destroy-rebuild-database']' returned non-zero exit status 1
-    default:
-    default: Provisioning failed!
-    default: * Look at the traceback(s) above to find more about the errors.
-    default: * Resolve the errors or get help on chat.
-    default: * If you can fix this yourself, you can re-run tools/provision at any time.
-    default: * Logs are here: zulip/var/log/provision.log
-    default:
-The SSH command responded with a non-zero exit status. Vagrant
-assumes that this means the command failed. The output for this command
-should be in the log above. Please read the output to determine what
-went wrong.
+There was an error while executing `VBoxManage`, a CLI used by Vagrant
+for controlling VirtualBox. The command and stderr is shown below.
+
+Command: ["startvm", "8924a681-b4e4-4b7a-96f2-4cb11619f123", "--type", "headless"]
+
+Stderr: VBoxManage.exe: error: (VERR_NEM_MISSING_KERNEL_API).
+VBoxManage.exe: error: VT-x is not available (VERR_VMX_NO_VMX)
+VBoxManage.exe: error: Details: code E_FAIL (0x80004005), component ConsoleWrap, interface IConsole
 ```
 
-This error is caused by a bug in the MacOS NFS file syncing
-implementation (Zulip uses Vagrant's NFS feature for syncing files on
-MacOS).  In early versions of MacOS High Sierra, files present in the
-directory on the host machine would appear to not be present in the
-Vagrant guest (e.g. in the exception above, `zerver/lib/emoji.py` is
-missing).  This bug is fixed in MacOS High Sierra 10.13.2 and above,
-so the fix is to upgrade to a version of MacOS with a working NFS
-implementation.
+or
 
-You can read more about this
-[here](https://github.com/hashicorp/vagrant/issues/8788).
+```
+Stderr: VBoxManage.exe: error: Call to WHvSetupPartition failed: ERROR_SUCCESS (Last=0xc000000d/87) (VERR_NEM_VM_CREATE_FAILED)
+VBoxManage.exe: error: Details: code E_FAIL (0x80004005), component ConsoleWrap, interface IConsole
+```
+
+First, ensure that hardware virtualization support (VT-x or AMD-V) is
+enabled in your BIOS.
+
+If the error persists, you may have run into an incompatibility
+between VirtualBox and Hyper-V on Windows.  To disable Hyper-V, open
+command prompt as administrator, run `bcdedit /set
+hypervisorlaunchtype off`, and reboot.  If you need to enable it
+later, run `bcdedit /deletevalue hypervisorlaunchtype`, and reboot.
+
+#### OSError: [Errno 26] Text file busy
+
+```
+default: Traceback (most recent call last):
+…
+default:   File "/srv/zulip-py3-venv/lib/python3.6/shutil.py", line 426, in _rmtree_safe_fd
+default:     os.rmdir(name, dir_fd=topfd)
+default: OSError: [Errno 26] Text file busy: 'baremetrics'
+```
+
+This error is caused by a
+[bug](https://www.virtualbox.org/ticket/19004) in recent versions of
+the VirtualBox Guest Additions for Linux on Windows hosts.  It has not
+been fixed upstream as of this writing, but you may be able to work
+around it by removing the plugin that upgrades Guest Additions:
+
+```
+vagrant destroy
+vagrant plugin uninstall vagrant-vbguest
+vagrant up --provider=virtualbox
+```
 
 ### Specifying an Ubuntu mirror
 

@@ -76,7 +76,7 @@ exports.populate_emoji = function (emoji_data) {
         },
         filter: {
             element: emoji_table.closest(".settings-section").find(".search"),
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
             onupdate: function () {

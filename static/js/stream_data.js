@@ -1,5 +1,82 @@
-const Dict = require('./dict').Dict;
+const IntDict = require('./int_dict').IntDict;
+const FoldDict = require('./fold_dict').FoldDict;
+const LazySet = require('./lazy_set').LazySet;
 
+const BinaryDict = function (pred) {
+    /*
+      A dictionary that keeps track of which objects had the predicate
+      return true or false for efficient lookups and iteration.
+
+      This class is an optimization for managing subscriptions.
+      Typically you only subscribe to a small minority of streams, and
+      most common operations want to efficiently iterate through only
+      streams where the current user is subscribed:
+
+            - search bar search
+            - build left sidebar
+            - autocomplete #stream_links
+            - autocomplete stream in compose
+    */
+
+    const self = {};
+    self.trues = new FoldDict();
+    self.falses = new FoldDict();
+
+    self.true_values = function () {
+        return self.trues.values();
+    };
+
+    self.num_true_items = function () {
+        return self.trues.num_items();
+    };
+
+    self.false_values = function () {
+        return self.falses.values();
+    };
+
+    self.values = function () {
+        const trues = self.trues.values();
+        const falses = self.falses.values();
+        const both = trues.concat(falses);
+        return both;
+    };
+
+    self.get = function (k) {
+        const res = self.trues.get(k);
+
+        if (res !== undefined) {
+            return res;
+        }
+
+        return self.falses.get(k);
+    };
+
+    self.set = function (k, v) {
+        if (pred(v)) {
+            self.set_true(k, v);
+        } else {
+            self.set_false(k, v);
+        }
+    };
+
+    self.set_true = function (k, v) {
+        self.falses.del(k);
+        self.trues.set(k, v);
+    };
+
+    self.set_false = function (k, v) {
+        self.trues.del(k);
+        self.falses.set(k, v);
+    };
+
+    self.del = function (k) {
+        self.trues.del(k);
+        self.falses.del(k);
+    };
+
+
+    return self;
+};
 
 // The stream_info variable maps stream names to stream properties objects
 // Call clear_subscriptions() to initialize it.
@@ -7,11 +84,14 @@ let stream_info;
 let subs_by_stream_id;
 let filter_out_inactives = false;
 
-const stream_ids_by_name = new Dict({fold_case: true});
+const stream_ids_by_name = new FoldDict();
+const default_stream_ids = new Set();
 
 exports.clear_subscriptions = function () {
-    stream_info = new Dict({fold_case: true});
-    subs_by_stream_id = new Dict();
+    stream_info = new BinaryDict(function (sub) {
+        return sub.subscribed;
+    });
+    subs_by_stream_id = new IntDict();
 };
 
 exports.clear_subscriptions();
@@ -19,7 +99,7 @@ exports.clear_subscriptions();
 exports.set_filter_out_inactives = function () {
     if (page_params.demote_inactive_streams ===
             settings_display.demote_inactive_streams_values.automatic.code) {
-        filter_out_inactives = exports.subscribed_subs().length >= 30;
+        filter_out_inactives = exports.num_subscribed_subs() >= 30;
     } else if (page_params.demote_inactive_streams ===
             settings_display.demote_inactive_streams_values.always.code) {
         filter_out_inactives = true;
@@ -34,7 +114,6 @@ exports.is_filtering_inactives = function () {
 };
 
 exports.is_active = function (sub) {
-    exports.set_filter_out_inactives();
     if (!filter_out_inactives || sub.pin_to_top) {
         // If users don't want to filter inactive streams
         // to the bottom, we respect that setting and don't
@@ -63,6 +142,19 @@ exports.subscribe_myself = function (sub) {
     exports.add_subscriber(sub.name, user_id);
     sub.subscribed = true;
     sub.newly_subscribed = true;
+    stream_info.set_true(sub.name, sub);
+};
+
+exports.is_subscriber_subset = function (sub1, sub2) {
+    if (sub1.subscribers && sub2.subscribers) {
+        const sub2_set = sub2.subscribers;
+
+        return _.every(sub1.subscribers.keys(), (key) => {
+            return sub2_set.has(key);
+        });
+    }
+
+    return false;
 };
 
 exports.unsubscribe_myself = function (sub) {
@@ -71,11 +163,12 @@ exports.unsubscribe_myself = function (sub) {
     exports.remove_subscriber(sub.name, user_id);
     sub.subscribed = false;
     sub.newly_subscribed = false;
+    stream_info.set_false(sub.name, sub);
 };
 
 exports.add_sub = function (stream_name, sub) {
     if (!_.has(sub, 'subscribers')) {
-        sub.subscribers = Dict.from_array([]);
+        sub.subscribers = LazySet([]);
     }
 
     stream_info.set(stream_name, sub);
@@ -151,7 +244,7 @@ exports.name_to_slug = function (name) {
 exports.slug_to_name = function (slug) {
     const m = /^([\d]+)-/.exec(slug);
     if (m) {
-        const stream_id = m[1];
+        const stream_id = parseInt(m[1], 10);
         const sub = subs_by_stream_id.get(stream_id);
         if (sub) {
             return sub.name;
@@ -209,12 +302,16 @@ exports.get_updated_unsorted_subs = function () {
     return all_subs;
 };
 
+exports.num_subscribed_subs = function () {
+    return stream_info.num_true_items();
+};
+
 exports.subscribed_subs = function () {
-    return _.where(stream_info.values(), {subscribed: true});
+    return stream_info.true_values();
 };
 
 exports.unsubscribed_subs = function () {
-    return _.where(stream_info.values(), {subscribed: false});
+    return stream_info.false_values();
 };
 
 exports.subscribed_streams = function () {
@@ -293,6 +390,9 @@ exports.receives_notifications = function (stream_name, notification_name) {
     if (sub[notification_name] !== null) {
         return sub[notification_name];
     }
+    if (notification_name === 'wildcard_mentions_notify') {
+        return page_params[notification_name];
+    }
     return page_params["enable_stream_" + notification_name];
 };
 
@@ -301,6 +401,7 @@ const stream_notification_settings = [
     "audible_notifications",
     "push_notifications",
     "email_notifications",
+    "wildcard_mentions_notify",
 ];
 
 exports.update_calculated_fields = function (sub) {
@@ -443,19 +544,17 @@ exports.all_topics_in_cache = function (sub) {
     return first_cached_message.id <= sub.first_message_id;
 };
 
-const default_stream_ids = new Dict();
-
 exports.set_realm_default_streams = function (realm_default_streams) {
     page_params.realm_default_streams = realm_default_streams;
     default_stream_ids.clear();
 
     realm_default_streams.forEach(function (stream) {
-        default_stream_ids.set(stream.stream_id, true);
+        default_stream_ids.add(stream.stream_id);
     });
 };
 
 exports.get_default_stream_names = function () {
-    const streams = _.map(default_stream_ids.keys(), exports.get_sub_by_id);
+    const streams = _.map(Array.from(default_stream_ids), exports.get_sub_by_id);
     const default_stream_names = _.pluck(streams, 'name');
     return default_stream_names;
 };
@@ -504,7 +603,7 @@ exports.maybe_get_stream_name = function (stream_id) {
 };
 
 exports.set_subscribers = function (sub, user_ids) {
-    sub.subscribers = Dict.from_array(user_ids || []);
+    sub.subscribers = LazySet(user_ids || []);
 };
 
 exports.add_subscriber = function (stream_name, user_id) {
@@ -518,7 +617,7 @@ exports.add_subscriber = function (stream_name, user_id) {
         blueslip.error("We tried to add invalid subscriber: " + user_id);
         return false;
     }
-    sub.subscribers.set(user_id, true);
+    sub.subscribers.add(user_id);
 
     return true;
 };
@@ -729,7 +828,7 @@ exports.remove_default_stream = function (stream_id) {
             return stream.stream_id === stream_id;
         }
     );
-    default_stream_ids.del(stream_id);
+    default_stream_ids.delete(stream_id);
 };
 
 window.stream_data = exports;

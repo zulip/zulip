@@ -3,8 +3,9 @@ from argparse import ArgumentParser
 from typing import Any
 
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
-from zerver.lib.management import ZulipBaseCommand, CommandError
+from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.models import all_realm_filters
+
 
 class Command(ZulipBaseCommand):
     help = """Create a link filter rule for the specified realm.

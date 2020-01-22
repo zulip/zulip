@@ -21,9 +21,9 @@ from zerver.lib.exceptions import UnexpectedWebhookEventType
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, is_remote_server
+from zerver.lib.utils import statsd, is_remote_server, has_api_key_format
 from zerver.lib.exceptions import JsonableError, ErrorCode, \
-    InvalidJSONError, InvalidAPIKeyError, \
+    InvalidJSONError, InvalidAPIKeyError, InvalidAPIKeyFormatError, \
     OrganizationAdministratorRequired
 from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import to_non_negative_int
@@ -120,13 +120,8 @@ def update_user_activity(request: HttpRequest, user_profile: UserProfile,
 def require_post(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
     def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        if (request.method != "POST" and
-            not (request.method == "SOCKET" and
-                 request.META['zulip.emulated_method'] == "POST")):
-            if request.method == "SOCKET":  # nocoverage # zulip.emulated_method is always POST
-                err_method = "SOCKET/%s" % (request.META['zulip.emulated_method'],)
-            else:
-                err_method = request.method
+        if request.method != "POST":
+            err_method = request.method
             logging.warning('Method Not Allowed (%s): %s', err_method, request.path,
                             extra={'status_code': 405, 'request': request})
             return HttpResponseNotAllowed(["POST"])
@@ -251,13 +246,9 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
     if not user_profile.is_active:
         raise JsonableError(_("Account is deactivated"))
 
-    # Either the subdomain matches, or processing a websockets message
-    # in the message_sender worker (which will have already had the
-    # subdomain validated), or we're accessing Tornado from and to
-    # localhost (aka spoofing a request as the user).
+    # Either the subdomain matches, or we're accessing Tornado from
+    # and to localhost (aka spoofing a request as the user).
     if (not user_matches_subdomain(get_subdomain(request), user_profile) and
-        not (request.method == "SOCKET" and
-             request.META['SERVER_NAME'] == "127.0.0.1") and
         not (settings.RUNNING_INSIDE_TORNADO and
              request.META["SERVER_NAME"] == "127.0.0.1" and
              request.META["REMOTE_ADDR"] == "127.0.0.1")):
@@ -266,6 +257,9 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
         raise JsonableError(_("Account is not associated with this subdomain"))
 
 def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[str]=None) -> UserProfile:
+    if not has_api_key_format(api_key):
+        raise InvalidAPIKeyFormatError()
+
     try:
         user_profile = get_user_profile_by_api_key(api_key)
     except UserProfile.DoesNotExist:

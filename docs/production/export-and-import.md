@@ -14,9 +14,9 @@ service (or back):
     the same output).
   * Backups must be restored on a server running the same `postgres`
     version.
-  * Migrating organizations between self-hosting and Zulip Cloud
-    (generally requires renumbering all the
-    users/messages/etc.).
+  * Backups aren't useful for migrating organizations between
+    self-hosting and Zulip Cloud (which may require renumbering all
+    the users/messages/etc.).
 
   We highly recommend this tool in situations where it is applicable,
   because it is highly optimized and highly stable, since the hard
@@ -34,11 +34,12 @@ service (or back):
   [Slack](https://zulipchat.com/help/import-from-slack).
 
   Like the backup tool, logical data exports must be imported on a
-  Zulip server running the same version.  However, these exports
-  imported on Zulip servers running a different `postgres` version or
-  hosting a different set of Zulip organizations.  We recommend this
-  tool in cases where the backup tool isn't applicable, including
-  situations where an easily machine-parsable export format is desired.
+  Zulip server running the same version.  However, logical data
+  exports can be imported on Zulip servers running a different
+  `postgres` version or hosting a different set of Zulip
+  organizations.  We recommend this tool in cases where the backup
+  tool isn't applicable, including situations where an easily
+  machine-parsable export format is desired.
 
 * Zulip also has an [HTML archive
   tool](https://github.com/zulip/zulip-archive), which is primarily
@@ -65,7 +66,7 @@ su zulip -c '/home/zulip/deployments/current/manage.py backup'
 
 The backup tool provides the following options:
 - `--output`: Path where the output file should be stored. If no path is
- provided, the output file would be saved to a temporary directory.
+ provided, the output file is saved to a temporary directory.
 - `--skip-db`: Skip backup of the database.  Useful if you're using a
   remote postgres host with its own backup system and just need to
   backup non-database state.
@@ -138,20 +139,16 @@ and you may want to backup separately:
   exceed its disk capacity.  Additionally, S3 is a reliable persistent
   storage system with its own high-quality tools for doing backups.
 
-* Transient data present in Zulip's RabbitMQ queues.  For example, a
-  record that a missed-message email for a given Zulip message is
-  scheduled to be sent to a given user in 2 minutes, if the recipient
-  user doesn't interact with Zulip during that time window.  You can
-  check their status using `rabbitmq list_queues` as root.
+* SSL certificates.  These are not included because they are
+  particularly security-sensitive and are either trivially replaced
+  (if generated via Certbot) or provided by the system administrator.
 
-* Certain highly transient state that Zulip doesn't store in a
-  database, such as typing status, API rate-limiting counters,
-  etc. that would have no value 1 minute after the backup is
-  completed.
-
-* SSL certificates.  Since these are particularly security-sensitive
-  and either trivially replaced (if generated via Certbot) or provided
-  by the system administrator.
+For completeness, Zulip's backups do not include certain highly
+transient state that Zulip doesn't store in a database.  For example,
+typing status data, API rate-limiting counters, and RabbitMQ queues
+that are essentially always empty in a healthy server (like outgoing
+emails to send).  You can check whether these queues are empty using
+`rabbitmqctl list_queues`.
 
 #### Backup details
 
@@ -300,9 +297,9 @@ archive of all the organization's uploaded files.
 
 1. [Install a new Zulip server](../production/install.md),
 **skipping Step 3** (you'll create your Zulip organization via the data
- import tool instead).  
+ import tool instead).
     * Ensure that the Zulip server you're importing into is running the same
-version of Zulip as the server you're exporting from.
+      version of Zulip as the server you're exporting from.
 
     * For exports from zulipchat.com, run the following:
 
@@ -310,17 +307,56 @@ version of Zulip as the server you're exporting from.
       /home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
       ```
 
-    * Note that if your server has 2GB of RAM or less, you'll want to read the
-    detailed instructions [here][upgrade-zulip-from-git].
-    It is not sufficient to be on the latest stable release, as zulipchat.com is
-    often several months of development ahead of the latest release.
+      It is not sufficient to be on the latest stable release, as
+      zulipchat.com runs pre-release versions of Zulip that are often
+      several months of development ahead of the latest release.
+
+      Read the instructions [here][upgrade-zulip-from-git] for more details.
+
+    * Note that if your server has limited free RAM, you'll want to
+      shut down the Zulip server with `supervisorctl stop all` while
+      you run the import, since our minimal system requirements do not
+      budget extra RAM for running the data import tool.
 
 2. If your new Zulip server is meant to fully replace a previous Zulip
-server, you may want to copy the contents of `/etc/zulip` to your new
-server to reuse the server-level configuration and
-secret keys from your old server.  See our
-[documentation on backups](#backups) for details on the contents of
-this directory.
+server, you may want to copy some settings from `/etc/zulip` to your
+new server to reuse the server-level configuration and secret keys
+from your old server.  There are a few important details to understand
+about doing so:
+
+   * Copying `/etc/zulip/settings.py` and `/etc/zulip/zulip.conf` is
+     safe and recommended.  Care is required when copying secrets from
+     `/etc/zulip/zulip-secrets.conf` (details below).
+   * If you copy `zulip_org_id` and `zulip_org_key` (the credentials
+     for the [mobile push notifications
+     service](../production/mobile-push-notifications.md)), you should
+     be very careful to make sure the no users had their IDs
+     renumbered during the import process (this can be checked using
+     `manage.py shell` with some care).  The push notifications
+     service has a mapping of which `user_id` values are associated
+     with which devices for a given Zulip server (represented by the
+     `zulip_org_id` registration).  This means that if any `user_id`
+     values were renumbered during the import and you don't register a
+     new `zulip_org_id`, push notifications meant for the user who now
+     has ID 15 may be sent to devices registered by the user who had
+     user ID 15 before the data export (yikes!).  The solution is
+     simply to not copy these settings and re-register your server for
+     mobile push notifications if any users had their IDs renumbered
+     during the logical export/import process.
+   * If you copy the `rabbitmq_password` secret from
+     `zulip-secrets.conf`, you'll need to run
+     `scripts/setup/configure-rabbitmq` to update your local RabbitMQ
+     installation to use the password in your Zulip secrets file.
+   * You will likely want to copy `camo_key` (required to avoid
+     breaking certain links) and any settings you added related to
+     authentication and email delivery so that those work on your new
+     server.
+   * Copying `avatar_salt` is not recommended, due to similar issues
+     to the mobile push notifications service.  Zulip will
+     automatically rewrite avatars at URLs appropriate for the new
+     user IDs, and using the same avatar salt (and same server URL)
+     post import could result in issues with browsers caching the
+     avatar image improperly for users whose ID was renumbered.
 
 3. Log in to a shell on your Zulip server as the `zulip` user. Run the
 following commands, replacing the filename with the path to your data

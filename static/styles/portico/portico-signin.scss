@@ -249,7 +249,9 @@ html {
     margin: 0 auto 10px;
 }
 
-.register-account .terms-of-service .input-group {
+.register-account .terms-of-service .input-group,
+.register-account .default-stream-groups .input-group,
+.register-account .default-stream-groups p {
     width: 330px;
     margin: 0 auto 10px;
 }

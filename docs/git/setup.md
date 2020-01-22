@@ -39,7 +39,7 @@ something goes wrong, this helps you figure out when and why.
 
 If you don't already have one installed, here are some suggestions:
 
-- macOS: [GitX-dev][gitgui-gitxdev]
+- macOS: [GitX][gitgui-gitx] (previously [GitX-dev][gitgui-gitxdev])
 - Ubuntu/Linux: [git-cola][gitgui-gitcola], [gitg][gitgui-gitg], [gitk][gitgui-gitk]
 - Windows: [SourceTree][gitgui-sourcetree]
 
@@ -61,6 +61,7 @@ And, if none of the above are to your liking, try [one of these][gitbook-guis].
 [gitgui-gitcola]: http://git-cola.github.io/
 [gitgui-gitg]: https://wiki.gnome.org/Apps/Gitg
 [gitgui-gitk]: https://git-scm.com/docs/gitk
+[gitgui-gitx]: https://github.com/gitx/gitx/
 [gitgui-gitxdev]: https://rowanj.github.io/gitx/
 [gitgui-sourcetree]: https://www.sourcetreeapp.com/
 [github-help-add-ssh-key]: https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account

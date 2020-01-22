@@ -278,6 +278,12 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(filter_presence_idle_user_ids({user_profile.id}), [user_profile.id])
         self.client_post("/json/users/me/presence", {'status': 'idle'})
         self.assertEqual(filter_presence_idle_user_ids({user_profile.id}), [user_profile.id])
+
+        # Active presence from the mobile app doesn't count
+        self.client_post("/json/users/me/presence", {'status': 'active'},
+                         HTTP_USER_AGENT="ZulipMobile/1.0")
+        self.assertEqual(filter_presence_idle_user_ids({user_profile.id}), [user_profile.id])
+
         self.client_post("/json/users/me/presence", {'status': 'active'})
         self.assertEqual(filter_presence_idle_user_ids({user_profile.id}), [])
 

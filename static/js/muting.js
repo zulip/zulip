@@ -1,11 +1,12 @@
 const Dict = require('./dict').Dict;
+const FoldDict = require('./fold_dict').FoldDict;
 
 let muted_topics = new Dict();
 
 exports.add_muted_topic = function (stream_id, topic) {
     let sub_dict = muted_topics.get(stream_id);
     if (!sub_dict) {
-        sub_dict = new Dict({fold_case: true});
+        sub_dict = new FoldDict();
         muted_topics.set(stream_id, sub_dict);
     }
     sub_dict.set(topic, true);

@@ -1,18 +1,16 @@
+import os
+import time
 from datetime import timedelta
+from typing import Any, Dict
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
-from analytics.models import installation_epoch, \
-    last_successful_fill
 from analytics.lib.counts import COUNT_STATS, CountStat
-from zerver.lib.timestamp import floor_to_hour, floor_to_day, verify_UTC, \
-    TimezoneNotUTCException
+from analytics.models import installation_epoch, last_successful_fill
+from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day, \
+    floor_to_hour, verify_UTC
 from zerver.models import Realm
-
-import os
-import time
-from typing import Any, Dict
 
 states = {
     0: "OK",

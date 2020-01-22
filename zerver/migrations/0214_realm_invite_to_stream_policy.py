@@ -3,9 +3,9 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+
 
 def handle_waiting_period(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Realm = apps.get_model('zerver', 'Realm')

@@ -6,6 +6,7 @@ from django.core.management.base import CommandError
 from zerver.lib.actions import do_change_full_name
 from zerver.lib.management import ZulipBaseCommand
 
+
 class Command(ZulipBaseCommand):
     help = """Change the names for many users."""
 

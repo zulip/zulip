@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class TransifexHookTests(WebhookTestCase):
     STREAM_NAME = 'transifex'
     URL_TEMPLATE = u"/api/v1/external/transifex?stream={stream}&api_key={api_key}"

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-
 from zerver.lib.test_classes import WebhookTestCase
-
 from zerver.webhooks.gosquared.view import CHAT_MESSAGE_TEMPLATE
+
 
 class GoSquaredHookTests(WebhookTestCase):
     STREAM_NAME = 'gosquared'

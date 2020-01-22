@@ -3,6 +3,7 @@ from typing import Any
 from django.conf import settings
 
 from zerver.lib.management import ZulipBaseCommand
+
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import invoice_plans_as_needed
 

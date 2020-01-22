@@ -5,7 +5,7 @@ from typing import Any, List, Optional
 from django.db import connection
 
 from zerver.lib.fix_unreads import fix
-from zerver.lib.management import ZulipBaseCommand, CommandError
+from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.models import Realm, UserProfile
 
 logging.getLogger('zulip.fix_unreads').setLevel(logging.INFO)

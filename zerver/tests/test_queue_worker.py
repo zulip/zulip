@@ -11,12 +11,15 @@ from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingException, clear_history
+from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, UserActivity, PreregistrationUser, \
     get_system_bot, get_stream, get_realm
+from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
     get_active_worker_queues,
@@ -36,6 +39,11 @@ Event = Dict[str, Any]
 # loop.
 class AbortLoop(Exception):
     pass
+
+loopworker_sleep_mock = patch(
+    'zerver.worker.queue_processors.time.sleep',
+    side_effect=AbortLoop,
+)
 
 class WorkerTest(ZulipTestCase):
     class FakeClient:
@@ -75,16 +83,11 @@ class WorkerTest(ZulipTestCase):
         fake_client = self.FakeClient()
         worker = SlowQueryWorker()
 
-        time_mock = patch(
-            'zerver.worker.queue_processors.time.sleep',
-            side_effect=AbortLoop,
-        )
-
         send_mock = patch(
             'zerver.worker.queue_processors.internal_send_message'
         )
 
-        with send_mock as sm, time_mock as tm:
+        with send_mock as sm, loopworker_sleep_mock as tm:
             with simulated_queue_client(lambda: fake_client):
                 try:
                     worker.setup()
@@ -128,12 +131,7 @@ class WorkerTest(ZulipTestCase):
         )
         fake_client.queue.append(('user_activity', data))
 
-        time_mock = patch(
-            'zerver.worker.queue_processors.time.sleep',
-            side_effect=AbortLoop,
-        )
-
-        with time_mock:
+        with loopworker_sleep_mock:
             with simulated_queue_client(lambda: fake_client):
                 worker = queue_processors.UserActivityWorker()
                 worker.setup()
@@ -152,7 +150,7 @@ class WorkerTest(ZulipTestCase):
         # up to 2.  Ideally, we'd use an event with a slightly never
         # time, but it's not really important.
         fake_client.queue.append(('user_activity', data))
-        with time_mock:
+        with loopworker_sleep_mock:
             with simulated_queue_client(lambda: fake_client):
                 worker = queue_processors.UserActivityWorker()
                 worker.setup()
@@ -221,7 +219,7 @@ class WorkerTest(ZulipTestCase):
                 self.is_running = False
 
         timer = MockTimer()
-        time_mock = patch(
+        loopworker_sleep_mock = patch(
             'zerver.worker.queue_processors.Timer',
             return_value=timer,
         )
@@ -233,7 +231,7 @@ class WorkerTest(ZulipTestCase):
 
         bonus_event = dict(user_profile_id=hamlet.id, message_id=hamlet3_msg_id)
 
-        with send_mock as sm, time_mock as tm:
+        with send_mock as sm, loopworker_sleep_mock as tm:
             with simulated_queue_client(lambda: fake_client):
                 self.assertFalse(timer.is_alive())
                 mmw.setup()
@@ -273,6 +271,62 @@ class WorkerTest(ZulipTestCase):
             {m['message'].content for m in othello_info['missed_messages']},
             {'where art thou, othello?'}
         )
+
+    def test_push_notifications_worker(self) -> None:
+        """
+        The push notifications system has its own comprehensive test suite,
+        so we can limit ourselves to simple unit testing the queue processor,
+        without going deeper into the system - by mocking the handle_push_notification
+        functions to immediately produce the effect we want, to test its handling by the queue
+        processor.
+        """
+        fake_client = self.FakeClient()
+
+        def fake_publish(queue_name: str,
+                         event: Dict[str, Any],
+                         processor: Callable[[Any], None]) -> None:
+            fake_client.queue.append((queue_name, event))
+
+        def generate_new_message_notification() -> Dict[str, Any]:
+            return build_offline_notification(1, 1)
+
+        def generate_remove_notification() -> Dict[str, Any]:
+            return {
+                "type": "remove",
+                "user_profile_id": 1,
+                "message_ids": [1],
+            }
+
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.PushNotificationsWorker()
+            worker.setup()
+            with patch('zerver.worker.queue_processors.handle_push_notification') as mock_handle_new, \
+                    patch('zerver.worker.queue_processors.handle_remove_push_notification') as mock_handle_remove, \
+                    patch('zerver.worker.queue_processors.initialize_push_notifications'):
+                event_new = generate_new_message_notification()
+                event_remove = generate_remove_notification()
+                fake_client.queue.append(('missedmessage_mobile_notifications', event_new))
+                fake_client.queue.append(('missedmessage_mobile_notifications', event_remove))
+
+                worker.start()
+                mock_handle_new.assert_called_once_with(event_new['user_profile_id'], event_new)
+                mock_handle_remove.assert_called_once_with(event_remove['user_profile_id'],
+                                                           event_remove['message_ids'])
+
+            with patch('zerver.worker.queue_processors.handle_push_notification',
+                       side_effect=PushNotificationBouncerRetryLaterError("test")) as mock_handle_new, \
+                    patch('zerver.worker.queue_processors.handle_remove_push_notification',
+                          side_effect=PushNotificationBouncerRetryLaterError("test")) as mock_handle_remove, \
+                    patch('zerver.worker.queue_processors.initialize_push_notifications'):
+                event_new = generate_new_message_notification()
+                event_remove = generate_remove_notification()
+                fake_client.queue.append(('missedmessage_mobile_notifications', event_new))
+                fake_client.queue.append(('missedmessage_mobile_notifications', event_remove))
+
+                with patch('zerver.lib.queue.queue_json_publish', side_effect=fake_publish):
+                    worker.start()
+                    self.assertEqual(mock_handle_new.call_count, 1 + MAX_REQUEST_RETRIES)
+                    self.assertEqual(mock_handle_remove.call_count, 1 + MAX_REQUEST_RETRIES)
 
     @patch('zerver.worker.queue_processors.mirror_email')
     def test_mirror_worker(self, mock_mirror_email: MagicMock) -> None:
@@ -387,7 +441,7 @@ class WorkerTest(ZulipTestCase):
                     patch('logging.exception'):
                 worker.start()
 
-        self.assertEqual(data['failed_tries'], 4)
+        self.assertEqual(data['failed_tries'], 1 + MAX_REQUEST_RETRIES)
 
     def test_signups_worker_retries(self) -> None:
         """Tests the retry logic of signups queue."""
@@ -416,7 +470,7 @@ class WorkerTest(ZulipTestCase):
                                   ZULIP_FRIENDS_LIST_ID='id'):
                 worker.start()
 
-        self.assertEqual(data['failed_tries'], 4)
+        self.assertEqual(data['failed_tries'], 1 + MAX_REQUEST_RETRIES)
 
     def test_signups_worker_existing_member(self) -> None:
         fake_client = self.FakeClient()
@@ -466,17 +520,17 @@ class WorkerTest(ZulipTestCase):
 
     def test_invites_worker(self) -> None:
         fake_client = self.FakeClient()
-        invitor = self.example_user('iago')
+        inviter = self.example_user('iago')
         prereg_alice = PreregistrationUser.objects.create(
-            email=self.nonreg_email('alice'), referred_by=invitor, realm=invitor.realm)
+            email=self.nonreg_email('alice'), referred_by=inviter, realm=inviter.realm)
         PreregistrationUser.objects.create(
-            email=self.nonreg_email('bob'), referred_by=invitor, realm=invitor.realm)
+            email=self.nonreg_email('bob'), referred_by=inviter, realm=inviter.realm)
         data = [
-            dict(prereg_id=prereg_alice.id, referrer_id=invitor.id, email_body=None),
+            dict(prereg_id=prereg_alice.id, referrer_id=inviter.id, email_body=None),
             # Nonexistent prereg_id, as if the invitation was deleted
-            dict(prereg_id=-1, referrer_id=invitor.id, email_body=None),
+            dict(prereg_id=-1, referrer_id=inviter.id, email_body=None),
             # Form with `email` is from versions up to Zulip 1.7.1
-            dict(email=self.nonreg_email('bob'), referrer_id=invitor.id, email_body=None),
+            dict(email=self.nonreg_email('bob'), referrer_id=inviter.id, email_body=None),
         ]
         for element in data:
             fake_client.queue.append(('invites', element))
@@ -522,8 +576,48 @@ class WorkerTest(ZulipTestCase):
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
         with open(fn, 'r') as f:
             line = f.readline().strip()
-        event = ujson.loads(line.split('\t')[1])
+        events = ujson.loads(line.split('\t')[1])
+        self.assert_length(events, 1)
+        event = events[0]
         self.assertEqual(event["type"], 'unexpected behaviour')
+
+        processed = []
+        @queue_processors.assign_queue('unreliable_loopworker')
+        class UnreliableLoopWorker(queue_processors.LoopQueueProcessingWorker):
+            def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+                for event in events:
+                    if event["type"] == 'unexpected behaviour':
+                        raise Exception('Worker task not performing as expected!')
+                    processed.append(event["type"])
+
+        for msg in ['good', 'fine', 'unexpected behaviour', 'back to normal']:
+            fake_client.queue.append(('unreliable_loopworker', {'type': msg}))
+
+        fn = os.path.join(settings.QUEUE_ERROR_DIR, 'unreliable_loopworker.errors')
+        try:
+            os.remove(fn)
+        except OSError:  # nocoverage # error handling for the directory not existing
+            pass
+
+        with loopworker_sleep_mock, simulated_queue_client(lambda: fake_client):
+            loopworker = UnreliableLoopWorker()
+            loopworker.setup()
+            with patch('logging.exception') as logging_exception_mock:
+                try:
+                    loopworker.start()
+                except AbortLoop:
+                    pass
+                logging_exception_mock.assert_called_once_with(
+                    "Problem handling data on queue unreliable_loopworker")
+
+        self.assertEqual(processed, ['good', 'fine'])
+        with open(fn, 'r') as f:
+            line = f.readline().strip()
+        events = ujson.loads(line.split('\t')[1])
+        self.assert_length(events, 4)
+
+        self.assertEqual([event["type"] for event in events],
+                         ['good', 'fine', 'unexpected behaviour', 'back to normal'])
 
     def test_worker_noname(self) -> None:
         class TestWorker(queue_processors.QueueProcessingWorker):
@@ -534,16 +628,6 @@ class WorkerTest(ZulipTestCase):
                 pass  # nocoverage # this is intentionally not called
         with self.assertRaises(queue_processors.WorkerDeclarationException):
             TestWorker()
-
-    def test_worker_noconsume(self) -> None:
-        @queue_processors.assign_queue('test_worker')
-        class TestWorker(queue_processors.QueueProcessingWorker):
-            def __init__(self) -> None:
-                super().__init__()
-
-        with self.assertRaises(queue_processors.WorkerDeclarationException):
-            worker = TestWorker()
-            worker.consume({})
 
     def test_get_active_worker_queues(self) -> None:
         worker_queue_count = (len(QueueProcessingWorker.__subclasses__()) +

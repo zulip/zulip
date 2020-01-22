@@ -6,8 +6,9 @@ from django.core.management.base import CommandParser
 from django.db import models
 
 from zerver.lib import utils
-from zerver.lib.management import ZulipBaseCommand, CommandError
+from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.models import UserMessage
+
 
 class Command(ZulipBaseCommand):
     help = """Sets user message flags. Used internally by actions.py. Marks all

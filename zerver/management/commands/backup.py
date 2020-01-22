@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import connection
 from django.utils.timezone import now as timezone_now
 
-from scripts.lib.zulip_tools import parse_os_release, run, TIMESTAMP_FORMAT
+from scripts.lib.zulip_tools import TIMESTAMP_FORMAT, parse_os_release, run
 from version import ZULIP_VERSION
 from zerver.lib.management import ZulipBaseCommand
 from zerver.logging_handlers import try_git_describe

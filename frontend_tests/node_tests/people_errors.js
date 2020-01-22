@@ -35,6 +35,17 @@ run_test('report_late_add', () => {
     blueslip.clear_test_data();
 });
 
+run_test('is_my_user_id', () => {
+    blueslip.clear_test_data();
+    blueslip.set_test_data('error', 'user_id is a string in my_user_id: 999');
+    assert.equal(people.is_my_user_id('999'), false);
+
+    blueslip.set_test_data('error', 'user_id is a string in my_user_id: 30');
+    assert.equal(people.is_my_user_id(me.user_id.toString()), true);
+
+    assert.equal(blueslip.get_test_logs('error').length, 2);
+});
+
 run_test('blueslip', () => {
     const unknown_email = "alicebobfred@example.com";
 
@@ -106,7 +117,7 @@ run_test('blueslip', () => {
         display_recipient: [
             {id: maria.user_id},
             {id: 42},
-            {user_id: charles.user_id},
+            {id: charles.user_id},
         ],
         sender_id: charles.user_id,
     };

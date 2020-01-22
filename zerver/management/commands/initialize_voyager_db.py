@@ -1,13 +1,13 @@
 from argparse import ArgumentParser
-from typing import Any, Iterable, Tuple, Optional
+from typing import Any, Iterable, Optional, Tuple
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_change_is_admin
 from zerver.lib.bulk_create import bulk_create_users
-from zerver.models import Realm, UserProfile, \
-    email_to_username, get_client, get_system_bot
+from zerver.models import Realm, UserProfile, email_to_username, get_client, \
+    get_system_bot
 
 settings.TORNADO_SERVER = None
 

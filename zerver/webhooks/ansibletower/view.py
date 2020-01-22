@@ -1,13 +1,13 @@
+import operator
 from typing import Any, Dict, List
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.decorator import REQ, api_key_only_webhook_view, \
+    has_request_variables
 from zerver.lib.response import json_success
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
-
-import operator
 
 ANSIBLETOWER_DEFAULT_MESSAGE_TEMPLATE = "{friendly_name}: [#{id} {name}]({url}) {status}."
 

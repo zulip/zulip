@@ -45,12 +45,26 @@ Handlebars.registerHelper({
     not: function (a) { return !a || Handlebars.Utils.isEmpty(a); },
 });
 
+// Note that this i18n caching strategy does not allow us to support
+// live-updating the UI language without reloading the Zulip browser
+// window.  That constraint would be very hard to change in any case,
+// though, because of how Zulip renders some strings using the backend
+// Jinja2 templating engine, so we don't consider this important.
+const t_cache = new Map();
+
 Handlebars.registerHelper('t', function (i18n_key) {
     // Marks a string for translation.
     // Example usage:
     //     {{t "some English text"}}
+
+    const cache_result = t_cache.get(i18n_key);
+    if (cache_result !== undefined) {
+        return cache_result;
+    }
     const result = i18n.t(i18n_key);
-    return new Handlebars.SafeString(result);
+    const safe_result = new Handlebars.SafeString(result);
+    t_cache.set(i18n_key, safe_result);
+    return safe_result;
 });
 
 Handlebars.registerHelper('tr', function (context, options) {

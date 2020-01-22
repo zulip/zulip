@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
 from django.test import TestCase
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.webhooks.appfollow.view import convert_markdown
+
 
 class AppFollowHookTests(WebhookTestCase):
     STREAM_NAME = 'appfollow'

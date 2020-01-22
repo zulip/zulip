@@ -8,6 +8,7 @@ zrequire('util');
 zrequire('stream_data');
 zrequire('search_util');
 set_global('page_params', {});
+set_global('blueslip', global.make_zblueslip());
 
 set_global('location', {
     hash: "#streams/1/announce",
@@ -124,8 +125,8 @@ run_test('filter_table', () => {
     assert.deepEqual(sub_table_append, [
         '.stream-row-poland',
         '.stream-row-pomona',
-        '.stream-row-denmark',
         '.stream-row-cpp',
+        '.stream-row-denmark',
     ]);
 
     // Search with multiple keywords
@@ -180,8 +181,8 @@ run_test('filter_table', () => {
     assert.deepEqual(sub_table_append, [
         '.stream-row-pomona',
         '.stream-row-poland',
-        '.stream-row-denmark',
         '.stream-row-cpp',
+        '.stream-row-denmark',
     ]);
 
     // active stream-row is not included in results

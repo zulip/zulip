@@ -2,9 +2,10 @@ from argparse import ArgumentParser
 from typing import Any
 
 from zerver.lib.actions import do_deactivate_user
-from zerver.lib.management import ZulipBaseCommand, CommandError
+from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.lib.sessions import user_sessions
 from zerver.models import UserProfile
+
 
 class Command(ZulipBaseCommand):
     help = "Deactivate a user, including forcibly logging them out."

@@ -12,8 +12,8 @@ exports.make_event_store = (selector) => {
        handlers.
 
     */
-    const on_functions = new Dict();
-    const child_on_functions = new Dict();
+    const on_functions = new Map();
+    const child_on_functions = new Map();
 
     function generic_event(event_name, arg) {
         if (typeof arg === 'function') {
@@ -58,7 +58,7 @@ exports.make_event_store = (selector) => {
             const event_name = arguments[0];
 
             if (arguments.length === 1) {
-                on_functions.del(event_name);
+                on_functions.delete(event_name);
                 return;
             }
 
@@ -96,7 +96,12 @@ exports.make_event_store = (selector) => {
             handler = arguments[2];
             assert.equal(typeof sel, 'string', 'String selectors expected here.');
             assert.equal(typeof handler, 'function', 'An handler function expected here.');
-            const child_on = child_on_functions.setdefault(sel, new Dict());
+
+            if (!child_on_functions.has(sel)) {
+                child_on_functions.set(sel, new Map());
+            }
+
+            const child_on = child_on_functions.get(sel);
 
             if (child_on.has(event_name)) {
                 throw Error('dup ' + event_name + ' handler for ' + selector + ' ' + sel);
@@ -132,12 +137,12 @@ exports.make_new_elem = function (selector, opts) {
     let css;
     let shown = false;
     let focused = false;
-    const find_results = new Dict();
+    const find_results = new Map();
     let my_parent;
-    const parents_result = new Dict();
-    const properties = new Dict();
-    const attrs = new Dict();
-    const classes = new Dict();
+    const parents_result = new Map();
+    const properties = new Map();
+    const attrs = new Map();
+    const classes = new Map();
     const event_store = exports.make_event_store(selector);
 
     const self = {
@@ -172,7 +177,17 @@ exports.make_new_elem = function (selector, opts) {
             }
             return elem.parent().closest(selector);
         },
-        data: noop,
+        data: function (name, val) {
+            if (val === undefined) {
+                const data_val = attrs.get('data-' + name);
+                if (data_val === undefined) {
+                    return;
+                }
+                return JSON.parse(data_val);
+            }
+            attrs.set('data-' + name, val);
+            return self;
+        },
         delay: function () {
             return self;
         },
@@ -289,13 +304,13 @@ exports.make_new_elem = function (selector, opts) {
             return self;
         },
         removeAttr: function (name) {
-            attrs.del(name);
+            attrs.delete(name);
             return self;
         },
         removeClass: function (class_names) {
             class_names = class_names.split(' ');
             class_names.forEach(function (class_name) {
-                classes.del(class_name);
+                classes.delete(class_name);
             });
             return self;
         },

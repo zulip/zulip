@@ -175,6 +175,7 @@ class HomeTest(ZulipTestCase):
             "realm_password_auth_enabled",
             "realm_plan_type",
             "realm_presence_disabled",
+            "realm_private_message_policy",
             "realm_push_notifications_enabled",
             "realm_send_welcome_emails",
             "realm_signup_notifications_stream_id",
@@ -214,7 +215,6 @@ class HomeTest(ZulipTestCase):
             "unread_msgs",
             "unsubscribed",
             "upgrade_text_for_wide_organization_logo",
-            "use_websockets",
             "user_id",
             "user_status",
             "warn_no_email",
@@ -245,8 +245,8 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(result["Cache-Control"].split(", ")),
                          {"must-revalidate", "no-store", "no-cache"})
 
-        self.assert_length(queries, 45)
-        self.assert_length(cache_mock.call_args_list, 7)
+        self.assert_length(queries, 42)
+        self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode('utf-8')
 
@@ -311,7 +311,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 42)
+            self.assert_length(queries, 40)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:
@@ -343,7 +343,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 39)
+        self.assert_length(queries2, 37)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
@@ -584,6 +584,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 email='emailgateway@zulip.com',
                 full_name='Email Gateway',
+                bot_owner_id=None,
                 is_bot=True
             ),
             dict(
@@ -591,6 +592,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 email='feedback@zulip.com',
                 full_name='Zulip Feedback Bot',
+                bot_owner_id=None,
                 is_bot=True
             ),
             dict(
@@ -598,6 +600,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 email=notification_bot.email,
                 full_name='Notification Bot',
+                bot_owner_id=None,
                 is_bot=True
             ),
             dict(
@@ -605,6 +608,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 email='welcome-bot@zulip.com',
                 full_name='Welcome Bot',
+                bot_owner_id=None,
                 is_bot=True
             ),
         ], key=by_email))

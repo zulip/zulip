@@ -12,6 +12,20 @@ let current_topic_sidebar_elem;
 let all_messages_sidebar_elem;
 let starred_messages_sidebar_elem;
 
+function elem_to_stream_id(elem) {
+    const stream_id = parseInt(elem.attr('data-stream-id'), 10);
+
+    if (stream_id === undefined) {
+        blueslip.error('could not find stream id');
+    }
+
+    return stream_id;
+}
+
+function topic_popover_stream_id(e) {
+    return elem_to_stream_id($(e.currentTarget));
+}
+
 exports.stream_popped = function () {
     return current_stream_sidebar_elem !== undefined;
 };
@@ -70,7 +84,8 @@ exports.hide_streamlist_sidebar = function () {
 
 
 function stream_popover_sub(e) {
-    const stream_id = $(e.currentTarget).parents('ul').attr('data-stream-id');
+    const elem = $(e.currentTarget).parents('ul');
+    const stream_id = elem_to_stream_id(elem);
     const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
         blueslip.error('Unknown stream: ' + stream_id);
@@ -252,7 +267,8 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
 
         const elt = e.target;
-        const stream_id = $(elt).parents('li').attr('data-stream-id');
+        const stream_li = $(elt).parents('li');
+        const stream_id = elem_to_stream_id(stream_li);
 
         build_stream_popover({
             elt: elt,
@@ -264,7 +280,8 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
 
         const elt = $(e.target).closest('.topic-sidebar-arrow').expectOne()[0];
-        const stream_id = $(elt).closest('.narrow-filter').expectOne().attr('data-stream-id');
+        const stream_li = $(elt).closest('.narrow-filter').expectOne();
+        const stream_id = elem_to_stream_id(stream_li);
         const topic_name = $(elt).closest('li').expectOne().attr('data-topic-name');
 
         build_topic_popover({
@@ -384,15 +401,7 @@ exports.register_stream_handlers = function () {
 
 };
 
-function topic_popover_stream_id(e) {
-    // TODO: use data-stream-id in stream list
-    const stream_id = $(e.currentTarget).attr('data-stream-id');
-
-    return stream_id;
-}
-
 function topic_popover_sub(e) {
-    // TODO: use data-stream-id in stream list
     const stream_id = topic_popover_stream_id(e);
     if (!stream_id) {
         blueslip.error('cannot find stream id');

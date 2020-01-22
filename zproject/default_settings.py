@@ -33,7 +33,7 @@ AUTH_LDAP_SERVER_URI = ""
 LDAP_EMAIL_ATTR = None  # type: Optional[str]
 AUTH_LDAP_USERNAME_ATTR = None  # type: Optional[str]
 AUTH_LDAP_REVERSE_EMAIL_SEARCH = None  # type: Optional[LDAPSearch]
-# AUTH_LDAP_CONNECTION_OPTIONS: we set ldap.OPT_REFERRALS below if unset.
+# AUTH_LDAP_CONNECTION_OPTIONS: we set ldap.OPT_REFERRALS in settings.py if unset.
 AUTH_LDAP_CONNECTION_OPTIONS = {}  # type: Dict[int, object]
 # Disable django-auth-ldap caching, to prevent problems with OU changes.
 AUTH_LDAP_CACHE_TIMEOUT = 0
@@ -108,11 +108,13 @@ BOT_CONFIG_SIZE_LIMIT = 10000
 # External service configuration
 CAMO_URI = ''
 MEMCACHED_LOCATION = '127.0.0.1:11211'
+MEMCACHED_USERNAME = None if get_secret("memcached_password") is None else "zulip"
 RABBITMQ_HOST = '127.0.0.1'
 RABBITMQ_USERNAME = 'zulip'
 REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
 REMOTE_POSTGRES_HOST = ''
+REMOTE_POSTGRES_PORT = ''
 REMOTE_POSTGRES_SSLMODE = ''
 THUMBOR_URL = ''
 THUMBOR_SERVES_CAMO = False
@@ -166,7 +168,7 @@ DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 #    like zulipchat.com or to work around a problem on another server.
 
 # The following bots are optional system bots not enabled by
-# default.  The default ones are defined in INTERNAL_BOTS, below.
+# default.  The default ones are defined in INTERNAL_BOTS, in settings.py.
 
 # ERROR_BOT sends Django exceptions to an "errors" stream in the
 # system realm.
@@ -221,12 +223,12 @@ REALM_HOSTS = {}  # type: Dict[str, str]
 # testing.
 USING_PGROONGA = False
 
-# How Django should send emails.  Set for most contexts below, but
+# How Django should send emails.  Set for most contexts in settings.py, but
 # available for sysadmin override in unusual cases.
 EMAIL_BACKEND = None  # type: Optional[str]
 
 # Whether to give admins a warning in the web app that email isn't set up.
-# Set below when email isn't configured.
+# Set in settings.py when email isn't configured.
 WARN_NO_EMAIL = False
 
 # Whether to keep extra frontend stack trace data.
@@ -304,11 +306,6 @@ PERSONAL_ZMIRROR_SERVER = None  # type: Optional[str]
 CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS = 1
 INVITATION_LINK_VALIDITY_DAYS = 10
 REALM_CREATION_LINK_VALIDITY_DAYS = 7
-
-# By default, Zulip uses websockets to send messages.  In some
-# networks, websockets don't work.  One can configure Zulip to
-# not use websockets here.
-USE_WEBSOCKETS = True
 
 # Version number for ToS.  Change this if you want to force every
 # user to click through to re-accept terms of service before using

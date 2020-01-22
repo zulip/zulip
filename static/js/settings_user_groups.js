@@ -57,7 +57,7 @@ exports.populate_user_groups = function () {
         }
 
         const userg = $('div.user-group[id="' + data.id + '"]');
-        data.members.keys().forEach(function (user_id) {
+        data.members.forEach(function (user_id) {
             const user = people.get_person_from_user_id(user_id);
             user_pill.append_user(user, pills);
         });
@@ -87,7 +87,7 @@ exports.populate_user_groups = function () {
         function is_user_group_changed() {
             const draft_group = get_pill_user_ids();
             const group_data = user_groups.get_user_group_from_id(data.id);
-            const original_group = group_data.members.keys();
+            const original_group = [...group_data.members];
             const same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             const description = $('#user-groups #' + data.id + ' .description').text().trim();
             const name = $('#user-groups #' + data.id + ' .name').text().trim();
@@ -138,7 +138,7 @@ exports.populate_user_groups = function () {
         function save_members() {
             const draft_group = get_pill_user_ids();
             const group_data = user_groups.get_user_group_from_id(data.id);
-            const original_group = group_data.members.keys();
+            const original_group = [...group_data.members];
             const same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             if (!draft_group.length || same_groups) {
                 return;

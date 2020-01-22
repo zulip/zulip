@@ -8,6 +8,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 class Uploader:
     def __init__(self) -> None:
         self.old_orig_image_path_template = "{realm_id}/emoji/{emoji_file_name}.original"

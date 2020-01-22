@@ -46,6 +46,28 @@ Here is the **full list of search operators**.
 * `group-pm-with:ada@zulip.com,bob@zulip.com`: Search all group
   private messages that include Ada and Bob.
 
+## Searching shared history
+
+Zulip's [stream permissions](/help/stream-permissions) model allows
+access to the full history of public streams and [private streams with
+shared history](/help/stream-permissions), including messages sent
+before you joined the stream (or organization) or those sent to public
+streams you are not subscribed to.
+
+By default, Zulip searches messages in your personal history, i.e. the
+messages you actually received.  This avoids cluttering search results
+with irrelevant messages from public streams you're not interested in.
+
+If you'd like to instead search the organization's shared history, any
+query using the `stream:` or `streams:` operators will search all
+messages that you have access to in the selected stream(s).  For
+example:
+
+* `streams:public keyword` searches for `keyword` in all public
+  streams in the organization.
+* `streams:public sender:user@example.com` searches for all messages
+  sent by the user to any public stream.
+
 ## Words and phrases
 
 Most searches consist of a list of operators followed by a list of keywords.
@@ -66,17 +88,3 @@ Note that Zulip ignores common words like `a`, `the`, and about 100
 others. A quirk in Zulip's current implementation means that if all of your
 keywords are ignored, we'll return 0 search results.
 
-## Messages sent before you joined
-
-Zulip's [stream permissions](/help/stream-permissions) model allows
-full access to the full history of public streams and [private streams
-with shared history](/help/stream-permissions), including messages
-sent before you joined the stream (or organization) or those sent to
-public streams you are not subscribed to.
-
-By default, Zulip searches messages in your personal history,
-i.e. the messages you actually received.
-
-If you'd like to search the organization's shared history, any query
-using the `stream:` or `streams:` operators will search all messages
-that you have access to in the selected stream(s).

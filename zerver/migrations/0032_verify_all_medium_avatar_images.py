@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import hashlib
 from typing import Text
 
@@ -12,6 +11,7 @@ from mock import patch
 from zerver.lib.upload import upload_backend
 from zerver.lib.utils import make_safe_digest
 from zerver.models import UserProfile
+
 
 # We hackishly patch this function in order to revert it to the state
 # it had when this migration was first written.  This is a balance

@@ -51,8 +51,6 @@ def run():
         'frontend': ['js', 'ts', 'css', 'scss', 'hbs', 'html', 'lock'],
     }, exclude=EXCLUDED_FILES)
 
-    linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'],
-                                  description="Compares addClass() between JavaSsript and CSS.")
     linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'],
                                   fix_arg='--fix',
                                   description="Standard CSS style and formatting linter "
@@ -77,7 +75,7 @@ def run():
     linter_config.external_linter('openapi', ['node', 'tools/check-openapi'], ['yaml'],
                                   description="Validates our OpenAPI/Swagger API documentation"
                                   "(zerver/openapi/zulip.yaml) ")
-    linter_config.external_linter('shellcheck', ['shellcheck', '-x'], ['sh'],
+    linter_config.external_linter('shellcheck', ['shellcheck', '-x', '-P', 'SCRIPTDIR'], ['sh'],
                                   description="Standard shell script linter.")
     command = ['tools/run-mypy', '--quiet']
     if args.force:

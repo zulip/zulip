@@ -6,6 +6,7 @@ from django.core.management.base import CommandError
 from zerver.lib.actions import do_change_is_admin
 from zerver.lib.management import ZulipBaseCommand
 
+
 class Command(ZulipBaseCommand):
     help = """Give an existing user administrative permissions over their (own) Realm.
 

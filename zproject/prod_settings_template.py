@@ -140,7 +140,7 @@ AUTHENTICATION_BACKENDS = (
 # (3) Return to "Credentials", and select "Create credentials".
 # Choose "OAuth client ID", and follow prompts to create a consent
 # screen.  Fill in "Authorized redirect URIs" with a value like
-#   https://zulip.example.com/accounts/login/google/done/
+#   https://zulip.example.com/complete/google/
 # based on your value for EXTERNAL_HOST.
 #
 # (4) You should get a client ID and a client secret. Copy them.
@@ -393,12 +393,13 @@ ENABLE_GRAVATAR = True
 #DEFAULT_AVATAR_URI = '/local-static/default-avatar.png'
 
 # To access an external postgres database you should define the host name in
-# REMOTE_POSTGRES_HOST, you can define the password in the secrets file in the
+# REMOTE_POSTGRES_HOST, port in REMOTE_POSTGRES_PORT, password in the secrets file in the
 # property postgres_password, and the SSL connection mode in REMOTE_POSTGRES_SSLMODE
 # Valid values for REMOTE_POSTGRES_SSLMODE are documented in the
 # "SSL Mode Descriptions" table in
 #   https://www.postgresql.org/docs/9.5/static/libpq-ssl.html
 #REMOTE_POSTGRES_HOST = 'dbserver.example.com'
+#REMOTE_POSTGRES_PORT = '5432'
 #REMOTE_POSTGRES_SSLMODE = 'require'
 
 # If you want to set a Terms of Service for your server, set the path
@@ -570,6 +571,9 @@ CAMO_URI = '/external_content/'
 # to use a remote Memcached instance, set MEMCACHED_LOCATION here.
 # Format HOST:PORT
 # MEMCACHED_LOCATION = 127.0.0.1:11211
+# To authenticate to memcached, set memcached_password in zulip-secrets.conf,
+# and optionally change the default username 'zulip' here.
+# MEMCACHED_USERNAME = 'zulip'
 
 # Redis configuration
 #

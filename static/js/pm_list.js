@@ -25,15 +25,6 @@ function set_count(count) {
     update_count_in_dom(count_span, value_span, count);
 }
 
-exports.get_conversation_li = function (conversation) {
-    // conversation is something like "foo@example.com,bar@example.com"
-    const user_ids_string = people.reply_to_to_user_ids_string(conversation);
-    if (!user_ids_string) {
-        return;
-    }
-    return exports.get_li_for_user_ids_string(user_ids_string);
-};
-
 exports.get_li_for_user_ids_string = function (user_ids_string) {
     const pm_li = get_filter_li();
     const convo_li = pm_li.find("li[data-user-ids-string='" + user_ids_string + "']");
@@ -64,15 +55,27 @@ exports.close = function () {
     remove_expanded_private_messages();
 };
 
-exports._build_private_messages_list = function (active_conversation) {
+exports.get_active_user_ids_string = function () {
+    const filter = narrow_state.filter();
+
+    if (!filter) {
+        return;
+    }
+
+    const emails = filter.operands('pm-with')[0];
+
+    if (!emails) {
+        return;
+    }
+
+    return people.emails_strings_to_user_ids_string(emails);
+};
+
+exports._build_private_messages_list = function () {
 
     const private_messages = pm_conversations.recent.get();
     const display_messages = [];
-
-    // SHIM
-    if (active_conversation) {
-        active_conversation = people.emails_strings_to_user_ids_string(active_conversation);
-    }
+    const active_user_ids_string = exports.get_active_user_ids_string();
 
     _.each(private_messages, function (private_message_obj) {
         const user_ids_string = private_message_obj.user_ids_string;
@@ -83,14 +86,18 @@ exports._build_private_messages_list = function (active_conversation) {
 
         const is_group = user_ids_string.indexOf(',') >= 0;
 
-        let user_circle_class = buddy_data.get_user_circle_class(user_ids_string);
+        const is_active = user_ids_string === active_user_ids_string;
 
+        let user_circle_class;
         let fraction_present;
+
         if (is_group) {
             user_circle_class = 'user_circle_fraction';
             fraction_present = buddy_data.huddle_fraction_present(user_ids_string);
         } else {
-            const recipient_user_obj = people.get_person_from_user_id(user_ids_string);
+            const user_id = parseInt(user_ids_string, 10);
+            user_circle_class = buddy_data.get_user_circle_class(user_id);
+            const recipient_user_obj = people.get_person_from_user_id(user_id);
 
             if (recipient_user_obj.is_bot) {
                 user_circle_class = 'user_circle_green';
@@ -102,6 +109,7 @@ exports._build_private_messages_list = function (active_conversation) {
             user_ids_string: user_ids_string,
             unread: num_unread,
             is_zero: num_unread === 0,
+            is_active: is_active,
             url: hash_util.pm_with_uri(reply_to),
             user_circle_class: user_circle_class,
             fraction_present: fraction_present,
@@ -110,29 +118,33 @@ exports._build_private_messages_list = function (active_conversation) {
         display_messages.push(display_message);
     });
 
+    const finish = blueslip.start_timing('render pm list');
     const recipients_dom = render_sidebar_private_message_list({
         messages: display_messages,
     });
+    finish();
     return recipients_dom;
 };
 
-exports.rebuild_recent = function (active_conversation) {
+exports.rebuild_recent = function () {
     stream_popover.hide_topic_popover();
 
     if (private_messages_open) {
-        const rendered_pm_list = exports._build_private_messages_list(
-            active_conversation);
+        const rendered_pm_list = exports._build_private_messages_list();
         ui.get_content_element($("#private-container")).html(rendered_pm_list);
     }
 
-    if (active_conversation) {
-        const active_li = exports.get_conversation_li(active_conversation);
-        if (active_li) {
-            active_li.addClass('active-sub-filter');
-        }
+    resize.resize_stream_filters_container();
+};
+
+exports.is_all_privates = function () {
+    const filter = narrow_state.filter();
+
+    if (!filter) {
+        return false;
     }
 
-    resize.resize_stream_filters_container();
+    return _.contains(filter.operands('is'), "private");
 };
 
 exports.update_private_messages = function () {
@@ -140,40 +152,16 @@ exports.update_private_messages = function () {
         return;
     }
 
-    let is_pm_filter = false;
-    let pm_with = '';
-    const filter = narrow_state.filter();
+    exports.rebuild_recent();
 
-    if (filter) {
-        const conversation = filter.operands('pm-with');
-        if (conversation.length === 1) {
-            pm_with = conversation[0];
-        }
-        if (conversation.length === 0) {
-            is_pm_filter = _.contains(filter.operands('is'), "private");
-        }
-        // We don't support having two pm-with: operands in a search
-        // (Group PMs are represented as a single pm-with operand
-        // containing a list).
-    }
-
-    exports.rebuild_recent(pm_with);
-
-    if (is_pm_filter) {
+    if (exports.is_all_privates()) {
         $(".top_left_private_messages").addClass('active-filter');
     }
 };
 
-exports.expand = function (op_pm) {
+exports.expand = function () {
     private_messages_open = true;
-    if (op_pm.length === 1) {
-        exports.rebuild_recent(op_pm[0]);
-    } else if (op_pm.length !== 0) {
-        // TODO: Should pass the reply-to of the thread
-        exports.rebuild_recent("");
-    } else {
-        exports.rebuild_recent("");
-    }
+    exports.rebuild_recent();
 };
 
 exports.update_dom_with_unread_counts = function (counts) {

@@ -51,12 +51,15 @@ note are:
 Finally, you can rely on our Travis CI setup to run linters for you, but
 it is good practice to run lint checks locally.
 
-**Important:** We provide a
-  [Git pre-commit hook](http://localhost:9991/docs/git/zulip-tools.html#set-up-git-repo-script)
-  that can automatically run `tools/lint` on just the files that
-  changed (in a few 100ms) whenever you make a commit.  This can save
-  you a lot of time, by automatically detecting linter errors as you
-  make them.
+```eval_rst
+.. important::
+    We provide a
+    `Git pre-commit hook <../git/zulip-tools.html#set-up-git-repo-script>`_
+    that can automatically run ``tools/lint`` on just the files that
+    changed (in a few 100ms) whenever you make a commit.  This can save
+    you a lot of time, by automatically detecting linter errors as you
+    make them.
+```
 
 **Note:** The linters only check files that git tracks. Remember to `git add`
 new files before running lint checks.
@@ -182,14 +185,6 @@ that we exempt may be deemed not worthwhile to fix.
 We check our JavaScript code in a few different ways:
 - We run eslint.
 - We perform custom Zulip regex checks on the code.
-- We verify that all addClass calls, with a few exceptions, explicitly
-  contain a CSS class.
-
-The last check happens via a call to `./tools/find-add-class`.  This
-particular check is a work in progress, as we are trying to evolve a
-more rigorous system for weeding out legacy CSS styles, and the ability
-to quickly introspect our JS code for `addClass` calls is part of our
-vision.
 
 #### Puppet manifests
 

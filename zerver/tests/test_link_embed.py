@@ -14,7 +14,7 @@ from zerver.lib.test_helpers import MockPythonResponse
 from zerver.worker.queue_processors import FetchLinksEmbedData
 from zerver.lib.url_preview.preview import (
     get_link_embed_data, link_embed_data_from_cache)
-from zerver.lib.url_preview.oembed import get_oembed_data, get_safe_html
+from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
 from zerver.lib.url_preview.parsers import (
     OpenGraphParser, GenericParser)
 from zerver.lib.cache import cache_set, NotFoundInCache, preview_url_cache_key
@@ -116,22 +116,16 @@ class OembedTestCase(ZulipTestCase):
         data = get_oembed_data(url)
         self.assertIsNone(data)
 
-    def test_safe_oembed_html(self) -> None:
+    def test_oembed_html(self) -> None:
         html = '<iframe src="//www.instagram.com/embed.js"></iframe>'
-        safe_html = get_safe_html(html)
-        self.assertEqual(html, safe_html)
-
-    def test_unsafe_oembed_html(self) -> None:
-        html = ('<blockquote class="instagram-media" data-instgrm-captioned>test</blockquote>\n'
-                '<script async src="//www.instagram.com/embed.js"></script>')
-        safe_html = get_safe_html(html)
-        self.assertEqual('', safe_html)
+        stripped_html = strip_cdata(html)
+        self.assertEqual(html, stripped_html)
 
     def test_autodiscovered_oembed_xml_format_html(self) -> None:
         iframe_content = '<iframe src="https://w.soundcloud.com/player"></iframe>'
         html = '<![CDATA[{}]]>'.format(iframe_content)
-        safe_html = get_safe_html(html)
-        self.assertEqual(iframe_content, safe_html)
+        stripped_html = strip_cdata(html)
+        self.assertEqual(iframe_content, stripped_html)
 
 
 class OpenGraphParserTestCase(ZulipTestCase):
@@ -152,6 +146,26 @@ class OpenGraphParserTestCase(ZulipTestCase):
         self.assertEqual(result['title'], 'The Rock')
         self.assertEqual(result.get('description'), 'The Rock film')
 
+    def test_page_with_evil_og_tags(self) -> None:
+        html = """<html>
+          <head>
+          <meta property="og:title" content="The Rock" />
+          <meta property="og:type" content="video.movie" />
+          <meta property="og:url" content="http://www.imdb.com/title/tt0117500/" />
+          <meta property="og:image" content="http://ia.media-imdb.com/images/rock.jpg" />
+          <meta property="og:description" content="The Rock film" />
+          <meta property="og:html" content="<script>alert(window.location)</script>" />
+          <meta property="og:oembed" content="True" />
+          </head>
+        </html>"""
+
+        parser = OpenGraphParser(html)
+        result = parser.extract_data()
+        self.assertIn('title', result)
+        self.assertEqual(result['title'], 'The Rock')
+        self.assertEqual(result.get('description'), 'The Rock film')
+        self.assertEqual(result.get('oembed'), None)
+        self.assertEqual(result.get('html'), None)
 
 class GenericParserTestCase(ZulipTestCase):
     def test_parser(self) -> None:
@@ -228,6 +242,8 @@ class PreviewTestCase(ZulipTestCase):
                 <meta property="og:type" content="video.movie" />
                 <meta property="og:url" content="http://www.imdb.com/title/tt0117500/" />
                 <meta property="og:image" content="http://ia.media-imdb.com/images/rock.jpg" />
+                <meta http-equiv="refresh" content="30" />
+                <meta property="notog:extra-text" content="Extra!" />
             </head>
             <body>
                 <h1>Main header</h1>
@@ -490,6 +506,35 @@ class PreviewTestCase(ZulipTestCase):
 
         # HTML without the og:image metadata
         html = '\n'.join(line for line in self.open_graph_html.splitlines() if 'og:image' not in line)
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url, html=html))
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with mock.patch('requests.get', mocked_response):
+                FetchLinksEmbedData().consume(event)
+                cached_data = link_embed_data_from_cache(url)
+
+        self.assertIn('title', cached_data)
+        self.assertNotIn('image', cached_data)
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        self.assertEqual(
+            ('<p><a href="http://test.org/foo.html" target="_blank" title="http://test.org/foo.html">'
+             'http://test.org/foo.html</a></p>'),
+            msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_link_preview_open_graph_image_missing_content(self) -> None:
+        email = self.example_email('hamlet')
+        self.login(email)
+        url = 'http://test.org/foo.html'
+        with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
+            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        # HTML without the og:image metadata
+        html = '\n'.join(line if 'og:image' not in line else '<meta property="og:image"/>'
+                         for line in self.open_graph_html.splitlines())
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url, html=html))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with mock.patch('requests.get', mocked_response):

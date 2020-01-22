@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class ZenDeskHookTests(WebhookTestCase):
     STREAM_NAME = 'zendesk'
     URL_TEMPLATE = u"/api/v1/external/zendesk?stream={stream}"

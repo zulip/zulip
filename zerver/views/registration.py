@@ -34,7 +34,8 @@ from zerver.views.auth import create_preregistration_user, redirect_and_log_into
     redirect_to_deactivation_notice, get_safe_redirect_to
 
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, \
-    ZulipLDAPExceptionNoMatchingLDAPUser, email_auth_enabled, ZulipLDAPAuthBackend
+    ZulipLDAPExceptionNoMatchingLDAPUser, email_auth_enabled, ZulipLDAPAuthBackend, \
+    email_belongs_to_ldap, any_social_backend_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
     validate_key, create_confirmation_link, get_object_from_key, \
@@ -122,24 +123,17 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             del request.session['authenticated_full_name']
         except KeyError:
             pass
-        if realm is not None and realm.is_zephyr_mirror_realm:
-            # For MIT users, we can get an authoritative name from Hesiod.
-            # Technically we should check that this is actually an MIT
-            # realm, but we can cross that bridge if we ever get a non-MIT
-            # zephyr mirroring realm.
-            hesiod_name = compute_mit_user_fullname(email)
-            form = RegistrationForm(
-                initial={'full_name': hesiod_name if "@" not in hesiod_name else ""},
-                realm_creation=realm_creation)
-            name_validated = True
-        elif settings.POPULATE_PROFILE_VIA_LDAP:
+
+        ldap_full_name = None
+        if settings.POPULATE_PROFILE_VIA_LDAP:
+            # If the user can be found in LDAP, we'll take the full name from the directory,
+            # and further down create a form pre-filled with it.
             for backend in get_backends():
                 if isinstance(backend, LDAPBackend):
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
                     except ZulipLDAPExceptionNoMatchingLDAPUser:
                         logging.warning("New account email %s could not be found in LDAP" % (email,))
-                        form = RegistrationForm(realm_creation=realm_creation)
                         break
 
                     # Note that this `ldap_user` object is not a
@@ -158,26 +152,37 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
                     try:
                         ldap_full_name, _ = backend.get_mapped_name(ldap_user)
-                        request.session['authenticated_full_name'] = ldap_full_name
-                        name_validated = True
-                        # We don't use initial= here, because if the form is
-                        # complete (that is, no additional fields need to be
-                        # filled out by the user) we want the form to validate,
-                        # so they can be directly registered without having to
-                        # go through this interstitial.
-                        form = RegistrationForm({'full_name': ldap_full_name},
-                                                realm_creation=realm_creation)
-
-                        # Check whether this is ZulipLDAPAuthBackend,
-                        # which is responsible for authentication and
-                        # requires that LDAP accounts enter their LDAP
-                        # password to register, or ZulipLDAPUserPopulator,
-                        # which just populates UserProfile fields (no auth).
-                        require_ldap_password = isinstance(backend, ZulipLDAPAuthBackend)
-                        break
                     except TypeError:
-                        # Let the user fill out a name and/or try another backend
-                        form = RegistrationForm(realm_creation=realm_creation)
+                        break
+
+                    # Check whether this is ZulipLDAPAuthBackend,
+                    # which is responsible for authentication and
+                    # requires that LDAP accounts enter their LDAP
+                    # password to register, or ZulipLDAPUserPopulator,
+                    # which just populates UserProfile fields (no auth).
+                    require_ldap_password = isinstance(backend, ZulipLDAPAuthBackend)
+                    break
+
+        if ldap_full_name:
+            # We don't use initial= here, because if the form is
+            # complete (that is, no additional fields need to be
+            # filled out by the user) we want the form to validate,
+            # so they can be directly registered without having to
+            # go through this interstitial.
+            form = RegistrationForm({'full_name': ldap_full_name},
+                                    realm_creation=realm_creation)
+            request.session['authenticated_full_name'] = ldap_full_name
+            name_validated = True
+        elif realm is not None and realm.is_zephyr_mirror_realm:
+            # For MIT users, we can get an authoritative name from Hesiod.
+            # Technically we should check that this is actually an MIT
+            # realm, but we can cross that bridge if we ever get a non-MIT
+            # zephyr mirroring realm.
+            hesiod_name = compute_mit_user_fullname(email)
+            form = RegistrationForm(
+                initial={'full_name': hesiod_name if "@" not in hesiod_name else ""},
+                realm_creation=realm_creation)
+            name_validated = True
         elif prereg_user.full_name:
             if prereg_user.full_name_validated:
                 request.session['authenticated_full_name'] = prereg_user.full_name
@@ -275,18 +280,20 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                         prereg_user=prereg_user,
                                         return_data=return_data)
             if user_profile is None:
-                if return_data.get("no_matching_ldap_user") and email_auth_enabled(realm):
-                    # If both the LDAP and Email auth backends are
+                can_use_different_backend = email_auth_enabled(realm) or any_social_backend_enabled(realm)
+                if settings.LDAP_APPEND_DOMAIN:
+                    # In LDAP_APPEND_DOMAIN configurations, we don't allow making a non-ldap account
+                    # if the email matches the ldap domain.
+                    can_use_different_backend = can_use_different_backend and (
+                        not email_belongs_to_ldap(realm, email))
+                if return_data.get("no_matching_ldap_user") and can_use_different_backend:
+                    # If both the LDAP and Email or Social auth backends are
                     # enabled, and there's no matching user in the LDAP
                     # directory then the intent is to create a user in the
                     # realm with their email outside the LDAP organization
                     # (with e.g. a password stored in the Zulip database,
                     # not LDAP).  So we fall through and create the new
                     # account.
-                    #
-                    # It's likely that we can extend this block to the
-                    # Google and GitHub auth backends with no code changes
-                    # other than here.
                     pass
                 else:
                     # TODO: This probably isn't going to give a
@@ -533,7 +540,8 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 context.update({
                     'email': user.delivery_email,
                 })
-                send_email('zerver/emails/find_team', to_user_ids=[user.id], context=context)
+                send_email('zerver/emails/find_team', to_user_ids=[user.id], context=context,
+                           from_address=FromAddress.SUPPORT)
 
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses

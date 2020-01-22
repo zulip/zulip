@@ -293,4 +293,11 @@ run_test('basics', () => {
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
     assert.deepEqual(call_count.stop_last_notification, 1);
+
+    // Stream messages are represented as get_user_ids_string being empty
+    compose_pm_pill.get_user_ids_string = () => '';
+    typing_status.update(worker, typing.get_recipient());
+    assert.deepEqual(call_count.maybe_ping_server, 2);
+    assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
+    assert.deepEqual(call_count.stop_last_notification, 2);
 });

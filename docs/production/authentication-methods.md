@@ -47,15 +47,22 @@ it as follows:
 1. Tell your IdP how to find your Zulip server:
 
     * **SP Entity ID**: `https://yourzulipdomain.example.com`.
+
+      The `Entity ID` should match the value of
+      `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
+       You can get the correct value by running the following:
+      `/home/zulip/deployments/current/scripts/get-django-setting
+       SOCIAL_AUTH_SAML_SP_ENTITY_ID`.
+
     * **SSO URL**:
       `https://yourzulipdomain.example.com/complete/saml/`.  This is
       the "SAML ACS url" in SAML terminology.
 
-   The `Entity ID` should match the value of
-   `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
-   You can run on your Zulip server
-   `/home/zulip/deployments/current/scripts/setup/get-django-setting
-   SOCIAL_AUTH_SAML_SP_ENTITY_ID` to get the computed value.
+      If you're
+      [hosting multiple organizations](../production/multiple-organizations.html#authentication),
+      you need to use `SOCIAL_AUTH_SUBDOMAIN`.  For example,
+      if `SOCIAL_AUTH_SUBDOMAIN="auth"` and `EXTERNAL_HOST=zulip.example.com`,
+      this should be `https://auth.zulip.example.com/complete/saml/`.
 
 2. Tell Zulip how to connect to your SAML provider(s) by filling
    out the section of `/etc/zulip/settings.py` on your Zulip server
@@ -169,29 +176,33 @@ In either configuration, you will need to do the following:
    the form it needs for authentication.  There are three supported
    ways to set up the username and/or email mapping:
 
-   (A) Using email addresses as usernames, if LDAP has each user's
-      email address.  To do this, just set `AUTH_LDAP_USER_SEARCH` to
-      query by email address.
+   (A) Using email addresses as Zulip usernames, if LDAP has each
+      user's email address:
+      * Make `AUTH_LDAP_USER_SEARCH` a query by email address.
+      * Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to the same query with
+        `%(email)s` rather than `%(user)s` as the search parameter.
+      * Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
+        attribute for the user's LDAP username in the search result
+        for `AUTH_LDAP_REVERSE_EMAIL_SEARCH`.
 
    (B) Using LDAP usernames as Zulip usernames, with email addresses
-      formed consistently like `sam` -> `sam@example.com`.  To do
-      this, set `AUTH_LDAP_USER_SEARCH` to query by LDAP username, and
-      `LDAP_APPEND_DOMAIN = "example.com"`.
+      formed consistently like `sam` -> `sam@example.com`:
+      * Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
+      * Set `LDAP_APPEND_DOMAIN = "example.com"`.
 
    (C) Using LDAP usernames as Zulip usernames, with email addresses
-      taken from some other attribute in LDAP (for example, `email`).
-      To do this, set `AUTH_LDAP_USER_SEARCH` to query by LDAP
-      username, and `LDAP_EMAIL_ATTR = "email"`.
-
-1. In configurations (A) and (C), you need to tell Zulip how to look
-   up a user's LDAP data given their user's email address:
-
-   * Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find an
-   LDAP user given their email address.  Generally, this will be
-   `AUTH_LDAP_USER_SEARCH` in configuration (A) or a search by
-   `LDAP_EMAIL_ATTR` in configuration (C).
-   * Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP attribute
-   for the user's LDAP username in that search result.
+      taken from some other attribute in LDAP (for example, `mail`):
+      * Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
+      * Set `LDAP_EMAIL_ATTR = "mail"`.
+      * Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find
+        an LDAP user given their email address (i.e. a search by
+        `LDAP_EMAIL_ATTR`).  For example:
+        ```
+        AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                                    ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+        ```
+      * Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
+        attribute for the user's LDAP username in that search result.
 
 You can quickly test whether your configuration works by running:
 
@@ -203,24 +214,31 @@ from the root of your Zulip installation.  If your configuration is
 working, that will output the full name for your user (and that user's
 email address, if it isn't the same as the "Zulip username").
 
-**Active Directory**: For Active Directory, one typically sets
-  `AUTH_LDAP_USER_SEARCH` to one of:
+**Active Directory**: Most Active Directory installations will use one
+of the following configurations:
 
 * To access by Active Directory username:
     ```
     AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                        ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
+    AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                       ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+    AUTH_LDAP_USERNAME_ATTR = "sAMAccountName"
     ```
+
 * To access by Active Directory email address:
     ```
     AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                        ldap.SCOPE_SUBTREE, "(mail=%(user)s)")
+    AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                                ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+    AUTH_LDAP_USERNAME_ATTR = "mail"
     ```
 
 **If you are using LDAP for authentication**: you will need to enable
 the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
-`AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.  After doing
-so (and as always [restarting the Zulip server](settings.md) to ensure
+`AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.  After doing so
+(and as always [restarting the Zulip server](settings.md) to ensure
 your settings changes take effect), you should be able to log into
 Zulip by entering your email address and LDAP password on the Zulip
 login form.
@@ -360,6 +378,26 @@ settings in `/etc/zulip/settings.py`.  See the
 details.
 
 [upstream-ldap-groups]: https://django-auth-ldap.readthedocs.io/en/latest/groups.html#limiting-access
+
+### Troubleshooting
+
+Most issues with LDAP authentication are caused by misconfigurations of
+the user and email search settings.  Some things you can try to get to
+the bottom of the problem:
+
+* Review the instructions for the LDAP configuration type you're
+  using: (A), (B) or (C) (described above), and that you have
+  configured all of the required settings documented in the
+  instructions for that configuration type.
+* Use the `manage.py query_ldap` tool to verify your configuration.
+  The output of the command will usually indicate the cause of any
+  configuration problem.  For the LDAP integration to work, this
+  command should be able to successfully fetch a complete, correct set
+  of data for the queried user.
+* You can find LDAP-specific logs in `/var/log/zulip/ldap.log`. If
+  you're asking for help with your setup, please provide logs from
+  this file (feel free to anonymize any email addresses to
+  `username@example.com`) in your report.
 
 ## Apache-based SSO with `REMOTE_USER`
 

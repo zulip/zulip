@@ -124,6 +124,7 @@ if not CASPER_TESTS:
     set_loglevel('zulip.requests', 'CRITICAL')
     set_loglevel('zulip.management', 'CRITICAL')
     set_loglevel('django.request', 'ERROR')
+    set_loglevel('django_auth_ldap', 'WARNING')
     set_loglevel('fakeldap', 'ERROR')
     set_loglevel('zulip.send_email', 'ERROR')
     set_loglevel('zerver.lib.push_notifications', 'WARNING')

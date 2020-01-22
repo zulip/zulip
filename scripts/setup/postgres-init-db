@@ -37,16 +37,12 @@ fi
 # Drop any open connections to any old database.  Hackishly call using
 # `source`, because postgres user may not be able to read this directory
 # if unpacked by root.
-# shellcheck source=/dev/null
+# shellcheck source=terminate-psql-sessions
 source "$(dirname "$0")/terminate-psql-sessions" postgres zulip zulip_base
 
 (
 # Make sure the current working directory is readable by postgres
 cd /
-
-su "$POSTGRES_USER" -c 'psql -v ON_ERROR_STOP=1 -e' <<EOF
-DROP DATABASE IF EXISTS zulip;
-EOF
 
 su "$POSTGRES_USER" -c 'psql -v ON_ERROR_STOP=1 -e' < "$(dirname "$0")/create-db.sql"
 )

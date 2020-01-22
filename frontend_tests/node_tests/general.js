@@ -97,6 +97,7 @@ const messages = {
 const noop = () => undefined;
 
 set_global('alert_words', {});
+set_global('blueslip', global.make_zblueslip());
 
 alert_words.process_message = noop;
 

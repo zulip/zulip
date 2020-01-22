@@ -1,21 +1,21 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Optional, Type
-import mock
 
+import mock
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
-from analytics.lib.counts import COUNT_STATS, \
-    CountStat, do_drop_all_analytics_tables
+from analytics.lib.counts import COUNT_STATS, CountStat, \
+    do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
-from analytics.models import BaseCount, FillState, RealmCount, UserCount, \
-    StreamCount, InstallationCount
-from zerver.lib.actions import do_change_is_admin, STREAM_ASSIGNMENT_COLORS
+from analytics.models import BaseCount, FillState, InstallationCount, \
+    RealmCount, StreamCount, UserCount
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_change_is_admin
 from zerver.lib.create_user import create_user
 from zerver.lib.timestamp import floor_to_day
-from zerver.models import Realm, Stream, Client, \
-    Recipient, Subscription
+from zerver.models import Client, Realm, Recipient, Stream, Subscription
+
 
 class Command(BaseCommand):
     help = """Populates analytics tables with randomly generated data."""
@@ -63,6 +63,8 @@ class Command(BaseCommand):
         stream = Stream.objects.create(
             name='all', realm=realm, date_created=installation_time)
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        stream.recipient = recipient
+        stream.save(update_fields=["recipient"])
 
         # Subscribe shylock to the stream to avoid invariant failures.
         # TODO: This should use subscribe_users_to_streams from populate_db.

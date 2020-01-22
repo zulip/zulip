@@ -91,7 +91,7 @@ exports.build_stream_list = function () {
 
     // The main logic to build the list is in stream_sort.js, and
     // we get three lists of streams (pinned/normal/dormant).
-    const stream_groups = stream_sort.sort_groups(get_search_term());
+    const stream_groups = stream_sort.sort_groups(streams, get_search_term());
 
     if (stream_groups.same_as_before) {
         return;
@@ -153,6 +153,10 @@ exports.get_stream_li = function (stream_id) {
     return li;
 };
 
+function stream_id_for_elt(elt) {
+    return parseInt(elt.attr('data-stream-id'), 10);
+}
+
 exports.zoom_in_topics = function (options) {
     // This only does stream-related tasks related to zooming
     // in to more topics, which is basically hiding all the
@@ -170,9 +174,9 @@ exports.zoom_in_topics = function (options) {
 
     $("#stream_filters li.narrow-filter").each(function () {
         const elt = $(this);
-        const stream_id = options.stream_id.toString();
+        const stream_id = options.stream_id;
 
-        if (elt.attr('data-stream-id') === stream_id) {
+        if (stream_id_for_elt(elt) === stream_id) {
             elt.show();
         } else {
             elt.hide();
@@ -216,7 +220,7 @@ function build_stream_sidebar_li(sub) {
         is_muted: stream_data.is_muted(sub.stream_id) === true,
         invite_only: sub.invite_only,
         is_web_public: sub.is_web_public,
-        color: stream_data.get_color(name),
+        color: sub.color,
         pin_to_top: sub.pin_to_top,
     };
     args.dark_background = stream_color.get_color_class(args.color);
@@ -297,7 +301,9 @@ function set_stream_unread_count(stream_id, count) {
 }
 
 exports.update_streams_sidebar = function () {
+    const finish = blueslip.start_timing('build_stream_list');
     exports.build_stream_list();
+    finish();
     exports.stream_cursor.redraw();
 
     if (!narrow_state.active()) {
@@ -502,7 +508,7 @@ exports.set_event_handlers = function () {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
-        const stream_id = $(e.target).parents('li').attr('data-stream-id');
+        const stream_id = stream_id_for_elt($(e.target).parents('li'));
         const sub = stream_data.get_sub_by_id(stream_id);
         popovers.hide_all();
         narrow.by('stream', sub.name, {trigger: 'sidebar'});

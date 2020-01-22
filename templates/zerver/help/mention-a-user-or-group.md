@@ -51,4 +51,6 @@ notification. Silent mentions start with `@_` instead of `@`.
 You can mention everyone on a stream with the `@**all**` mention. Use
 sparingly!  Note that this will not notify anyone who has muted the
 stream, and users can disable receiving email/push notifications for
-these wildcard mentions.
+these wildcard mentions, either
+[globally](/help/pm-mention-alert-notifications) or for [individual
+streams](/help/stream-notifications).

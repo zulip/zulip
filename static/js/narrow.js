@@ -56,24 +56,7 @@ exports.save_pre_narrow_offset_for_reload = function () {
     }
 };
 
-exports.narrow_title = "home";
-exports.activate = function (raw_operators, opts) {
-    const start_time = new Date();
-    const was_narrowed_already = narrow_state.active();
-    // most users aren't going to send a bunch of a out-of-narrow messages
-    // and expect to visit a list of narrows, so let's get these out of the way.
-    notifications.clear_compose_notifications();
-
-    // Open tooltips are only interesting for current narrow,
-    // so hide them when activating a new one.
-    $(".tooltip").hide();
-
-    if (raw_operators.length === 0) {
-        return exports.deactivate();
-    }
-    const filter = new Filter(raw_operators);
-    const operators = filter.operators();
-
+function update_narrow_title(filter) {
     // Take the most detailed part of the narrow to use as the title.
     // If the operator is something other than "stream", "topic", or
     // "is", we shouldn't update the narrow title
@@ -105,9 +88,31 @@ exports.activate = function (raw_operators, opts) {
             }
         }
     }
-
     notifications.redraw_title();
+}
+
+exports.narrow_title = "home";
+exports.activate = function (raw_operators, opts) {
+    const start_time = new Date();
+    const was_narrowed_already = narrow_state.active();
+    // most users aren't going to send a bunch of a out-of-narrow messages
+    // and expect to visit a list of narrows, so let's get these out of the way.
+    notifications.clear_compose_notifications();
+
+    // Open tooltips are only interesting for current narrow,
+    // so hide them when activating a new one.
+    $(".tooltip").hide();
+
+    if (raw_operators.length === 0) {
+        return exports.deactivate();
+    }
+    const filter = new Filter(raw_operators);
+    const operators = filter.operators();
+
+    update_narrow_title(filter);
     notifications.hide_history_limit_message();
+    $(".all-messages-search-caution").hide();
+
     blueslip.debug("Narrowed", {operators: _.map(operators,
                                                  function (e) { return e.operator; }),
                                 trigger: opts ? opts.trigger : undefined,
@@ -244,6 +249,26 @@ exports.activate = function (raw_operators, opts) {
                 msg_list.network_time = new Date();
                 maybe_report_narrow_time(msg_list);
             },
+            pre_scroll_cont: function () {
+                // Potentially display the notice that lets users know
+                // that not all messages were searched.  One could
+                // imagine including `filter.is_search()` in these
+                // conditions, but there's a very legitimate use case
+                // for moderation of searching for all messages sent
+                // by a potential spammer user.
+                if (!filter.contains_only_private_messages() &&
+                    !filter.includes_full_stream_history() &&
+                    !filter.has_operand("is", "starred")) {
+                    $(".all-messages-search-caution").show();
+                    // Set the link to point to this search with streams:public added.
+                    // It's a bit hacky to use the href, but
+                    // !filter.includes_full_stream_history() implies streams:public
+                    // wasn't already present.
+                    $(".all-messages-search-caution a.search-shared-history").attr(
+                        "href", window.location.hash.replace("#narrow/", "#narrow/streams/public/")
+                    );
+                }
+            },
         });
     }());
 
@@ -276,18 +301,6 @@ exports.activate = function (raw_operators, opts) {
         compose.update_closed_compose_buttons_for_private();
     } else {
         compose.update_closed_compose_buttons_for_stream();
-    }
-
-    // Toggle the notice that lets users know that not all messages were searched.
-    // One could imagine including `filter.is_search()` in these conditions, but
-    // there's a very legitimate use case for moderation of searching for all
-    // messages sent by a potential spammer user.
-    if (!filter.contains_only_private_messages() &&
-        !filter.includes_full_stream_history() &&
-        !filter.has_operand("is", "starred")) {
-        $(".all-messages-search-caution").show();
-    } else {
-        $(".all-messages-search-caution").hide();
     }
 
     // Put the narrow operators in the search bar.
@@ -457,6 +470,11 @@ exports.maybe_add_local_messages = function (opts) {
     // so we definitely want to land on the target_id message.
     id_info.final_select_id = id_info.target_id;
 
+    // TODO: We could improve on this next condition by considering
+    // cases where `message_list.all.has_found_oldest(); which would
+    // come up with e.g. `near: 0` in a small organization.
+    //
+    // And similarly for `near: max_int` with has_found_newest.
     if (message_list.all.empty() ||
         id_info.target_id < message_list.all.first().id ||
         id_info.target_id > message_list.all.last().id) {
@@ -709,7 +727,7 @@ exports.to_compose_target = function () {
     }
 
     if (compose_state.get_message_type() === 'private') {
-        const recipient_string = compose_state.recipient();
+        const recipient_string = compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient_string);
         const invalid = _.reject(emails, people.is_valid_email_for_compose);
         // If there are no recipients or any recipient is

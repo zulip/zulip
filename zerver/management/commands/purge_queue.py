@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand
 from zerver.lib.queue import SimpleQueueClient
 from zerver.worker.queue_processors import get_active_worker_queues
 
+
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(dest="queue_name", type=str, nargs='?',
@@ -31,8 +32,7 @@ class Command(BaseCommand):
         else:
             queue_name = options['queue_name']
             if not (queue_name in get_active_worker_queues() or
-                    queue_name.startswith("notify_tornado") or
-                    queue_name.startswith("tornado_return")):
+                    queue_name.startswith("notify_tornado")):
                 raise CommandError("Unknown queue %s" % (queue_name,))
 
             print("Purging queue %s" % (queue_name,))

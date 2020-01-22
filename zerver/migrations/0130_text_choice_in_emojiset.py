@@ -2,6 +2,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 # change emojiset to text if emoji_alt_code is true.
 def change_emojiset(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model("zerver", "UserProfile")

@@ -23,6 +23,17 @@ casper.then(function () {
     casper.click("li[data-section='organization-settings']");
 });
 
+function submit_notifications_stream_settings() {
+    casper.then(function () {
+        casper.waitUntilVisible('#org-submit-notifications[data-status="unsaved"]', function () {
+            casper.test.assertSelectorHasText('#org-submit-notifications', 'Save');
+        });
+    });
+    casper.then(function () {
+        casper.click('#org-submit-notifications');
+    });
+}
+
 // Test changing notifications stream
 casper.then(function () {
     casper.test.info('Changing notifications stream to Verona by filtering with "verona"');
@@ -32,21 +43,28 @@ casper.then(function () {
         casper.sendKeys('#id_realm_notifications_stream .dropdown-search > input[type=text]', 'verona');
         casper.click("#id_realm_notifications_stream .dropdown-list-body li.stream_name");
     });
+});
 
-    casper.waitUntilVisible('#admin-realm-notifications-stream-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-notifications-stream-status',
-                                          'Notifications stream changed!');
-        casper.test.assertSelectorHasText('#realm_notifications_stream_name', '#Verona');
+submit_notifications_stream_settings();
+
+casper.then(function () {
+    casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 casper.then(function () {
-    casper.click(".notifications-stream-disable");
-    casper.waitUntilVisible('#admin-realm-notifications-stream-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-notifications-stream-status',
-                                          'Notifications stream disabled!');
-        casper.test.assertSelectorHasText('#realm_notifications_stream_name', 'Disabled');
+    casper.click("#notifications_stream_disable");
+});
+
+submit_notifications_stream_settings();
+
+casper.then(function () {
+    casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test changing signup notifications stream
@@ -58,21 +76,28 @@ casper.then(function () {
         casper.sendKeys('#id_realm_signup_notifications_stream .dropdown-search > input[type=text]', 'verona');
         casper.click("#id_realm_signup_notifications_stream .dropdown-list-body li.stream_name");
     });
+});
 
-    casper.waitUntilVisible('#admin-realm-signup-notifications-stream-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-signup-notifications-stream-status',
-                                          'Signup notifications stream changed!');
-        casper.test.assertSelectorHasText('#realm_signup_notifications_stream_name', '#Verona');
+submit_notifications_stream_settings();
+
+casper.then(function () {
+    casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 casper.then(function () {
-    casper.click(".signup-notifications-stream-disable");
-    casper.waitUntilVisible('#admin-realm-signup-notifications-stream-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-signup-notifications-stream-status',
-                                          'Signup notifications stream disabled!');
-        casper.test.assertSelectorHasText('#realm_signup_notifications_stream_name', 'Disabled');
+    casper.click("#signup_notifications_stream_disable");
+});
+
+submit_notifications_stream_settings();
+
+casper.then(function () {
+    casper.waitUntilVisible('#org-submit-notifications[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-notifications', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test permissions setting
@@ -101,6 +126,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting create streams policy to 'members and admins'.
@@ -119,6 +145,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting create streams policy to 'full members'.
@@ -137,6 +164,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting invite to streams policy to 'admins only'.
@@ -155,6 +183,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting invite to streams policy to 'members and admins'.
@@ -173,6 +202,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting invite to streams policy to 'full members'.
@@ -191,6 +221,7 @@ casper.then(function () {
     casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting new user threshold to three days.
@@ -210,6 +241,7 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
         casper.test.assertNotVisible('#id_realm_waiting_period_threshold');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 // Test setting new user threshold to N days.
@@ -229,6 +261,7 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#org-submit-other-permissions', 'Saved');
         casper.test.assertVisible('#id_realm_waiting_period_threshold');
     });
+    casper.waitWhileVisible('#org-submit-notifications');
 });
 
 casper.then(function () {

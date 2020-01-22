@@ -1,6 +1,5 @@
 from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, \
     Union, Optional, Sequence, AbstractSet, Callable, Iterable
-from typing.re import Match
 
 from django.db import models
 from django.db.models.query import QuerySet
@@ -12,7 +11,6 @@ import django.contrib.auth
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, MinLengthValidator, \
     RegexValidator, validate_email
-from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_api_key_cache_key, active_non_guest_user_ids_cache_key, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
@@ -25,9 +23,8 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
-from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
-from django.db.models.signals import pre_save, post_save, post_delete
+from django.db.models.signals import post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
 from zerver.lib.validator import check_int, \
@@ -43,7 +40,6 @@ from bitfield import BitField
 from bitfield.types import BitHandler
 from collections import defaultdict
 from datetime import timedelta
-import pylibmc
 import re
 import sre_constants
 import time
@@ -216,6 +212,15 @@ class Realm(models.Model):
         USER_GROUP_EDIT_POLICY_ADMINS,
     ]
 
+    PRIVATE_MESSAGE_POLICY_UNLIMITED = 1
+    PRIVATE_MESSAGE_POLICY_DISABLED = 2
+    private_message_policy = models.PositiveSmallIntegerField(
+        default=PRIVATE_MESSAGE_POLICY_UNLIMITED)  # type: int
+    PRIVATE_MESSAGE_POLICY_TYPES = [
+        PRIVATE_MESSAGE_POLICY_UNLIMITED,
+        PRIVATE_MESSAGE_POLICY_DISABLED,
+    ]
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is the
     # same as UserProfile.delivery_email, or is instead garbage.
@@ -354,6 +359,7 @@ class Realm(models.Model):
         video_chat_provider=int,
         waiting_period_threshold=int,
         digest_weekday=int,
+        private_message_policy=int,
         user_group_edit_policy=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
@@ -737,6 +743,38 @@ def flush_realm_filter(sender: Any, **kwargs: Any) -> None:
 post_save.connect(flush_realm_filter, sender=RealmFilter)
 post_delete.connect(flush_realm_filter, sender=RealmFilter)
 
+# The Recipient table is used to map Messages to the set of users who
+# received the message.  It is implemented as a set of triples (id,
+# type_id, type). We have 3 types of recipients: Huddles (for group
+# private messages), UserProfiles (for 1:1 private messages), and
+# Streams. The recipient table maps a globally unique recipient id
+# (used by the Message table) to the type-specific unique id (the
+# stream id, user_profile id, or huddle id).
+class Recipient(models.Model):
+    type_id = models.IntegerField(db_index=True)  # type: int
+    type = models.PositiveSmallIntegerField(db_index=True)  # type: int
+    # Valid types are {personal, stream, huddle}
+    PERSONAL = 1
+    STREAM = 2
+    HUDDLE = 3
+
+    class Meta:
+        unique_together = ("type", "type_id")
+
+    # N.B. If we used Django's choice=... we would get this for free (kinda)
+    _type_names = {
+        PERSONAL: 'personal',
+        STREAM: 'stream',
+        HUDDLE: 'huddle'}
+
+    def type_name(self) -> str:
+        # Raises KeyError if invalid
+        return self._type_names[self.type]
+
+    def __str__(self) -> str:
+        display_recipient = get_display_recipient(self)
+        return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
+
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
@@ -785,6 +823,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     delivery_email = models.EmailField(blank=False, db_index=True)  # type: str
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
+    # Foreign key to the Recipient object for PERSONAL type messages to this user.
+    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
     # The user's name.  We prefer the model of a full_name and
     # short_name over first+last because cultures vary on how many
@@ -869,7 +909,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_offline_email_notifications = models.BooleanField(default=True)  # type: bool
     message_content_in_email_notifications = models.BooleanField(default=True)  # type: bool
     enable_offline_push_notifications = models.BooleanField(default=True)  # type: bool
-    enable_online_push_notifications = models.BooleanField(default=False)  # type: bool
+    enable_online_push_notifications = models.BooleanField(default=True)  # type: bool
 
     DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
     DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2
@@ -1055,9 +1095,27 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def is_realm_admin(self) -> bool:
         return self.role == UserProfile.ROLE_REALM_ADMINISTRATOR
 
+    @is_realm_admin.setter
+    def is_realm_admin(self, value: bool) -> None:
+        if value:
+            self.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        elif self.role == UserProfile.ROLE_REALM_ADMINISTRATOR:
+            # We need to be careful to not accidentally change
+            # ROLE_GUEST to ROLE_MEMBER here.
+            self.role = UserProfile.ROLE_MEMBER
+
     @property
     def is_guest(self) -> bool:
         return self.role == UserProfile.ROLE_GUEST
+
+    @is_guest.setter
+    def is_guest(self, value: bool) -> None:
+        if value:
+            self.role = UserProfile.ROLE_GUEST
+        elif self.role == UserProfile.ROLE_GUEST:
+            # We need to be careful to not accidentally change
+            # ROLE_REALM_ADMINISTRATOR to ROLE_MEMBER here.
+            self.role = UserProfile.ROLE_MEMBER
 
     @property
     def is_incoming_webhook(self) -> bool:
@@ -1302,6 +1360,9 @@ class Stream(models.Model):
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default=u'')  # type: str
     rendered_description = models.TextField(default=u'')  # type: str
 
+    # Foreign key to the Recipient object for STREAM type messages to this stream.
+    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
+
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]
     history_public_to_subscribers = models.BooleanField(default=False)  # type: bool
 
@@ -1368,38 +1429,6 @@ class Stream(models.Model):
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 
-# The Recipient table is used to map Messages to the set of users who
-# received the message.  It is implemented as a set of triples (id,
-# type_id, type). We have 3 types of recipients: Huddles (for group
-# private messages), UserProfiles (for 1:1 private messages), and
-# Streams. The recipient table maps a globally unique recipient id
-# (used by the Message table) to the type-specific unique id (the
-# stream id, user_profile id, or huddle id).
-class Recipient(models.Model):
-    type_id = models.IntegerField(db_index=True)  # type: int
-    type = models.PositiveSmallIntegerField(db_index=True)  # type: int
-    # Valid types are {personal, stream, huddle}
-    PERSONAL = 1
-    STREAM = 2
-    HUDDLE = 3
-
-    class Meta:
-        unique_together = ("type", "type_id")
-
-    # N.B. If we used Django's choice=... we would get this for free (kinda)
-    _type_names = {
-        PERSONAL: 'personal',
-        STREAM: 'stream',
-        HUDDLE: 'huddle'}
-
-    def type_name(self) -> str:
-        # Raises KeyError if invalid
-        return self._type_names[self.type]
-
-    def __str__(self) -> str:
-        display_recipient = get_display_recipient(self)
-        return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
-
 class MutedTopic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
@@ -1438,7 +1467,7 @@ def get_client_remote_cache(name: str) -> Client:
 
 @cache_with_key(get_stream_cache_key, timeout=3600*24*7)
 def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
-    return Stream.objects.select_related("realm").get(
+    return Stream.objects.select_related().get(
         name__iexact=stream_name.strip(), realm_id=realm_id)
 
 def stream_name_in_use(stream_name: str, realm_id: int) -> bool:
@@ -1472,14 +1501,14 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
         #
         # This should be just
         #
-        # Stream.objects.select_related("realm").filter(name__iexact__in=stream_names,
-        #                                               realm_id=realm_id)
+        # Stream.objects.select_related().filter(name__iexact__in=stream_names,
+        #                                        realm_id=realm_id)
         #
         # But chaining __in and __iexact doesn't work with Django's
         # ORM, so we have the following hack to construct the relevant where clause
         upper_list = ", ".join(["UPPER(%s)"] * len(stream_names))
         where_clause = "UPPER(zerver_stream.name::text) IN (%s)" % (upper_list,)
-        return get_active_streams(realm.id).select_related("realm").extra(
+        return get_active_streams(realm.id).select_related().extra(
             where=[where_clause],
             params=stream_names)
 
@@ -1543,31 +1572,6 @@ def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]
                                      if subscription.recipient_id == recipient.id]
 
     return result_dict
-
-def bulk_get_recipients(type: int, type_ids: List[int]) -> Dict[int, Any]:
-    def cache_key_function(type_id: int) -> str:
-        return get_recipient_cache_key(type, type_id)
-
-    def query_function(type_ids: List[int]) -> Sequence[Recipient]:
-        # TODO: Change return type to QuerySet[Recipient]
-        return Recipient.objects.filter(type=type, type_id__in=type_ids)
-
-    def recipient_to_type_id(recipient: Recipient) -> int:
-        return recipient.type_id
-
-    return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
-                                     id_fetcher=recipient_to_type_id)
-
-def get_stream_recipients(stream_ids: List[int]) -> List[Recipient]:
-
-    '''
-    We could call bulk_get_recipients(...).values() here, but it actually
-    leads to an extra query in test mode.
-    '''
-    return Recipient.objects.filter(
-        type=Recipient.STREAM,
-        type_id__in=stream_ids,
-    )
 
 class AbstractMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
@@ -1704,44 +1708,14 @@ class Message(AbstractMessage):
                                        'desktop app' in sending_client)
 
     @staticmethod
-    def content_has_attachment(content: str) -> Match:
-        return re.search(r'[/\-]user[\-_]uploads[/\.-]', content)
-
-    @staticmethod
-    def content_has_image(content: str) -> bool:
-        return bool(re.search(r'[/\-]user[\-_]uploads[/\.-]\S+\.(bmp|gif|jpg|jpeg|png|webp)',
-                              content, re.IGNORECASE))
-
-    @staticmethod
-    def content_has_link(content: str) -> bool:
-        return ('http://' in content or
-                'https://' in content or
-                '/user_uploads' in content or
-                (settings.ENABLE_FILE_LINKS and 'file:///' in content) or
-                'bitcoin:' in content)
-
-    @staticmethod
     def is_status_message(content: str, rendered_content: str) -> bool:
         """
-        Returns True if content and rendered_content are from 'me_message'
+        "status messages" start with /me and have special rendering:
+            /me loves chocolate -> Full Name loves chocolate
         """
         if content.startswith('/me '):
-            if rendered_content.startswith('<p>') and rendered_content.endswith('</p>'):
-                return True
+            return True
         return False
-
-    def update_calculated_fields(self) -> None:
-        # TODO: rendered_content could also be considered a calculated field
-        content = self.content
-        self.has_attachment = bool(Message.content_has_attachment(content))
-        self.has_image = bool(Message.content_has_image(content))
-        self.has_link = bool(Message.content_has_link(content))
-
-@receiver(pre_save, sender=Message)
-def pre_save_message(sender: Any, **kwargs: Any) -> None:
-    if kwargs['update_fields'] is None or "content" in kwargs['update_fields']:
-        message = kwargs['instance']
-        message.update_calculated_fields()
 
 def get_context_for_message(message: Message) -> Sequence[Message]:
     # TODO: Change return type to QuerySet[Message]
@@ -2251,15 +2225,6 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
             Subscription.objects.bulk_create(subs_to_create)
         return huddle
 
-def clear_database() -> None:  # nocoverage # Only used in populate_db
-    pylibmc.Client(['127.0.0.1']).flush_all()
-    model = None  # type: Any
-    for model in [Message, Stream, UserProfile, Recipient,
-                  Realm, Subscription, Huddle, UserMessage, Client,
-                  DefaultStream]:
-        model.objects.all().delete()
-    Session.objects.all().delete()
-
 class UserActivity(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
@@ -2542,6 +2507,31 @@ class ScheduledEmail(AbstractScheduledJob):
         return "<ScheduledEmail: %s %s %s>" % (self.type,
                                                self.address or list(self.users.all()),
                                                self.scheduled_timestamp)
+
+class MissedMessageEmailAddress(models.Model):
+    EXPIRY_SECONDS = 60 * 60 * 24 * 5
+    ALLOWED_USES = 1
+
+    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    email_token = models.CharField(max_length=34, unique=True, db_index=True)  # type: str
+
+    # Timestamp of when the missed message address generated.
+    # The address is valid until timestamp + EXPIRY_SECONDS.
+    timestamp = models.DateTimeField(db_index=True, default=timezone_now)  # type: datetime.datetime
+    times_used = models.PositiveIntegerField(default=0, db_index=True)  # type: int
+
+    def __str__(self) -> str:
+        return settings.EMAIL_GATEWAY_PATTERN % (self.email_token,)
+
+    def is_usable(self) -> bool:
+        not_expired = timezone_now() <= self.timestamp + timedelta(seconds=self.EXPIRY_SECONDS)
+        has_uses_left = self.times_used < self.ALLOWED_USES
+        return has_uses_left and not_expired
+
+    def increment_times_used(self) -> None:
+        self.times_used += 1
+        self.save(update_fields=["times_used"])
 
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile

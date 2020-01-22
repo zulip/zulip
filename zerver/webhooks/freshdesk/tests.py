@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-
 from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
+
 
 class FreshdeskHookTests(WebhookTestCase):
     STREAM_NAME = 'freshdesk'

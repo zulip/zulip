@@ -15,6 +15,7 @@ from zerver.lib.remote_server import send_analytics_to_remote_server
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
 
+
 class Command(BaseCommand):
     help = """Fills Analytics tables.
 

@@ -176,7 +176,7 @@ function create_message_object() {
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
-        const recipient = compose_state.recipient();
+        const recipient = compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient);
         message.to = emails;
         message.reply_to = recipient;
@@ -372,7 +372,7 @@ exports.do_post_send_tasks = function () {
 };
 
 exports.update_email = function (user_id, new_email) {
-    let reply_to = compose_state.recipient();
+    let reply_to = compose_state.private_message_recipient();
 
     if (!reply_to) {
         return;
@@ -380,11 +380,12 @@ exports.update_email = function (user_id, new_email) {
 
     reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
 
-    compose_state.recipient(reply_to);
+    compose_state.private_message_recipient(reply_to);
 };
 
 exports.get_invalid_recipient_emails = function () {
-    const private_recipients = util.extract_pm_recipients(compose_state.recipient());
+    const private_recipients = util.extract_pm_recipients(
+        compose_state.private_message_recipient());
     const invalid_recipients = _.reject(private_recipients, people.is_valid_email_for_compose);
 
     return invalid_recipients;
@@ -561,7 +562,18 @@ function validate_stream_message() {
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
-    if (compose_state.recipient().length === 0) {
+    if (page_params.realm_private_message_policy === 2) {
+        // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED
+        const user_ids = compose_pm_pill.get_user_ids();
+        if (user_ids.length !== 1 || !people.get_person_from_user_id(user_ids[0]).is_bot) {
+            // Unless we're composing to a bot
+            compose_error(i18n.t("Private messages are disabled in this organization."),
+                          $("#private_message_recipient"));
+            return false;
+        }
+    }
+
+    if (compose_state.private_message_recipient().length === 0) {
         compose_error(i18n.t("Please specify at least one valid recipient"), $("#private_message_recipient"));
         return false;
     } else if (page_params.realm_is_zephyr_mirror_realm) {
@@ -728,7 +740,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
         // and will be undefined in case of errors
         let rendered_preview_html;
         if (raw_content !== undefined &&
-            markdown.is_status_message(raw_content, rendered_content)) {
+            markdown.is_status_message(raw_content)) {
             // Handle previews of /me messages
             rendered_preview_html = "<p><strong>" + page_params.full_name + "</strong>" + rendered_content.slice("<p>/me".length);
         } else {
@@ -783,6 +795,90 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
     }
 };
 
+exports.warn_if_private_stream_is_linked = function (linked_stream) {
+    // For PMs, we currently don't warn about links to private
+    // streams, since you are specifically sharing the existence of
+    // the private stream with someone.  One could imagine changing
+    // this policy if user feedback suggested it was useful.
+    if (compose_state.get_message_type() !== 'stream') {
+        return;
+    }
+
+    const compose_stream = stream_data.get_sub(compose_state.stream_name());
+    if (compose_stream === undefined) {
+        // We have an invalid stream name, don't warn about this here as
+        // we show an error to the user when they try to send the message.
+        return;
+    }
+
+    // If the stream we're linking to is not invite-only, then it's
+    // public, and there is no need to warn about it, since all
+    // members can already see all the public streams.
+    //
+    // Theoretically, we could still do a warning if there are any
+    // guest users subscribed to the stream we're posting to; we may
+    // change this policy if user feedback suggests it'd be an
+    // improvement.
+    if (!linked_stream.invite_only) {
+        return;
+    }
+
+    if (stream_data.is_subscriber_subset(compose_stream, linked_stream)) {
+        // Don't warn if subscribers list of current compose_stream is
+        // a subset of linked_stream's subscribers list, because
+        // everyone will be subscribed to the linked stream and so
+        // knows it exists.
+        return;
+    }
+
+    const stream_name = linked_stream.name;
+
+    const warning_area = $("#compose_private_stream_alert");
+    const context = { stream_name: stream_name };
+    const new_row = render_compose_private_stream_alert(context);
+
+    warning_area.append(new_row);
+    warning_area.show();
+};
+
+exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
+    if (compose_state.get_message_type() !== 'stream') {
+        return;
+    }
+
+    // Disable for Zephyr mirroring realms, since we never have subscriber lists there
+    if (page_params.realm_is_zephyr_mirror_realm) {
+        return;
+    }
+
+    const email = mentioned.email;
+
+    if (mentioned.is_broadcast) {
+        return; // don't check if @all/@everyone/@stream
+    }
+
+    if (exports.needs_subscribe_warning(email)) {
+        const error_area = $("#compose_invite_users");
+        const existing_invites_area = $('#compose_invite_users .compose_invite_user');
+
+        const existing_invites = _.map($(existing_invites_area), function (user_row) {
+            return $(user_row).data('useremail');
+        });
+
+        if (existing_invites.indexOf(email) === -1) {
+            const context = {
+                email: email,
+                name: mentioned.full_name,
+                can_subscribe_other_users: page_params.can_subscribe_other_users,
+            };
+            const new_row = render_compose_invite_users(context);
+            error_area.append(new_row);
+        }
+
+        error_area.show();
+    }
+};
+
 exports.initialize = function () {
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('keyup', update_fade);
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('change', update_fade);
@@ -801,57 +897,6 @@ exports.initialize = function () {
     resize.watch_manual_resize("#compose-textarea");
 
     upload.feature_check($("#compose #attach_files"));
-
-    // Show a warning if a user @-mentions someone who will not receive this message
-    $(document).on('usermention_completed.zulip', function (event, data) {
-        if (compose_state.get_message_type() !== 'stream') {
-            return;
-        }
-        if (data.is_silent) {
-            // We don't need to warn in case of silent mentions.
-            return;
-        }
-
-        // Disable for Zephyr mirroring realms, since we never have subscriber lists there
-        if (page_params.realm_is_zephyr_mirror_realm) {
-            return;
-        }
-
-        if (data !== undefined && data.mentioned !== undefined) {
-            const email = data.mentioned.email;
-
-            // warn if @all, @everyone or @stream is mentioned
-            if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone' || data.mentioned.full_name === 'stream') {
-                return; // don't check if @all or @everyone is subscribed to a stream
-            }
-
-            if (exports.needs_subscribe_warning(email)) {
-                const error_area = $("#compose_invite_users");
-                const existing_invites_area = $('#compose_invite_users .compose_invite_user');
-
-                const existing_invites = _.map($(existing_invites_area), function (user_row) {
-                    return $(user_row).data('useremail');
-                });
-
-                if (existing_invites.indexOf(email) === -1) {
-                    const context = {
-                        email: email,
-                        name: data.mentioned.full_name,
-                        can_subscribe_other_users: page_params.can_subscribe_other_users,
-                    };
-                    const new_row = render_compose_invite_users(context);
-                    error_area.append(new_row);
-                }
-
-                error_area.show();
-            }
-        }
-
-        // User group mentions will fall through here.  In the future,
-        // we may want to add some sort of similar warning for cases
-        // where nobody in the group is subscribed, but that decision
-        // can wait on user feedback.
-    });
 
     $("#compose-all-everyone").on('click', '.compose-all-everyone-confirm', function (event) {
         event.preventDefault();
@@ -943,55 +988,6 @@ exports.initialize = function () {
         if (all_invites.children().length === 0) {
             all_invites.hide();
         }
-    });
-
-    // Show a warning if a private stream is linked
-    $(document).on('streamname_completed.zulip', function (event, data) {
-        // For PMs, we don't warn about links to private streams, since
-        // you are often specifically encouraging somebody to subscribe
-        // to the stream over PMs.
-        if (compose_state.get_message_type() !== 'stream') {
-            return;
-        }
-
-        if (data === undefined || data.stream === undefined) {
-            blueslip.error('Invalid options passed into handler.');
-            return;
-        }
-
-        const compose_stream = stream_data.get_sub(compose_state.stream_name());
-        if (compose_stream === undefined) {
-            // We have an invalid stream name, don't warn about this here as
-            // we show an error to the user when they try to send the message.
-            return;
-        }
-
-        if (compose_stream.subscribers && data.stream.subscribers) {
-            const compose_stream_sub = compose_stream.subscribers.keys();
-            const mentioned_stream_sub = data.stream.subscribers.keys();
-            // Don't warn if subscribers list of current compose_stream is a subset of
-            // mentioned_stream subscribers list.
-            if (_.difference(compose_stream_sub, mentioned_stream_sub).length === 0) {
-                return;
-            }
-        }
-
-        // data.stream refers to the stream we're linking to in
-        // typeahead.  If it's not invite-only, then it's public, and
-        // there is no need to warn about it, since all users can already
-        // see all the public streams.
-        if (!data.stream.invite_only) {
-            return;
-        }
-
-        const stream_name = data.stream.name;
-
-        const warning_area = $("#compose_private_stream_alert");
-        const context = { stream_name: stream_name };
-        const new_row = render_compose_private_stream_alert(context);
-
-        warning_area.append(new_row);
-        warning_area.show();
     });
 
     $("#compose_private_stream_alert").on('click', '.compose_private_stream_alert_close', function (event) {

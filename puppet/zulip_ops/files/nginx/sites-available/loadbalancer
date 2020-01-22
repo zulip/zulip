@@ -34,11 +34,6 @@ server {
         include /etc/nginx/zulip-include/proxy;
     }
 
-    location /sockjs {
-        proxy_pass https://staging;
-        include /etc/nginx/zulip-include/location-sockjs;
-    }
-
     # We don't need /api/v1/events/internal, because that doesn't go through the loadbalancer.
     location ~ /json/events|/api/v1/events {
         proxy_pass https://staging;
@@ -61,11 +56,6 @@ server {
     location / {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy;
-    }
-
-    location /sockjs {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/location-sockjs;
     }
 
     location ~ /json/events|/api/v1/events {
@@ -91,11 +81,6 @@ server {
         include /etc/nginx/zulip-include/proxy;
     }
 
-    location /sockjs {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/location-sockjs;
-    }
-
     location ~ /json/events|/api/v1/events {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
@@ -113,11 +98,6 @@ server {
     location / {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy;
-    }
-
-    location /sockjs {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/location-sockjs;
     }
 
     location ~ /json/events|/api/v1/events {

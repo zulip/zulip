@@ -14,7 +14,7 @@ from django.conf import settings
 from zerver.forms import OurAuthenticationForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm, do_set_realm_property
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, InvalidAPIKeyError, InvalidAPIKeyFormatError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
     HostRequestMock,
@@ -25,6 +25,7 @@ from zerver.lib.test_classes import (
 from zerver.lib.response import json_response, json_success
 from zerver.lib.users import get_api_key
 from zerver.lib.user_agent import parse_user_agent
+from zerver.lib.utils import generate_api_key, has_api_key_format
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
     RequestVariableConversionError, RequestConfusingParmsError
@@ -290,7 +291,7 @@ class DecoratorTestCase(TestCase):
         webhook_client_name = "ZulipClientNameWebhook"
 
         request = HostRequestMock()
-        request.POST['api_key'] = 'not_existing_api_key'
+        request.POST['api_key'] = 'X'*32
 
         with self.assertRaisesRegex(JsonableError, "Invalid API key"):
             my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
@@ -1292,15 +1293,26 @@ class TestValidateApiKey(ZulipTestCase):
         self.webhook_bot = get_user('webhook-bot@zulip.com', zulip_realm)
         self.default_bot = get_user('default-bot@zulip.com', zulip_realm)
 
+    def test_has_api_key_format(self) -> None:
+        self.assertFalse(has_api_key_format("TooShort"))
+        # Has an invalid character:
+        self.assertFalse(has_api_key_format("32LONGXXXXXXXXXXXXXXXXXXXXXXXXX-"))
+        # Too long:
+        self.assertFalse(has_api_key_format("33LONGXXXXXXXXXXXXXXXXXXXXXXXXXXX"))
+
+        self.assertTrue(has_api_key_format("VIzRVw2CspUOnEm9Yu5vQiQtJNkvETkp"))
+        for i in range(0, 10):
+            self.assertTrue(has_api_key_format(generate_api_key()))
+
     def test_validate_api_key_if_profile_does_not_exist(self) -> None:
         with self.assertRaises(JsonableError):
-            validate_api_key(HostRequestMock(), 'email@doesnotexist.com', 'api_key')
+            validate_api_key(HostRequestMock(), 'email@doesnotexist.com', 'VIzRVw2CspUOnEm9Yu5vQiQtJNkvETkp')
 
     def test_validate_api_key_if_api_key_does_not_match_profile_api_key(self) -> None:
-        with self.assertRaises(JsonableError):
+        with self.assertRaises(InvalidAPIKeyFormatError):
             validate_api_key(HostRequestMock(), self.webhook_bot.email, 'not_32_length')
 
-        with self.assertRaises(JsonableError):
+        with self.assertRaises(InvalidAPIKeyError):
             # We use default_bot's key but webhook_bot's email address to test
             # the logic when an API key is passed and it doesn't belong to the
             # user whose email address has been provided.

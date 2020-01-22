@@ -19,8 +19,7 @@ exports.setup_subscriptions_tab_hash = function (tab_key_value) {
 };
 
 exports.settings_for_sub = function (sub) {
-    const id = parseInt(sub.stream_id, 10);
-    return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
+    return $("#subscription_overlay .subscription_settings[data-stream-id='" + sub.stream_id + "']");
 };
 
 exports.is_sub_settings_active = function (sub) {
@@ -36,12 +35,9 @@ exports.is_sub_settings_active = function (sub) {
 };
 
 exports.get_email_of_subscribers = function (subscribers) {
-    const emails = [];
-    subscribers.each(function (o, i) {
-        const email = people.get_person_from_user_id(i).email;
-        emails.push(email);
+    return subscribers.map(function (user_id) {
+        return people.get_person_from_user_id(user_id).email;
     });
-    return emails;
 };
 
 function clear_edit_panel() {
@@ -54,7 +50,8 @@ function get_stream_id(target) {
     if (target.constructor !== jQuery) {
         target = $(target);
     }
-    return target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
+    const row = target.closest(".stream-row, .subscription_settings");
+    return parseInt(row.attr("data-stream-id"), 10);
 }
 
 function get_sub_for_target(target) {
@@ -98,8 +95,8 @@ function format_member_list_elem(email) {
 }
 
 function get_subscriber_list(sub_row) {
-    const id = sub_row.data("stream-id");
-    return $('.subscription_settings[data-stream-id="' + id + '"] .subscriber-list');
+    const stream_id_str = sub_row.data("stream-id");
+    return $('.subscription_settings[data-stream-id="' + stream_id_str + '"] .subscriber-list');
 }
 
 exports.update_stream_name = function (sub, new_name) {
@@ -183,7 +180,7 @@ function show_subscription_settings(sub_row) {
         },
         filter: {
             element: $("[data-stream-id='" + stream_id + "'] .search"),
-            callback: function (item, value) {
+            predicate: function (item, value) {
                 const person = people.get_by_email(item);
 
                 if (person) {
@@ -227,6 +224,8 @@ function show_subscription_settings(sub_row) {
 exports.is_notification_setting = function (setting_label) {
     if (setting_label.indexOf("_notifications") > -1) {
         return true;
+    } else if (setting_label.indexOf("_notify") > -1) {
+        return true;
     }
     return false;
 };
@@ -238,6 +237,7 @@ const settings_labels = {
     push_notifications: i18n.t("Mobile notifications"),
     email_notifications: i18n.t("Email notifications"),
     pin_to_top: i18n.t("Pin stream to top of left sidebar"),
+    wildcard_mentions_notify: i18n.t("Notifications for @all/@everyone mentions"),
 };
 
 const check_realm_setting = {
@@ -322,7 +322,11 @@ function stream_setting_clicked(e) {
         return false;
     }
     if (exports.is_notification_setting(setting) && sub[setting] === null) {
-        sub[setting] = page_params["enable_stream_" + setting];
+        if (setting === 'wildcard_mentions_notify') {
+            sub[setting] = page_params[setting];
+        } else {
+            sub[setting] = page_params["enable_stream_" + setting];
+        }
     }
     exports.set_stream_property(sub, setting, !sub[setting]);
 

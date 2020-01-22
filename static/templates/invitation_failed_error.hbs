@@ -1,6 +1,13 @@
-<p>{{ error_message }}</p>
+<p id="invitation_error_message">{{ error_message }}</p>
 <ul>
     {{#each error_list}}
     <li>{{this}}</li>
     {{/each}}
 </ul>
+{{#if is_invitee_deactivated}}
+    {{#if is_admin}}
+    <p id="invitation_admin_message">{{#tr this}}You can reactivate deactivated users from <a href="#organization/deactivated-users-admin">organization settings.</a>{{/tr}}</p>
+    {{else}}
+    <p id="invitation_non_admin_message">{{t "Organization administrators can reactivate deactivated users." }}</p>
+    {{/if}}
+{{/if}}

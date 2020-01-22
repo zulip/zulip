@@ -39,8 +39,10 @@ to a new Zulip release:
     ```
 
     The upgrade process will:
-    * Shut down the Zulip service
     * Run `apt-get upgrade`
+    * Install new versions of Zulip's dependencies (mainly Python packages).
+    * (`upgrade-zulip-from-git` only) Build Zulip's frontend assets using `webpack`.
+    * Shut down the Zulip service
     * Run a `puppet apply`
     * Run any database migrations
     * Bring the Zulip service back up on the new version.
@@ -72,8 +74,8 @@ fork](#making-changes).  The process is simple:
 ```
 
 Zulip will automatically fetch the relevant Git commit and upgrade to
-that version of Zulip.  Note that [downgrading to an older
-version](#upgrading-to-master) using this process won't work.
+that version of Zulip.  Note that downgrading to an older commit
+is not generally supported ([details](#upgrading-to-master)).
 
 By default, this uses the main upstream Zulip server repository, but
 you can configure any other Git repository by adding a section like
@@ -123,10 +125,9 @@ in any reports.
 
 ### Rolling back to a prior version
 
-This rollback process is primarily useful for minor releases
-(e.g. `2.0.3` to `2.0.6`); a more complicated process is required to
-rollback database migrations before downgrading to an older major
-release.
+This rollback process is intended for minor releases (e.g. `2.0.3` to
+`2.0.6`); a more complicated process is required to roll back database
+migrations before downgrading to an older major release.
 
 The Zulip upgrade process works by creating a new deployment under
 `/home/zulip/deployments/` containing a complete copy of the Zulip server code,
@@ -147,7 +148,7 @@ the version corresponding to the `restart-server` path you call.
 .. warning::
     If you have modified configuration files installed by
     Zulip (e.g. the nginx configuration), the Zulip upgrade process will
-    overwrite your configuration when it does the `puppet apply`.
+    overwrite your configuration when it does the ``puppet apply``.
 ```
 
 You can test whether this will happen assuming no upstream changes to
@@ -176,69 +177,13 @@ custom configuration.
 ## Upgrading the operating system
 
 When you upgrade the operating system on which Zulip is installed
-(E.g. Ubuntu 14.04 Trusty to Ubuntu 16.04 Xenial), you need to take
+(E.g. Ubuntu 16.06 Xenial to Ubuntu 18.04 Bionic), you need to take
 some additional steps to update your Zulip installation, documented
 below.
 
 The steps are largely the same for the various OS upgrades aside from
 the versions of postgres, so you should be able to adapt these
 instructions for other supported platforms.
-
-### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
-
-1. First, as the Zulip user, stop the Zulip server and run the following
-to back up the system:
-
-    ```
-    supervisorctl stop all
-    /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
-    ```
-
-2. Switch to the root user and upgrade the operating system using the
-OS's standard tooling.  E.g. for Ubuntu, this means running
-`do-release-upgrade` and following the prompts until it completes
-successfully:
-
-    ```
-    sudo -i # Or otherwise get a root shell
-    do-release-upgrade
-    ```
-
-    When `do-release-upgrade` asks you how to upgrade configuration
-    files for services that Zulip manages like `redis`, `postgres`,
-    `nginx`, and `memcached`, the best choice is `N` to keep the
-    currently installed version.  But it's not important; the next
-    step will re-install Zulip's configuration in any case.
-
-3. As root, upgrade the database installation and OS configuration to
-match the new OS version:
-
-    ```
-    apt remove upstart -y
-    /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-    pg_dropcluster 9.5 main --stop
-    systemctl stop postgresql
-    pg_upgradecluster -m upgrade 9.3 main
-    pg_dropcluster 9.3 main
-    apt remove postgresql-9.3
-    systemctl start postgresql
-    service memcached restart
-    ```
-
-4. At this point, you are now running the version of postgres that
-comes with the new Ubuntu version.  Finally, we need to reinstall the
-current version of Zulip, which among other things will recompile
-Zulip's Python module dependencies for your new version of Python:
-
-    ```
-    rm -rf /srv/zulip-venv-cache/*
-    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
-        /home/zulip/deployments/current/ --ignore-static-assets
-    ```
-
-That last command will finish by restarting your Zulip server; you
-should now be able to navigate to its URL and confirm everything is
-working correctly.
 
 ### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
 
@@ -296,6 +241,32 @@ That last command will finish by restarting your Zulip server; you
 should now be able to navigate to its URL and confirm everything is
 working correctly.
 
+
+### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
+
+First, make sure you upgrade your server to the latest Zulip `2.0.x`,
+since newer releases don't support Ubuntu 14.04 Trusty.
+
+1. Same as for Xenial to Bionic.
+
+2. Same as for Xenial to Bionic.
+
+3. As root, upgrade the database installation and OS configuration to
+match the new OS version:
+
+    ```
+    apt remove upstart -y
+    /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+    pg_dropcluster 9.5 main --stop
+    systemctl stop postgresql
+    pg_upgradecluster -m upgrade 9.3 main
+    pg_dropcluster 9.3 main
+    apt remove postgresql-9.3
+    systemctl start postgresql
+    service memcached restart
+    ```
+
+4. Same as for Xenial to Bionic.
 
 ## Modifying Zulip
 
@@ -382,22 +353,20 @@ across future Zulip releases.
 
 ### Upgrading to future releases
 
-Eventually, you'll want to upgrade to a new Zulip release
-(e.g. `2.1.0` in this example).  If your changes were integrated into
-that Zulip release or are otherwise no longer needed, you can just use
-[upgrade as usual](#upgrading-to-a-release).  Otherwise, you'll need
-to update your branch by rebasing your changes (starting from a
-[clone][fork-clone] of the [zulip/zulip][] repository):
-
-If you want to keep your modifications, you'll need to
-update your branch by rebasing your changes (starting from a
-[clone][fork-clone] of the [zulip/zulip][] repository):
+Eventually, you'll want to upgrade to a new Zulip release.  If your
+changes were integrated into that Zulip release or are otherwise no
+longer needed, you can just [upgrade as
+usual](#upgrading-to-a-release).  Otherwise, you'll need to update
+your branch by rebasing your changes (starting from a
+[clone][fork-clone] of the [zulip/zulip][] repository).  The example
+below assumes you have a branch off of 2.0.4 and want to upgrade to
+2.1.0.
 
 ```
 cd zulip
 git fetch --tags upstream
 git checkout acme-branch
-git rebase 2.1.0
+git rebase --onto 2.1.0 2.0.4
 # Fix any errors or merge conflicts; see Zulip's Git Guide for advice
 
 # Use `git diff` to verify your changes are what you expect
@@ -444,22 +413,15 @@ git cherry-pick abcd1234
 instead of "making changes locally" (where `abcd1234` is the commit ID
 of the change you'd like).
 
-In general, we can't provide support for issues caused by
+In general, we can't provide unpaid support for issues caused by
 cherry-picking arbitrary commits if the issues don't also affect
-master or an official release.  However, there is a major exception to
-this rule.
+master or an official release.
 
-Zulip can be deployed in a wide variety of configurations and
-environments, and so we often merge fixes to bugs that we can
-reproduce in an automated test but have not directly reproduced in a
-production system.  In these cases, we'll ask the user(s) who reported
-the bug to apply the patch to their production system to verify the
-fix works for them.
-
-Generally, we'll only request this if we expect the fix in question to
-apply cleanly to the latest release without introducing regressions,
-and you can expect the Zulip community to be responsive in debugging
-any problems any caused by a patch we asked you to apply.
+The exception to this rule is when we ask or encourage a user to apply
+a change to their production system to help verify the fix resolves
+the issue for them.  You can expect the Zulip community to be
+responsive in debugging any problems caused by a patch we asked
+you to apply.
 
 ### Upgrading to master
 
@@ -467,7 +429,7 @@ It's unsafe to backport arbitrary patches from master to an older
 version.  Common issues include:
 
 * Changes containing database migrations (new files under
-  `zerver/migrations/`), which includes most new features.  We
+  `*/migrations/`), which includes most new features.  We
   don't support applying database migrations out of order.
 * Changes that are stacked on top of other changes to the same system.
 * Essentially any patch with hundreds of lines of changes.
@@ -476,19 +438,19 @@ While it's possible to backport these sorts of changes, you're
 unlikely to succeed without help from the core team via a support
 contract.
 
-If you need an unreleased feature, the best path is usually to Zulip
-master using [upgrade-zulip-from-git][].  Before upgrading to master,
-make sure you understand:
+If you need an unreleased feature, the best path is usually to
+upgrade to Zulip master using [upgrade-zulip-from-git][].  Before
+upgrading to master, make sure you understand:
 
 * The `master` branch is under very active development; dozens of new
   changes are integrated into it on most days.  Master can have
   thousands of changes not present in the latest release (all of which
   will be included in our next release).  There are probably some
   bugs.
-* That said we deploy master to chat.zulip.org and zulipchat.com on a
-  regular basis (often daily), so it's very important to the project
-  that it be stable.  Most regressions will be minor UX issues or be
-  fixed quickly.
+* We deploy master to chat.zulip.org and zulipchat.com on a regular
+  basis (often daily), so it's very important to the project that it
+  be stable.  Most regressions will be minor UX issues or be fixed
+  quickly, because we need them to be fixed.
 * The development community is very interested in helping debug issues
   that arise when upgrading from the latest release to master, since
   they provide us an opportunity to fix that category of issue before
@@ -503,61 +465,6 @@ make sure you understand:
   notes](../overview/changelog.md) available listing major changes
   since the last release.  The **Upgrade notes** section will always
   be current, even if some new features aren't documented.
-
-### Applying system updates
-
-The Zulip upgrade script will automatically run `apt-get update` and
-then `apt-get upgrade`, to make sure you have any new versions of
-dependencies (this will also update system packages).  We assume that
-you will install security updates from `apt` regularly, according to
-your usual security practices for a production server.
-
-If you'd like to minimize downtime when installing a Zulip server
-upgrade, you may want to do an `apt-get upgrade` (and then restart the
-server and check everything is working) before running the Zulip
-upgrade script.
-
-There's one `apt` package to be careful about: upgrading `postgresql`
-while the server is running may result in an outage (basically,
-`postgresql` might stop accepting new queries but refuse to shut down
-while waiting for connections from the Zulip server to shut down).
-While this only happens sometimes, it can be hard to fix for someone
-who isn't comfortable managing a `postgresql` database [1].  You can
-avoid that possibility with the following procedure (run as root):
-
-```
-apt-get update
-supervisorctl stop all
-apt-get upgrade -y
-supervisorctl start all
-```
-
-[1] If this happens to you, just stop the Zulip server, restart
-postgres, and then start the Zulip server again, and you'll be back in
-business.
-
-#### Disabling unattended upgrades
-
-**Important**: We recommend that you
-[disable Ubuntu's unattended-upgrades][disable-unattended-upgrades],
-and instead install apt upgrades manually.  With unattended upgrades
-enabled, the moment a new Postgres release is published, your Zulip
-server will have its postgres server upgraded (and thus restarted).
-
-When one of the services Zulip depends on (postgres, memcached, redis,
-rabbitmq) is restarted, that services will disconnect everything using
-them (like the Zulip server), and every operation that Zulip does
-which uses that service will throw an exception (and send you an error
-report email).  These apparently "random errors" can be confusing and
-might cause you to worry incorrectly about the stability of the Zulip
-software, which in fact the problem is that Ubuntu automatically
-upgraded and then restarted key Zulip dependencies.
-
-Instead, we recommend installing updates for these services manually,
-and then restarting the Zulip server with
-`/home/zulip/deployments/current/scripts/restart-server` afterwards.
-
-[disable-unattended-upgrades]: https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/
 
 ## Contributing patches
 

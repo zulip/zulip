@@ -55,7 +55,6 @@ queues = {
     'error_reports',
     'feedback_messages',
     'invites',
-    'message_sender',
     'missedmessage_emails',
     'missedmessage_email_senders',
     'email_senders',
@@ -68,7 +67,6 @@ queues = {
     'user_presence',
     # These queues may not be present if settings.TORNADO_PROCESSES > 1
     'notify_tornado',
-    'tornado_return',
 }
 
 for queue_name in queues:
@@ -79,8 +77,6 @@ for line in output.split('\n'):
     parts = line.split('\t')
     if len(parts) >= 2:
         queue_name = parts[0]
-        if queue_name.startswith("tornado_return_"):
-            queue_name = "tornado_return"
         if queue_name.startswith("notify_tornado_"):
             queue_name = "notify_tornado"
         consumers[queue_name] += 1
@@ -92,7 +88,7 @@ for queue_name in consumers.keys():
     state_file_tmp = state_file_path + "-tmp"
 
     target_count = options.min_count
-    if queue_name in ["tornado_return", "notify_tornado"]:
+    if queue_name == "notify_tornado":
         target_count = TORNADO_PROCESSES
 
     if consumers[queue_name] < target_count:

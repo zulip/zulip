@@ -1,21 +1,21 @@
 # Webhooks for external integrations.
-
 import base64
-from functools import wraps
-from typing import Any, Dict, Optional, List, Tuple
 import re
+from functools import wraps
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
-from zerver.lib.types import ViewFuncT
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.types import ViewFuncT
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
     get_push_commits_event_message
-from zerver.lib.validator import check_dict
 from zerver.models import UserProfile
+
 
 def build_message_from_gitlog(user_profile: UserProfile, name: str, ref: str,
                               commits: List[Dict[str, str]], before: str, after: str,

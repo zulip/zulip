@@ -131,6 +131,18 @@
                 </div>
 
                 <div class="input-group">
+                    <label for="realm_private_message_policy">{{t "Who can use private messages" }} ({{t "beta" }})
+                        <a href="/help/restrict-private-messages" target="_blank">
+                            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                        </a>
+                    </label>
+                    <select name="realm_private_message_policy" class="setting-widget prop-element" id="id_realm_private_message_policy" data-setting-widget-type="integer">
+                        <option value="by_anyone">{{t "Admins, members, and guests" }}</option>
+                        <option value="disabled">{{t "Private messages disabled" }}</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
                     <label for="realm_email_address_visibility">{{t "Who can access user email addresses" }}
                         <a href="/help/restrict-visibility-of-email-addresses" target="_blank">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>

@@ -57,47 +57,43 @@ https://help.ubuntu.com/community/Repositories/Ubuntu
   installing with less than 2GB of RAM, as you will likely experience
   out of memory issues installing dependencies.  We recommend against
   using highly CPU-limited servers like the AWS `t2` style instances
-  for organizations with a hundreds of users (active or no).
-
-  See our
-  [documentation on scalability](#scalability)
-  for advice on hardware requirements for larger organizations.
+  for organizations with hundreds of users (active or no).
 
 * Disk space: You'll need at least 10GB of free disk space for a
-  server with dozens of users. If you intend to store uploaded files
-  locally rather than on S3 you will likely need more, depending how
-  often your users upload large files.  You'll eventually need 100GB
-  or more if you have thousands of active users or millions of total
-  messages sent.  We recommend using an SSD and avoiding cloud storage
-  backends that limit the IOPS per second, since the disk is primarily
-  used for the database (assuming you're using the
-  [S3 file uploads backend](../production/upload-backends.md)).
+  server with dozens of users.  We recommend using an SSD and avoiding
+  cloud storage backends that limit the IOPS per second, since the
+  disk is primarily used for the Zulip database.
+
+See our [documentation on scalability](#scalability) below for advice
+on hardware requirements for larger organizations.
 
 #### Network and Security Specifications
 
 * Incoming HTTPS access (usually port 443, though this is
   [configurable](../production/deployment.html#using-an-alternate-port))
   from the networks where your users are (usually, the public
-  Internet).  If you also open port 80, Zulip will redirect users to
-  HTTPS rather than not working when users type
-  e.g. `http://zulip.example.com` in their browser.  If you are using
-  Zulip's [incoming email integration][email-mirror-code] you may also
-  need incoming port 25 open.
-
-[email-mirror-code]: https://github.com/zulip/zulip/blob/master/zerver/management/commands/email_mirror.py
-
+  Internet).
+* Incoming port 80 access (optional).  Zulip only serves content over
+  HTTPS, and will redirect HTTP requests to HTTPS.
+* Incoming port 25 if you plan to enable Zulip's [incoming email
+  integration](../production/email-gateway.md).
 * Outgoing HTTP(S) access (ports 80 and 443) to the public Internet so
-  that Zulip can properly manage inline image previews.  You'll also
-  need outgoing SMTP access to your SMTP server (the standard port for
-  this is 587) so that Zulip can send email.
+  that Zulip can properly manage image previews and embeds.  Outgoing
+  Internet access is not required if you [disable those
+  features](https://zulipchat.com/help/allow-image-link-previews).
+* Outgoing SMTP access (usually port 587) to your [SMTP
+  server](../production/email.md) so that Zulip can send emails.
+* A domain name (e.g. `zulip.example.com`) that your users will use to
+  access the Zulip server.  In order to generate valid SSL
+  certificates [with Certbot][doc-certbot], and to enable other
+  services such as Google authentication, public DNS name is simpler,
+  but Zulip can be configured to use a non-public domain or even an IP
+  address as its external hostname (though we don't recommend that
+  configuration).
+* Zulip supports [running behind a reverse proxy][reverse-proxy].
 
-#### Domain name
-
-You should already have a domain name (e.g., `zulip.example.com`)
-available for your Zulip server. In order to generate valid SSL
-certificates [with Certbot][doc-certbot], and to enable other services
-such as Google authentication, you'll need to set the domain's
-A record to point to your production server.
+[reverse-proxy]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
+[email-mirror-code]: https://github.com/zulip/zulip/blob/master/zerver/management/commands/email_mirror.py
 
 ## Credentials needed
 
@@ -135,12 +131,13 @@ Zulip in production](../production/install.md).
 
 ## Scalability
 
-This section details some basic guidelines on for running a Zulip
-server for larger organizations (especially >1000 users or 500+ daily
-active users).  Zulip's resource needs depend roughly on 3 parameters:
-daily active users (e.g. number of employees if everyone's an
-employee), total user accounts (can be much larger), and message
-volume.
+This section details some basic guidelines for running a Zulip server
+for larger organizations (especially >1000 users or 500+ daily active
+users).  Zulip's resource needs depend mainly on 3 parameters:
+* daily active users (e.g. number of employees if everyone's an
+employee)
+* total user accounts (can be much larger)
+* message volume.
 
 In the following, we discuss a configuration with at most two types of
 servers: application servers (running Django, Tornado, RabbitMQ,
@@ -157,8 +154,7 @@ installing Zulip with a dedicated database server.
   database](postgres.md), but it's not required.
 
 * **RAM:**  We recommended more RAM for larger installations:
-    * With 25+ daily active users, 4GB of RAM (Under that, Zulip runs
-      its queue processors in a special low-resource mode).
+    * With 25+ daily active users, 4GB of RAM.
     * With 100+ daily active users, 8GB of RAM.
     * With 400+ daily active users, 16GB of RAM for the Zulip
       application server, plus 16GB for the database.
@@ -177,8 +173,9 @@ installing Zulip with a dedicated database server.
 
 * **Disk for application server:** We recommend using [the S3 file
   uploads backend][s3-uploads] to store uploaded files at scale.  With
-  that configuration, we recommend 50GB of disk for the OS, Zulip
-  software, logs and scratch/free space.
+  the S3 backend configuration, we recommend 50GB of disk for the OS,
+  Zulip software, logs and scratch/free space.  Disk needs when
+  storing uploads locally
 
 * **Disk for database:** SSD disk is highly recommended.  For
   installations where most messages have <100 recipients, 10GB per 1M
@@ -187,13 +184,12 @@ installing Zulip with a dedicated database server.
   subscribed (like on chat.zulip.org), add 20GB per (1000 user
   accounts) per (1M messages to public streams).
 
-* **Example:**  When the
+* **Example:** When the
   [chat.zulip.org](../contributing/chat-zulip-org.md) community server
-  has 12K user accounts (~300 hundred daily actives) and 800K messages
-  of history (400K to public streams), it had 16GB of RAM, 4 cores, and
-  its database was using 100GB of disk.  It is a default
-  configuration single-server installation.  The CPUs are essentially
-  always idle.
+  had 12K user accounts (~300 daily actives) and 800K messages of
+  history (400K to public streams), it was a default configuration
+  single-server installation with 16GB of RAM, 4 cores (essentially
+  always idle), and its database was using about 100GB of disk.
 
 * **Disaster recovery:** One can easily run a hot spare application
   server and a hot spare database (using [Postgres streaming
@@ -210,9 +206,9 @@ installing Zulip with a dedicated database server.
   can't currently offer this model outside of enterprise support
   contracts.
 
-* Zulip 2.0 and later supports running multiple Tornado servers
-  sharded by realm/organization, which is how we scale Zulip Cloud.
-  Contact us for help implementing the sharding policy.
+  * Zulip 2.0 and later supports running multiple Tornado servers
+    sharded by realm/organization, which is how we scale Zulip Cloud.
+    Contact us for help implementing the sharding policy.
 
 Scalability is an area of active development, so if you're unsure
 whether Zulip is a fit for your organization or need further advice

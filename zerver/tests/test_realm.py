@@ -448,6 +448,20 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid user_group_edit_policy')
 
+    def test_private_message_policy(self) -> None:
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+        req = dict(private_message_policy = ujson.dumps(Realm.PRIVATE_MESSAGE_POLICY_DISABLED))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        print(result)
+
+        invalid_value = 10
+        req = dict(private_message_policy = ujson.dumps(invalid_value))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid private_message_policy')
+
     def test_invalid_integer_attribute_values(self) -> None:
 
         integer_values = [key for key, value in Realm.property_types.items() if value is int]
@@ -462,6 +476,7 @@ class RealmTest(ZulipTestCase):
             waiting_period_threshold=-10,
             digest_weekday=10,
             user_group_edit_policy=10,
+            private_message_policy=10,
         )
 
         # We need an admin user.
@@ -673,6 +688,8 @@ class RealmAPITest(ZulipTestCase):
                                   Realm.CREATE_STREAM_POLICY_WAITING_PERIOD],
             user_group_edit_policy=[Realm.USER_GROUP_EDIT_POLICY_ADMINS,
                                     Realm.USER_GROUP_EDIT_POLICY_MEMBERS],
+            private_message_policy=[Realm.PRIVATE_MESSAGE_POLICY_UNLIMITED,
+                                    Realm.PRIVATE_MESSAGE_POLICY_DISABLED],
             invite_to_stream_policy=[Realm.INVITE_TO_STREAM_POLICY_ADMINS,
                                      Realm.INVITE_TO_STREAM_POLICY_MEMBERS,
                                      Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD],

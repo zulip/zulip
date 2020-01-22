@@ -258,7 +258,7 @@ exports.initialize = function () {
         e.preventDefault();
         // Note that we may have an href here, but we trust the stream id more,
         // so we re-encode the hash.
-        const stream_id = $(this).attr('data-stream-id');
+        const stream_id = parseInt($(this).attr('data-stream-id'), 10);
         if (stream_id) {
             hashchange.go_to_location(hash_util.by_stream_uri(stream_id));
             return;
@@ -392,7 +392,7 @@ exports.initialize = function () {
 
     $('body').on('click', '.on_hover_topic_mute', function (e) {
         e.stopPropagation();
-        const stream_id = $(e.currentTarget).attr('data-stream-id');
+        const stream_id = parseInt($(e.currentTarget).attr('data-stream-id'), 10);
         const topic = $(e.currentTarget).attr('data-topic-name');
         muting_ui.mute(stream_id, topic);
     });
@@ -499,8 +499,8 @@ exports.initialize = function () {
     $('#user_presences').on('mouseenter', '.user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block', function (e) {
         e.stopPropagation();
         const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
-        const user_id = elem.attr('data-user-id');
-        const title_data = buddy_data.get_title_data(user_id, false);
+        const user_id_string = elem.attr('data-user-id');
+        const title_data = buddy_data.get_title_data(user_id_string, false);
         do_render_buddy_list_tooltip(elem, title_data);
     });
 

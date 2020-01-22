@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class NetlifyHookTests(WebhookTestCase):
     STREAM_NAME = 'netlify'
     URL_TEMPLATE = u"/api/v1/external/netlify?stream={stream}&api_key={api_key}"

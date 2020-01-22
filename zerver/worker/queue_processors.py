@@ -1,4 +1,5 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
+from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Mapping, Optional, cast, Tuple, TypeVar, Type
 
 import copy
@@ -12,8 +13,6 @@ import socket
 
 from django.conf import settings
 from django.db import connection
-from django.core.handlers.wsgi import WSGIRequest
-from django.core.handlers.base import BaseHandler
 from zerver.models import \
     get_client, get_system_bot, PreregistrationUser, \
     get_user_profile_by_id, Message, Realm, UserMessage, UserProfile, \
@@ -21,7 +20,7 @@ from zerver.models import \
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.feedback import handle_feedback
-from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
+from zerver.lib.queue import SimpleQueueClient, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.email_notifications import handle_missedmessage_emails
 from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification, \
@@ -35,11 +34,9 @@ from zerver.lib.digest import handle_digest_email
 from zerver.lib.send_email import send_future_email, send_email_from_dict, \
     FromAddress, EmailNotDeliveredException, handle_send_email_format_changes
 from zerver.lib.email_mirror import process_message as mirror_email, rate_limit_mirror_by_realm, \
-    is_missed_message_address, extract_and_validate
+    is_missed_message_address, decode_stream_email_address
 from zerver.lib.streams import access_stream_by_id
-from zerver.tornado.socket import req_redis_key, respond_send_message
 from zerver.lib.db import reset_queries
-from zerver.lib.redis_utils import get_redis_client
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services, RealmAuditLog
@@ -47,9 +44,9 @@ from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.export import export_realm_wrapper
+from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 
 import os
-import sys
 import ujson
 from collections import defaultdict
 import email
@@ -57,7 +54,6 @@ import time
 import datetime
 import logging
 import requests
-from io import StringIO
 import urllib
 
 logger = logging.getLogger(__name__)
@@ -118,7 +114,7 @@ def retry_send_email_failures(
 
     return wrapper
 
-class QueueProcessingWorker:
+class QueueProcessingWorker(ABC):
     queue_name = None  # type: str
 
     def __init__(self) -> None:
@@ -126,26 +122,30 @@ class QueueProcessingWorker:
         if self.queue_name is None:
             raise WorkerDeclarationException("Queue worker declared without queue_name")
 
+    @abstractmethod
     def consume(self, data: Dict[str, Any]) -> None:
-        raise WorkerDeclarationException("No consumer defined!")
+        pass
 
     def consume_wrapper(self, data: Dict[str, Any]) -> None:
         try:
             self.consume(data)
         except Exception:
-            self._log_problem()
-            if not os.path.exists(settings.QUEUE_ERROR_DIR):
-                os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
-            fname = '%s.errors' % (self.queue_name,)
-            fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
-            line = '%s\t%s\n' % (time.asctime(), ujson.dumps(data))
-            lock_fn = fn + '.lock'
-            with lockfile(lock_fn):
-                with open(fn, 'ab') as f:
-                    f.write(line.encode('utf-8'))
-            check_and_send_restart_signal()
+            self._handle_consume_exception([data])
         finally:
             reset_queries()
+
+    def _handle_consume_exception(self, events: List[Dict[str, Any]]) -> None:
+        self._log_problem()
+        if not os.path.exists(settings.QUEUE_ERROR_DIR):
+            os.mkdir(settings.QUEUE_ERROR_DIR)  # nocoverage
+        fname = '%s.errors' % (self.queue_name,)
+        fn = os.path.join(settings.QUEUE_ERROR_DIR, fname)
+        line = '%s\t%s\n' % (time.asctime(), ujson.dumps(events))
+        lock_fn = fn + '.lock'
+        with lockfile(lock_fn):
+            with open(fn, 'ab') as f:
+                f.write(line.encode('utf-8'))
+        check_and_send_restart_signal()
 
     def _log_problem(self) -> None:
         logging.exception("Problem handling data on queue %s" % (self.queue_name,))
@@ -166,10 +166,11 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
 
     def start(self) -> None:  # nocoverage
         while True:
-            # TODO: Probably it'd be better to share code with consume_wrapper()
             events = self.q.drain_queue(self.queue_name, json=True)
             try:
                 self.consume_batch(events)
+            except Exception:
+                self._handle_consume_exception(events)
             finally:
                 reset_queries()
 
@@ -179,8 +180,9 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
             if not self.sleep_only_if_empty or len(events) == 0:
                 time.sleep(self.sleep_delay)
 
-    def consume_batch(self, event: List[Dict[str, Any]]) -> None:
-        raise NotImplementedError
+    @abstractmethod
+    def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+        pass
 
     def consume(self, event: Dict[str, Any]) -> None:
         """In LoopQueueProcessingWorker, consume is used just for automated tests"""
@@ -205,7 +207,7 @@ class SignupWorker(QueueProcessingWorker):
                 logging.warning("Attempted to sign up already existing email to list: %s" %
                                 (data['email_address'],))
             elif r.status_code == 400:
-                retry_event('signups', data, lambda e: r.raise_for_status())
+                retry_event(self.queue_name, data, lambda e: r.raise_for_status())
             else:
                 r.raise_for_status()
 
@@ -418,14 +420,21 @@ class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
         initialize_push_notifications()
         super().start()
 
-    def consume(self, data: Mapping[str, Any]) -> None:
-        if data.get("type", "add") == "remove":
-            message_ids = data.get('message_ids')
-            if message_ids is None:  # legacy task across an upgrade
-                message_ids = [data['message_id']]
-            handle_remove_push_notification(data['user_profile_id'], message_ids)
-        else:
-            handle_push_notification(data['user_profile_id'], data)
+    def consume(self, event: Dict[str, Any]) -> None:
+        try:
+            if event.get("type", "add") == "remove":
+                message_ids = event.get('message_ids')
+                if message_ids is None:  # legacy task across an upgrade
+                    message_ids = [event['message_id']]
+                handle_remove_push_notification(event['user_profile_id'], message_ids)
+            else:
+                handle_push_notification(event['user_profile_id'], event)
+        except PushNotificationBouncerRetryLaterError:
+            def failure_processor(event: Dict[str, Any]) -> None:
+                logger.warning(
+                    "Maximum retries exceeded for trigger:%s event:push_notification" % (
+                        event['user_profile_id'],))
+            retry_event(self.queue_name, event, failure_processor)
 
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
 @assign_queue('feedback_messages')
@@ -469,66 +478,6 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
             internal_send_message(error_bot_realm, settings.ERROR_BOT,
                                   "stream", settings.SLOW_QUERY_LOGS_STREAM, topic, content)
 
-@assign_queue("message_sender")
-class MessageSenderWorker(QueueProcessingWorker):
-    def __init__(self) -> None:
-        super().__init__()
-        self.redis_client = get_redis_client()
-        self.handler = BaseHandler()
-        self.handler.load_middleware()
-
-    def consume(self, event: Mapping[str, Any]) -> None:
-        server_meta = event['server_meta']
-
-        environ = {
-            'REQUEST_METHOD': 'SOCKET',
-            'SCRIPT_NAME': '',
-            'PATH_INFO': '/json/messages',
-            'SERVER_NAME': '127.0.0.1',
-            'SERVER_PORT': 9993,
-            'SERVER_PROTOCOL': 'ZULIP_SOCKET/1.0',
-            'wsgi.version': (1, 0),
-            'wsgi.input': StringIO(),
-            'wsgi.errors': sys.stderr,
-            'wsgi.multithread': False,
-            'wsgi.multiprocess': True,
-            'wsgi.run_once': False,
-            'zulip.emulated_method': 'POST'
-        }
-
-        if 'socket_user_agent' in event['request']:
-            environ['HTTP_USER_AGENT'] = event['request']['socket_user_agent']
-            del event['request']['socket_user_agent']
-
-        # We're mostly using a WSGIRequest for convenience
-        environ.update(server_meta['request_environ'])
-        request = WSGIRequest(environ)
-        # Note: If we ever support non-POST methods, we'll need to change this.
-        request._post = event['request']
-        request.csrf_processing_done = True
-
-        user_profile = get_user_profile_by_id(server_meta['user_id'])
-        request._cached_user = user_profile
-
-        resp = self.handler.get_response(request)
-        server_meta['time_request_finished'] = time.time()
-        server_meta['worker_log_data'] = request._log_data
-
-        resp_content = resp.content.decode('utf-8')
-        response_data = ujson.loads(resp_content)
-        if response_data['result'] == 'error':
-            check_and_send_restart_signal()
-
-        result = {'response': response_data, 'req_id': event['req_id'],
-                  'server_meta': server_meta}
-
-        redis_key = req_redis_key(event['req_id'])
-        self.redis_client.hmset(redis_key, {'status': 'complete',
-                                            'response': resp_content})
-
-        queue_json_publish(server_meta['return_queue'], result,
-                           respond_send_message)
-
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):  # nocoverage
     # Who gets a digest is entirely determined by the enqueue_digest_emails
@@ -544,7 +493,7 @@ class MirrorWorker(QueueProcessingWorker):
         if not is_missed_message_address(rcpt_to):
             # Missed message addresses are one-time use, so we don't need
             # to worry about emails to them resulting in message spam.
-            recipient_realm = extract_and_validate(rcpt_to)[0].realm
+            recipient_realm = decode_stream_email_address(rcpt_to)[0].realm
             try:
                 rate_limit_mirror_by_realm(recipient_realm)
             except RateLimited:
@@ -555,7 +504,7 @@ class MirrorWorker(QueueProcessingWorker):
                 return
 
         mirror_email(email.message_from_string(event["message"]),
-                     rcpt_to=rcpt_to, pre_checked=True)
+                     rcpt_to=rcpt_to)
 
 @assign_queue('test', queue_type="test")
 class TestWorker(QueueProcessingWorker):
@@ -655,7 +604,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
 
 @assign_queue('deferred_work')
 class DeferredWorker(QueueProcessingWorker):
-    def consume(self, event: Mapping[str, Any]) -> None:
+    def consume(self, event: Dict[str, Any]) -> None:
         if event['type'] == 'mark_stream_messages_as_read':
             user_profile = get_user_profile_by_id(event['user_profile_id'])
             client = Client.objects.get(id=event['client_id'])
@@ -668,7 +617,14 @@ class DeferredWorker(QueueProcessingWorker):
                                                                require_active=False)
                 do_mark_stream_messages_as_read(user_profile, client, stream)
         elif event['type'] == 'clear_push_device_tokens':
-            clear_push_device_tokens(event["user_profile_id"])
+            try:
+                clear_push_device_tokens(event["user_profile_id"])
+            except PushNotificationBouncerRetryLaterError:
+                def failure_processor(event: Dict[str, Any]) -> None:
+                    logger.warning(
+                        "Maximum retries exceeded for trigger:%s event:clear_push_device_tokens" % (
+                            event['user_profile_id'],))
+                retry_event(self.queue_name, event, failure_processor)
         elif event['type'] == 'realm_export':
             start = time.time()
             realm = Realm.objects.get(id=event['realm_id'])

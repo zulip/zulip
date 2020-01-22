@@ -1,23 +1,22 @@
 import re
 from functools import partial
-from typing import Any, Dict, Optional
 from inspect import signature
+from typing import Any, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header, UnexpectedWebhookEventType
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
+    check_send_webhook_message, get_http_headers_from_filename, \
+    validate_extract_webhook_http_header
 from zerver.lib.webhooks.git import CONTENT_MESSAGE_TEMPLATE, \
     TOPIC_WITH_BRANCH_TEMPLATE, TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_issue_event_message, \
     get_pull_request_event_message, get_push_commits_event_message, \
     get_push_tag_event_message, get_setup_webhook_message
 from zerver.models import UserProfile
-from zerver.lib.webhooks.common import \
-    get_http_headers_from_filename
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 

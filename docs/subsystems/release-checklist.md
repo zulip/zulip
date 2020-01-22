@@ -33,19 +33,18 @@ preparing a new release.
 
 * Do final updates to `changelog.md`, for any final changes and with
   any revisions from the draft blog post.  (And the date!)
-* Update `ZULIP_VERSION`, `LATEST_RELEASE_VERSION`, etc. in `version.py`.
+* Update `ZULIP_VERSION` and `LATEST_RELEASE_VERSION` in `version.py`.
 * Use `build-release-tarball` to generate a final release tarball.
 * Post the release tarball on https://www.zulip.org/dist/releases/ :
   add the file, update the `zulip-server-latest.tar.gz` symlink, and
-  add to SHA256SUMS.txt.
+  add to SHA256SUMS.txt, using `ship-release.sh`.
 * Create a Git tag and push the tag.
 * Post the release on GitHub, using the text from `changelog.md`.
 * Update the [Docker image](https://github.com/zulip/docker-zulip) and do a release of that.
 * Update the image of DigitalOcean one click app using [Fabric](https://github.com/zulip/marketplace-partners)
   and publish it to DO marketplace.
 * Publish the blog post.
-* Email zulip-announce, and send a tweet.
-* For a major release: submit blog post to aggregators.
+* Email zulip-announce, post to #announce, and send a tweet.
 
 ### Post-release
 

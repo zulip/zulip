@@ -7,9 +7,10 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_int
-from zerver.lib.webhooks.common import check_send_webhook_message, \
-    UnexpectedWebhookEventType
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
+    check_send_webhook_message
 from zerver.models import UserProfile
+
 
 @api_key_only_webhook_view('Transifex', notify_bot_owner_on_invalid_json=False)
 @has_request_variables

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 from zerver.lib.test_classes import WebhookTestCase
+
 
 class PagerDutyHookTests(WebhookTestCase):
     STREAM_NAME = 'pagerduty'

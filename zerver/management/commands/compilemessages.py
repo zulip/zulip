@@ -1,11 +1,11 @@
 import json
 import os
-import polib
 import re
-import ujson
 from subprocess import CalledProcessError, check_output
 from typing import Any, Dict, List
 
+import polib
+import ujson
 from django.conf import settings
 from django.conf.locale import LANG_INFO
 from django.core.management.base import CommandParser
@@ -13,6 +13,7 @@ from django.core.management.commands import compilemessages
 from django.utils.translation.trans_real import to_language
 
 from zerver.lib.i18n import with_language
+
 
 class Command(compilemessages.Command):
 

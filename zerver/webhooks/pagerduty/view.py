@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-
 from typing import Any, Dict, Iterable
 
 from django.http import HttpRequest, HttpResponse
@@ -7,8 +6,8 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import check_send_webhook_message, \
-    UnexpectedWebhookEventType
+from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
+    check_send_webhook_message
 from zerver.models import UserProfile
 
 PAGER_DUTY_EVENT_NAMES = {

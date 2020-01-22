@@ -2,11 +2,11 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-
-from django.db.migrations.state import StateApps
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.migrations.state import StateApps
 
 from zerver.lib.actions import render_stream_description
+
 
 def render_all_stream_descriptions(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Stream = apps.get_model('zerver', 'Stream')

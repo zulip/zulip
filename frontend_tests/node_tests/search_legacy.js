@@ -63,9 +63,10 @@ run_test('initialize', () => {
         assert(search.is_using_input_method);
     };
 
+    search_suggestion.max_num_of_search_results = 999;
     search_query_box.typeahead = (opts) => {
         assert.equal(opts.fixed, true);
-        assert.equal(opts.items, 12);
+        assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);

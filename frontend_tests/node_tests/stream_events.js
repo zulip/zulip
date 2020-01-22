@@ -94,6 +94,12 @@ run_test('update_property', () => {
     checkbox = $("#email_notifications_1");
     assert.equal(checkbox.prop('checked'), true);
 
+    // Tests wildcard_mentions_notify notifications
+    stream_events.update_property(1, 'wildcard_mentions_notify', true);
+    assert.equal(frontend.wildcard_mentions_notify, true);
+    checkbox = $("#wildcard_mentions_notify_1");
+    assert.equal(checkbox.prop('checked'), true);
+
     // Test name change
     with_overrides(function (override) {
         global.with_stub(function (stub) {

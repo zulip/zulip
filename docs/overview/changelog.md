@@ -2,23 +2,53 @@
 
 All notable changes to the Zulip server are documented in this file.
 
-### 2.1.0-rc1 -- 2019-11-22
+### Unreleased
 
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.1.2 -- 2020-01-16
+
+- Corrected fix for CVE-2019-19775 (the original fix was affected by
+  an unfixed security bug in Python's urllib, CVE-2015-2104).
+- Migrated data for handling replies to missed-message emails from
+  semi-persistent redis to the fully persistent database.
+- Added authentication for redis and memcached even in configurations
+  where these are running on localhost, for add hardening against
+  attacks from malicious processes running on the Zulip server.
+- Improved logging for misconfigurations of LDAP authentication.
+- Improved error handling for invalid LDAP configurations.
+- Improved error tracebacks for invalid memcached keys.
+- Fixed support for using LDAP with email address visibility
+  limited to administrators.
+- Fixed styling of complex markup within /me messages.
+- Fixed left sidebar duplicating some group private message threads.
+- Fixed the "Mentions" narrow being unable to mark messages as read.
+- Fixed error handling bug preventing rerunning the installer.
+- Fixed a few minor issues with migrations for upgrading from 2.0.x.
+
+### 2.1.1 -- 2019-12-13
+
+- Fixed upgrading to 2.1.x with the LDAP integration enabled in a
+  configuration where `AUTH_LDAP_REVERSE_EMAIL_SEARCH` is newly
+  required, but is not yet set.
+- Reimplemented `--postgres-missing-dictionaries` installer option,
+  used with our new support for a DBaaS managed database.
+- Improved documentation for `AUTH_LDAP_REVERSE_EMAIL_SEARCH`.
+
+### 2.1.0 -- 2019-12-12
+
 **Highlights:**
 
-- Removed support for EOL Ubuntu Trusty.
-- Added support for Debian buster.
+- Added support for Debian buster.  Removed support for EOL Ubuntu Trusty.
 - Added support for SAML authentication.
+- Removed our dependency on `tsearch_extras`, making it possible to
+  run a production Zulip server against any postgres database
+  (including those where one cannot install extensions, like Amazon RDS).
 - Significantly improved the email->Zulip gateway, and added [nice
   setup documentation](../production/email-gateway.md).  It now
   should be possible to subscribe a Zulip stream to an email list and
   have a good experience.
-- Removed our dependency on `tsearch_extras`, making it possible to
-  run a production Zulip server against any postgres database
-  (including those one cannot add extensions to like Amazon RDS).
 - Added an option for hiding access to user email addresses from
   other users.  While counterproductive for most corporate
   communities, for open source projects and other volunteer
@@ -32,14 +62,9 @@ in bursts.
   to existing Slack/HipChat/Gitter import tools).  Slack import now
   supports importing data only included in corporate exports,
   including private messages and shared channels.
-- Changed the user-level stream notification settings model to be
-  defaults (for all streams where the user hasn't specifically changed
-  their settings) instead of a default for newly subscribed streams.
 - Added markdown support and typeahead for mentioning topics.
-- Added support for setting a message retention policy, automatically
-  deleting messages older than a certain date.
-- Redesigned Zulip's missed-message emails to use a clean, more
-  readable style.
+- Email notifications have been completely redesigned with a minimal,
+  readable style inspired by GitHub's email notifications.
 - We merged significant preparatory work for supporting RHEL/CentOS in
   production.  We're now interested in beta testers for this feature.
 - Reorganized Zulip's documentation for sysadmins, and added [new
@@ -74,6 +99,14 @@ lose the setting and need to re-enable it.
       replaced with `SOCIAL_AUTH_GOOGLE_KEY`.
     * In `/etc/zulip/settings.py`, `GoogleMobileOauth2Backend` should
       be replaced with called `GoogleAuthBackend`.
+- Installations using Zulip's LDAP integration without
+  `LDAP_APPEND_DOMAIN` will need to configure two new settings telling
+  Zulip how to look up a user in LDAP given their email address:
+  `AUTH_LDAP_REVERSE_EMAIL_SEARCH` and `AUTH_LDAP_USERNAME_ATTR`. See
+  the [LDAP configuration
+  instructions](../production/authentication-methods.html#ldap-including-active-directory)
+  for details.  You can use the usual `manage.py query_ldap` method to
+  verify whether your configuration is working correctly.
 - The Zulip web and desktop apps have been converted to directly count
   all unread messages, replacing an old system that just counted the
   (recent) messages fully fetched by the webapp.  This one-time
@@ -82,21 +115,26 @@ lose the setting and need to re-enable it.
   happened is the user never read these messages, and the Zulip webapp
   was not displaying that.  Generally, the fix is for users to simply
   mark those messages as read as usual.
-
+- Previous versions of Zulip's installer would generate the secrets
+  `local_database_password` and `initial_password_salt`.  These
+  secrets don't do anything, as they only modify behavior of a Zulip
+  development environment.  We recommend deleting those lines from
+  `/etc/zulip/zulip-secrets.conf` when you upgrade to avoid confusion.
 - This release has a particularly expensive database migration,
-changing the `UserMessage.id` field from an `int` to a `bigint` to
-support more than 2 billion message deliveries on a Zulip server.  It
-runs in 2 phases: A first migration that doesn't require the server to
-be down (which took about 4 hours to process the 250M rows there
-(`UserMessage.objects.count()`)) and a second migration that does
-require downtime (which took about 60 seconds for chat.zulip.org).  We
-expect that most Zulip servers can happily just use the normal upgrade
-process with at most a few minutes of downtime.  Larger Zulip servers
-may want to first upgrade to [this
-commit](https://github.com/zulip/zulip/commit/b008515d63841e1c0a16ad868d3d67be3bfc20ca)
-using `upgrade-zulip-from-git`, following the instructions to avoid
-downtime, and then upgrade to the new release.
+  changing the `UserMessage.id` field from an `int` to a `bigint` to
+  support more than 2 billion message deliveries on a Zulip server.
+  It runs in 2 phases: A first migration that doesn't require the
+  server to be down (which took about 4 hours to process the 250M rows
+  on chat.zulip.org, and a second migration that does require downtime
+  (which took about 60 seconds for chat.zulip.org). You can check the
+  number of rows for your server with `UserMessage.objects.count()`.
 
+  We expect that most Zulip servers can happily just use the normal
+  upgrade process with a few minutes of downtime.  Zulip servers with
+  over 1M messages may want to first upgrade to [this
+  commit](https://github.com/zulip/zulip/commit/b008515d63841e1c0a16ad868d3d67be3bfc20ca)
+  using `upgrade-zulip-from-git`, following the instructions to avoid
+  downtime, and then upgrade to the new release.
 
 **Full feature changelog:**
 - Added sortable columns to all tables in settings pages.
@@ -118,10 +156,16 @@ downtime, and then upgrade to the new release.
   convenient to link to profiles on GitHub, Twitter, and other tools.
 - Added support for choosing which email address to use in GitHub auth.
 - Added a new setting to control whether inactive streams are demoted.
-- Added webapp support for upcoming desktop app features: inline reply
+- Added webapp support for new desktop app features: inline reply
   from notifications, and detecting user presence from OS APIs.
-- Added markdown support for headings, implemented using `# heading`.
+- Added markdown support for headings, implemented using `# heading`,
+  and removed several other unnecessary differences from CommonMark.
 - Added local echo when editing messages for a more responsive experience.
+- Changes to global notification settings for stream messages now
+  affect existing subscriptions where the user had not explicitly
+  changed the notification settings, as expected.
+- The default setting value is now to send mobile push notifications
+  if the user was recently online.
 - Fixed issues with positioning and marking messages as read when
   doing a search where some results are unread messages.
 - The private messages widget shows much deeper history of private
@@ -140,6 +184,8 @@ downtime, and then upgrade to the new release.
   rewrote formatting for dozens of integraitons for cleaner punctuation.
 - The beta "weekly digest emails" feature is again available as an
   organization-level configuration option, after several improvements.
+- The administrative UI for managing bots now nicely links to the
+  bot's owner.
 - Restructured "private messages" widget to have a cleaner design.
 - Significantly improved performance of the backend markdown processor.
 - Significantly improved Help Center documentation of dozens of features.
@@ -151,17 +197,22 @@ downtime, and then upgrade to the new release.
 - Improved default nginx TLS settings for stronger security.
 - Improved UI of administrative user management UI.
 - Improved error messages for various classes of invalid searches.
-- Improved styling of markdown numbered lists.
+- Improved styling of both markdown unordered and numbered lists.
 - Compose typeahead now autofills stream field if only subscribed to
   one stream.
 - Bot users can now post to announcement-only streams if their owners
   can (this preserves the pre-existing security model).
 - User full names now must use characters valid in an email from line.
 - Settings pages that normal users cannot modify are now hidden by default.
+- The `has:link`, `has:attachment`, and `has:image` search keywords
+  have been redesigned to correctly handle corner cases like links in
+  code blocks.
 - Replaced title attributes with nice tooltips in the message feed and
   buddy list.
 - Fixed incorrect caching settings for the Zulip API, which could result
   in browers appearing to display old content or remark messages unread.
+- Fixed a bug that prevented sending mobile push notifications when the
+  user was recently online via the mobile app.
 - Fixed buggy handling of LaTeX in quote-and-reply.
 - Fixed buggy rendering of bulleted lists inside blockquotes.
 - Fixed several bugs with CORS in the nginx configuration.
@@ -199,12 +250,15 @@ downtime, and then upgrade to the new release.
 - Fixed email gateway bot being created with incorrectly cached permissions.
 - Fixed guest users seeing UI widgets they can't use.
 - Fixed several issues with click handlers incorrectly closing compose.
+- Fixed buggy behavior of /me messages not ending with a paragraph.
 - Fixed several major UI issues with the mobile webapp.
 - Fixed HTML styling when copy-pasting content out of Zulip's night theme.
 - Fixed obscure traceback with Virtualenv 16.0.0 unexpectedly installed.
 - Added a new visual tool for testing webhook integrations.
 - Rewrote the Google authentication backend to use python-social-auth,
   removing Zulip's original 2013-era SSO authentication backend.
+- The `/server_settings` API now advertises supported authentication
+  methods alongside details on how to render login/registration buttons.
 - Rewrote HTML/CSS markup for various core components to be more
   easily modified.
 - Removed the legacy static asset pipeline; everything now uses webpack.
@@ -213,6 +267,10 @@ downtime, and then upgrade to the new release.
   scrollbar-related bugs in the process.
 - Enabled webpack code splitting and deduplication.
 - Started migrating our frontend codebase to TypeScript.
+
+### 2.0.8 -- 2019-12-12
+
+- CVE-2019-19775: Close open redirect in thumbnail view.
 
 ### 2.0.7 -- 2019-11-21
 
@@ -454,7 +512,7 @@ Zulip installations; it has minimal changes for existing servers.
   phase of the upgrade closely, we recommend
   [running them first manually](../production/expensive-migrations.md)
   and as well as the usual trick of
-  [doing an apt upgrade first](../production/upgrade-or-modify.html#applying-system-updates).
+  doing an apt upgrade first.
 
 **Full feature changelog:**
 - Added an organization setting for message deletion time limits.
@@ -464,7 +522,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Renamed the hotkey for starring a message to Ctrl+S.
 - Added the new `SOCIAL_AUTH_SUBDOMAIN` setting, which all servers using
   both GitHub authentication and hosting multiple Zulip organizations
-  should set (see [the docs for details](../production/multiple-organizations.html#social-authentication)).
+  should set (see [the docs for details](../production/multiple-organizations.html#authentication)).
 - Added automatic thumbnailing of images, powered by thumbor.  The new
   THUMBOR_URL setting controls this feature; it is disabled by default
   in this release, because the mobile apps don't support it yet.
@@ -832,7 +890,7 @@ Backend and scaling
   phase of the upgrade closely, we recommend
   [running them first manually](../production/expensive-migrations.md) and as well
   as the usual trick of
-  [doing an apt upgrade first](../production/upgrade-or-modify.html#applying-system-updates).
+  doing an apt upgrade first.
 
 * We've removed support for an uncommon legacy deployment model where
   a Zulip server served multiple organizations on the same domain.

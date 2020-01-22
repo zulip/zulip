@@ -1,7 +1,6 @@
 import hashlib
 import shutil
 import subprocess
-
 from argparse import ArgumentParser
 from typing import Any, Dict, List
 
@@ -9,6 +8,7 @@ from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.models import UserProfile
 from zerver.templatetags.app_filters import render_markdown_path
+
 
 def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None:
     """

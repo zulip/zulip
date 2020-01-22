@@ -156,10 +156,29 @@
       "expected_output": "<p>Hello [world][ref-name]</p>\n<p>[ref-name]: <a href=\"https://google.com\" target=\"_blank\" title=\"https://google.com\">https://google.com</a></p>"
     },
     {
-      "name": "ulist_standard",
+      "name": "ulist_standard_1",
       "input": "Some text with a list:\n\n* One item\n* Two items\n* Three items",
       "expected_output": "<p>Some text with a list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
       "text_content": "Some text with a list:\n\nOne item\nTwo items\nThree items\n"
+    },
+    {
+      "name": "ulist_standard_2",
+      "input": "Some text with a list:\n\n- One item\n- Two items\n- Three items",
+      "expected_output": "<p>Some text with a list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
+      "text_content": "Some text with a list:\n\nOne item\nTwo items\nThree items\n"
+    },
+    {
+      "name": "ulist_standard_3",
+      "input": "Some text with a list:\n\n+ One item\n+ Two items\n+ Three items",
+      "expected_output": "<p>Some text with a list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
+      "text_content": "Some text with a list:\n\nOne item\nTwo items\nThree items\n"
+    },
+    {
+      "name": "ulist_mixed_bullets",
+      "input": "Combine four lists:\n\n* One\n- Two\n+ Three\n- Four\n- Five",
+      "expected_output": "<p>Combine four lists:</p>\n<ul>\n<li>One</li>\n<li>Two</li>\n<li>Three</li>\n<li>Four</li>\n<li>Five</li>\n</ul>",
+      "marked_expected_output": "<p>Combine four lists:</p>\n<ul>\n<li>One</li>\n</ul>\n<ul>\n<li>Two</li>\n</ul>\n<ul>\n<li>Three</li>\n</ul>\n<ul>\n<li>Four</li>\n<li>Five</li>\n</ul>",
+      "text_content": "Combine four lists:\n\nOne\nTwo\nThree\nFour\nFive\n"
     },
     {
       "name": "ulist_hanging",

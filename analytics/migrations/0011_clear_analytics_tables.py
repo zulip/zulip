@@ -3,6 +3,7 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def clear_analytics_tables(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserCount = apps.get_model('analytics', 'UserCount')
     StreamCount = apps.get_model('analytics', 'StreamCount')

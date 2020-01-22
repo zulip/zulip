@@ -1,4 +1,6 @@
-const Dict = require('./dict').Dict;
+require("unorm");  // String.prototype.normalize polyfill for IE11
+const IntDict = require('./int_dict').IntDict;
+const FoldDict = require('./fold_dict').FoldDict;
 
 let people_dict;
 let people_by_name_dict;
@@ -16,23 +18,29 @@ exports.init = function () {
     // (all people we've seen), but people_dict can have duplicate
     // keys related to email changes.  We want to deprecate
     // people_dict over time and always do lookups by user_id.
-    people_dict = new Dict({fold_case: true});
-    people_by_name_dict = new Dict({fold_case: true});
-    people_by_user_id_dict = new Dict();
+    people_dict = new FoldDict();
+    people_by_name_dict = new FoldDict();
+    people_by_user_id_dict = new IntDict();
 
     // The next dictionary includes all active users (human/user)
     // in our realm, but it excludes non-active users and
     // cross-realm bots.
-    active_user_dict = new Dict();
-    cross_realm_dict = new Dict(); // keyed by user_id
-    pm_recipient_count_dict = new Dict();
+    active_user_dict = new IntDict();
+    cross_realm_dict = new IntDict(); // keyed by user_id
+    pm_recipient_count_dict = new IntDict();
 
-    // The next Dict maintains a set of ids of people with same full names.
-    duplicate_full_name_data = new Dict({fold_case: true});
+    // This maintains a set of ids of people with same full names.
+    duplicate_full_name_data = new FoldDict();
 };
 
 // WE INITIALIZE DATA STRUCTURES HERE!
 exports.init();
+
+function split_to_ints(lst) {
+    return _.map(lst.split(','), function (s) {
+        return parseInt(s, 10);
+    });
+}
 
 exports.get_person_from_user_id = function (user_id) {
     if (!people_by_user_id_dict.has(user_id)) {
@@ -116,10 +124,6 @@ exports.is_known_user_id = function (user_id) {
 };
 
 function sort_numerically(user_ids) {
-    user_ids = _.map(user_ids, function (user_id) {
-        return parseInt(user_id, 10);
-    });
-
     user_ids.sort(function (a, b) {
         return a - b;
     });
@@ -154,7 +158,8 @@ exports.huddle_string = function (message) {
 };
 
 exports.user_ids_string_to_emails_string = function (user_ids_string) {
-    const user_ids = user_ids_string.split(',');
+    const user_ids = split_to_ints(user_ids_string);
+
     let emails = _.map(user_ids, function (user_id) {
         const person = people_by_user_id_dict.get(user_id);
         if (person) {
@@ -295,7 +300,7 @@ exports.get_full_name = function (user_id) {
 exports.get_recipients = function (user_ids_string) {
     // See message_store.get_pm_full_names() for a similar function.
 
-    const user_ids = user_ids_string.split(',');
+    const user_ids = split_to_ints(user_ids_string);
     const other_ids = _.reject(user_ids, exports.is_my_user_id);
 
     if (other_ids.length === 0) {
@@ -365,7 +370,7 @@ exports.pm_lookup_key = function (user_ids_string) {
         in keys for PMs, but we only want our user id if
         we sent a message to ourself.
     */
-    let user_ids = user_ids_string.split(',');
+    let user_ids = split_to_ints(user_ids_string);
     user_ids = sorted_other_user_ids(user_ids);
     return user_ids.join(',');
 };
@@ -380,8 +385,8 @@ exports.all_user_ids_in_pm = function (message) {
         return;
     }
 
-    let user_ids = _.map(message.display_recipient, function (elem) {
-        return elem.user_id || elem.id;
+    let user_ids = _.map(message.display_recipient, function (recip) {
+        return recip.id;
     });
 
     user_ids = sort_numerically(user_ids);
@@ -398,8 +403,8 @@ exports.pm_with_user_ids = function (message) {
         return;
     }
 
-    const user_ids = _.map(message.display_recipient, function (elem) {
-        return elem.user_id || elem.id;
+    const user_ids = _.map(message.display_recipient, function (recip) {
+        return recip.id;
     });
 
     return sorted_other_user_ids(user_ids);
@@ -414,8 +419,9 @@ exports.group_pm_with_user_ids = function (message) {
         blueslip.error('Empty recipient list in message');
         return;
     }
-    const user_ids = _.map(message.display_recipient, function (elem) {
-        return elem.user_id || elem.id;
+
+    const user_ids = _.map(message.display_recipient, function (recip) {
+        return recip.id;
     });
     const is_user_present = _.some(user_ids, function (user_id) {
         return exports.is_my_user_id(user_id);
@@ -564,7 +570,7 @@ exports.slug_to_emails = function (slug) {
 exports.exclude_me_from_string = function (user_ids_string) {
     // Exclude me from a user_ids_string UNLESS I'm the
     // only one in it.
-    let user_ids = user_ids_string.split(',');
+    let user_ids = split_to_ints(user_ids_string);
 
     if (user_ids.length <= 1) {
         // We either have a message to ourself, an empty
@@ -706,8 +712,8 @@ exports.is_active_user_for_popover = function (user_id) {
     return false;
 };
 
-exports.get_all_persons = function () {
-    return people_by_user_id_dict.values();
+exports.filter_all_persons = function (pred) {
+    return people_by_user_id_dict.filter_values(pred);
 };
 
 exports.get_realm_persons = function () {
@@ -742,8 +748,20 @@ exports.get_recipient_count = function (person) {
         return person.pm_recipient_count;
     }
 
-    const user_id = person.user_id || person.id;
-    const count = pm_recipient_count_dict.get(user_id);
+    /*
+        For searching in the search bar, we will
+        have true `person` objects with `user_id`.
+
+        Likewise, we'll have user_id if we
+        are tab-completing a user to send a PM
+        to (but we only get called if we're not
+        currently in a stream view).
+
+        Finally, we'll have user_id if we are adding
+        people to a stream (w/typeahead).
+
+    */
+    const count = pm_recipient_count_dict.get(person.user_id);
 
     return count || 0;
 };
@@ -753,61 +771,98 @@ exports.incr_recipient_count = function (user_id) {
     pm_recipient_count_dict.set(user_id, old_count + 1);
 };
 
-// Diacritic removal from:
-// https://stackoverflow.com/questions/18236208/perform-a-find-match-with-javascript-ignoring-special-language-characters-acce
-const diacritic_regexes = {
-    letters_only: /^[a-z]+$/,
-    a: /[áàãâä]/g,
-    e: /[éèëê]/g,
-    i: /[íìïî]/g,
-    o: /[óòöôõ]/g,
-    u: /[úùüû]/g,
-    c: /[ç]/g,
-    n: /[ñ]/g,
-};
+const unicode_marks = /\p{M}/gu;
 
 exports.remove_diacritics = function (s) {
-    if (diacritic_regexes.letters_only.test(s)) {
-        return s;
-    }
-
-    return s.replace(diacritic_regexes.a, "a")
-        .replace(diacritic_regexes.e, "e")
-        .replace(diacritic_regexes.i, "i")
-        .replace(diacritic_regexes.o, "o")
-        .replace(diacritic_regexes.u, "u")
-        .replace(diacritic_regexes.c, "c")
-        .replace(diacritic_regexes.n, "n");
+    return s.normalize("NFKD").replace(unicode_marks, "");
 };
 
-exports.person_matches_query = function (user, query) {
-    const email = user.email.toLowerCase();
-    const names = user.full_name.toLowerCase().split(' ');
+exports.get_message_people = function () {
+    /*
+        message_people are roughly the people who have
+        actually sent messages that are currently
+        showing up on your feed.  These people
+        are important--we give them preference
+        over other users in certain search
+        suggestions, since non-message-people are
+        presumably either not very active or
+        possibly subscribed to streams you don't
+        care about.  message_people also includes
+        people whom you have sent PMs, but look
+        at the message_store code to see the precise
+        semantics
+    */
+    const message_people = _.compact(
+        _.map(message_store.user_ids(), (user_id) => {
+            return people_by_user_id_dict.get(user_id);
+        })
+    );
 
-    let termlets = query.toLowerCase().split(/\s+/);
-    termlets = _.map(termlets, function (termlet) {
-        return termlet.trim();
-    });
+    return message_people;
+};
 
-    if (email.indexOf(query.trim()) === 0) {
-        return true;
+exports.get_people_for_search_bar = function (query) {
+    const pred = exports.build_person_matcher(query);
+
+    const message_people = exports.get_message_people();
+
+    const small_results = _.filter(message_people, pred);
+
+    if (small_results.length >= 5) {
+        return small_results;
     }
-    return _.all(termlets, function (termlet) {
-        const is_ascii = /^[a-z]+$/.test(termlet);
+
+    return exports.filter_all_persons(pred);
+};
+
+exports.build_termlet_matcher = function (termlet) {
+    termlet = termlet.trim();
+
+    const is_ascii = /^[a-z]+$/.test(termlet);
+
+    return function (user) {
+        let full_name = user.full_name;
+        if (is_ascii) {
+            // Only ignore diacritics if the query is plain ascii
+            full_name = exports.remove_diacritics(full_name);
+        }
+        const names = full_name.toLowerCase().split(' ');
+
         return _.any(names, function (name) {
-            if (is_ascii) {
-                // Only ignore diacritics if the query is plain ascii
-                name = exports.remove_diacritics(name);
-            }
             if (name.indexOf(termlet) === 0) {
                 return true;
             }
         });
-    });
+    };
+};
+
+exports.build_person_matcher = function (query) {
+    query = query.trim();
+
+    const termlets = query.toLowerCase().split(/\s+/);
+    const termlet_matchers = _.map(termlets, exports.build_termlet_matcher);
+
+    return function (user) {
+        const email = user.email.toLowerCase();
+
+        if (email.indexOf(query) === 0) {
+            return true;
+        }
+
+        return _.all(termlet_matchers, function (matcher) {
+            return matcher(user);
+        });
+    };
 };
 
 exports.filter_people_by_search_terms = function (users, search_terms) {
-    const filtered_users = new Dict();
+    const filtered_users = new IntDict();
+
+    // Build our matchers outside the loop to avoid some
+    // search overhead that is not user-specific.
+    const matchers = _.map(search_terms, function (search_term) {
+        return exports.build_person_matcher(search_term);
+    });
 
     // Loop through users and populate filtered_users only
     // if they include search_terms
@@ -819,8 +874,8 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
         }
 
         // Return user emails that include search terms
-        const match = _.any(search_terms, function (search_term) {
-            return exports.person_matches_query(user, search_term);
+        const match = _.any(matchers, function (matcher) {
+            return matcher(user);
         });
 
         if (match) {
@@ -844,10 +899,21 @@ function people_cmp(person1, person2) {
     return util.strcmp(person1.email, person2.email);
 }
 
-exports.get_rest_of_realm = function get_rest_of_realm() {
+exports.get_people_for_stream_create = function () {
+    /*
+        If you are thinking of reusing this function,
+        a better option in most cases is to just
+        call `exports.get_realm_persons()` and then
+        filter out the "me" user yourself as part of
+        any other filtering that you are doing.
+
+        In particular, this function does a sort
+        that is kinda expensive and may not apply
+        to your use case.
+    */
     const people_minus_you = [];
-    active_user_dict.each(function (person) {
-        if (!exports.is_current_user(person.email)) {
+    _.each(active_user_dict.values(), function (person) {
+        if (!exports.is_my_user_id(person.user_id)) {
             people_minus_you.push({email: person.email,
                                    user_id: person.user_id,
                                    full_name: person.full_name});
@@ -857,24 +923,25 @@ exports.get_rest_of_realm = function get_rest_of_realm() {
 };
 
 exports.track_duplicate_full_name = function (full_name, user_id, to_remove) {
-    let ids = new Dict();
+    let ids;
     if (duplicate_full_name_data.has(full_name)) {
         ids = duplicate_full_name_data.get(full_name);
+    } else {
+        ids = new Set();
     }
     if (!to_remove && user_id) {
-        ids.set(user_id);
+        ids.add(user_id);
     }
-    if (to_remove && user_id && ids.has(user_id)) {
-        ids.del(user_id);
+    if (to_remove && user_id) {
+        ids.delete(user_id);
     }
     duplicate_full_name_data.set(full_name, ids);
 };
 
 exports.is_duplicate_full_name = function (full_name) {
-    if (duplicate_full_name_data.has(full_name)) {
-        return duplicate_full_name_data.get(full_name).keys().length > 1;
-    }
-    return false;
+    const ids = duplicate_full_name_data.get(full_name);
+
+    return ids && ids.size > 1;
 };
 
 exports.get_mention_syntax = function (full_name, user_id, silent) {
@@ -977,6 +1044,48 @@ exports.extract_people_from_message = function (message) {
     });
 };
 
+function safe_lower(s) {
+    return (s || '').toLowerCase();
+}
+
+exports.matches_user_settings_search = function (person, value) {
+    const email = exports.email_for_user_settings(person);
+
+    return (
+        safe_lower(person.full_name).indexOf(value) >= 0 ||
+        safe_lower(email).indexOf(value) >= 0
+    );
+};
+
+exports.filter_for_user_settings_search = function (persons, query) {
+    /*
+        TODO: For large realms, we can optimize this a couple
+              different ways.  For realms that don't show
+              emails, we can make a simpler filter predicate
+              that works solely with full names.  And we can
+              also consider two-pass filters that try more
+              stingy criteria first, such as exact prefix
+              matches, before widening the search.
+
+              See #13554 for more context.
+    */
+    return _.filter(persons, (person) => {
+        return exports.matches_user_settings_search(person, query);
+    });
+};
+
+exports.email_for_user_settings = function (person) {
+    if (!settings_org.show_email()) {
+        return;
+    }
+
+    if (page_params.is_admin && person.delivery_email) {
+        return person.delivery_email;
+    }
+
+    return person.email;
+};
+
 exports.maybe_incr_recipient_count = function (message) {
     if (message.type !== 'private') {
         return;
@@ -987,13 +1096,13 @@ exports.maybe_incr_recipient_count = function (message) {
     }
 
     // Track the number of PMs we've sent to this person to improve autocomplete
-    _.each(message.display_recipient, function (person) {
+    _.each(message.display_recipient, function (recip) {
 
-        if (person.unknown_local_echo_user) {
+        if (recip.unknown_local_echo_user) {
             return;
         }
 
-        const user_id = person.user_id || person.id;
+        const user_id = recip.id;
         exports.incr_recipient_count(user_id);
     });
 };
@@ -1064,7 +1173,13 @@ exports.is_my_user_id = function (user_id) {
     if (!user_id) {
         return false;
     }
-    return user_id.toString() === my_user_id.toString();
+
+    if (typeof user_id !== 'number') {
+        blueslip.error('user_id is a string in my_user_id: ' + user_id);
+        user_id = parseInt(user_id, 10);
+    }
+
+    return user_id === my_user_id;
 };
 
 exports.initialize = function () {

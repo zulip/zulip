@@ -6,6 +6,7 @@ from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+
 def fix_bot_email_property(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model('zerver', 'UserProfile')
     for user_profile in UserProfile.objects.filter(is_bot=True):

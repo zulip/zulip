@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class CircleCiHookTests(WebhookTestCase):
     STREAM_NAME = 'circleci'
     URL_TEMPLATE = u"/api/v1/external/circleci?stream={stream}&api_key={api_key}"

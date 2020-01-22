@@ -1,4 +1,5 @@
-const Dict = require('./dict').Dict;
+const FoldDict = require('./fold_dict').FoldDict;
+const IntDict = require('./int_dict').IntDict;
 
 let user_group_name_dict;
 let user_group_by_id_dict;
@@ -6,16 +7,16 @@ let user_group_by_id_dict;
 // We have an init() function so that our automated tests
 // can easily clear data.
 exports.init = function () {
-    user_group_name_dict = new Dict({fold_case: true});
-    user_group_by_id_dict = new Dict();
+    user_group_name_dict = new FoldDict();
+    user_group_by_id_dict = new IntDict();
 };
 
 // WE INITIALIZE DATA STRUCTURES HERE!
 exports.init();
 
 exports.add = function (user_group) {
-    // Reformat the user group members structure to be a dict.
-    user_group.members = Dict.from_array(user_group.members);
+    // Reformat the user group members structure to be a set.
+    user_group.members = new Set(user_group.members);
     user_group_name_dict.set(user_group.name, user_group);
     user_group_by_id_dict.set(user_group.id, user_group);
 };
@@ -71,14 +72,14 @@ exports.is_member_of = function (user_group_id, user_id) {
 exports.add_members = function (user_group_id, user_ids) {
     const user_group = user_group_by_id_dict.get(user_group_id);
     _.each(user_ids, function (user_id) {
-        user_group.members.set(user_id, true);
+        user_group.members.add(user_id);
     });
 };
 
 exports.remove_members = function (user_group_id, user_ids) {
     const user_group = user_group_by_id_dict.get(user_group_id);
     _.each(user_ids, function (user_id) {
-        user_group.members.del(user_id);
+        user_group.members.delete(user_id);
     });
 };
 
