@@ -89,6 +89,73 @@ run_test('process_from_server for differently rendered messages', () => {
     }]);
 });
 
+run_test('build_display_recipient', () => {
+    let message = {
+        type: "stream",
+        stream: "general",
+        sender_email: "iago@zulip.com",
+        sender_full_name: "Iago",
+        sender_id: 123,
+    };
+    let display_recipient = echo.build_display_recipient(message);
+    assert.equal(display_recipient, "general");
+
+    people.get_by_email = (email) => {
+        if (email === "cordelia@zulip.com") {
+            return {
+                email: "cordelia@zulip.com",
+                full_name: "Cordelia",
+                user_id: 21,
+            };
+        }
+        return;
+    };
+    message = {
+        type: "private",
+        private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
+        sender_email: "iago@zulip.com",
+        sender_full_name: "Iago",
+        sender_id: 123,
+    };
+    display_recipient = echo.build_display_recipient(message);
+    assert.equal(display_recipient.length, 2);
+
+    const cordelia = display_recipient.find((recipient) => recipient.email === "cordelia@zulip.com");
+    assert.equal(cordelia.full_name, "Cordelia");
+    assert.equal(cordelia.id, 21);
+
+    const hamlet = display_recipient.find((recipient) => recipient.email === "hamlet@zulip.com");
+    assert.equal(hamlet.full_name, "hamlet@zulip.com");
+    assert.equal(hamlet.id, undefined);
+    assert.equal(hamlet.unknown_local_echo_user, true);
+
+    people.get_by_email = (email) => {
+        if (email === "iago@zulip.com") {
+            return {
+                email: "iago@zulip.com",
+                full_name: "Iago",
+                user_id: 123,
+            };
+        }
+        return;
+    };
+
+    message = {
+        type: "private",
+        private_message_recipient: "iago@zulip.com",
+        sender_email: "iago@zulip.com",
+        sender_full_name: "Iago",
+        sender_id: 123,
+    };
+    display_recipient = echo.build_display_recipient(message);
+
+    assert.equal(display_recipient.length, 1);
+    const iago = display_recipient.find((recipient) => recipient.email === "iago@zulip.com");
+    assert.equal(iago.full_name, "Iago");
+    assert.equal(iago.id, 123);
+
+});
+
 run_test('insert_local_message', () => {
     const local_id = 1;
     people.my_current_email = () => "iago@zulip.com";
