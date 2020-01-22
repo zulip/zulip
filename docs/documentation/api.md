@@ -76,12 +76,16 @@ one writes a Markdown file block that looks something like this:
 ```
 {start_tabs}
 {tab|python}
+
 {generate_code_example(python)|/messages/render:post|example}
+
+{tab|js}
+...
+
 {tab|curl}
-curl -X POST {{ api_url }}/v1/messages/render \
-...
-{tab|javascript}
-...
+
+{generate_code_example(curl)|/messages/render:post|example}
+
 {end_tabs}
 ```
 
