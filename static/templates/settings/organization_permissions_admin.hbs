@@ -108,9 +108,7 @@
                 <div class="input-group">
                     <label for="realm_bot_creation_policy">{{t "Who can add bots" }}</label>
                     <select name="realm_bot_creation_policy" class="setting-widget prop-element" id="id_realm_bot_creation_policy" data-setting-widget-type="integer">
-                        {{#each bot_creation_policy_values}}
-                        <option value='{{this.code}}'>{{this.description}}</option>
-                        {{/each}}
+                        {{> dropdown_options_widget option_values=bot_creation_policy_values}}
                     </select>
                 </div>
 
@@ -149,9 +147,7 @@
                         </a>
                     </label>
                     <select name="realm_email_address_visibility" class="setting-widget prop-element" id="id_realm_email_address_visibility" data-setting-widget-type="integer">
-                        {{#each email_address_visibility_values}}
-                        <option value='{{this.code}}'>{{this.description}}</option>
-                        {{/each}}
+                        {{> dropdown_options_widget option_values=email_address_visibility_values}}
                     </select>
                 </div>
             </div>
