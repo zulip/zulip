@@ -322,6 +322,13 @@ function build_tab_bar() {
     reset_nav_bar();
 }
 
+$(document).on('zuliptypeaheadclosed', () => {
+    if ($("input:focus,textarea:focus")[0].className === "search-query input-block-level") {
+        tab_bar.exit_search();
+        $("input:focus,textarea:focus").blur();
+    }
+});
+
 exports.update_stream_name = function (new_name) {
     const tab_bar_data = make_tab_data();
     tab_bar_data.title = new_name;
