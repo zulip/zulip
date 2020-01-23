@@ -567,6 +567,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     #feedback_container,
     .rendered_markdown code,
+    .feedback_content code,
     .typeahead.dropdown-menu {
         background-color: hsl(212, 25%, 15%);
         border-color: hsla(0, 0%, 0%, 0.5);
