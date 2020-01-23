@@ -8,7 +8,7 @@ if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
 from scripts.lib.setup_venv import get_venv_dependencies, setup_virtualenv
-from scripts.lib.zulip_tools import os_families, overwrite_symlink, parse_os_release, run
+from scripts.lib.zulip_tools import os_families, overwrite_symlink, parse_os_release, run, run_as_root
 
 parser = argparse.ArgumentParser(description="Create a production virtualenv with caching")
 parser.add_argument("deploy_path")
@@ -23,6 +23,12 @@ if "debian" in os_families():
     run(["apt-get", "-y", "install", *VENV_DEPENDENCIES])
 elif "fedora" in os_families():
     run(["yum", "-y", "install", *VENV_DEPENDENCIES])
+    # The executable pg_config is needed for installation of psycopg2.
+    # TODO POSTGRES_VERSION is hardcoded to be 10 instead of being tailored
+    # specific to CentOS, RHEL, or Fedora.
+    POSTGRES_VERSION = "10"
+    run_as_root(["ln", "-nsf", "/usr/pgsql-%s/bin/pg_config" % (POSTGRES_VERSION,),
+                 "/usr/bin/pg_config"])
 else:
     print("Unsupported platform: {}".format(distro_info['ID']))
     sys.exit(1)

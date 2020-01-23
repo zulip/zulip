@@ -54,7 +54,7 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "xmlsec1-openssl-devel",
     "libtool-ltdl-devel",
     "libxslt-devel",
-    "postgresql-libs",  # libpq-dev on apt
+    "postgresql10-devel",  # libpq-dev on apt
     "openssl-devel",
     "jq",
 ]
