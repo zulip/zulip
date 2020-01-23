@@ -52,6 +52,53 @@ exports.email_address_visibility_values = {
     },
 };
 
+exports.create_stream_policy_values = {
+    by_admins_only: {
+        order: 1,
+        code: 2,
+        description: i18n.t("Admins"),
+    },
+    by_full_members: {
+        order: 2,
+        code: 3,
+        description: i18n.t("Admins and full members"),
+    },
+    by_members: {
+        order: 3,
+        code: 1,
+        description: i18n.t("Admins and members"),
+    },
+};
+
+exports.get_sorted_options_list = function (option_values_object) {
+    const options_list = Object.keys(option_values_object).map((key) => {
+        return _.extend(option_values_object[key], {key: key});
+    });
+    let comparator = (x, y) => x.order - y.order;
+    if (!options_list[0].order) {
+        comparator = (x, y) => {
+            const key_x = x.key.toUpperCase();
+            const key_y = y.key.toUpperCase();
+            if (key_x < key_y) {
+                return -1;
+            }
+            if (key_x > key_y) {
+                return 1;
+            }
+            return 0;
+        };
+    }
+    options_list.sort(comparator);
+    return options_list;
+};
+
+exports.get_organization_settings_options = () => {
+    const options = {};
+    options.create_stream_policy_values = exports.get_sorted_options_list(
+        exports.create_stream_policy_values);
+    return options;
+};
+
 exports.show_email = function () {
     // TODO: Extend this when we add support for admins_and_members above.
     if (page_params.realm_email_address_visibility ===
@@ -91,18 +138,6 @@ function get_property_value(property_name) {
             return "three_days";
         }
         return "custom_days";
-    }
-
-    if (property_name === 'realm_create_stream_policy') {
-        if (page_params.realm_create_stream_policy === 2) {
-            return "by_admins_only";
-        }
-        if (page_params.realm_create_stream_policy === 1) {
-            return "by_members";
-        }
-        if (page_params.realm_create_stream_policy === 3) {
-            return "by_full_members";
-        }
     }
 
     if (property_name === 'realm_invite_to_stream_policy') {
@@ -818,7 +853,6 @@ exports.build_page = function () {
                 JSON.stringify(parseInt(new_message_retention_days, 10)) : null;
         } else if (subsection === 'other_permissions') {
             const waiting_period_threshold = $("#id_realm_waiting_period_setting").val();
-            const create_stream_policy = $("#id_realm_create_stream_policy").val();
             const invite_to_stream_policy = $("#id_realm_invite_to_stream_policy").val();
             const user_group_edit_policy = $("#id_realm_user_group_edit_policy").val();
             const private_message_policy = $("#id_realm_private_message_policy").val();
@@ -828,14 +862,6 @@ exports.build_page = function () {
                 data.add_emoji_by_admins_only = true;
             } else if (add_emoji_permission === "by_anyone") {
                 data.add_emoji_by_admins_only = false;
-            }
-
-            if (create_stream_policy === "by_admins_only") {
-                data.create_stream_policy = 2;
-            } else if (create_stream_policy === "by_members") {
-                data.create_stream_policy = 1;
-            } else if (create_stream_policy === "by_full_members") {
-                data.create_stream_policy = 3;
             }
 
             if (invite_to_stream_policy === "by_admins_only") {
