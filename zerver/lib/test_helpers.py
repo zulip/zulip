@@ -4,7 +4,6 @@ from typing import (
     Optional, Tuple, Union, IO, TypeVar, TYPE_CHECKING
 )
 
-from django.core import signing
 from django.urls.resolvers import LocaleRegexURLResolver
 from django.conf import settings
 from django.test import override_settings
@@ -24,6 +23,7 @@ from zerver.tornado import event_queue
 from zerver.tornado.handlers import allocate_handler_id
 from zerver.worker import queue_processors
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.views.auth import get_login_data
 
 from zerver.lib.actions import (
     get_stream_recipient,
@@ -468,7 +468,9 @@ def get_all_templates() -> List[str]:
 def load_subdomain_token(response: HttpResponse) -> Dict[str, Any]:
     assert isinstance(response, HttpResponseRedirect)
     token = response.url.rsplit('/', 1)[1]
-    return signing.loads(token, salt='zerver.views.auth.log_into_subdomain')
+    data = get_login_data(token, should_delete=False)
+    assert data is not None
+    return data
 
 FuncT = TypeVar('FuncT', bound=Callable[..., None])
 
