@@ -86,9 +86,21 @@ run_test('is_complete_for_stream_id', () => {
         topic_data.is_complete_for_stream_id(sub.stream_id),
         true);
 
+
+    // Now simulate a more recent message id.
     message_list.all.first = () => {
         return {id: sub.first_message_id + 1};
     };
+
+    // Note that we'll return `true` here due to
+    // fetched_stream_ids having the stream_id now.
+    assert.equal(
+        topic_data.is_complete_for_stream_id(sub.stream_id),
+        true);
+
+    // But now clear the data to see what we'd have without
+    // the previous call.
+    topic_data.reset();
 
     assert.equal(
         topic_data.is_complete_for_stream_id(sub.stream_id),
@@ -96,7 +108,18 @@ run_test('is_complete_for_stream_id', () => {
 });
 
 run_test('server_history', () => {
-    const stream_id = 66;
+    const sub = {
+        name: 'devel',
+        stream_id: 66,
+    };
+    const stream_id = sub.stream_id;
+    stream_data.add_sub(sub.name, sub);
+
+    message_list.all.fetch_status.has_found_newest = () => false;
+
+    assert.equal(
+        topic_data.is_complete_for_stream_id(stream_id),
+        false);
 
     topic_data.add_message({
         stream_id: stream_id,
@@ -113,6 +136,13 @@ run_test('server_history', () => {
     }
 
     add_server_history();
+
+    // Since we added history, now subsequent calls
+    // to is_complete_for_stream_id will return true.
+    assert.equal(
+        topic_data.is_complete_for_stream_id(stream_id),
+        true);
+
     let history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['local', 'hist2', 'hist1']);
 
@@ -238,7 +268,7 @@ run_test('server_history_end_to_end', () => {
         get_success_callback = opts.success;
     };
 
-    topic_data.get_server_history(stream_id, function () {
+    topic_data.get_server_history(stream_id, () => {
         on_success_called = true;
     });
 
@@ -248,4 +278,17 @@ run_test('server_history_end_to_end', () => {
 
     const history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['topic3', 'topic2', 'topic1']);
+
+    // Try getting server history for a second time.
+
+    channel.get = () => {
+        throw Error('We should not get more data.');
+    };
+
+    on_success_called = false;
+    topic_data.get_server_history(stream_id, () => {
+        on_success_called = true;
+    });
+    assert(on_success_called);
+
 });
