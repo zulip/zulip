@@ -2,8 +2,13 @@ const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 
 const stream_dict = new IntDict(); // stream_id -> topic_history object
+const fetched_stream_ids = new Set();
 
 exports.is_complete_for_stream_id = (stream_id) => {
+    if (fetched_stream_ids.has(stream_id)) {
+        return true;
+    }
+
     /*
         TODO: We should possibly move all_topics_in_cache
         from stream_data to here, since the function
@@ -12,7 +17,20 @@ exports.is_complete_for_stream_id = (stream_id) => {
         need sub.first_message_id.)
     */
     const sub = stream_data.get_sub_by_id(stream_id);
-    return stream_data.all_topics_in_cache(sub);
+    const in_cache = stream_data.all_topics_in_cache(sub);
+
+    if (in_cache) {
+        /*
+            If the stream is cached, we can add it to
+            fetched_stream_ids.  Note that for the opposite
+            scenario, we don't delete from
+            fetched_stream_ids, because we may just be
+            waiting for the initial message fetch.
+        */
+        fetched_stream_ids.add(stream_id);
+    }
+
+    return in_cache;
 };
 
 exports.stream_has_topics = function (stream_id) {
@@ -189,9 +207,15 @@ exports.add_message = function (opts) {
 exports.add_history = function (stream_id, server_history) {
     const history = exports.find_or_create(stream_id);
     history.add_history(server_history);
+    fetched_stream_ids.add(stream_id);
 };
 
 exports.get_server_history = function (stream_id, on_success) {
+    if (fetched_stream_ids.has(stream_id)) {
+        on_success();
+        return;
+    }
+
     const url = '/json/users/me/' + stream_id + '/topics';
 
     channel.get({
@@ -214,6 +238,7 @@ exports.get_recent_names = function (stream_id) {
 exports.reset = function () {
     // This is only used by tests.
     stream_dict.clear();
+    fetched_stream_ids.clear();
 };
 
 window.topic_data = exports;
