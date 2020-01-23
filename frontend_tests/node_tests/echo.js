@@ -124,7 +124,11 @@ run_test('build_display_recipient', () => {
         sender_id: 123,
     };
     display_recipient = echo.build_display_recipient(message);
-    assert.equal(display_recipient.length, 2);
+    assert.equal(display_recipient.length, 3);
+
+    let iago = display_recipient.find((recipient) => recipient.email === "iago@zulip.com");
+    assert.equal(iago.full_name, "Iago");
+    assert.equal(iago.id, 123);
 
     const cordelia = display_recipient.find((recipient) => recipient.email === "cordelia@zulip.com");
     assert.equal(cordelia.full_name, "Cordelia");
@@ -145,7 +149,7 @@ run_test('build_display_recipient', () => {
     display_recipient = echo.build_display_recipient(message);
 
     assert.equal(display_recipient.length, 1);
-    const iago = display_recipient.find((recipient) => recipient.email === "iago@zulip.com");
+    iago = display_recipient.find((recipient) => recipient.email === "iago@zulip.com");
     assert.equal(iago.full_name, "Iago");
     assert.equal(iago.id, 123);
 
@@ -203,7 +207,7 @@ run_test('insert_local_message', () => {
     insert_message_called = false;
 
     local_message.insert_message = (message) => {
-        assert.equal(message.display_recipient.length, 2);
+        assert.equal(message.display_recipient.length, 3);
         insert_message_called = true;
     };
 
