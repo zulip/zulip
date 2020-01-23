@@ -236,14 +236,7 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
     # For the mobile Oauth flow, we send the API key and other
     # necessary details in a redirect to a zulip:// URI scheme.
     api_key = get_api_key(user_profile)
-    params = {
-        'otp_encrypted_api_key': otp_encrypt_api_key(api_key, otp),
-        'email': user_profile.delivery_email,
-        'realm': user_profile.realm.uri,
-    }
-    # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
-    response = HttpResponse(status=302)
-    response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
+    response = create_response_for_otp_flow(api_key, otp, user_profile)
 
     # Since we are returning an API key instead of going through
     # the Django login() function (which creates a browser
@@ -258,6 +251,18 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
     request._email = user_profile.delivery_email
+
+    return response
+
+def create_response_for_otp_flow(key: str, otp: str, user_profile: UserProfile) -> HttpResponse:
+    params = {
+        'otp_encrypted_api_key': otp_encrypt_api_key(key, otp),
+        'email': user_profile.delivery_email,
+        'realm': user_profile.realm.uri,
+    }
+    # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
+    response = HttpResponse(status=302)
+    response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
 
     return response
 
