@@ -1032,16 +1032,23 @@ class MarkdownTest(ZulipTestCase):
 
         self.assertEqual(converted, '<p><a href="https://trac.example.com/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.example.com/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
 
-        def assert_conversion(content: str, should_have_converted: bool=True) -> None:
+        def assert_conversion(content: str, should_have_converted: bool=True, check_topic: bool=True) -> None:
             converted = markdown_convert(content, message_realm=realm, message=msg)
             converted_topic = topic_links(realm.id, content)
+            # Some tests modify the domain as well, so we have two different asserts for each case.
             if should_have_converted:
-                self.assertTrue('https://trac.example.com' in converted)
+                self.assertTrue('https://' in converted)
+                self.assertTrue('trac.example.com' in converted)
                 self.assertEqual(len(converted_topic), 1)
-                self.assertTrue('https://trac.example.com' in converted_topic[0])
+                if check_topic:
+                    self.assertTrue('https://' in converted_topic[0])
+                    self.assertTrue('trac.example.com' in converted_topic[0])
             else:
-                self.assertTrue('https://trac.example.com' not in converted)
-                self.assertEqual(len(converted_topic), 0)
+                self.assertTrue('https://' not in converted)
+                self.assertTrue('trac.example.com' not in converted)
+                if check_topic:
+                    self.assertEqual(len(converted_topic), 0)
+
         assert_conversion('Hello #123 World')
         assert_conversion('Hello #123World', False)
         assert_conversion('Hello#123 World', False)
@@ -1065,6 +1072,15 @@ class MarkdownTest(ZulipTestCase):
                     url_format_string=r'https://trac.example.com/hello/%(id)s').save()
         converted_topic = topic_links(realm.id, 'hello#123 #234')
         self.assertEqual(converted_topic, ['https://trac.example.com/ticket/234', 'https://trac.example.com/hello/123'])
+
+        # test substitution in the domain name.
+        RealmFilter(realm=realm, pattern=r'chat#(?P<org>.+)',
+                    url_format_string=r'https://%(org)s.trac.example.com').save()
+        # We haven't added the url validation logic to topic_links yet.
+        assert_conversion('chat#programmers', check_topic=False)
+        assert_conversion('chat#rust', check_topic=False)
+        assert_conversion('chat#123', check_topic=False)
+        assert_conversion('chat#@#$%', False, check_topic=False)
 
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm('zulip')
@@ -1102,7 +1118,6 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.example.com/ticket/ABC-123">ABC-123</a> or <a href="https://trac.example.com/ticket/16">trac ABC-123</a> today.</p>')
         # Both the links should be generated in topics.
         self.assertEqual(converted_topic, ['https://trac.example.com/ticket/ABC-123', 'https://other-trac.example.com/ticket/ABC-123'])
-
     def test_maybe_update_markdown_engines(self) -> None:
         realm = get_realm('zulip')
         url_format_string = r"https://trac.example.com/ticket/%(id)s"

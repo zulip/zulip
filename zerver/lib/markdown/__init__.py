@@ -1628,7 +1628,7 @@ def prepare_realm_pattern(source: str) -> str:
 
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
-class RealmFilterPattern(markdown.inlinepatterns.Pattern):
+class RealmFilterProcessor(markdown.inlinepatterns.InlineProcessor):
     """ Applied a given realm filter to the input """
 
     def __init__(self, source_pattern: str,
@@ -1636,13 +1636,20 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
                  markdown_instance: Optional[markdown.Markdown]=None) -> None:
         self.pattern = prepare_realm_pattern(source_pattern)
         self.format_string = format_string
-        markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
+        super().__init__(self.pattern, markdown_instance)
 
-    def handleMatch(self, m: Match[str]) -> Union[Element, str]:
+    def handleMatch(self, m: Match[str], data: str) -> Tuple[Optional[Union[Element, str]],
+                                                             Optional[int], Optional[int]]:
         db_data = self.md.zulip_db_data
-        return url_to_a(db_data,
-                        self.format_string % m.groupdict(),
-                        markdown.util.AtomicString(m.group(OUTER_CAPTURE_GROUP)))
+        substituted_url = self.format_string % m.groupdict()
+        atomic_text = markdown.util.AtomicString(m.group(OUTER_CAPTURE_GROUP))
+        url_element = url_to_a(db_data, substituted_url, atomic_text)
+        if isinstance(url_element, str):
+            # url_to_a returns the raw url as str when url validation fails. We want to
+            # return the raw linkifier text in such cases.
+            return None, None, None
+        else:
+            return url_element, m.start(0), m.end(0)
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
@@ -1984,7 +1991,7 @@ class Markdown(markdown.Markdown):
 
     def register_realm_filters(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
         for (pattern, format_string, id) in self.getConfig("realm_filters"):
-            inlinePatterns.register(RealmFilterPattern(pattern, format_string, self),
+            inlinePatterns.register(RealmFilterProcessor(pattern, format_string, self),
                                     f'realm_filters/{pattern}', 45)
         return inlinePatterns
 
