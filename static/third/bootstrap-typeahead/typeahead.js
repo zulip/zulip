@@ -49,6 +49,15 @@
  *   Our custom changes include all mentions of this.header, some CSS changes
  *   in compose.scss and splitting $container out of $menu so we can insert
  *   additional HTML before $menu.
+ *
+ * 4. Hook for dismissing typeahead:
+ *
+ *   We emit an event on dismissing a typeahead, which can be used by other
+ *   parts of Zulip code. This change is mainly used by the JS based navbar.
+ *   Look at https://github.com/zulip/zulip/pull/11894#issuecomment-577469170.
+ *
+ *   Our custom change includes emitting an event before calling .hide() on
+ *   the typeahead.
  * ============================================================ */
 
 !function($){
@@ -348,6 +357,7 @@
 
         case 27: // escape
           if (!this.shown) return
+          $(document).trigger("zuliptypeaheadclosed"); // Zulip specific change.
           this.hide()
           break
 
