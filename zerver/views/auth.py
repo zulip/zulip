@@ -198,6 +198,8 @@ def register_remote_user(request: HttpRequest, remote_username: str,
 def login_or_register_remote_user(request: HttpRequest, remote_username: str,
                                   user_profile: Optional[UserProfile], full_name: str='',
                                   mobile_flow_otp: Optional[str]=None,
+                                  desktop_flow_otp: Optional[str]=None,
+                                  realm: Optional[Realm]=None,
                                   is_signup: bool=False, redirect_to: str='',
                                   multiuse_object_key: str='',
                                   full_name_validated: bool=False) -> HttpResponse:
@@ -216,8 +218,8 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
       Zulip account but is_signup is False (i.e. the user tried to login
       and then did social authentication selecting an email address that does
       not have a Zulip account in this organization).
-    * A zulip:// URL to send control back to the mobile apps if they
-      are doing authentication using the mobile_flow_otp flow.
+    * A zulip:// URL to send control back to the mobile or desktop apps if they
+      are doing authentication using the mobile_flow_otp or desktop_flow_otp flow.
     """
     if user_profile is None or user_profile.is_mirror_dummy:
         return register_remote_user(request, remote_username, full_name,
@@ -229,11 +231,30 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
     # or not they're using the mobile OTP flow or want a browser session.
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
+    elif desktop_flow_otp is not None:
+        assert realm is not None
+        return finish_desktop_flow(request, user_profile, realm, desktop_flow_otp)
 
     do_login(request, user_profile)
 
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
+
+def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
+                        realm: Realm, otp: str) -> HttpResponse:
+    """
+    The desktop otp flow returns to the app (through a zulip:// redirect)
+    a token that allows obtaining (through log_into_subdomain) a logged in session
+    for the user account we authenticated in this flow.
+    The token can only be used once and within LOGIN_KEY_EXPIRATION_SECONDS
+    of being created, as nothing more powerful is needed for the desktop flow
+    and this minimizes the threat of one of these keys being leaked.
+    """
+    data = {'email': user_profile.delivery_email,
+            'subdomain': realm.subdomain}
+    token = store_login_data(data)
+
+    return create_response_for_otp_flow(token, otp, user_profile)
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
     # For the mobile Oauth flow, we send the API key and other
@@ -371,6 +392,12 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
         if not is_valid_otp(mobile_flow_otp):
             raise JsonableError(_("Invalid OTP"))
         params['mobile_flow_otp'] = mobile_flow_otp
+
+    desktop_flow_otp = request.GET.get('desktop_flow_otp')
+    if desktop_flow_otp is not None:
+        if not is_valid_otp(desktop_flow_otp):
+            raise JsonableError(_("Invalid OTP"))
+        params['desktop_flow_otp'] = desktop_flow_otp
 
     next = request.GET.get('next')
     if next:

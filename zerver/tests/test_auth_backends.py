@@ -512,6 +512,7 @@ class SocialAuthBase(ZulipTestCase):
     def prepare_login_url_and_headers(self,
                                       subdomain: Optional[str]=None,
                                       mobile_flow_otp: Optional[str]=None,
+                                      desktop_flow_otp: Optional[str]=None,
                                       is_signup: Optional[str]=None,
                                       next: str='',
                                       multiuse_object_key: str='',
@@ -528,6 +529,8 @@ class SocialAuthBase(ZulipTestCase):
         if mobile_flow_otp is not None:
             params['mobile_flow_otp'] = mobile_flow_otp
             headers['HTTP_USER_AGENT'] = "ZulipAndroid"
+        if desktop_flow_otp is not None:
+            params['desktop_flow_otp'] = desktop_flow_otp
         if is_signup is not None:
             url = self.SIGNUP_URL
         params['next'] = next
@@ -540,6 +543,7 @@ class SocialAuthBase(ZulipTestCase):
     def social_auth_test(self, account_data_dict: Dict[str, str],
                          *, subdomain: Optional[str]=None,
                          mobile_flow_otp: Optional[str]=None,
+                         desktop_flow_otp: Optional[str]=None,
                          is_signup: Optional[str]=None,
                          next: str='',
                          multiuse_object_key: str='',
@@ -547,7 +551,8 @@ class SocialAuthBase(ZulipTestCase):
                          alternative_start_url: Optional[str]=None,
                          **extra_data: Any) -> HttpResponse:
         url, headers = self.prepare_login_url_and_headers(
-            subdomain, mobile_flow_otp, is_signup, next, multiuse_object_key, alternative_start_url
+            subdomain, mobile_flow_otp, desktop_flow_otp, is_signup, next,
+            multiuse_object_key, alternative_start_url
         )
 
         result = self.client_get(url, **headers)
@@ -747,6 +752,48 @@ class SocialAuthBase(ZulipTestCase):
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
+
+    def test_social_auth_desktop_success(self) -> None:
+        desktop_flow_otp = '1234abcd' * 8
+        account_data_dict = self.get_account_data_dict(email=self.email, name='Full Name')
+
+        # Verify that the right thing happens with an invalid-format OTP
+        result = self.social_auth_test(account_data_dict, subdomain='zulip',
+                                       desktop_flow_otp="1234")
+        self.assert_json_error(result, "Invalid OTP")
+        result = self.social_auth_test(account_data_dict, subdomain='zulip',
+                                       desktop_flow_otp="invalido" * 8)
+        self.assert_json_error(result, "Invalid OTP")
+
+        # Now do it correctly
+        result = self.social_auth_test(account_data_dict, subdomain='zulip',
+                                       expect_choose_email_screen=True,
+                                       desktop_flow_otp=desktop_flow_otp)
+        self.assertEqual(result.status_code, 302)
+
+        redirect_url = result['Location']
+        parsed_url = urllib.parse.urlparse(redirect_url)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        self.assertEqual(parsed_url.scheme, 'zulip')
+        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
+        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
+
+        encrypted_key = query_params["otp_encrypted_api_key"][0]
+        decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
+        auth_url = 'http://zulip.testserver/accounts/login/subdomain/{}'.format(decrypted_key)
+
+        result = self.client_get(auth_url)
+        self.assertEqual(result.status_code, 302)
+        self.assert_logged_in_user_id(self.user_profile.id)
+
+    def test_social_auth_mobile_and_desktop_flow_in_one_request_error(self) -> None:
+        otp = '1234abcd' * 8
+        account_data_dict = self.get_account_data_dict(email=self.email, name='Full Name')
+
+        result = self.social_auth_test(account_data_dict, subdomain='zulip',
+                                       expect_choose_email_screen=True,
+                                       desktop_flow_otp=otp, mobile_flow_otp=otp)
+        self.assert_json_error(result, "Can't use both mobile_flow_otp and desktop_flow_otp together.")
 
     def test_social_auth_registration_existing_account(self) -> None:
         """If the user already exists, signup flow just logs them in"""
@@ -1039,12 +1086,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
     def social_auth_test(self, account_data_dict: Dict[str, str],
                          *, subdomain: Optional[str]=None,
                          mobile_flow_otp: Optional[str]=None,
+                         desktop_flow_otp: Optional[str]=None,
                          is_signup: Optional[str]=None,
                          next: str='',
                          multiuse_object_key: str='',
                          **extra_data: Any) -> HttpResponse:
         url, headers = self.prepare_login_url_and_headers(
-            subdomain, mobile_flow_otp, is_signup, next, multiuse_object_key
+            subdomain, mobile_flow_otp, desktop_flow_otp, is_signup, next, multiuse_object_key
         )
 
         result = self.client_get(url, **headers)
