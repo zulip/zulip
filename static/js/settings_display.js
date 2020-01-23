@@ -137,6 +137,10 @@ exports.set_up = function () {
     });
     $(".emojiset_choice").click(function () {
         const data = {emojiset: JSON.stringify($(this).val())};
+        const current_emojiset = JSON.stringify(page_params.emojiset);
+        if (current_emojiset === data.emojiset) {
+            return;
+        }
         const spinner = $("#emoji-settings-status").expectOne();
         loading.make_indicator(spinner, {text: settings_ui.strings.saving });
 
