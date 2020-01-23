@@ -199,6 +199,13 @@ function populate_users(realm_people_data) {
             return $("<span></span>").text(i18n.t("Unknown"));
         }
         if (item.last_active === LAST_ACTIVE_NEVER) {
+            // only two possibilities remain either user has never logged in
+            // or the user was last active more than 2 weeks ago. Check this
+            // by using same method as sidebar user list
+            const last_active_date = presence.last_active_date(item.user_id);
+            if (last_active_date === undefined) {
+                return $("<span></span>").text(i18n.t("More than 2 weeks ago"));
+            }
             return $("<span></span>").text(i18n.t("Never"));
         }
         return timerender.render_date(
