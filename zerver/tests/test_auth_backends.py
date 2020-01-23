@@ -8,7 +8,6 @@ from django_auth_ldap.backend import LDAPSearch, _LDAPUser
 from django.test.client import RequestFactory
 from django.utils.timezone import now as timezone_now
 from typing import Any, Callable, Dict, List, Optional, Tuple
-from django.core import signing
 from django.urls import reverse
 
 import responses
@@ -17,7 +16,6 @@ import ldap
 import jwt
 import mock
 import re
-import time
 import datetime
 
 from zerver.lib.actions import (
@@ -42,6 +40,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.users import get_all_api_keys
 from zerver.lib.upload import resize_avatar, MEDIUM_AVATAR_SIZE
+from zerver.lib.utils import generate_random_token
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -66,7 +65,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPUser
 
 from zerver.views.auth import (maybe_send_to_registration,
-                               _subdomain_token_salt)
+                               store_login_data, LOGIN_TOKEN_LENGTH)
 
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -1567,8 +1566,12 @@ class GoogleAuthBackendTest(SocialAuthBase):
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleAuthBackend',)):
             self.assertTrue(google_auth_enabled())
 
-    def get_log_into_subdomain(self, data: Dict[str, Any], *, key: Optional[str]=None, subdomain: str='zulip') -> HttpResponse:
-        token = signing.dumps(data, salt=_subdomain_token_salt, key=key)
+    def get_log_into_subdomain(self, data: Dict[str, Any], *, subdomain: str='zulip',
+                               force_token: Optional[str]=None) -> HttpResponse:
+        if force_token is None:
+            token = store_login_data(data)
+        else:
+            token = force_token
         url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
         return self.client_get(url_path, subdomain=subdomain)
 
@@ -1598,29 +1601,27 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res.url, 'http://zulip.testserver/#narrow/stream/7-test-here')
 
-    def test_log_into_subdomain_when_signature_is_bad(self) -> None:
+    def test_log_into_subdomain_when_token_is_malformed(self) -> None:
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
                 'is_signup': False,
                 'next': ''}
-        with mock.patch('logging.warning') as mock_warning:
-            result = self.get_log_into_subdomain(data, key='nonsense')
-            mock_warning.assert_called_with("Subdomain cookie: Bad signature.")
+        with mock.patch("logging.warning") as mock_warn:
+            result = self.get_log_into_subdomain(data, force_token='nonsense')
+            mock_warn.assert_called_once_with("log_into_subdomain: Malformed token given: nonsense")
         self.assertEqual(result.status_code, 400)
 
-    def test_log_into_subdomain_when_signature_is_expired(self) -> None:
+    def test_log_into_subdomain_when_token_not_found(self) -> None:
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
                 'is_signup': False,
                 'next': ''}
-        with mock.patch('django.core.signing.time.time', return_value=time.time() - 45):
-            token = signing.dumps(data, salt=_subdomain_token_salt)
-        url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
-        with mock.patch('logging.warning') as mock_warning:
-            result = self.client_get(url_path, subdomain='zulip')
-            mock_warning.assert_called_once()
+        with mock.patch("logging.warning") as mock_warn:
+            token = generate_random_token(LOGIN_TOKEN_LENGTH)
+            result = self.get_log_into_subdomain(data, force_token=token)
+            mock_warn.assert_called_once_with("log_into_subdomain: Invalid token given: %s" % (token,))
         self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_is_signup_is_true(self) -> None:
@@ -1757,10 +1758,8 @@ class GoogleAuthBackendTest(SocialAuthBase):
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zephyr'}
-        with mock.patch('logging.warning') as mock_warning:
-            result = self.get_log_into_subdomain(data)
-            mock_warning.assert_called_with("Login attempt on invalid subdomain")
-        self.assertEqual(result.status_code, 400)
+        result = self.get_log_into_subdomain(data)
+        self.assert_json_error(result, "Invalid subdomain")
 
 class JSONFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:

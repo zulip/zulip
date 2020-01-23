@@ -11,9 +11,10 @@ def get_redis_client() -> redis.StrictRedis:
 
 def put_dict_in_redis(redis_client: redis.StrictRedis, key_format: str,
                       data_to_store: Dict[str, Any],
-                      expiration_seconds: int) -> str:
+                      expiration_seconds: int,
+                      token_length: int=64) -> str:
     with redis_client.pipeline() as pipeline:
-        token = generate_random_token(64)
+        token = generate_random_token(token_length)
         key = key_format.format(token=token)
         pipeline.set(key, ujson.dumps(data_to_store))
         pipeline.expire(key, expiration_seconds)
