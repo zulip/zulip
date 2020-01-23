@@ -3,6 +3,14 @@ class zulip::supervisor {
 
   package { 'supervisor': ensure => 'installed' }
 
+  if $::osfamily == 'redhat' {
+    file { '/etc/supervisord.d':
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'root',
+    }
+  }
+
   $system_conf_dir = $zulip::common::supervisor_system_conf_dir
   file { $system_conf_dir:
     ensure  => 'directory',
