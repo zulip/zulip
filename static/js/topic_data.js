@@ -3,6 +3,18 @@ const FoldDict = require('./fold_dict').FoldDict;
 
 const stream_dict = new IntDict(); // stream_id -> topic_history object
 
+exports.is_complete_for_stream_id = (stream_id) => {
+    /*
+        TODO: We should possibly move all_topics_in_cache
+        from stream_data to here, since the function
+        mostly looks at message_list.all and has little
+        to do with typical stream_data stuff.  (We just
+        need sub.first_message_id.)
+    */
+    const sub = stream_data.get_sub_by_id(stream_id);
+    return stream_data.all_topics_in_cache(sub);
+};
+
 exports.stream_has_topics = function (stream_id) {
     if (!stream_dict.has(stream_id)) {
         return false;
