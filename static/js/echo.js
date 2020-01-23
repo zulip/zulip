@@ -55,6 +55,16 @@ exports.build_display_recipient = function (message) {
         const person = people.get_by_email(email);
         if (person === undefined) {
             // For unknown users, we return a skeleton object.
+            //
+            // This allows us to support zephyr mirroring situations
+            // where the server might dynamically create users in
+            // response to messages being sent to their email address.
+            //
+            // TODO: It might be cleaner for the webapp for such
+            // dynamic user creation to happen inside a separate API
+            // call when the pill is constructed, and then enforcing
+            // the requirement that we have an actual user object in
+            // `people.js` when sending messages.
             return {
                 email: email,
                 full_name: email,
