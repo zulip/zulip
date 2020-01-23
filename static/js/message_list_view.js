@@ -590,7 +590,13 @@ MessageListView.prototype = {
             if (stream_id && !$(this).find(".highlight").length) {
                 // Display the current name for stream if it is not
                 // being displayed in search highlight.
-                $(this).text("#" + stream_data.maybe_get_stream_name(stream_id));
+                const stream_name = stream_data.maybe_get_stream_name(stream_id);
+                if (stream_name !== undefined) {
+                    // If the stream has been deleted,
+                    // stream_data.maybe_get_stream_name might return
+                    // undefined.  Otherwise, display the current stream name.
+                    $(this).text("#" + stream_name);
+                }
             }
         });
 
@@ -601,7 +607,13 @@ MessageListView.prototype = {
                 // being displayed in search highlight.
                 const text = $(this).text();
                 const topic = text.split('>', 2)[1];
-                $(this).text("#" + stream_data.maybe_get_stream_name(stream_id) + ' > ' + topic);
+                const stream_name = stream_data.maybe_get_stream_name(stream_id);
+                if (stream_name !== undefined) {
+                    // If the stream has been deleted,
+                    // stream_data.maybe_get_stream_name might return
+                    // undefined.  Otherwise, display the current stream name.
+                    $(this).text("#" + stream_name + ' > ' + topic);
+                }
             }
         });
 
