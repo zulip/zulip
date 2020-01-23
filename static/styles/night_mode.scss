@@ -277,9 +277,9 @@ on a dark background, and don't change the dark labels dark either. */
     .clear_search_button:active,
     .clear_search_button[disabled]:hover,
     #user-groups .save-instructions,
-    #searchbox_legacy a.search_icon,
+    #searchbox_legacy .search_icon,
     #searchbox_legacy .search_button,
-    #searchbox a.search_icon,
+    #searchbox .search_icon,
     #searchbox .search_button,
     .close,
     #user_presences li:hover .user-list-arrow,
@@ -292,9 +292,9 @@ on a dark background, and don't change the dark labels dark either. */
 
     #message_edit_tooltip:hover,
     .clear_search_button:hover,
-    #searchbox_legacy a.search_icon:hover,
+    #searchbox_legacy .search_icon:hover,
     #searchbox_legacy .search_button:hover,
-    #searchbox a.search_icon:hover,
+    #searchbox .search_icon:hover,
     #searchbox .search_button:hover,
     .close:hover {
         color: hsl(0, 0%, 100%);
