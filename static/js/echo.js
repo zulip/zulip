@@ -50,7 +50,8 @@ exports.build_display_recipient = function (message) {
     // ", " at the end of the recipient list
     const emails = util.extract_pm_recipients(message.private_message_recipient);
 
-    return _.map(emails, function (email) {
+    let me_in_display_recipients = false;
+    const display_recipient = _.map(emails, function (email) {
         email = email.trim();
         const person = people.get_by_email(email);
         if (person === undefined) {
@@ -72,6 +73,10 @@ exports.build_display_recipient = function (message) {
             };
         }
 
+        if (people.is_my_user_id(person.user_id)) {
+            me_in_display_recipients = true;
+        }
+
         // NORMAL PATH
         //
         // This should match the format of display_recipient
@@ -84,6 +89,17 @@ exports.build_display_recipient = function (message) {
             full_name: person.full_name,
         };
     });
+
+    if (!me_in_display_recipients) {
+        // Ensure that the current user is included in
+        // display_recipient for group PMs.
+        display_recipient.push({
+            id: message.sender_id,
+            email: message.sender_email,
+            full_name: message.sender_full_name,
+        });
+    }
+    return display_recipient;
 };
 
 exports.insert_local_message = function (message_request, local_id) {
