@@ -16,6 +16,7 @@ const render_compose_private_stream_alert = require("../templates/compose_privat
 
 let user_acknowledged_all_everyone;
 let user_acknowledged_announce;
+let wildcard_mention;
 
 exports.all_everyone_warn_threshold = 15;
 exports.announce_warn_threshold = 60;
@@ -32,7 +33,8 @@ function make_uploads_relative(content) {
 function show_all_everyone_warnings() {
     const stream_count = stream_data.get_subscriber_count(compose_state.stream_name()) || 0;
 
-    const all_everyone_template = render_compose_all_everyone({count: stream_count});
+    const all_everyone_template = render_compose_all_everyone({count: stream_count,
+                                                               mention: wildcard_mention});
     const error_area_all_everyone = $("#compose-all-everyone");
 
     // only show one error for any number of @all or @everyone mentions
@@ -429,10 +431,10 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
 
 function validate_stream_message_mentions(stream_name) {
     const stream_count = stream_data.get_subscriber_count(stream_name) || 0;
+    wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
 
-    // check if @all or @everyone is in the message
-    if (util.is_all_or_everyone_mentioned(compose_state.message_content()) &&
-        stream_count > exports.all_everyone_warn_threshold) {
+    // check if wildcard_mention has any mention and henceforth execute the warning message.
+    if (wildcard_mention !== null && stream_count > exports.all_everyone_warn_threshold) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
@@ -541,8 +543,7 @@ function validate_stream_message() {
 
     // If both `@all` is mentioned and it's in `#announce`, just validate
     // for `@all`. Users shouldn't have to hit "yes" more than once.
-    if (util.is_all_or_everyone_mentioned(compose_state.message_content()) &&
-        stream_name === "announce") {
+    if (wildcard_mention !== null && stream_name === "announce") {
         if (!exports.validate_stream_message_address_info(stream_name) ||
             !validate_stream_message_mentions(stream_name)) {
             return false;

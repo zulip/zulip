@@ -7,8 +7,8 @@
 // and assert truths:
 
 zrequire('util');
-assert(!util.is_all_or_everyone_mentioned('boring text'));
-assert(util.is_all_or_everyone_mentioned('mention @**everyone**'));
+assert(!util.find_wildcard_mentions('boring text'));
+assert(util.find_wildcard_mentions('mention @**everyone**'));
 
 // Let's test with people.js next.  We'll show this technique:
 //  * get a false value
