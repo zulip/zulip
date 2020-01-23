@@ -53,7 +53,8 @@ exports.enter_day_mode = function () {
             night_mode.disable();
             feedback_widget.show({
                 populate: function (container) {
-                    container.text(data.msg);
+                    const rendered_msg = marked(data.msg).trim();
+                    container.html(rendered_msg);
                 },
                 on_undo: function () {
                     exports.send({
@@ -74,7 +75,8 @@ exports.enter_night_mode = function () {
             night_mode.enable();
             feedback_widget.show({
                 populate: function (container) {
-                    container.text(data.msg);
+                    const rendered_msg = marked(data.msg).trim();
+                    container.html(rendered_msg);
                 },
                 on_undo: function () {
                     exports.send({
