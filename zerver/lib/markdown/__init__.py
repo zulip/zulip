@@ -59,6 +59,7 @@ from zerver.lib.timeout import TimeoutExpired, timeout
 from zerver.lib.timezone import get_common_timezones
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
+from zerver.lib.url_validator import get_uncompiled_netloc_re
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
     Message,
@@ -129,6 +130,10 @@ STREAM_LINK_REGEX = r"""
                          (?P<stream_name>[^\*]+)  # stream name can contain anything
                      \*\*                         # ends by double asterisks
                     """
+
+@one_time
+def get_compiled_netloc_re() -> Pattern:
+    return verbose_compile(get_uncompiled_netloc_re())
 
 @one_time
 def get_compiled_stream_link_regex() -> Pattern:
@@ -1463,6 +1468,11 @@ def sanitize_url(url: str) -> Optional[str]:
     #
     # We already converted an empty scheme to http:// above, so we skip
     # the colon check, which would also forbid a lot of legitimate URLs.
+
+    # Check for invalid domain names.
+    netloc_re = get_compiled_netloc_re()
+    if netloc and not netloc_re.match(netloc):
+        return None
 
     # Url passes all tests. Return url as-is.
     return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
