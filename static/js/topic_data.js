@@ -1,7 +1,7 @@
-const Dict = require('./dict').Dict;
+const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 
-let stream_dict = new Dict(); // stream_id -> topic_history object
+const stream_dict = new IntDict(); // stream_id -> topic_history object
 
 exports.stream_has_topics = function (stream_id) {
     if (!stream_dict.has(stream_id)) {
@@ -201,7 +201,7 @@ exports.get_recent_names = function (stream_id) {
 
 exports.reset = function () {
     // This is only used by tests.
-    stream_dict = new Dict();
+    stream_dict.clear();
 };
 
 window.topic_data = exports;
