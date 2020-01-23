@@ -31,6 +31,7 @@ from django.dispatch import receiver, Signal
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.translation import ugettext as _
 from requests import HTTPError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
@@ -1076,6 +1077,10 @@ def social_auth_finish(backend: Any,
     realm = Realm.objects.get(id=return_data["realm_id"])
     multiuse_object_key = strategy.session_get('multiuse_object_key', '')
     mobile_flow_otp = strategy.session_get('mobile_flow_otp')
+    desktop_flow_otp = strategy.session_get('desktop_flow_otp')
+    if mobile_flow_otp and desktop_flow_otp:
+        raise JsonableError(_("Can't use both mobile_flow_otp and desktop_flow_otp together."))
+
     if user_profile is None or user_profile.is_mirror_dummy:
         is_signup = strategy.session_get('is_signup') == '1'
     else:
@@ -1086,10 +1091,17 @@ def social_auth_finish(backend: Any,
     #
     # The next step is to call login_or_register_remote_user, but
     # there are two code paths here because of an optimization to save
-    # a redirect on mobile.
+    # a redirect on mobile and desktop.
 
-    if mobile_flow_otp is not None:
-        # For mobile app authentication, login_or_register_remote_user
+    if mobile_flow_otp or desktop_flow_otp:
+        extra_kwargs = {}
+        if mobile_flow_otp:
+            extra_kwargs["mobile_flow_otp"] = mobile_flow_otp
+        elif desktop_flow_otp:
+            extra_kwargs["desktop_flow_otp"] = desktop_flow_otp
+            extra_kwargs["realm"] = realm
+
+        # For mobile and desktop app authentication, login_or_register_remote_user
         # will redirect to a special zulip:// URL that is handled by
         # the app after a successful authentication; so we can
         # redirect directly from here, saving a round trip over what
@@ -1098,10 +1110,10 @@ def social_auth_finish(backend: Any,
         return login_or_register_remote_user(
             strategy.request, email_address,
             user_profile, full_name,
-            mobile_flow_otp=mobile_flow_otp,
             is_signup=is_signup,
             redirect_to=redirect_to,
-            full_name_validated=full_name_validated
+            full_name_validated=full_name_validated,
+            **extra_kwargs
         )
 
     # If this authentication code were executing on
@@ -1263,7 +1275,7 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
 @external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     auth_backend_name = "SAML"
-    standard_relay_params = ["subdomain", "multiuse_object_key", "mobile_flow_otp",
+    standard_relay_params = ["subdomain", "multiuse_object_key", "mobile_flow_otp", "desktop_flow_otp",
                              "next", "is_signup"]
     REDIS_EXPIRATION_SECONDS = 60 * 15
     name = "saml"
