@@ -47,7 +47,7 @@ async function test_invalid_linkifier_pattern(page) {
     await page.waitForSelector("div#admin-filter-pattern-status", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, "div#admin-filter-pattern-status"),
-        "Failed: Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].",
+        "Failed: No groups found in URL format string.",
     );
 }
 

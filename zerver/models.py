@@ -744,13 +744,7 @@ post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 def filter_pattern_validator(value: str) -> None:
-    regex = re.compile(r'^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$')
-    error_msg = _('Invalid filter pattern.  Valid characters are {}.').format(
-        '[ a-zA-Z_#=/:+!-]',)
-
-    if not regex.match(str(value)):
-        raise ValidationError(error_msg)
-
+    error_msg = _('Invalid filter pattern. Please check the pattern for syntax errors.')
     try:
         re.compile(value)
     except re.error:
@@ -770,7 +764,7 @@ class RealmFilter(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name='ID')
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern: str = models.TextField(validators=[filter_pattern_validator])
-    url_format_string: str = models.TextField(validators=[URLValidator(), filter_format_validator])
+    url_format_string: str = models.TextField()
 
     class Meta:
         unique_together = ("realm", "pattern")
@@ -789,6 +783,10 @@ class RealmFilter(models.Model):
             return
         group_list = list(pattern.groupindex.keys())
         group_match_regex = re.compile(r'%\((?P<group_name>[^)]+)\)s')
+
+        # Report regexes without any patterns.
+        if len(group_list) == 0:
+            raise ValidationError(_("No groups found in URL format string."))
 
         # Report patterns missing in filter pattern.
         for m in group_match_regex.finditer(self.url_format_string):

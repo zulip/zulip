@@ -1,8 +1,10 @@
 import re
 
+from django.core.exceptions import ValidationError
+
 from zerver.lib.actions import do_add_realm_filter
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmFilter, get_realm
+from zerver.models import RealmFilter, filter_format_validator, get_realm
 
 
 class RealmFilterTest(ZulipTestCase):
@@ -27,21 +29,26 @@ class RealmFilterTest(ZulipTestCase):
 
         data['pattern'] = '$a'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].')
+        self.assert_json_error(result, 'No groups found in URL format string.')
 
         data['pattern'] = r'ZUL-(?P<id>\d++)'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].')
+        self.assert_json_error(result, 'Invalid filter pattern. Please check the pattern for syntax errors.')
 
         data['pattern'] = r'ZUL-(?P<id>\d+)'
         data['url_format_string'] = '$fgfg'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Enter a valid URL.')
+        self.assert_json_error(result, "Group 'id' in filter pattern is not present in URL format string.")
+
+        data['pattern'] = r'ZUL-(?P<id>\d+)'
+        data['url_format_string'] = '$fgfg%(id)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, 'Filter pattern does not result in valid URL.')
 
         data['pattern'] = r'ZUL-(?P<id>\d+)'
         data['url_format_string'] = 'https://realm.com/my_realm_filter/'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid URL format string.')
+        self.assert_json_error(result, "Group 'id' in filter pattern is not present in URL format string.")
 
         data['url_format_string'] = 'https://realm.com/my_realm_filter/#hashtag/%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
@@ -108,12 +115,29 @@ class RealmFilterTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], 'zulip/zulip#123'))
 
+        data['pattern'] = r'chat-(?P<org>[a-zA-Z0-9_-]+)'
+        data['url_format_string'] = 'https://%(org)s.zulipchat.com/'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data['pattern'], 'chat-some-opensource-org'))
+
+        data['pattern'] = r'ZUL-(?P<id>\d+)'
+        data['url_format_string'] = r'http%(id)s://zulipchat.com/'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Filter pattern does not result in valid URL.")
+
     def test_not_realm_admin(self) -> None:
         self.login('hamlet')
         result = self.client_post("/json/realm/filters")
         self.assert_json_error(result, 'Must be an organization administrator')
         result = self.client_delete("/json/realm/filters/15")
         self.assert_json_error(result, 'Must be an organization administrator')
+
+    def test_filter_format_validator(self) -> None:
+        # This is outdated code but it is used in some migrations.
+        with self.assertRaises(ValidationError):
+            filter_format_validator('https://google.com')  # No pattern in url
+        filter_format_validator('https://google.com/%(id)s')  # Valid id is present.
 
     def test_delete(self) -> None:
         self.login('iago')
