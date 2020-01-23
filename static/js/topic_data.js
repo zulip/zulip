@@ -1,7 +1,7 @@
 const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
 
-let stream_dict = new Dict(); // stream_id -> array of objects
+let stream_dict = new Dict(); // stream_id -> topic_history object
 
 exports.stream_has_topics = function (stream_id) {
     if (!stream_dict.has(stream_id)) {
@@ -14,6 +14,13 @@ exports.stream_has_topics = function (stream_id) {
 };
 
 exports.topic_history = function (stream_id) {
+    /*
+        Each stream has a dictionary of topics.
+        The main getter of this object is
+        get_recent_names, and we just sort on
+        the fly every time we are called.
+    */
+
     const topics = new FoldDict();
 
     const self = {};
