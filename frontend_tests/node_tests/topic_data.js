@@ -1,8 +1,10 @@
 zrequire('unread');
 zrequire('util');
+zrequire('stream_data');
 zrequire('topic_data');
 
 set_global('channel', {});
+set_global('message_list', {});
 
 run_test('basics', () => {
     const stream_id = 55;
@@ -60,6 +62,37 @@ run_test('basics', () => {
     topic_data.remove_message({
         stream_id: 9999999,
     });
+});
+
+run_test('is_complete_for_stream_id', () => {
+    const sub = {
+        name: 'devel',
+        stream_id: 444,
+        first_message_id: 1000,
+    };
+    stream_data.add_sub(sub.name, sub);
+
+    message_list.all = {
+        empty: () => false,
+        fetch_status: {
+            has_found_newest: () => true,
+        },
+        first: () => {
+            return {id: 5};
+        },
+    };
+
+    assert.equal(
+        topic_data.is_complete_for_stream_id(sub.stream_id),
+        true);
+
+    message_list.all.first = () => {
+        return {id: sub.first_message_id + 1};
+    };
+
+    assert.equal(
+        topic_data.is_complete_for_stream_id(sub.stream_id),
+        false);
 });
 
 run_test('server_history', () => {
