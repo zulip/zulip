@@ -209,9 +209,12 @@ exports.CachedValue.prototype = {
     },
 };
 
-exports.is_all_or_everyone_mentioned = function (message_content) {
-    const all_everyone_re = /(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/;
-    return all_everyone_re.test(message_content);
+exports.find_wildcard_mentions = function (message_content) {
+    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/);
+    if (mention === null) {
+        return null;
+    }
+    return mention[3];
 };
 
 exports.move_array_elements_to_front = function util_move_array_elements_to_front(array, selected) {
