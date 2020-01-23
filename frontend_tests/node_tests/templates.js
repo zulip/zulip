@@ -519,13 +519,29 @@ run_test('compose_invite_users', () => {
 run_test('compose_all_everyone', () => {
     const args = {
         count: '101',
-        name: 'all',
+        mention: 'all',
     };
-    const html = render('compose_all_everyone', args);
+    let html = render('compose_all_everyone', args);
     const button = $(html).find("button").first();
+
+    // test for @all mention warning.
     assert.equal(button.text(), "translated: Yes, send");
-    const error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
-    assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?");
+    let error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
+    assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?  This will send email and mobile push notifications to most of those 101 users.  If you don't want to do that, please edit your message to remove the @all mention.");
+
+    // test for @everyone warning.
+    args.mention = 'everyone';
+    html = render('compose_all_everyone', args);
+    assert.equal(button.text(), "translated: Yes, send");
+    error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
+    assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?  This will send email and mobile push notifications to most of those 101 users.  If you don't want to do that, please edit your message to remove the @everyone mention.");
+
+    // test for @stream warning.
+    args.mention = 'stream';
+    html = render('compose_all_everyone', args);
+    assert.equal(button.text(), "translated: Yes, send");
+    error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
+    assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?  This will send email and mobile push notifications to most of those 101 users.  If you don't want to do that, please edit your message to remove the @stream mention.");
 });
 
 run_test('compose_announce', () => {
