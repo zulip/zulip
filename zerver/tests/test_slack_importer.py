@@ -38,6 +38,9 @@ from zerver.lib.import_realm import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.test_helpers import (
+    get_test_image_file
+)
 from zerver.lib.topic import (
     EXPORT_TOPIC_NAME,
 )
@@ -703,6 +706,7 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(test_reactions, reactions)
 
+    @mock.patch("zerver.data_import.slack.requests.get")
     @mock.patch("zerver.data_import.slack.process_uploads", return_value = [])
     @mock.patch("zerver.data_import.slack.build_attachment",
                 return_value = [])
@@ -713,7 +717,8 @@ class SlackImporter(ZulipTestCase):
                                                mock_build_avatar_url: mock.Mock,
                                                mock_build_avatar: mock.Mock,
                                                mock_process_uploads: mock.Mock,
-                                               mock_attachment: mock.Mock) -> None:
+                                               mock_attachment: mock.Mock,
+                                               mock_requests_get: mock.Mock) -> None:
         test_slack_dir = os.path.join(settings.DEPLOY_ROOT, "zerver", "tests", "fixtures",
                                       "slack_fixtures")
         test_slack_zip_file = os.path.join(test_slack_dir, "test_slack_importer.zip")
@@ -731,17 +736,33 @@ class SlackImporter(ZulipTestCase):
         self.rm_tree(test_slack_unzipped_file)
 
         user_data_fixture = ujson.loads(self.fixture_data('user_data.json', type='slack_fixtures'))
-        mock_get_slack_api_data.side_effect = [user_data_fixture['members'], {}]
+        team_info_fixture = ujson.loads(self.fixture_data('team_info.json', type='slack_fixtures'))
+        mock_get_slack_api_data.side_effect = [user_data_fixture['members'], {}, team_info_fixture["team"]]
+        mock_requests_get.return_value.raw = get_test_image_file("img.png")
 
         do_convert_data(test_slack_zip_file, output_dir, token)
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + '/realm.json'))
+
+        realm_icons_path = os.path.join(output_dir, 'realm_icons')
+        realm_icon_records_path = os.path.join(realm_icons_path, 'records.json')
+
+        self.assertTrue(os.path.exists(realm_icon_records_path))
+        with open(realm_icon_records_path) as f:
+            records = ujson.load(f)
+            self.assertEqual(len(records), 2)
+            self.assertEqual(records[0]["path"], "0/icon.original")
+            self.assertTrue(os.path.exists(os.path.join(realm_icons_path, records[0]["path"])))
+
+            self.assertEqual(records[1]["path"], "0/icon.png")
+            self.assertTrue(os.path.exists(os.path.join(realm_icons_path, records[1]["path"])))
 
         # test import of the converted slack data into an existing database
         with self.settings(BILLING_ENABLED=False):
             do_import_realm(output_dir, test_realm_subdomain)
         realm = get_realm(test_realm_subdomain)
         self.assertTrue(realm.name, test_realm_subdomain)
+        self.assertEqual(realm.icon_source, Realm.ICON_UPLOADED)
 
         # test RealmAuditLog
         realmauditlog = RealmAuditLog.objects.filter(realm=realm)
