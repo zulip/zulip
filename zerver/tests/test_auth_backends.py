@@ -778,7 +778,7 @@ class SocialAuthBase(ZulipTestCase):
         self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
 
-        encrypted_key = query_params["otp_encrypted_api_key"][0]
+        encrypted_key = query_params["otp_encrypted_login_key"][0]
         decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
         auth_url = 'http://zulip.testserver/accounts/login/subdomain/{}'.format(decrypted_key)
 

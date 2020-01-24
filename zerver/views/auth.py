@@ -254,13 +254,15 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
             'subdomain': realm.subdomain}
     token = store_login_data(data)
 
-    return create_response_for_otp_flow(token, otp, user_profile)
+    return create_response_for_otp_flow(token, otp, user_profile,
+                                        encrypted_key_field_name='otp_encrypted_login_key')
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
     # For the mobile Oauth flow, we send the API key and other
     # necessary details in a redirect to a zulip:// URI scheme.
     api_key = get_api_key(user_profile)
-    response = create_response_for_otp_flow(api_key, otp, user_profile)
+    response = create_response_for_otp_flow(api_key, otp, user_profile,
+                                            encrypted_key_field_name='otp_encrypted_api_key')
 
     # Since we are returning an API key instead of going through
     # the Django login() function (which creates a browser
@@ -278,9 +280,10 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 
     return response
 
-def create_response_for_otp_flow(key: str, otp: str, user_profile: UserProfile) -> HttpResponse:
+def create_response_for_otp_flow(key: str, otp: str, user_profile: UserProfile,
+                                 encrypted_key_field_name: str) -> HttpResponse:
     params = {
-        'otp_encrypted_api_key': otp_encrypt_api_key(key, otp),
+        encrypted_key_field_name: otp_encrypt_api_key(key, otp),
         'email': user_profile.delivery_email,
         'realm': user_profile.realm.uri,
     }
