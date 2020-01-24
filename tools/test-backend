@@ -84,7 +84,6 @@ not_yet_fully_covered = {path for target in [
     'zerver/lib/digest.py',
     'zerver/lib/error_notify.py',
     'zerver/lib/export.py',
-    'zerver/lib/feedback.py',
     'zerver/lib/fix_unreads.py',
     'zerver/lib/html_diff.py',
     'zerver/lib/import_realm.py',
