@@ -19,7 +19,6 @@ from zerver.models import \
     Client
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
-from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.email_notifications import handle_missedmessage_emails
@@ -435,13 +434,6 @@ class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
                     "Maximum retries exceeded for trigger:%s event:push_notification" % (
                         event['user_profile_id'],))
             retry_event(self.queue_name, event, failure_processor)
-
-# We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
-@assign_queue('feedback_messages')
-class FeedbackBot(QueueProcessingWorker):
-    def consume(self, event: Mapping[str, Any]) -> None:
-        logging.info("Received feedback from %s" % (event["sender_email"],))
-        handle_feedback(event)
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):

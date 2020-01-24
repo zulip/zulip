@@ -315,12 +315,6 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2  # 2 weeks
 # Controls whether Zulip sends "new login" email notifications.
 #SEND_LOGIN_EMAILS = True
 
-# Controls whether or not there is a feedback button in the UI.
-ENABLE_FEEDBACK = False
-
-# Feedback sent by your users will be sent to this email address.
-FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
-
 # Controls whether or not error reports (tracebacks) are emailed to the
 # server administrators.
 #ERROR_REPORTING = True
