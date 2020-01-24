@@ -141,11 +141,13 @@ EOF
     exit 1
 fi
 
-# Check for at least ~1.9GB of RAM before starting installation;
+# Check for at least ~1.86GB of RAM before starting installation;
 # otherwise users will find out about insufficient RAM via weird
 # errors like a segfault running `pip install`.
+# Additionally, some AWS images that are advertised to be 2 GB
+# are actually 1880000B in size.
 mem_kb=$(head -n1 /proc/meminfo | awk '{print $2}')
-if [ "$mem_kb" -lt 1900000 ]; then
+if [ "$mem_kb" -lt 1860000 ]; then
     set +x
     echo -e '\033[0;31m' >&2
     echo "Insufficient RAM.  Zulip requires at least 2GB of RAM." >&2
