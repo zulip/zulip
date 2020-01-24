@@ -248,7 +248,7 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     for the user account we authenticated in this flow.
     The token can only be used once and within LOGIN_KEY_EXPIRATION_SECONDS
     of being created, as nothing more powerful is needed for the desktop flow
-    and this minimizes the threat of one of these keys being leaked.
+    and this ensures the key can only be used for completing this authentication attempt.
     """
     data = {'email': user_profile.delivery_email,
             'subdomain': realm.subdomain}
@@ -478,6 +478,10 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     redirect_and_log_into_subdomain called on auth.zulip.example.com),
     call login_or_register_remote_user, passing all the authentication
     result data that has been stored in redis, associated with this token.
+    Obligatory fields for the data are 'subdomain' and 'email', because this endpoint
+    needs to know which user and realm to log into. Others are optional and only used
+    if the user account still needs to be made and they're passed as argument to the
+    register_remote_user function.
     """
     if not has_api_key_format(token):  # The tokens are intended to have the same format as API keys.
         logging.warning("log_into_subdomain: Malformed token given: %s" % (token,))
