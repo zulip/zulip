@@ -254,7 +254,7 @@ class Realm(models.Model):
     allow_community_topic_editing = models.BooleanField(default=True)  # type: bool
 
     # Defaults for new users
-    default_twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
+    default_twenty_four_hour_time = models.BooleanField(default=True)  # type: bool
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH)  # type: str
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'general'
@@ -953,7 +953,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     high_contrast_mode = models.BooleanField(default=False)  # type: bool
     night_mode = models.BooleanField(default=False)  # type: bool
     translate_emoticons = models.BooleanField(default=False)  # type: bool
-    twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
+    twenty_four_hour_time = models.BooleanField(default=True)  # type: bool
     starred_message_counts = models.BooleanField(default=False)  # type: bool
 
     # UI setting controlling Zulip's behavior of demoting in the sort
