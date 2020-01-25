@@ -225,8 +225,14 @@ function test_submit_settings_form(submit_form) {
         return `${subsection}`;
     };
 
-    $("#id_realm_invite_to_stream_policy").val("by_members");
     $("#id_realm_waiting_period_threshold").val(10);
+
+    const invite_to_stream_policy_elem = $("#id_realm_invite_to_stream_policy");
+    invite_to_stream_policy_elem.val('1');
+    invite_to_stream_policy_elem.attr("id", 'id_realm_invite_to_stream_policy');
+    invite_to_stream_policy_elem.data = () => {
+        return "integer";
+    };
 
     const create_stream_policy_elem = $("#id_realm_create_stream_policy");
     create_stream_policy_elem.val('2');
@@ -259,6 +265,7 @@ function test_submit_settings_form(submit_form) {
         email_address_visibility_elem,
         add_emoji_by_admins_only_elem,
         create_stream_policy_elem,
+        invite_to_stream_policy_elem,
     ]);
 
     patched = false;
@@ -535,7 +542,8 @@ function test_sync_realm_settings() {
         page_params.realm_invite_to_stream_policy = 3;
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
-        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_full_members");
+        assert.equal($("#id_realm_invite_to_stream_policy").val(),
+                     settings_org.create_stream_policy_values.by_full_members.code);
     }
 
     {
@@ -550,7 +558,8 @@ function test_sync_realm_settings() {
         page_params.realm_invite_to_stream_policy = 1;
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
-        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_members");
+        assert.equal($("#id_realm_invite_to_stream_policy").val(),
+                     settings_org.create_stream_policy_values.by_members.code);
     }
 
     {
@@ -565,7 +574,8 @@ function test_sync_realm_settings() {
         page_params.realm_invite_to_stream_policy = 2;
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
-        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_admins_only");
+        assert.equal($("#id_realm_invite_to_stream_policy").val(),
+                     settings_org.create_stream_policy_values.by_admins_only.code);
     }
 
     {
