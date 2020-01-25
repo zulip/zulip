@@ -70,6 +70,8 @@ exports.create_stream_policy_values = {
     },
 };
 
+exports.invite_to_stream_policy_values = exports.create_stream_policy_values;
+
 exports.get_sorted_options_list = function (option_values_object) {
     const options_list = Object.keys(option_values_object).map((key) => {
         return _.extend(option_values_object[key], {key: key});
@@ -96,6 +98,8 @@ exports.get_organization_settings_options = () => {
     const options = {};
     options.create_stream_policy_values = exports.get_sorted_options_list(
         exports.create_stream_policy_values);
+    options.invite_to_stream_policy_values = exports.get_sorted_options_list(
+        exports.invite_to_stream_policy_values);
     return options;
 };
 
@@ -138,18 +142,6 @@ function get_property_value(property_name) {
             return "three_days";
         }
         return "custom_days";
-    }
-
-    if (property_name === 'realm_invite_to_stream_policy') {
-        if (page_params.realm_invite_to_stream_policy === 1) {
-            return "by_members";
-        }
-        if (page_params.realm_invite_to_stream_policy === 2) {
-            return "by_admins_only";
-        }
-        if (page_params.realm_invite_to_stream_policy === 3) {
-            return "by_full_members";
-        }
     }
 
     if (property_name === 'realm_user_group_edit_policy') {
@@ -853,7 +845,6 @@ exports.build_page = function () {
                 JSON.stringify(parseInt(new_message_retention_days, 10)) : null;
         } else if (subsection === 'other_permissions') {
             const waiting_period_threshold = $("#id_realm_waiting_period_setting").val();
-            const invite_to_stream_policy = $("#id_realm_invite_to_stream_policy").val();
             const user_group_edit_policy = $("#id_realm_user_group_edit_policy").val();
             const private_message_policy = $("#id_realm_private_message_policy").val();
             const add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
@@ -862,14 +853,6 @@ exports.build_page = function () {
                 data.add_emoji_by_admins_only = true;
             } else if (add_emoji_permission === "by_anyone") {
                 data.add_emoji_by_admins_only = false;
-            }
-
-            if (invite_to_stream_policy === "by_admins_only") {
-                data.invite_to_stream_policy = 2;
-            } else if (invite_to_stream_policy === "by_members") {
-                data.invite_to_stream_policy = 1;
-            } else if (invite_to_stream_policy === "by_full_members") {
-                data.invite_to_stream_policy = 3;
             }
 
             if (user_group_edit_policy === "by_admins_only") {
