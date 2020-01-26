@@ -626,15 +626,24 @@ def get_messages_iterator(slack_data_dir: str, added_channels: Dict[str, Any],
         messages_for_one_day = []  # type: List[ZerverFieldsT]
         for dir_path in all_json_names[json_name]:
             message_dir = os.path.join(dir_path, json_name)
-            messages = get_data_file(message_dir)
             dir_name = os.path.basename(dir_path)
-            for message in messages:
+            messages = []
+            for message in get_data_file(message_dir):
+                if message.get('user') == 'U00':
+                    # Skip messages involving the the "U00" user,
+                    # which is apparently used in some channel rename
+                    # messages.  It's likely just the result of some
+                    # bug in Slack's export system.  Arguably we could
+                    # change this to point to slackbot instead, but
+                    # skipping those messages is simpler.
+                    continue
                 if dir_name in added_channels:
                     message['channel_name'] = dir_name
                 elif dir_name in added_mpims:
                     message['mpim_name'] = dir_name
                 elif dir_name in dm_members:
                     message['pm_name'] = dir_name
+                messages.append(message)
             messages_for_one_day += messages
 
         # we sort the messages according to the timestamp to show messages with
