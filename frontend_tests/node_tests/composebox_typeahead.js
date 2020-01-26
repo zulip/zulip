@@ -1,3 +1,4 @@
+const typeahead = zrequire('typeahead', 'shared/js/typeahead');
 set_global('i18n', global.stub_i18n);
 zrequire('compose_state');
 zrequire('ui_util');
@@ -662,7 +663,7 @@ run_test('initialize', () => {
         assert.equal(actual_value, expected_value);
 
         function matcher(query, person) {
-            query = ct.clean_query_lowercase(query);
+            query = typeahead.clean_query_lowercase(query);
             return ct.query_matches_person(query, person);
         }
 

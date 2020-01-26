@@ -1,6 +1,7 @@
 require("unorm");  // String.prototype.normalize polyfill for IE11
 const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
+const typeahead = require("../shared/js/typeahead");
 
 let people_dict;
 let people_by_name_dict;
@@ -771,12 +772,6 @@ exports.incr_recipient_count = function (user_id) {
     pm_recipient_count_dict.set(user_id, old_count + 1);
 };
 
-const unicode_marks = /\p{M}/gu;
-
-exports.remove_diacritics = function (s) {
-    return s.normalize("NFKD").replace(unicode_marks, "");
-};
-
 exports.get_message_people = function () {
     /*
         message_people are roughly the people who have
@@ -824,7 +819,7 @@ exports.build_termlet_matcher = function (termlet) {
         let full_name = user.full_name;
         if (is_ascii) {
             // Only ignore diacritics if the query is plain ascii
-            full_name = exports.remove_diacritics(full_name);
+            full_name = typeahead.remove_diacritics(full_name);
         }
         const names = full_name.toLowerCase().split(' ');
 
