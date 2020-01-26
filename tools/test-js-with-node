@@ -111,57 +111,58 @@ parser.add_argument('--force', dest='force',
                     default=False, help='Run tests despite possible problems.')
 parser.add_argument('args', nargs=argparse.REMAINDER)
 options = parser.parse_args()
+individual_files = options.args
 
 from tools.lib.test_script import assert_provisioning_status_ok
 
 assert_provisioning_status_ok(options.force)
 
-os.environ['TZ'] = 'UTC'
+def run_tests_via_node_js() -> int:
+    os.environ['TZ'] = 'UTC'
 
-# Add ".js" to the end of all the file arguments, so index.js
-# can actually verify if the file exists or not.
-for index, arg in enumerate(options.args):
-    if not arg.endswith('.js') and not arg.endswith('.ts'):
-        # If it doesn't end with ".js" or ".ts", assume it is a JS file,
-        # since most files are currently JS files.
-        options.args[index] = arg + '.js'
+    # Add ".js" to the end of all the file arguments, so index.js
+    # can actually verify if the file exists or not.
+    for index, arg in enumerate(options.args):
+        if not arg.endswith('.js') and not arg.endswith('.ts'):
+            # If it doesn't end with ".js" or ".ts", assume it is a JS file,
+            # since most files are currently JS files.
+            options.args[index] = arg + '.js'
 
-individual_files = options.args
+    # The index.js test runner is the real "driver" here, and we launch
+    # with either nyc or node, depending on whether we want coverage
+    # reports.  Running under nyc is slower and creates funny
+    # tracebacks, so you generally want to get coverage reports only
+    # after making sure tests will pass.
+    node_tests_cmd = ['node', '--stack-trace-limit=100', INDEX_JS]
+    node_tests_cmd += individual_files
+    if options.coverage:
+        coverage_dir = os.path.join(ROOT_DIR, 'var/node-coverage')
+        coverage_lcov_file = os.path.join(coverage_dir, 'lcov.info')
 
-# The index.js test runner is the real "driver" here, and we launch
-# with either nyc or node, depending on whether we want coverage
-# reports.  Running under nyc is slower and creates funny
-# tracebacks, so you generally want to get coverage reports only
-# after making sure tests will pass.
-node_tests_cmd = ['node', '--stack-trace-limit=100', INDEX_JS]
-node_tests_cmd += individual_files
-if options.coverage:
-    coverage_dir = os.path.join(ROOT_DIR, 'var/node-coverage')
-    coverage_lcov_file = os.path.join(coverage_dir, 'lcov.info')
+        nyc = os.path.join(ROOT_DIR, 'node_modules/.bin/nyc')
+        command = [nyc, '--extension', '.ts']
+        command += ['--report-dir', coverage_dir]
+        command += ['--temp-directory', coverage_dir, '-r=text-summary']
+        command += node_tests_cmd
+        command += ['&&', 'nyc', 'report', '-r=lcov', '-r=json']
+        command += ['>', coverage_lcov_file]
+    else:
+        # Normal testing, no coverage analysis.
+        # Run the index.js test runner, which runs all the other tests.
+        command = node_tests_cmd
 
-    nyc = os.path.join(ROOT_DIR, 'node_modules/.bin/nyc')
-    command = [nyc, '--extension', '.ts']
-    command += ['--report-dir', coverage_dir]
-    command += ['--temp-directory', coverage_dir, '-r=text-summary']
-    command += node_tests_cmd
-    command += ['&&', 'nyc', 'report', '-r=lcov', '-r=json']
-    command += ['>', coverage_lcov_file]
-else:
-    # Normal testing, no coverage analysis.
-    # Run the index.js test runner, which runs all the other tests.
-    command = node_tests_cmd
+    print('Starting node tests...')
 
-print('Starting node tests...')
-
-# If we got this far, we can run the tests!
-try:
-    ret = subprocess.check_call(command)
-except OSError:
-    print('Bad command: %s' % (command,))
-    raise
-except subprocess.CalledProcessError:
-    print('\n** Tests failed, PLEASE FIX! **\n')
-    sys.exit(1)
+    # If we got this far, we can run the tests!
+    try:
+        ret = subprocess.check_call(command)
+    except OSError:
+        print('Bad command: %s' % (command,))
+        raise
+    except subprocess.CalledProcessError:
+        print('\n** Tests failed, PLEASE FIX! **\n')
+        sys.exit(1)
+    return ret
 
 def check_line_coverage(fn, line_coverage, line_mapping, log=True):
     # type: (str, Dict[Any, Any], Dict[Any, Any], bool) -> bool
@@ -224,6 +225,8 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
 
     problems_encountered = (coverage_lost or coverage_not_enforced)
     return problems_encountered
+
+ret = run_tests_via_node_js()
 
 if options.coverage and ret == 0:
     if not individual_files:
