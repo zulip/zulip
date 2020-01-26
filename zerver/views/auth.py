@@ -555,7 +555,7 @@ def store_login_data(data: Dict[str, Any]) -> str:
 
 def get_login_data(token: str, should_delete: bool=True) -> Optional[Dict[str, Any]]:
     key = LOGIN_KEY_FORMAT.format(token=token)
-    data = get_dict_from_redis(redis_client, key)
+    data = get_dict_from_redis(redis_client, LOGIN_KEY_FORMAT, key)
     if data is not None and should_delete:
         redis_client.delete(key)
     return data
