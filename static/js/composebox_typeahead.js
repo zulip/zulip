@@ -1,3 +1,4 @@
+const typeahead = require("../shared/js/typeahead");
 const autosize = require('autosize');
 
 //************************************
@@ -53,81 +54,17 @@ function get_language_matcher(query) {
     };
 }
 
-function clean_query(query) {
-    query = people.remove_diacritics(query);
-    // When `abc ` with a space at the end is typed in a
-    // contenteditable widget such as the composebox PM section, the
-    // space at the end was a `no break-space (U+00A0)` instead of
-    // `space (U+0020)`, which lead to no matches in those cases.
-    query = query.replace(/\u00A0/g, String.fromCharCode(32));
-
-    return query;
-}
-
-exports.clean_query_lowercase = function (query) {
-    query = query.toLowerCase();
-    query = clean_query(query);
-    return query;
-};
-
-function query_matches_string(query, source_str, split_char) {
-    source_str = people.remove_diacritics(source_str);
-
-    // If query doesn't contain a separator, we just want an exact
-    // match where query is a substring of one of the target characters.
-    if (query.indexOf(split_char) > 0) {
-        // If there's a whitespace character in the query, then we
-        // require a perfect prefix match (e.g. for 'ab cd ef',
-        // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
-        // ef', etc.).
-        const queries = query.split(split_char);
-        const sources = source_str.split(split_char);
-        let i;
-
-        for (i = 0; i < queries.length - 1; i += 1) {
-            if (sources[i] !== queries[i]) {
-                return false;
-            }
-        }
-
-        // This block is effectively a final iteration of the last
-        // loop.  What differs is that for the last word, a
-        // partial match at the beginning of the word is OK.
-        if (sources[i] === undefined) {
-            return false;
-        }
-        return sources[i].indexOf(queries[i]) === 0;
-    }
-
-    // For a single token, the match can be anywhere in the string.
-    return source_str.indexOf(query) !== -1;
-}
-
-// This function attempts to match a query with source's attributes.
-// * query is the user-entered search query
-// * Source is the object we're matching from, e.g. a user object
-// * match_attrs are the values associated with the target object that
-// the entered string might be trying to match, e.g. for a user
-// account, there might be 2 attrs: their full name and their email.
-// * split_char is the separator for this syntax (e.g. ' ').
-function query_matches_source_attrs(query, source, match_attrs, split_char) {
-    return _.any(match_attrs, function (attr) {
-        const source_str = source[attr].toLowerCase();
-        return query_matches_string(query, source_str, split_char);
-    });
-}
-
 exports.query_matches_person = function (query, person) {
-    return query_matches_source_attrs(query, person, ["full_name", "email"], " ");
+    return typeahead.query_matches_source_attrs(query, person, ["full_name", "email"], " ");
 };
 
 function query_matches_name_description(query, user_group_or_stream) {
-    return query_matches_source_attrs(query, user_group_or_stream, ["name", "description"], " ");
+    return typeahead.query_matches_source_attrs(query, user_group_or_stream, ["name", "description"], " ");
 }
 
 function get_stream_or_user_group_matcher(query) {
     // Case-insensitive.
-    query = exports.clean_query_lowercase(query);
+    query = typeahead.clean_query_lowercase(query);
 
     return function (user_group_or_stream) {
         return query_matches_name_description(query, user_group_or_stream);
@@ -135,32 +72,22 @@ function get_stream_or_user_group_matcher(query) {
 }
 
 function get_slash_matcher(query) {
-    query = exports.clean_query_lowercase(query);
+    query = typeahead.clean_query_lowercase(query);
 
     return function (item) {
-        return query_matches_source_attrs(query, item, ["name"], " ");
-    };
-}
-
-function get_emoji_matcher(query) {
-    // replaces spaces with underscores for emoji matching
-    query = query.split(" ").join("_");
-    query = exports.clean_query_lowercase(query);
-
-    return function (emoji) {
-        return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
+        return typeahead.query_matches_source_attrs(query, item, ["name"], " ");
     };
 }
 
 function get_topic_matcher(query) {
-    query = exports.clean_query_lowercase(query);
+    query = typeahead.clean_query_lowercase(query);
 
     return function (topic) {
         const obj = {
             topic: topic,
         };
 
-        return query_matches_source_attrs(query, obj, ['topic'], ' ');
+        return typeahead.query_matches_source_attrs(query, obj, ['topic'], ' ');
     };
 }
 
@@ -475,7 +402,7 @@ exports.get_pm_people = function (query) {
 };
 
 exports.get_person_suggestions = function (query, opts) {
-    query = exports.clean_query_lowercase(query);
+    query = typeahead.clean_query_lowercase(query);
 
     const person_matcher = (item) => {
         return exports.query_matches_person(query, item);
@@ -880,7 +807,7 @@ exports.content_typeahead_selected = function (item, event) {
 exports.compose_content_matcher = function (completing, token) {
     switch (completing) {
     case 'emoji':
-        return get_emoji_matcher(token);
+        return typeahead.get_emoji_matcher(token);
     case 'slash':
         return get_slash_matcher(token);
     case 'stream':
