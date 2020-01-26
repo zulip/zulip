@@ -23,6 +23,7 @@ USAGE = '''
     '''
 
 enforce_fully_covered = {
+    'static/shared/js/typeahead.js',
     'static/shared/js/typing_status.js',
 
     'static/js/activity.js',
@@ -208,7 +209,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
 
     coverage_not_enforced = False
     for path in coverage_json:
-        if '/static/js/' in path:
+        if '/static/js/' in path or '/static/shared/js' in path:
             relative_path = os.path.relpath(path, ROOT_DIR)
             line_coverage = coverage_json[path]['s']
             line_mapping = coverage_json[path]['statementMap']
