@@ -2,6 +2,7 @@ from django.conf import settings
 from typing import Any, Dict, Optional
 from zerver.lib.utils import generate_random_token
 
+import re
 import redis
 import ujson
 
@@ -9,7 +10,13 @@ import ujson
 # so we want to stay limited to 1024 characters.
 MAX_KEY_LENGTH = 1024
 
-class ZulipRedisKeyTooLongError(Exception):
+class ZulipRedisError(Exception):
+    pass
+
+class ZulipRedisKeyTooLongError(ZulipRedisError):
+    pass
+
+class ZulipRedisKeyOfWrongFormatError(ZulipRedisError):
     pass
 
 def get_redis_client() -> redis.StrictRedis:
@@ -33,11 +40,25 @@ def put_dict_in_redis(redis_client: redis.StrictRedis, key_format: str,
 
     return key
 
-def get_dict_from_redis(redis_client: redis.StrictRedis, key: str) -> Optional[Dict[str, Any]]:
+def get_dict_from_redis(redis_client: redis.StrictRedis, key_format: str, key: str
+                        ) -> Optional[Dict[str, Any]]:
+    # This function requires inputting the intended key_format to validate
+    # that the key fits it, as an additionally security measure. This protects
+    # against bugs where a caller requests a key based on user input and doesn't
+    # validate it - which could potentially allow users to poke around arbitrary redis keys.
     if len(key) > MAX_KEY_LENGTH:
         error_msg = "Requested key too long in get_dict_from_redis: %s"
         raise ZulipRedisKeyTooLongError(error_msg % (key,))
+    validate_key_fits_format(key, key_format)
+
     data = redis_client.get(key)
     if data is None:
         return None
     return ujson.loads(data)
+
+def validate_key_fits_format(key: str, key_format: str) -> None:
+    assert "{token}" in key_format
+    regex = key_format.format(token=r"[a-z0-9]+")
+
+    if not re.fullmatch(regex, key):
+        raise ZulipRedisKeyOfWrongFormatError("%s does not match format %s" % (key, key_format))

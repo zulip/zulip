@@ -1337,7 +1337,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         data = None
         if key.startswith('saml_token_'):
             # Safety if statement, to not allow someone to poke around arbitrary redis keys here.
-            data = get_dict_from_redis(redis_client, key)
+            data = get_dict_from_redis(redis_client, "saml_token_{token}", key)
         if data is None:
             # TODO: We will need some sort of user-facing message
             # about the authentication session having expired here.
