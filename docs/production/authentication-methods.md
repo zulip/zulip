@@ -243,6 +243,13 @@ your settings changes take effect), you should be able to log into
 Zulip by entering your email address and LDAP password on the Zulip
 login form.
 
+You may also want to configure Zulip's settings for [inviting new
+users](https://zulipchat.com/help/invite-new-users).  If LDAP is the
+only enabled authentication method, the main use case for Zulip's
+invitation feature is selecting the initial streams for invited users
+(invited users will still need to use their LDAP password to create an
+account).
+
 ### Synchronizing data
 
 Zulip can automatically synchronize data declared in
