@@ -16,6 +16,9 @@ sanity_check.check_venv(__file__)
 # Import this after we do the sanity_check so it doesn't crash.
 import ujson
 
+INDEX_JS = 'frontend_tests/zjsunit/index.js'
+NODE_COVERAGE_PATH = 'var/node-coverage/coverage-final.json'
+
 USAGE = '''
     tools/test-js-with-node                      - to run all tests
     tools/test-js-with-node util.js activity.js  - to run just a couple tests
@@ -115,8 +118,6 @@ assert_provisioning_status_ok(options.force)
 
 os.environ['TZ'] = 'UTC'
 
-INDEX_JS = 'frontend_tests/zjsunit/index.js'
-
 # Add ".js" to the end of all the file arguments, so index.js
 # can actually verify if the file exists or not.
 for index, arg in enumerate(options.args):
@@ -176,8 +177,6 @@ def check_line_coverage(fn, line_coverage, line_mapping, log=True):
             print()
         return False
     return True
-
-NODE_COVERAGE_PATH = 'var/node-coverage/coverage-final.json'
 
 def read_coverage() -> Any:
     coverage_json = None
