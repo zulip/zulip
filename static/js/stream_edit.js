@@ -249,10 +249,12 @@ exports.stream_settings = function (sub) {
         const ret = {
             name: setting,
             label: settings_labels[setting],
+            is_disabled: check_realm_setting[setting],
             is_notification_setting: exports.is_notification_setting(setting),
         };
         if (exports.is_notification_setting(setting)) {
             ret.is_checked = sub[setting + "_display"] && !check_realm_setting[setting];
+            ret.is_disabled = ret.is_disabled || sub.is_muted;
             return ret;
         }
         ret.is_checked = sub[setting] && !check_realm_setting[setting];
