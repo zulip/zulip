@@ -245,22 +245,18 @@ const check_realm_setting = {
 };
 
 exports.stream_settings = function (sub) {
-    const settings = [];
-    _.each(Object.keys(settings_labels), function (setting) {
+    const settings = Object.keys(settings_labels).map((setting) => {
+        const ret = {
+            name: setting,
+            label: settings_labels[setting],
+            is_notification_setting: exports.is_notification_setting(setting),
+        };
         if (exports.is_notification_setting(setting)) {
-            settings.push({
-                name: setting,
-                label: settings_labels[setting],
-                value: sub[setting + "_display"],
-                is_notification_setting: true,
-            });
-        } else {
-            settings.push({
-                name: setting,
-                label: settings_labels[setting],
-                value: sub[setting],
-            });
+            ret.value = sub[setting + "_display"];
+            return ret;
         }
+        ret.value = sub[setting];
+        return ret;
     });
     return settings;
 };
