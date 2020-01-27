@@ -5,6 +5,19 @@ function user_checkbox(email) {
     return '#user-checkboxes [data-user-id="' + user_id + '"]';
 }
 
+function user_span(email) {
+    return user_checkbox(email) + ' input ~ span';
+}
+
+function is_checked(email) {
+    var sel = user_checkbox(email);
+    return casper.evaluate(function (sel) {
+        return $(sel).find('input')[0].checked;
+    }, {
+        sel: sel,
+    });
+}
+
 common.start_and_log_in();
 
 casper.then(function () {
@@ -69,21 +82,21 @@ casper.then(function () {
     casper.test.info("Check Uncheck only visible users for new stream");
     casper.click('.subs_set_all_users');
     casper.wait(100, function () {
-        casper.test.assert(casper.evaluate(function () {
-            return !$('#user-checkboxes [value="cordelia@zulip.com"]')[0].checked;
-        }), "Cordelia is unchecked");
-        casper.test.assert(casper.evaluate(function () {
-            return $('#user-checkboxes [value="othello@zulip.com"]')[0].checked;
-        }), "Othello is checked");
+        casper.test.assert(
+            !is_checked('cordelia@zulip.com'),
+            "Cordelia is unchecked");
+        casper.test.assert(
+            is_checked('othello@zulip.com'),
+            "Othello is checked");
     });
 });
 casper.then(function () {
     casper.test.info("Check Uncheck only visible users for new stream");
     casper.click('.subs_unset_all_users');
     casper.wait(100, function () {
-        casper.test.assert(casper.evaluate(function () {
-            return !$('#user-checkboxes [value="othello@zulip.com"]')[0].checked;
-        }), "Othello is unchecked");
+        casper.test.assert(
+            !is_checked('othello@zulip.com'),
+            "Othello is unchecked");
     });
 });
 casper.then(function () {
@@ -109,8 +122,8 @@ casper.then(function () {
         casper.test.assertTextExists('Create stream', 'New stream creation panel');
         casper.fill('form#stream_creation_form', {stream_name: 'Waseemio', stream_description: 'Oimeesaw'});
         casper.click('input[value="Scotland"] ~ span');
-        casper.click('input[value="cordelia@zulip.com"] ~ span');
-        casper.click('input[value="othello@zulip.com"] ~ span');
+        casper.click(user_span('cordelia@zulip.com'));
+        casper.click(user_span('othello@zulip.com'));
         casper.click('form#stream_creation_form button.button.sea-green');
     });
 });

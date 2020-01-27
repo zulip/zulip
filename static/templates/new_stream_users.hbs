@@ -30,7 +30,7 @@
 <div id="user-checkboxes">
     {{#each users}}
     <label class="checkbox add-user-label" data-user-id="{{this.user_id}}">
-        <input type="checkbox" name="user" value="{{this.email}}" {{#if @first}}checked="checked"{{#unless is_admin}} disabled="disabled"{{/unless}}{{/if}}/>
+        <input type="checkbox" name="user" {{#if @first}}checked="checked"{{#unless is_admin}} disabled="disabled"{{/unless}}{{/if}}/>
         <span></span>
         {{this.full_name}} ({{this.email}})
     </label>

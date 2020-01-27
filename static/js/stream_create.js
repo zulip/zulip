@@ -97,8 +97,16 @@ const stream_name_error = (function () {
     return self;
 }());
 
-function ajaxSubscribeForCreation(stream_name, description, principals, invite_only,
+function ajaxSubscribeForCreation(stream_name, description, user_ids, invite_only,
                                   is_announcement_only, announce, history_public_to_subscribers) {
+    // TODO: We can eliminate the user_ids -> principals conversion
+    //       once we upgrade the backend to accept user_ids.
+    const persons = _.compact(_.map(user_ids, (user_id) => {
+        return people.get_person_from_user_id(user_id);
+    }));
+
+    const principals = _.map(persons, (person) => person.email);
+
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
         url: "/json/users/me/subscriptions",
@@ -164,7 +172,8 @@ function get_principals() {
     return _.map(
         $("#stream_creation_form input:checkbox[name=user]:checked"),
         function (elem) {
-            return $(elem).val();
+            const label = $(elem).closest('.add-user-label');
+            return parseInt(label.attr('data-user-id'), 10);
         }
     );
 }
@@ -397,7 +406,7 @@ exports.set_up_handlers = function () {
             stream_subscription_error.report_no_subs_to_stream();
             return;
         }
-        if (principals.indexOf(people.my_current_email()) < 0 && !page_params.is_admin) {
+        if (principals.indexOf(people.my_current_user_id()) < 0 && !page_params.is_admin) {
             stream_subscription_error.cant_create_stream_without_susbscribing();
             return;
         }
