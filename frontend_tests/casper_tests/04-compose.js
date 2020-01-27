@@ -143,8 +143,14 @@ casper.then(function () {
 casper.then(function () {
     casper.click('*[title="Narrow to your private messages with Cordelia Lear"]');
 });
-casper.waitUntilVisible('li[data-user-ids-string="8"].expanded_private_message.active-sub-filter', function () {
-    casper.page.sendEvent('keypress', 'c');
+
+casper.then(function () {
+    var cordelia_user_id = common.get_user_id('cordelia@zulip.com');
+    var pm_li = 'li[data-user-ids-string="' + cordelia_user_id + '"].expanded_private_message.active-sub-filter';
+
+    casper.waitUntilVisible(pm_li, function () {
+        casper.page.sendEvent('keypress', 'c');
+    });
 });
 
 casper.then(function () {

@@ -302,6 +302,14 @@ exports.get_form_field_value = function (selector) {
     }, selector);
 };
 
+exports.get_user_id = function (email) {
+    return casper.evaluate(function (email) {
+        return people.get_user_id(email);
+    }, {
+        email: email,
+    });
+};
+
 // Inject key presses by running some jQuery code in page context.
 // PhantomJS and CasperJS don't provide a clean way to insert key
 // presses by code, only strings of printable characters.
