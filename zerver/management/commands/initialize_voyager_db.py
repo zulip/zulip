@@ -11,12 +11,14 @@ from zerver.models import Realm, UserProfile, email_to_username, get_client, \
 
 settings.TORNADO_SERVER = None
 
-def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: Optional[int]=None) -> None:
+def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
+                 tos_version: Optional[str]=None,
+                 bot_type: Optional[int]=None) -> None:
     user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
-    bulk_create_users(realm, user_set, bot_type)
+    bulk_create_users(realm, user_set, bot_type=bot_type, tos_version=tos_version)
 
 class Command(BaseCommand):
     help = "Populate an initial database for Zulip Voyager"
