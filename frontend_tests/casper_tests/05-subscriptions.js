@@ -1,5 +1,9 @@
 var common = require('../casper_lib/common.js');
 
+function user_checkbox(email) {
+    return '#user-checkboxes [data-email="' + email + '"]';
+}
+
 common.start_and_log_in();
 
 casper.then(function () {
@@ -27,8 +31,8 @@ casper.waitUntilVisible('.sub_unsub_button.checked', function () {
 });
 
 casper.then(function () {
-    casper.test.assertExists('#user-checkboxes [data-email="cordelia@zulip.com"]', 'Original user list contains Cordelia');
-    casper.test.assertExists('#user-checkboxes [data-email="othello@zulip.com"]', 'Original user list contains Othello');
+    casper.test.assertExists(user_checkbox('cordelia@zulip.com'), 'Original user list contains Cordelia');
+    casper.test.assertExists(user_checkbox('othello@zulip.com'), 'Original user list contains Othello');
 });
 
 casper.waitUntilVisible("#copy-from-stream-expand-collapse", function () {
@@ -45,10 +49,10 @@ casper.waitUntilVisible("form#stream_creation_form", function () {
     casper.fill('form#stream_creation_form', {user_list_filter: 'ot'});
 });
 casper.waitUntilVisible("#user-checkboxes", function () {
-    casper.test.assertEquals(casper.visible('#user-checkboxes [data-email="cordelia@zulip.com"]'),
+    casper.test.assertEquals(casper.visible(user_checkbox('cordelia@zulip.com')),
                              false,
                              "Cordelia is not visible");
-    casper.test.assertEquals(casper.visible('#user-checkboxes [data-email="othello@zulip.com"]'),
+    casper.test.assertEquals(casper.visible(user_checkbox('othello@zulip.com')),
                              true,
                              "Othello is visible");
 
@@ -86,10 +90,10 @@ casper.then(function () {
     casper.fill('form#stream_creation_form', {user_list_filter: ''});
 });
 casper.then(function () {
-    casper.test.assertEquals(casper.visible('#user-checkboxes [data-email="cordelia@zulip.com"]'),
+    casper.test.assertEquals(casper.visible(user_checkbox('cordelia@zulip.com')),
                              true,
                              "Cordelia is visible again");
-    casper.test.assertEquals(casper.visible('#user-checkboxes [data-email="othello@zulip.com"]'),
+    casper.test.assertEquals(casper.visible(user_checkbox('othello@zulip.com')),
                              true,
                              "Othello is visible again");
     casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Scotland"]'),
