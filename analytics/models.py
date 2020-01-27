@@ -15,8 +15,6 @@ class FillState(models.Model):
     STARTED = 2
     state = models.PositiveSmallIntegerField()  # type: int
 
-    last_modified = models.DateTimeField(auto_now=True)  # type: datetime.datetime
-
     def __str__(self) -> str:
         return "<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
 
