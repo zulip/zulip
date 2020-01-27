@@ -716,6 +716,12 @@ urls += [
 ]
 
 # Python Social Auth
+
+# This overrides the analogical entry in social_django.urls, because we want run our own code
+# at the beginning of social auth process. If deleting this override in the future,
+# it should be possible to remove urls.W003 from SILENCED_SYSTEM_CHECKS.
+urls += [url(r'^login/(?P<backend>[^/]+)/$', zerver.views.auth.social_auth, name='social:begin')]
+
 urls += [url(r'^', include('social_django.urls', namespace='social'))]
 urls += [url(r'^saml/metadata.xml$', zerver.views.auth.saml_sp_metadata)]
 
