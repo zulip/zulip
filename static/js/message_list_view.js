@@ -48,7 +48,7 @@ function get_user_group_id_for_mention_button(elem) {
     const user_group_id = $(elem).attr('data-user-group-id');
 
     if (user_group_id) {
-        return user_group_id;
+        return parseInt(user_group_id, 10);
     }
 
     return;
