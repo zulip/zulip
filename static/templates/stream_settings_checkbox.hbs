@@ -1,5 +1,5 @@
 {{!-- If setting is disabled on realm level, then render setting as control-label-disabled and do not set setting value. Setting status should not change on any click handler, as it is disabled at realm level. --}}
-<div id="{{prefix}}{{setting_name}}{{suffix}}" class="sub_setting_checkbox {{#unless realm_setting_disabled}}{{#if notification_setting}}sub_notification_setting {{#if is_muted}}muted-sub{{/if}}{{/if}}{{else}}control-label-disabled{{/unless}}">
+<div id="sub_{{setting_name}}_setting" class="sub_setting_checkbox {{#unless realm_setting_disabled}}{{#if notification_setting}}sub_notification_setting {{#if is_muted}}muted-sub{{/if}}{{/if}}{{else}}control-label-disabled{{/unless}}">
     <input id="{{setting_name}}_{{stream_id}}" name="{{setting_name}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if (and (not realm_setting_disabled) is_checked)}}checked{{/if}}{{#if (or (and is_muted notification_setting) realm_setting_disabled)}}disabled="disabled"{{/if}} />
     <label class="subscription-control-label">{{label}}</label>
 
