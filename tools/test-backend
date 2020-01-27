@@ -106,6 +106,7 @@ not_yet_fully_covered = {path for target in [
     # Low priority for coverage
     'zerver/lib/ccache.py',
     'zerver/lib/generate_test_data.py',
+    'zerver/lib/server_initialization.py',
     'zerver/lib/test_fixtures.py',
     'zerver/lib/test_runner.py',
     'zerver/openapi/python_examples.py',
