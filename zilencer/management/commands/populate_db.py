@@ -2,7 +2,7 @@ import itertools
 import os
 import random
 from typing import Any, Callable, Dict, Iterable, List, \
-    Mapping, Optional, Sequence, Set, Tuple
+    Mapping, Sequence, Tuple
 
 import ujson
 from datetime import datetime
@@ -18,11 +18,12 @@ import pylibmc
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, \
     do_change_is_admin, do_send_messages, do_update_user_custom_profile_data_if_changed, \
     try_add_realm_custom_profile_field, try_add_realm_default_custom_profile_field
-from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
+from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
+from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.users import add_service
 from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
@@ -31,8 +32,8 @@ from zerver.lib.utils import generate_api_key
 from zerver.models import CustomProfileField, DefaultStream, Message, Realm, RealmAuditLog, \
     RealmDomain, Recipient, Service, Stream, Subscription, \
     UserMessage, UserPresence, UserProfile, Huddle, Client, \
-    email_to_username, get_client, get_huddle, get_realm, get_stream, \
-    get_system_bot, get_user, get_user_profile_by_id
+    get_client, get_huddle, get_realm, get_stream, \
+    get_user, get_user_profile_by_id
 from zerver.lib.types import ProfileFieldData
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
@@ -72,16 +73,6 @@ def clear_database() -> None:
 
 # Suppress spammy output from the push notifications logger
 push_notifications_logger.disabled = True
-
-def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
-                 bot_type: Optional[int]=None,
-                 bot_owner: Optional[UserProfile]=None) -> None:
-    user_set = set()  # type: Set[Tuple[str, str, str, bool]]
-    for full_name, email in name_list:
-        short_name = email_to_username(email)
-        user_set.add((email, full_name, short_name, True))
-    tos_version = settings.TOS_VERSION if bot_type is None else None
-    bulk_create_users(realm, user_set, bot_type=bot_type, bot_owner=bot_owner, tos_version=tos_version)
 
 def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
     subscriptions_to_add = []
@@ -607,17 +598,6 @@ class Command(BaseCommand):
                 # development purpose only
                 call_command('populate_analytics_db')
             self.stdout.write("Successfully populated test database.\n")
-
-def create_internal_realm() -> None:
-    internal_realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
-
-    internal_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
-                           for bot in settings.INTERNAL_BOTS]
-    create_users(internal_realm, internal_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
-
-    # Initialize the email gateway bot as an API Super User
-    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
-    do_change_is_admin(email_gateway_bot, True, permission="api_super_user")
 
 recipient_hash = {}  # type: Dict[int, Recipient]
 def get_recipient_by_id(rid: int) -> Recipient:
