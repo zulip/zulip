@@ -53,7 +53,7 @@
                     <li>
                         {{> stream_settings_checkbox
                           setting_name=name
-                          is_checked=value
+                          is_checked=is_checked
                           is_muted=(lookup ../sub "is_muted")
                           stream_id=(lookup ../sub "stream_id")
                           notification_setting=is_notification_setting

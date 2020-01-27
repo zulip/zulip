@@ -252,10 +252,10 @@ exports.stream_settings = function (sub) {
             is_notification_setting: exports.is_notification_setting(setting),
         };
         if (exports.is_notification_setting(setting)) {
-            ret.value = sub[setting + "_display"];
+            ret.is_checked = sub[setting + "_display"] && !check_realm_setting[setting];
             return ret;
         }
-        ret.value = sub[setting];
+        ret.is_checked = sub[setting] && !check_realm_setting[setting];
         return ret;
     });
     return settings;
