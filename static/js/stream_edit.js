@@ -249,6 +249,7 @@ exports.stream_settings = function (sub) {
         const ret = {
             name: setting,
             label: settings_labels[setting],
+            disabled_realm_setting: check_realm_setting[setting],
             is_disabled: check_realm_setting[setting],
             is_notification_setting: exports.is_notification_setting(setting),
         };
@@ -271,7 +272,6 @@ exports.show_settings_for = function (node) {
     const html = render_subscription_settings({
         sub: sub,
         settings: exports.stream_settings(sub),
-        realm_settings: check_realm_setting,
     });
     ui.get_content_element($('.subscriptions .right .settings')).html(html);
 
