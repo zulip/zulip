@@ -502,12 +502,6 @@ class Command(BaseCommand):
             generate_and_send_messages(job)
 
         if options["delete"]:
-            # Create the "website" and "API" clients; if we don't, the
-            # default values in zerver/decorators.py will not work
-            # with the Django test suite.
-            get_client("website")
-            get_client("API")
-
             if options["test_suite"]:
                 # Create test users; the MIT ones are needed to test
                 # the Zephyr mirroring codepaths.
