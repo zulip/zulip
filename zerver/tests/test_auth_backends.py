@@ -786,6 +786,28 @@ class SocialAuthBase(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assert_logged_in_user_id(self.user_profile.id)
 
+    def test_social_auth_session_fields_cleared_correctly(self) -> None:
+        mobile_flow_otp = '1234abcd' * 8
+
+        def initiate_auth(mobile_flow_otp: Optional[str]=None) -> None:
+            url, headers = self.prepare_login_url_and_headers(subdomain='zulip',
+                                                              mobile_flow_otp=mobile_flow_otp)
+            result = self.client_get(url, **headers)
+            self.assertEqual(result.status_code, 302)
+
+            result = self.client_get(result.url, **headers)
+            self.assertEqual(result.status_code, 302)
+
+        # Start social auth with mobile_flow_otp param. It should get saved into the session
+        # on SOCIAL_AUTH_SUBDOMAIN.
+        initiate_auth(mobile_flow_otp)
+        self.assertEqual(self.client.session['mobile_flow_otp'], mobile_flow_otp)
+
+        # Make a request without mobile_flow_otp param and verify the field doesn't persist
+        # in the session from the previous request.
+        initiate_auth()
+        self.assertNotIn('mobile_flow_otp', self.client.session)
+
     def test_social_auth_mobile_and_desktop_flow_in_one_request_error(self) -> None:
         otp = '1234abcd' * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name='Full Name')
