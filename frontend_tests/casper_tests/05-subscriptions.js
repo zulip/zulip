@@ -1,7 +1,8 @@
 var common = require('../casper_lib/common.js');
 
 function user_checkbox(email) {
-    return '#user-checkboxes [data-email="' + email + '"]';
+    var user_id = common.get_user_id(email);
+    return '#user-checkboxes [data-user-id="' + user_id + '"]';
 }
 
 common.start_and_log_in();
