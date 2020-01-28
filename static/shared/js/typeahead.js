@@ -147,28 +147,34 @@ exports.triage = function (query, objs, get_item) {
 };
 
 exports.sort_emojis = function (objs, query) {
+    const lowerQuery = query.toLowerCase();
+
+    function decent_match(name) {
+        const pieces = name.toLowerCase().split('_');
+        return _.any(pieces, (piece) => {
+            return piece.startsWith(lowerQuery);
+        });
+    }
+
     const popular_set = new Set(exports.popular_emojis);
+
+    function is_popular(obj) {
+        return popular_set.has(obj.emoji_code) &&
+            decent_match(obj.emoji_name);
+    }
+
+    const popular_emoji_matches = _.filter(objs, is_popular);
+    const others = _.reject(objs, is_popular);
 
     const triage_results = exports.triage(
         query,
-        objs,
+        others,
         (x) => x.emoji_name
     );
 
-    const popular_emoji_matches = [];
-    const other_emoji_matches = [];
-
-    for (const obj of triage_results.matches) {
-        if (popular_set.has(obj.emoji_code)) {
-            popular_emoji_matches.push(obj);
-        } else {
-            other_emoji_matches.push(obj);
-        }
-    }
-
     return [].concat(
         popular_emoji_matches,
-        other_emoji_matches,
+        triage_results.matches,
         triage_results.rest
     );
 };
