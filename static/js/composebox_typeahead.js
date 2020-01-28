@@ -958,7 +958,7 @@ exports.initialize = function () {
             // The matcher for "stream" is strictly prefix-based,
             // because we want to avoid mixing up streams.
             const q = this.query.trim().toLowerCase();
-            return item.toLowerCase().indexOf(q) === 0;
+            return item.toLowerCase().startsWith(q);
         },
     });
 

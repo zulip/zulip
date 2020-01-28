@@ -415,10 +415,11 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         // returns the substring after the ":" symbol.
         const suggestion_operand = s.search_string.substring(s.search_string.indexOf(":") + 1);
         // e.g for `att` search query, `has:attachment` should be suggested.
-        const show_operator_suggestions = last.operator === 'search' && suggestion_operand.toLowerCase().indexOf(last_string) === 0;
-        return s.search_string.toLowerCase().indexOf(last_string) === 0 ||
+        const show_operator_suggestions = last.operator === 'search' &&
+            suggestion_operand.toLowerCase().startsWith(last_string);
+        return s.search_string.toLowerCase().startsWith(last_string) ||
                show_operator_suggestions ||
-               s.description.toLowerCase().indexOf(last_string) === 0;
+               s.description.toLowerCase().startsWith(last_string);
     });
 
     // Only show home if there's an empty bar
@@ -541,15 +542,20 @@ function get_sent_by_me_suggestions(last, operators) {
         return [];
     }
 
-    if (last.operator === '' || sender_query.indexOf(last_string) === 0 ||
-        sender_me_query.indexOf(last_string) === 0 || last_string === sent_string) {
+    if (last.operator === '' ||
+        sender_query.startsWith(last_string) ||
+        sender_me_query.startsWith(last_string) ||
+        last_string === sent_string
+    ) {
         return [
             {
                 search_string: sender_query,
                 description: description,
             },
         ];
-    } else if (from_query.indexOf(last_string) === 0 || from_me_query.indexOf(last_string) === 0) {
+    } else if (from_query.startsWith(last_string) ||
+        from_me_query.startsWith(last_string)
+    ) {
         return [
             {
                 search_string: from_query,
@@ -567,7 +573,7 @@ function get_operator_suggestions(last) {
     let last_operand = last.operand;
 
     let negated = false;
-    if (last_operand.indexOf("-") === 0) {
+    if (last_operand.startsWith("-")) {
         negated = true;
         last_operand = last_operand.slice(1);
     }

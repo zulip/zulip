@@ -25,7 +25,7 @@ function filter_streams_by_search(streams, search_term) {
             const cands = lower_stream_name.split(" ");
             cands.push(lower_stream_name);
             return _.any(cands, function (name) {
-                return name.indexOf(search_term) === 0;
+                return name.startsWith(search_term);
             });
         });
     });

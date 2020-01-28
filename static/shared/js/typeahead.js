@@ -30,7 +30,7 @@ function query_matches_string(query, source_str, split_char) {
         if (sources[i] === undefined) {
             return false;
         }
-        return sources[i].indexOf(queries[i]) === 0;
+        return sources[i].startsWith(queries[i]);
     }
 
     // For a single token, the match can be anywhere in the string.

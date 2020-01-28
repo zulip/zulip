@@ -1,5 +1,5 @@
 function make_upload_absolute(uri) {
-    if (uri.indexOf(compose.uploads_path) === 0) {
+    if (uri.startsWith(compose.uploads_path)) {
         // Rewrite the URI to a usable link
         return compose.uploads_domain + uri;
     }
