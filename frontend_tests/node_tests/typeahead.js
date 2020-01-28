@@ -140,9 +140,9 @@ run_test('sort_emojis sm', () => {
     assert.deepEqual(
         typeahead.sort_emojis(emoji_list, 'sm'),
         [
+            slight_smile,
             small_airplane,
             big_smile,
-            slight_smile,
         ]
     );
 });
