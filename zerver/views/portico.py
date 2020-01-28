@@ -39,3 +39,15 @@ def team_view(request: HttpRequest) -> HttpResponse:
             'date': data['date'],
         },
     )
+
+def get_isolated_page(request: HttpRequest) -> bool:
+    '''Accept a GET param `?nav=no` to render an isolated, navless page.'''
+    return request.GET.get('nav') == 'no'
+
+def terms_view(request: HttpRequest) -> HttpResponse:
+    return render(request, 'zerver/terms.html',
+                  context={'isolated_page': get_isolated_page(request)})
+
+def privacy_view(request: HttpRequest) -> HttpResponse:
+    return render(request, 'zerver/privacy.html',
+                  context={'isolated_page': get_isolated_page(request)})

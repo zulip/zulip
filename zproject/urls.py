@@ -563,8 +563,8 @@ i18n_urls = [
     url(r'^atlassian/$', TemplateView.as_view(template_name='zerver/atlassian.html')),
 
     # Terms of Service and privacy pages.
-    url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
-    url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html'), name='privacy'),
+    url(r'^terms/$', zerver.views.portico.terms_view, name='terms'),
+    url(r'^privacy/$', zerver.views.portico.privacy_view, name='privacy'),
 
     url(r'^config-error/google$', TemplateView.as_view(
         template_name='zerver/config_error.html',),
