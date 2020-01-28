@@ -8,17 +8,17 @@ from zerver.models import Realm, UserProfile, email_to_username, get_client, \
 from typing import Iterable, Optional, Tuple
 
 def create_internal_realm() -> None:
-    internal_realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
+    realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
 
     # Create the "website" and "API" clients:
     get_client("website")
     get_client("API")
 
-    internal_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
-                           for bot in settings.INTERNAL_BOTS]
-    create_users(internal_realm, internal_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+    internal_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
+                     for bot in settings.INTERNAL_BOTS]
+    create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
     # Set the owners for these bots to the bots themselves
-    bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in internal_realm_bots])
+    bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in internal_bots])
     for bot in bots:
         bot.bot_owner = bot
         bot.save()
