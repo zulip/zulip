@@ -1,5 +1,9 @@
 var common = require('../casper_lib/common.js');
 
+function stream_checkbox(stream_name) {
+    return '#stream-checkboxes [data-stream-name="' + stream_name + '"]';
+}
+
 function user_checkbox(email) {
     var user_id = common.get_user_id(email);
     return '#user-checkboxes [data-user-id="' + user_id + '"]';
@@ -54,8 +58,8 @@ casper.waitUntilVisible("#copy-from-stream-expand-collapse", function () {
 });
 
 casper.waitUntilVisible("#stream-checkboxes", function () {
-    casper.test.assertExists('#stream-checkboxes [data-stream-name="Scotland"]', 'Original stream list contains Scotland');
-    casper.test.assertExists('#stream-checkboxes [data-stream-name="Rome"]', 'Original stream list contains Rome');
+    casper.test.assertExists(stream_checkbox('Scotland'), 'Original stream list contains Scotland');
+    casper.test.assertExists(stream_checkbox('Rome'), 'Original stream list contains Rome');
 });
 
 casper.waitUntilVisible("form#stream_creation_form", function () {
@@ -71,10 +75,10 @@ casper.waitUntilVisible("#user-checkboxes", function () {
                              "Othello is visible");
 
     /* The filter should not impact streams */
-    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Scotland"]'),
+    casper.test.assertEquals(casper.visible(stream_checkbox('Scotland')),
                              true,
                              "Scotland is visible");
-    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Rome"]'),
+    casper.test.assertEquals(casper.visible(stream_checkbox('Rome')),
                              true,
                              "Rome is visible");
 });
@@ -110,10 +114,10 @@ casper.then(function () {
     casper.test.assertEquals(casper.visible(user_checkbox('othello@zulip.com')),
                              true,
                              "Othello is visible again");
-    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Scotland"]'),
+    casper.test.assertEquals(casper.visible(stream_checkbox('Scotland')),
                              true,
                              "Scotland is visible again");
-    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Rome"]'),
+    casper.test.assertEquals(casper.visible(stream_checkbox('Rome')),
                              true,
                              "Rome is visible again");
 });
