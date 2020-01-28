@@ -615,7 +615,7 @@ exports.change_state = function (section) {
 
     // if the section is a valid number.
     if (/\d+/.test(section)) {
-        const stream_id = section;
+        const stream_id = parseInt(section, 10);
         // Guest users can not access unsubscribed streams
         // So redirect guest users to 'subscribed' tab
         // for any unsubscribed stream settings hash
