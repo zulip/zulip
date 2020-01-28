@@ -302,7 +302,7 @@ exports.compare_by_popularity = function (lang_a, lang_b) {
 };
 
 exports.sort_languages = function (matches, query) {
-    const results = util.prefix_sort(query, matches, function (x) { return x; });
+    const results = util.prefix_sort(query, matches);
 
     // Languages that start with the query
     results.matches = results.matches.sort(exports.compare_by_popularity);
@@ -413,7 +413,9 @@ function slash_command_comparator(slash_command_a, slash_command_b) {
 exports.sort_slash_commands = function (matches, query) {
     // We will likely want to in the future make this sort the
     // just-`/` commands by something approximating usefulness.
-    const results = util.prefix_sort(query, matches, function (x) { return x.name; });
+    const results = util.prefix_sort(
+        query, matches, (x) => x.name);
+
     results.matches = results.matches.sort(slash_command_comparator);
     results.rest = results.rest.sort(slash_command_comparator);
     return results.matches.concat(results.rest);
@@ -451,9 +453,11 @@ exports.compare_by_activity = function (stream_a, stream_b) {
 };
 
 exports.sort_streams = function (matches, query) {
-    const name_results = util.prefix_sort(query, matches, function (x) { return x.name; });
-    const desc_results
-        = util.prefix_sort(query, name_results.rest, function (x) { return x.description; });
+    const name_results = util.prefix_sort(
+        query, matches, (x) => x.name);
+
+    const desc_results = util.prefix_sort(
+        query, name_results.rest, (x) => x.description);
 
     // Streams that start with the query.
     name_results.matches = name_results.matches.sort(exports.compare_by_activity);
