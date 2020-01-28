@@ -256,7 +256,15 @@ class POSTRequestMock:
 
     def __init__(self, post_data: Dict[str, Any], user_profile: Optional[UserProfile]) -> None:
         self.GET = {}  # type: Dict[str, Any]
-        self.POST = post_data
+
+        # Convert any integer parameters passed into strings, even
+        # though of course the HTTP API would do so.  Ideally, we'd
+        # get rid of this abstraction entirely and just use the HTTP
+        # API directly, but while it exists, we need this code.
+        self.POST = {}  # type: Dict[str, str]
+        for key in post_data:
+            self.POST[key] = str(post_data[key])
+
         self.user = user_profile
         self._tornado_handler = DummyHandler()
         self._log_data = {}  # type: Dict[str, Any]
