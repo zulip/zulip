@@ -285,6 +285,9 @@ def sql_data_collector(output_table: Type[BaseCount], query: str,
                        group_by: Optional[Tuple[models.Model, str]]) -> DataCollector:
     def pull_function(property: str, start_time: datetime, end_time: datetime,
                       realm: Optional[Realm] = None) -> int:
+        # While performing single Realm analytics pull function needs the realm argument
+        # just because of 'minutes_active::day' stat that uses do_pull_minutes_active
+        # as its pull function where realm is required.
         return do_pull_by_sql_query(property, start_time, end_time, query, group_by)
     return DataCollector(output_table, pull_function)
 
@@ -575,6 +578,11 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
                   sql_data_collector(UserCount, check_realmauditlog_by_user_query(
                       realm), (UserProfile, 'is_bot')),
                   CountStat.DAY),
+
+        # Realm argument is not passed in LoggingCountStats because of the unavailability of
+        # pull functions in them. So while performing single realm analytics only
+        # do_aggregate_to_summary_table has to take care of the realm constraint.
+
         # Sanity check on 'active_users_audit:is_bot:day', and a archetype for future LoggingCountStats.
         # In RealmCount, 'active_users_audit:is_bot:day' should be the partial
         # sum sequence of 'active_users_log:is_bot:day', for any realm that
