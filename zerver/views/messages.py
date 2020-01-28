@@ -842,7 +842,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     # Set value that will be used to short circuit the after_query
     # altogether and avoid needless conditions in the before_query.
-    anchored_to_right = (anchor == LARGER_THAN_MAX_MESSAGE_ID)
+    anchored_to_right = (anchor >= LARGER_THAN_MAX_MESSAGE_ID)
     if anchored_to_right:
         num_after = 0
 
