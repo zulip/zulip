@@ -311,6 +311,6 @@ def plans_view(request: HttpRequest) -> HttpResponse:
         realm_plan_type = realm.plan_type
         if realm.plan_type == Realm.SELF_HOSTED and settings.PRODUCTION:
             return HttpResponseRedirect('https://zulipchat.com/plans')
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             return redirect_to_login(next="plans")
     return render(request, "zerver/plans.html", context={"realm_plan_type": realm_plan_type})
