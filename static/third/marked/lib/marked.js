@@ -1122,7 +1122,7 @@ Renderer.prototype.link = function(href, title, text) {
     } catch (e) {
       return '';
     }
-    if (prot.indexOf('javascript:') === 0 || prot.indexOf('vbscript:') === 0) {
+    if (prot.startsWith('javascript:') || prot.startsWith('vbscript:')) {
       return '';
     }
   }
