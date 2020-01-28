@@ -124,8 +124,8 @@ exports.initialize = function () {
             // stopPropagation prevents them from being called.
             return;
         }
-
-        if ($(e.target).is(".message_edit_notice")) {
+        // we do not want to reply if the user is on Save or Cancel button.
+        if ($(e.target).is(".message_edit_notice") || $(e.target).is(".message_edit_save") || $(e.target).is(".message_edit_cancel")) {
             return;
         }
 
@@ -141,11 +141,6 @@ exports.initialize = function () {
         if (drag.val < 5 && drag.time < 150 || drag.val < 2) {
             const row = $(this).closest(".message_row");
             const id = rows.id(row);
-
-            if (message_edit.is_editing(id)) {
-                // Clicks on a message being edited shouldn't trigger a reply.
-                return;
-            }
 
             current_msg_list.select_id(id);
             compose_actions.respond_to_message({trigger: 'message click'});
