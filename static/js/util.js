@@ -241,13 +241,14 @@ exports.prefix_sort = function (query, objs, get_item) {
     const beginswithCaseSensitive = [];
     const beginswithCaseInsensitive = [];
     const noMatch = [];
+    const lowerQuery = query.toLowerCase();
 
     for (const obj of objs) {
         const item = get_item(obj);
 
-        if (item.indexOf(query) === 0) {
+        if (item.startsWith(query)) {
             beginswithCaseSensitive.push(obj);
-        } else if (item.toLowerCase().indexOf(query.toLowerCase()) === 0) {
+        } else if (item.toLowerCase().startsWith(lowerQuery)) {
             beginswithCaseInsensitive.push(obj);
         } else {
             noMatch.push(obj);
