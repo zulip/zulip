@@ -147,6 +147,8 @@ exports.triage = function (query, objs, get_item) {
 };
 
 exports.sort_emojis = function (objs, query) {
+    const popular_set = new Set(exports.popular_emojis);
+
     const triage_results = exports.triage(
         query,
         objs,
@@ -157,7 +159,7 @@ exports.sort_emojis = function (objs, query) {
     const other_emoji_matches = [];
 
     for (const obj of triage_results.matches) {
-        if (exports.popular_emojis.indexOf(obj.emoji_code) !== -1) {
+        if (popular_set.has(obj.emoji_code)) {
             popular_emoji_matches.push(obj);
         } else {
             other_emoji_matches.push(obj);
