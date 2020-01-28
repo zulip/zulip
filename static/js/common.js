@@ -71,13 +71,13 @@ exports.phrase_match = function (query, phrase) {
     query = query.toLowerCase();
 
     phrase = phrase.toLowerCase();
-    if (phrase.indexOf(query) === 0) {
+    if (phrase.startsWith(query)) {
         return true;
     }
 
     const parts = phrase.split(' ');
     for (i = 0; i < parts.length; i += 1) {
-        if (parts[i].indexOf(query) === 0) {
+        if (parts[i].startsWith(query)) {
             return true;
         }
     }

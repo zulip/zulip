@@ -170,7 +170,7 @@ exports.add_topic_links = function (message) {
 };
 
 exports.is_status_message = function (raw_content) {
-    return raw_content.indexOf('/me ') === 0;
+    return raw_content.startsWith('/me ');
 };
 
 function make_emoji_span(codepoint, title, alt_text) {
@@ -251,7 +251,7 @@ function handleTex(tex, fullmatch) {
     try {
         return katex.renderToString(tex);
     } catch (ex) {
-        if (ex.message.indexOf('KaTeX parse error') === 0) { // TeX syntax error
+        if (ex.message.startsWith('KaTeX parse error')) { // TeX syntax error
             return '<span class="tex-error">' + escape(fullmatch) + '</span>';
         }
         blueslip.error(ex);
