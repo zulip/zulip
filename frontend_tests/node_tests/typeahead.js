@@ -53,3 +53,44 @@ run_test('get_emoji_matcher', () => {
     assert_matches(
         'japanese post ', [emoji_japanese_post_office]);
 });
+
+run_test('triage', () => {
+    const alice = {name: 'alice'};
+    const Alicia = {name: 'Alicia'};
+    const steve = {name: 'steve'};
+    const Stephanie = {name: 'Stephanie'};
+
+    const names = [alice, Alicia, steve, Stephanie];
+
+    assert.deepEqual(
+        typeahead.triage('a', names, (r) => r.name),
+        {
+            matches: [alice, Alicia],
+            rest: [steve, Stephanie],
+        }
+    );
+
+    assert.deepEqual(
+        typeahead.triage('A', names, (r) => r.name),
+        {
+            matches: [Alicia, alice],
+            rest: [steve, Stephanie],
+        }
+    );
+
+    assert.deepEqual(
+        typeahead.triage('S', names, (r) => r.name),
+        {
+            matches: [Stephanie, steve],
+            rest: [alice, Alicia],
+        }
+    );
+
+    assert.deepEqual(
+        typeahead.triage('fred', names, (r) => r.name),
+        {
+            matches: [],
+            rest: [alice, Alicia, steve, Stephanie],
+        }
+    );
+});
