@@ -85,6 +85,19 @@ exports.user_group_edit_policy_values = {
     },
 };
 
+exports.private_message_policy_values = {
+    by_anyone: {
+        order: 1,
+        code: 1,
+        description: i18n.t("Admins, members, and guests"),
+    },
+    disabled: {
+        order: 2,
+        code: 2,
+        description: i18n.t("Private messages disabled"),
+    },
+};
+
 exports.get_sorted_options_list = function (option_values_object) {
     const options_list = Object.keys(option_values_object).map((key) => {
         return _.extend(option_values_object[key], {key: key});
@@ -115,6 +128,8 @@ exports.get_organization_settings_options = () => {
         exports.invite_to_stream_policy_values);
     options.user_group_edit_policy_values = exports.get_sorted_options_list(
         exports.user_group_edit_policy_values);
+    options.private_message_policy_values = exports.get_sorted_options_list(
+        exports.private_message_policy_values);
     return options;
 };
 
@@ -157,15 +172,6 @@ function get_property_value(property_name) {
             return "three_days";
         }
         return "custom_days";
-    }
-
-    if (property_name === 'realm_private_message_policy') {
-        if (page_params.realm_private_message_policy === 1) {
-            return "by_anyone";
-        }
-        if (page_params.realm_private_message_policy === 2) {
-            return "disabled";
-        }
     }
 
     if (property_name === 'realm_add_emoji_by_admins_only') {
@@ -851,19 +857,12 @@ exports.build_page = function () {
                 JSON.stringify(parseInt(new_message_retention_days, 10)) : null;
         } else if (subsection === 'other_permissions') {
             const waiting_period_threshold = $("#id_realm_waiting_period_setting").val();
-            const private_message_policy = $("#id_realm_private_message_policy").val();
             const add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
 
             if (add_emoji_permission === "by_admins_only") {
                 data.add_emoji_by_admins_only = true;
             } else if (add_emoji_permission === "by_anyone") {
                 data.add_emoji_by_admins_only = false;
-            }
-
-            if (private_message_policy === "disabled") {
-                data.private_message_policy = 2;
-            } else if (private_message_policy === "by_anyone") {
-                data.private_message_policy = 1;
             }
 
             if (waiting_period_threshold === "none") {

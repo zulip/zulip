@@ -130,8 +130,7 @@
                         </a>
                     </label>
                     <select name="realm_private_message_policy" class="setting-widget prop-element" id="id_realm_private_message_policy" data-setting-widget-type="integer">
-                        <option value="by_anyone">{{t "Admins, members, and guests" }}</option>
-                        <option value="disabled">{{t "Private messages disabled" }}</option>
+                        {{> dropdown_options_widget option_values=private_message_policy_values}}
                     </select>
                 </div>
 
