@@ -156,31 +156,6 @@ exports.render_emoji = function (item) {
     return exports.render_typeahead_item(args);
 };
 
-exports.sort_emojis = function (objs, query) {
-    const triage_results = typeahead.triage(
-        query,
-        objs,
-        (x) => x.emoji_name
-    );
-
-    const popular_emoji_matches = [];
-    const other_emoji_matches = [];
-
-    for (const obj of triage_results.matches) {
-        if (typeahead.popular_emojis.indexOf(obj.emoji_code) !== -1) {
-            popular_emoji_matches.push(obj);
-        } else {
-            other_emoji_matches.push(obj);
-        }
-    }
-
-    return [].concat(
-        popular_emoji_matches,
-        other_emoji_matches,
-        triage_results.rest
-    );
-};
-
 exports.sorter = function (query, objs, get_item) {
     const results = typeahead.triage(query, objs, get_item);
     return results.matches.concat(results.rest);
