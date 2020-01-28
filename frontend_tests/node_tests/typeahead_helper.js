@@ -711,21 +711,6 @@ run_test('sort_slash_commands', () => {
     ]);
 });
 
-run_test('sort_emojis', () => {
-    const emoji_list = [
-        { emoji_name: '+1' },
-        { emoji_name: 'thumbs_up' },
-        { emoji_name: 'pig' },
-        { emoji_name: 'thumbs_down' },
-    ];
-    assert.deepEqual(th.sort_emojis(emoji_list, 'thumbs'), [
-        { emoji_name: 'thumbs_up' },
-        { emoji_name: 'thumbs_down' },
-        { emoji_name: '+1' },
-        { emoji_name: 'pig' },
-    ]);
-});
-
 run_test('sort_recipientbox_typeahead', () => {
     let recipients = th.sort_recipientbox_typeahead("b, a", matches, ""); // search "a"
     let recipients_email = _.map(recipients, function (person) {

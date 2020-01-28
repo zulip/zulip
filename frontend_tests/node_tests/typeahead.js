@@ -94,3 +94,56 @@ run_test('triage', () => {
         }
     );
 });
+
+run_test('sort_emojis th', () => {
+    const thumbs_up = {
+        emoji_name: 'thumbs_up', emoji_code: '1f44d'};
+    const thumbs_down = {
+        emoji_name: 'thumbs_down'};
+    const thermometer = {
+        emoji_name: 'thermometer'};
+    const mother_nature = {
+        emoji_name: 'mother_nature'};
+
+    const emoji_list = [
+        mother_nature,
+        thermometer,
+        thumbs_down,
+        thumbs_up,
+    ];
+
+    assert.deepEqual(
+        typeahead.sort_emojis(emoji_list, 'th'),
+        [
+            thumbs_up,
+            thermometer,
+            thumbs_down,
+            mother_nature,
+        ]
+    );
+});
+
+run_test('sort_emojis sm', () => {
+    const big_smile = {
+        emoji_name: 'big_smile'};
+    const slight_smile = {
+        emoji_name: 'slight_smile', emoji_code: '1f642'};
+    const small_airplane = {
+        emoji_name: 'small_airplane'};
+
+    const emoji_list = [
+        big_smile,
+        slight_smile,
+        small_airplane,
+    ];
+
+    assert.deepEqual(
+        typeahead.sort_emojis(emoji_list, 'sm'),
+        [
+            small_airplane,
+            big_smile,
+            slight_smile,
+        ]
+    );
+});
+
