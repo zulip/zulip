@@ -155,10 +155,13 @@ exports.render_emoji = function (item) {
     return exports.render_typeahead_item(args);
 };
 
-// manipulate prefix_sort to select popular emojis first
-// This is kinda a hack and so probably not our long-term solution.
-function emoji_prefix_sort(query, objs, get_item) {
-    const prefix_sort = util.prefix_sort(query, objs, get_item);
+exports.sort_emojis = function (objs, query) {
+    const prefix_sort = util.prefix_sort(
+        query,
+        objs,
+        (x) => x.emoji_name
+    );
+
     const popular_emoji_matches = [];
     const other_emoji_matches = [];
     prefix_sort.matches.forEach(function (obj) {
@@ -168,8 +171,13 @@ function emoji_prefix_sort(query, objs, get_item) {
             other_emoji_matches.push(obj);
         }
     });
-    return { matches: popular_emoji_matches.concat(other_emoji_matches), rest: prefix_sort.rest };
-}
+
+    return [].concat(
+        popular_emoji_matches,
+        other_emoji_matches,
+        prefix_sort.rest
+    );
+};
 
 exports.sorter = function (query, objs, get_item) {
     const results = util.prefix_sort(query, objs, get_item);
@@ -408,12 +416,6 @@ exports.sort_slash_commands = function (matches, query) {
     const results = util.prefix_sort(query, matches, function (x) { return x.name; });
     results.matches = results.matches.sort(slash_command_comparator);
     results.rest = results.rest.sort(slash_command_comparator);
-    return results.matches.concat(results.rest);
-};
-
-exports.sort_emojis = function (matches, query) {
-    // TODO: sort by category in v2
-    const results = emoji_prefix_sort(query, matches, function (x) { return x.emoji_name; });
     return results.matches.concat(results.rest);
 };
 
