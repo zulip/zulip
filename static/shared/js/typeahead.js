@@ -78,3 +78,41 @@ exports.get_emoji_matcher = (query) => {
     };
 };
 
+exports.triage = function (query, objs, get_item) {
+    /*
+        We split objs into three groups:
+
+            - match prefix exactly with `query`
+            - match prefix case-insensitively
+            - other
+
+        Then we concat the first two groups into
+        `matches` and then call the rest `rest`.
+    */
+
+    if (!get_item) {
+        get_item = (x) => x;
+    }
+
+    const beginswithCaseSensitive = [];
+    const beginswithCaseInsensitive = [];
+    const noMatch = [];
+    const lowerQuery = query.toLowerCase();
+
+    for (const obj of objs) {
+        const item = get_item(obj);
+
+        if (item.startsWith(query)) {
+            beginswithCaseSensitive.push(obj);
+        } else if (item.toLowerCase().startsWith(lowerQuery)) {
+            beginswithCaseInsensitive.push(obj);
+        } else {
+            noMatch.push(obj);
+        }
+    }
+    return {
+        matches: beginswithCaseSensitive.concat(beginswithCaseInsensitive),
+        rest: noMatch,
+    };
+};
+
