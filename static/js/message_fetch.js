@@ -222,7 +222,7 @@ exports.load_messages_for_narrow = function (opts) {
     const msg_list = message_list.narrowed;
 
     exports.load_messages({
-        anchor: opts.then_select_id.toFixed(),
+        anchor: opts.anchor,
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list: msg_list,
