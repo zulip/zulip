@@ -8,7 +8,7 @@ class zulip::memcached {
       $memcached_user = 'memcache'
     }
     'redhat': {
-      $memcached_packages = [ 'memcached' ]
+      $memcached_packages = [ 'memcached', 'cyrus-sasl' ]
       $memcached_user = 'memcached'
     }
     default: {
