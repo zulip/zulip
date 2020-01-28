@@ -2163,7 +2163,6 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_newest'], True)
         self.assertEqual(data['history_limited'], False)
 
-        # BUG: The LARGER_THAN_MAX_MESSAGE_ID value is important to the found_newest value.
         with first_visible_id_as(0):
             data = self.get_messages_response(anchor=LARGER_THAN_MAX_MESSAGE_ID + 1,
                                               num_before=5, num_after=0)
@@ -2172,7 +2171,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_length(messages, 5)
         self.assertEqual(data['found_anchor'], False)
         self.assertEqual(data['found_oldest'], False)
-        self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['found_newest'], True)
         self.assertEqual(data['history_limited'], False)
 
         with first_visible_id_as(0):
