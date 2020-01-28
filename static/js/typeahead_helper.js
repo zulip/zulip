@@ -1,3 +1,4 @@
+const typeahead = require("../shared/js/typeahead");
 const render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');
 const IntDict = require('./int_dict').IntDict;
 
@@ -156,7 +157,7 @@ exports.render_emoji = function (item) {
 };
 
 exports.sort_emojis = function (objs, query) {
-    const prefix_sort = util.prefix_sort(
+    const triage_results = typeahead.triage(
         query,
         objs,
         (x) => x.emoji_name
@@ -164,23 +165,24 @@ exports.sort_emojis = function (objs, query) {
 
     const popular_emoji_matches = [];
     const other_emoji_matches = [];
-    prefix_sort.matches.forEach(function (obj) {
+
+    for (const obj of triage_results.matches) {
         if (emoji.frequently_used_emojis_list.indexOf(obj.emoji_code) !== -1) {
             popular_emoji_matches.push(obj);
         } else {
             other_emoji_matches.push(obj);
         }
-    });
+    }
 
     return [].concat(
         popular_emoji_matches,
         other_emoji_matches,
-        prefix_sort.rest
+        triage_results.rest
     );
 };
 
 exports.sorter = function (query, objs, get_item) {
-    const results = util.prefix_sort(query, objs, get_item);
+    const results = typeahead.triage(query, objs, get_item);
     return results.matches.concat(results.rest);
 };
 
@@ -302,7 +304,7 @@ exports.compare_by_popularity = function (lang_a, lang_b) {
 };
 
 exports.sort_languages = function (matches, query) {
-    const results = util.prefix_sort(query, matches);
+    const results = typeahead.triage(query, matches);
 
     // Languages that start with the query
     results.matches = results.matches.sort(exports.compare_by_popularity);
@@ -341,33 +343,18 @@ exports.sort_recipients = function (
             items, current_stream, current_topic);
     }
 
-    function partition(items, get_item) {
-        /*
-            The name for util.prefix_sort is quite
-            misleading.  It really just partitions a list
-            of items into two groups--good and bad.  But
-            for the goods, it puts case-senstitive matches
-            before case-insensitive matches, otherwise preserving
-            the original sort, so it's kinda like a sort
-            if you're starting with data that's most sorted
-            the way you want it.  And then we re-sort it, but
-            maybe sort_people_for_relevance is a stable sort?
-            And do we actually care whether matches are case
-            sensitive here?  I don't know.
-        */
-
-        return util.prefix_sort(query, items, get_item);
-    }
-
-    const users_name_results = partition(
+    const users_name_results = typeahead.triage(
+        query,
         users,
         (p) => p.full_name);
 
-    const email_results = partition(
+    const email_results = typeahead.triage(
+        query,
         users_name_results.rest,
         (p) => p.email);
 
-    const groups_results = partition(
+    const groups_results = typeahead.triage(
+        query,
         groups,
         (g) => g.name);
 
@@ -413,7 +400,7 @@ function slash_command_comparator(slash_command_a, slash_command_b) {
 exports.sort_slash_commands = function (matches, query) {
     // We will likely want to in the future make this sort the
     // just-`/` commands by something approximating usefulness.
-    const results = util.prefix_sort(
+    const results = typeahead.triage(
         query, matches, (x) => x.name);
 
     results.matches = results.matches.sort(slash_command_comparator);
@@ -453,10 +440,10 @@ exports.compare_by_activity = function (stream_a, stream_b) {
 };
 
 exports.sort_streams = function (matches, query) {
-    const name_results = util.prefix_sort(
+    const name_results = typeahead.triage(
         query, matches, (x) => x.name);
 
-    const desc_results = util.prefix_sort(
+    const desc_results = typeahead.triage(
         query, name_results.rest, (x) => x.description);
 
     // Streams that start with the query.
