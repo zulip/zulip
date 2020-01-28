@@ -1,3 +1,33 @@
+/*
+    We hand selected the following emojis a few years
+    ago to be given extra precedence in our typeahead
+    algorithms and emoji picker UIs.  We call them "popular"
+    emojis for historical reasons, although we've never
+    technically measured their popularity (and any
+    results now would be biased in favor of the ones
+    below, since they've easier to submit).  Nonetheless, it
+    is often convenient to quickly find these.  We can
+    adjust this list over time; we just need to make
+    sure it works well with the emoji picker's layout
+    if you increase the number of them.
+
+    For typeahead we'll favor any of these as long as
+    the emoji code matches.  For example, we'll show the
+    emoji with code 1f44d at the top of your suggestions
+    whether you type "+" as a prefix for "+1"
+    or "th" as a prefix for "thumbs up".  The caveat is
+    that other factors still may matter more, such as
+    prefix matches trumping "popularity".
+*/
+exports.popular_emojis = [
+    '1f44d', // +1
+    '1f389', // tada
+    '1f642', // slight_smile
+    '2764', // heart
+    '1f6e0', // working_on_it
+    '1f419', // octopus
+];
+
 const unicode_marks = /\p{M}/gu;
 
 exports.remove_diacritics = function (s) {

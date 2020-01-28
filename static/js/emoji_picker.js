@@ -1,3 +1,5 @@
+const typeahead = require("../shared/js/typeahead");
+
 const render_emoji_popover = require('../templates/emoji_popover.hbs');
 const render_emoji_popover_content = require('../templates/emoji_popover_content.hbs');
 const render_emoji_popover_search_results = require('../templates/emoji_popover_search_results.hbs');
@@ -119,7 +121,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     });
 
     exports.complete_emoji_catalog.Popular = [];
-    _.each(emoji.frequently_used_emojis_list, function (codepoint) {
+    _.each(typeahead.popular_emojis, function (codepoint) {
         if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
             const emoji_name = emoji_codes.codepoint_to_name[codepoint];
             if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {
