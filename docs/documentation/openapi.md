@@ -38,13 +38,13 @@ information in this section rarely changes.
 For example, the `swagger` and `info` objects look like this:
 ```
 # Basic Swagger UI info
-swagger: '2.0'
+openapi: 3.0.1
 info:
-  version: '1.0.0'
+  version: 1.0.0
   title: Zulip REST API
-  description: Powerful open source group chat
+  description: Powerful open source group chat.
   contact:
-    url: https://zulip.org/
+    url: https://zulipchat.com
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
