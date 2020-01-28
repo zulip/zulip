@@ -124,7 +124,14 @@ def curl_method_arguments(endpoint: str, method: str,
 
 def get_openapi_param_example_value_as_string(endpoint: str, method: str, param: Dict[str, Any],
                                               curl_argument: bool=False) -> str:
-    param_type = param["schema"]["type"]
+    if "type" in param["schema"]:
+        param_type = param["schema"]["type"]
+    else:
+        # Hack: Ideally, we'd extract a common function for handling
+        # oneOf values in types and do something with the resulting
+        # union type.  But for this logic's purpose, it's good enough
+        # to just check the first parameter.
+        param_type = param["schema"]["oneOf"][0]["type"]
     param_name = param["name"]
     if param_type in ["object", "array"]:
         example_value = param.get("example", None)
@@ -139,7 +146,7 @@ cURL example.""".format(endpoint, method, param_name)
             return "    --data-urlencode {}='{}'".format(param_name, ordered_ex_val_str)
         return ordered_ex_val_str  # nocoverage
     else:
-        example_value = param.get("example", DEFAULT_EXAMPLE[param["schema"]["type"]])
+        example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
         if type(example_value) == bool:
             example_value = str(example_value).lower()
         if param["schema"].get("format", "") == "json":
