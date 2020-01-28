@@ -560,3 +560,18 @@ class PrivacyTermsTest(ZulipTestCase):
         with self.settings(PRIVACY_POLICY=abs_path):
             response = self.client_get('/privacy/')
         self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
+
+    def test_no_nav(self) -> None:
+        # Test that our ?nav=0 feature of /privacy and /terms,
+        # designed to comply with the Apple App Store draconian
+        # policies that ToS/Privacy pages linked from an iOS app have
+        # no links to the rest of the site if there's pricing
+        # information for anything elsewhere on the site.
+        response = self.client_get("/terms/")
+        self.assert_in_success_response(["Plans"], response)
+
+        response = self.client_get("/terms/?nav=no")
+        self.assert_not_in_success_response(["Plans"], response)
+
+        response = self.client_get("/privacy/?nav=no")
+        self.assert_not_in_success_response(["Plans"], response)
