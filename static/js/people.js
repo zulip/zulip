@@ -824,7 +824,7 @@ exports.build_termlet_matcher = function (termlet) {
         const names = full_name.toLowerCase().split(' ');
 
         return _.any(names, function (name) {
-            if (name.indexOf(termlet) === 0) {
+            if (name.startsWith(termlet)) {
                 return true;
             }
         });
@@ -840,7 +840,7 @@ exports.build_person_matcher = function (query) {
     return function (user) {
         const email = user.email.toLowerCase();
 
-        if (email.indexOf(query) === 0) {
+        if (email.startsWith(query)) {
             return true;
         }
 
