@@ -233,18 +233,18 @@ exports.is_mobile = function () {
 exports.prefix_sort = function (query, objs, get_item) {
     // Based on Bootstrap typeahead's default sorter, but taking into
     // account case sensitivity on "begins with"
+
+    if (!get_item) {
+        get_item = (x) => x;
+    }
+
     const beginswithCaseSensitive = [];
     const beginswithCaseInsensitive = [];
     const noMatch = [];
-    let obj;
-    let item;
-    for (let i = 0; i < objs.length; i += 1) {
-        obj = objs[i];
-        if (get_item) {
-            item = get_item(obj);
-        } else {
-            item = obj;
-        }
+
+    for (const obj of objs) {
+        const item = get_item(obj);
+
         if (item.indexOf(query) === 0) {
             beginswithCaseSensitive.push(obj);
         } else if (item.toLowerCase().indexOf(query.toLowerCase()) === 0) {
