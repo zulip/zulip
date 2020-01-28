@@ -167,7 +167,7 @@ exports.sort_emojis = function (objs, query) {
     const other_emoji_matches = [];
 
     for (const obj of triage_results.matches) {
-        if (emoji.frequently_used_emojis_list.indexOf(obj.emoji_code) !== -1) {
+        if (typeahead.popular_emojis.indexOf(obj.emoji_code) !== -1) {
             popular_emoji_matches.push(obj);
         } else {
             other_emoji_matches.push(obj);
