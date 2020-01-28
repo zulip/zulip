@@ -9,8 +9,8 @@
 
 <div id="stream-checkboxes">
     {{#each streams}}
-    <label class="checkbox add-user-label" data-stream-id="{{this.stream_id}}" data-stream-name="{{this.name}}">
-        <input type="checkbox" name="stream" value="{{this.name}}" />
+    <label class="checkbox add-user-label" data-stream-id="{{this.stream_id}}">
+        <input type="checkbox" name="stream" />
         <span></span>
         {{this.name}} ( <i class="fa fa-user" aria-hidden="true"></i> {{this.subscriber_count}})
     </label>

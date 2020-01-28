@@ -5,6 +5,10 @@ function stream_checkbox(stream_name) {
     return '#stream-checkboxes [data-stream-id="' + stream_id + '"]';
 }
 
+function stream_span(stream_name) {
+    return stream_checkbox(stream_name) + ' input ~ span';
+}
+
 function user_checkbox(email) {
     var user_id = common.get_user_id(email);
     return '#user-checkboxes [data-user-id="' + user_id + '"]';
@@ -126,7 +130,7 @@ casper.then(function () {
     casper.waitUntilVisible('#stream_creation_form', function () {
         casper.test.assertTextExists('Create stream', 'New stream creation panel');
         casper.fill('form#stream_creation_form', {stream_name: 'Waseemio', stream_description: 'Oimeesaw'});
-        casper.click('input[value="Scotland"] ~ span');
+        casper.click(stream_span('Scotland'));
         casper.click(user_span('cordelia@zulip.com'));
         casper.click(user_span('othello@zulip.com'));
         casper.click('form#stream_creation_form button.button.sea-green');
