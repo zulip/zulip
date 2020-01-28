@@ -2076,6 +2076,29 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_newest'], False)
         self.assertEqual(data['history_limited'], False)
 
+        # Verify that with anchor=-1 we always get found_oldest=True
+        # anchor=-1 is arguably invalid input, but it used to be supported
+        with first_visible_id_as(0):
+            data = self.get_messages_response(anchor=-1, num_before=0, num_after=5)
+
+        messages = data['messages']
+        messages_matches_ids(messages, message_ids[0:5])
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], False)
+
+        # And anchor='first' does the same thing.
+        with first_visible_id_as(0):
+            data = self.get_messages_response(anchor='oldest', num_before=0, num_after=5)
+
+        messages = data['messages']
+        messages_matches_ids(messages, message_ids[0:5])
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], False)
+
         data = self.get_messages_response(anchor=message_ids[5], num_before=5, num_after=4)
 
         messages = data['messages']
@@ -2155,6 +2178,17 @@ class GetOldMessagesTest(ZulipTestCase):
         # Verify some additional behavior of found_newest.
         with first_visible_id_as(0):
             data = self.get_messages_response(anchor=LARGER_THAN_MAX_MESSAGE_ID, num_before=5, num_after=0)
+
+        messages = data['messages']
+        self.assert_length(messages, 5)
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], True)
+        self.assertEqual(data['history_limited'], False)
+
+        # The anchor value of 'last' behaves just like LARGER_THAN_MAX_MESSAGE_ID.
+        with first_visible_id_as(0):
+            data = self.get_messages_response(anchor='newest', num_before=5, num_after=0)
 
         messages = data['messages']
         self.assert_length(messages, 5)

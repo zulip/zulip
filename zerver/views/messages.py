@@ -764,15 +764,37 @@ def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
                      command: str=REQ('command')) -> HttpResponse:
     return json_success(process_zcommands(command, user_profile))
 
+def parse_anchor_value(anchor_val: Optional[str]) -> Optional[int]:
+    if anchor_val is None:
+        return None
+    if anchor_val == "oldest":
+        return 0
+    if anchor_val == "newest":
+        return LARGER_THAN_MAX_MESSAGE_ID
+    try:
+        # We don't use `.isnumeric()` to support negative numbers for
+        # anchor.  We don't recommend it in the API (if you want the
+        # very first message, use 0 or 1), but it used to be supported
+        # and was used by the webapp, so we need to continue
+        # supporting it for backwards-compatibility
+        anchor = int(anchor_val)
+        if anchor < 0:
+            return 0
+        return anchor
+    except ValueError:
+        raise JsonableError(_("Invalid anchor"))
+
 @has_request_variables
 def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
-                         anchor: Optional[int]=REQ(converter=int, default=None),
+                         anchor_val: Optional[str]=REQ(
+                             'anchor', str_validator=check_string, default=None),
                          num_before: int=REQ(converter=to_non_negative_int),
                          num_after: int=REQ(converter=to_non_negative_int),
                          narrow: OptionalNarrowListT=REQ('narrow', converter=narrow_parameter, default=None),
                          use_first_unread_anchor: bool=REQ(validator=check_bool, default=False),
                          client_gravatar: bool=REQ(validator=check_bool, default=False),
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
+    anchor = parse_anchor_value(anchor_val)
     if anchor is None and not use_first_unread_anchor:
         return json_error(_("Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."))
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
