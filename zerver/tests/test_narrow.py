@@ -2065,6 +2065,17 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['history_limited'], False)
         self.assert_length(messages, 0)
 
+        # Verify that with anchor=0 we always get found_oldest=True
+        with first_visible_id_as(0):
+            data = self.get_messages_response(anchor=0, num_before=0, num_after=5)
+
+        messages = data['messages']
+        messages_matches_ids(messages, message_ids[0:5])
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], False)
+
         data = self.get_messages_response(anchor=message_ids[5], num_before=5, num_after=4)
 
         messages = data['messages']
@@ -2140,6 +2151,39 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_newest'], False)
         self.assertEqual(data['history_limited'], False)
         self.assert_length(messages, 0)
+
+        # Verify some additional behavior of found_newest.
+        with first_visible_id_as(0):
+            data = self.get_messages_response(anchor=LARGER_THAN_MAX_MESSAGE_ID, num_before=5, num_after=0)
+
+        messages = data['messages']
+        self.assert_length(messages, 5)
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], True)
+        self.assertEqual(data['history_limited'], False)
+
+        # BUG: The LARGER_THAN_MAX_MESSAGE_ID value is important to the found_newest value.
+        with first_visible_id_as(0):
+            data = self.get_messages_response(anchor=LARGER_THAN_MAX_MESSAGE_ID + 1,
+                                              num_before=5, num_after=0)
+
+        messages = data['messages']
+        self.assert_length(messages, 5)
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], False)
+
+        with first_visible_id_as(0):
+            data = self.get_messages_response(anchor=LARGER_THAN_MAX_MESSAGE_ID, num_before=20, num_after=0)
+
+        messages = data['messages']
+        self.assert_length(messages, 10)
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], True)
+        self.assertEqual(data['history_limited'], False)
 
     def test_missing_params(self) -> None:
         """
