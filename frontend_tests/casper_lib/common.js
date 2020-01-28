@@ -310,6 +310,14 @@ exports.get_user_id = function (email) {
     });
 };
 
+exports.get_stream_id = function (stream_name) {
+    return casper.evaluate(function (stream_name) {
+        return stream_data.get_stream_id(stream_name);
+    }, {
+        stream_name: stream_name,
+    });
+};
+
 // Inject key presses by running some jQuery code in page context.
 // PhantomJS and CasperJS don't provide a clean way to insert key
 // presses by code, only strings of printable characters.
