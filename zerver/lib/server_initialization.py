@@ -17,6 +17,11 @@ def create_internal_realm() -> None:
     internal_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
                            for bot in settings.INTERNAL_BOTS]
     create_users(internal_realm, internal_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+    # Set the owners for these bots to the bots themselves
+    bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in internal_realm_bots])
+    for bot in bots:
+        bot.bot_owner = bot
+        bot.save()
 
     # Initialize the email gateway bot as an API Super User
     email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
