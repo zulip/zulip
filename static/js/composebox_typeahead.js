@@ -830,7 +830,7 @@ exports.compose_content_matcher = function (completing, token) {
 exports.sort_results = function (completing, matches, token) {
     switch (completing) {
     case 'emoji':
-        return typeahead_helper.sort_emojis(matches, token);
+        return typeahead.sort_emojis(matches, token);
     case 'slash':
         return typeahead_helper.sort_slash_commands(matches, token);
     case 'stream':
