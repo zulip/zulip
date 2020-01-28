@@ -489,7 +489,8 @@ class ZulipTestCase(TestCase):
             realm=recipient_realm,
         )
 
-    def get_messages_response(self, anchor: int=1, num_before: int=100, num_after: int=100,
+    def get_messages_response(self, anchor: Union[int, str]=1,
+                              num_before: int=100, num_after: int=100,
                               use_first_unread_anchor: bool=False) -> Dict[str, List[Dict[str, Any]]]:
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after,
@@ -498,7 +499,7 @@ class ZulipTestCase(TestCase):
         data = result.json()
         return data
 
-    def get_messages(self, anchor: int=1, num_before: int=100, num_after: int=100,
+    def get_messages(self, anchor: Union[str, int]=1, num_before: int=100, num_after: int=100,
                      use_first_unread_anchor: bool=False) -> List[Dict[str, Any]]:
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data['messages']

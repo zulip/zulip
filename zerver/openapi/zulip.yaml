@@ -291,7 +291,9 @@ paths:
         description: The message ID to fetch messages near.
           Required unless `use_first_unread_anchor` is set to true.
         schema:
-          type: integer
+          oneOf:
+            - type: string
+            - type: integer
         example: 42
       - name: use_first_unread_anchor
         in: query
