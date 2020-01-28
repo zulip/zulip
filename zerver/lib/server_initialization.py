@@ -5,7 +5,7 @@ from zerver.lib.bulk_create import bulk_create_users
 from zerver.models import Realm, UserProfile, email_to_username, get_client, \
     get_system_bot
 
-from typing import Iterable, Optional, Set, Tuple
+from typing import Iterable, Optional, Tuple
 
 def create_internal_realm() -> None:
     internal_realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
@@ -26,7 +26,7 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
                  tos_version: Optional[str]=None,
                  bot_type: Optional[int]=None,
                  bot_owner: Optional[UserProfile]=None) -> None:
-    user_set = set()  # type: Set[Tuple[str, str, str, bool]]
+    user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
