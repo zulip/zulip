@@ -37,6 +37,7 @@ class Command(BaseCommand):
             return
         realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
 
+        # Create the "website" and "API" clients:
         get_client("website")
         get_client("API")
 
