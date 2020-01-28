@@ -10,7 +10,9 @@
 {% block content %}
 <div class="portico-container" data-platform="{{ platform }}">
     <div class="portico-wrap">
+        {% if not isolated_page %}
         {% include 'zerver/portico-header.html' %}
+        {% endif %}
         <div class="app portico-page {% block portico_class_name %}{% endblock %}">
             <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
                 {% block portico_content %}
@@ -18,6 +20,8 @@
             </div>
         </div>
     </div>
+    {% if not isolated_page %}
     {% include 'zerver/footer.html' %}
+    {% endif %}
 </div>
 {% endblock %}
