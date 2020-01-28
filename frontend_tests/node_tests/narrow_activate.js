@@ -187,7 +187,7 @@ run_test('basics', () => {
         assert.deepEqual(opts, {
             cont: opts.cont,
             pre_scroll_cont: opts.pre_scroll_cont,
-            then_select_id: 1000,
+            anchor: 1000,
             use_first_unread_anchor: false,
         });
     };

@@ -237,7 +237,7 @@ exports.activate = function (raw_operators, opts) {
         }
 
         message_fetch.load_messages_for_narrow({
-            then_select_id: anchor,
+            anchor: anchor,
             use_first_unread_anchor: use_first_unread,
             cont: function () {
                 if (!select_immediately) {
