@@ -377,9 +377,15 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         openapi_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, object]]]]
         for element in openapi_parameters:
             name = element["name"]  # type: str
-            _type = VARMAP[element["schema"]["type"]]
+            schema = element["schema"]
+            if 'oneOf' in schema:
+                # Hack: Just use the type of the first value
+                # Ideally, we'd turn this into a Union type.
+                _type = VARMAP[schema['oneOf'][0]['type']]
+            else:
+                _type = VARMAP[schema["type"]]
             if _type == list:
-                items = element["schema"]["items"]
+                items = schema["items"]
                 if "anyOf" in items.keys():
                     subtypes = []
                     for st in items["anyOf"]:
