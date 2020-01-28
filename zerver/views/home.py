@@ -299,6 +299,18 @@ def home_real(request: HttpRequest) -> HttpResponse:
 def desktop_home(request: HttpRequest) -> HttpResponse:
     return HttpResponseRedirect(reverse('zerver.views.home.home'))
 
+def get_isolated_page(request: HttpRequest) -> bool:
+    '''Accept a GET param `?nav=no` to render an isolated, navless page.'''
+    return request.GET.get('nav') == 'no'
+
+def terms_view(request: HttpRequest) -> HttpResponse:
+    return render(request, 'zerver/terms.html',
+                  context={'isolated_page': get_isolated_page(request)})
+
+def privacy_view(request: HttpRequest) -> HttpResponse:
+    return render(request, 'zerver/privacy.html',
+                  context={'isolated_page': get_isolated_page(request)})
+
 def apps_view(request: HttpRequest, _: str) -> HttpResponse:
     if settings.ZILENCER_ENABLED:
         return render(request, 'zerver/apps.html')
