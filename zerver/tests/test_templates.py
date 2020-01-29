@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
 import re
 from typing import Any, Dict, Iterable
 import logging
@@ -321,40 +320,3 @@ footer
         content_sans_whitespace = content.replace(" ", "").replace('\n', '')
         expected = 'headerfooter'
         self.assertEqual(content_sans_whitespace, expected)
-
-    def test_custom_tos_template(self) -> None:
-        response = self.client_get("/terms/")
-
-        self.assert_in_success_response([u"Thanks for using our products and services (\"Services\"). ",
-                                         u"By using our Services, you are agreeing to these terms"],
-                                        response)
-
-    def test_custom_terms_of_service_template(self) -> None:
-        not_configured_message = 'This installation of Zulip does not have a configured ' \
-                                 'terms of service'
-        with self.settings(TERMS_OF_SERVICE=None):
-            response = self.client_get('/terms/')
-        self.assert_in_success_response([not_configured_message], response)
-        with self.settings(TERMS_OF_SERVICE='zerver/tests/markdown/test_markdown.md'):
-            response = self.client_get('/terms/')
-        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
-        self.assert_not_in_success_response([not_configured_message], response)
-
-    def test_custom_privacy_policy_template(self) -> None:
-        not_configured_message = 'This installation of Zulip does not have a configured ' \
-                                 'privacy policy'
-        with self.settings(PRIVACY_POLICY=None):
-            response = self.client_get('/privacy/')
-        self.assert_in_success_response([not_configured_message], response)
-        with self.settings(PRIVACY_POLICY='zerver/tests/markdown/test_markdown.md'):
-            response = self.client_get('/privacy/')
-        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
-        self.assert_not_in_success_response([not_configured_message], response)
-
-    def test_custom_privacy_policy_template_with_absolute_url(self) -> None:
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        abs_path = os.path.join(current_dir, '..', '..',
-                                'templates/zerver/tests/markdown/test_markdown.md')
-        with self.settings(PRIVACY_POLICY=abs_path):
-            response = self.client_get('/privacy/')
-        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)

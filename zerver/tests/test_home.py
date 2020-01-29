@@ -719,22 +719,6 @@ class HomeTest(ZulipTestCase):
         path = urllib.parse.urlparse(result['Location']).path
         self.assertEqual(path, "/")
 
-    def test_apps_view(self) -> None:
-        result = self.client_get('/apps')
-        self.assertEqual(result.status_code, 301)
-        self.assertTrue(result['Location'].endswith('/apps/'))
-
-        with self.settings(ZILENCER_ENABLED=False):
-            result = self.client_get('/apps/')
-        self.assertEqual(result.status_code, 301)
-        self.assertTrue(result['Location'] == 'https://zulipchat.com/apps/')
-
-        with self.settings(ZILENCER_ENABLED=True):
-            result = self.client_get('/apps/')
-        self.assertEqual(result.status_code, 200)
-        html = result.content.decode('utf-8')
-        self.assertIn('Apps for every platform.', html)
-
     def test_compute_navbar_logo_url(self) -> None:
         user_profile = self.example_user("hamlet")
 
