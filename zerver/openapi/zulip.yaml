@@ -290,6 +290,9 @@ paths:
         in: query
         description: The message ID to fetch messages near.
           Required unless `use_first_unread_anchor` is set to true.
+
+          The special values of `'newest'` and `'oldest'` are also supported
+          for anchoring the query at the most recent or oldest messages.
         schema:
           oneOf:
             - type: string

@@ -799,6 +799,7 @@ markdown_docs_length_exclude = {
     "templates/zerver/integrations/perforce.md",
     # Has some example code that could perhaps be wrapped
     "templates/zerver/api/incoming-webhooks-walkthrough.md",
+    "templates/zerver/api/get-messages.md",
     # This macro has a long indented URL
     "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
     "templates/zerver/api/update-notification-settings.md",
