@@ -1,5 +1,7 @@
 let unnarrow_times;
 
+const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
+
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
         url: '/json/report/narrow_times',
@@ -227,10 +229,17 @@ exports.activate = function (raw_operators, opts) {
         // particular message ID (which could be max_int), or we're
         // asking the server to figure out for us what the first
         // unread message is, and center the narrow around that.
-        if (id_info.final_select_id !== undefined) {
-            anchor = id_info.final_select_id;
-        } else {
+        if (id_info.final_select_id === undefined) {
             anchor = "first_unread";
+        } else if (id_info.final_select_id === -1) {
+            // This case should never happen in this code path; it's
+            // here in case we choose to extract this as an
+            // independent reusable function.
+            anchor = "oldest";
+        } else if (id_info.final_select_id === LARGER_THAN_MAX_MESSAGE_ID) {
+            anchor = "newest";
+        } else {
+            anchor = id_info.final_select_id;
         }
 
         message_fetch.load_messages_for_narrow({
@@ -381,7 +390,7 @@ exports.maybe_add_local_messages = function (opts) {
     // narrow later in this function.
     if (!id_info.target_id && !narrow_state.filter().allow_use_first_unread_when_narrowing()) {
         // Note that this may be overwritten; see above comment.
-        id_info.final_select_id = 10000000000000000;
+        id_info.final_select_id = LARGER_THAN_MAX_MESSAGE_ID;
     }
 
     if (unread_info.flavor === 'cannot_compute') {
