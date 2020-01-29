@@ -162,9 +162,6 @@ exports.load_messages = function (opts) {
     if (opts.msg_list === home_msg_list && page_params.narrow_stream !== undefined) {
         data.narrow = JSON.stringify(page_params.narrow);
     }
-    if (opts.use_first_unread_anchor) {
-        data.use_first_unread_anchor = true;
-    }
 
     if (opts.num_before > 0) {
         opts.msg_list.fetch_status.start_older_batch();
@@ -226,7 +223,6 @@ exports.load_messages_for_narrow = function (opts) {
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list: msg_list,
-        use_first_unread_anchor: opts.use_first_unread_anchor,
         pre_scroll_cont: opts.pre_scroll_cont,
         cont: function () {
             message_scroll.hide_indicators();

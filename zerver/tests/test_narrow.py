@@ -2447,8 +2447,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # search still gets the first message sent to Hamlet (before he
         # subscribed) and other recent messages to the stream.
         query_params = dict(
-            use_first_unread_anchor='true',
-            anchor=0,
+            anchor="first_unread",
             num_before=10,
             num_after=10,
             narrow='[["stream", "England"]]'
@@ -2484,8 +2483,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.send_personal_message(self.example_email("othello"), self.example_email("iago"))
 
         query_params = dict(
-            use_first_unread_anchor='true',
-            anchor=0,
+            anchor="first_unread",
             num_before=10,
             num_after=10,
             narrow='[]'
@@ -2532,8 +2530,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.send_personal_message(self.example_email("othello"), self.example_email("iago"))
 
         query_params = dict(
-            use_first_unread_anchor='true',
-            anchor=0,
+            anchor="first_unread",
             num_before=10,
             num_after=10,
             narrow='[]'
@@ -2563,8 +2560,7 @@ class GetOldMessagesTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
 
         query_params = dict(
-            use_first_unread_anchor='true',
-            anchor=0,
+            anchor="first_unread",
             num_before=10,
             num_after=10,
             narrow='[]'
@@ -2616,8 +2612,7 @@ class GetOldMessagesTest(ZulipTestCase):
         set_topic_mutes(user_profile, muted_topics)
 
         query_params = dict(
-            use_first_unread_anchor='true',
-            anchor=0,
+            anchor="first_unread",
             num_before=0,
             num_after=0,
             narrow='[["stream", "Scotland"]]'
