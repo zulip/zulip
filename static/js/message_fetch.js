@@ -163,7 +163,8 @@ exports.load_messages = function (opts) {
         data.narrow = JSON.stringify(page_params.narrow);
     }
     if (opts.use_first_unread_anchor) {
-        data.use_first_unread_anchor = true;
+        // TODO: Push this convention into the callers
+        data.anchor = null;
     }
 
     if (opts.num_before > 0) {
@@ -226,7 +227,6 @@ exports.load_messages_for_narrow = function (opts) {
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list: msg_list,
-        use_first_unread_anchor: opts.use_first_unread_anchor,
         pre_scroll_cont: opts.pre_scroll_cont,
         cont: function () {
             message_scroll.hide_indicators();

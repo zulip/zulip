@@ -764,13 +764,29 @@ def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
                      command: str=REQ('command')) -> HttpResponse:
     return json_success(process_zcommands(command, user_profile))
 
-def parse_anchor_value(anchor_val: Optional[str]) -> Optional[int]:
-    if anchor_val is None:
+def parse_anchor_value(anchor_val: Optional[str],
+                       use_first_unread_anchor: bool) -> Optional[int]:
+    """Given the anchor and use_first_unread_anchor parameters passed by
+    the client, computes what anchor value the client requested,
+    handling backwards-compatibility and the various string-valued
+    fields.  We encode use_first_unread_anchor as anchor=None.
+    """
+    if use_first_unread_anchor:
+        # Backwards-compatibility: Before we added support for the
+        # special string-typed anchor values, clients would pass
+        # anchor=None and use_first_unread_anchor=True to indicate
+        # what is now expressed as anchor="first_unread".
         return None
+    if anchor_val is None:
+        # Throw an exception if neither an anchor argument not
+        # use_first_unread_anchor was specified.
+        raise JsonableError(_("Missing 'anchor' argument."))
     if anchor_val == "oldest":
         return 0
     if anchor_val == "newest":
         return LARGER_THAN_MAX_MESSAGE_ID
+    if anchor_val == "first_unread":
+        return None
     try:
         # We don't use `.isnumeric()` to support negative numbers for
         # anchor.  We don't recommend it in the API (if you want the
@@ -791,12 +807,11 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          num_before: int=REQ(converter=to_non_negative_int),
                          num_after: int=REQ(converter=to_non_negative_int),
                          narrow: OptionalNarrowListT=REQ('narrow', converter=narrow_parameter, default=None),
-                         use_first_unread_anchor: bool=REQ(validator=check_bool, default=False),
+                         use_first_unread_anchor_val: bool=REQ('use_first_unread_anchor',
+                                                               validator=check_bool, default=False),
                          client_gravatar: bool=REQ(validator=check_bool, default=False),
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
-    anchor = parse_anchor_value(anchor_val)
-    if anchor is None and not use_first_unread_anchor:
-        return json_error(_("Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."))
+    anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
         return json_error(_("Too many messages requested (maximum %s).")
                           % (MAX_MESSAGES_PER_FETCH,))
@@ -850,7 +865,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     sa_conn = get_sqlalchemy_connection()
 
-    if use_first_unread_anchor:
+    if anchor is None:
+        # The use_first_unread_anchor code path
         anchor = find_first_unread_anchor(
             sa_conn,
             user_profile,
