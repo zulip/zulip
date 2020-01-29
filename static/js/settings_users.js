@@ -341,13 +341,7 @@ exports.on_load_success = function (realm_people_data) {
     modal_elem.find('.do_deactivate_button').click(function () {
         const user_id = modal_elem.data('user-id');
         const row = get_user_info_row(user_id);
-        const email = row.attr("data-email");
 
-        if ($("#deactivation_user_modal .email").html() !== email) {
-            blueslip.error("User deactivation canceled due to non-matching fields.");
-            ui_report.message(i18n.t("Deactivation encountered an error. Please reload and try again."),
-                              $("#home-error"), 'alert-error');
-        }
         modal_elem.modal("hide");
         const row_deactivate_button = row.find("button.deactivate");
         row_deactivate_button.prop("disabled", true).text(i18n.t("Working…"));
