@@ -166,7 +166,7 @@ exports.processing_text = function () {
         $focused_elt.is("select") ||
         $focused_elt.is("textarea") ||
         $focused_elt.hasClass("editable-section") ||
-        $focused_elt.hasClass("pill-container") ||
+        $focused_elt.parents(".pill-container").length >= 1 ||
         $focused_elt.attr("id") === "compose-send-button";
 };
 
