@@ -24,6 +24,7 @@ import zerver.views.compatibility
 import zerver.views.home
 import zerver.views.email_mirror
 import zerver.views.registration
+import zerver.views.portico
 import zerver.views.zephyr
 import zerver.views.users
 import zerver.views.unsubscribe
@@ -541,10 +542,10 @@ i18n_urls = [
         zerver.views.documentation.integration_doc,
         name="zerver.views.documentation.integration_doc"),
     url(r'^integrations/(.*)$', IntegrationView.as_view()),
-    url(r'^team/$', zerver.views.users.team_view),
+    url(r'^team/$', zerver.views.portico.team_view),
     url(r'^history/$', TemplateView.as_view(template_name='zerver/history.html')),
-    url(r'^apps/(.*)$', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
-    url(r'^plans/$', zerver.views.home.plans_view, name='plans'),
+    url(r'^apps/(.*)$', zerver.views.portico.apps_view, name='zerver.views.home.apps_view'),
+    url(r'^plans/$', zerver.views.portico.plans_view, name='plans'),
 
     # Landing page, features pages, signup form, etc.
     url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html',
