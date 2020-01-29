@@ -657,12 +657,13 @@ class EventsRegisterTest(ZulipTestCase):
             schema_checker = self.check_events_dict([
                 ('type', equals('message')),
                 ('flags', check_list(None)),
-                ('message', self.check_events_dict([
+                ('message', check_dict_only([
                     ('avatar_url', check_gravatar),
                     ('client', check_string),
                     ('content', check_string),
                     ('content_type', equals('text/html')),
                     ('display_recipient', check_string),
+                    ('id', check_int),
                     ('is_me_message', check_bool),
                     ('reactions', check_list(None)),
                     ('recipient_id', check_int),
