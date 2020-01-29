@@ -188,7 +188,6 @@ run_test('basics', () => {
             cont: opts.cont,
             pre_scroll_cont: opts.pre_scroll_cont,
             anchor: 1000,
-            use_first_unread_anchor: false,
         });
     };
 
