@@ -182,7 +182,7 @@ run_test('basic_chars', () => {
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
-    hotkey.is_editing_stream_name = return_false;
+    hotkey.in_content_editable_widget = return_false;
     overlays.settings_open = return_false;
 
     set_global('popovers', {
@@ -409,10 +409,10 @@ run_test('motion_keys', () => {
     assert_mapping('right_arrow', 'lightbox.next');
     overlays.lightbox_open = return_false;
 
-    hotkey.is_editing_stream_name = return_true;
+    hotkey.in_content_editable_widget = return_true;
     assert_unmapped('down_arrow');
     assert_unmapped('up_arrow');
-    hotkey.is_editing_stream_name = return_false;
+    hotkey.in_content_editable_widget = return_false;
 
     overlays.settings_open = return_true;
     assert_unmapped('end');
