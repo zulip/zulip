@@ -1371,7 +1371,7 @@ class MessageDictTest(ZulipTestCase):
             '/json/messages?use_first_unread_anchor=false&num_before=1&num_after=1')
 
         self.assert_json_error(
-            result, "Missing 'anchor' argument (or set 'use_first_unread_anchor'=True).")
+            result, "Missing 'anchor' argument.")
 
     def test_invalid_anchor(self) -> None:
         self.login(self.example_email("hamlet"))

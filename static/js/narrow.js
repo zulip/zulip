@@ -222,7 +222,6 @@ exports.activate = function (raw_operators, opts) {
 
     (function fetch_messages() {
         let anchor;
-        let use_first_unread;
 
         // Either we're trying to center the narrow around a
         // particular message ID (which could be max_int), or we're
@@ -230,15 +229,12 @@ exports.activate = function (raw_operators, opts) {
         // unread message is, and center the narrow around that.
         if (id_info.final_select_id !== undefined) {
             anchor = id_info.final_select_id;
-            use_first_unread = false;
         } else {
-            anchor = -1;
-            use_first_unread = true;
+            anchor = "first_unread";
         }
 
         message_fetch.load_messages_for_narrow({
             anchor: anchor,
-            use_first_unread_anchor: use_first_unread,
             cont: function () {
                 if (!select_immediately) {
                     exports.update_selection({
