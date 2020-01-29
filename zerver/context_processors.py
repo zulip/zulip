@@ -178,6 +178,12 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     context['external_authentication_methods'] = get_external_method_dicts(realm)
     context['no_auth_enabled'] = no_auth_enabled
 
+    # Include external_authentication_methods in page_params for use
+    # by the desktop client.
+    context['page_params'] = dict(
+        external_authentication_methods = context['external_authentication_methods']
+    )
+
     return context
 
 def latest_info_context() -> Dict[str, str]:
