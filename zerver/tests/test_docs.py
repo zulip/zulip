@@ -505,3 +505,58 @@ class PlansPageTest(ZulipTestCase):
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
         self.assert_not_in_success_response([sign_up_now, buy_standard], result)
+
+class AppsPageTest(ZulipTestCase):
+    def test_apps_view(self) -> None:
+        result = self.client_get('/apps')
+        self.assertEqual(result.status_code, 301)
+        self.assertTrue(result['Location'].endswith('/apps/'))
+
+        with self.settings(ZILENCER_ENABLED=False):
+            result = self.client_get('/apps/')
+        self.assertEqual(result.status_code, 301)
+        self.assertTrue(result['Location'] == 'https://zulipchat.com/apps/')
+
+        with self.settings(ZILENCER_ENABLED=True):
+            result = self.client_get('/apps/')
+        self.assertEqual(result.status_code, 200)
+        html = result.content.decode('utf-8')
+        self.assertIn('Apps for every platform.', html)
+
+class PrivacyTermsTest(ZulipTestCase):
+    def test_custom_tos_template(self) -> None:
+        response = self.client_get("/terms/")
+
+        self.assert_in_success_response([u"Thanks for using our products and services (\"Services\"). ",
+                                         u"By using our Services, you are agreeing to these terms"],
+                                        response)
+
+    def test_custom_terms_of_service_template(self) -> None:
+        not_configured_message = 'This installation of Zulip does not have a configured ' \
+                                 'terms of service'
+        with self.settings(TERMS_OF_SERVICE=None):
+            response = self.client_get('/terms/')
+        self.assert_in_success_response([not_configured_message], response)
+        with self.settings(TERMS_OF_SERVICE='zerver/tests/markdown/test_markdown.md'):
+            response = self.client_get('/terms/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
+        self.assert_not_in_success_response([not_configured_message], response)
+
+    def test_custom_privacy_policy_template(self) -> None:
+        not_configured_message = 'This installation of Zulip does not have a configured ' \
+                                 'privacy policy'
+        with self.settings(PRIVACY_POLICY=None):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response([not_configured_message], response)
+        with self.settings(PRIVACY_POLICY='zerver/tests/markdown/test_markdown.md'):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
+        self.assert_not_in_success_response([not_configured_message], response)
+
+    def test_custom_privacy_policy_template_with_absolute_url(self) -> None:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        abs_path = os.path.join(current_dir, '..', '..',
+                                'templates/zerver/tests/markdown/test_markdown.md')
+        with self.settings(PRIVACY_POLICY=abs_path):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
