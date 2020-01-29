@@ -1,5 +1,10 @@
 var common = require('../casper_lib/common.js');
 
+function user_row(name) {
+    var email = name + '@zulip.com';
+    return '.user_row[data-email="' + email + '"]';
+}
+
 common.start_and_log_in();
 
 casper.then(function () {
@@ -18,9 +23,9 @@ casper.then(function () {
 
 // Test user deactivation and reactivation
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[data-email="cordelia@zulip.com"]', function () {
-        casper.test.assertSelectorHasText('.user_row[data-email="cordelia@zulip.com"]', 'Deactivate');
-        casper.click('.user_row[data-email="cordelia@zulip.com"] .deactivate');
+    casper.waitUntilVisible(user_row('cordelia'), function () {
+        casper.test.assertSelectorHasText(user_row('cordelia'), 'Deactivate');
+        casper.click(user_row('cordelia') + ' .deactivate');
         casper.test.assertTextExists('Deactivate cordelia@zulip.com', 'Deactivate modal has right user');
         casper.test.assertTextExists('Deactivate now', 'Deactivate now button available');
         casper.click('#deactivation_user_modal .do_deactivate_button');
@@ -28,23 +33,23 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[data-email="cordelia@zulip.com"].deactivated_user', function () {
-        casper.test.assertSelectorHasText('.user_row[data-email="cordelia@zulip.com"]', 'Reactivate');
-        casper.click('.user_row[data-email="cordelia@zulip.com"] .reactivate');
+    casper.waitUntilVisible(user_row('cordelia') + '.deactivated_user', function () {
+        casper.test.assertSelectorHasText(user_row('cordelia'), 'Reactivate');
+        casper.click(user_row('cordelia') + ' .reactivate');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[data-email="cordelia@zulip.com"]:not(.deactivated_user)', function () {
-        casper.test.assertSelectorHasText('.user_row[data-email="cordelia@zulip.com"]', 'Deactivate');
+    casper.waitUntilVisible(user_row('cordelia') + ':not(.deactivated_user)', function () {
+        casper.test.assertSelectorHasText(user_row('cordelia'), 'Deactivate');
     });
 });
 
 casper.then(function () {
     // Test Deactivated users section of admin page
-    casper.waitUntilVisible('.user_row[data-email="cordelia@zulip.com"]', function () {
-        casper.test.assertSelectorHasText('.user_row[data-email="cordelia@zulip.com"]', 'Deactivate');
-        casper.click('.user_row[data-email="cordelia@zulip.com"] .deactivate');
+    casper.waitUntilVisible(user_row('cordelia'), function () {
+        casper.test.assertSelectorHasText(user_row('cordelia'), 'Deactivate');
+        casper.click(user_row('cordelia') + ' .deactivate');
         casper.test.assertTextExists('Deactivate cordelia@zulip.com', 'Deactivate modal has right user');
         casper.test.assertTextExists('Deactivate now', 'Deactivate now button available');
         casper.click('#deactivation_user_modal .do_deactivate_button');
@@ -59,15 +64,15 @@ casper.then(function () {
     casper.click("li[data-section='deactivated-users-admin']");
 
 
-    casper.waitUntilVisible('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"] .reactivate', function () {
-        casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"]', 'Reactivate');
-        casper.click('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"] .reactivate');
+    casper.waitUntilVisible('#admin_deactivated_users_table ' + user_row('cordelia') + ' .reactivate', function () {
+        casper.test.assertSelectorHasText('#admin_deactivated_users_table ' + user_row('cordelia') + '', 'Reactivate');
+        casper.click('#admin_deactivated_users_table ' + user_row('cordelia') + ' .reactivate');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"] button:not(.reactivate)', function () {
-        casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"]', 'Deactivate');
+    casper.waitUntilVisible('#admin_deactivated_users_table ' + user_row('cordelia') + ' button:not(.reactivate)', function () {
+        casper.test.assertSelectorHasText('#admin_deactivated_users_table ' + user_row('cordelia') + '', 'Deactivate');
     });
 });
 
@@ -78,22 +83,22 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[data-email="default-bot@zulip.com"]', function () {
-        casper.test.assertSelectorHasText('.user_row[data-email="default-bot@zulip.com"]', 'Deactivate');
-        casper.click('.user_row[data-email="default-bot@zulip.com"] .deactivate');
+    casper.waitUntilVisible(user_row('default-bot'), function () {
+        casper.test.assertSelectorHasText(user_row('default-bot'), 'Deactivate');
+        casper.click(user_row('default-bot') + ' .deactivate');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[data-email="default-bot@zulip.com"].deactivated_user', function () {
-        casper.test.assertSelectorHasText('.user_row[data-email="default-bot@zulip.com"]', 'Reactivate');
-        casper.click('.user_row[data-email="default-bot@zulip.com"] .reactivate');
+    casper.waitUntilVisible(user_row('default-bot') + '.deactivated_user', function () {
+        casper.test.assertSelectorHasText(user_row('default-bot'), 'Reactivate');
+        casper.click(user_row('default-bot') + ' .reactivate');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[data-email="default-bot@zulip.com"]:not(.deactivated_user)', function () {
-        casper.test.assertSelectorHasText('.user_row[data-email="default-bot@zulip.com"]', 'Deactivate');
+    casper.waitUntilVisible(user_row('default-bot') + ':not(.deactivated_user)', function () {
+        casper.test.assertSelectorHasText(user_row('default-bot'), 'Deactivate');
     });
 });
 
