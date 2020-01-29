@@ -149,7 +149,7 @@ def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bo
         body = '(No email body)'
 
     if show_sender:
-        sender = message.get("From")
+        sender = str(make_header(decode_header(message.get("From"))))
         body = "From: %s\n%s" % (sender, body)
 
     return body
