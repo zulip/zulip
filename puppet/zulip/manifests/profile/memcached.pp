@@ -7,10 +7,14 @@ class zulip::profile::memcached {
     'debian': {
       $memcached_packages = [ 'memcached', 'sasl2-bin' ]
       $memcached_user = 'memcache'
+      $memcached_config = '/etc/memcached.conf'
+      $memcached_template = 'zulip/memcached.conf.template.erb'
     }
     'redhat': {
       $memcached_packages = [ 'memcached', 'cyrus-sasl' ]
       $memcached_user = 'memcached'
+      $memcached_config = '/etc/sysconfig/memcached'
+      $memcached_template = 'zulip/memcached.conf.centos.template.erb'
     }
     default: {
       fail('osfamily not supported')
@@ -88,7 +92,7 @@ Environment=SASL_CONF_PATH=/etc/sasl2
       Service['memcached'],
     ],
   }
-  file { '/etc/memcached.conf':
+  file { $memcached_config:
     ensure  => file,
     require => [
       Package[$memcached_packages],
@@ -97,11 +101,11 @@ Environment=SASL_CONF_PATH=/etc/sasl2
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    content => template('zulip/memcached.conf.template.erb'),
+    content => template($memcached_template),
   }
   service { 'memcached':
     ensure    => running,
-    subscribe => File['/etc/memcached.conf'],
+    subscribe => File[$memcached_config],
     require   => Class['zulip::systemd_daemon_reload'];
   }
 }
