@@ -2446,13 +2446,6 @@ nav ul li.active::after {
     z-index: 1;
 }
 
-.gradients .gradient {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 1100px;
-}
-
 .gradients .gradient.dark-blue {
     background: linear-gradient(10deg, hsla(196, 58%, 14%, 0) 50%, hsla(196, 58%, 14%, 0.7));
 }
