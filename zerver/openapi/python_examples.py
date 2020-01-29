@@ -543,15 +543,13 @@ def get_messages(client):
     # type: (Client) -> None
 
     # {code_example|start}
-    # Get the 3 last messages sent by "iago@zulip.com" to the stream "Verona"
+    # Get the 100 last messages sent by "iago@zulip.com" to the stream "Verona"
     request = {
-        'use_first_unread_anchor': True,
-        'num_before': 3,
+        'anchor': 'newest',
+        'num_before': 100,
         'num_after': 0,
         'narrow': [{'operator': 'sender', 'operand': 'iago@zulip.com'},
                    {'operator': 'stream', 'operand': 'Verona'}],
-        'client_gravatar': True,
-        'apply_markdown': True
     }  # type: Dict[str, Any]
     result = client.get_messages(request)
     # {code_example|end}
