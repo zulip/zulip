@@ -2,7 +2,8 @@ var common = require('../casper_lib/common.js');
 
 function user_row(name) {
     var email = name + '@zulip.com';
-    return '.user_row[data-email="' + email + '"]';
+    var user_id = common.get_user_id(email);
+    return '.user_row[data-user-id="' + user_id + '"]';
 }
 
 common.start_and_log_in();
