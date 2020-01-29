@@ -3,7 +3,8 @@ var common = require('../casper_lib/common.js');
 common.start_and_log_in();
 
 function get_stream_li(stream_name) {
-    return '#stream_filters [data-stream-name="' + stream_name + '"]';
+    var stream_id = common.get_stream_id(stream_name);
+    return '#stream_filters [data-stream-id="' + stream_id + '"]';
 }
 
 // We could use the messages sent by 02-site.js, but we want to
@@ -376,17 +377,19 @@ casper.then(function () {
     arrow('Down'); // Denmark -> Scotland
 });
 
-casper.waitForSelector(get_stream_li("Scotland") + '.highlighted_stream', function () {
-    casper.test.info('Suggestion highlighting - after arrow key navigation');
-    casper.test.assertDoesntExist(
-        get_stream_li("Denmark") + '.highlighted_stream',
-        'Stream Denmark is not highlighted');
-    casper.test.assertExist(
-        get_stream_li("Scotland") + '.highlighted_stream',
-        'Stream Scotland is  highlighted');
-    casper.test.assertDoesntExist(
-        get_stream_li("Verona") + '.highlighted_stream',
-        'Stream Verona is not highlighted');
+casper.then(function () {
+    casper.waitForSelector(get_stream_li("Scotland") + '.highlighted_stream', function () {
+        casper.test.info('Suggestion highlighting - after arrow key navigation');
+        casper.test.assertDoesntExist(
+            get_stream_li("Denmark") + '.highlighted_stream',
+            'Stream Denmark is not highlighted');
+        casper.test.assertExist(
+            get_stream_li("Scotland") + '.highlighted_stream',
+            'Stream Scotland is  highlighted');
+        casper.test.assertDoesntExist(
+            get_stream_li("Verona") + '.highlighted_stream',
+            'Stream Verona is not highlighted');
+    });
 });
 
 // We search for the beginning of "Scotland", not case sensitive
@@ -429,19 +432,19 @@ casper.then(function () {
     });
 });
 
-// There will be no race condition between these waits because we
-// expect them to happen in parallel.
-casper.waitUntilVisible(get_stream_li("Denmark"), function () {
-    casper.test.assertExists(get_stream_li("Denmark"),
-                             'Restored stream list contains Denmark');
-});
-casper.waitUntilVisible(get_stream_li("Scotland"), function () {
-    casper.test.assertExists(get_stream_li("Denmark"),
-                             'Restored stream list contains Scotland');
-});
-casper.waitUntilVisible(get_stream_li("Verona"), function () {
-    casper.test.assertExists(get_stream_li("Denmark"),
-                             'Restored stream list contains Verona');
+casper.then(function () {
+    casper.waitUntilVisible(get_stream_li("Denmark"), function () {
+        casper.test.assertExists(get_stream_li("Denmark"),
+                                 'Restored stream list contains Denmark');
+    });
+    casper.waitUntilVisible(get_stream_li("Scotland"), function () {
+        casper.test.assertExists(get_stream_li("Denmark"),
+                                 'Restored stream list contains Scotland');
+    });
+    casper.waitUntilVisible(get_stream_li("Verona"), function () {
+        casper.test.assertExists(get_stream_li("Denmark"),
+                                 'Restored stream list contains Verona');
+    });
 });
 
 
