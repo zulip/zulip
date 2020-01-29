@@ -170,7 +170,7 @@ exports.processing_text = function () {
         $focused_elt.attr("id") === "compose-send-button";
 };
 
-exports.is_editing_stream_name = function (e) {
+exports.in_content_editable_widget = function (e) {
     return $(e.target).is(".editable-section");
 };
 
@@ -178,7 +178,7 @@ exports.is_editing_stream_name = function (e) {
 exports.process_escape_key = function (e) {
     let row;
 
-    if (exports.is_editing_stream_name(e)) {
+    if (exports.in_content_editable_widget(e)) {
         return false;
     }
 
@@ -311,7 +311,7 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
-    if (exports.is_editing_stream_name(e)) {
+    if (exports.in_content_editable_widget(e)) {
         $(e.target).parent().find(".checkmark").click();
         return false;
     }
@@ -511,7 +511,7 @@ exports.process_hotkey = function (e, hotkey) {
         return subs.switch_rows(event_name);
     }
 
-    if (exports.is_editing_stream_name(e)) {
+    if (exports.in_content_editable_widget(e)) {
         // We handle the enter key in process_enter_key().
         // We ignore all other keys.
         return false;
