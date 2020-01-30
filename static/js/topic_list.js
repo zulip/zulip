@@ -92,6 +92,10 @@ exports.widget = function (parent_elem, my_stream_id) {
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
 
+        const is_showing_all_possible_topics =
+            list_info.items.length === num_possible_topics &&
+            topic_data.is_complete_for_stream_id(my_stream_id);
+
         const ul = $('<ul class="topic-list">');
 
         self.topic_items = new FoldDict();
@@ -111,10 +115,6 @@ exports.widget = function (parent_elem, my_stream_id) {
         // frontend's cache, or if we (possibly) don't have all
         // historical topics in the browser's cache.
         const show_more = self.build_more_topics_section(more_topics_unreads);
-
-        const is_showing_all_possible_topics =
-            list_info.items.length === num_possible_topics &&
-            topic_data.is_complete_for_stream_id(my_stream_id);
 
         if (!is_showing_all_possible_topics) {
             ul.append(show_more);
