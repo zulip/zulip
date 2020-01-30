@@ -1,4 +1,5 @@
 const render_more_topics = require('../templates/more_topics.hbs');
+const render_more_topics_spinner = require('../templates/more_topics_spinner.hbs');
 const render_topic_list_item = require('../templates/topic_list_item.hbs');
 const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
@@ -114,19 +115,17 @@ exports.widget = function (parent_elem, my_stream_id) {
         // widget.  We need it if there are at least 5 topics in the
         // frontend's cache, or if we (possibly) don't have all
         // historical topics in the browser's cache.
-        const show_more = self.build_more_topics_section(more_topics_unreads);
 
         if (!is_showing_all_possible_topics) {
-            ul.append(show_more);
+            const show_more_html = render_more_topics({
+                more_topics_unreads: more_topics_unreads,
+            });
+            ul.append($(show_more_html));
+
+            const spinner = render_more_topics_spinner();
+            ul.append($(spinner));
         }
         return ul;
-    };
-
-    self.build_more_topics_section = function (more_topics_unreads) {
-        const show_more_html = render_more_topics({
-            more_topics_unreads: more_topics_unreads,
-        });
-        return $(show_more_html);
     };
 
     self.get_parent = function () {
