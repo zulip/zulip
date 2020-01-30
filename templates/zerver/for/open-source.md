@@ -182,6 +182,9 @@ and organized, enabling a meaningful archive indexed by search engines.
 Currently implemented as an [out-of-tree
 tool](https://github.com/zulip/zulip-archive), though a native feature
 built into the Zulip server is coming soon.
+Zulip, together with the public archive satisfies the
+[SLOPI](http://blog.greptilian.com/2020/01/25/slopi-communication/) requirement
+for FLOSS communication.
 
 ### Logged-out public access (coming soon)
 
