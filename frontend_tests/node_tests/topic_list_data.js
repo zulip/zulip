@@ -24,9 +24,8 @@ function clear() {
 
 function get_list_info(zoomed) {
     const stream_id = general.stream_id;
-    const max_topics = 5;
     return topic_list_data.get_list_info(
-        stream_id, max_topics, zoomed);
+        stream_id, zoomed);
 }
 
 run_test('get_list_info w/real topic_data', () => {
