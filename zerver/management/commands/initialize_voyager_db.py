@@ -4,8 +4,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from zerver.lib.server_initialization import create_internal_realm
-from zerver.models import Realm
+from zerver.lib.server_initialization import create_internal_realm, server_initialized
 
 settings.TORNADO_SERVER = None
 
@@ -20,7 +19,7 @@ class Command(BaseCommand):
                             help='The number of extra users to create')
 
     def handle(self, *args: Any, **options: Any) -> None:
-        if Realm.objects.count() > 0:
+        if server_initialized():
             print("Database already initialized; doing nothing.")
             return
         create_internal_realm()

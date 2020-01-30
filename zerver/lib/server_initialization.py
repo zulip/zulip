@@ -7,6 +7,9 @@ from zerver.models import Realm, UserProfile, email_to_username, get_client, \
 
 from typing import Iterable, Optional, Tuple
 
+def server_initialized() -> bool:
+    return Realm.objects.count() > 0
+
 def create_internal_realm() -> None:
     realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
 
