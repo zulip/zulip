@@ -1,19 +1,17 @@
-"""
-Forward messages sent to the configured email gateway to Zulip.
+"""Cron job implementation of Zulip's incoming email gateway's helper
+for forwarding emails into Zulip.
 
-For zulip.com, messages to that address go to the Inbox of emailgateway@zulip.com.
-Zulip voyager configurations will differ.
+https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
 
-Messages meant for Zulip have a special recipient form of
+The email gateway supports two major modes of operation: An email
+server (using postfix) where the email address configured in
+EMAIL_GATEWAY_PATTERN delivers emails directly to Zulip, and this, a
+cron job that connects to an IMAP inbox (which receives the emails)
+periodically.
 
-    <stream name>+<regenerable stream token>@streams.zulip.com
-
-This pattern is configurable via the EMAIL_GATEWAY_PATTERN settings.py
-variable.
-
-Run this in a cronjob every N minutes if you have configured Zulip to poll
-an external IMAP mailbox for messages. The script will then connect to
-your IMAP server and batch-process all messages.
+Run this in a cronjob every N minutes if you have configured Zulip to
+poll an external IMAP mailbox for messages. The script will then
+connect to your IMAP server and batch-process all messages.
 
 We extract and validate the target stream from information in the
 recipient address and retrieve, forward, and archive the message.
