@@ -84,11 +84,10 @@ exports.set_count = function (stream_id, topic, count) {
 
 exports.widget = function (parent_elem, my_stream_id) {
     const self = {};
-    const max_topics = 5;
 
     self.build_list = function () {
         const list_info = topic_list_data.get_list_info(
-            my_stream_id, max_topics, zoomed);
+            my_stream_id, zoomed);
 
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;

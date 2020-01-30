@@ -1,4 +1,7 @@
-exports.get_list_info = function (stream_id, max_topics, zoomed) {
+const max_topics = 5;
+const max_topics_with_unread = 8;
+
+exports.get_list_info = function (stream_id, zoomed) {
     let topics_selected = 0;
     let more_topics_unreads = 0;
 
@@ -8,7 +11,6 @@ exports.get_list_info = function (stream_id, max_topics, zoomed) {
         active_topic = active_topic.toLowerCase();
     }
 
-    const max_topics_with_unread = 8;
     const topic_names = topic_data.get_recent_names(stream_id);
 
     const items = [];
