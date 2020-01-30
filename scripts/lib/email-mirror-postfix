@@ -1,31 +1,33 @@
 #!/usr/bin/env python3
 
-"""
-Forward messages sent to the configured email gateway to Zulip.
+"""Postfix implementation of the incoming email gateway's helper for
+forwarding emails into Zulip.
 
-For zulip.com, messages to that address go to the Inbox of emailgateway@zulip.com.
-Zulip voyager configurations will differ.
+https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
 
-Messages meant for Zulip have a special recipient form of
+The email gateway supports two major modes of operation: An email
+server (using postfix) where the email address configured in
+EMAIL_GATEWAY_PATTERN delivers emails directly to Zulip (this) or a
+cron job that connects to an IMAP inbox (which receives the emails)
+periodically.
 
-    <stream name>+<regenerable stream token>@streams.zulip.com
-
-This pattern is configurable via the EMAIL_GATEWAY_PATTERN settings.py
-variable.
-
-Configure your MTA to execute this script on message
-receipt with the contents of the message piped to standard input. The
-script will queue the message for processing. In this mode of invocation,
-you should pass the destination email address in the ORIGINAL_RECIPIENT
-environment variable.
+Zulip's puppet configuration takes care of configuring postfix to
+execute this script when emails are received by postfix, piping the
+email content via standard input (and the destination email address in
+the ORIGINAL_RECIPIENT environment variable).
 
 In Postfix, you can express that via an /etc/aliases entry like this:
  |/home/zulip/deployments/current/scripts/lib/email-mirror-postfix -r ${original_recipient}
 
+To manage DoS issues, this script does very little work (just sending
+an HTTP request to queue the message for processing) to avoid
+importing expensive libraries.
+
 Also you can use optional keys to configure the script and change default values:
 
 -s SHARED_SECRET    For adding shared secret key if it is not contained in
-                    "/etc/zulip/zulip-secrets.conf".
+                    "/etc/zulip/zulip-secrets.conf".  This key is used to authenticate
+                    the HTTP requests made by this tool.
 
 -d HOST             Destination Zulip host for email uploading. Address must contain type of
                     HTTP protocol, i.e "https://example.com". Default value: "https://127.0.0.1".
@@ -36,6 +38,7 @@ Also you can use optional keys to configure the script and change default values
                     self-signed certificates. Default value: False.
 
 -t                  Disable sending request to the Zulip server. Default value: False.
+
 """
 
 import os
