@@ -38,7 +38,7 @@ class HelloWorldHookTests(WebhookTestCase):
                                            content_type="application/x-www-form-urlencoded")
 
     def test_stream_error_pm_to_bot_owner(self) -> None:
-        # Note taht this is really just a test for check_send_webhook_message
+        # Note that this is really just a test for check_send_webhook_message
         self.STREAM_NAME = 'nonexistent'
         self.url = self.build_webhook_url()
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
