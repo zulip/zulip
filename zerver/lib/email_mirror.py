@@ -149,10 +149,16 @@ def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bo
         body = '(No email body)'
 
     if show_sender:
-        sender = str(make_header(decode_header(message.get("From"))))
+        sender = handle_header_content(message.get("From", ""))
         body = "From: %s\n%s" % (sender, body)
 
     return body
+
+def handle_header_content(content: str) -> str:
+    """
+    Deals with converting encoded headers to readable python string.
+    """
+    return str(make_header(decode_header(content)))
 
 ## Sending the Zulip ##
 
@@ -292,7 +298,7 @@ def is_forwarded(subject: str) -> bool:
     return bool(re.match(reg, subject, flags=re.IGNORECASE))
 
 def process_stream_message(to: str, message: message.Message) -> None:
-    subject_header = str(make_header(decode_header(message.get("Subject", ""))))
+    subject_header = handle_header_content(message.get("Subject", ""))
     subject = strip_from_subject(subject_header) or "(no topic)"
 
     stream, options = decode_stream_email_address(to)
