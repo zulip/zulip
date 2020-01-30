@@ -861,7 +861,8 @@ class WebhookTestCase(ZulipTestCase):
         headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
         headers = standardize_headers(headers)
         kwargs.update(headers)
-        sender = kwargs.get('sender', self.test_user)
+        # The sender profile shouldn't be passed any further in kwargs, so we pop it.
+        sender = kwargs.pop('sender', self.test_user)
         msg = self.send_json_payload(sender, self.url, payload,
                                      stream_name=None, **kwargs)
         self.do_test_message(msg, expected_message)
