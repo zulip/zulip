@@ -545,7 +545,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 # Miscellaneous settings.
 
 # The default CAMO_URI of '/external_content/' is served by the camo
-# setup in the default Voyager nginx configuration.  Setting CAMO_URI
+# setup in the default Zulip nginx configuration.  Setting CAMO_URI
 # to '' will disable the Camo integration.
 CAMO_URI = '/external_content/'
 
