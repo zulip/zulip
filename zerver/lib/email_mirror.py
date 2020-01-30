@@ -264,7 +264,11 @@ def extract_and_upload_attachments(message: message.Message, realm: Realm) -> st
     attachment_links = []
     for part in message.walk():
         content_type = part.get_content_type()
-        filename = part.get_filename()
+        encoded_filename = part.get_filename()
+        if not encoded_filename:
+            continue
+
+        filename = handle_header_content(encoded_filename)
         if filename:
             attachment = part.get_payload(decode=True)
             if isinstance(attachment, bytes):
