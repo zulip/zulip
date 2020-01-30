@@ -1092,6 +1092,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return "<UserProfile: %s %s>" % (self.email, self.realm)
 
     @property
+    def is_new_member(self) -> bool:
+        diff = (timezone_now() - self.date_joined).days
+        if diff < self.realm.waiting_period_threshold:
+            return True
+        return False
+
+    @property
     def is_realm_admin(self) -> bool:
         return self.role == UserProfile.ROLE_REALM_ADMINISTRATOR
 
@@ -1161,11 +1168,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         if self.realm.create_stream_policy == Realm.CREATE_STREAM_POLICY_MEMBERS:
             return True
-
-        diff = (timezone_now() - self.date_joined).days
-        if diff >= self.realm.waiting_period_threshold:
-            return True
-        return False
+        return not self.is_new_member
 
     def can_subscribe_other_users(self) -> bool:
         if self.is_realm_admin:
@@ -1179,10 +1182,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             return True
 
         assert self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD
-        diff = (timezone_now() - self.date_joined).days
-        if diff >= self.realm.waiting_period_threshold:
-            return True
-        return False
+        return not self.is_new_member
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
