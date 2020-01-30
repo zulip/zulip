@@ -449,6 +449,41 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         message = most_recent_message(user_profile)
         self.assertEqual(message.content, "Test body\n[image.png](https://test_url)")
 
+    def test_message_with_attachment_utf8_filename(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_to_address = encode_email_address(stream)
+
+        incoming_valid_message = MIMEMultipart()
+        text_msg = MIMEText("Test body")
+        incoming_valid_message.attach(text_msg)
+        with open(os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), 'rb') as f:
+            image_bytes = f.read()
+
+        attachment_msg = MIMEImage(image_bytes)
+        utf8_filename = "image_ąęó.png"
+        encoded_filename = "=?utf-8?b?aW1hZ2VfxIXEmcOzLnBuZw==?="
+        attachment_msg.add_header('Content-Disposition', 'attachment', filename=encoded_filename)
+        incoming_valid_message.attach(attachment_msg)
+
+        incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        with mock.patch('zerver.lib.email_mirror.upload_message_file',
+                        return_value='https://test_url') as upload_message_file:
+            process_message(incoming_valid_message)
+            upload_message_file.assert_called_with(utf8_filename, len(image_bytes),
+                                                   'image/png', image_bytes,
+                                                   get_system_bot(settings.EMAIL_GATEWAY_BOT),
+                                                   target_realm=user_profile.realm)
+
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.content, "Test body\n[%s](https://test_url)" % (utf8_filename,))
+
     def test_message_with_valid_nested_attachment(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
