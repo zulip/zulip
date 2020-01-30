@@ -76,8 +76,7 @@ i18n_urls = [
     url(r'^confirmation_key/$', zerver.views.development.registration.confirmation_key),
 ]
 
-# These are used for voyager development. On a real voyager instance,
-# these files would be served by nginx.
+# On a production instance, these files would be served by nginx.
 if settings.LOCAL_UPLOADS_DIR is not None:
     urls += [
         url(r'^user_avatars/(?P<path>.*)$', serve,

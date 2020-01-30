@@ -9,7 +9,7 @@ from zerver.lib.server_initialization import create_internal_realm, server_initi
 settings.TORNADO_SERVER = None
 
 class Command(BaseCommand):
-    help = "Populate an initial database for Zulip Voyager"
+    help = "Populate system realm and bots for a Zulip production server"
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--extra-users',

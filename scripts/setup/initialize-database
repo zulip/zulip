@@ -32,7 +32,7 @@ cd "$THIS_DIR/../.."
 ./manage.py migrate --noinput
 ./manage.py createcachetable third_party_api_results
 
-if ! ./manage.py initialize_voyager_db; then
+if ! ./manage.py initialize_production_database; then
     set +x
     echo
     echo -e '\033[32mPopulating default database failed.'

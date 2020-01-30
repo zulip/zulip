@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from zerver.lib.management import check_config
 
 class Command(BaseCommand):
-    help = """Checks your Zulip Voyager Django configuration for issues."""
+    help = """Checks /etc/zulip/settings.py for common configuration issues."""
 
     def handle(self, *args: Any, **options: Any) -> None:
         check_config()
