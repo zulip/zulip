@@ -396,12 +396,15 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
 
     # If message content is disabled, then flush all information we pass to email.
     if not message_content_allowed_in_missedmessage_emails(user_profile):
+        realm = user_profile.realm
         context.update({
             'reply_to_zulip': False,
             'messages': [],
             'sender_str': "",
-            'realm_str': user_profile.realm.name,
+            'realm_str': realm.name,
             'huddle_display_name': "",
+            'message_content_disabled_by_user': not user_profile.message_content_in_email_notifications,
+            'message_content_disabled_by_realm': not realm.message_content_allowed_in_email_notifications,
         })
     else:
         context.update({

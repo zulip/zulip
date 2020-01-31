@@ -299,6 +299,10 @@ a.button:hover {
     font-weight: bold;
 }
 
+.content_disabled_help_link {
+    color: #15c;
+}
+
 @media only screen and (max-width: 620px) {
     table[class=body] h1 {
         font-size: 28px !important;
