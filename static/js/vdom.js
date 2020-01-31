@@ -57,12 +57,15 @@ exports.render_tag = (tag) => {
     return start_tag + '\n' + innards + '\n' + end_tag;
 };
 
-exports.update = (container, new_dom, old_dom) => {
+exports.update = (replace_content, find, new_dom, old_dom) => {
     /*
         The update method allows you to continually
         update a "virtual" representation of your DOM,
         and then this method actually updates the
-        real DOM in a container using jQuery.
+        real DOM using jQuery.  The caller will pass
+        in a method called `replace_content` that will replace
+        the entire html and a method called `find` to
+        find the existing DOM for more surgical updates.
 
         The first "update" will be more like a create,
         because your `old_dom` should be undefined.
@@ -73,13 +76,12 @@ exports.update = (container, new_dom, old_dom) => {
         The basic scheme here is simple:
 
             1) If old_dom is undefined, we render
-               everything for the first time into
-               the container.
+               everything for the first time.
 
             2) If the keys of your new children are no
                longer the same order as the old
                children, then we just render
-               everything anew into the container.
+               everything anew.
                (We may refine this in the future.)
 
             3) If your key structure remains the same,
@@ -109,7 +111,7 @@ exports.update = (container, new_dom, old_dom) => {
     */
     function do_full_update() {
         const rendered_dom = exports.render_tag(new_dom);
-        container.html(rendered_dom);
+        replace_content(rendered_dom);
     }
 
     if (old_dom === undefined) {
@@ -153,8 +155,7 @@ exports.update = (container, new_dom, old_dom) => {
         We will only update nodes whose data has changed.
     */
 
-    const tag_name = new_dom.tag_name;
-    const child_elems = container.find(tag_name).children();
+    const child_elems = find().children();
 
     _.each(new_opts.keyed_nodes, (new_node, i) => {
         const old_node = old_opts.keyed_nodes[i];
@@ -166,7 +167,7 @@ exports.update = (container, new_dom, old_dom) => {
     });
 
     exports.update_attrs(
-        container.find(tag_name),
+        find(),
         new_opts.attrs,
         old_opts.attrs
     );
