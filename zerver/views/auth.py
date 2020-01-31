@@ -720,13 +720,13 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
     if 'username' in request.POST:
         extra_context['email'] = request.POST['username']
+    extra_context.update(login_context(request))
 
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         return start_two_factor_auth(request, extra_context=extra_context,
                                      **kwargs)
 
     try:
-        extra_context.update(login_context(request))
         template_response = DjangoLoginView.as_view(
             authentication_form=OurAuthenticationForm,
             extra_context=extra_context, **kwargs)(request)
