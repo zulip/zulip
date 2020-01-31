@@ -429,6 +429,9 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
     if (backend == "google") and not (settings.SOCIAL_AUTH_GOOGLE_KEY and
                                       settings.SOCIAL_AUTH_GOOGLE_SECRET):
         return redirect_to_config_error("google")
+    if (backend == "gitlab") and not (settings.SOCIAL_AUTH_GITLAB_KEY and
+                                      settings.SOCIAL_AUTH_GITLAB_SECRET):
+        return redirect_to_config_error("gitlab")
     # TODO: Add a similar block for AzureAD.
 
     return oauth_redirect_to_root(request, backend_url, 'social', extra_url_params=extra_url_params)

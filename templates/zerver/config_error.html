@@ -74,6 +74,14 @@
                         {% endif %}
                     {% endif %}
 
+                    {% if gitlab_error %}
+                        {% if development_environment %}
+                        {{ render_markdown_path('zerver/gitlab-error.md', {"root_domain_uri": root_domain_uri, "settings_path": secrets_path, "secrets_path": secrets_path, "client_id_key_name": "social_auth_gitlab_key"}) }}
+                        {% else %}
+                        {{ render_markdown_path('zerver/gitlab-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path, "client_id_key_name": "SOCIAL_AUTH_GITLAB_KEY"}) }}
+                        {% endif %}
+                    {% endif %}
+
                     {% if google_error or github_error %}
                         {% if not development_environment %}
                         <p>

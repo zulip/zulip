@@ -39,6 +39,7 @@ from onelogin.saml2.errors import OneLogin_Saml2_Error
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.backends.azuread import AzureADOAuth2
+from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.google import GoogleOAuth2
 from social_core.backends.saml import SAMLAuth
@@ -109,6 +110,9 @@ def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
 
 def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
+
+def gitlab_auth_enabled(realm: Optional[Realm]=None) -> bool:
+    return auth_enabled_helper(['GitLab'], realm)
 
 def saml_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['SAML'], realm)
@@ -1323,6 +1327,13 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"
     display_icon = "/static/images/landing-page/logos/azuread-icon.png"
+
+@external_auth_method
+class GitLabAuthBackend(SocialAuthMixin, GitLabOAuth2):
+    sort_order = 75
+    name = "gitlab"
+    auth_backend_name = "GitLab"
+    display_icon = "/static/images/landing-page/logos/gitlab-icon.png"
 
 @external_auth_method
 class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):

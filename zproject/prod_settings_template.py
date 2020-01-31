@@ -119,6 +119,7 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.EmailAuthBackend',  # Email and password; just requires SMTP setup
     # 'zproject.backends.GoogleAuthBackend',  # Google auth, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
+    # 'zproject.backends.GitLabAuthBackend',  # GitLab auth, setup below
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
     # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
@@ -147,6 +148,24 @@ AUTHENTICATION_BACKENDS = (
 # Use the client ID as `SOCIAL_AUTH_GOOGLE_KEY` here, and put the
 # client secret in zulip-secrets.conf as `social_auth_google_secret`.
 #SOCIAL_AUTH_GOOGLE_KEY = <your client ID from Google>
+
+#######
+# GitLab OAuth.
+#
+# To set up GitLab authentication, you'll need to do the following:
+#
+# (1) Register an OAuth application with GitLab at
+#   https://gitlab.com/oauth/applications
+# Fill in the "Redirect URI" with a value like
+#   http://zulip.example.com/complete/gitlab/
+# based on your value for EXTERNAL_HOST and select "read_user" in
+# scopes.
+#
+# (2) You should get a page with application details containing
+# Application ID and Secret. Use the Application ID as
+# `SOCIAL_AUTH_GITLAB_KEY`  here, and put the Secret in zulip-secrets.conf as
+# `social_auth_gitlab_secret`.
+#SOCIAL_AUTH_GITLAB_KEY = <your Application ID from GitLab>
 
 ########
 # GitHub OAuth.
