@@ -77,7 +77,6 @@ class zulip::base {
     'embedded_bots',
     'error_reports',
     'invites',
-    'missedmessage_email_senders',
     'email_senders',
     'missedmessage_emails',
     'missedmessage_mobile_notifications',
