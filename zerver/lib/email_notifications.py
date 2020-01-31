@@ -323,7 +323,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'message_count': message_count,
         'unsubscribe_link': unsubscribe_link,
         'realm_name_in_notifications': user_profile.realm_name_in_notifications,
-        'show_message_content': message_content_allowed_in_missedmessage_emails(user_profile)
     })
 
     triggers = list(message['trigger'] for message in missed_messages)
@@ -403,6 +402,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             'sender_str': "",
             'realm_str': realm.name,
             'huddle_display_name': "",
+            'show_message_content': False,
             'message_content_disabled_by_user': not user_profile.message_content_in_email_notifications,
             'message_content_disabled_by_realm': not realm.message_content_allowed_in_email_notifications,
         })
@@ -411,6 +411,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             'messages': build_message_list(user_profile, list(m['message'] for m in missed_messages)),
             'sender_str': ", ".join(sender.full_name for sender in senders),
             'realm_str': user_profile.realm.name,
+            'show_message_content': True,
         })
 
     from_name = "Zulip missed messages"  # type: str
