@@ -117,7 +117,16 @@ exports.update_private_messages = function () {
     if (private_messages_open) {
         const container = ui.get_content_element($("#private-container"));
         const new_dom = exports._build_private_messages_list();
-        vdom.update(container, new_dom, prior_dom);
+
+        function replace_content(html) {
+            container.html(html);
+        }
+
+        function find() {
+            return container.find('ul');
+        }
+
+        vdom.update(replace_content, find, new_dom, prior_dom);
         prior_dom = new_dom;
     }
 };
