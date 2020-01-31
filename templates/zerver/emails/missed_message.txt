@@ -6,6 +6,14 @@
 {% endfor %}
 {% endfor %}
 {% endfor %}
+{% else %}
+{% if message_content_disabled_by_realm %}
+This email does not include message content because your organization has disabled message content appearing in email notifications.
+See {{ realm_uri }}/help/hide-message-content-in-emails for more details.
+{% elif message_content_disabled_by_user %}
+This email does not include message content because you have disabled message content appearing in email notifications.
+See {{ realm_uri }}/help/pm-mention-alert-notifications for more details.
+{% endif %}
 {% endif %}
 
 --
@@ -17,6 +25,9 @@ You are receiving this because you have email notifications enabled for this str
 
 {% if reply_to_zulip  %}
 Reply to this email directly, or view it in Zulip:
+{{ narrow_url }}
+{% elif not show_message_content %}
+View or reply in Zulip:
 {{ narrow_url }}
 {% else %}
 Reply in Zulip:
