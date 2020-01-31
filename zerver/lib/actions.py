@@ -81,7 +81,9 @@ from zerver.lib.topic_mutes import (
 from zerver.lib.users import (
     check_bot_name_available,
     check_full_name,
+    format_user_row,
     get_api_key,
+    user_profile_to_user_row,
 )
 from zerver.lib.user_status import (
     update_user_status,
@@ -436,22 +438,18 @@ def process_new_human_user(user_profile: UserProfile,
             lambda event: None)
 
 def notify_created_user(user_profile: UserProfile) -> None:
-    person = dict(email=user_profile.email,
-                  user_id=user_profile.id,
-                  is_admin=user_profile.is_realm_admin,
-                  full_name=user_profile.full_name,
-                  avatar_url=avatar_url(user_profile),
-                  timezone=user_profile.timezone,
-                  date_joined=user_profile.date_joined.isoformat(),
-                  is_guest=user_profile.is_guest,
-                  is_bot=user_profile.is_bot)  # type: Dict[str, Any]
-    if user_profile.is_bot:
-        person["bot_type"] = user_profile.bot_type
-        if user_profile.bot_owner_id is not None:
-            person["bot_owner_id"] = user_profile.bot_owner_id
+    user_row = user_profile_to_user_row(user_profile)
+    person = format_user_row(user_profile.realm, user_profile, user_row,
+                             # Since we don't know what the client
+                             # supports at this point in the code, we
+                             # just assume client_gravatar=False :(
+                             client_gravatar=False,
+                             # We assume there's no custom profile
+                             # field data for a new user; initial
+                             # values are expected to be added in a
+                             # later event.
+                             custom_profile_field_data={})
     event = dict(type="realm_user", op="add", person=person)  # type: Dict[str, Any]
-    if not user_profile.is_bot:
-        event["person"]["profile_data"] = {}
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:

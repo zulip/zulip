@@ -326,8 +326,29 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
         result['profile_data'] = custom_profile_field_data
     return result
 
-def get_cross_realm_dicts() -> List[Dict[str, Any]]:
+def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
+    # What we're trying to do is simulate the user_profile having been
+    # fetched from a QuerySet using `.values(*realm_user_dict_fields)`
+    # even though we fetched UserProfile objects.  This is messier
+    # than it seems.
+    #
+    # What we'd like to do is just call model_to_dict(user,
+    # fields=realm_user_dict_fields).  The problem with this is
+    # that model_to_dict has a different convention than
+    # `.values()` in its handling of foreign keys, naming them as
+    # e.g. `bot_owner`, not `bot_owner_id`; we work around that
+    # here.
+    #
+    # This could be potentially simplified in the future by
+    # changing realm_user_dict_fields to name the bot owner with
+    # the less readable `bot_owner` (instead of `bot_owner_id`).
+    user_row = model_to_dict(user_profile,
+                             fields=realm_user_dict_fields + ['bot_owner'])
+    user_row['bot_owner_id'] = user_row['bot_owner']
+    del user_row['bot_owner']
+    return user_row
 
+def get_cross_realm_dicts() -> List[Dict[str, Any]]:
     users = bulk_get_users(list(settings.CROSS_REALM_BOT_EMAILS), None,
                            base_query=UserProfile.objects.filter(
                            realm__string_id=settings.SYSTEM_BOT_REALM)).values()
@@ -338,25 +359,10 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
         # cache with other UserProfile caches.
         if user.realm.string_id != settings.SYSTEM_BOT_REALM:
             continue
-
-        # What we're trying to do is simulate bulk_get_users returning
-        # `.values(*realm_user_dict_fields)` even though we fetched
-        # UserProfile objects.  This is messier than it seems.
-        #
-        # What we'd like to do is just call model_to_dict(user,
-        # fields=realm_user_dict_fields).  The problem with this is
-        # that model_to_dict has a different convention than
-        # `.values()` in its handling of foreign keys, naming them as
-        # e.g. `bot_owner`, not `bot_owner_id`; we work around that
-        # here.  And then, because we want to avoid clients dealing
-        # with the implementation detail that these bots are
-        # self-owned, we just set bot_owner_id=None.
-        #
-        # This could be potentially simplified in the future by
-        # changing realm_user_dict_fields to name the bot owner with
-        # the less readable `bot_owner` (instead of `bot_owner_id`).
-        user_row = model_to_dict(user,
-                                 fields=realm_user_dict_fields)
+        user_row = user_profile_to_user_row(user)
+        # Because we want to avoid clients becing exposed to the
+        # implementation detail that these bots are self-owned, we
+        # just set bot_owner_id=None.
         user_row['bot_owner_id'] = None
 
         result.append(format_user_row(user.realm,
