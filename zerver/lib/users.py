@@ -357,7 +357,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
         # Important: We filter here, is addition to in
         # `base_query`, because of how bulk_get_users shares its
         # cache with other UserProfile caches.
-        if user.realm.string_id != settings.SYSTEM_BOT_REALM:
+        if user.realm.string_id != settings.SYSTEM_BOT_REALM:  # nocoverage
             continue
         user_row = user_profile_to_user_row(user)
         # Because we want to avoid clients becing exposed to the
