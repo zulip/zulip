@@ -1,13 +1,14 @@
 set_global('$', global.make_zjquery());
-set_global('people', {});
 set_global('markdown', {});
 set_global('local_message', {
     now: () => "timestamp",
 });
 set_global('page_params', {});
+set_global('blueslip',  global.make_zblueslip());
 
 zrequire('echo');
 zrequire('util');
+zrequire('people');
 
 let disparities = [];
 let messages_to_rerender = [];
@@ -90,6 +91,21 @@ run_test('process_from_server for differently rendered messages', () => {
 });
 
 run_test('build_display_recipient', () => {
+    page_params.user_id = 123;
+    page_params.realm_users = [
+        {
+            user_id: 123,
+            full_name: "Iago",
+            email: "iago@zulip.com",
+        },
+        {
+            email: "cordelia@zulip.com",
+            full_name: "Cordelia",
+            user_id: 21,
+        },
+    ];
+    people.initialize();
+
     let message = {
         type: "stream",
         stream: "general",
@@ -100,16 +116,6 @@ run_test('build_display_recipient', () => {
     let display_recipient = echo.build_display_recipient(message);
     assert.equal(display_recipient, "general");
 
-    people.get_by_email = (email) => {
-        if (email === "cordelia@zulip.com") {
-            return {
-                email: "cordelia@zulip.com",
-                full_name: "Cordelia",
-                user_id: 21,
-            };
-        }
-        return;
-    };
     message = {
         type: "private",
         private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
@@ -129,17 +135,6 @@ run_test('build_display_recipient', () => {
     assert.equal(hamlet.id, undefined);
     assert.equal(hamlet.unknown_local_echo_user, true);
 
-    people.get_by_email = (email) => {
-        if (email === "iago@zulip.com") {
-            return {
-                email: "iago@zulip.com",
-                full_name: "Iago",
-                user_id: 123,
-            };
-        }
-        return;
-    };
-
     message = {
         type: "private",
         private_message_recipient: "iago@zulip.com",
@@ -158,8 +153,16 @@ run_test('build_display_recipient', () => {
 
 run_test('insert_local_message', () => {
     const local_id = 1;
-    people.my_current_email = () => "iago@zulip.com";
-    people.my_full_name = () => "Iago";
+
+    page_params.user_id = 123;
+    page_params.realm_users = [
+        {
+            user_id: 123,
+            full_name: "Iago",
+            email: "iago@zulip.com",
+        },
+    ];
+    people.initialize();
 
     let apply_markdown_called = false;
     let add_topic_links_called = false;
@@ -198,8 +201,6 @@ run_test('insert_local_message', () => {
     add_topic_links_called = false;
     apply_markdown_called = false;
     insert_message_called = false;
-
-    people.get_by_email = () => {};
 
     local_message.insert_message = (message) => {
         assert.equal(message.display_recipient.length, 2);
