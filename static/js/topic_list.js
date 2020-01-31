@@ -1,7 +1,6 @@
 const render_more_topics = require('../templates/more_topics.hbs');
 const render_more_topics_spinner = require('../templates/more_topics_spinner.hbs');
 const render_topic_list_item = require('../templates/topic_list_item.hbs');
-const FoldDict = require('./fold_dict').FoldDict;
 const IntDict = require('./int_dict').IntDict;
 const topic_list_data = require('./topic_list_data');
 
@@ -17,6 +16,12 @@ const active_widgets = new IntDict();
 
 // We know whether we're zoomed or not.
 let zoomed = false;
+
+exports.update = function () {
+    for (const widget of active_widgets.values()) {
+        widget.build();
+    }
+};
 
 exports.remove_expanded_topics = function () {
     stream_popover.hide_topic_popover();
@@ -50,43 +55,73 @@ exports.zoom_out = function () {
     exports.rebuild(parent_widget, stream_id);
 };
 
-function update_unread_count(unread_count_elem, count) {
-    // unread_count_elem is a jquery element...we expect DOM
-    // to look like this:
-    //   <div class="topic-unread-count {{#if is_zero}}zero_count{{/if}}">
-    //        <div class="value">{{unread}}</div>
-    //   </div>
-    const value_span = unread_count_elem.find('.value');
+exports.keyed_topic_li = (convo) => {
+    const render = () => {
+        return render_topic_list_item(convo);
+    };
 
-    if (value_span.length === 0) {
-        blueslip.error('malformed dom for unread count');
-        return;
-    }
+    const eq = (other) => {
+        return _.isEqual(convo, other.convo);
+    };
 
-    if (count === 0) {
-        unread_count_elem.addClass("zero_count");
-        value_span.text('');
-    } else {
-        unread_count_elem.removeClass("zero_count");
-        unread_count_elem.show();
-        value_span.text(count);
-    }
-}
+    const key = 't:' + convo.topic_name;
 
-exports.set_count = function (stream_id, topic, count) {
-    const widget = active_widgets.get(stream_id);
+    return {
+        key: key,
+        render: render,
+        convo: convo,
+        eq: eq,
+    };
+};
 
-    if (widget === undefined) {
-        return false;
-    }
+exports.more_li = (more_topics_unreads) => {
+    const render = () => {
+        return render_more_topics({
+            more_topics_unreads: more_topics_unreads,
+        });
+    };
 
-    return widget.set_count(topic, count);
+    const eq = (other) => {
+        return other.more_items &&
+            more_topics_unreads === other.more_topics_unreads;
+    };
+
+    const key = 'more';
+
+    return {
+        key: key,
+        more_items: true,
+        more_topics_unreads: more_topics_unreads,
+        render: render,
+        eq: eq,
+    };
+};
+
+exports.spinner_li = () => {
+    const render = () => {
+        return render_more_topics_spinner();
+    };
+
+    const eq = (other) => {
+        return other.spinner;
+    };
+
+    const key = 'more';
+
+    return {
+        key: key,
+        spinner: true,
+        render: render,
+        eq: eq,
+    };
 };
 
 exports.widget = function (parent_elem, my_stream_id) {
     const self = {};
 
-    self.build_list = function () {
+    self.prior_dom = undefined;
+
+    self.build_list = function (spinner) {
         const list_info = topic_list_data.get_list_info(
             my_stream_id, zoomed);
 
@@ -97,35 +132,25 @@ exports.widget = function (parent_elem, my_stream_id) {
             list_info.items.length === num_possible_topics &&
             topic_data.is_complete_for_stream_id(my_stream_id);
 
-        const ul = $('<ul class="topic-list">');
+        const attrs = [
+            ['class', 'topic-list'],
+        ];
 
-        self.topic_items = new FoldDict();
+        const nodes = _.map(
+            list_info.items, exports.keyed_topic_li);
 
-        // This is the main list of topics:
-        //    topic1
-        //    topic2
-        //    topic3
-        _.each(list_info.items, (topic_info) => {
-            const li = $(render_topic_list_item(topic_info));
-            self.topic_items.set(topic_info.topic_name, li);
-            ul.append(li);
+        if (spinner) {
+            nodes.push(exports.spinner_li());
+        } else if (!is_showing_all_possible_topics) {
+            nodes.push(exports.more_li(more_topics_unreads));
+        }
+
+        const dom = vdom.ul({
+            attrs: attrs,
+            keyed_nodes: nodes,
         });
 
-        // Now, we decide whether we need to show the "more topics"
-        // widget.  We need it if there are at least 5 topics in the
-        // frontend's cache, or if we (possibly) don't have all
-        // historical topics in the browser's cache.
-
-        if (!is_showing_all_possible_topics) {
-            const show_more_html = render_more_topics({
-                more_topics_unreads: more_topics_unreads,
-            });
-            ul.append($(show_more_html));
-
-            const spinner = render_more_topics_spinner();
-            ul.append($(spinner));
-        }
-        return ul;
+        return dom;
     };
 
     self.get_parent = function () {
@@ -136,94 +161,26 @@ exports.widget = function (parent_elem, my_stream_id) {
         return my_stream_id;
     };
 
-    self.get_dom = function () {
-        return self.dom;
-    };
-
     self.remove = function () {
-        self.dom.remove();
+        parent_elem.find('.topic-list').remove();
+        self.prior_dom = undefined;
     };
 
-    self.num_items = function () {
-        return self.topic_items.size;
-    };
+    self.build = function (spinner) {
+        const new_dom = self.build_list(spinner);
 
-    self.set_count = function (topic, count) {
-        let unread_count_elem;
-        if (topic === null) {
-            // null is used for updating the "more topics" count.
-            if (zoomed) {
-                return false;
-            }
-            const unread_count_parent = $(".show-more-topics");
-            if (unread_count_parent.length === 0) {
-                // If no show-more-topics element is present in the
-                // DOM, there are two possibilities.  The most likely
-                // is that there are simply no unreads on that topic
-                // and there should continue to not be a "more topics"
-                // button; we can check this by looking at count.
-                if (count === 0) {
-                    return false;
-                }
-
-                // The alternative is that there is these new messages
-                // create the need for a "more topics" widget with a
-                // nonzero unread count, and we need to create one and
-                // add it to the DOM.
-                //
-                // With our current implementation, this code path
-                // will always have its results overwritten shortly
-                // after, because (1) the can only happen when we just
-                // added unread counts, (not removing them), and (2)
-                // when learning about new (unread) messages,
-                // stream_list.update_dom_with_unread_count is always
-                // immediately followed by
-                // stream_list.update_streams_sidebar, which will
-                // rebuilds the topic list from scratch anyway.
-                //
-                // So this code mostly exists to document this corner
-                // case if in the future we adjust the model for
-                // managing unread counts.  The code for updating this
-                // element would look something like the following:
-                //
-                // var show_more = self.build_more_topics_section(count);
-                // var topic_list_ul = exports.get_stream_li().find(".topic-list").expectOne();
-                // topic_list_ul.append(show_more);
-                return false;
-            }
-            unread_count_elem = unread_count_parent.find(".topic-unread-count");
-            update_unread_count(unread_count_elem, count);
-            return false;
+        function replace_content(html) {
+            self.remove();
+            parent_elem.append(html);
         }
 
-        if (!self.topic_items.has(topic)) {
-            // `topic_li` may not exist if the topic is behind "more
-            // topics"; We need to update the "more topics" count
-            // instead in that case; we do this by returning true to
-            // notify the caller to accumulate these.
-            if (muting.is_topic_muted(my_stream_id, topic)) {
-                // But we don't count unreads in muted topics.
-                return false;
-            }
-            return true;
+        function find() {
+            return parent_elem.find('.topic-list');
         }
 
-        const topic_li = self.topic_items.get(topic);
-        unread_count_elem = topic_li.find('.topic-unread-count');
-        update_unread_count(unread_count_elem, count);
-        return false;
-    };
+        vdom.update(replace_content, find, new_dom, self.prior_dom);
 
-    self.show_spinner = function () {
-        // The spinner will go away once we get results and redraw
-        // the whole list.
-        const spinner = self.dom.find('.searching-for-more-topics');
-        spinner.show();
-    };
-
-    self.build = function () {
-        self.dom = self.build_list();
-        parent_elem.append(self.dom);
+        self.prior_dom = new_dom;
     };
 
     return self;
@@ -251,6 +208,13 @@ exports.get_stream_li = function () {
 };
 
 exports.rebuild = function (stream_li, stream_id) {
+    const active_widget = active_widgets.get(stream_id);
+
+    if (active_widget) {
+        active_widget.build();
+        return;
+    }
+
     exports.remove_expanded_topics();
     const widget = exports.widget(stream_li, stream_id);
     widget.build();
@@ -286,13 +250,14 @@ exports.zoom_in = function () {
             return;
         }
 
-        const widget = active_widgets.get(stream_id);
-
-        exports.rebuild(widget.get_parent(), stream_id);
+        active_widget.build();
     }
 
     ui.get_scroll_element($('#stream-filters-container')).scrollTop(0);
-    active_widget.show_spinner();
+
+    const spinner = true;
+    active_widget.build(spinner);
+
     topic_data.get_server_history(stream_id, on_success);
 };
 
