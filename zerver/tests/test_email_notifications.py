@@ -335,7 +335,7 @@ class TestMissedMessages(ZulipTestCase):
             self.example_email('hamlet'),
             'Extremely personal message!',
         )
-        verify_body_include = ['Do not reply to this message.']
+        verify_body_include = ['Do not reply to this email.']
         email_subject = 'PMs with Othello, the Moor of Venice'
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
