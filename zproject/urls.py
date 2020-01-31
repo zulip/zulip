@@ -572,6 +572,9 @@ i18n_urls = [
     url(r'^config-error/github$', TemplateView.as_view(
         template_name='zerver/config_error.html',),
         {'github_error': True},),
+    url(r'^config-error/gitlab$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'gitlab_error': True},),
     url(r'^config-error/smtp$', TemplateView.as_view(
         template_name='zerver/config_error.html',),
         {'smtp_error': True},),

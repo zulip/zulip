@@ -413,6 +413,36 @@ class ConfigErrorTest(ZulipTestCase):
         self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
         self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
 
+    @override_settings(SOCIAL_AUTH_GITLAB_KEY=None)
+    def test_gitlab(self) -> None:
+        result = self.client_get("/accounts/login/social/gitlab")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/config-error/gitlab')
+        result = self.client_get(result.url)
+        self.assert_in_success_response(["social_auth_gitlab_key"], result)
+        self.assert_in_success_response(["social_auth_gitlab_secret"], result)
+        self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
+        self.assert_not_in_success_response(["SOCIAL_AUTH_GITLAB_KEY"], result)
+        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
+        self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
+        self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
+
+    @override_settings(SOCIAL_AUTH_GITLAB_KEY=None)
+    @override_settings(DEVELOPMENT=False)
+    def test_gitlab_production_error(self) -> None:
+        """Test the !DEVELOPMENT code path of config-error."""
+        result = self.client_get("/accounts/login/social/gitlab")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/config-error/gitlab')
+        result = self.client_get(result.url)
+        self.assert_in_success_response(["SOCIAL_AUTH_GITLAB_KEY"], result)
+        self.assert_in_success_response(["/etc/zulip/settings.py"], result)
+        self.assert_in_success_response(["social_auth_gitlab_secret"], result)
+        self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
+        self.assert_not_in_success_response(["social_auth_gitlab_key"], result)
+        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
+        self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
+
     @override_settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=None)
     def test_saml_error(self) -> None:
         result = self.client_get("/accounts/login/social/saml")
