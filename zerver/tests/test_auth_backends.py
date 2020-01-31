@@ -2095,6 +2095,9 @@ class DevGetEmailsTest(ZulipTestCase):
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
 class ExternalMethodDictsTests(ZulipTestCase):
+    def get_configured_saml_backend_idp_names(self) -> List[str]:
+        return settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys()
+
     def test_get_external_method_dicts_correctly_sorted(self) -> None:
         with self.settings(
             AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
@@ -2115,6 +2118,29 @@ class ExternalMethodDictsTests(ZulipTestCase):
                     reverse=True
                 )]
             )
+
+    def test_get_external_method_buttons(self) -> None:
+        with self.settings(
+            AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
+                                     'zproject.backends.GitHubAuthBackend',
+                                     'zproject.backends.GoogleAuthBackend',
+                                     'zproject.backends.SAMLAuthBackend')
+        ):
+            saml_idp_names = self.get_configured_saml_backend_idp_names()
+            expected_button_id_strings = [
+                'id="{}_auth_button_github"',
+                'id="{}_auth_button_google"'
+            ]
+            for name in saml_idp_names:
+                expected_button_id_strings.append('id="{}_auth_button_saml:%s"' % (name,))
+
+            result = self.client_get("/login/")
+            self.assert_in_success_response([string.format("login") for string in expected_button_id_strings],
+                                            result)
+
+            result = self.client_get("/register/")
+            self.assert_in_success_response([string.format("register") for string in expected_button_id_strings],
+                                            result)
 
 class FetchAuthBackends(ZulipTestCase):
     def assert_on_error(self, error: Optional[str]) -> None:
