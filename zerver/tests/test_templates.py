@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import mock
 import re
 from typing import Any, Dict, Iterable
 import logging
 
+from django.contrib.auth.models import AnonymousUser
 from django.test import override_settings
 from django.template.loader import get_template
 from django.test.client import RequestFactory
 
 from jinja2.exceptions import UndefinedError
 
+from zerver.context_processors import login_context
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
 from zerver.lib.test_helpers import get_all_templates
 from zerver.lib.test_classes import (
@@ -199,6 +202,12 @@ of syntax errors.  There are two common causes for this test failing:
             realm_icon_url=lambda _: "url",
             realm=realm,
         )
+
+        # A necessary block to make login_context available to templates.
+        request = mock.MagicMock()
+        request.user = AnonymousUser()
+        request.realm = realm
+        context.update(login_context(request))
 
         context.update(kwargs)
         return context
