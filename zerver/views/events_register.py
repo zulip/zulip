@@ -30,7 +30,12 @@ def events_register_backend(
         all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool),
         include_subscribers: bool=REQ(default=False, validator=check_bool),
         client_capabilities: Optional[Dict[str, bool]]=REQ(validator=check_dict([
+            # This field was accidentally made required when it was added in v2.0.0-781;
+            # this was not realized until after the release of Zulip 2.1.2. (It remains
+            # required to help ensure backwards compatibility of client code.)
             ("notification_settings_null", check_bool),
+        ], [
+            # Any new fields of `client_capabilities` should be optional. Add them here.
         ]), default=None, documentation_pending=True),
         event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         fetch_event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
