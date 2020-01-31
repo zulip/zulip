@@ -312,8 +312,12 @@ exports.set_up = function () {
         });
 
         $("#download_zuliprc").on("click", function () {
-            const data = settings_bots.generate_zuliprc_content(people.my_current_email(),
-                                                                $("#api_key_value").text());
+            const bot_object = {
+                user_id: people.my_current_user_id(),
+                email: people.my_current_email(),
+                api_key: $("#api_key_value").text(),
+            };
+            const data = settings_bots.generate_zuliprc_content(bot_object);
             $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
         });
     });
