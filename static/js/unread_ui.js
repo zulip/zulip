@@ -51,6 +51,7 @@ exports.update_unread_counts = function () {
     top_left_corner.update_dom_with_unread_counts(res);
     stream_list.update_dom_with_unread_counts(res);
     pm_list.update_dom_with_unread_counts(res);
+    topic_list.update();
     notifications.update_pm_count(res.private_message_count);
     const notifiable_unread_count = unread.calculate_notifiable_count(res);
     notifications.update_title_count(notifiable_unread_count);
