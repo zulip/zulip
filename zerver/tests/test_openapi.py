@@ -162,71 +162,104 @@ class OpenAPIToolsTest(ZulipTestCase):
 class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
     checked_endpoints = set()  # type: Set[str]
-    # TODO: These endpoints need to be documented:
     pending_endpoints = set([
-        '/users/me/avatar',
-        '/settings/display',
-        '/users/me/profile_data',
-        '/users/me/pointer',
+        #### TODO: These endpoints are a priority to document:
+        '/messages/matches_narrow',
+        '/realm/presence',
+        '/streams/{stream_id}/members',
+        '/streams/{stream_id}/delete_topic',
         '/users/me/presence',
-        '/bot_storage',
-        '/users/me/api_key/regenerate',
-        '/default_streams',
-        '/default_stream_groups/create',
         '/users/me/alert_words',
         '/users/me/status',
-        '/messages/matches_narrow',
-        '/dev_fetch_api_key',
-        '/dev_list_users',
-        '/fetch_api_key',
-        '/fetch_google_client_id',
-        '/settings',
-        '/submessage',
+
+        #### These realm administration settings are valuable to document:
+        # List all files uploaded by current user.  May want to add support
+        # for a larger list available to administrators?
         '/attachments',
-        '/calls/create',
+        # Delete a file uploaded by current user.
+        '/attachments/{attachment_id}',
+        # List data exports for organization (GET) or request one (POST)
         '/export/realm',
+        # Delete a data export.
         '/export/realm/{export_id}',
-        '/zcommand',
-        '/realm',
-        '/realm/deactivate',
-        '/realm/domains',
-        '/realm/icon',
-        '/realm/logo',
-        '/realm/presence',
-        '/realm/profile_fields',
-        '/queue_id',
-        '/invites',
-        '/invites/multiuse',
-        '/bots',
-        # Used for desktop app to test connectivity.
-        '/generate_204',
-        # Mobile-app only endpoints
-        '/users/me/android_gcm_reg_id',
-        '/users/me/apns_device_token',
-        # Regex based urls
-        '/realm/domains/{domain}',
-        '/realm/profile_fields/{field_id}',
-        '/realm/subdomain/{subdomain}',
+        # Manage default streams and default stream groups
+        '/default_streams',
+        '/default_stream_groups/create',
+        '/default_stream_groups/{group_id}',
+        '/default_stream_groups/{group_id}/streams',
+        # Administer a user -- reactivate and/or modify settings.
         '/users/{user_id}/reactivate',
         '/users/{user_id}',
-        '/bots/{bot_id}/api_key/regenerate',
-        '/bots/{bot_id}',
+        # Administer invitations
+        '/invites',
+        '/invites/multiuse',
         '/invites/{prereg_id}',
         '/invites/{prereg_id}/resend',
         '/invites/multiuse/{invite_id}',
+        # Single-stream settings alternative to the bulk endpoint
+        # users/me/subscriptions/properties; probably should just be a
+        # section of the same page.
         '/users/me/subscriptions/{stream_id}',
-        '/attachments/{attachment_id}',
-        '/user_groups/{user_group_id}/members',
-        '/streams/{stream_id}/members',
-        '/streams/{stream_id}/delete_topic',
-        '/default_stream_groups/{group_id}',
-        '/default_stream_groups/{group_id}/streams',
-        # Regex with an unnamed capturing group.
-        '/users/(?!me/)(?P<email>[^/]*)/presence',
-        # Actually '/user_groups/<user_group_id>' in urls.py but fails the reverse mapping
-        # test because of the variable name mismatch. So really, it's more of a buggy endpoint.
+
+        #### Mobile-app only endpoints; important for mobile developers.
+        # Mobile interface for fetching API keys
+        '/fetch_api_key',
+        # Already documented; need to fix tracking bug
+        '/dev_fetch_api_key',
+        # Mobile interface for development environment login
+        '/dev_list_users',
+        # Registration for iOS/Android mobile push notifications.
+        '/users/me/android_gcm_reg_id',
+        '/users/me/apns_device_token',
+
+        #### These personal settings endpoints have modest value to document:
+        '/settings',
+        '/users/me/avatar',
+        '/users/me/api_key/regenerate',
+        # Not very useful outside the UI
+        '/settings/display',
+        # Much more valuable would be an org admin bulk-upload feature.
+        '/users/me/profile_data',
+        # To be deprecated and deleted.
+        '/users/me/pointer',
+
+        #### Should be documented as part of interactive bots documentation
+        '/bot_storage',
+        '/submessage',
+        '/zcommand',
+
+        #### These "organization settings" endpoint have modest value to document:
+        '/realm',
+        '/realm/domains',
+        '/realm/domains/{domain}',
+        '/bots',
+        '/bots/{bot_id}',
+        '/bots/{bot_id}/api_key/regenerate',
+        #### These "organization settings" endpoints have low value to document:
+        '/realm/profile_fields',
+        '/realm/profile_fields/{field_id}',
+        '/realm/icon',
+        '/realm/logo',
+        '/realm/deactivate',
+        '/realm/subdomain/{subdomain}',
+
+        #### Other low value endpoints
+        # Used for dead desktop app to test connectivity.  To delete.
+        '/generate_204',
+        # Used for failed approach with dead Android app.
+        '/fetch_google_client_id',
+        # API for video calls we're planning to remove/replace.
+        '/calls/create',
+
+        #### Documented endpoints not properly detected by tooling.
+        # E.g. '/user_groups/<user_group_id>' in urls.py but fails the
+        # reverse mapping test because of the variable name
+        # mismatch.
         '/user_groups/{group_id}',  # Equivalent of what's in urls.py
         '/user_groups/{user_group_id}',  # What's in the OpenAPI docs
+        '/user_groups/{user_group_id}/members',
+        # Regex with an unnamed capturing group.
+        '/users/(?!me/)(?P<email>[^/]*)/presence',
     ])
 
     # Endpoints where the documentation is currently failing our
