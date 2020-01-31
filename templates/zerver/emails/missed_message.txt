@@ -33,7 +33,7 @@ View or reply in Zulip:
 Reply in Zulip:
 {{ narrow_url }}
 
-Do not reply to this message. This Zulip server is not configured to accept
+Do not reply to this email. This Zulip server is not configured to accept
 incoming emails. Help:
 https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 {% endif %}
