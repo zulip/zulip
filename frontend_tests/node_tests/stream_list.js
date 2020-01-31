@@ -3,8 +3,8 @@ set_global('$', global.make_zjquery());
 set_global('blueslip', global.make_zblueslip());
 set_global('i18n', global.stub_i18n);
 
-const FoldDict = zrequire('fold_dict').FoldDict;
 const IntDict = zrequire('int_dict').IntDict;
+
 zrequire('unread_ui');
 zrequire('Filter', 'js/filter');
 zrequire('util');
@@ -435,7 +435,7 @@ run_test('narrowing', () => {
     };
 
     stream_list.handle_narrow_deactivated();
-    assert.equal(removed_classes, 'active-filter active-sub-filter');
+    assert.equal(removed_classes, 'active-filter');
     assert(topics_closed);
 });
 
@@ -663,28 +663,6 @@ run_test('update_count_in_dom', () => {
     stream_list.update_dom_with_unread_counts(counts);
     assert.equal($('<stream-value>').text(), '99');
     assert(stream_li.hasClass('stream-with-count'));
-
-    let topic_results;
-
-    topic_list.set_count = function (stream_id, topic, count) {
-        topic_results = {
-            stream_id: stream_id,
-            topic: topic,
-            count: count,
-        };
-    };
-
-    const topic_count = new FoldDict();
-    topic_count.set('lunch', '555');
-    counts.topic_count.set(stream_id, topic_count);
-
-    stream_list.update_dom_with_unread_counts(counts);
-
-    assert.deepEqual(topic_results, {
-        stream_id: stream_id,
-        topic: 'lunch',
-        count: 555,
-    });
 });
 
 narrow_state.active = () => false;
