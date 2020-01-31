@@ -58,9 +58,9 @@ from confirmation.models import Confirmation, create_confirmation_link
 
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleAuthBackend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
-    ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
-    dev_auth_enabled, password_auth_enabled, github_auth_enabled, google_auth_enabled, \
-    require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
+    ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, GitLabAuthBackend, ZulipAuthMixin, \
+    dev_auth_enabled, password_auth_enabled, github_auth_enabled, gitlab_auth_enabled, \
+    google_auth_enabled, require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionNoMatchingLDAPUser, ZulipLDAPExceptionOutsideDomain, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
     PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap, \
@@ -1694,6 +1694,26 @@ class GitHubAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.url, "/login/")
             mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
                                                  " emails associated with the account")
+
+class GitLabAuthBackendTest(SocialAuthBase):
+    __unittest_skip__ = False
+
+    BACKEND_CLASS = GitLabAuthBackend
+    CLIENT_KEY_SETTING = "SOCIAL_AUTH_GITLAB_KEY"
+    LOGIN_URL = "/accounts/login/social/gitlab"
+    SIGNUP_URL = "/accounts/register/social/gitlab"
+    AUTHORIZATION_URL = "https://gitlab.com/oauth/authorize"
+    ACCESS_TOKEN_URL = "https://gitlab.com/oauth/token"
+    USER_INFO_URL = "https://gitlab.com/api/v4/user"
+    AUTH_FINISH_URL = "/complete/gitlab/"
+    CONFIG_ERROR_URL = "/config-error/gitlab"
+
+    def test_gitlab_auth_enabled(self) -> None:
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitLabAuthBackend',)):
+            self.assertTrue(gitlab_auth_enabled())
+
+    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+        return dict(email=email, name=name, email_verified=True)
 
 class GoogleAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
