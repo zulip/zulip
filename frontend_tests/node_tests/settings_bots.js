@@ -41,13 +41,10 @@ run_test('generate_zuliprc_uri', () => {
 });
 
 run_test('generate_zuliprc_content', () => {
-    const user = {
-        email: "admin12@chatting.net",
-        api_key: "nSlA0mUm7G42LP85lMv7syqFTzDE2q34",
-    };
-    const content = settings_bots.generate_zuliprc_content(user.email, user.api_key);
-    const expected = "[api]\nemail=admin12@chatting.net\n" +
-                   "key=nSlA0mUm7G42LP85lMv7syqFTzDE2q34\n" +
+    const bot_user = bot_data.get(1);
+    const content = settings_bots.generate_zuliprc_content(bot_user);
+    const expected = "[api]\nemail=error-bot@zulip.org\n" +
+                   "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +
                    "site=https://chat.example.com\n";
 
     assert.equal(content, expected);

@@ -115,13 +115,7 @@ exports.render_bots = function () {
 
 exports.generate_zuliprc_uri = function (bot_id) {
     const bot = bot_data.get(bot_id);
-    let token;
-    // For outgoing webhooks, include the token in the zuliprc.
-    // It's needed for authenticating to the Botserver.
-    if (bot.bot_type === 3) {
-        token = bot_data.get_services(bot_id)[0].token;
-    }
-    const data = exports.generate_zuliprc_content(bot.email, bot.api_key, token);
+    const data = exports.generate_zuliprc_content(bot);
     return exports.encode_zuliprc_as_uri(data);
 };
 
@@ -129,10 +123,16 @@ exports.encode_zuliprc_as_uri = function (zuliprc) {
     return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
 };
 
-exports.generate_zuliprc_content = function (email, api_key, token) {
+exports.generate_zuliprc_content = function (bot) {
+    let token;
+    // For outgoing webhooks, include the token in the zuliprc.
+    // It's needed for authenticating to the Botserver.
+    if (bot.bot_type === 3) {
+        token = bot_data.get_services(bot.user_id)[0].token;
+    }
     return "[api]" +
-           "\nemail=" + email +
-           "\nkey=" + api_key +
+           "\nemail=" + bot.email +
+           "\nkey=" + bot.api_key +
            "\nsite=" + page_params.realm_uri +
            (token === undefined ? "" : "\ntoken=" + token) +
            // Some tools would not work in files without a trailing new line.
@@ -491,10 +491,10 @@ exports.set_up = function () {
 
     new ClipboardJS('#copy_zuliprc', {
         text: function (trigger) {
-            const bot_info = trigger.closest(".bot-information-box");
-            const email = $(bot_info).find(".email .value").text();
-            const api_key = $(bot_info).find(".api_key .api-key-value-and-button .value").text();
-            const data = exports.generate_zuliprc_content(email.trim(), api_key.trim());
+            const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const bot_id = parseInt(bot_info.attr("data-user-id"), 10);
+            const bot = bot_data.get(bot_id);
+            const data = exports.generate_zuliprc_content(bot);
             return data;
         },
     });
