@@ -45,25 +45,22 @@ run_test('attributes', () => {
     let updated;
     let removed;
 
-    const container = {
-        find: (tag_name) => {
-            assert.equal(tag_name, 'ul');
-            return {
-                children: () => [],
+    function find() {
+        return {
+            children: () => [],
 
-                attr: (k, v) => {
-                    assert.equal(k, 'color');
-                    assert.equal(v, 'red');
-                    updated = true;
-                },
+            attr: (k, v) => {
+                assert.equal(k, 'color');
+                assert.equal(v, 'red');
+                updated = true;
+            },
 
-                removeAttr: (k) => {
-                    assert.equal(k, 'id');
-                    removed = true;
-                },
-            };
-        },
-    };
+            removeAttr: (k) => {
+                assert.equal(k, 'id');
+                removed = true;
+            },
+        };
+    }
 
     const new_opts = {
         keyed_nodes: [],
@@ -74,8 +71,9 @@ run_test('attributes', () => {
     };
 
     const new_ul = vdom.ul(new_opts);
+    const replace_content = undefined;
 
-    vdom.update(container, new_ul, ul);
+    vdom.update(replace_content, find, new_ul, ul);
 
     assert(updated);
     assert(removed);
@@ -107,11 +105,11 @@ function make_children(lst) {
 run_test('children', () => {
     let rendered_html;
 
-    const container = {
-        html: (html) => {
-            rendered_html = html;
-        },
-    };
+    function replace_content(html) {
+        rendered_html = html;
+    }
+
+    const find = undefined;
 
     const nodes = make_children([1, 2, 3]);
 
@@ -122,7 +120,7 @@ run_test('children', () => {
 
     const ul = vdom.ul(opts);
 
-    vdom.update(container, ul);
+    vdom.update(replace_content, find, ul);
 
     assert.equal(
         rendered_html,
@@ -143,7 +141,7 @@ run_test('children', () => {
     };
 
     const new_ul = vdom.ul(new_opts);
-    vdom.update(container, new_ul, ul);
+    vdom.update(replace_content, find, new_ul, ul);
 
     assert.equal(
         rendered_html,
@@ -157,11 +155,11 @@ run_test('children', () => {
 run_test('partial updates', () => {
     let rendered_html;
 
-    const container = {
-        html: (html) => {
-            rendered_html = html;
-        },
+    let replace_content = (html) => {
+        rendered_html = html;
     };
+
+    let find;
 
     const nodes = make_children([1, 2, 3]);
 
@@ -172,7 +170,7 @@ run_test('partial updates', () => {
 
     const ul = vdom.ul(opts);
 
-    vdom.update(container, ul);
+    vdom.update(replace_content, find, ul);
 
     assert.equal(
         rendered_html,
@@ -183,14 +181,13 @@ run_test('partial updates', () => {
         '</ul>'
     );
 
-    container.html = () => {
+    replace_content = () => {
         throw Error('should not replace entire html');
     };
 
     let patched_html;
 
-    container.find = (tag_name) => {
-        assert.equal(tag_name, 'ul');
+    find = () => {
         return {
             children: () => {
                 return {
@@ -216,7 +213,7 @@ run_test('partial updates', () => {
     };
 
     const new_ul = vdom.ul(new_opts);
-    vdom.update(container, new_ul, ul);
+    vdom.update(replace_content, find, new_ul, ul);
 
     assert.equal(patched_html, '<li>modified1</li>');
 });
@@ -263,10 +260,11 @@ run_test('error checking', () => {
         'error',
         'We need keyed_nodes for updates.');
 
-    const container = 'whatever';
+    const replace_content = 'whatever';
+    const find = 'whatever';
     const ul = {opts: {}};
 
-    vdom.update(container, ul, ul);
+    vdom.update(replace_content, find, ul, ul);
     assert.equal(blueslip.get_test_logs('error').length, 1);
 
     blueslip.set_test_data(

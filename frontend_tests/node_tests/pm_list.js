@@ -258,8 +258,7 @@ run_test('expand', () => {
     with_fake_list(() => {
         let html_updated;
 
-        vdom.update = (container) => {
-            assert.equal(container.selector, '#private-container');
+        vdom.update = () => {
             html_updated = true;
         };
 
@@ -272,12 +271,19 @@ run_test('expand', () => {
 run_test('update_private_messages', () => {
     narrow_state.active = () => true;
 
+    $('#private-container').find = (sel) => {
+        assert.equal(sel, 'ul');
+    };
+
     with_fake_list(() => {
         let html_updated;
 
-        vdom.update = (container) => {
-            assert.equal(container.selector, '#private-container');
+        vdom.update = (replace_content, find) => {
             html_updated = true;
+
+            // get line coverage for simple one-liners
+            replace_content();
+            find();
         };
 
         const orig_is_all_privates = pm_list.is_all_privates;
