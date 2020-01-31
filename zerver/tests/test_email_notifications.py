@@ -203,7 +203,13 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_does_not_include = []  # type: List[str]
         else:
             # Test in case if message content in missed email message are disabled.
-            verify_body_include = ['Manage email preferences: http://zulip.testserver/#settings/notifications']
+            verify_body_include = [
+                "This email does not include message content because you have disabled message ",
+                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "View or reply in Zulip",
+                " Manage email preferences: http://zulip.testserver/#settings/notifications"
+            ]
+
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Denmark > test', 'Othello, the Moor of Venice',
                                             '1 2 3 4 5 6 7 8 9 10 @**King Hamlet**', 'private', 'group',
@@ -233,7 +239,12 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_does_not_include = []  # type: List[str]
         else:
             # Test in case if message content in missed email message are disabled.
-            verify_body_include = ['Manage email preferences: http://zulip.testserver/#settings/notifications']
+            verify_body_include = [
+                "This email does not include message content because you have disabled message ",
+                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "View or reply in Zulip",
+                " Manage email preferences: http://zulip.testserver/#settings/notifications"
+            ]
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Denmark > test', 'Othello, the Moor of Venice',
                                             '1 2 3 4 5 @**all**', 'private', 'group',
@@ -273,7 +284,9 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user, trigger='mentioned')
 
     def _extra_context_in_personal_missed_stream_messages(self, send_as_user: bool,
-                                                          show_message_content: bool=True) -> None:
+                                                          show_message_content: bool=True,
+                                                          message_content_disabled_by_user: bool=False,
+                                                          message_content_disabled_by_realm: bool=False) -> None:
         msg_id = self.send_personal_message(
             self.example_email('othello'),
             self.example_email('hamlet'),
@@ -285,7 +298,20 @@ class TestMissedMessages(ZulipTestCase):
             email_subject = 'PMs with Othello, the Moor of Venice'
             verify_body_does_not_include = []  # type: List[str]
         else:
-            verify_body_include = ['Manage email preferences: http://zulip.testserver/#settings/notifications']
+            if message_content_disabled_by_realm:
+                verify_body_include = [
+                    "This email does not include message content because your organization has disabled",
+                    "http://zulip.testserver/help/hide-message-content-in-emails",
+                    "View or reply in Zulip",
+                    " Manage email preferences: http://zulip.testserver/#settings/notifications"
+                ]
+            elif message_content_disabled_by_user:
+                verify_body_include = [
+                    "This email does not include message content because you have disabled message ",
+                    "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                    "View or reply in Zulip",
+                    " Manage email preferences: http://zulip.testserver/#settings/notifications"
+                ]
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Othello, the Moor of Venice', 'Extremely personal message!',
                                             'mentioned', 'group', 'Reply to this email directly, or view it in Zulip']
@@ -329,7 +355,12 @@ class TestMissedMessages(ZulipTestCase):
             email_subject = 'Group PMs with Iago and Othello, the Moor of Venice'
             verify_body_does_not_include = []  # type: List[str]
         else:
-            verify_body_include = ['Manage email preferences: http://zulip.testserver/#settings/notifications']
+            verify_body_include = [
+                "This email does not include message content because you have disabled message ",
+                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "View or reply in Zulip",
+                " Manage email preferences: http://zulip.testserver/#settings/notifications"
+            ]
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Iago', 'Othello, the Moor of Venice Othello, the Moor of Venice',
                                             'Group personal message!', 'mentioned',
@@ -436,7 +467,8 @@ class TestMissedMessages(ZulipTestCase):
         mail.outbox = []
         self._extra_context_in_missed_stream_messages_wildcard_mention(False, show_message_content=False)
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False,
+                                                               message_content_disabled_by_user=True)
         mail.outbox = []
         self._extra_context_in_huddle_missed_stream_messages_two_others(False, show_message_content=False)
 
@@ -540,7 +572,8 @@ class TestMissedMessages(ZulipTestCase):
         # Emails don't have missed message content when message content is disabled by the user
         do_change_notification_settings(user, "message_content_in_email_notifications", False)
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False,
+                                                               message_content_disabled_by_user=True)
 
         # When message content is not allowed at realm level
         # Emails don't have missed message irrespective of message content setting of the user
@@ -550,11 +583,14 @@ class TestMissedMessages(ZulipTestCase):
 
         do_change_notification_settings(user, "message_content_in_email_notifications", True)
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False,
+                                                               message_content_disabled_by_realm=True)
 
         do_change_notification_settings(user, "message_content_in_email_notifications", False)
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False,
+                                                               message_content_disabled_by_user=True,
+                                                               message_content_disabled_by_realm=True)
 
     def test_realm_emoji_in_missed_message(self) -> None:
         realm = get_realm("zulip")
