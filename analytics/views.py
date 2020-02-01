@@ -1065,8 +1065,11 @@ def get_confirmations(types: List[int], object_ids: List[int],
             expires_in = "Expired"
 
         url = confirmation_url(confirmation.confirmation_key, realm_host, type)
+        support_url = confirmation_url(confirmation.confirmation_key,
+                                       "localhost:9991", type) + "?support=true"
         confirmation_dicts.append({"object": confirmation.content_object,
-                                   "url": url, "type": type, "link_status": link_status,
+                                   "url": url, "support_url": support_url,
+                                   "type": type, "link_status": link_status,
                                    "expires_in": expires_in})
     return confirmation_dicts
 

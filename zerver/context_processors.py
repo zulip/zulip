@@ -36,6 +36,8 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
     }
 
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
+    if hasattr(request, "patched_realm"):
+        return request.patched_realm
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
     if not hasattr(request, "realm"):

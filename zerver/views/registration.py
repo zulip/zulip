@@ -54,11 +54,12 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
         return render_confirmation_key_error(
             request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
 
-    # update_status allows the staff member to inspect the /accounts/register page
-    # by preventing the status of the content object to be set to confirmation.settings.STATUS_ACTIVE
-    update_status = not(request.GET.get("support", False) and request.user.is_staff)
+    # The server administrator access from /support is designed to not
+    # update the click count on the key (for visual inspection).
+    server_admin_request = request.user.is_staff and request.GET.get("support", False)
     try:
-        get_object_from_key(confirmation_key, confirmation.type, update_status=update_status)
+        get_object_from_key(confirmation_key, confirmation.type,
+                            update_status=not server_admin_request)
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
@@ -68,7 +69,8 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
     return render(request, 'confirmation/confirm_preregistrationuser.html',
                   context={
                       'key': confirmation_key,
-                      'full_name': request.GET.get("full_name", None)})
+                      'full_name': request.GET.get("full_name", None)
+                  })
 
 @require_post
 def accounts_register(request: HttpRequest) -> HttpResponse:
@@ -91,8 +93,23 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         realm = None
     else:
         if get_subdomain(request) != prereg_user.realm.string_id:
-            return render_confirmation_key_error(
-                request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
+            if request.user.is_staff:
+                # For the /activity/support feature to view
+                # confirmation links for visual inspection, we allow
+                # things to proceed in this first phase (so we can
+                # render a registration page).  This cross-realm
+                # request is required to make the fact that the
+                # requesting user is a server administrator available
+                # even though their auth cookie is limited to the
+                # domain they're logged into.
+                #
+                # We set request.patched_realm for use by the context
+                # code so that we render the registration page for the
+                # target realm.
+                request.patched_realm = prereg_user.realm
+            else:
+                return render_confirmation_key_error(
+                    request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
         realm = prereg_user.realm
 
         try:
@@ -220,6 +237,13 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         form['password'].field.required = False
 
     if form.is_valid():
+        if get_subdomain(request) != prereg_user.realm.string_id:
+            # Repeat the check above; this covers an is_staff corner
+            # case (We don't want to allow staff members to actually
+            # submit the form).
+            return render_confirmation_key_error(
+                request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
+
         if password_auth_enabled(realm) and form['password'].field.required:
             password = form.cleaned_data['password']
         else:
