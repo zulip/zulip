@@ -63,7 +63,7 @@ function make_id_set() {
     return self;
 }
 
-const unread_messages = make_id_set();
+const unread_messages = new Set();
 
 function make_bucketer(options) {
     const self = {};
@@ -440,7 +440,7 @@ exports.message_unread = function (message) {
 };
 
 exports.get_unread_message_ids = function (message_ids) {
-    return _.filter(message_ids, unread_messages.has);
+    return _.filter(message_ids, message_id => unread_messages.has(message_id));
 };
 
 exports.get_unread_messages = function (messages) {
@@ -507,7 +507,7 @@ exports.mark_as_read = function (message_id) {
     exports.unread_pm_counter.del(message_id);
     exports.unread_topic_counter.del(message_id);
     exports.unread_mentions_counter.delete(message_id);
-    unread_messages.del(message_id);
+    unread_messages.delete(message_id);
 
     const message = message_store.get(message_id);
     if (message) {
@@ -610,7 +610,7 @@ exports.get_msg_ids_for_mentions = function () {
 };
 
 exports.get_all_msg_ids = function () {
-    const ids = unread_messages.members();
+    const ids = [...unread_messages];
 
     return util.sorted_ids(ids);
 };
@@ -636,15 +636,15 @@ exports.initialize = function () {
     _.each(unread_msgs.mentions, message_id => exports.unread_mentions_counter.add(message_id));
 
     _.each(unread_msgs.huddles, function (obj) {
-        unread_messages.add_many(obj.unread_message_ids);
+        _.each(obj.unread_message_ids, message_id => unread_messages.add(message_id));
     });
     _.each(unread_msgs.pms, function (obj) {
-        unread_messages.add_many(obj.unread_message_ids);
+        _.each(obj.unread_message_ids, message_id => unread_messages.add(message_id));
     });
     _.each(unread_msgs.streams, function (obj) {
-        unread_messages.add_many(obj.unread_message_ids);
+        _.each(obj.unread_message_ids, message_id => unread_messages.add(message_id));
     });
-    unread_messages.add_many(unread_msgs.mentions);
+    _.each(unread_msgs.mentions, message_id => unread_messages.add(message_id));
 };
 
 window.unread = exports;
