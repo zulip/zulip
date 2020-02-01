@@ -2,8 +2,8 @@ set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 set_global('blueslip', global.make_zblueslip());
 
-const Dict = zrequire('dict').Dict;
 const FoldDict = zrequire('fold_dict').FoldDict;
+const IntDict = zrequire('int_dict').IntDict;
 zrequire('unread_ui');
 zrequire('Filter', 'js/filter');
 zrequire('util');
@@ -638,7 +638,7 @@ run_test('update_count_in_dom', () => {
     stream_li.addClass('stream-with-count');
     assert(stream_li.hasClass('stream-with-count'));
 
-    const stream_count = new Dict();
+    const stream_count = new IntDict();
     const stream_id = 11;
 
     const stream_row = {
@@ -650,7 +650,7 @@ run_test('update_count_in_dom', () => {
     stream_count.set(stream_id, 0);
     const counts = {
         stream_count: stream_count,
-        topic_count: new Dict(),
+        topic_count: new IntDict(),
     };
 
     stream_list.update_dom_with_unread_counts(counts);
@@ -764,7 +764,7 @@ run_test('refresh_pin', () => {
 run_test('create_initial_sidebar_rows', () => {
     initialize_stream_data();
 
-    const html_dict = new Dict();
+    const html_dict = new IntDict();
 
     stream_list.stream_sidebar = {
         has_row_for: return_false,
