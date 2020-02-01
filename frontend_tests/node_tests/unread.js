@@ -443,10 +443,10 @@ run_test('private_messages', () => {
     };
     people.add_in_realm(bob);
 
-    assert.equal(unread.num_unread_for_person(alice.user_id), 0);
-    assert.equal(unread.num_unread_for_person(bob.user_id), 0);
-    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id), []);
-    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
+    assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 0);
+    assert.equal(unread.num_unread_for_person(bob.user_id.toString()), 0);
+    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
     assert.deepEqual(unread.get_msg_ids_for_person(), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), []);
 
@@ -461,20 +461,20 @@ run_test('private_messages', () => {
         flags: ['read'],
     };
     unread.process_loaded_messages([message, read_message]);
-    assert.equal(unread.num_unread_for_person(alice.user_id), 1);
+    assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 1);
 
     assert.equal(unread.num_unread_for_person(''), 0);
 
-    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id), [message.id]);
-    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), [message.id]);
+    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), [message.id]);
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
 
     unread.mark_as_read(message.id);
-    assert.equal(unread.num_unread_for_person(alice.user_id), 0);
+    assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 0);
     assert.equal(unread.num_unread_for_person(''), 0);
-    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id), []);
-    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), []);
     assert.deepEqual(unread.get_all_msg_ids(), []);
     const counts = unread.get_counts();
