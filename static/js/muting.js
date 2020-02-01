@@ -1,7 +1,7 @@
-const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
+const IntDict = require('./int_dict').IntDict;
 
-let muted_topics = new Dict();
+const muted_topics = new IntDict();
 
 exports.add_muted_topic = function (stream_id, topic) {
     let sub_dict = muted_topics.get(stream_id);
@@ -38,7 +38,7 @@ exports.get_muted_topics = function () {
 };
 
 exports.set_muted_topics = function (tuples) {
-    muted_topics = new Dict();
+    muted_topics.clear();
 
     _.each(tuples, function (tuple) {
         const stream_name = tuple[0];
