@@ -1,12 +1,12 @@
 # Zulip overview
 
-Zulip is a powerful, open source group chat application that combines the
-immediacy of real-time chat with the productivity benefits of threaded
-conversations. Zulip is used by open source projects, Fortune 500 companies,
-large standards bodies, and others who need a real-time chat system that
-allows users to easily process hundreds or thousands of messages a day. With
-over 500 contributors merging over 500 commits a month, Zulip is also the
-largest and fastest growing open source group chat project.
+Zulip is a powerful, free and open source group chat application that combines
+the immediacy of real-time chat with the productivity benefits of threaded
+conversations. Zulip is used by free and open source projects, Fortune 500
+companies, large standards bodies, and others who need a real-time chat system
+that allows users to easily process hundreds or thousands of messages a day.
+With over 500 contributors merging over 500 commits a month, Zulip is also the
+largest and fastest growing free and open source group chat project.
 
 [![CircleCI branch](https://img.shields.io/circleci/project/github/zulip/zulip/master.svg)](https://circleci.com/gh/zulip/zulip/tree/master)
 [![Coverage Status](https://img.shields.io/codecov/c/github/zulip/zulip/master.svg)](https://codecov.io/gh/zulip/zulip/branch/master)
@@ -51,7 +51,7 @@ You might be interested in:
   the
   [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html). We
   also recommend reading Zulip for
-  [open source](https://zulipchat.com/for/open-source/), Zulip for
+  [free and open source projects](https://zulipchat.com/for/open-source/), Zulip for
   [companies](https://zulipchat.com/for/companies/), or Zulip for
   [working groups and part time communities](https://zulipchat.com/for/working-groups-and-communities/).
 
