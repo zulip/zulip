@@ -106,7 +106,8 @@ Learning more:
 * Subscribe to the
 [Zulip announcements email list](https://groups.google.com/forum/#!forum/zulip-announce)
 for server administrators.  This extremely low-traffic list is for
-important announcements, including new releases and security issues. You can also use the [RSS feed](https://groups.google.com/forum/#!aboutgroup/zulip-announce).
+important announcements, including new releases and security issues. You can also use the
+[RSS feed](https://groups.google.com/forum/#!aboutgroup/zulip-announce).
 * Follow [Zulip on Twitter](https://twitter.com/zulip).
 * Learn how to [configure your Zulip server settings](settings.md).
 * Learn about [Backups, export and import](../production/export-and-import.md)
