@@ -24,7 +24,7 @@ from zerver.context_processors import zulip_default_context, get_realm_from_requ
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR, DEACTIVATED_ACCOUNT_ERROR, ZulipPasswordResetForm, \
     AuthenticationTokenForm
-from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
+from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
 from zerver.lib.request import REQ, has_request_variables, JsonableError
@@ -40,7 +40,7 @@ from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
     AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled, SAMLAuthBackend, \
-    redirect_to_config_error, ZulipRemoteUserBackend
+    redirect_to_config_error, ZulipRemoteUserBackend, validate_otp_params
 from version import ZULIP_VERSION
 
 import jwt
@@ -406,12 +406,6 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
     params = {**params, **extra_url_params}
 
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
-
-def validate_otp_params(mobile_flow_otp: Optional[str]=None,
-                        desktop_flow_otp: Optional[str]=None) -> None:
-    for otp in [mobile_flow_otp, desktop_flow_otp]:
-        if otp is not None and not is_valid_otp(otp):
-            raise JsonableError(_("Invalid OTP"))
 
 def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
                        ) -> HttpResponse:
