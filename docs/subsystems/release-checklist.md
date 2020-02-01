@@ -51,6 +51,7 @@ preparing a new release.
 * Push the release commit to master, if applicable (typically for a
   major release); otherwise, make sure any last changes make it back
   to master.
-* Update `ZULIP_VERSION` in `version.py`, and `release` and `version` in
- `docs/conf.py`, to e.g. `1.6.0+git`.
+* Update `ZULIP_VERSION` in `version.py` to e.g. `2.2.0+git` following
+  a 2.1.0 release, and make a Git tag named e.g. `2.2-dev` pointing to
+  this update.
 * Consider removing a few old releases from ReadTheDocs.
