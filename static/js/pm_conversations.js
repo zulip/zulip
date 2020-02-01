@@ -1,14 +1,13 @@
-const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
 
-const partners = new Dict();
+const partners = new Set();
 
 exports.set_partner = function (user_id) {
-    partners.set(user_id, true);
+    partners.add(user_id);
 };
 
 exports.is_partner = function (user_id) {
-    return partners.get(user_id) || false;
+    return partners.has(user_id);
 };
 
 exports.recent = (function () {
