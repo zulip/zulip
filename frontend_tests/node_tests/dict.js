@@ -40,6 +40,7 @@ run_test('basic', () => {
 });
 
 run_test('undefined_keys', () => {
+    blueslip.clear_test_data();
     blueslip.set_test_data('error', 'Tried to call a Dict method with an undefined key.');
 
     const d = new Dict();
@@ -47,6 +48,17 @@ run_test('undefined_keys', () => {
     assert.equal(d.has(undefined), false);
     assert.strictEqual(d.get(undefined), undefined);
     assert.equal(blueslip.get_test_logs('error').length, 2);
+});
+
+run_test('non-strings', () => {
+    blueslip.clear_test_data();
+    blueslip.set_test_data('error', 'Tried to call a Dict method with a non-string.');
+
+    const d = new Dict();
+
+    d.set('17', 'value');
+    assert.equal(d.get(17), 'value');
+    assert.equal(blueslip.get_test_logs('error').length, 1);
 });
 
 run_test('restricted_keys', () => {
