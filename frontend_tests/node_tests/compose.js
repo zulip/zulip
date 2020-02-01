@@ -1677,18 +1677,17 @@ run_test('create_message_object', () => {
 run_test('nonexistent_stream_reply_error', () => {
     set_global('$', global.make_zjquery());
 
-    let shown;
-    let hidden;
+    const actions = [];
     $("#nonexistent_stream_reply_error").show = () => {
-        shown = _.uniqueId();
+        actions.push("show");
     };
     $("#nonexistent_stream_reply_error").hide = () => {
-        hidden = _.uniqueId();
+        actions.push("hide");
     };
 
     compose.nonexistent_stream_reply_error();
     assert.equal($("#compose-reply-error-msg").html(), 'There are no messages to reply to yet.');
-    assert(shown < hidden); // test shown before hidden
+    assert.deepEqual(actions, ["show", "hide"]);
 });
 
 run_test('narrow_button_titles', () => {
