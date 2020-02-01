@@ -6,9 +6,6 @@ set_global('page_params', {});
 run_test('edge_cases', () => {
     // private messages
     assert(!muting.is_topic_muted(undefined, undefined));
-
-    // defensive
-    assert(!muting.is_topic_muted('nonexistent', undefined));
 });
 
 const design = {
