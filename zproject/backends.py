@@ -48,6 +48,7 @@ from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate
 from zerver.lib.avatar import is_avatar_new, avatar_url
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
+from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
@@ -1076,10 +1077,10 @@ def social_auth_finish(backend: Any,
     redirect_to = strategy.session_get('next')
     realm = Realm.objects.get(id=return_data["realm_id"])
     multiuse_object_key = strategy.session_get('multiuse_object_key', '')
+
     mobile_flow_otp = strategy.session_get('mobile_flow_otp')
     desktop_flow_otp = strategy.session_get('desktop_flow_otp')
-    if mobile_flow_otp and desktop_flow_otp:
-        raise JsonableError(_("Can't use both mobile_flow_otp and desktop_flow_otp together."))
+    validate_otp_params(mobile_flow_otp, desktop_flow_otp)
 
     if user_profile is None or user_profile.is_mirror_dummy:
         is_signup = strategy.session_get('is_signup') == '1'
@@ -1426,6 +1427,15 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             result.append(saml_dict)
 
         return result
+
+def validate_otp_params(mobile_flow_otp: Optional[str]=None,
+                        desktop_flow_otp: Optional[str]=None) -> None:
+    for otp in [mobile_flow_otp, desktop_flow_otp]:
+        if otp is not None and not is_valid_otp(otp):
+            raise JsonableError(_("Invalid OTP"))
+
+    if mobile_flow_otp and desktop_flow_otp:
+        raise JsonableError(_("Can't use both mobile_flow_otp and desktop_flow_otp together."))
 
 def get_external_method_dicts(realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
     """
