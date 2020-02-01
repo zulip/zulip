@@ -1,6 +1,6 @@
 const render_stream_privacy = require('../templates/stream_privacy.hbs');
 const render_stream_sidebar_row = require('../templates/stream_sidebar_row.hbs');
-const Dict = require('./dict').Dict;
+const IntDict = require('./int_dict').IntDict;
 
 let has_scrolled = false;
 
@@ -29,7 +29,7 @@ exports.update_count_in_dom = function (unread_count_elem, count) {
 exports.stream_sidebar = (function () {
     const self = {};
 
-    self.rows = new Dict(); // stream id -> row widget
+    self.rows = new IntDict(); // stream id -> row widget
 
     self.set_row = function (stream_id, widget) {
         self.rows.set(stream_id, widget);
