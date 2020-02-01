@@ -46,6 +46,8 @@ set_global('rows', {
     },
 });
 
+let next_timestamp = 1500000000;
+
 run_test('msg_edited_vars', () => {
     // This is a test to verify that only one of the three bools,
     // `edited_in_left_col`, `edited_alongside_sender`, `edited_status_msg`
@@ -66,7 +68,7 @@ run_test('msg_edited_vars', () => {
         });
         message_context.msg = _.defaults(message, {
             is_me_message: false,
-            last_edit_timestamp: _.uniqueId(),
+            last_edit_timestamp: next_timestamp += 1,
         });
         return message_context;
     }
@@ -142,7 +144,7 @@ run_test('merge_message_groups', () => {
             stream: 'Test Stream 1',
             topic: 'Test Subject 1',
             sender_email: 'test@example.com',
-            timestamp: _.uniqueId(),
+            timestamp: next_timestamp += 1,
         });
         return message_context;
     }

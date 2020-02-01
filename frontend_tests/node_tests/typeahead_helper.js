@@ -20,6 +20,8 @@ const ct = zrequire('composebox_typeahead');
 const th = zrequire('typeahead_helper');
 const LazySet = zrequire('lazy_set.js').LazySet;
 
+let next_id = 0;
+
 function assertSameEmails(lst1, lst2) {
     assert.deepEqual(
         _.map(lst1, (r) => r.email),
@@ -258,19 +260,19 @@ run_test('sort_recipients', () => {
         sender_id: 7,
         stream_id: 1,
         topic: "Dev Topic",
-        id: _.uniqueId(),
+        id: next_id += 1,
     });
     global.recent_senders.process_message_for_senders({
         sender_id: 5,
         stream_id: 1,
         topic: "Dev Topic",
-        id: _.uniqueId(),
+        id: next_id += 1,
     });
     global.recent_senders.process_message_for_senders({
         sender_id: 6,
         stream_id: 1,
         topic: "Dev Topic",
-        id: _.uniqueId(),
+        id: next_id += 1,
     });
 
     // Typeahead for stream message [query, stream-name, topic-name]
@@ -288,13 +290,13 @@ run_test('sort_recipients', () => {
         sender_id: 5,
         stream_id: 2,
         topic: "Linux Topic",
-        id: _.uniqueId(),
+        id: next_id += 1,
     });
     global.recent_senders.process_message_for_senders({
         sender_id: 7,
         stream_id: 2,
         topic: "Linux Topic",
-        id: _.uniqueId(),
+        id: next_id += 1,
     });
 
     // No match
