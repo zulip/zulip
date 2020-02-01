@@ -1,19 +1,19 @@
 const render_more_topics = require('../templates/more_topics.hbs');
 const render_more_topics_spinner = require('../templates/more_topics_spinner.hbs');
 const render_topic_list_item = require('../templates/topic_list_item.hbs');
-const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
+const IntDict = require('./int_dict').IntDict;
 const topic_list_data = require('./topic_list_data');
 
 /*
-    Track all active widgets with a Dict.
+    Track all active widgets with an IntDict.
 
     (We have at max one for now, but we may
     eventually allow multiple streams to be
     expanded.)
 */
 
-const active_widgets = new Dict();
+const active_widgets = new IntDict();
 
 // We know whether we're zoomed or not.
 let zoomed = false;
