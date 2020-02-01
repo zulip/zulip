@@ -10,9 +10,9 @@ This library implements two related, similar concepts:
 
 */
 
-const Dict = require('./dict').Dict;
+const IntDict = require('./int_dict').IntDict;
 
-let _message_content_height_cache = new Dict();
+const _message_content_height_cache = new IntDict();
 
 function show_more_link(row) {
     row.find(".message_condenser").hide();
@@ -144,7 +144,7 @@ exports.toggle_collapse = function (message) {
 };
 
 exports.clear_message_content_height_cache = function () {
-    _message_content_height_cache = new Dict();
+    _message_content_height_cache.clear();
 };
 
 exports.un_cache_message_content_height = function (message_id) {
