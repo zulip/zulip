@@ -54,6 +54,19 @@ Job: [#2674 System - Deploy - Zabbix Agent](http://awx.example.co.uk/#/jobs/play
 
         self.send_and_test_stream_message('job_successful', expected_topic, expected_message)
 
+    def test_ansibletower_nine_job_successful_message(self) -> None:
+        """
+        Test to see if awx/ansibletower 9.x.x job successful notifications are
+        handled just as successfully as prior to 9.x.x.
+        """
+        expected_topic = "Demo Job Template"
+        expected_message = """
+Job: [#1 Demo Job Template](https://towerhost/#/jobs/playbook/1) was successful:
+* localhost: Success
+""".strip()
+
+        self.send_and_test_stream_message('job_complete_successful_awx_9.1.1', expected_topic, expected_message)
+
     def test_ansibletower_job_failed_message(self) -> None:
         """
         Tests if ansibletower job failed notification is handled correctly
