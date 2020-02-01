@@ -38,7 +38,6 @@ const zero_counts = {
     home_unread_messages: 0,
     mentioned_message_count: 0,
     stream_count: new IntDict(),
-    topic_count: new IntDict(),
     pm_count: new Dict(),
 };
 
