@@ -1,7 +1,7 @@
 const Dict = require('./dict').Dict;
 
 const load_func_dict = new Dict(); // group -> function
-const is_loaded = new Dict(); // group -> bool
+const loaded_groups = new Set();
 
 exports.get_group = function (section) {
     // Sometimes several sections all share the same code.
@@ -53,7 +53,7 @@ exports.load_settings_section = function (section) {
         return;
     }
 
-    if (is_loaded.get(group)) {
+    if (loaded_groups.has(group)) {
         // We only load groups once (unless somebody calls
         // reset_sections).
         return;
@@ -63,11 +63,11 @@ exports.load_settings_section = function (section) {
 
     // Do the real work here!
     load_func();
-    is_loaded.set(group, true);
+    loaded_groups.add(group);
 };
 
 exports.reset_sections = function () {
-    is_loaded.clear();
+    loaded_groups.clear();
     settings_emoji.reset();
     settings_exports.reset();
     settings_linkifiers.reset();
