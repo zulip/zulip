@@ -615,10 +615,10 @@ run_test('server_counts', () => {
     assert.equal(unread.num_unread_for_topic(1, 'bogus'), 0);
     assert.equal(unread.num_unread_for_topic(1, 'test'), 3);
 
-    assert.equal(unread.unread_mentions_counter.count(), 4);
+    assert.equal(unread.unread_mentions_counter.size, 4);
 
     unread.mark_as_read(40);
-    assert.equal(unread.unread_mentions_counter.count(), 3);
+    assert.equal(unread.unread_mentions_counter.size, 3);
 
     unread.mark_as_read(35);
     assert.equal(unread.num_unread_for_topic(1, 'test'), 2);

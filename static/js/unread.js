@@ -430,7 +430,7 @@ exports.unread_topic_counter = (function () {
     return self;
 }());
 
-exports.unread_mentions_counter = make_id_set();
+exports.unread_mentions_counter = new Set();
 
 exports.message_unread = function (message) {
     if (message === undefined) {
@@ -506,7 +506,7 @@ exports.mark_as_read = function (message_id) {
     // was never set to unread.
     exports.unread_pm_counter.del(message_id);
     exports.unread_topic_counter.del(message_id);
-    exports.unread_mentions_counter.del(message_id);
+    exports.unread_mentions_counter.delete(message_id);
     unread_messages.del(message_id);
 
     const message = message_store.get(message_id);
@@ -529,7 +529,7 @@ exports.get_counts = function () {
     // pretty cheap, even if you don't care about all the counts, and you
     // should strive to keep it free of side effects on globals or DOM.
     res.private_message_count = 0;
-    res.mentioned_message_count = exports.unread_mentions_counter.count();
+    res.mentioned_message_count = exports.unread_mentions_counter.size;
 
     // This sets stream_count, topic_count, and home_unread_messages
     const topic_res = exports.unread_topic_counter.get_counts();
@@ -604,7 +604,7 @@ exports.get_msg_ids_for_private = function () {
 };
 
 exports.get_msg_ids_for_mentions = function () {
-    const ids = exports.unread_mentions_counter.members();
+    const ids = [...exports.unread_mentions_counter];
 
     return util.sorted_ids(ids);
 };
@@ -633,7 +633,7 @@ exports.initialize = function () {
     exports.unread_pm_counter.set_huddles(unread_msgs.huddles);
     exports.unread_pm_counter.set_pms(unread_msgs.pms);
     exports.unread_topic_counter.set_streams(unread_msgs.streams);
-    exports.unread_mentions_counter.add_many(unread_msgs.mentions);
+    _.each(unread_msgs.mentions, message_id => exports.unread_mentions_counter.add(message_id));
 
     _.each(unread_msgs.huddles, function (obj) {
         unread_messages.add_many(obj.unread_message_ids);
