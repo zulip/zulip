@@ -295,7 +295,8 @@ def create_response_for_otp_flow(key: str, otp: str, user_profile: UserProfile,
 @log_view_func
 @has_request_variables
 def remote_user_sso(request: HttpRequest,
-                    mobile_flow_otp: Optional[str]=REQ(default=None)) -> HttpResponse:
+                    mobile_flow_otp: Optional[str]=REQ(default=None),
+                    desktop_flow_otp: Optional[str]=REQ(default=None)) -> HttpResponse:
     subdomain = get_subdomain(request)
     try:
         realm = get_realm(subdomain)  # type: Optional[Realm]
@@ -316,11 +317,14 @@ def remote_user_sso(request: HttpRequest,
     # enabled.
     validate_login_email(remote_user_to_email(remote_user))
 
-    # Here we support the mobile flow for REMOTE_USER_BACKEND; we
+    # Here we support the mobile and desktop flow for REMOTE_USER_BACKEND; we
     # validate the data format and then pass it through to
     # login_or_register_remote_user if appropriate.
     if mobile_flow_otp is not None:
         if not is_valid_otp(mobile_flow_otp):
+            raise JsonableError(_("Invalid OTP"))
+    if desktop_flow_otp is not None:
+        if not is_valid_otp(desktop_flow_otp):
             raise JsonableError(_("Invalid OTP"))
 
     subdomain = get_subdomain(request)
@@ -333,6 +337,8 @@ def remote_user_sso(request: HttpRequest,
 
     return login_or_register_remote_user(request, remote_user, user_profile,
                                          mobile_flow_otp=mobile_flow_otp,
+                                         desktop_flow_otp=desktop_flow_otp,
+                                         realm=realm,
                                          redirect_to=redirect_to)
 
 @csrf_exempt

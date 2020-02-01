@@ -2396,6 +2396,92 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
+    def test_login_desktop_flow_otp_success_email(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
+        user_profile.save()
+        desktop_flow_otp = '1234abcd' * 8
+
+        # Verify that the right thing happens with an invalid-format OTP
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(desktop_flow_otp="1234"),
+                                  REMOTE_USER=email)
+        self.assert_logged_in_user_id(None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(desktop_flow_otp="invalido" * 8),
+                                  REMOTE_USER=email)
+        self.assert_logged_in_user_id(None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(desktop_flow_otp=desktop_flow_otp),
+                                  REMOTE_USER=email)
+        self.assertEqual(result.status_code, 302)
+        redirect_url = result['Location']
+        parsed_url = urllib.parse.urlparse(redirect_url)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        self.assertEqual(parsed_url.scheme, 'zulip')
+        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
+        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
+
+        encrypted_key = query_params["otp_encrypted_login_key"][0]
+        decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
+        auth_url = 'http://zulip.testserver/accounts/login/subdomain/{}'.format(decrypted_key)
+
+        result = self.client_get(auth_url)
+        self.assertEqual(result.status_code, 302)
+        self.assert_logged_in_user_id(user_profile.id)
+
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    @override_settings(SSO_APPEND_DOMAIN="zulip.com")
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
+    def test_login_desktop_flow_otp_success_username(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        remote_user = email_to_username(email)
+        user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
+        user_profile.save()
+        desktop_flow_otp = '1234abcd' * 8
+
+        # Verify that the right thing happens with an invalid-format OTP
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(desktop_flow_otp="1234"),
+                                  REMOTE_USER=remote_user)
+        self.assert_logged_in_user_id(None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(desktop_flow_otp="invalido" * 8),
+                                  REMOTE_USER=remote_user)
+        self.assert_logged_in_user_id(None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(desktop_flow_otp=desktop_flow_otp),
+                                  REMOTE_USER=remote_user)
+        self.assertEqual(result.status_code, 302)
+        redirect_url = result['Location']
+        parsed_url = urllib.parse.urlparse(redirect_url)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        self.assertEqual(parsed_url.scheme, 'zulip')
+        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
+        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
+
+        encrypted_key = query_params["otp_encrypted_login_key"][0]
+        decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
+        auth_url = 'http://zulip.testserver/accounts/login/subdomain/{}'.format(decrypted_key)
+
+        result = self.client_get(auth_url)
+        self.assertEqual(result.status_code, 302)
+        self.assert_logged_in_user_id(user_profile.id)
+
     def test_redirect_to(self) -> None:
         """This test verifies the behavior of the redirect_to logic in
         login_or_register_remote_user."""
