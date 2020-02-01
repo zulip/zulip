@@ -320,12 +320,7 @@ def remote_user_sso(request: HttpRequest,
     # Here we support the mobile and desktop flow for REMOTE_USER_BACKEND; we
     # validate the data format and then pass it through to
     # login_or_register_remote_user if appropriate.
-    if mobile_flow_otp is not None:
-        if not is_valid_otp(mobile_flow_otp):
-            raise JsonableError(_("Invalid OTP"))
-    if desktop_flow_otp is not None:
-        if not is_valid_otp(desktop_flow_otp):
-            raise JsonableError(_("Invalid OTP"))
+    validate_otp_params(mobile_flow_otp, desktop_flow_otp)
 
     subdomain = get_subdomain(request)
     if realm is None:
@@ -396,15 +391,12 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
     # mobile_flow_otp is a one-time pad provided by the app that we
     # can use to encrypt the API key when passing back to the app.
     mobile_flow_otp = request.GET.get('mobile_flow_otp')
-    if mobile_flow_otp is not None:
-        if not is_valid_otp(mobile_flow_otp):
-            raise JsonableError(_("Invalid OTP"))
-        params['mobile_flow_otp'] = mobile_flow_otp
-
     desktop_flow_otp = request.GET.get('desktop_flow_otp')
+
+    validate_otp_params(mobile_flow_otp, desktop_flow_otp)
+    if mobile_flow_otp is not None:
+        params['mobile_flow_otp'] = mobile_flow_otp
     if desktop_flow_otp is not None:
-        if not is_valid_otp(desktop_flow_otp):
-            raise JsonableError(_("Invalid OTP"))
         params['desktop_flow_otp'] = desktop_flow_otp
 
     next = request.GET.get('next')
@@ -414,6 +406,12 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
     params = {**params, **extra_url_params}
 
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
+
+def validate_otp_params(mobile_flow_otp: Optional[str]=None,
+                        desktop_flow_otp: Optional[str]=None) -> None:
+    for otp in [mobile_flow_otp, desktop_flow_otp]:
+        if otp is not None and not is_valid_otp(otp):
+            raise JsonableError(_("Invalid OTP"))
 
 def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
                        ) -> HttpResponse:
