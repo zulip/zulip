@@ -2364,7 +2364,9 @@ class UserPresence(models.Model):
 
         info_row_dct = defaultdict(list)  # type: DefaultDict[str, List[Dict[str, Any]]]
         for row in presence_rows:
-            email = row['user_profile__email']
+            # For legacy reasons user_key is the email, but we will
+            # soon allow user_key to be a stringified user_id.
+            user_key = row['user_profile__email']
             client_name = row['client__name']
             status = UserPresence.status_to_string(row['status'])
             dt = row['timestamp']
@@ -2381,11 +2383,11 @@ class UserPresence(models.Model):
                 pushable=pushable,
             )
 
-            info_row_dct[email].append(info)
+            info_row_dct[user_key].append(info)
 
         user_statuses = dict()  # type: Dict[str, Dict[str, Any]]
 
-        for email, info_rows in info_row_dct.items():
+        for user_key, info_rows in info_row_dct.items():
             # Note that datetime values have sub-second granularity, which is
             # mostly important for avoiding test flakes, but it's also technically
             # more precise for real users.
@@ -2397,11 +2399,11 @@ class UserPresence(models.Model):
                 del r['dt']
 
             client_dict = {info['client']: info for info in info_rows}
-            user_statuses[email] = client_dict
+            user_statuses[user_key] = client_dict
 
             # The word "aggegrated" here is possibly misleading.
             # It's really just the most recent client's info.
-            user_statuses[email]['aggregated'] = dict(
+            user_statuses[user_key]['aggregated'] = dict(
                 client=most_recent_info['client'],
                 status=most_recent_info['status'],
                 timestamp=most_recent_info['timestamp'],
