@@ -12,7 +12,7 @@ from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
 
-from django.contrib.auth.views import (LoginView, password_reset_done,
+from django.contrib.auth.views import (LoginView, PasswordResetDoneView,
                                        PasswordResetConfirmView, password_reset_complete)
 
 import zerver.tornado.views
@@ -456,8 +456,8 @@ i18n_urls = [
 
     url(r'^accounts/password/reset/$', zerver.views.auth.password_reset,
         name='zerver.views.auth.password_reset'),
-    url(r'^accounts/password/reset/done/$', password_reset_done,
-        {'template_name': 'zerver/reset_emailed.html'}),
+    url(r'^accounts/password/reset/done/$',
+        PasswordResetDoneView.as_view(template_name='zerver/reset_emailed.html')),
     url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$',
         PasswordResetConfirmView.as_view(success_url='/accounts/password/done/',
                                          template_name='zerver/reset_confirm.html',
