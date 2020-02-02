@@ -288,24 +288,16 @@ paths:
       parameters:
       - name: anchor
         in: query
-        description: The message ID to fetch messages near.
-          Required unless `use_first_unread_anchor` is set to true.
-
-          The special values of `'newest'` and `'oldest'` are also supported
+        description: Fetches first unread message when `first_unread` is given as value.
+          Other special values like `'newest'` and `'oldest'` are also supported
           for anchoring the query at the most recent or oldest messages.
+          The anchor can also take a message ID to fetch the particular message.
         schema:
           oneOf:
             - type: string
             - type: integer
-        example: 42
-      - name: use_first_unread_anchor
-        in: query
-        description: Whether to use the (computed by the server) first unread message
-          matching the narrow as the `anchor`.  Mutually exclusive with `anchor`.
-        schema:
-          type: boolean
-          default: false
-        example: true
+        example: first_unread
+        required: true
       - name: num_before
         in: query
         description: The number of messages with IDs less than the anchor to retrieve.
@@ -361,8 +353,7 @@ paths:
                 - properties:
                     anchor:
                       type: integer
-                      description: The same `anchor` specified in the request (or the computed
-                        one, if `use_first_unread_anchor` is `true`).
+                      description: The same `anchor` specified in the request.
                     found_newest:
                       type: boolean
                       description: Whether the `messages` list includes the
