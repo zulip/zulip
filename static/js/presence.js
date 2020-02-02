@@ -96,27 +96,12 @@ exports.set_info_for_user = function (user_id, info, server_time) {
 
 exports.set_info = function (presences, server_timestamp) {
     exports.presence_info = {};
-    _.each(presences, function (info, this_email) {
-        const person = people.get_by_email(this_email);
+    _.each(presences, function (info, user_id_str) {
+        const status = status_from_timestamp(server_timestamp,
+                                             info);
 
-        if (person === undefined) {
-            if (!(server_events.suspect_offline || reload_state.is_in_progress())) {
-                // If we're online, and we get a user who we don't
-                // know about in the presence data, throw an error.
-                blueslip.error('Unknown email in presence data: ' + this_email);
-            }
-            // Either way, we deal by skipping this user and
-            // rendering everyone else, to avoid disruption.
-            return;
-        }
-
-        const user_id = person.user_id;
-
-        if (user_id) {
-            const status = status_from_timestamp(server_timestamp,
-                                                 info);
-            exports.presence_info[user_id] = status;
-        }
+        const user_id = parseInt(user_id_str, 10);
+        exports.presence_info[user_id] = status;
     });
     exports.update_info_for_small_realm();
 };

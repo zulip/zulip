@@ -68,6 +68,7 @@ class ClientDescriptor:
                  client_type_name: str,
                  apply_markdown: bool=True,
                  client_gravatar: bool=True,
+                 slim_presence: bool=False,
                  all_public_streams: bool=False,
                  lifespan_secs: int=0,
                  narrow: Iterable[Sequence[str]]=[]) -> None:
@@ -84,6 +85,7 @@ class ClientDescriptor:
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
         self.client_gravatar = client_gravatar
+        self.slim_presence = slim_presence
         self.all_public_streams = all_public_streams
         self.client_type_name = client_type_name
         self._timeout_handle = None  # type: Any # TODO: should be return type of ioloop.call_later
@@ -108,6 +110,7 @@ class ClientDescriptor:
                     last_connection_time=self.last_connection_time,
                     apply_markdown=self.apply_markdown,
                     client_gravatar=self.client_gravatar,
+                    slim_presence=self.slim_presence,
                     all_public_streams=self.all_public_streams,
                     narrow=self.narrow,
                     client_type_name=self.client_type_name)
@@ -124,6 +127,9 @@ class ClientDescriptor:
             # Temporary migration for the addition of the client_gravatar field
             d['client_gravatar'] = False
 
+        if 'slim_presence' not in d:
+            d['slim_presence'] = False
+
         ret = cls(
             d['user_profile_id'],
             d['realm_id'],
@@ -132,6 +138,7 @@ class ClientDescriptor:
             d['client_type_name'],
             d['apply_markdown'],
             d['client_gravatar'],
+            d['slim_presence'],
             d['all_public_streams'],
             d['queue_timeout'],
             d.get('narrow', [])
@@ -570,7 +577,7 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
 # The following functions are called from Django
 
 def request_event_queue(user_profile: UserProfile, user_client: Client, apply_markdown: bool,
-                        client_gravatar: bool, queue_lifespan_secs: int,
+                        client_gravatar: bool, slim_presence: bool, queue_lifespan_secs: int,
                         event_types: Optional[Iterable[str]]=None,
                         all_public_streams: bool=False,
                         narrow: Iterable[Sequence[str]]=[]) -> Optional[str]:
@@ -579,6 +586,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
         req = {'dont_block': 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
                'client_gravatar': ujson.dumps(client_gravatar),
+               'slim_presence': ujson.dumps(slim_presence),
                'all_public_streams': ujson.dumps(all_public_streams),
                'client': 'internal',
                'user_profile_id': user_profile.id,

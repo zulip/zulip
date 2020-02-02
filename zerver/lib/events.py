@@ -80,6 +80,7 @@ def always_want(msg_type: str) -> bool:
 def fetch_initial_state_data(user_profile: UserProfile,
                              event_types: Optional[Iterable[str]],
                              queue_id: str, client_gravatar: bool,
+                             slim_presence: bool = False,
                              include_subscribers: bool = True) -> Dict[str, Any]:
     state = {'queue_id': queue_id}  # type: Dict[str, Any]
     realm = user_profile.realm
@@ -118,7 +119,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['pointer'] = user_profile.pointer
 
     if want('presence'):
-        state['presences'] = get_status_dict(user_profile)
+        state['presences'] = get_status_dict(user_profile, slim_presence)
 
     if want('realm'):
         for property_name in Realm.property_types:
@@ -310,7 +311,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
 def apply_events(state: Dict[str, Any], events: Iterable[Dict[str, Any]],
                  user_profile: UserProfile, client_gravatar: bool,
-                 include_subscribers: bool = True,
+                 slim_presence: bool, include_subscribers: bool = True,
                  fetch_event_types: Optional[Iterable[str]] = None) -> None:
     for event in events:
         if fetch_event_types is not None and event['type'] not in fetch_event_types:
@@ -323,12 +324,14 @@ def apply_events(state: Dict[str, Any], events: Iterable[Dict[str, Any]],
             # `apply_event`.  For now, be careful in your choice of
             # `fetch_event_types`.
             continue
-        apply_event(state, event, user_profile, client_gravatar, include_subscribers)
+        apply_event(state, event, user_profile,
+                    client_gravatar, slim_presence, include_subscribers)
 
 def apply_event(state: Dict[str, Any],
                 event: Dict[str, Any],
                 user_profile: UserProfile,
                 client_gravatar: bool,
+                slim_presence: bool,
                 include_subscribers: bool) -> None:
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
@@ -605,7 +608,11 @@ def apply_event(state: Dict[str, Any],
     elif event['type'] == "presence":
         # TODO: Add user_id to presence update events / state format!
         presence_user_profile = get_user(event['email'], user_profile.realm)
-        state['presences'][event['email']] = UserPresence.get_status_dict_by_user(
+        if slim_presence:
+            user_key = str(presence_user_profile.id)
+        else:
+            user_key = event['email']
+        state['presences'][user_key] = UserPresence.get_status_dict_by_user(
             presence_user_profile)[event['email']]
     elif event['type'] == "update_message":
         # We don't return messages in /register, so we don't need to
@@ -761,6 +768,7 @@ def apply_event(state: Dict[str, Any],
 def do_events_register(user_profile: UserProfile, user_client: Client,
                        apply_markdown: bool = True,
                        client_gravatar: bool = False,
+                       slim_presence: bool = False,
                        event_types: Optional[Iterable[str]] = None,
                        queue_lifespan_secs: int = 0,
                        all_public_streams: bool = False,
@@ -780,7 +788,8 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
 
     # Note that we pass event_types, not fetch_event_types here, since
     # that's what controls which future events are sent.
-    queue_id = request_event_queue(user_profile, user_client, apply_markdown, client_gravatar,
+    queue_id = request_event_queue(user_profile, user_client,
+                                   apply_markdown, client_gravatar, slim_presence,
                                    queue_lifespan_secs, event_types, all_public_streams,
                                    narrow=narrow)
 
@@ -799,12 +808,13 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
 
     ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
                                    client_gravatar=client_gravatar,
+                                   slim_presence=slim_presence,
                                    include_subscribers=include_subscribers)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
     apply_events(ret, events, user_profile, include_subscribers=include_subscribers,
-                 client_gravatar=client_gravatar,
+                 client_gravatar=client_gravatar, slim_presence=slim_presence,
                  fetch_event_types=fetch_event_types)
 
     post_process_state(user_profile, ret, notification_settings_null)

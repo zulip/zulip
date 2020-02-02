@@ -484,7 +484,8 @@ class EventsRegisterTest(ZulipTestCase):
     def do_test(self, action: Callable[[], object], event_types: Optional[List[str]]=None,
                 include_subscribers: bool=True, state_change_expected: bool=True,
                 notification_settings_null: bool=False,
-                client_gravatar: bool=True, num_events: int=1) -> List[Dict[str, Any]]:
+                client_gravatar: bool=True, slim_presence: bool=False,
+                num_events: int=1) -> List[Dict[str, Any]]:
         '''
         Make sure we have a clean slate of client descriptors for these tests.
         If we don't do this, then certain failures will only manifest when you
@@ -502,6 +503,7 @@ class EventsRegisterTest(ZulipTestCase):
                  client_type_name = "website",
                  apply_markdown = True,
                  client_gravatar = client_gravatar,
+                 slim_presence = slim_presence,
                  all_public_streams = False,
                  queue_timeout = 600,
                  last_connection_time = time.time(),
@@ -512,6 +514,7 @@ class EventsRegisterTest(ZulipTestCase):
         hybrid_state = fetch_initial_state_data(
             self.user_profile, event_types, "",
             client_gravatar=client_gravatar,
+            slim_presence=slim_presence,
             include_subscribers=include_subscribers
         )
         action()
@@ -522,7 +525,9 @@ class EventsRegisterTest(ZulipTestCase):
         post_process_state(self.user_profile, initial_state, notification_settings_null)
         before = ujson.dumps(initial_state)
         apply_events(hybrid_state, events, self.user_profile,
-                     client_gravatar=client_gravatar, include_subscribers=include_subscribers)
+                     client_gravatar=client_gravatar,
+                     slim_presence=slim_presence,
+                     include_subscribers=include_subscribers)
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = ujson.dumps(hybrid_state)
 
@@ -540,6 +545,7 @@ class EventsRegisterTest(ZulipTestCase):
         normal_state = fetch_initial_state_data(
             self.user_profile, event_types, "",
             client_gravatar=client_gravatar,
+            slim_presence=slim_presence,
             include_subscribers=include_subscribers,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
@@ -1194,8 +1200,18 @@ class EventsRegisterTest(ZulipTestCase):
                 ])),
             ])),
         ])
+
         events = self.do_test(lambda: do_update_user_presence(
-            self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE))
+            self.user_profile, get_client("website"),
+            timezone_now(), UserPresence.ACTIVE),
+            slim_presence=False)
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        events = self.do_test(lambda: do_update_user_presence(
+            self.example_user('cordelia'), get_client("website"),
+            timezone_now(), UserPresence.ACTIVE),
+            slim_presence=True)
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

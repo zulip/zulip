@@ -21,12 +21,14 @@ from zerver.lib.validator import check_bool, check_capped_string
 from zerver.models import UserActivity, UserPresence, UserProfile, \
     get_active_user_by_delivery_email
 
-def get_status_list(requesting_user_profile: UserProfile) -> Dict[str, Any]:
-    return {'presences': get_status_dict(requesting_user_profile),
+def get_status_list(requesting_user_profile: UserProfile,
+                    slim_presence: bool) -> Dict[str, Any]:
+    return {'presences': get_status_dict(requesting_user_profile, slim_presence),
             'server_timestamp': time.time()}
 
 def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
                          email: str) -> HttpResponse:
+    # This does not seem to be called by the web backend.
     try:
         target = get_active_user_by_delivery_email(email, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -78,7 +80,8 @@ def update_user_status_backend(request: HttpRequest,
 def update_active_status_backend(request: HttpRequest, user_profile: UserProfile,
                                  status: str=REQ(),
                                  ping_only: bool=REQ(validator=check_bool, default=False),
-                                 new_user_input: bool=REQ(validator=check_bool, default=False)
+                                 new_user_input: bool=REQ(validator=check_bool, default=False),
+                                 slim_presence: bool=REQ(validator=check_bool, default=False)
                                  ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
@@ -90,7 +93,7 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
     if ping_only:
         ret = {}  # type: Dict[str, Any]
     else:
-        ret = get_status_list(user_profile)
+        ret = get_status_list(user_profile, slim_presence)
 
     if user_profile.realm.is_zephyr_mirror_realm:
         # In zephyr mirroring realms, users can't see the presence of other
@@ -109,4 +112,6 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
     return json_success(ret)
 
 def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    return json_success(get_status_list(user_profile))
+    # This doesn't seem to be called by the backend, so we
+    # maintain backward compatibility.
+    return json_success(get_status_list(user_profile, slim_presence=False))

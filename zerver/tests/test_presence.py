@@ -501,17 +501,29 @@ class UserPresenceAggregationTests(ZulipTestCase):
 class GetRealmStatusesTest(ZulipTestCase):
     def test_get_statuses(self) -> None:
         # Setup the test by simulating users reporting their presence data.
-        othello_email = self.example_email("othello")
-        result = self.api_post(othello_email, "/api/v1/users/me/presence", {'status': 'active'},
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+
+        result = self.api_post(othello.email, "/api/v1/users/me/presence",
+                               dict(status='active'),
                                HTTP_USER_AGENT="ZulipAndroid/1.0")
 
-        hamlet_email = self.example_email("hamlet")
-        result = self.api_post(hamlet_email, "/api/v1/users/me/presence", {'status': 'idle'},
+        result = self.api_post(hamlet.email, "/api/v1/users/me/presence",
+                               dict(status='idle'),
                                HTTP_USER_AGENT="ZulipDesktop/1.0")
         self.assert_json_success(result)
+        json = result.json()
+        self.assertEqual(set(json['presences'].keys()), {hamlet.email, othello.email})
+
+        result = self.api_post(hamlet.email, "/api/v1/users/me/presence",
+                               dict(status='active', slim_presence='true'),
+                               HTTP_USER_AGENT="ZulipDesktop/1.0")
+        self.assert_json_success(result)
+        json = result.json()
+        self.assertEqual(set(json['presences'].keys()), {str(hamlet.id), str(othello.id)})
 
         # Check that a bot can fetch the presence data for the realm.
         result = self.api_get(self.example_email("default_bot"), "/api/v1/realm/presence")
         self.assert_json_success(result)
         json = result.json()
-        self.assertEqual(sorted(json['presences'].keys()), [hamlet_email, othello_email])
+        self.assertEqual(set(json['presences'].keys()), {hamlet.email, othello.email})
