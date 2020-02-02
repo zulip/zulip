@@ -12,7 +12,7 @@ from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
 
-from django.contrib.auth.views import (login, password_reset_done,
+from django.contrib.auth.views import (LoginView, password_reset_done,
                                        password_reset_confirm, password_reset_complete)
 
 import zerver.tornado.views
@@ -445,7 +445,7 @@ i18n_urls = [
     # return `/accounts/login/`.
     url(r'^accounts/login/$', zerver.views.auth.login_page,
         {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
-    url(r'^accounts/login/$', login, {'template_name': 'zerver/login.html'},
+    url(r'^accounts/login/$', LoginView.as_view(template_name='zerver/login.html'),
         name='django.contrib.auth.views.login'),
     url(r'^accounts/logout/$', zerver.views.auth.logout_then_login,
         name='zerver.views.auth.logout_then_login'),
