@@ -3,6 +3,7 @@ import datetime
 from email.utils import parseaddr
 
 from django.conf import settings
+from django.contrib.auth.views import INTERNAL_RESET_URL_TOKEN
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
@@ -240,18 +241,23 @@ class PasswordResetTest(ZulipTestCase):
         password_reset_url = self.get_confirmation_url_from_outbox(
             email, url_pattern=settings.EXTERNAL_HOST + r"(\S\S+)")
         result = self.client_get(password_reset_url)
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result.url.endswith('/{}/'.format(INTERNAL_RESET_URL_TOKEN)))
+
+        final_reset_url = result.url
+        result = self.client_get(final_reset_url)
         self.assertEqual(result.status_code, 200)
 
         # Reset your password
         with self.settings(PASSWORD_MIN_LENGTH=3, PASSWORD_MIN_GUESSES=1000):
             # Verify weak passwords don't work.
-            result = self.client_post(password_reset_url,
+            result = self.client_post(final_reset_url,
                                       {'new_password1': 'easy',
                                        'new_password2': 'easy'})
             self.assert_in_response("The password is too weak.",
                                     result)
 
-            result = self.client_post(password_reset_url,
+            result = self.client_post(final_reset_url,
                                       {'new_password1': 'f657gdGGk9',
                                        'new_password2': 'f657gdGGk9'})
             # password reset succeeded
