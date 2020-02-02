@@ -96,9 +96,15 @@ class UserPresenceModelTests(ZulipTestCase):
         result = self.client_post("/json/users/me/presence", {'status': 'active'})
         self.assert_json_success(result)
 
-        presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
+        slim_presence = False
+        presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id, slim_presence)
         self.assertEqual(len(presence_dct), 1)
         self.assertEqual(presence_dct[email]['website']['status'], 'active')
+
+        slim_presence = True
+        presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id, slim_presence)
+        self.assertEqual(len(presence_dct), 1)
+        self.assertEqual(presence_dct[str(user_profile.id)]['website']['status'], 'active')
 
         def back_date(num_weeks: int) -> None:
             user_presence = UserPresence.objects.filter(user_profile=user_profile)[0]
