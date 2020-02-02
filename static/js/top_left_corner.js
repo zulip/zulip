@@ -42,6 +42,27 @@ function deselect_top_left_corner_items() {
     remove($('.top_left_mentions'));
 }
 
+function should_expand_pm_list(filter) {
+    const op_is = filter.operands('is');
+
+    if (op_is.length >= 1 && op_is.includes("private")) {
+        return true;
+    }
+
+    const op_pm = filter.operands('pm-with');
+
+    if (op_pm.length !== 1) {
+        return false;
+    }
+
+    const emails_strings = op_pm[0];
+    const emails = emails_strings.split(',');
+
+    const has_valid_emails = people.is_valid_bulk_emails_for_compose(emails);
+
+    return has_valid_emails;
+}
+
 exports.handle_narrow_activated = function (filter) {
     deselect_top_left_corner_items();
 
@@ -70,32 +91,11 @@ exports.handle_narrow_activated = function (filter) {
         }
     }
 
-    if (exports.should_expand_pm_list(filter)) {
+    if (should_expand_pm_list(filter)) {
         pm_list.expand();
     } else {
         pm_list.close();
     }
-};
-
-exports.should_expand_pm_list = function (filter) {
-    const op_is = filter.operands('is');
-
-    if (op_is.length >= 1 && op_is.includes("private")) {
-        return true;
-    }
-
-    const op_pm = filter.operands('pm-with');
-
-    if (op_pm.length !== 1) {
-        return false;
-    }
-
-    const emails_strings = op_pm[0];
-    const emails = emails_strings.split(',');
-
-    const has_valid_emails = people.is_valid_bulk_emails_for_compose(emails);
-
-    return has_valid_emails;
 };
 
 exports.handle_narrow_deactivated = function () {
