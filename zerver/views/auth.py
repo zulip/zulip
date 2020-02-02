@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.views import LoginView as DjangoLoginView, \
     logout_then_login as django_logout_then_login
-from django.contrib.auth.views import password_reset as django_password_reset
+from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView
 from django.urls import reverse
 from zerver.decorator import require_post, \
     process_client, do_login, log_view_func
@@ -969,17 +969,17 @@ def api_fetch_google_client_id(request: HttpRequest) -> HttpResponse:
 def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     return django_logout_then_login(request, kwargs)
 
-def password_reset(request: HttpRequest, **kwargs: Any) -> HttpResponse:
+def password_reset(request: HttpRequest) -> HttpResponse:
     if not Realm.objects.filter(string_id=get_subdomain(request)).exists():
         # If trying to get to password reset on a subdomain that
         # doesn't exist, just go to find_account.
         redirect_url = reverse('zerver.views.registration.find_account')
         return HttpResponseRedirect(redirect_url)
 
-    return django_password_reset(request,
-                                 template_name='zerver/reset.html',
-                                 password_reset_form=ZulipPasswordResetForm,
-                                 post_reset_redirect='/accounts/password/reset/done/')
+    view_func = DjangoPasswordResetView.as_view(template_name='zerver/reset.html',
+                                                form_class=ZulipPasswordResetForm,
+                                                success_url='/accounts/password/reset/done/')
+    return view_func(request)
 
 @csrf_exempt
 def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # nocoverage
