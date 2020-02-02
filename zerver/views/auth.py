@@ -1,7 +1,7 @@
 from django.forms import Form
 from django.conf import settings
 from django.contrib.auth import authenticate
-from django.contrib.auth.views import login as django_login_page, \
+from django.contrib.auth.views import LoginView as DjangoLoginView, \
     logout_then_login as django_logout_then_login
 from django.contrib.auth.views import password_reset as django_password_reset
 from django.urls import reverse
@@ -729,9 +729,9 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
     try:
         extra_context.update(login_context(request))
-        template_response = django_login_page(
-            request, authentication_form=OurAuthenticationForm,
-            extra_context=extra_context, **kwargs)
+        template_response = DjangoLoginView.as_view(
+            authentication_form=OurAuthenticationForm,
+            extra_context=extra_context, **kwargs)(request)
     except ZulipLDAPConfigurationError as e:
         assert len(e.args) > 1
         return redirect_to_misconfigured_ldap_notice(e.args[1])
