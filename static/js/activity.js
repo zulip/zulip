@@ -305,6 +305,7 @@ function send_presence_to_server(want_redraw) {
             status: exports.compute_active_status(),
             ping_only: !want_redraw,
             new_user_input: exports.new_user_input,
+            slim_presence: true,
         },
         idempotent: true,
         success: function (data) {

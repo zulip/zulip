@@ -2035,6 +2035,14 @@ paths:
           type: boolean
           default: false
         example: true
+      - name: slim_presence
+        in: query
+        description: Setting this to `true` will make presence dictionaries be
+          keyed by user_id instead of email.
+        schema:
+          type: boolean
+          default: false
+        example: true
       - name: event_types
         in: query
         description: "A JSON-encoded array indicating which types of events

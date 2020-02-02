@@ -27,6 +27,7 @@ def events_register_backend(
         request: HttpRequest, user_profile: UserProfile,
         apply_markdown: bool=REQ(default=False, validator=check_bool),
         client_gravatar: bool=REQ(default=False, validator=check_bool),
+        slim_presence: bool=REQ(default=False, validator=check_bool),
         all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool),
         include_subscribers: bool=REQ(default=False, validator=check_bool),
         client_capabilities: Optional[Dict[str, bool]]=REQ(validator=check_dict([
@@ -49,7 +50,8 @@ def events_register_backend(
         client_capabilities = {}
     notification_settings_null = client_capabilities.get("notification_settings_null", False)
 
-    ret = do_events_register(user_profile, request.client, apply_markdown, client_gravatar,
+    ret = do_events_register(user_profile, request.client,
+                             apply_markdown, client_gravatar, slim_presence,
                              event_types, queue_lifespan_secs, all_public_streams,
                              narrow=narrow, include_subscribers=include_subscribers,
                              notification_settings_null=notification_settings_null,

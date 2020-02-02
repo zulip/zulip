@@ -121,6 +121,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     register_ret = do_events_register(user_profile, request.client,
                                       apply_markdown=True, client_gravatar=True,
+                                      slim_presence=True,
                                       notification_settings_null=True,
                                       narrow=narrow)
     user_has_messages = (register_ret['max_message_id'] != -1)
