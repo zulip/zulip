@@ -8,7 +8,6 @@ from django.conf import settings
 
 from zerver.decorator import require_realm_admin, require_member_or_admin
 from zerver.forms import CreateUserForm, PASSWORD_TOO_WEAK_ERROR
-from zerver.lib.events import get_raw_user_data
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
@@ -29,7 +28,7 @@ from zerver.lib.validator import check_bool, check_string, check_int, check_url,
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
     access_bot_by_id, add_service, access_user_by_id, check_bot_name_available, \
-    validate_user_custom_profile_data
+    validate_user_custom_profile_data, get_raw_user_data
 from zerver.lib.utils import generate_api_key, generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_by_delivery_email, Service, get_user_including_cross_realm, \
