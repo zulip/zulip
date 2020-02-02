@@ -30,7 +30,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.dispatch import receiver, Signal
-from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpRequest
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import ugettext as _
@@ -245,7 +245,8 @@ class ZulipDummyBackend(ZulipAuthMixin):
     when explicitly requested by including the use_dummy_backend kwarg.
     """
 
-    def authenticate(self, *, username: str, realm: Realm,
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     username: str, realm: Realm,
                      use_dummy_backend: bool=False,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if use_dummy_backend:
@@ -723,7 +724,8 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
     registration for organizations that use a different SSO solution
     for managing login (often via RemoteUserBackend).
     """
-    def authenticate(self, *, username: str, password: str, realm: Realm,
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     username: str, password: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         return None
 
@@ -841,7 +843,8 @@ def query_ldap(email: str) -> List[str]:
 class DevAuthBackend(ZulipAuthMixin):
     """Allow logging in as any user without a password.  This is used for
     convenience when developing Zulip, and is disabled in production."""
-    def authenticate(self, *, dev_auth_username: str, realm: Realm,
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     dev_auth_username: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if not dev_auth_enabled(realm):
             return None
@@ -907,7 +910,8 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
 
     create_unknown_user = False
 
-    def authenticate(self, *, remote_user: str, realm: Realm,
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     remote_user: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if not auth_enabled_helper(["RemoteUser"], realm):
             return None
