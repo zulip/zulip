@@ -2303,10 +2303,12 @@ class UserPresence(models.Model):
             # TODO: Add a test, though this is low priority, since we don't use mobile_user_ids yet.
             mobile_user_ids.add(user_profile.id)
 
-        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
+        # TODO: allow users to pass in slim_presence=True
+        slim_presence = False
+        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
 
     @staticmethod
-    def get_status_dict_by_realm(realm_id: int) -> Dict[str, Dict[str, Any]]:
+    def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict[str, Dict[str, Any]]:
         user_profile_ids = UserProfile.objects.filter(
             realm_id=realm_id,
             is_active=True,
@@ -2356,17 +2358,26 @@ class UserPresence(models.Model):
         )
         mobile_user_ids = set(mobile_query)
 
-        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
+        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
 
     @staticmethod
     def get_status_dicts_for_rows(presence_rows: List[Dict[str, Any]],
-                                  mobile_user_ids: Set[int]) -> Dict[str, Dict[str, Any]]:
+                                  mobile_user_ids: Set[int],
+                                  slim_presence: bool) -> Dict[str, Dict[str, Any]]:
 
         info_row_dct = defaultdict(list)  # type: DefaultDict[str, List[Dict[str, Any]]]
         for row in presence_rows:
-            # For legacy reasons user_key is the email, but we will
-            # soon allow user_key to be a stringified user_id.
-            user_key = row['user_profile__email']
+            # For now slim_presence just means that we will use
+            # user_id as a key instead of email.  We will eventually
+            # do other things based on this flag to make things simpler
+            # for the clients.
+            if slim_presence:
+                # Stringify user_id here, since it's gonna be turned
+                # into a string anyway by JSON, and it keeps mypy happy.
+                user_key = str(row['user_profile__id'])
+            else:
+                user_key = row['user_profile__email']
+
             client_name = row['client__name']
             status = UserPresence.status_to_string(row['status'])
             dt = row['timestamp']
