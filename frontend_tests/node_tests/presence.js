@@ -151,21 +151,21 @@ run_test('set_presence_info', () => {
     const presences = {};
     const base_time = 500;
 
-    presences[alice.email] = {
+    presences[alice.user_id.toString()] = {
         website: {
             status: 'active',
             timestamp: base_time,
         },
     };
 
-    presences[fred.email] = {
+    presences[fred.user_id.toString()] = {
         website: {
             status: 'idle',
             timestamp: base_time,
         },
     };
 
-    presences[me.email] = {
+    presences[me.user_id.toString()] = {
         website: {
             status: 'active',
             timestamp: base_time,
@@ -197,19 +197,6 @@ run_test('set_presence_info', () => {
     people.get_realm_count = function () { return 1000; };
     assert.equal(presence.set_info(presences, base_time), undefined);
     people.get_realm_count = get_realm_count;
-
-    const unknown = {
-        email: 'unknown@zulip.com',
-        user_id: 42,
-        full_name: 'Unknown Name',
-    };
-    presences[unknown.email] = {};
-
-    server_events.suspect_offline = false;
-    blueslip.error = function (msg) {
-        assert.equal(msg, 'Unknown email in presence data: unknown@zulip.com');
-    };
-    presence.set_info(presences, base_time);
 });
 
 run_test('last_active_date', () => {
