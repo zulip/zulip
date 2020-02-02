@@ -472,7 +472,8 @@ class LoginTest(ZulipTestCase):
         do_deactivate_user(user_profile)
         result = self.login_with_return(self.example_email("hamlet"), "xxx")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response("Your account is no longer active.", result)
+        self.assert_in_response("Your account {} is no longer active.".format(self.example_email('hamlet')),
+                                result)
         self.assert_logged_in_user_id(None)
 
     def test_login_bad_password(self) -> None:
@@ -492,8 +493,10 @@ class LoginTest(ZulipTestCase):
             result = self.login_with_return(self.mit_email("sipbtest"), "xxx")
             mock_warning.assert_called_once()
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response("Your Zulip account is not a member of the "
-                                "organization associated with this subdomain.", result)
+        expected_error = ("Your Zulip account %s is not a member of the " +
+                          "organization associated with this subdomain.")
+        self.assert_in_response(expected_error % (self.mit_email("sipbtest"),),
+                                result)
         self.assert_logged_in_user_id(None)
 
     def test_login_invalid_subdomain(self) -> None:

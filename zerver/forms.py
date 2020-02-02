@@ -39,10 +39,10 @@ MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
                        u'If you want to sign up an alias for Zulip, ' + \
                        u'<a href="mailto:support@zulipchat.com">contact us</a>.'
-WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
+WRONG_SUBDOMAIN_ERROR = "Your Zulip account %(username)s is not a member of the " + \
                         "organization associated with this subdomain.  " + \
                         "Please contact your organization administrator with any questions."
-DEACTIVATED_ACCOUNT_ERROR = u"Your account is no longer active. " + \
+DEACTIVATED_ACCOUNT_ERROR = u"Your account %(username)s is no longer active. " + \
                             u"Please contact your organization administrator to reactivate it."
 PASSWORD_TOO_WEAK_ERROR = u"The password is too weak."
 
@@ -315,12 +315,14 @@ class OurAuthenticationForm(AuthenticationForm):
                 # We exclude mirror dummy accounts here. They should be treated as the
                 # user never having had an account, so we let them fall through to the
                 # normal invalid_login case below.
-                raise ValidationError(mark_safe(DEACTIVATED_ACCOUNT_ERROR))
+                raise ValidationError(mark_safe(DEACTIVATED_ACCOUNT_ERROR),
+                                      params={'username': username})
 
             if return_data.get("invalid_subdomain"):
                 logging.warning("User %s attempted to password login to wrong subdomain %s" %
                                 (username, subdomain))
-                raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR))
+                raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR),
+                                      params={'username': username})
 
             if self.user_cache is None:
                 raise forms.ValidationError(
