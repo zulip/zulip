@@ -62,6 +62,8 @@ def update_realm(
             validator=check_bool, default=None),
         bot_creation_policy: Optional[int]=REQ(validator=check_int_in(
             Realm.BOT_CREATION_POLICY_TYPES), default=None),
+        announcement_only_stream_post_policy: Optional[int]=REQ(validator=check_int_in(
+            Realm.ANNOUNCEMENT_ONLY_STREAM_POST_POLICY_TYPES), default=None),
         create_stream_policy: Optional[int]=REQ(validator=check_int_in(
             Realm.CREATE_STREAM_POLICY_TYPES), default=None),
         invite_to_stream_policy: Optional[int]=REQ(validator=check_int_in(

@@ -39,6 +39,13 @@ exports.current_user_has_reacted_to_emoji = function (message, emoji_code, type)
     });
 };
 
+exports.set_restrict_emoji_reaction = function (message) {
+    if (page_params.realm_announcement_only_stream_post_policy === 1) {
+        return false;
+    }
+    return stream_data.get_announcement_only(message.stream) && !page_params.is_admin;
+};
+
 function get_message(message_id) {
     const message = message_store.get(message_id);
     if (!message) {

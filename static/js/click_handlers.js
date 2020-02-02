@@ -190,7 +190,10 @@ exports.initialize = function () {
         e.stopPropagation();
         const local_id = $(this).attr('data-reaction-id');
         const message_id = rows.get_message_id(this);
-        reactions.process_reaction_click(message_id, local_id);
+        const message = current_msg_list.get(message_id);
+        if (!message.is_stream || !reactions.set_restrict_emoji_reaction(message)) {
+            reactions.process_reaction_click(message_id, local_id);
+        }
         $(".tooltip").remove();
     });
 
@@ -228,6 +231,12 @@ exports.initialize = function () {
         const elem = $(e.currentTarget);
         const local_id = elem.attr('data-reaction-id');
         const message_id = rows.get_message_id(e.currentTarget);
+        const message = current_msg_list.get(message_id);
+        if (message.is_stream) {
+            if (reactions.set_restrict_emoji_reaction(message)) {
+                $(this).closest(".message_reaction").find(".disable-reaction-button").show();
+            }
+        }
         const title = reactions.get_reaction_title_data(message_id, local_id);
 
         elem.tooltip({
@@ -245,6 +254,7 @@ exports.initialize = function () {
     $('#main_div').on('mouseleave', '.message_reaction', function (e) {
         e.stopPropagation();
         $(e.currentTarget).tooltip('destroy');
+        $(this).closest(".message_reaction").find(".disable-reaction-button").hide();
     });
 
     // DESTROY PERSISTING TOOLTIPS ON HOVER

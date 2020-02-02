@@ -9,7 +9,7 @@ from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.request import JsonableError
 from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_realm, Message, Reaction, RealmEmoji, UserMessage
+from zerver.models import get_realm, Message, Reaction, RealmEmoji, UserMessage, Realm, UserProfile
 
 class ReactionEmojiTest(ZulipTestCase):
     def test_missing_emoji(self) -> None:
@@ -337,6 +337,34 @@ class ReactionTest(ZulipTestCase):
         emoji.deactivated = True
         emoji.save(update_fields=['deactivated'])
         result = self.api_delete(sender, '/api/v1/messages/1/reactions', reaction_info)
+        self.assert_json_success(result)
+
+    def test_add_reaction_in_announcement_only_streams(self) -> None:
+        realm = get_realm('zulip')
+        sender = self.example_email('iago')
+        reaction_sender = self.example_user("hamlet")
+        reaction_sender.role = UserProfile.ROLE_MEMBER
+        reaction_sender.save()
+        emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'smile')
+        stream = self.make_stream("announcement_only")
+        stream.is_announcement_only = True
+        stream.save()
+        msg_id = self.send_stream_message(sender, stream.name,
+                                          topic_name="test", content="test")
+        reaction_info = {
+            'emoji_name': 'smile',
+            'emoji_code': emoji_code,
+            'reaction_type': reaction_type
+        }
+
+        realm.announcement_only_stream_post_policy = Realm.ADMINS_CAN_POST_AND_REACT
+        realm.save()
+        result = self.api_post(reaction_sender.email, '/api/v1/messages/%s/reactions' % (msg_id,), reaction_info)
+        self.assert_json_error(result, "Only admins can react.")
+
+        realm.announcement_only_stream_post_policy = Realm.ANYONE_CAN_REACT_AND_ADMINS_CAN_POST
+        realm.save()
+        result = self.api_post(reaction_sender.email, '/api/v1/messages/%s/reactions' % (msg_id,), reaction_info)
         self.assert_json_success(result)
 
 class ReactionEventTest(ZulipTestCase):

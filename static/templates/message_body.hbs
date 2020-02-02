@@ -48,4 +48,4 @@
 </div>
 <div class="message_expander message_length_controller" title="{{t 'Expand message (-)' }}">{{t "[More...]" }}</div>
 <div class="message_condenser message_length_controller" title="{{t 'Condense message (-)' }}">{{t "[Condense message]" }}</div>
-<div class="message_reactions">{{> message_reactions }}</div>
+<div class="message_reactions {{#restrict_emoji_reaction}}disabled{{/restrict_emoji_reaction}}">{{> message_reactions}}</div>

@@ -462,6 +462,19 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid private_message_policy')
 
+    def test_announcement_only_stream_post_policy(self) -> None:
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+        req = dict(announcement_only_stream_post_policy = ujson.dumps(Realm.ADMINS_CAN_POST_AND_REACT))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+
+        invalid_value = 10
+        req = dict(announcement_only_stream_post_policy = ujson.dumps(invalid_value))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid announcement_only_stream_post_policy')
+
     def test_invalid_integer_attribute_values(self) -> None:
 
         integer_values = [key for key, value in Realm.property_types.items() if value is int]
@@ -477,6 +490,7 @@ class RealmTest(ZulipTestCase):
             digest_weekday=10,
             user_group_edit_policy=10,
             private_message_policy=10,
+            announcement_only_stream_post_policy=10,
         )
 
         # We need an admin user.
@@ -694,6 +708,8 @@ class RealmAPITest(ZulipTestCase):
                                      Realm.INVITE_TO_STREAM_POLICY_MEMBERS,
                                      Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD],
             bot_creation_policy=[1, 2],
+            announcement_only_stream_post_policy = [Realm.ANYONE_CAN_REACT_AND_ADMINS_CAN_POST,
+                                                    Realm.ADMINS_CAN_POST_AND_REACT],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                                       Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             video_chat_provider=[

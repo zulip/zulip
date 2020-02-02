@@ -4,8 +4,9 @@
     {{/if}}
 
     {{#unless msg/sent_by_me}}
-    <div class="reaction_button">
-        <i class="fa fa-smile-o" aria-label="{{#tr this}}Add emoji reaction{{/tr}} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
+    <div class="reaction_button {{#restrict_emoji_reaction}}disabled{{/restrict_emoji_reaction}}">
+        <i class="fa fa-smile-o {{#restrict_emoji_reaction}}disabled{{/restrict_emoji_reaction}}" aria-label="{{#tr this}}Add emoji reaction{{/tr}} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
+        <div class="disable-emoji-icon"></div>
     </div>
     {{/unless}}
 

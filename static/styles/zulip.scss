@@ -647,7 +647,8 @@ td.pointer {
         display: inline-block;
         position: relative;
         color: hsl(0, 0%, 73%);
-        &:hover {
+
+        &:not(.disabled):hover {
             color: hsl(200, 100%, 40%);
         }
     }

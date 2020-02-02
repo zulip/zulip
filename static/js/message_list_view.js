@@ -351,6 +351,8 @@ MessageListView.prototype = {
             if (message_container.msg.stream) {
                 message_container.background_color =
                     stream_data.get_color(message_container.msg.stream);
+                message_container.restrict_emoji_reaction =
+                    reactions.set_restrict_emoji_reaction(message_container.msg);
             }
 
             message_container.contains_mention = message_container.msg.mentioned;

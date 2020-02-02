@@ -135,6 +135,13 @@
                 </div>
 
                 <div class="input-group">
+                    <label for="realm_announcement_only_stream_post_policy" class="dropdown-title">{{t "Who can post on announcement only streams" }}</label>
+                    <select name="realm_announcement_only_stream_post_policy" class="setting-widget prop-element" id="id_realm_announcement_only_stream_post_policy" data-setting-widget-type="integer">
+                        {{> dropdown_options_widget option_values=announcement_only_stream_post_policy_values}}
+                    </select>
+                </div>
+
+                <div class="input-group">
                     <label for="realm_email_address_visibility">{{t "Who can access user email addresses" }}
                         <a href="/help/restrict-visibility-of-email-addresses" target="_blank">
                             <i class="fa fa-question-circle-o" aria-hidden="true"></i>

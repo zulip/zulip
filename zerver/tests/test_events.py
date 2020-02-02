@@ -1613,6 +1613,7 @@ class EventsRegisterTest(ZulipTestCase):
             user_group_edit_policy=[1, 2],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
+            announcement_only_stream_post_policy=[1, 2],
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'],
                 Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']

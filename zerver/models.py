@@ -300,6 +300,14 @@ class Realm(models.Model):
         BOT_CREATION_ADMINS_ONLY,
     ]
 
+    ANYONE_CAN_REACT_AND_ADMINS_CAN_POST = 1
+    ADMINS_CAN_POST_AND_REACT = 2
+    announcement_only_stream_post_policy = models.PositiveSmallIntegerField(default=ANYONE_CAN_REACT_AND_ADMINS_CAN_POST)  # type: int
+    ANNOUNCEMENT_ONLY_STREAM_POST_POLICY_TYPES = [
+        ANYONE_CAN_REACT_AND_ADMINS_CAN_POST,
+        ADMINS_CAN_POST_AND_REACT
+    ]
+
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     UPLOAD_QUOTA_LIMITED = 5
     UPLOAD_QUOTA_STANDARD = 50
@@ -330,6 +338,7 @@ class Realm(models.Model):
         add_emoji_by_admins_only=bool,
         allow_edit_history=bool,
         allow_message_deleting=bool,
+        announcement_only_stream_post_policy=int,
         bot_creation_policy=int,
         create_stream_policy=int,
         invite_to_stream_policy=int,

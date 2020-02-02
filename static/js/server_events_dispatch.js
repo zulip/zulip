@@ -88,6 +88,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             allow_message_deleting: noop,
             allow_message_editing: noop,
             allow_community_topic_editing: noop,
+            announcement_only_stream_post_policy: noop,
             user_group_edit_policy: noop,
             avatar_changes_disabled: settings_account.update_avatar_change_display,
             bot_creation_policy: settings_bots.update_bot_permissions_ui,
@@ -146,6 +147,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             } else if (event.property === 'signup_notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(
                     page_params.realm_signup_notifications_stream_id, 'signup_notifications');
+            } else if (event.property === 'announcement_only_stream_post_policy') {
+                current_msg_list.rerender();
             }
 
             if (event.property === 'name' && window.electron_bridge !== undefined) {

@@ -76,6 +76,8 @@ exports.build_page = function () {
         upgrade_text_for_wide_organization_logo:
             page_params.upgrade_text_for_wide_organization_logo,
         realm_default_external_accounts: page_params.realm_default_external_accounts,
+        realm_announcement_only_stream_post_policy:
+            page_params.realm_announcement_only_stream_post_policy,
     };
 
     options.admin_settings_label = admin_settings_label;

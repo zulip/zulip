@@ -689,12 +689,22 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
 
         const message_id = rows.get_message_id(this);
-        exports.toggle_emoji_popover(this, message_id);
+        const message = current_msg_list.get(message_id);
+        if (!message.is_stream || !reactions.set_restrict_emoji_reaction(message)) {
+            exports.toggle_emoji_popover(this, message_id);
+        }
     });
 
     $("#main_div").on("mouseenter", ".reaction_button", function (e) {
         e.stopPropagation();
 
+        const message_id = rows.get_message_id(this);
+        const message = current_msg_list.get(message_id);
+        if (message.is_stream) {
+            if (reactions.set_restrict_emoji_reaction(message)) {
+                $(this).find(".disable-emoji-icon").show();
+            }
+        }
         const elem = $(e.currentTarget);
         const title = i18n.t("Add emoji reaction");
         elem.tooltip({
@@ -708,6 +718,7 @@ exports.register_click_handlers = function () {
     });
 
     $('#main_div').on('mouseleave', '.reaction_button', function (e) {
+        $(this).find(".disable-emoji-icon").hide();
         e.stopPropagation();
         $(e.currentTarget).tooltip('hide');
     });

@@ -98,6 +98,17 @@ exports.private_message_policy_values = {
     },
 };
 
+exports.announcement_only_stream_post_policy_values = {
+    anyone_can_react: {
+        code: 1,
+        description: i18n.t("Anyone can react and only admins can post"),
+    },
+    admins_only: {
+        code: 2,
+        description: i18n.t("Only admins can react and post"),
+    },
+};
+
 exports.get_sorted_options_list = function (option_values_object) {
     const options_list = Object.keys(option_values_object).map((key) => {
         return _.extend(option_values_object[key], {key: key});
@@ -130,6 +141,8 @@ exports.get_organization_settings_options = () => {
         exports.user_group_edit_policy_values);
     options.private_message_policy_values = exports.get_sorted_options_list(
         exports.private_message_policy_values);
+    options.announcement_only_stream_post_policy_values =
+        exports.get_sorted_options_list(exports.announcement_only_stream_post_policy_values);
     return options;
 };
 
@@ -304,6 +317,11 @@ function set_video_chat_provider_dropdown() {
         $("#google_hangouts_domain").hide();
         $(".zoom_credentials").hide();
     }
+}
+
+function set_announcement_only_stream_post_policy_dropdown() {
+    const value = get_property_value("realm_announcement_only_stream_post_policy");
+    $("#id_realm_announcement_only_stream_post_policy").val(value);
 }
 
 const time_limit_dropdown_values = {
@@ -557,6 +575,8 @@ function update_dependent_subsettings(property_name) {
     } else if (property_name === 'realm_digest_emails_enabled') {
         settings_notifications.set_enable_digest_emails_visibility();
         set_digest_emails_weekday_visibility();
+    } else if (property_name === 'realm_announcement_only_stream_post_policy') {
+        set_announcement_only_stream_post_policy_dropdown();
     }
 }
 
@@ -705,6 +725,7 @@ exports.build_page = function () {
     set_digest_emails_weekday_visibility();
     set_user_group_edit_policy_dropdown();
     set_private_message_policy_dropdown();
+    set_announcement_only_stream_post_policy_dropdown();
 
     function get_auth_method_table_data() {
         const new_auth_methods = {};

@@ -126,6 +126,7 @@ class HomeTest(ZulipTestCase):
             "realm_allow_edit_history",
             "realm_allow_message_deleting",
             "realm_allow_message_editing",
+            "realm_announcement_only_stream_post_policy",
             "realm_authentication_methods",
             "realm_available_video_chat_providers",
             "realm_avatar_changes_disabled",

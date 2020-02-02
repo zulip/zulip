@@ -241,6 +241,13 @@ const event_fixtures = {
         value: 1,
     },
 
+    realm__update__announcement_only_stream_post_policy: {
+        type: 'realm',
+        op: 'update',
+        property: 'announcement_only_stream_post_policy',
+        value: 2,
+    },
+
     realm__update__disallow_disposable_email_addresses: {
         type: 'realm',
         op: 'update',
@@ -906,6 +913,10 @@ with_overrides(function (override) {
 
     event = event_fixtures.realm__update__invite_required;
     test_realm_boolean(event, 'realm_invite_required');
+
+    event = event_fixtures.realm__update__announcement_only_stream_post_policy;
+    dispatch(event);
+    assert_same(page_params.realm_announcement_only_stream_post_policy, 2);
 
     event = event_fixtures.realm__update__name;
     dispatch(event);

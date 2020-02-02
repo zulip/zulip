@@ -198,6 +198,7 @@ function test_submit_settings_form(submit_form) {
         realm_default_twenty_four_hour_time: 'false',
         realm_invite_to_stream_policy: 2,
         realm_create_stream_policy: 1,
+        realm_announcement_only_stream_post_policy: 1,
     });
 
     global.patch_builtin('setTimeout', func => func());
@@ -257,6 +258,12 @@ function test_submit_settings_form(submit_form) {
     email_address_visibility_elem.data = () => {
         return "integer";
     };
+    const announcement_only_stream_post_policy_elem = $("#id_realm_announcement_only_stream_post_policy");
+    announcement_only_stream_post_policy_elem.val('2');
+    announcement_only_stream_post_policy_elem.attr("id", 'id_realm_announcement_only_stream_post_policy');
+    announcement_only_stream_post_policy_elem.data = () => {
+        return "integer";
+    };
 
     let subsection_elem = $(`#org-${subsection}`);
     subsection_elem.closest = () => subsection_elem;
@@ -266,6 +273,7 @@ function test_submit_settings_form(submit_form) {
         add_emoji_by_admins_only_elem,
         create_stream_policy_elem,
         invite_to_stream_policy_elem,
+        announcement_only_stream_post_policy_elem,
     ]);
 
     patched = false;
@@ -279,6 +287,7 @@ function test_submit_settings_form(submit_form) {
         add_emoji_by_admins_only: false,
         create_stream_policy: '2',
         waiting_period_threshold: 10,
+        announcement_only_stream_post_policy: '2',
     };
     assert.deepEqual(data, expected_value);
 
@@ -646,6 +655,34 @@ function test_sync_realm_settings() {
         page_params.realm_disallow_disposable_email_addresses = false;
         settings_org.sync_realm_settings('emails_restricted_to_domains');
         assert.equal($("#id_realm_org_join_restrictions").val(), "no_restriction");
+    }
+
+    {
+        /* Test that when announcement_only_stream_policy is set to "Anyone can react
+        and admin can post" that the dropdown is set to correct value */
+
+        const property_elem = $('#id_realm_announcement_only_stream_post_policy');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_announcement_only_stream_post_policy');
+
+        page_params.realm_announcement_only_stream_post_policy = 1;
+
+        settings_org.sync_realm_settings('announcement_only_stream_post_policy');
+        assert.equal($("#id_realm_announcement_only_stream_post_policy").val(), 1);
+    }
+
+    {
+        /* Test that when announcement_only_stream_policy is set to "Only admin can
+        react and post" that the dropdown is set to correct value */
+
+        const property_elem = $('#id_realm_announcement_only_stream_post_policy');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_announcement_only_stream_post_policy');
+
+        page_params.realm_announcement_only_stream_post_policy = 2;
+
+        settings_org.sync_realm_settings('announcement_only_stream_post_policy');
+        assert.equal($("#id_realm_announcement_only_stream_post_policy").val(), 2);
     }
 }
 

@@ -8,7 +8,8 @@ from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
-from zerver.models import Message, Reaction, UserMessage, UserProfile
+from zerver.lib.streams import access_stream_by_id
+from zerver.models import Message, Reaction, Realm, UserMessage, UserProfile, Recipient
 
 from typing import Optional
 
@@ -28,14 +29,21 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
                  emoji_code: Optional[str]=REQ(default=None),
                  reaction_type: str=REQ(default="unicode_emoji")) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id)
-
+    realm = message.sender.realm
     if emoji_code is None:
         # The emoji_code argument is only required for rare corner
         # cases discussed in the long block comment below.  For simple
         # API clients, we allow specifying just the name, and just
         # look up the code using the current name->code mapping.
-        emoji_code = emoji_name_to_emoji_code(message.sender.realm,
+        emoji_code = emoji_name_to_emoji_code(realm,
                                               emoji_name)[0]
+
+    if message.recipient.type == Recipient.STREAM:
+        stream, recipient, sub = access_stream_by_id(user_profile, message.recipient.type_id)
+        if stream.is_announcement_only and \
+                realm.announcement_only_stream_post_policy == Realm.ADMINS_CAN_POST_AND_REACT:
+            if not user_profile.is_realm_admin:
+                raise JsonableError(_("Only admins can react."))
 
     if Reaction.objects.filter(user_profile=user_profile,
                                message=message,
