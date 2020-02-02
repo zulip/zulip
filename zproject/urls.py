@@ -13,7 +13,7 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
 
 from django.contrib.auth.views import (LoginView, PasswordResetDoneView,
-                                       PasswordResetConfirmView, password_reset_complete)
+                                       PasswordResetConfirmView, PasswordResetCompleteView)
 
 import zerver.tornado.views
 import zerver.views
@@ -463,8 +463,8 @@ i18n_urls = [
                                          template_name='zerver/reset_confirm.html',
                                          form_class=zerver.forms.LoggingSetPasswordForm),
         name='django.contrib.auth.views.password_reset_confirm'),
-    url(r'^accounts/password/done/$', password_reset_complete,
-        {'template_name': 'zerver/reset_done.html'}),
+    url(r'^accounts/password/done/$',
+        PasswordResetCompleteView.as_view(template_name='zerver/reset_done.html')),
     url(r'^accounts/deactivated/$',
         zerver.views.auth.show_deactivation_notice,
         name='zerver.views.auth.show_deactivation_notice'),
