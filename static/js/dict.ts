@@ -1,61 +1,49 @@
-import * as _ from 'underscore';
-
-type KeyValue<V> = { k: string; v: V };
-type Items<V> = {
-    [key: string]: KeyValue<V>;
-};
-
 export class Dict<V> {
-    private _items: Items<V> = {};
+    private _items: Map<string, V> = new Map();
 
     get(key: string): V | undefined {
-        const mapping = this._items[this._munge(key)];
-        if (mapping === undefined) {
-            return undefined;
-        }
-        return mapping.v;
+        return this._items.get(this._munge(key));
     }
 
     set(key: string, value: V): V {
-        this._items[this._munge(key)] = {k: key, v: value};
+        this._items.set(this._munge(key), value);
         return value;
     }
 
     has(key: string): boolean {
-        return _.has(this._items, this._munge(key));
+        return this._items.has(this._munge(key));
     }
 
     del(key: string): void {
-        delete this._items[this._munge(key)];
+        this._items.delete(this._munge(key));
     }
 
     keys(): string[] {
-        return _.pluck(_.values(this._items), 'k');
+        return [...this._items.keys()];
     }
 
     values(): V[] {
-        return _.pluck(_.values(this._items), 'v');
+        return [...this._items.values()];
     }
 
     items(): [string, V][] {
-        return _.map(_.values(this._items),
-            (mapping: KeyValue<V>): [string, V] => [mapping.k, mapping.v]);
+        return [...this._items];
     }
 
     num_items(): number {
-        return _.keys(this._items).length;
+        return this._items.size;
     }
 
     is_empty(): boolean {
-        return _.isEmpty(this._items);
+        return this._items.size === 0;
     }
 
     each(f: (v: V, k?: string) => void): void {
-        _.each(this._items, (mapping: KeyValue<V>) => f(mapping.v, mapping.k));
+        this._items.forEach(f);
     }
 
     clear(): void {
-        this._items = {};
+        this._items.clear();
     }
 
     // Convert keys to strings and handle undefined.
@@ -70,6 +58,6 @@ export class Dict<V> {
             key = (key as object).toString();
         }
 
-        return ':' + key;
+        return key;
     }
 }
