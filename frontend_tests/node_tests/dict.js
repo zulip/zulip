@@ -4,13 +4,13 @@ const Dict = zrequire('dict').Dict;
 run_test('basic', () => {
     const d = new Dict();
 
-    assert(d.is_empty());
+    assert.equal(d.size, 0);
 
     assert.deepEqual(d.keys(), []);
 
     d.set('foo', 'bar');
     assert.equal(d.get('foo'), 'bar');
-    assert(!d.is_empty());
+    assert.notEqual(d.size, 0);
 
     d.set('foo', 'baz');
     assert.equal(d.get('foo'), 'baz');
@@ -113,15 +113,12 @@ run_test('each', () => {
 run_test('num_items', () => {
     const d = new Dict();
     assert.equal(d.size, 0);
-    assert(d.is_empty());
 
     d.set('foo', 1);
     assert.equal(d.size, 1);
-    assert(!d.is_empty());
 
     d.set('foo', 2);
     assert.equal(d.size, 1);
-    assert(!d.is_empty());
 
     d.set('bar', 1);
     assert.equal(d.size, 2);
@@ -162,13 +159,11 @@ run_test('clear', () => {
 
     populate();
     assert.equal(d.size, 2);
-    assert(!d.is_empty());
 
     d.clear();
     assert.equal(d.get('foo'), undefined);
     assert.equal(d.get('bar'), undefined);
     assert.equal(d.size, 0);
-    assert(d.is_empty());
 
     // make sure it still works after clearing
     populate();

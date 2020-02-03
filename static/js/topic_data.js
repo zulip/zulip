@@ -56,7 +56,7 @@ exports.topic_history = function (stream_id) {
     const self = {};
 
     self.has_topics = function () {
-        return !topics.is_empty();
+        return topics.size !== 0;
     };
 
     self.add_or_update = function (opts) {

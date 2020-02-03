@@ -66,10 +66,6 @@ export class IntDict<V> {
         return this._map.size;
     }
 
-    is_empty(): boolean {
-        return this._map.size === 0;
-    }
-
     each(f: (v: V, k?: number) => void): void {
         this._map.forEach(f);
     }

@@ -4,13 +4,13 @@ const IntDict = zrequire('int_dict').IntDict;
 run_test('basic', () => {
     const d = new IntDict();
 
-    assert(d.is_empty());
+    assert.equal(d.size, 0);
 
     assert.deepEqual(d.keys(), []);
 
     d.set(101, 'bar');
     assert.equal(d.get(101), 'bar');
-    assert(!d.is_empty());
+    assert.notEqual(d.size, 0);
 
     d.set(101, 'baz');
     assert.equal(d.get(101), 'baz');
@@ -131,15 +131,12 @@ run_test('non integers', () => {
 run_test('num_items', () => {
     const d = new IntDict();
     assert.equal(d.size, 0);
-    assert(d.is_empty());
 
     d.set(101, 1);
     assert.equal(d.size, 1);
-    assert(!d.is_empty());
 
     d.set(101, 2);
     assert.equal(d.size, 1);
-    assert(!d.is_empty());
 
     d.set(102, 1);
     assert.equal(d.size, 2);
@@ -159,13 +156,11 @@ run_test('clear', () => {
 
     populate();
     assert.equal(d.size, 2);
-    assert(!d.is_empty());
 
     d.clear();
     assert.equal(d.get(101), undefined);
     assert.equal(d.get(102), undefined);
     assert.equal(d.size, 0);
-    assert(d.is_empty());
 
     // make sure it still works after clearing
     populate();
