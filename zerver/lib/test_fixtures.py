@@ -197,6 +197,7 @@ def template_database_status(
             'zilencer/management/commands/populate_db.py',
             'zerver/lib/bulk_create.py',
             'zerver/lib/generate_test_data.py',
+            'zerver/lib/server_initialization.py',
             'tools/setup/postgres-init-test-db',
             'tools/setup/postgres-init-dev-db',
             'zerver/migrations/0258_enable_online_push_notifications_default.py',
