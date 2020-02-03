@@ -18,8 +18,8 @@ export class Dict<V> {
         this._items.delete(this._munge(key));
     }
 
-    keys(): string[] {
-        return [...this._items.keys()];
+    keys(): Iterator<string> {
+        return this._items.keys();
     }
 
     values(): V[] {

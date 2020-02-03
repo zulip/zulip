@@ -38,8 +38,10 @@ export class FoldDict<V> {
         return this._items.delete(this._munge(key));
     }
 
-    keys(): string[] {
-        return [...this._items.values()].map(({k}) => k);
+    *keys(): Iterator<string> {
+        for (const {k} of this._items.values()) {
+            yield k;
+        }
     }
 
     values(): V[] {

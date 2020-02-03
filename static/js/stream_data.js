@@ -149,7 +149,7 @@ exports.is_subscriber_subset = function (sub1, sub2) {
     if (sub1.subscribers && sub2.subscribers) {
         const sub2_set = sub2.subscribers;
 
-        return _.every(sub1.subscribers.keys(), (key) => {
+        return _.every([...sub1.subscribers.keys()], (key) => {
             return sub2_set.has(key);
         });
     }

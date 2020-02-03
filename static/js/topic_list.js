@@ -36,7 +36,7 @@ exports.close = function () {
 exports.zoom_out = function () {
     zoomed = false;
 
-    const stream_ids = active_widgets.keys();
+    const stream_ids = [...active_widgets.keys()];
 
     if (stream_ids.length !== 1) {
         blueslip.error('Unexpected number of topic lists to zoom out.');
@@ -230,7 +230,7 @@ exports.widget = function (parent_elem, my_stream_id) {
 };
 
 exports.active_stream_id = function () {
-    const stream_ids = active_widgets.keys();
+    const stream_ids = [...active_widgets.keys()];
 
     if (stream_ids.length !== 1) {
         return;

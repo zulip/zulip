@@ -273,7 +273,7 @@ exports.unread_topic_counter = (function () {
             return [];
         }
 
-        let topic_names = per_stream_bucketer.keys();
+        let topic_names = [...per_stream_bucketer.keys()];
 
         topic_names = _.reject(topic_names, function (topic_name) {
             return topic_dict.has(topic_name);

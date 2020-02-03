@@ -42,8 +42,8 @@ export class IntDict<V> {
         return this._map.delete(key);
     }
 
-    keys(): number[] {
-        return Array.from(this._map.keys());
+    keys(): Iterator<number> {
+        return this._map.keys();
     }
 
     values(): V[] {
