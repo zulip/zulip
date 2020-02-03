@@ -41,7 +41,7 @@ export class LazySet {
         this.arr = undefined;
     }
 
-    num_items() {
+    get size() {
         if (this.set !== undefined) {
             return this.set.size;
         }

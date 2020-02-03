@@ -19,7 +19,7 @@ casper.then(function () {
     common.turn_off_press_enter_to_send();
     casper.test.info("Checking for all everyone warning");
     var stream_size = this.evaluate(function () {
-        return stream_data.get_sub('Verona').subscribers.num_items();
+        return stream_data.get_sub('Verona').subscribers.size;
     });
     casper.test.info(stream_size);
     var threshold = this.evaluate(function () {

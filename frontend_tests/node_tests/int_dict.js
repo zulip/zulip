@@ -14,12 +14,12 @@ run_test('basic', () => {
 
     d.set(101, 'baz');
     assert.equal(d.get(101), 'baz');
-    assert.equal(d.num_items(), 1);
+    assert.equal(d.size, 1);
 
     d.set(102, 'qux');
     assert.equal(d.get(101), 'baz');
     assert.equal(d.get(102), 'qux');
-    assert.equal(d.num_items(), 2);
+    assert.equal(d.size, 2);
 
     assert.equal(d.has(102), true);
     assert.equal(d.has(999), false);
@@ -130,21 +130,21 @@ run_test('non integers', () => {
 
 run_test('num_items', () => {
     const d = new IntDict();
-    assert.equal(d.num_items(), 0);
+    assert.equal(d.size, 0);
     assert(d.is_empty());
 
     d.set(101, 1);
-    assert.equal(d.num_items(), 1);
+    assert.equal(d.size, 1);
     assert(!d.is_empty());
 
     d.set(101, 2);
-    assert.equal(d.num_items(), 1);
+    assert.equal(d.size, 1);
     assert(!d.is_empty());
 
     d.set(102, 1);
-    assert.equal(d.num_items(), 2);
+    assert.equal(d.size, 2);
     d.delete(101);
-    assert.equal(d.num_items(), 1);
+    assert.equal(d.size, 1);
 });
 
 run_test('clear', () => {
@@ -158,16 +158,16 @@ run_test('clear', () => {
     }
 
     populate();
-    assert.equal(d.num_items(), 2);
+    assert.equal(d.size, 2);
     assert(!d.is_empty());
 
     d.clear();
     assert.equal(d.get(101), undefined);
     assert.equal(d.get(102), undefined);
-    assert.equal(d.num_items(), 0);
+    assert.equal(d.size, 0);
     assert(d.is_empty());
 
     // make sure it still works after clearing
     populate();
-    assert.equal(d.num_items(), 2);
+    assert.equal(d.size, 2);
 });

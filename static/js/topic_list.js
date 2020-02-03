@@ -145,7 +145,7 @@ exports.widget = function (parent_elem, my_stream_id) {
     };
 
     self.num_items = function () {
-        return self.topic_items.num_items();
+        return self.topic_items.size;
     };
 
     self.set_count = function (topic, count) {
