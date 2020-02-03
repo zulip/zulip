@@ -142,10 +142,6 @@ exports.initialize = function () {
             const row = $(this).closest(".message_row");
             const id = rows.id(row);
 
-            if (message_edit.is_editing(id)) {
-                // Clicks on a message being edited shouldn't trigger a reply.
-                return;
-            }
 
             current_msg_list.select_id(id);
             compose_actions.respond_to_message({trigger: 'message click'});
