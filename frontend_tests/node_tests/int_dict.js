@@ -25,7 +25,7 @@ run_test('basic', () => {
     assert.equal(d.has(999), false);
 
     assert.deepEqual([...d.keys()], [101, 102]);
-    assert.deepEqual(d.values(), ['baz', 'qux']);
+    assert.deepEqual([...d.values()], ['baz', 'qux']);
 
     d.delete(102);
     assert.equal(d.has(102), false);

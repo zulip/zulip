@@ -22,8 +22,8 @@ export class Dict<V> {
         return this._items.keys();
     }
 
-    values(): V[] {
-        return [...this._items.values()];
+    values(): Iterator<V> {
+        return this._items.values();
     }
 
     items(): [string, V][] {

@@ -46,8 +46,8 @@ export class IntDict<V> {
         return this._map.keys();
     }
 
-    values(): V[] {
-        return Array.from(this._map.values());
+    values(): Iterator<V> {
+        return this._map.values();
     }
 
     filter_values(pred: (item: V) => boolean): V[] {

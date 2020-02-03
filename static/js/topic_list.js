@@ -21,9 +21,9 @@ let zoomed = false;
 exports.remove_expanded_topics = function () {
     stream_popover.hide_topic_popover();
 
-    _.each(active_widgets.values(), function (widget) {
+    for (const widget of active_widgets.values()) {
         widget.remove();
-    });
+    }
 
     active_widgets.clear();
 };
@@ -240,7 +240,7 @@ exports.active_stream_id = function () {
 };
 
 exports.get_stream_li = function () {
-    const widgets = active_widgets.values();
+    const widgets = [...active_widgets.values()];
 
     if (widgets.length !== 1) {
         return;
