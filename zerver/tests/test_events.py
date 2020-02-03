@@ -1187,9 +1187,8 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_presence_events(self) -> None:
-        schema_checker = self.check_events_dict([
+        fields = [
             ('type', equals('presence')),
-            ('email', check_string),
             ('user_id', check_int),
             ('server_timestamp', check_float),
             ('presence', check_dict_only([
@@ -1200,12 +1199,15 @@ class EventsRegisterTest(ZulipTestCase):
                     ('pushable', check_bool),
                 ])),
             ])),
-        ])
+        ]
+
+        email_field = ('email', check_string)
 
         events = self.do_test(lambda: do_update_user_presence(
             self.user_profile, get_client("website"),
             timezone_now(), UserPresence.ACTIVE),
             slim_presence=False)
+        schema_checker = self.check_events_dict(fields + [email_field])
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1213,6 +1215,7 @@ class EventsRegisterTest(ZulipTestCase):
             self.example_user('cordelia'), get_client("website"),
             timezone_now(), UserPresence.ACTIVE),
             slim_presence=True)
+        schema_checker = self.check_events_dict(fields)
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1231,6 +1234,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ])),
             ])),
         ])
+
         self.api_post(self.user_profile.email, "/api/v1/users/me/presence", {'status': 'idle'},
                       HTTP_USER_AGENT="ZulipAndroid/1.0")
         self.do_test(lambda: do_update_user_presence(
