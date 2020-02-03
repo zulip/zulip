@@ -2772,33 +2772,26 @@ def notify_subscriptions_added(user_profile: UserProfile,
                    'names': [stream.name for sub, stream in sub_pairs],
                    'realm': user_profile.realm.string_id})
 
+    sub_dicts = []
+    for (subscription, stream) in sub_pairs:
+        sub_dict = stream.to_dict()
+        for field_name in Subscription.API_FIELDS:
+            if field_name == "active":
+                # Skip the "active" field, it's implied by context
+                continue
+            sub_dict[field_name] = getattr(subscription, field_name)
+
+        sub_dict['in_home_view'] = not subscription.is_muted
+        sub_dict['email_address'] = encode_email_address(stream, show_sender=True)
+        sub_dict['is_old_stream'] = is_old_stream(stream.date_created)
+        sub_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
+            stream.id, stream.date_created, recent_traffic)
+        sub_dict['subscribers'] = stream_user_ids(stream)
+        sub_dicts.append(sub_dict)
+
     # Send a notification to the user who subscribed.
-    payload = [dict(name=stream.name,
-                    stream_id=stream.id,
-                    in_home_view=not subscription.is_muted,
-                    is_muted=subscription.is_muted,
-                    invite_only=stream.invite_only,
-                    is_web_public=stream.is_web_public,
-                    is_announcement_only=stream.is_announcement_only,
-                    color=subscription.color,
-                    email_address=encode_email_address(stream, show_sender=True),
-                    desktop_notifications=subscription.desktop_notifications,
-                    audible_notifications=subscription.audible_notifications,
-                    push_notifications=subscription.push_notifications,
-                    email_notifications=subscription.email_notifications,
-                    wildcard_mentions_notify=subscription.wildcard_mentions_notify,
-                    description=stream.description,
-                    rendered_description=stream.rendered_description,
-                    pin_to_top=subscription.pin_to_top,
-                    is_old_stream=is_old_stream(stream.date_created),
-                    first_message_id=stream.first_message_id,
-                    stream_weekly_traffic=get_average_weekly_stream_traffic(
-                        stream.id, stream.date_created, recent_traffic),
-                    subscribers=stream_user_ids(stream),
-                    history_public_to_subscribers=stream.history_public_to_subscribers)
-               for (subscription, stream) in sub_pairs]
     event = dict(type="subscription", op="add",
-                 subscriptions=payload)
+                 subscriptions=sub_dicts)
     send_event(user_profile.realm, event, [user_profile.id])
 
 def get_peer_user_ids_for_stream_change(stream: Stream,
@@ -4738,10 +4731,7 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
 def gather_subscriptions_helper(user_profile: UserProfile,
                                 include_subscribers: bool=True) -> SubHelperT:
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
-        "recipient_id", "is_muted", "color", "desktop_notifications",
-        "audible_notifications", "push_notifications", "email_notifications",
-        "wildcard_mentions_notify", "active", "pin_to_top"
-    ).order_by("recipient_id")
+        *Subscription.API_FIELDS, "recipient_id").order_by("recipient_id")
 
     sub_dicts = list(sub_dicts)
     sub_recipient_ids = [
@@ -4759,10 +4749,16 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     recent_traffic = get_streams_traffic(stream_ids=stream_ids)
 
     all_streams = get_active_streams(user_profile.realm).select_related(
-        "realm").values("id", "name", "invite_only", "is_announcement_only", "realm_id",
-                        "email_token", "description", "rendered_description", "date_created",
-                        "history_public_to_subscribers", "first_message_id", "is_web_public",
-                        "recipient_id")
+        "realm").values(
+            *Stream.API_FIELDS,
+            # date_created is used as an input for the is_old_stream computed field.
+            "date_created",
+            # The realm_id and recipient_id are generally not needed in the API.
+            "realm_id",
+            "recipient_id",
+            # email_token isn't public to some users with access to
+            # the stream, so doesn't belong in API_FIELDS.
+            "email_token")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
@@ -4803,46 +4799,46 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             # This stream has been deactivated, don't include it.
             continue
 
-        subscribers = subscriber_map[stream["id"]]  # type: Optional[List[int]]
+        # We first construct a dictionary based on the standard Stream
+        # and Subscription models' API_FIELDS.
+        stream_dict = {}
+        for field_name in Stream.API_FIELDS:
+            if field_name == "id":
+                stream_dict['stream_id'] = stream["id"]
+                continue
+            stream_dict[field_name] = stream[field_name]
 
+        # Copy Subscription.API_FIELDS except for "active", which is
+        # used to determine where to the put the field.
+        for field_name in Subscription.API_FIELDS:
+            stream_dict[field_name] = sub[field_name]
+
+        # Backwards-compatibility for clients that haven't been
+        # updated for the in_home_view => is_muted API migration.
+        stream_dict['in_home_view'] = not stream_dict['is_muted']
+
+        # Add a few computed fields not directly from the data models.
+        stream_dict['is_old_stream'] = is_old_stream(stream["date_created"])
+        stream_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
+            stream["id"], stream["date_created"], recent_traffic)
+        stream_dict['email_address'] = encode_email_address_helper(
+            stream["name"], stream["email_token"], show_sender=True)
+
+        # Construct and add subscribers data
+        subscribers = subscriber_map[stream["id"]]  # type: Optional[List[int]]
         # Important: don't show the subscribers if the stream is invite only
         # and this user isn't on it anymore (or a realm administrator).
         if stream["invite_only"] and not (sub["active"] or user_profile.is_realm_admin):
             subscribers = None
-
         # Guest users lose access to subscribers when they are unsubscribed.
         if not sub["active"] and user_profile.is_guest:
             subscribers = None
-
-        email_address = encode_email_address_helper(stream["name"], stream["email_token"],
-                                                    show_sender=True)
-        stream_dict = {'name': stream["name"],
-                       'in_home_view': not sub["is_muted"],
-                       'is_muted': sub["is_muted"],
-                       'invite_only': stream["invite_only"],
-                       'is_web_public': stream["is_web_public"],
-                       'is_announcement_only': stream["is_announcement_only"],
-                       'color': sub["color"],
-                       'desktop_notifications': sub["desktop_notifications"],
-                       'audible_notifications': sub["audible_notifications"],
-                       'push_notifications': sub["push_notifications"],
-                       'email_notifications': sub["email_notifications"],
-                       'wildcard_mentions_notify': sub["wildcard_mentions_notify"],
-                       'pin_to_top': sub["pin_to_top"],
-                       'stream_id': stream["id"],
-                       'first_message_id': stream["first_message_id"],
-                       'description': stream["description"],
-                       'rendered_description': stream["rendered_description"],
-                       'is_old_stream': is_old_stream(stream["date_created"]),
-                       'stream_weekly_traffic': get_average_weekly_stream_traffic(stream["id"],
-                                                                                  stream["date_created"],
-                                                                                  recent_traffic),
-                       'email_address': email_address,
-                       'history_public_to_subscribers': stream['history_public_to_subscribers']}
-
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers
-        if sub["active"]:
+
+        # is_active is represented in this structure by which list we include it in.
+        is_active = stream_dict.pop("active")
+        if is_active:
             subscribed.append(stream_dict)
         else:
             unsubscribed.append(stream_dict)
@@ -4858,19 +4854,17 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     for stream in never_subscribed_streams:
         is_public = (not stream['invite_only'])
         if is_public or user_profile.is_realm_admin:
-            stream_dict = {'name': stream['name'],
-                           'invite_only': stream['invite_only'],
-                           'is_web_public': stream['is_web_public'],
-                           'is_announcement_only': stream['is_announcement_only'],
-                           'stream_id': stream['id'],
-                           'first_message_id': stream["first_message_id"],
-                           'is_old_stream': is_old_stream(stream["date_created"]),
-                           'stream_weekly_traffic': get_average_weekly_stream_traffic(stream["id"],
-                                                                                      stream["date_created"],
-                                                                                      recent_traffic),
-                           'description': stream['description'],
-                           'rendered_description': stream["rendered_description"],
-                           'history_public_to_subscribers': stream['history_public_to_subscribers']}
+            stream_dict = {}
+            for field_name in Stream.API_FIELDS:
+                if field_name == "id":
+                    stream_dict['stream_id'] = stream["id"]
+                    continue
+                stream_dict[field_name] = stream[field_name]
+
+            stream_dict['is_old_stream'] = is_old_stream(stream["date_created"])
+            stream_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
+                stream["id"], stream["date_created"], recent_traffic)
+
             if is_public or user_profile.is_realm_admin:
                 subscribers = subscriber_map[stream["id"]]
                 if subscribers is not None:
