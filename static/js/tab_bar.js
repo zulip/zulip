@@ -165,6 +165,21 @@ function build_tab_bar() {
     tab_bar.removeClass('notdisplayed');
 }
 
+exports.update_stream_name = function (new_name) {
+    // noop
+    if (new_name) {
+        return;
+    }
+};
+
+exports.update_stream_description = function (rendered_new_description) {
+    // noop as .narrow_description does not exist (undefined)
+    const stream_description = $(".narrow_description");
+    if (stream_description !== undefined) {
+        stream_description.html(rendered_new_description);
+    }
+};
+
 exports.initialize = function () {
     build_tab_bar();
 };

@@ -140,6 +140,9 @@ exports.update_stream_name = function (sub, new_name) {
     if (compose_state.stream_name() === old_name) {
         compose_state.stream_name(new_name);
     }
+
+    // Update navbar
+    tab_bar.update_stream_name(new_name);
 };
 
 exports.update_stream_description = function (sub, description, rendered_description) {
@@ -152,6 +155,9 @@ exports.update_stream_description = function (sub, description, rendered_descrip
 
     // Update stream settings
     stream_edit.update_stream_description(sub);
+
+    // Update navbar stream description
+    tab_bar.update_stream_description(sub.rendered_description);
 };
 
 exports.update_stream_privacy = function (sub, values) {
