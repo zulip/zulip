@@ -613,7 +613,7 @@ def apply_event(state: Dict[str, Any],
         else:
             user_key = event['email']
         state['presences'][user_key] = UserPresence.get_status_dict_by_user(
-            event['user_id'])[event['email']]
+            event['user_id'], slim_presence)[user_key]
     elif event['type'] == "update_message":
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update

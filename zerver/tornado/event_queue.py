@@ -915,6 +915,30 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         # `user_event` was already constructed from scratch above.
         client.add_event(user_event)
 
+def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    slim_event = dict(
+        type='presence',
+        user_id=event['user_id'],
+        server_timestamp=event['server_timestamp'],
+        presence=event['presence'],
+    )
+
+    legacy_event = dict(
+        type='presence',
+        user_id=event['user_id'],
+        email=event['email'],
+        server_timestamp=event['server_timestamp'],
+        presence=event['presence'],
+    )
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(event):
+                if client.slim_presence:
+                    client.add_event(slim_event)
+                else:
+                    client.add_event(legacy_event)
+
 def process_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
     for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
@@ -1047,12 +1071,15 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     event = notice['event']  # type: Mapping[str, Any]
     users = notice['users']  # type: Union[List[int], List[Mapping[str, Any]]]
     start_time = time.time()
+
     if event['type'] == "message":
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
     elif event['type'] == "update_message":
         process_message_update_event(event, cast(Iterable[Mapping[str, Any]], users))
     elif event['type'] == "delete_message":
         process_userdata_event(event, cast(Iterable[Mapping[str, Any]], users))
+    elif event['type'] == "presence":
+        process_presence_event(event, cast(Iterable[int], users))
     else:
         process_event(event, cast(Iterable[int], users))
     logging.debug("Tornado: Event %s for %s users took %sms" % (
