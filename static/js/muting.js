@@ -29,11 +29,11 @@ exports.is_topic_muted = function (stream_id, topic) {
 
 exports.get_muted_topics = function () {
     const topics = [];
-    muted_topics.each(function (sub_dict, stream_id) {
+    for (const [stream_id, sub_dict] of muted_topics) {
         for (const topic of sub_dict.keys()) {
             topics.push([stream_id, topic]);
         }
-    });
+    }
     return topics;
 };
 
