@@ -16,7 +16,7 @@ let my_user_id;
 // We have an init() function so that our automated tests
 // can easily clear data.
 exports.init = function () {
-    // The following three Dicts point to the same objects
+    // The following three dicts point to the same objects
     // (all people we've seen), but people_dict can have duplicate
     // keys related to email changes.  We want to deprecate
     // people_dict over time and always do lookups by user_id.

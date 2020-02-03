@@ -1,6 +1,4 @@
-const Dict = require('./dict').Dict;
-
-const load_func_dict = new Dict(); // group -> function
+const load_func_dict = new Map(); // group -> function
 const loaded_groups = new Set();
 
 exports.get_group = function (section) {
