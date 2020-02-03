@@ -5,7 +5,7 @@ import SourceMap from "source-map";
 
 declare namespace StackTraceGPS {
     type StackTraceGPSOptions = {
-        sourceCache?: { [url: string]: string };
+        sourceCache?: { [url: string]: string | Promise<string> };
         sourceMapConsumerCache?: { [sourceMappingUrl: string]: SourceMap.SourceMapConsumer };
         offline?: boolean;
         ajax?(url: string): Promise<string>;
