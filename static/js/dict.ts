@@ -21,18 +21,6 @@ export class Dict<V> {
         return value;
     }
 
-    /**
-     * If `key` exists in the Dict, return its value. Otherwise insert `key`
-     * with a value of `value` and return the value.
-     */
-    setdefault(key: string, value: V): V {
-        const mapping = this._items[this._munge(key)];
-        if (mapping === undefined) {
-            return this.set(key, value);
-        }
-        return mapping.v;
-    }
-
     has(key: string): boolean {
         return _.has(this._items, this._munge(key));
     }

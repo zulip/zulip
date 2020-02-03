@@ -110,20 +110,6 @@ run_test('each', () => {
     assert.equal(unseen_keys.length, 0);
 });
 
-run_test('setdefault', () => {
-    const d = new Dict();
-    const val = ['foo'];
-    let res = d.setdefault('foo', val);
-    assert.equal(res, val);
-    assert.equal(d.has('foo'), true);
-    assert.equal(d.get('foo'), val);
-
-    const val2 = ['foo2'];
-    res = d.setdefault('foo', val2);
-    assert.equal(res, val);
-    assert.equal(d.get('foo'), val);
-});
-
 run_test('num_items', () => {
     const d = new Dict();
     assert.equal(d.num_items(), 0);
