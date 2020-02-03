@@ -730,7 +730,7 @@ exports.get_active_human_persons = function () {
 
 exports.get_active_user_ids = function () {
     // This includes active users and active bots.
-    return active_user_dict.keys();
+    return [...active_user_dict.keys()];
 };
 
 exports.is_cross_realm_email = function (email) {

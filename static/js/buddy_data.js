@@ -127,7 +127,7 @@ function filter_user_ids(filter_text, user_ids) {
     });
 
     const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
-    return user_id_dict.keys();
+    return [...user_id_dict.keys()];
 }
 
 exports.matches_filter = function (filter_text, user_id) {

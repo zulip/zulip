@@ -28,9 +28,9 @@ export class LazySet {
 
     keys() {
         if (this.set !== undefined) {
-            return Array.from(this.set);
+            return this.set.keys();
         }
-        return this.arr;
+        return this.arr.values();
     }
 
     _make_set() {
@@ -50,7 +50,7 @@ export class LazySet {
     }
 
     map(f) {
-        return _.map(this.keys(), f);
+        return Array.from(this.keys(), f);
     }
 
     has(v) {

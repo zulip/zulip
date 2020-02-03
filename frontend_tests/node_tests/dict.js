@@ -6,7 +6,7 @@ run_test('basic', () => {
 
     assert.equal(d.size, 0);
 
-    assert.deepEqual(d.keys(), []);
+    assert.deepEqual([...d.keys()], []);
 
     d.set('foo', 'bar');
     assert.equal(d.get('foo'), 'bar');
@@ -24,7 +24,7 @@ run_test('basic', () => {
     assert.equal(d.has('bar'), true);
     assert.equal(d.has('baz'), false);
 
-    assert.deepEqual(d.keys(), ['foo', 'bar']);
+    assert.deepEqual([...d.keys()], ['foo', 'bar']);
     assert.deepEqual(d.values(), ['baz', 'qux']);
     assert.deepEqual(d.items(), [['foo', 'baz'], ['bar', 'qux']]);
 
@@ -32,7 +32,7 @@ run_test('basic', () => {
     assert.equal(d.has('bar'), false);
     assert.strictEqual(d.get('bar'), undefined);
 
-    assert.deepEqual(d.keys(), ['foo']);
+    assert.deepEqual([...d.keys()], ['foo']);
 
     const val = ['foo'];
     const res = d.set('abc', val);
@@ -97,7 +97,7 @@ run_test('each', () => {
     d.set('banana', 50);
     d.set('carrot', 60);
 
-    let unseen_keys = d.keys();
+    let unseen_keys = [...d.keys()];
 
     let cnt = 0;
     d.each(function (v, k) {
@@ -106,7 +106,7 @@ run_test('each', () => {
         cnt += 1;
     });
 
-    assert.equal(cnt, d.keys().length);
+    assert.equal(cnt, d.size);
     assert.equal(unseen_keys.length, 0);
 });
 
