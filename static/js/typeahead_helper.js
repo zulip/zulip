@@ -91,7 +91,7 @@ exports.render_person = function (person) {
 };
 
 exports.clear_rendered_person = function (user_id) {
-    rendered.persons.del(user_id);
+    rendered.persons.delete(user_id);
 };
 
 exports.render_user_group = function (user_group) {
@@ -118,7 +118,7 @@ exports.render_person_or_user_group = function (item) {
 
 exports.clear_rendered_stream = function (stream_id) {
     if (rendered.streams.has(stream_id)) {
-        rendered.streams.del(stream_id);
+        rendered.streams.delete(stream_id);
     }
 };
 

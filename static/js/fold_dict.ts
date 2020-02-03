@@ -34,8 +34,8 @@ export class FoldDict<V> {
         return this._items.has(this._munge(key));
     }
 
-    del(key: string): void {
-        this._items.delete(this._munge(key));
+    delete(key: string): boolean {
+        return this._items.delete(this._munge(key));
     }
 
     keys(): string[] {

@@ -984,7 +984,7 @@ exports.deactivate = function (person) {
     // We don't fully remove a person from all of our data
     // structures, because deactivated users can be part
     // of somebody's PM list.
-    active_user_dict.del(person.user_id);
+    active_user_dict.delete(person.user_id);
 };
 
 exports.report_late_add = function (user_id, email) {
@@ -1104,7 +1104,7 @@ exports.maybe_incr_recipient_count = function (message) {
 
 exports.set_full_name = function (person_obj, new_full_name) {
     if (people_by_name_dict.has(person_obj.full_name)) {
-        people_by_name_dict.del(person_obj.full_name);
+        people_by_name_dict.delete(person_obj.full_name);
     }
     // Remove previous and add new full name to the duplicate full name tracker.
     exports.track_duplicate_full_name(person_obj.full_name, person_obj.user_id, true);

@@ -27,7 +27,7 @@ run_test('basic', () => {
     assert.deepEqual(d.keys(), [101, 102]);
     assert.deepEqual(d.values(), ['baz', 'qux']);
 
-    d.del(102);
+    d.delete(102);
     assert.equal(d.has(102), false);
     assert.strictEqual(d.get(102), undefined);
 
@@ -143,7 +143,7 @@ run_test('num_items', () => {
 
     d.set(102, 1);
     assert.equal(d.num_items(), 2);
-    d.del(101);
+    d.delete(101);
     assert.equal(d.num_items(), 1);
 });
 

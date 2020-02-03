@@ -50,7 +50,7 @@ exports.stream_sidebar = (function () {
         // cases like removing the last pinned stream (and removing
         // the divider).
 
-        self.rows.del(stream_id);
+        self.rows.delete(stream_id);
     };
 
     return self;

@@ -37,9 +37,9 @@ export class IntDict<V> {
         return this._map.has(key);
     }
 
-    del(key: number): void {
+    delete(key: number): boolean {
         key = this._convert(key);
-        this._map.delete(key);
+        return this._map.delete(key);
     }
 
     keys(): number[] {

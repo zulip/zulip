@@ -14,7 +14,7 @@ export class Dict<V> {
         return this._items.has(this._munge(key));
     }
 
-    del(key: string): void {
+    delete(key: string): void {
         this._items.delete(this._munge(key));
     }
 

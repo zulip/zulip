@@ -15,7 +15,7 @@ exports.add_muted_topic = function (stream_id, topic) {
 exports.remove_muted_topic = function (stream_id, topic) {
     const sub_dict = muted_topics.get(stream_id);
     if (sub_dict) {
-        sub_dict.del(topic);
+        sub_dict.delete(topic);
     }
 };
 

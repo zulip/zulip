@@ -148,7 +148,7 @@ exports.clear_message_content_height_cache = function () {
 };
 
 exports.un_cache_message_content_height = function (message_id) {
-    _message_content_height_cache.del(message_id);
+    _message_content_height_cache.delete(message_id);
 };
 
 function get_message_height(elem, message_id) {

@@ -52,7 +52,7 @@ function collect_single(operators) {
     _.each(operators, function (elem) {
         const key = elem.operator;
         if (seen.has(key)) {
-            result.del(key);
+            result.delete(key);
         } else {
             result.set(key, elem.operand);
             seen.set(key, true);
