@@ -62,7 +62,7 @@ export class IntDict<V> {
         return results;
     }
 
-    num_items(): number {
+    get size(): number {
         return this._map.size;
     }
 

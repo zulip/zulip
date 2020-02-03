@@ -14,12 +14,12 @@ run_test('basic', () => {
 
     d.set('foo', 'baz');
     assert.equal(d.get('foo'), 'baz');
-    assert.equal(d.num_items(), 1);
+    assert.equal(d.size, 1);
 
     d.set('bar', 'qux');
     assert.equal(d.get('foo'), 'baz');
     assert.equal(d.get('bar'), 'qux');
-    assert.equal(d.num_items(), 2);
+    assert.equal(d.size, 2);
 
     assert.equal(d.has('bar'), true);
     assert.equal(d.has('baz'), false);
@@ -70,18 +70,18 @@ run_test('clear', () => {
     }
 
     populate();
-    assert.equal(d.num_items(), 2);
+    assert.equal(d.size, 2);
     assert(!d.is_empty());
 
     d.clear();
     assert.equal(d.get('fOO'), undefined);
     assert.equal(d.get('bAR'), undefined);
-    assert.equal(d.num_items(), 0);
+    assert.equal(d.size, 0);
     assert(d.is_empty());
 
     // make sure it still works after clearing
     populate();
-    assert.equal(d.num_items(), 2);
+    assert.equal(d.size, 2);
 });
 
 run_test('undefined_keys', () => {

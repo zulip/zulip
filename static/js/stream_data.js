@@ -27,7 +27,7 @@ const BinaryDict = function (pred) {
     };
 
     self.num_true_items = function () {
-        return self.trues.num_items();
+        return self.trues.size;
     };
 
     self.false_values = function () {
@@ -353,7 +353,7 @@ exports.get_colors = function () {
 };
 
 exports.update_subscribers_count = function (sub) {
-    const count = sub.subscribers.num_items();
+    const count = sub.subscribers.size;
     sub.subscriber_count = count;
 };
 
@@ -370,7 +370,7 @@ exports.get_subscriber_count = function (stream_name) {
     if (!sub.subscribers) {
         return 0;
     }
-    return sub.subscribers.num_items();
+    return sub.subscribers.size;
 };
 
 exports.update_stream_announcement_only = function (sub, is_announcement_only) {

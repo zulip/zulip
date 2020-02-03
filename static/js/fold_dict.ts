@@ -50,7 +50,7 @@ export class FoldDict<V> {
         return [...this._items.values()].map(({k, v}) => [k, v]);
     }
 
-    num_items(): number {
+    get size(): number {
         return this._items.size;
     }
 

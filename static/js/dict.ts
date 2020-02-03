@@ -30,7 +30,7 @@ export class Dict<V> {
         return [...this._items];
     }
 
-    num_items(): number {
+    get size(): number {
         return this._items.size;
     }
 
