@@ -48,10 +48,12 @@ from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_status import get_user_info_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
-from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
-    get_user_profile_by_id, realm_filters_for_realm, get_user,\
-    custom_profile_fields_for_realm, get_realm_domains, \
+from zerver.models import (
+    Client, Message, Realm, UserPresence, UserProfile,
+    get_user_profile_by_id, realm_filters_for_realm,
+    custom_profile_fields_for_realm, get_realm_domains,
     get_default_stream_groups, CustomProfileField, Stream
+)
 from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
@@ -606,13 +608,12 @@ def apply_event(state: Dict[str, Any],
                         user_id in sub['subscribers']):
                     sub['subscribers'].remove(user_id)
     elif event['type'] == "presence":
-        presence_user_profile = get_user(event['email'], user_profile.realm)
         if slim_presence:
             user_key = str(event['user_id'])
         else:
             user_key = event['email']
         state['presences'][user_key] = UserPresence.get_status_dict_by_user(
-            presence_user_profile)[event['email']]
+            event['user_id'])[event['email']]
     elif event['type'] == "update_message":
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update
