@@ -79,22 +79,6 @@ run_test('benchmark', () => {
 });
 */
 
-run_test('filter_values', () => {
-    const d = new IntDict();
-
-    d.set(1, "fred");
-    d.set(2, "foo");
-    d.set(3, "bar");
-    d.set(4, "baz");
-    d.set(4, "fay");
-
-    const pred = (v) => {
-        return v.startsWith('f');
-    };
-
-    assert.deepEqual(d.filter_values(pred).sort(), ['fay', 'foo', 'fred']);
-});
-
 run_test('undefined_keys', () => {
     blueslip.clear_test_data();
     blueslip.set_test_data('error', 'Tried to call a IntDict method with an undefined key.');
