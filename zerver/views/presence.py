@@ -38,7 +38,7 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
     if target.is_bot:
         return json_error(_('Presence is not supported for bot users.'))
 
-    presence_dict = UserPresence.get_status_dict_by_user(target)
+    presence_dict = UserPresence.get_status_dict_by_user(target.id)
     if len(presence_dict) == 0:
         return json_error(_('No presence data for %s') % (target.email,))
 
