@@ -34,10 +34,6 @@ export class Dict<V> {
         return this._items.size;
     }
 
-    is_empty(): boolean {
-        return this._items.size === 0;
-    }
-
     each(f: (v: V, k?: string) => void): void {
         this._items.forEach(f);
     }

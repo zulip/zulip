@@ -4,13 +4,13 @@ set_global('blueslip', global.make_zblueslip());
 run_test('basic', () => {
     const d = new FoldDict();
 
-    assert(d.is_empty());
+    assert.equal(d.size, 0);
 
     assert.deepEqual(d.keys(), []);
 
     d.set('foo', 'bar');
     assert.equal(d.get('foo'), 'bar');
-    assert(!d.is_empty());
+    assert.notEqual(d.size, 0);
 
     d.set('foo', 'baz');
     assert.equal(d.get('foo'), 'baz');
@@ -71,13 +71,11 @@ run_test('clear', () => {
 
     populate();
     assert.equal(d.size, 2);
-    assert(!d.is_empty());
 
     d.clear();
     assert.equal(d.get('fOO'), undefined);
     assert.equal(d.get('bAR'), undefined);
     assert.equal(d.size, 0);
-    assert(d.is_empty());
 
     // make sure it still works after clearing
     populate();
