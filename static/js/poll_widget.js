@@ -10,7 +10,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
     const me = people.my_current_user_id();
     let poll_question = question;
-    const key_to_option = {};
+    const key_to_option = new Map();
     let my_idx = 1;
 
     let input_mode = is_my_poll; // for now
@@ -43,7 +43,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
     self.get_widget_data = function () {
         const options = [];
 
-        _.each(key_to_option, function (obj, key) {
+        for (const [key, obj] of key_to_option) {
             const voters = _.keys(obj.votes);
             const current_user_vote = _.contains(voters, String(me));
 
@@ -54,8 +54,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 key: key,
                 current_user_vote: current_user_vote,
             });
-        });
-
+        }
 
         const widget_data = {
             options: options,
@@ -85,11 +84,11 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 const option = data.option;
                 const votes = {};
 
-                key_to_option[key] = {
+                key_to_option.set(key, {
                     option: option,
                     user_id: sender_id,
                     votes: votes,
-                };
+                });
 
                 if (my_idx <= idx) {
                     my_idx = idx + 1;
@@ -120,7 +119,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 let vote = 1;
 
                 // toggle
-                if (key_to_option[key].votes[me]) {
+                if (key_to_option.get(key).votes[me]) {
                     vote = -1;
                 }
 
@@ -136,7 +135,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
             inbound: function (sender_id, data) {
                 const key = data.key;
                 const vote = data.vote;
-                const option = key_to_option[key];
+                const option = key_to_option.get(key);
 
                 if (option === undefined) {
                     blueslip.warn('unknown key for poll: ' + key);
