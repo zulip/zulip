@@ -606,10 +606,9 @@ def apply_event(state: Dict[str, Any],
                         user_id in sub['subscribers']):
                     sub['subscribers'].remove(user_id)
     elif event['type'] == "presence":
-        # TODO: Add user_id to presence update events / state format!
         presence_user_profile = get_user(event['email'], user_profile.realm)
         if slim_presence:
-            user_key = str(presence_user_profile.id)
+            user_key = str(event['user_id'])
         else:
             user_key = event['email']
         state['presences'][user_key] = UserPresence.get_status_dict_by_user(

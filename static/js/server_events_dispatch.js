@@ -56,7 +56,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'presence':
-        activity.update_presence_info(event.email, event.presence, event.server_timestamp);
+        activity.update_presence_info(event.user_id, event.presence, event.server_timestamp);
         break;
 
     case 'restart': {

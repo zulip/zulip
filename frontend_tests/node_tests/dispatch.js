@@ -169,6 +169,7 @@ const event_fixtures = {
     presence: {
         type: 'presence',
         email: 'alice@example.com',
+        user_id: 42,
         presence: {
             client_name: 'electron',
             is_mirror_dummy: false,
@@ -856,8 +857,8 @@ with_overrides(function (override) {
     global.with_stub(function (stub) {
         override('activity.update_presence_info', stub.f);
         dispatch(event);
-        const args = stub.get_args('email', 'presence', 'server_time');
-        assert_same(args.email, 'alice@example.com');
+        const args = stub.get_args('user_id', 'presence', 'server_time');
+        assert_same(args.user_id, event.user_id);
         assert_same(args.presence, event.presence);
         assert_same(args.server_time, event.server_timestamp);
     });
