@@ -4708,26 +4708,27 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
         color_idx = (color_idx + 1) % len(STREAM_ASSIGNMENT_COLORS)
         return color
 
-    subscribed = [
-        {'name': stream.name,
-         'is_muted': False,
-         'invite_only': False,
-         'is_announcement_only': stream.is_announcement_only,
-         'color': get_next_color(),
-         'desktop_notifications': True,
-         'audible_notifications': True,
-         'push_notifications': False,
-         'pin_to_top': False,
-         'stream_id': stream.id,
-         'description': stream.description,
-         'rendered_description': stream.rendered_description,
-         'is_old_stream': is_old_stream(stream.date_created),
-         'first_message_id': stream.first_message_id,
-         'stream_weekly_traffic': get_average_weekly_stream_traffic(stream.id,
-                                                                    stream.date_created,
-                                                                    {}),
-         'email_address': ''}
-        for stream in Stream.objects.filter(realm=realm, is_web_public=True, deactivated=False)]
+    subscribed = []
+    for stream in Stream.objects.filter(realm=realm, is_web_public=True, deactivated=False):
+        stream_dict = stream.to_dict()
+
+        # Add versions of the Subscription fields based on a simulated
+        # new user subscription set.
+        stream_dict['is_muted'] = False
+        stream_dict['color'] = get_next_color()
+        stream_dict['desktop_notifications'] = True
+        stream_dict['audible_notifications'] = True
+        stream_dict['push_notifications'] = True
+        stream_dict['email_notifications'] = True
+        stream_dict['pin_to_top'] = False
+        stream_dict['is_old_stream'] = is_old_stream(stream.date_created)
+        stream_weekly_traffic = get_average_weekly_stream_traffic(stream.id,
+                                                                  stream.date_created,
+                                                                  {})
+        stream_dict['stream_weekly_traffic'] = stream_weekly_traffic
+        stream_dict['email_address'] = ''
+        subscribed.append(stream_dict)
+
     return (subscribed, [], [])
 
 # In general, it's better to avoid using .values() because it makes
