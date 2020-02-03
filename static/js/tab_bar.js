@@ -1,172 +1,138 @@
 const render_tab_bar = require('../templates/tab_bar.hbs');
 
-function make_tab(title, hash, data, extra_class, home) {
-    return {active: "inactive",
-            cls: extra_class || "",
-            title: title,
-            hash: hash,
-            data: data,
-            home: home || false };
+function get_sub_count(current_stream) {
+    const sub_count = current_stream.subscriber_count;
+    return sub_count;
 }
 
-function make_tab_data() {
-    const tabs = [];
-    const filter = narrow_state.filter();
-
-    function filtered_to_non_home_view_stream() {
-        if (!filter.has_operator('stream')) {
-            return false;
-        }
-        const stream_name = filter.operands('stream')[0];
-        const stream_id = stream_data.get_stream_id(stream_name);
-        if (!stream_id) {
-            return true;
-        }
-
-        return stream_data.is_muted(stream_id);
+function get_formatted_sub_count(current_stream) {
+    let sub_count = get_sub_count(current_stream);
+    if (sub_count >= 1000) {
+        // parseInt() is used to floor the value of division to an integer
+        sub_count = parseInt(sub_count / 1000, 10) + "k";
     }
+    return sub_count;
+}
 
-    function in_all() {
-        return filter !== undefined &&
-               (filtered_to_non_home_view_stream() ||
-                filter.has_operand("in", "all"));
+function make_tab_data(filter) {
+    const tab_data = {};
+    if (filter === undefined) {
+        return {
+            title: 'All messages',
+            icon: 'home',
+        };
     }
-
-    if (in_all()) {
-        tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
-    } else if (page_params.narrow !== undefined) {
-        tabs.push(make_tab("Stream " + page_params.narrow_stream,
-                           hash_util.operators_to_hash([page_params.narrow[0]]),
-                           page_params.narrow_stream, 'stream'));
-        if (page_params.narrow_topic !== undefined) {
-            tabs.push(make_tab("Topic " + page_params.narrow_topic,
-                               hash_util.operators_to_hash(page_params.narrow),
-                               null));
-        }
-    }
-
-    if (narrow_state.active() && narrow_state.operators().length > 0) {
-        let stream;
-        const ops = narrow_state.operators();
-        // Second breadcrumb item
-        let hashed = hash_util.operators_to_hash(ops.slice(0, 1));
-        if (filter.has_operator("stream")) {
-            stream = filter.operands("stream")[0];
-            tabs.push(make_tab(stream, hashed, stream, 'stream'));
-        } else if (filter.has_operator("pm-with") ||
-                   filter.has_operand("is", "private")) {
-
-            tabs.push(make_tab("Private Messages", '#narrow/is/private',
-                               undefined, 'private_message '));
-
-            if (filter.has_operator("pm-with")) {
-                const emails = filter.operands("pm-with")[0].split(',');
-                const names = emails.map(email => {
-                    if (!people.get_by_email(email)) {
-                        return email;
-                    }
-                    return people.get_by_email(email).full_name;
-                });
-
-                tabs.push(make_tab(names.join(', '), hashed));
-            }
-
-        } else if (filter.has_operator("group-pm-with")) {
-
-            tabs.push(make_tab("Group Private", '#narrow/group-pm-with',
-                               undefined, 'private_message '));
-
-
-        } else if (filter.has_operand("is", "starred")) {
-            tabs.push(make_tab("Starred", hashed));
-        } else if (filter.has_operand("streams", "public")) {
-            tabs.push(make_tab("Public Streams", hashed));
-        } else if (filter.has_operator("near")) {
-            tabs.push(make_tab("Near " + filter.operands("near")[0], hashed));
-        } else if (filter.has_operator("id")) {
-            tabs.push(make_tab("ID " + filter.operands("id")[0], hashed));
-        } else if (filter.has_operand("is", "mentioned")) {
-            tabs.push(make_tab("Mentions", hashed));
-        } else if (filter.has_operator("sender")) {
-            let sender = filter.operands("sender")[0];
-            if (people.get_by_email(sender)) {
-                sender = people.get_by_email(sender).full_name;
-            }
-            tabs.push(make_tab("Sent by " + sender, hashed));
-        }  else if (filter.has_operator("search")) {
-            // Search is not a clickable link, since we don't have
-            // a search narrow
-            tabs.push(make_tab("Search results", false));
-        }
-
-        // Third breadcrumb item for stream-topic naarrows
-        if (filter.has_operator("stream") &&
-            filter.has_operator("topic")) {
-            const topic = filter.operands("topic")[0];
-            hashed = hash_util.operators_to_hash(ops.slice(0, 2));
-
-            tabs.push(make_tab(topic, hashed, null));
+    tab_data.title = filter.get_title();
+    tab_data.icon = filter.get_icon();
+    if (tab_data.icon === 'hashtag' || tab_data.icon === 'lock') {
+        const stream = filter.operands("stream")[0];
+        const current_stream  = stream_data.get_sub_by_name(stream);
+        if (current_stream) {
+            tab_data.rendered_narrow_description = current_stream.rendered_description;
+            tab_data.sub_count = get_sub_count(current_stream);
+            tab_data.formatted_sub_count = get_formatted_sub_count(current_stream);
+            tab_data.stream_settings_link = "#streams/" + current_stream.stream_id + "/" + current_stream.name;
+        } else {
+            tab_data.title = 'Unknown Stream';
+            tab_data.sub_count = '0';
+            tab_data.formatted_sub_count = '0';
+            tab_data.rendered_narrow_description = "This stream does not exist or is private.";
         }
     }
-
-    if (tabs.length === 0) {
-        tabs.push(make_tab('All messages', "#", "home", "root", true));
-    }
-
-    // Last tab is not a link
-    tabs[tabs.length - 1].hash = null;
-
-    return tabs;
+    return tab_data;
 }
 
 exports.colorize_tab_bar = function () {
-    const stream_tab = $('#tab_list .stream');
-    if (stream_tab.length > 0) {
-        let stream_name = stream_tab.data('name');
-        if (stream_name === undefined) {
-            return;
-        }
-        stream_name = stream_name.toString();
-
-        const color_for_stream = stream_data.get_color(stream_name);
-        const stream_dark = stream_color.get_color_class(color_for_stream);
-        const stream_light = colorspace.getHexColor(
-            colorspace.getLighterColor(
-                colorspace.getDecimalColor(color_for_stream), 0.2));
-
-        if (stream_tab.hasClass("stream")) {
-            stream_tab.css('background-color', color_for_stream);
-            if (stream_tab.hasClass("inactive")) {
-                stream_tab.hover (
-                    function () {
-                        $(this).css('background-color', stream_light);
-                    }, function () {
-                        $(this).css('background-color', color_for_stream);
-                    }
-                );
-            }
-            stream_tab.removeClass(stream_color.color_classes);
-            stream_tab.addClass(stream_dark);
-        }
-    }
+    const filter = narrow_state.filter();
+    if (filter === undefined || !filter.has_operator('stream')) {return;}
+    const color_for_stream = stream_data.get_color(filter.operands("stream")[0]);
+    const stream_light = colorspace.getHexColor(colorspace.getDecimalColor(color_for_stream));
+    $("#tab_list .fa-hashtag").css('color', stream_light);
+    $("#tab_list .fa-lock").css('color', stream_light);
 };
 
-function build_tab_bar() {
-    const tabs = make_tab_data();
-
+function display_tab_bar(tab_bar_data) {
     const tab_bar = $("#tab_bar");
     tab_bar.empty();
-
-    tabs[tabs.length - 1].active = "active";
-    const rendered =  render_tab_bar({tabs: tabs});
-
+    const rendered = render_tab_bar(tab_bar_data);
     tab_bar.append(rendered);
-    exports.colorize_tab_bar();
+    if (tab_bar_data.stream_settings_link) {
+        exports.colorize_tab_bar();
+    }
     tab_bar.removeClass('notdisplayed');
 }
 
+function build_tab_bar(filter) {
+    // This makes sure we don't waste time appending tab_bar on a template where it's never used
+    if (filter && !filter.is_common_narrow()) {
+        exports.open_search_bar_and_close_narrow_description();
+    } else {
+        const tab_bar_data = make_tab_data(filter);
+        display_tab_bar(tab_bar_data);
+        $(".search_closed").on("click", function (e) {
+            exports.open_search_bar_and_close_narrow_description();
+            $('#search_query').select();
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        exports.close_search_bar_and_open_narrow_description();
+    }
+}
+
+exports.exit_search = function () {
+    const filter = narrow_state.filter();
+    if (!filter || filter.is_common_narrow()) {
+        // for common narrows, we change the UI (and don't redirect)
+        exports.close_search_bar_and_open_narrow_description();
+    } else {
+        // for "searching narrows", we redirect
+        window.location.replace(filter.generate_redirect_url());
+    }
+};
+
+exports.update_stream_name = function (new_name) {
+    const stream_name = $(".stream a");
+    if (stream_name !== undefined) {
+        stream_name.text(new_name);
+    }
+};
+
+exports.update_stream_description = function () {
+    // TODO: Implement this properly.  Really, this and update_stream
+    // name should just do a full rerender of the tab_tab component;
+    // they're rare events and that rendering is cheap.
+
+    // TODO: Do similar rerenders for stream privacy or subscriber
+    // count changes.
+    return;
+};
+
 exports.initialize = function () {
-    build_tab_bar();
+    const filter = narrow_state.filter();
+    build_tab_bar(filter);
+
+    // register navbar click handlers
+    $('#search_exit').on("click", function (e) {
+        tab_bar.exit_search();
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $(".search_open").on("click", function (e) {
+        $('#search_query').typeahead('lookup').focus();
+        e.preventDefault();
+        e.stopPropagation();
+    });
+};
+
+exports.open_search_bar_and_close_narrow_description = function () {
+    $(".navbar-search").addClass("expanded");
+    $("#tab_list").addClass("hidden");
+};
+
+exports.close_search_bar_and_open_narrow_description = function () {
+    $(".navbar-search").removeClass("expanded");
+    $("#tab_list").removeClass("hidden");
 };
 
 window.tab_bar = exports;

@@ -251,9 +251,9 @@ expect_stream_subject();
 casper.then(check_narrow_title('frontend test - Zulip Dev - Zulip'));
 
 casper.then(function () {
-    // This time, un-narrow by hitting the search 'x'
+    // Un-narrow by clicking "Zulip"
     casper.test.info('Un-narrowing');
-    casper.click('#search_exit');
+    casper.click('.brand');
 });
 
 expect_home();
