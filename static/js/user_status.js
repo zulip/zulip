@@ -1,7 +1,5 @@
-const IntDict = require('./int_dict').IntDict;
-
 const away_user_ids = new Set();
-const user_info = new IntDict();
+const user_info = new Map();
 
 exports.server_update = function (opts) {
     channel.post({

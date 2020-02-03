@@ -1,7 +1,6 @@
 const FoldDict = require('./fold_dict').FoldDict;
-const IntDict = require('./int_dict').IntDict;
 
-const muted_topics = new IntDict();
+const muted_topics = new Map();
 
 exports.add_muted_topic = function (stream_id, topic) {
     let sub_dict = muted_topics.get(stream_id);

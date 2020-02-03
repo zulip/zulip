@@ -2,7 +2,6 @@ const util = require("./util");
 const pygments_data = require("../generated/pygments_data.json");
 const typeahead = require("../shared/js/typeahead");
 const render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');
-const IntDict = require('./int_dict').IntDict;
 
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
@@ -64,7 +63,7 @@ exports.render_typeahead_item = function (args) {
     return render_typeahead_list_item(args);
 };
 
-const rendered = { persons: new IntDict(), streams: new IntDict(), user_groups: new IntDict() };
+const rendered = { persons: new Map(), streams: new Map(), user_groups: new Map() };
 
 exports.render_person = function (person) {
     if (person.special_item_text) {

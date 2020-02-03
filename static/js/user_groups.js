@@ -1,5 +1,4 @@
 const FoldDict = require('./fold_dict').FoldDict;
-const IntDict = require('./int_dict').IntDict;
 
 let user_group_name_dict;
 let user_group_by_id_dict;
@@ -8,7 +7,7 @@ let user_group_by_id_dict;
 // can easily clear data.
 exports.init = function () {
     user_group_name_dict = new FoldDict();
-    user_group_by_id_dict = new IntDict();
+    user_group_by_id_dict = new Map();
 };
 
 // WE INITIALIZE DATA STRUCTURES HERE!

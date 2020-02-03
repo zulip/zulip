@@ -10,9 +10,8 @@ This library implements two related, similar concepts:
 
 */
 
-const IntDict = require('./int_dict').IntDict;
 
-const _message_content_height_cache = new IntDict();
+const _message_content_height_cache = new Map();
 
 function show_more_link(row) {
     row.find(".message_condenser").hide();

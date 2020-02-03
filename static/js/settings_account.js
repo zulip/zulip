@@ -1,5 +1,3 @@
-const IntDict = require("./int_dict").IntDict;
-
 const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
 const render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
 const render_settings_api_key_modal = require('../templates/settings/api_key_modal.hbs');
@@ -180,7 +178,7 @@ exports.initialize_custom_date_type_fields = function (element_id) {
 exports.initialize_custom_user_type_fields = function (element_id, user_id, is_editable,
                                                        set_handler_on_update) {
     const field_types = page_params.custom_profile_field_types;
-    const user_pills = new IntDict();
+    const user_pills = new Map();
 
     const person = people.get_by_user_id(user_id);
     if (person.is_bot) {
