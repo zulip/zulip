@@ -1,8 +1,6 @@
 set_global('$', global.make_zjquery());
 set_global('blueslip', global.make_zblueslip());
 
-const Dict = zrequire('dict').Dict;
-
 let filter_key_handlers;
 
 const _page_params = {
@@ -382,7 +380,7 @@ run_test('PM_update_dom_counts', () => {
     li.set_find_results('.count', count);
     count.set_parents_result('li', li);
 
-    const counts = new Dict();
+    const counts = new Map();
     counts.set(pm_key, 5);
     li.addClass('user_sidebar_entry');
 
@@ -407,7 +405,7 @@ run_test('group_update_dom_counts', () => {
     li.set_find_results('.count', count);
     count.set_parent(li);
 
-    const counts = new Dict();
+    const counts = new Map();
     counts.set(pm_key, 5);
     li.addClass('group-pms-sidebar-entry');
 

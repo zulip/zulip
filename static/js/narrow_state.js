@@ -1,5 +1,3 @@
-const Dict = require('./dict').Dict;
-
 let current_filter;
 
 exports.reset_current_filter = function () {
@@ -47,8 +45,8 @@ exports.search_string = function () {
 // Collect operators which appear only once into an object,
 // and discard those which appear more than once.
 function collect_single(operators) {
-    const seen   = new Dict();
-    const result = new Dict();
+    const seen   = new Map();
+    const result = new Map();
 
     for (const elem of operators) {
         const key = elem.operator;

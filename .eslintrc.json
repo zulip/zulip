@@ -213,7 +213,6 @@
             "globals": {
                 "$": false,
                 "ClipboardJS": false,
-                "Dict": false,
                 "FetchStatus": false,
                 "Filter": false,
                 "Handlebars": false,

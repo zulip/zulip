@@ -1,8 +1,8 @@
 const FoldDict = require('./fold_dict').FoldDict;
 const IntDict = require('./int_dict').IntDict;
 
-const topic_senders = new IntDict(); // key is stream-id, value is Dict
-const stream_senders = new IntDict(); // key is stream-id, value is Dict
+const topic_senders = new IntDict(); // key is stream-id, value is Map
+const stream_senders = new IntDict(); // key is stream-id, value is Map
 
 exports.process_message_for_senders = function (message) {
     const stream_id = message.stream_id;

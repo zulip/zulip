@@ -1,10 +1,8 @@
 const util = require("./util");
-const Dict = require('./dict').Dict;
-
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
-const typist_dct = new Dict();
-const inbound_timer_dict = new Dict();
+const typist_dct = new Map();
+const inbound_timer_dict = new Map();
 
 function to_int(s) {
     return parseInt(s, 10);
