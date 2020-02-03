@@ -54,18 +54,6 @@ export class IntDict<V> {
         return this._map.entries();
     }
 
-    filter_values(pred: (item: V) => boolean): V[] {
-        const results: V[] = [];
-
-        this._map.forEach(function (v: V) {
-            if (pred(v)) {
-                results.push(v);
-            }
-        });
-
-        return results;
-    }
-
     get size(): number {
         return this._map.size;
     }

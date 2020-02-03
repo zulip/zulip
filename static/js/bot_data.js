@@ -57,15 +57,23 @@ exports.update = function bot_data__update(bot_id, bot_update) {
 };
 
 exports.get_all_bots_for_current_user = function bots_data__get_editable() {
-    return bots.filter_values(function (bot) {
-        return people.is_current_user(bot.owner);
-    });
+    const ret = [];
+    for (const bot of bots.values()) {
+        if (people.is_current_user(bot.owner)) {
+            ret.push(bot);
+        }
+    }
+    return ret;
 };
 
 exports.get_editable = function bots_data__get_editable() {
-    return bots.filter_values(function (bot) {
-        return bot.is_active && people.is_current_user(bot.owner);
-    });
+    const ret = [];
+    for (const bot of bots.values()) {
+        if (bot.is_active && people.is_current_user(bot.owner)) {
+            ret.push(bot);
+        }
+    }
+    return ret;
 };
 
 exports.get = function bot_data__get(bot_id) {

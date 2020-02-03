@@ -681,7 +681,13 @@ exports.is_active_user_for_popover = function (user_id) {
 };
 
 exports.filter_all_persons = function (pred) {
-    return people_by_user_id_dict.filter_values(pred);
+    const ret = [];
+    for (const person of people_by_user_id_dict.values()) {
+        if (pred(person)) {
+            ret.push(person);
+        }
+    }
+    return ret;
 };
 
 exports.get_realm_persons = function () {
