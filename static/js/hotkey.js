@@ -487,6 +487,10 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
+    if (hotkey.message_view_only && gear_menu.is_open()) {
+        return false;
+    }
+
     if (overlays.settings_open()) {
         return false;
     }
