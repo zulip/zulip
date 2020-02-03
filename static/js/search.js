@@ -45,8 +45,6 @@ function update_buttons_with_focus(focused) {
         || search_query_box.val()
         || narrow_state.active()) {
         $('.search_button').prop('disabled', false);
-    } else {
-        $('.search_button').prop('disabled', true);
     }
 }
 
@@ -156,7 +154,6 @@ exports.initialize = function () {
     // Some of these functions don't actually need to be exported,
     // but the code was moved here from elsewhere, and it would be
     // more work to re-order everything and make them private.
-    $('#search_exit').on('click', narrow.deactivate);
 
     search_query_box.on('focus', exports.focus_search);
     search_query_box.on('blur', function () {
@@ -176,8 +173,6 @@ exports.initialize = function () {
         // really it would be OK if they did).
 
         setTimeout(function () {
-            const search_string = narrow_state.search_string();
-            search_query_box.val(search_string);
             exports.update_button_visibility();
         }, 100);
     });
@@ -204,6 +199,7 @@ exports.initiate_search = function () {
     if (page_params.search_pills_enabled) {
         $('#search_query').focus();
     } else {
+        tab_bar.open_search_bar_and_close_narrow_description();
         $('#search_query').select();
     }
 };
