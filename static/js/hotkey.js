@@ -543,6 +543,12 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
+    // Disable out of message_view_only hotkeys when
+    // settings gear menu is open.
+    if (hotkey.message_view_only && gear_menu.is_open()) {
+        return false;
+    }
+
     // The next two sections date back to 00445c84 and are Mac/Chrome-specific,
     // and they should possibly be eliminated in favor of keeping standard
     // browser behavior.

@@ -200,6 +200,9 @@ run_test('basic_chars', () => {
     set_global('hotspots', {
         is_open: return_false,
     });
+    set_global('gear_menu', {
+        is_open: return_false,
+    });
 
     // All letters should return false if we are composing text.
     hotkey.processing_text = return_true;
