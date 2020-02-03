@@ -1,4 +1,4 @@
-exports.LazySet = function (vals) {
+export class LazySet {
     /*
         This class is optimized for a very
         particular use case.
@@ -20,63 +20,62 @@ exports.LazySet = function (vals) {
         as has/add/delete, we convert it over
         to a set for a one-time cost.
     */
-    const self = {};
-    self.arr = vals;
-    self.set = undefined;
 
-    self.keys = function () {
-        if (self.set !== undefined) {
-            return Array.from(self.set);
-        }
-        return self.arr;
-    };
-
-    function make_set() {
-        if (self.set !== undefined) {
-            return;
-        }
-        self.set = new Set(self.arr);
-        self.arr = undefined;
+    constructor(vals) {
+        this.arr = vals;
+        this.set = undefined;
     }
 
-    self.num_items = function () {
-        if (self.set !== undefined) {
-            return self.set.size;
+    keys() {
+        if (this.set !== undefined) {
+            return Array.from(this.set);
+        }
+        return this.arr;
+    }
+
+    _make_set() {
+        if (this.set !== undefined) {
+            return;
+        }
+        this.set = new Set(this.arr);
+        this.arr = undefined;
+    }
+
+    num_items() {
+        if (this.set !== undefined) {
+            return this.set.size;
         }
 
-        return self.arr.length;
-    };
+        return this.arr.length;
+    }
 
-    self.map = function (f) {
-        return _.map(self.keys(), f);
-    };
+    map(f) {
+        return _.map(this.keys(), f);
+    }
 
-    self.has = function (v) {
-        make_set();
-        const val = self._clean(v);
-        return self.set.has(val);
-    };
+    has(v) {
+        this._make_set();
+        const val = this._clean(v);
+        return this.set.has(val);
+    }
 
-    self.add = function (v) {
-        make_set();
-        const val = self._clean(v);
-        self.set.add(val);
-    };
+    add(v) {
+        this._make_set();
+        const val = this._clean(v);
+        this.set.add(val);
+    }
 
-    self.delete = function (v) {
-        make_set();
-        const val = self._clean(v);
-        return self.set.delete(val);
-    };
+    delete(v) {
+        this._make_set();
+        const val = this._clean(v);
+        return this.set.delete(val);
+    }
 
-    self._clean = function (v) {
+    _clean(v) {
         if (typeof v !== 'number') {
             blueslip.error('not a number');
             return parseInt(v, 10);
         }
         return v;
-    };
-
-
-    return self;
-};
+    }
+}
