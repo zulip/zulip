@@ -51,7 +51,7 @@ exports.get_status_text = function (user_id) {
 
 exports.set_status_text = function (opts) {
     if (!opts.status_text) {
-        user_info.del(opts.user_id);
+        user_info.delete(opts.user_id);
         return;
     }
 

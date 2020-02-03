@@ -60,18 +60,18 @@ const BinaryDict = function (pred) {
     };
 
     self.set_true = function (k, v) {
-        self.falses.del(k);
+        self.falses.delete(k);
         self.trues.set(k, v);
     };
 
     self.set_false = function (k, v) {
-        self.trues.del(k);
+        self.trues.delete(k);
         self.falses.set(k, v);
     };
 
-    self.del = function (k) {
-        self.trues.del(k);
-        self.falses.del(k);
+    self.delete = function (k) {
+        self.trues.delete(k);
+        self.falses.delete(k);
     };
 
 
@@ -133,7 +133,7 @@ exports.rename_sub = function (sub, new_name) {
     stream_ids_by_name.set(old_name, sub.stream_id);
 
     sub.name = new_name;
-    stream_info.del(old_name);
+    stream_info.delete(old_name);
     stream_info.set(new_name, sub);
 };
 
@@ -264,8 +264,8 @@ exports.delete_sub = function (stream_id) {
         blueslip.warn('Failed to delete stream ' + stream_id);
         return;
     }
-    subs_by_stream_id.del(stream_id);
-    stream_info.del(sub.name);
+    subs_by_stream_id.delete(stream_id);
+    stream_info.delete(sub.name);
 };
 
 exports.get_non_default_stream_names = function () {
@@ -633,7 +633,7 @@ exports.remove_subscriber = function (stream_name, user_id) {
         return false;
     }
 
-    sub.subscribers.del(user_id);
+    sub.subscribers.delete(user_id);
 
     return true;
 };

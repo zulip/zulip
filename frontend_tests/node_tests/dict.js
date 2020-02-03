@@ -28,7 +28,7 @@ run_test('basic', () => {
     assert.deepEqual(d.values(), ['baz', 'qux']);
     assert.deepEqual(d.items(), [['foo', 'baz'], ['bar', 'qux']]);
 
-    d.del('bar');
+    d.delete('bar');
     assert.equal(d.has('bar'), false);
     assert.strictEqual(d.get('bar'), undefined);
 
@@ -125,7 +125,7 @@ run_test('num_items', () => {
 
     d.set('bar', 1);
     assert.equal(d.num_items(), 2);
-    d.del('foo');
+    d.delete('foo');
     assert.equal(d.num_items(), 1);
 });
 

@@ -102,7 +102,7 @@ exports.topic_history = function (stream_id) {
         }
 
         if (existing.count <= 1) {
-            topics.del(topic_name);
+            topics.delete(topic_name);
             return;
         }
 

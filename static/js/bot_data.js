@@ -40,8 +40,8 @@ exports.deactivate = function bot_data__deactivate(bot_id) {
 };
 
 exports.del = function bot_data__del(bot_id) {
-    bots.del(bot_id);
-    services.del(bot_id);
+    bots.delete(bot_id);
+    services.delete(bot_id);
     send_change_event();
 };
 

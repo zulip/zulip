@@ -48,7 +48,7 @@ function make_bucketer(options) {
         const bucket = reverse_lookup.get(item_id);
         if (bucket) {
             bucket.delete(item_id);
-            reverse_lookup.del(item_id);
+            reverse_lookup.delete(item_id);
         }
     };
 
@@ -112,7 +112,7 @@ exports.unread_pm_counter = (function () {
         }
     };
 
-    self.del = function (message_id) {
+    self.delete = function (message_id) {
         bucketer.delete(message_id);
     };
 
@@ -219,7 +219,7 @@ exports.unread_topic_counter = (function () {
         });
     };
 
-    self.del = function (msg_id) {
+    self.delete = function (msg_id) {
         bucketer.delete(msg_id);
     };
 
@@ -408,7 +408,7 @@ exports.update_unread_topics = function (msg, event) {
         return;
     }
 
-    exports.unread_topic_counter.del(
+    exports.unread_topic_counter.delete(
         msg.id
     );
 
@@ -452,8 +452,8 @@ exports.mark_as_read = function (message_id) {
     // We don't need to check anything about the message, since all
     // the following methods are cheap and work fine even if message_id
     // was never set to unread.
-    exports.unread_pm_counter.del(message_id);
-    exports.unread_topic_counter.del(message_id);
+    exports.unread_pm_counter.delete(message_id);
+    exports.unread_topic_counter.delete(message_id);
     exports.unread_mentions_counter.delete(message_id);
     unread_messages.delete(message_id);
 

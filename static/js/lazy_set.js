@@ -17,7 +17,7 @@ exports.LazySet = function (vals) {
 
         Once somebody does an operation
         where sets are useful, such
-        as has/add/del, we convert it over
+        as has/add/delete, we convert it over
         to a set for a one-time cost.
     */
     const self = {};
@@ -63,10 +63,10 @@ exports.LazySet = function (vals) {
         self.set.add(val);
     };
 
-    self.del = function (v) {
+    self.delete = function (v) {
         make_set();
         const val = self._clean(v);
-        self.set.delete(val);
+        return self.set.delete(val);
     };
 
     self._clean = function (v) {
