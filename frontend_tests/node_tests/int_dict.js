@@ -35,7 +35,7 @@ run_test('basic', () => {
 
     const val = ['fred'];
     const res = d.set(103, val);
-    assert.equal(val, res);
+    assert.strictEqual(res, d);
 });
 
 

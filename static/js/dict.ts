@@ -5,9 +5,9 @@ export class Dict<V> {
         return this._items.get(this._munge(key));
     }
 
-    set(key: string, value: V): V {
+    set(key: string, value: V): Dict<V> {
         this._items.set(this._munge(key), value);
-        return value;
+        return this;
     }
 
     has(key: string): boolean {

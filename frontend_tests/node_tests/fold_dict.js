@@ -36,7 +36,7 @@ run_test('basic', () => {
 
     const val = ['foo'];
     const res = d.set('abc', val);
-    assert.equal(val, res);
+    assert.strictEqual(res, d);
 });
 
 run_test('case insensitivity', () => {

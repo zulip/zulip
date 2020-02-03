@@ -25,9 +25,9 @@ export class FoldDict<V> {
         return mapping.v;
     }
 
-    set(key: string, value: V): V {
+    set(key: string, value: V): FoldDict<V> {
         this._items.set(this._munge(key), {k: key, v: value});
-        return value;
+        return this;
     }
 
     has(key: string): boolean {
