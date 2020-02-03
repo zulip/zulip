@@ -9,12 +9,6 @@ let get_events_timeout;
 let get_events_failures = 0;
 const get_events_params = {};
 
-// This field keeps track of whether we are attempting to
-// force-reconnect to the events server due to suspecting we are
-// offline.  It is important for avoiding races with the presence
-// system when coming back from unsuspend.
-exports.suspect_offline = false;
-
 function get_events_success(events) {
     let messages = [];
     const update_message_events = [];
@@ -178,13 +172,6 @@ function get_events(options) {
 
     get_events_params.dont_block = options.dont_block || get_events_failures > 0;
 
-    if (get_events_params.dont_block) {
-        // If we're requesting an immediate re-connect to the server,
-        // that means it's fairly likely that this client has been off
-        // the Internet and thus may have stale state (which is
-        // important for potential presence issues).
-        exports.suspect_offline = true;
-    }
     if (get_events_params.queue_id === undefined) {
         get_events_params.queue_id = page_params.queue_id;
         get_events_params.last_event_id = page_params.last_event_id;
@@ -207,7 +194,6 @@ function get_events(options) {
         idempotent: true,
         timeout: page_params.poll_timeout,
         success: function (data) {
-            exports.suspect_offline = false;
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
