@@ -798,24 +798,16 @@ run_test('update_presence_info', () => {
     };
 
     presence.presence_info[me.user_id] = undefined;
-    activity.update_presence_info(me.email, info, server_time);
+    activity.update_presence_info(me.user_id, info, server_time);
     assert(inserted);
     assert.deepEqual(presence.presence_info[me.user_id].status, 'active');
 
     presence.presence_info[alice.user_id] = undefined;
-    activity.update_presence_info(alice.email, info, server_time);
+    activity.update_presence_info(alice.user_id, info, server_time);
     assert(inserted);
 
     const expected = { status: 'active', mobile: false, last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);
-
-    activity.update_presence_info(alice.email, info, server_time);
-    blueslip.set_test_data('warn', 'unknown email: foo@bar.com');
-    blueslip.set_test_data('error', 'Unknown email for get_user_id: foo@bar.com');
-    activity.update_presence_info('foo@bar.com', info, server_time);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
 });
 
 run_test('initialize', () => {

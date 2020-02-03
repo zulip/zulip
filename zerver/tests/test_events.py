@@ -1190,6 +1190,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = self.check_events_dict([
             ('type', equals('presence')),
             ('email', check_string),
+            ('user_id', check_int),
             ('server_timestamp', check_float),
             ('presence', check_dict_only([
                 ('website', check_dict_only([
@@ -1219,6 +1220,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker_android = self.check_events_dict([
             ('type', equals('presence')),
             ('email', check_string),
+            ('user_id', check_int),
             ('server_timestamp', check_float),
             ('presence', check_dict_only([
                 ('ZulipAndroid/1.0', check_dict_only([
