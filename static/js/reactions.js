@@ -417,8 +417,7 @@ exports.get_message_reactions = function (message) {
         }
         collapsed_reaction.user_ids.push(user_id);
     });
-    const reactions = message_reactions.items().map(function (item) {
-        const reaction = item[1];
+    const reactions = Array.from(message_reactions.values(), reaction => {
         reaction.local_id = reaction.local_id;
         reaction.reaction_type = reaction.reaction_type;
         reaction.emoji_name = reaction.emoji_name;

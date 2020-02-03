@@ -26,8 +26,8 @@ export class Dict<V> {
         return this._items.values();
     }
 
-    items(): [string, V][] {
-        return [...this._items];
+    [Symbol.iterator](): Iterator<[string, V]> {
+        return this._items.entries();
     }
 
     get size(): number {
