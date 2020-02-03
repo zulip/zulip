@@ -50,6 +50,10 @@ export class IntDict<V> {
         return this._map.values();
     }
 
+    [Symbol.iterator](): Iterator<[number, V]> {
+        return this._map.entries();
+    }
+
     filter_values(pred: (item: V) => boolean): V[] {
         const results: V[] = [];
 
@@ -64,10 +68,6 @@ export class IntDict<V> {
 
     get size(): number {
         return this._map.size;
-    }
-
-    each(f: (v: V, k?: number) => void): void {
-        this._map.forEach(f);
     }
 
     clear(): void {

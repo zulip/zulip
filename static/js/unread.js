@@ -56,12 +56,16 @@ function make_bucketer(options) {
         return key_to_bucket.get(bucket_key);
     };
 
-    self.each = function (callback) {
-        key_to_bucket.each(callback);
-    };
-
     self.keys = function () {
         return key_to_bucket.keys();
+    };
+
+    self.values = function () {
+        return key_to_bucket.values();
+    };
+
+    self[Symbol.iterator] = function () {
+        return key_to_bucket[Symbol.iterator]();
     };
 
     return self;
@@ -119,11 +123,11 @@ exports.unread_pm_counter = (function () {
     self.get_counts = function () {
         const pm_dict = new Dict(); // Hash by user_ids_string -> count
         let total_count = 0;
-        bucketer.each(function (id_set, user_ids_string) {
+        for (const [user_ids_string, id_set] of bucketer) {
             const count = id_set.size;
             pm_dict.set(user_ids_string, count);
             total_count += count;
-        });
+        }
         return {
             total_count: total_count,
             pm_dict: pm_dict,
@@ -146,10 +150,10 @@ exports.unread_pm_counter = (function () {
     self.get_msg_ids = function () {
         const lists = [];
 
-        bucketer.each(function (id_set) {
+        for (const id_set of bucketer.values()) {
             const members = [...id_set];
             lists.push(members);
-        });
+        }
 
         const ids = [].concat.apply([], lists);
 
@@ -234,7 +238,7 @@ exports.unread_topic_counter = (function () {
         res.stream_unread_messages = 0;
         res.stream_count = new IntDict();  // hash by stream_id -> count
         res.topic_count = new IntDict(); // hash of hashes (stream_id, then topic -> count)
-        bucketer.each(function (per_stream_bucketer, stream_id) {
+        for (const [stream_id, per_stream_bucketer] of bucketer) {
 
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
@@ -242,24 +246,24 @@ exports.unread_topic_counter = (function () {
             // so that callers have a view of the **current** world.
             const sub = stream_data.get_sub_by_id(stream_id);
             if (!sub || !stream_data.is_subscribed(sub.name)) {
-                return;
+                continue;
             }
 
             res.topic_count.set(stream_id, str_dict());
             let stream_count = 0;
-            per_stream_bucketer.each(function (msgs, topic) {
+            for (const [topic, msgs] of per_stream_bucketer) {
                 const topic_count = msgs.size;
                 res.topic_count.get(stream_id).set(topic, topic_count);
                 if (!muting.is_topic_muted(stream_id, topic)) {
                     stream_count += topic_count;
                 }
-            });
+            }
             res.stream_count.set(stream_id, stream_count);
             if (!stream_data.is_muted(stream_id)) {
                 res.stream_unread_messages += stream_count;
             }
 
-        });
+        }
 
         return res;
     };
@@ -301,11 +305,11 @@ exports.unread_topic_counter = (function () {
         }
 
         const sub = stream_data.get_sub_by_id(stream_id);
-        per_stream_bucketer.each(function (msgs, topic) {
+        for (const [topic, msgs] of per_stream_bucketer) {
             if (sub && !muting.is_topic_muted(stream_id, topic)) {
                 stream_count += msgs.size;
             }
-        });
+        }
 
         return stream_count;
     };
@@ -333,11 +337,11 @@ exports.unread_topic_counter = (function () {
 
         const topic_lists = [];
         const sub = stream_data.get_sub_by_id(stream_id);
-        per_stream_bucketer.each(function (msgs, topic) {
+        for (const [topic, msgs] of per_stream_bucketer) {
             if (sub && !muting.is_topic_muted(stream_id, topic)) {
                 topic_lists.push([...msgs]);
             }
-        });
+        }
 
         const ids = [].concat.apply([], topic_lists);
 

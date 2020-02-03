@@ -85,7 +85,7 @@ exports.update_dom_with_unread_counts = function (counts) {
     // counts is just a data object that gets calculated elsewhere
     // Our job is to update some DOM elements.
 
-    counts.pm_count.each(function (count, user_ids_string) {
+    for (const [user_ids_string, count] of counts.pm_count) {
         // TODO: just use user_ids_string in our markup
         const is_pm = user_ids_string.indexOf(',') < 0;
         if (is_pm) {
@@ -93,7 +93,7 @@ exports.update_dom_with_unread_counts = function (counts) {
         } else {
             set_group_count(user_ids_string, count);
         }
-    });
+    }
 };
 
 exports.process_loaded_messages = function (messages) {

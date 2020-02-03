@@ -461,7 +461,7 @@ exports.on_load_success = function (realm_people_data) {
                     }
                 });
                 // Append user type field values also
-                fields_user_pills.each(function (field_pills, field_id) {
+                for (const [field_id, field_pills] of  fields_user_pills) {
                     if (field_pills) {
                         const user_ids = user_pill.get_user_ids(field_pills);
                         new_profile_data.push({
@@ -469,7 +469,7 @@ exports.on_load_success = function (realm_people_data) {
                             value: user_ids,
                         });
                     }
-                });
+                }
 
                 url = "/json/users/" + encodeURIComponent(user_id);
                 data = {

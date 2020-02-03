@@ -60,10 +60,6 @@ export class FoldDict<V> {
         return this._items.size;
     }
 
-    each(f: (v: V, k?: string) => void): void {
-        this._items.forEach(({k, v}) => f(v, k));
-    }
-
     clear(): void {
         this._items.clear();
     }

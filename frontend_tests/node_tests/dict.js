@@ -100,11 +100,11 @@ run_test('each', () => {
     let unseen_keys = [...d.keys()];
 
     let cnt = 0;
-    d.each(function (v, k) {
+    for (const [k, v] of d) {
         assert.equal(v, d.get(k));
         unseen_keys = _.without(unseen_keys, k);
         cnt += 1;
-    });
+    }
 
     assert.equal(cnt, d.size);
     assert.equal(unseen_keys.length, 0);
