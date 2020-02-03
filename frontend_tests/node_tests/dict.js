@@ -26,7 +26,7 @@ run_test('basic', () => {
 
     assert.deepEqual([...d.keys()], ['foo', 'bar']);
     assert.deepEqual([...d.values()], ['baz', 'qux']);
-    assert.deepEqual(d.items(), [['foo', 'baz'], ['bar', 'qux']]);
+    assert.deepEqual([...d], [['foo', 'baz'], ['bar', 'qux']]);
 
     d.delete('bar');
     assert.equal(d.has('bar'), false);
@@ -83,12 +83,12 @@ run_test('restricted_keys', () => {
 run_test('construction', () => {
     const d1 = new Dict();
 
-    assert.deepEqual(d1.items(), []);
+    assert.deepEqual([...d1], []);
 
     const d2 = new Dict();
     d2.set('foo', 'bar');
     d2.set('baz', 'qux');
-    assert.deepEqual(d2.items(), [['foo', 'bar'], ['baz', 'qux']]);
+    assert.deepEqual([...d2], [['foo', 'bar'], ['baz', 'qux']]);
 });
 
 run_test('each', () => {

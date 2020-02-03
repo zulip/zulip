@@ -26,7 +26,7 @@ run_test('basic', () => {
 
     assert.deepEqual([...d.keys()], ['foo', 'bar']);
     assert.deepEqual([...d.values()], ['baz', 'qux']);
-    assert.deepEqual(d.items(), [['foo', 'baz'], ['bar', 'qux']]);
+    assert.deepEqual([...d], [['foo', 'baz'], ['bar', 'qux']]);
 
     d.delete('bar');
     assert.equal(d.has('bar'), false);

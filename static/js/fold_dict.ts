@@ -50,8 +50,10 @@ export class FoldDict<V> {
         }
     }
 
-    items(): [string, V][] {
-        return [...this._items.values()].map(({k, v}) => [k, v]);
+    *[Symbol.iterator](): Iterator<[string, V]> {
+        for (const {k, v} of this._items.values()) {
+            yield [k, v];
+        }
     }
 
     get size(): number {
