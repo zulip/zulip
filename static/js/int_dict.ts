@@ -26,10 +26,10 @@ export class IntDict<V> {
         return this._map.get(key);
     }
 
-    set(key: number, value: V): V {
+    set(key: number, value: V): IntDict<V> {
         key = this._convert(key);
         this._map.set(key, value);
-        return value;
+        return this;
     }
 
     has(key: number): boolean {
