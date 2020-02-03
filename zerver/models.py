@@ -810,17 +810,21 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         EMBEDDED_BOT,
     ]
 
-    # The display email address, used for Zulip APIs, etc.  This field
-    # should never be used for actually emailing someone because it
-    # will be invalid for various values of
-    # Realm.email_address_visibility; for that, see delivery_email.
-    email = models.EmailField(blank=False, db_index=True)  # type: str
-
-    # delivery_email is just used for sending emails.  In almost all
-    # organizations, it matches `email`; this field is part of our
-    # transition towards supporting organizations where email
-    # addresses are not public.
+    # For historical reasons, Zulip has two email fields.  The
+    # `delivery_email` field is the user's email address, where all
+    # email notifications will be sent, and is used for all
+    # authentication use cases.
+    #
+    # The `email` field is the same as delivery_email in organizations
+    # with EMAIL_ADDRESS_VISIBILITY_EVERYONE.  For other
+    # organizations, it will be a unique value of the form
+    # user1234@example.com.  This field exists for backwards
+    # compatibility in Zulip APIs where users are refered to by their
+    # email address, not their ID; it should be used in all API use cases.
+    #
+    # Both fields are unique within a realm (in a case-insensitive fashion).
     delivery_email = models.EmailField(blank=False, db_index=True)  # type: str
+    email = models.EmailField(blank=False, db_index=True)  # type: str
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     # Foreign key to the Recipient object for PERSONAL type messages to this user.
@@ -2083,11 +2087,11 @@ def get_user_profile_by_id(uid: int) -> UserProfile:
 
 @cache_with_key(user_profile_by_email_cache_key, timeout=3600*24*7)
 def get_user_profile_by_email(email: str) -> UserProfile:
-    """This should only be used by our unit tests and for manual manage.py
-    shell work; robust code must use get_user instead, because Zulip
-    supports multiple users with a given email address existing (in
-    different realms).  Also, for many applications, we should prefer
-    get_user_by_delivery_email.
+    """This function is intended to be used by our unit tests and for
+    manual manage.py shell work; robust code must use get_user or
+    get_user_by_delivery_email instead, because Zulip supports
+    multiple users with a given (delivery) email address existing on a
+    single server (in different realms).
     """
     return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
 
@@ -2096,29 +2100,37 @@ def get_user_profile_by_api_key(api_key: str) -> UserProfile:
     return UserProfile.objects.select_related().get(api_key=api_key)
 
 def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
-    # Fetches users by delivery_email for use in
-    # authentication/registration contexts. Do not use for user-facing
-    # views (e.g. Zulip API endpoints); for that, you want get_user,
-    # both because it does lookup by email (not delivery_email) and
-    # because it correctly handles Zulip's support for multiple users
-    # with the same email address in different realms.
-    return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip(), realm=realm)
+    """Fetches a user given their delivery email.  For use in
+    authentication/registration contexts.  Do not use for user-facing
+    views (e.g. Zulip API endpoints) as doing so would violate the
+    EMAIL_ADDRESS_VISIBILITY_ADMINS security model.  Use get_user in
+    those code paths.
+    """
+    return UserProfile.objects.select_related().get(
+        delivery_email__iexact=email.strip(), realm=realm)
 
 @cache_with_key(user_profile_cache_key, timeout=3600*24*7)
 def get_user(email: str, realm: Realm) -> UserProfile:
-    # Fetches the user by its visible-to-other users username (in the
-    # `email` field).  For use in API contexts; do not use in
-    # authentication/registration contexts; for that, you need to use
-    # get_user_by_delivery_email.
+    """Fetches the user by its visible-to-other users username (in the
+    `email` field).  For use in API contexts; do not use in
+    authentication/registration contexts as doing so will break
+    authentication in organizations using
+    EMAIL_ADDRESS_VISIBILITY_ADMINS.  In those code paths, use
+    get_user_by_delivery_email.
+    """
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
 def get_active_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
+    """Variant of get_user_by_delivery_email that excludes deactivated users.
+    See get_user_by_delivery_email docstring for important usage notes."""
     user_profile = get_user_by_delivery_email(email, realm)
     if not user_profile.is_active:
         raise UserProfile.DoesNotExist()
     return user_profile
 
 def get_active_user(email: str, realm: Realm) -> UserProfile:
+    """Variant of get_user_by_email that excludes deactivated users.
+    See get_user docstring for important usage notes."""
     user_profile = get_user(email, realm)
     if not user_profile.is_active:
         raise UserProfile.DoesNotExist()
