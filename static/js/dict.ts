@@ -8,12 +8,6 @@ type Items<V> = {
 export class Dict<V> {
     private _items: Items<V> = {};
 
-    clone(): Dict<V> {
-        const dict = new Dict<V>();
-        dict._items = { ...this._items };
-        return dict;
-    }
-
     get(key: string): V | undefined {
         const mapping = this._items[this._munge(key)];
         if (mapping === undefined) {

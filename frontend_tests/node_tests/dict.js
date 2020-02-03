@@ -89,11 +89,6 @@ run_test('construction', () => {
     d2.set('foo', 'bar');
     d2.set('baz', 'qux');
     assert.deepEqual(d2.items(), [['foo', 'bar'], ['baz', 'qux']]);
-
-    const d3 = d2.clone();
-    d3.del('foo');
-    assert.deepEqual(d2.items(), [['foo', 'bar'], ['baz', 'qux']]);
-    assert.deepEqual(d3.items(), [['baz', 'qux']]);
 });
 
 run_test('each', () => {
