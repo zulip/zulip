@@ -48,12 +48,12 @@ export function clean_function_name(
     };
 }
 
-const sourceCache: { [source: string]: string } = {};
+const sourceCache: { [source: string]: string | Promise<string> } = {};
 
 const stack_trace_gps = new StackTraceGPS({ sourceCache });
 
-function get_context(location: StackFrame.StackFrame): NumberedLine[] | undefined {
-    const sourceContent = sourceCache[location.getFileName()];
+async function get_context(location: StackFrame.StackFrame): Promise<NumberedLine[] | undefined> {
+    const sourceContent = await sourceCache[location.getFileName()];
     if (sourceContent === undefined) {
         return undefined;
     }
@@ -84,7 +84,7 @@ export async function display_stacktrace(error: string, stack: string): Promise<
                 show_path: clean_path(location.getFileName()),
                 line_number: location.getLineNumber(),
                 function_name: clean_function_name(location.getFunctionName()),
-                context: get_context(location),
+                context: await get_context(location),
             };
         })
     );
