@@ -1,6 +1,5 @@
 const util = require("./util");
 const FoldDict = require('./fold_dict').FoldDict;
-const IntDict = require('./int_dict').IntDict;
 
 // The unread module tracks the message IDs and locations of the
 // user's unread messages.  The tracking is initialized with
@@ -28,7 +27,7 @@ const unread_messages = new Set();
 function make_bucketer(options) {
     const self = {};
     const key_to_bucket = new options.KeyDict();
-    const reverse_lookup = new IntDict();
+    const reverse_lookup = new Map();
 
     self.clear = function () {
         key_to_bucket.clear();
@@ -195,7 +194,7 @@ exports.unread_topic_counter = (function () {
     const self = {};
 
     const bucketer = make_bucketer({
-        KeyDict: IntDict, // bucket keys are stream_ids
+        KeyDict: Map, // bucket keys are stream_ids
         make_bucket: make_per_stream_bucketer,
     });
 
@@ -236,7 +235,7 @@ exports.unread_topic_counter = (function () {
     self.get_counts = function () {
         const res = {};
         res.stream_unread_messages = 0;
-        res.stream_count = new IntDict();  // hash by stream_id -> count
+        res.stream_count = new Map();  // hash by stream_id -> count
         for (const [stream_id, per_stream_bucketer] of bucketer) {
 
             // We track unread counts for streams that may be currently

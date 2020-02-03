@@ -1,5 +1,4 @@
 const util = require("./util");
-const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 const LazySet = require('./lazy_set').LazySet;
 
@@ -109,7 +108,7 @@ exports.clear_subscriptions = function () {
     stream_info = new BinaryDict(function (sub) {
         return sub.subscribed;
     });
-    subs_by_stream_id = new IntDict();
+    subs_by_stream_id = new Map();
 };
 
 exports.clear_subscriptions();

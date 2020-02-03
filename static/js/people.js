@@ -1,6 +1,5 @@
 const util = require("./util");
 require("unorm");  // String.prototype.normalize polyfill for IE11
-const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 const typeahead = require("../shared/js/typeahead");
 
@@ -22,14 +21,14 @@ exports.init = function () {
     // people_dict over time and always do lookups by user_id.
     people_dict = new FoldDict();
     people_by_name_dict = new FoldDict();
-    people_by_user_id_dict = new IntDict();
+    people_by_user_id_dict = new Map();
 
     // The next dictionary includes all active users (human/user)
     // in our realm, but it excludes non-active users and
     // cross-realm bots.
-    active_user_dict = new IntDict();
-    cross_realm_dict = new IntDict(); // keyed by user_id
-    pm_recipient_count_dict = new IntDict();
+    active_user_dict = new Map();
+    cross_realm_dict = new Map(); // keyed by user_id
+    pm_recipient_count_dict = new Map();
 
     // This maintains a set of ids of people with same full names.
     duplicate_full_name_data = new FoldDict();
@@ -816,7 +815,7 @@ exports.build_person_matcher = function (query) {
 };
 
 exports.filter_people_by_search_terms = function (users, search_terms) {
-    const filtered_users = new IntDict();
+    const filtered_users = new Map();
 
     // Build our matchers outside the loop to avoid some
     // search overhead that is not user-specific.
