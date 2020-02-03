@@ -17,6 +17,7 @@ import jwt
 import mock
 import re
 import datetime
+import time
 
 from zerver.lib.actions import (
     do_create_user,
@@ -40,9 +41,8 @@ from zerver.lib.validator import validate_login_email, \
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule, clear_history
 from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
-from zerver.lib.users import get_all_api_keys
-from zerver.lib.utils import generate_random_token
 from zerver.lib.upload import resize_avatar, MEDIUM_AVATAR_SIZE
+from zerver.lib.users import get_all_api_keys
 from zerver.lib.utils import generate_random_token
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import (
