@@ -1,5 +1,4 @@
 const render_group_pms = require('../templates/group_pms.hbs');
-const Dict = require('./dict').Dict;
 
 /*
     Helpers for detecting user activity and managing user idle states
@@ -27,7 +26,7 @@ exports.client_is_active = document.hasFocus && document.hasFocus();
 // server-initiated reload as user activity.
 exports.new_user_input = true;
 
-const huddle_timestamps = new Dict();
+const huddle_timestamps = new Map();
 
 function update_pm_count_in_dom(count_span, value_span, count) {
     const li = count_span.parents('li');

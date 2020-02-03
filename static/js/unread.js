@@ -1,5 +1,4 @@
 const util = require("./util");
-const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
 const IntDict = require('./int_dict').IntDict;
 
@@ -85,7 +84,7 @@ exports.unread_pm_counter = (function () {
     const self = {};
 
     const bucketer = make_bucketer({
-        KeyDict: Dict,
+        KeyDict: Map,
         make_bucket: () => new Set(),
     });
 
@@ -131,7 +130,7 @@ exports.unread_pm_counter = (function () {
     };
 
     self.get_counts = function () {
-        const pm_dict = new Dict(); // Hash by user_ids_string -> count
+        const pm_dict = new Map(); // Hash by user_ids_string -> count
         let total_count = 0;
         for (const [user_ids_string, id_set] of bucketer) {
             const count = id_set.size;

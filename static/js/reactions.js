@@ -1,6 +1,5 @@
 const emoji_codes = require("../generated/emoji/emoji_codes.json");
 const render_message_reaction = require('../templates/message_reaction.hbs');
-const Dict = require('./dict').Dict;
 
 exports.view = {}; // function namespace
 
@@ -399,7 +398,7 @@ exports.get_emojis_used_by_user_for_message_id = function (message_id) {
 };
 
 exports.get_message_reactions = function (message) {
-    const message_reactions = new Dict();
+    const message_reactions = new Map();
 
     for (const reaction of message.reactions) {
         const user_id = reaction.user.id;
