@@ -85,7 +85,9 @@ run_test('construction', () => {
 
     assert.deepEqual(d1.items(), []);
 
-    const d2 = Dict.from({foo: 'bar', baz: 'qux'});
+    const d2 = new Dict();
+    d2.set('foo', 'bar');
+    d2.set('baz', 'qux');
     assert.deepEqual(d2.items(), [['foo', 'bar'], ['baz', 'qux']]);
 
     const d3 = d2.clone();
@@ -97,15 +99,6 @@ run_test('construction', () => {
     assert.deepEqual(d4.items(), [['foo', true], ['bar', true]]);
 
     let caught;
-    try {
-        Dict.from('bogus');
-    } catch (e) {
-        caught = true;
-        assert.equal(e.toString(), 'TypeError: Cannot convert argument to Dict');
-    }
-    assert(caught);
-
-    caught = undefined;
     try {
         Dict.from_array({bogus: true});
     } catch (e2) {

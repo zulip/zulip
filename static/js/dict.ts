@@ -9,23 +9,6 @@ export class Dict<V> {
     private _items: Items<V> = {};
 
     /**
-     * Constructs a Dict object from an existing object's keys and values.
-     * @param obj - A javascript object
-     */
-    static from<V>(obj: { [key: string]: V }): Dict<V> {
-        if (typeof obj !== "object" || obj === null) {
-            throw new TypeError("Cannot convert argument to Dict");
-        }
-
-        const dict = new Dict<V>();
-        _.each(obj, function (val: V, key: string) {
-            dict.set(key, val);
-        });
-
-        return dict;
-    }
-
-    /**
      * Construct a Dict object from an array with each element set to `true`.
      * Intended for use as a set data structure.
      * @param arr - An array of keys
