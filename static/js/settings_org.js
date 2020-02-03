@@ -251,6 +251,17 @@ function get_subsection_property_elements(element) {
     return subsection.find('.prop-element');
 }
 
+const simple_dropdown_properties = ['realm_create_stream_policy',
+                                    'realm_invite_to_stream_policy',
+                                    'realm_user_group_edit_policy',
+                                    'realm_private_message_policy',
+                                    'realm_add_emoji_by_admins_only',
+                                    'realm_user_invite_restriction'];
+
+function set_property_dropdown_value(property_name) {
+    $('#id_' + property_name).val(get_property_value(property_name));
+}
+
 function set_realm_waiting_period_dropdown() {
     const value = get_property_value("realm_waiting_period_setting");
     $("#id_realm_waiting_period_setting").val(value);
@@ -259,30 +270,6 @@ function set_realm_waiting_period_dropdown() {
     } else {
         $("#id_realm_waiting_period_threshold").parent().hide();
     }
-}
-
-function set_create_stream_policy_dropdown() {
-    const value = get_property_value("realm_create_stream_policy");
-    $("#id_realm_create_stream_policy").val(value);
-}
-
-function set_invite_to_stream_policy_dropdown() {
-    const value = get_property_value("realm_invite_to_stream_policy");
-    $("#id_realm_invite_to_stream_policy").val(value);
-}
-
-function set_user_group_edit_policy_dropdown() {
-    const value = get_property_value("realm_user_group_edit_policy");
-    $("#id_realm_user_group_edit_policy").val(value);
-}
-
-function set_private_message_policy_dropdown() {
-    const value = get_property_value("realm_private_message_policy");
-    $("#id_realm_private_message_policy").val(value);
-}
-
-function set_add_emoji_permission_dropdown() {
-    $("#id_realm_add_emoji_by_admins_only").val(get_property_value("realm_add_emoji_by_admins_only"));
 }
 
 function set_video_chat_provider_dropdown() {
@@ -361,10 +348,6 @@ function set_msg_delete_limit_dropdown() {
     } else {
         $("#id_realm_message_content_delete_limit_minutes").parent().hide();
     }
-}
-
-function set_user_invite_restriction_dropdown() {
-    $("#id_realm_user_invite_restriction").val(get_property_value("realm_user_invite_restriction"));
 }
 
 function set_org_join_restrictions_dropdown() {
@@ -530,14 +513,10 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
 };
 
 function update_dependent_subsettings(property_name) {
-    if (property_name === 'realm_waiting_period_threshold') {
+    if (simple_dropdown_properties.indexOf(property_name) !== -1) {
+        set_property_dropdown_value(property_name);
+    } else if (property_name === 'realm_waiting_period_threshold') {
         set_realm_waiting_period_dropdown();
-    } else if (property_name === 'realm_create_stream_policy') {
-        set_create_stream_policy_dropdown();
-    } else if (property_name === 'realm_invite_to_stream_policy') {
-        set_invite_to_stream_policy_dropdown();
-    } else if (property_name === 'realm_user_group_edit_policy') {
-        set_user_group_edit_policy_dropdown();
     } else if (property_name === 'realm_video_chat_provider' ||
                property_name === 'realm_google_hangouts_domain' ||
                property_name.startsWith('realm_zoom')) {
@@ -550,8 +529,6 @@ function update_dependent_subsettings(property_name) {
         set_msg_delete_limit_dropdown();
     } else if (property_name === 'realm_org_join_restrictions') {
         set_org_join_restrictions_dropdown();
-    } else if (property_name === 'realm_user_invite_restriction') {
-        set_user_invite_restriction_dropdown();
     } else if (property_name === 'realm_message_content_allowed_in_email_notifications') {
         set_message_content_in_email_notifications_visiblity();
     } else if (property_name === 'realm_digest_emails_enabled') {
@@ -691,20 +668,15 @@ exports.build_page = function () {
     exports.populate_auth_methods(page_params.realm_authentication_methods);
     insert_tip_box();
 
+    simple_dropdown_properties.forEach(set_property_dropdown_value);
 
     set_realm_waiting_period_dropdown();
-    set_create_stream_policy_dropdown();
-    set_invite_to_stream_policy_dropdown();
-    set_add_emoji_permission_dropdown();
     set_video_chat_provider_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_delete_limit_dropdown();
     set_org_join_restrictions_dropdown();
-    set_user_invite_restriction_dropdown();
     set_message_content_in_email_notifications_visiblity();
     set_digest_emails_weekday_visibility();
-    set_user_group_edit_policy_dropdown();
-    set_private_message_policy_dropdown();
 
     function get_auth_method_table_data() {
         const new_auth_methods = {};
