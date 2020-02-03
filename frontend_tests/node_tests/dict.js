@@ -94,18 +94,6 @@ run_test('construction', () => {
     d3.del('foo');
     assert.deepEqual(d2.items(), [['foo', 'bar'], ['baz', 'qux']]);
     assert.deepEqual(d3.items(), [['baz', 'qux']]);
-
-    const d4 = Dict.from_array(['foo', 'bar']);
-    assert.deepEqual(d4.items(), [['foo', true], ['bar', true]]);
-
-    let caught;
-    try {
-        Dict.from_array({bogus: true});
-    } catch (e2) {
-        caught = true;
-        assert.equal(e2.toString(), 'TypeError: Argument is not an array');
-    }
-    assert(caught);
 });
 
 run_test('each', () => {

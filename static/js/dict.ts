@@ -8,23 +8,6 @@ type Items<V> = {
 export class Dict<V> {
     private _items: Items<V> = {};
 
-    /**
-     * Construct a Dict object from an array with each element set to `true`.
-     * Intended for use as a set data structure.
-     * @param arr - An array of keys
-     */
-    static from_array<V>(arr: string[]): Dict<V | true> {
-        if (!(arr instanceof Array)) {
-            throw new TypeError("Argument is not an array");
-        }
-
-        const dict = new Dict<V | true>();
-        for (const key of arr) {
-            dict.set(key, true);
-        }
-        return dict;
-    }
-
     clone(): Dict<V> {
         const dict = new Dict<V>();
         dict._items = { ...this._items };
