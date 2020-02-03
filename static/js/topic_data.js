@@ -1,7 +1,6 @@
-const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 
-const stream_dict = new IntDict(); // stream_id -> topic_history object
+const stream_dict = new Map(); // stream_id -> topic_history object
 const fetched_stream_ids = new Set();
 
 exports.is_complete_for_stream_id = (stream_id) => {

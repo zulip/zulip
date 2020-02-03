@@ -1,10 +1,8 @@
-const IntDict = require('./int_dict').IntDict;
-
-const bots = new IntDict();
+const bots = new Map();
 const bot_fields = ['api_key', 'avatar_url', 'default_all_public_streams',
                     'default_events_register_stream', 'default_sending_stream',
                     'email', 'full_name', 'is_active', 'owner', 'bot_type', 'user_id'];
-const services = new IntDict();
+const services = new Map();
 const services_fields = ['base_url', 'interface',
                          'config_data', 'service_name', 'token'];
 

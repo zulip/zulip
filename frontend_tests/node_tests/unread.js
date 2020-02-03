@@ -6,7 +6,6 @@ zrequire('stream_data');
 zrequire('unread');
 zrequire('settings_notifications');
 const FoldDict = zrequire('fold_dict').FoldDict;
-const IntDict = zrequire('int_dict').IntDict;
 
 set_global('page_params', {});
 set_global('blueslip', {});
@@ -168,7 +167,7 @@ run_test('changing_topics', () => {
         unread: true,
     };
 
-    const message_dict = new IntDict();
+    const message_dict = new Map();
     message_dict.set(message.id, message);
     message_dict.set(other_message.id, other_message);
     message_dict.set(sticky_message.id, sticky_message);

@@ -1,5 +1,4 @@
 const render_admin_default_streams_list = require("../templates/admin_default_streams_list.hbs");
-const IntDict = require('./int_dict').IntDict;
 
 const meta = {
     loaded: false,
@@ -21,7 +20,7 @@ exports.maybe_disable_widgets = function () {
 exports.build_default_stream_table = function (streams_data) {
     const self = {};
 
-    self.row_dict = new IntDict();
+    self.row_dict = new Map();
 
     const table = $("#admin_default_streams_table").expectOne();
 
