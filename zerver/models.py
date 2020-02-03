@@ -2351,8 +2351,8 @@ class UserPresence(models.Model):
             raise ValueError('Unknown status: %s' % (status,))
 
     @staticmethod
-    def get_status_dict_by_user(user_profile: UserProfile) -> Dict[str, Dict[str, Any]]:
-        query = UserPresence.objects.filter(user_profile=user_profile).values(
+    def get_status_dict_by_user(user_profile_id: int) -> Dict[str, Dict[str, Any]]:
+        query = UserPresence.objects.filter(user_profile_id=user_profile_id).values(
             'client__name',
             'status',
             'timestamp',
@@ -2363,9 +2363,9 @@ class UserPresence(models.Model):
         presence_rows = list(query)
 
         mobile_user_ids = set()  # type: Set[int]
-        if PushDeviceToken.objects.filter(user=user_profile).exists():  # nocoverage
+        if PushDeviceToken.objects.filter(user_id=user_profile_id).exists():  # nocoverage
             # TODO: Add a test, though this is low priority, since we don't use mobile_user_ids yet.
-            mobile_user_ids.add(user_profile.id)
+            mobile_user_ids.add(user_profile_id)
 
         # TODO: allow users to pass in slim_presence=True
         slim_presence = False
