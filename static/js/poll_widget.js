@@ -44,8 +44,8 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
         const options = [];
 
         for (const [key, obj] of key_to_option) {
-            const voters = _.keys(obj.votes);
-            const current_user_vote = _.contains(voters, String(me));
+            const voters = [...obj.votes.keys()];
+            const current_user_vote = _.contains(voters, me);
 
             options.push({
                 option: obj.option,
@@ -82,7 +82,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 const idx = data.idx;
                 const key = sender_id + ',' + idx;
                 const option = data.option;
-                const votes = {};
+                const votes = new Map();
 
                 key_to_option.set(key, {
                     option: option,
@@ -119,7 +119,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 let vote = 1;
 
                 // toggle
-                if (key_to_option.get(key).votes[me]) {
+                if (key_to_option.get(key).votes.get(me)) {
                     vote = -1;
                 }
 
@@ -145,9 +145,9 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 const votes = option.votes;
 
                 if (vote === 1) {
-                    votes[sender_id] = 1;
+                    votes.set(sender_id, 1);
                 } else {
-                    delete votes[sender_id];
+                    votes.delete(sender_id);
                 }
             },
         },
