@@ -141,7 +141,7 @@ exports.topic_history = function (stream_id) {
     };
 
     self.get_recent_names = function () {
-        const my_recents = topics.values();
+        const my_recents = [...topics.values()];
 
         const missing_topics = unread.get_missing_topics({
             stream_id: stream_id,

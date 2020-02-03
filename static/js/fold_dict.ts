@@ -44,8 +44,10 @@ export class FoldDict<V> {
         }
     }
 
-    values(): V[] {
-        return [...this._items.values()].map(({v}) => v);
+    *values(): Iterator<V> {
+        for (const {v} of this._items.values()) {
+            yield v;
+        }
     }
 
     items(): [string, V][] {

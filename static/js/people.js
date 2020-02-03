@@ -718,7 +718,7 @@ exports.filter_all_persons = function (pred) {
 };
 
 exports.get_realm_persons = function () {
-    return active_user_dict.values();
+    return [...active_user_dict.values()];
 };
 
 exports.get_active_human_persons = function () {
@@ -907,13 +907,13 @@ exports.get_people_for_stream_create = function () {
         to your use case.
     */
     const people_minus_you = [];
-    _.each(active_user_dict.values(), function (person) {
+    for (const person of active_user_dict.values()) {
         if (!exports.is_my_user_id(person.user_id)) {
             people_minus_you.push({email: person.email,
                                    user_id: person.user_id,
                                    full_name: person.full_name});
         }
-    });
+    }
     return people_minus_you.sort(people_cmp);
 };
 
