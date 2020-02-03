@@ -1416,19 +1416,38 @@ class Stream(models.Model):
     class Meta:
         unique_together = ("name", "realm")
 
+    # Stream fields included whenever a Stream object is provided to
+    # Zulip clients via the API.  A few details worth noting:
+    # * "id" is represented as "stream_id" in most API interfaces.
+    # * "email_token" is not realm-public and thus is not included here.
+    # * is_in_zephyr_realm is a backend-only optimization.
+    # * "deactivated" streams are filtered from the API entirely.
+    # * "realm" and "recipient" and not exposed to clients via the API.
+    # * "date_created" should probably be added here, as it's useful information
+    #   to subscribers and is needed to compute is_old_stream.
+    # * message_retention_days should be added here once the feature is
+    #   complete.
+    API_FIELDS = [
+        "name",
+        "id",
+        "description",
+        "rendered_description",
+        "invite_only",
+        "is_web_public",
+        "is_announcement_only",
+        "history_public_to_subscribers",
+        "first_message_id",
+    ]
+
     # This is stream information that is sent to clients
     def to_dict(self) -> Dict[str, Any]:
-        return dict(
-            name=self.name,
-            stream_id=self.id,
-            description=self.description,
-            rendered_description=self.rendered_description,
-            invite_only=self.invite_only,
-            is_web_public=self.is_web_public,
-            is_announcement_only=self.is_announcement_only,
-            history_public_to_subscribers=self.history_public_to_subscribers,
-            first_message_id=self.first_message_id,
-        )
+        result = {}
+        for field_name in self.API_FIELDS:
+            if field_name == "id":
+                result['stream_id'] = self.id
+                continue
+            result[field_name] = getattr(self, field_name)
+        return result
 
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
@@ -2080,6 +2099,32 @@ class Subscription(models.Model):
 
     def __str__(self) -> str:
         return "<Subscription: %s -> %s>" % (self.user_profile, self.recipient)
+
+    # Subscription fields included whenever a Subscription object is provided to
+    # Zulip clients via the API.  A few details worth noting:
+    # * These fields will generally be merged with Stream.API_FIELDS
+    #   data about the stream.
+    # * "user_profile" is usually implied as full API access to Subscription
+    #   is primarily done for the current user; API access to other users'
+    #   subscriptions is generally limited to boolean yes/no.
+    # * "id" and "recipient_id" are not included as they are not used
+    #   in the Zulip API; it's an internal implementation detail.
+    #   Subscription objects are always looked up in the API via
+    #   (user_profile, stream) pairs.
+    # * "active" is often excluded in API use cases where it is implied.
+    # * "is_muted" often needs to be copied to not "in_home_view" for
+    #   backwards-compatibility.
+    API_FIELDS = [
+        "active",
+        "color",
+        "is_muted",
+        "pin_to_top",
+        "audible_notifications",
+        "desktop_notifications",
+        "email_notifications",
+        "push_notifications",
+        "wildcard_mentions_notify",
+    ]
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
 def get_user_profile_by_id(uid: int) -> UserProfile:
