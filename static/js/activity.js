@@ -380,13 +380,7 @@ exports.initialize = function () {
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 };
 
-exports.update_presence_info = function (email, info, server_time) {
-    const user_id = people.get_user_id(email);
-    if (!user_id) {
-        blueslip.warn('unknown email: ' + email);
-        return;
-    }
-
+exports.update_presence_info = function (user_id, info, server_time) {
     presence.set_info_for_user(user_id, info, server_time);
     exports.redraw_user(user_id);
     exports.update_huddles();

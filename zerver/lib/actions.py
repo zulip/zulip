@@ -4000,7 +4000,9 @@ def do_update_user_activity(user_profile_id: int,
 
 def send_presence_changed(user_profile: UserProfile, presence: UserPresence) -> None:
     presence_dict = presence.to_dict()
-    event = dict(type="presence", email=user_profile.email,
+    event = dict(type="presence",
+                 email=user_profile.email,
+                 user_id=user_profile.id,
                  server_timestamp=time.time(),
                  presence={presence_dict['client']: presence_dict})
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
