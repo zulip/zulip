@@ -865,12 +865,12 @@ function test_raw_file_drop(raw_drop_func) {
 
 run_test('warn_if_private_stream_is_linked', () => {
     stream_data.add_sub(compose_state.stream_name(), {
-        subscribers: LazySet([1, 2]),
+        subscribers: new LazySet([1, 2]),
     });
 
     let denmark = {
         name: 'Denmark',
-        subscribers: LazySet([1, 2, 3]),
+        subscribers: new LazySet([1, 2, 3]),
     };
 
     function test_noop_case(invite_only) {
@@ -913,7 +913,7 @@ run_test('warn_if_private_stream_is_linked', () => {
     denmark = {
         invite_only: true,
         name: 'Denmark',
-        subscribers: LazySet([1]),
+        subscribers: new LazySet([1]),
     };
 
     compose.warn_if_private_stream_is_linked(denmark);

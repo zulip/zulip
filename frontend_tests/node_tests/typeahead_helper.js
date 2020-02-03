@@ -35,9 +35,9 @@ stream_data.create_streams([
 ]);
 
 run_test('sort_streams', () => {
-    const popular = LazySet([1, 2, 3, 4, 5, 6]);
+    const popular = new LazySet([1, 2, 3, 4, 5, 6]);
 
-    const unpopular = LazySet([1]);
+    const unpopular = new LazySet([1]);
 
     let test_streams = [
         {name: 'Dev', pin_to_top: false, subscribers: unpopular, subscribed: true},

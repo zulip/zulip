@@ -168,7 +168,7 @@ exports.unsubscribe_myself = function (sub) {
 
 exports.add_sub = function (stream_name, sub) {
     if (!_.has(sub, 'subscribers')) {
-        sub.subscribers = LazySet([]);
+        sub.subscribers = new LazySet([]);
     }
 
     stream_info.set(stream_name, sub);
@@ -603,7 +603,7 @@ exports.maybe_get_stream_name = function (stream_id) {
 };
 
 exports.set_subscribers = function (sub, user_ids) {
-    sub.subscribers = LazySet(user_ids || []);
+    sub.subscribers = new LazySet(user_ids || []);
 };
 
 exports.add_subscriber = function (stream_name, user_id) {
