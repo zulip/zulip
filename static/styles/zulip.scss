@@ -705,6 +705,34 @@ td.pointer {
         opacity: 1;
         pointer-events: all;
     }
+
+    @media (max-width: 500px) {
+        background-color: hsla(0, 66%, 100%, 0.9);
+        background-clip: content-box;
+    }
+}
+
+.selected_message .message_controls {
+    @media (max-width: 500px) {
+        background-color: hsla(0, 66%, 100%, 0.9);
+        background-clip: content-box;
+
+        .empty-star {
+            opacity: 0.4;
+        }
+
+        > div {
+            opacity: 0.8;
+        }
+    }
+}
+
+// Button visibility in night mode
+.night-mode .messagebox:hover .message_controls,
+.night-mode .selected_message .message_controls {
+    @media screen and (max-width: 500px) {
+        background-color: hsla(211, 27%, 18%, 0.9);
+    }
 }
 
 .include-sender .message_controls {
