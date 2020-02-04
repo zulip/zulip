@@ -64,16 +64,16 @@ these goals, but a few techniques are worth highlighting:
 * Our test suites are designed to not access the Internet, since the
   Internet might be down or unreliable in the test environment.  Where
   outgoing HTTP requests are required to test something, we mock the
-  responses with libraries like `httpretty`.
+  responses with libraries like `responses`.
 * We carefully avoid the potential for contamination of data inside
-  services like potsgres, redis, and memcached from different tests.
+  services like postgres, redis, and memcached from different tests.
     * Every test case prepends a unique random prefix to all keys it
       uses when accessing redis and memcached.
     * Every test case runs inside a database transaction, which is
       aborted after the test completes.  Each test process interacts
       only with a fresh copy of a special template database used for
       server tests that is destroyed after the process completes.
-* We rigorously investigate non-deterministically failing tests though
+* We rigorously investigate non-deterministically failing tests as though
   they were priority bugs in the product.
 
 ## Integration testing or unit testing?
