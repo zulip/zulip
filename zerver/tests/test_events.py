@@ -52,7 +52,7 @@ from zerver.lib.actions import (
     do_change_realm_domain,
     do_change_stream_description,
     do_change_stream_invite_only,
-    do_change_stream_announcement_only,
+    do_change_stream_post_policy,
     do_change_subscription_property,
     do_change_user_delivery_email,
     do_create_user,
@@ -134,7 +134,7 @@ from zerver.lib.topic_mutes import (
 )
 from zerver.lib.validator import (
     check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
-    equals, check_none_or, Validator, check_url
+    equals, check_none_or, Validator, check_url, check_int_in
 )
 from zerver.lib.users import get_api_key
 
@@ -1438,6 +1438,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('invite_only', check_bool),
                     ('is_web_public', check_bool),
                     ('is_announcement_only', check_bool),
+                    ('stream_post_policy', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
                     ('name', check_string),
                     ('stream_id', check_int),
                     ('first_message_id', check_none_or(check_int)),
@@ -2508,6 +2509,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('invite_only', check_bool),
             ('is_web_public', check_bool),
             ('is_announcement_only', check_bool),
+            ('stream_post_policy', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
             ('is_muted', check_bool),
             ('in_home_view', check_bool),
             ('name', check_string),
@@ -2584,13 +2586,13 @@ class EventsRegisterTest(ZulipTestCase):
             ('value', check_bool),
             ('history_public_to_subscribers', check_bool),
         ])
-        stream_update_is_announcement_only_schema_checker = self.check_events_dict([
+        stream_update_stream_post_policy_schema_checker = self.check_events_dict([
             ('type', equals('stream')),
             ('op', equals('update')),
-            ('property', equals('is_announcement_only')),
+            ('property', equals('stream_post_policy')),
             ('stream_id', check_int),
             ('name', check_string),
-            ('value', check_bool),
+            ('value', check_int_in(Stream.STREAM_POST_POLICY_TYPES)),
         ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
@@ -2655,11 +2657,11 @@ class EventsRegisterTest(ZulipTestCase):
         error = stream_update_invite_only_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        # Update stream is_announcement_only property
-        action = lambda: do_change_stream_announcement_only(stream, True)
+        # Update stream stream_post_policy property
+        action = lambda: do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS)
         events = self.do_test(action,
-                              include_subscribers=include_subscribers)
-        error = stream_update_is_announcement_only_schema_checker('events[0]', events[0])
+                              include_subscribers=include_subscribers, num_events=2)
+        error = stream_update_stream_post_policy_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it

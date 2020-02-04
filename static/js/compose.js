@@ -477,11 +477,28 @@ function validate_stream_message_announce(stream_name) {
     return true;
 }
 
-function validate_stream_message_announcement_only(stream_name) {
-    // Only allow realm admins to post to announcement_only streams.
-    const is_announcement_only = stream_data.get_announcement_only(stream_name);
-    if (is_announcement_only && !page_params.is_admin) {
+function validate_stream_message_post_policy(stream_name) {
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    const stream_post_permission_type = stream_data.stream_post_policy_values;
+    const stream_post_policy = stream_data.get_stream_post_policy(stream_name);
+
+    if (stream_post_policy === stream_post_permission_type.admins.code) {
         compose_error(i18n.t("Only organization admins are allowed to post to this stream."));
+        return false;
+    }
+
+    const person = people.get_person_from_user_id(page_params.user_id);
+    const current_datetime = new Date(Date.now());
+    const person_date_joined = new Date(person.date_joined);
+    const days = new Date(current_datetime - person_date_joined).getDate();
+    let error_text;
+    if (stream_post_policy === stream_post_permission_type.non_new_members.code &&
+        days < page_params.realm_waiting_period_threshold) {
+        error_text = i18n.t("New members are not allowed to post to this stream.<br>Permission will be granted in __days__ days.", {days: days});
+        compose_error(error_text);
         return false;
     }
     return true;
@@ -537,7 +554,7 @@ function validate_stream_message() {
         }
     }
 
-    if (!validate_stream_message_announcement_only(stream_name)) {
+    if (!validate_stream_message_post_policy(stream_name)) {
         return false;
     }
 

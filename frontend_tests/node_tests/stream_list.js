@@ -1,6 +1,7 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 set_global('blueslip', global.make_zblueslip());
+set_global('i18n', global.stub_i18n);
 
 const FoldDict = zrequire('fold_dict').FoldDict;
 const IntDict = zrequire('int_dict').IntDict;

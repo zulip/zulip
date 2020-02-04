@@ -98,7 +98,7 @@ const stream_name_error = (function () {
 }());
 
 function ajaxSubscribeForCreation(stream_name, description, user_ids, invite_only,
-                                  is_announcement_only, announce, history_public_to_subscribers) {
+                                  stream_post_policy, announce, history_public_to_subscribers) {
     // TODO: We can eliminate the user_ids -> principals conversion
     //       once we upgrade the backend to accept user_ids.
     const persons = _.compact(_.map(user_ids, (user_id) => {
@@ -114,7 +114,7 @@ function ajaxSubscribeForCreation(stream_name, description, user_ids, invite_onl
                                                description: description}]),
                principals: JSON.stringify(principals),
                invite_only: JSON.stringify(invite_only),
-               is_announcement_only: JSON.stringify(is_announcement_only),
+               stream_post_policy: JSON.stringify(stream_post_policy),
                announce: JSON.stringify(announce),
                history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
         },
@@ -182,11 +182,17 @@ function create_stream() {
     const stream_name = $.trim($("#create_stream_name").val());
     const description = $.trim($("#create_stream_description").val());
     const privacy_setting = $('#stream_creation_form input[name=privacy]:checked').val();
-    const is_announcement_only = $('#stream_creation_form input[name=is-announcement-only]').prop('checked');
+    let stream_post_policy = parseInt($('#stream_creation_form input[name=stream-post-policy]').val(), 10);
     const principals = get_principals();
 
     let invite_only;
     let history_public_to_subscribers;
+
+    // Because the stream_post_policy field is hidden when non-administrators create streams,
+    // we need to set the default value here.
+    if (isNaN(stream_post_policy)) {
+        stream_post_policy = stream_data.stream_post_policy_values.everyone.code;
+    }
 
     if (privacy_setting === 'invite-only') {
         invite_only = true;
@@ -219,7 +225,7 @@ function create_stream() {
         description,
         principals,
         invite_only,
-        is_announcement_only,
+        stream_post_policy,
         announce,
         history_public_to_subscribers
     );

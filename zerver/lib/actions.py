@@ -1824,7 +1824,7 @@ def create_stream_if_needed(realm: Realm,
                             stream_name: str,
                             *,
                             invite_only: bool=False,
-                            is_announcement_only: bool=False,
+                            stream_post_policy: int=Stream.STREAM_POST_POLICY_EVERYONE,
                             history_public_to_subscribers: Optional[bool]=None,
                             stream_description: str="") -> Tuple[Stream, bool]:
 
@@ -1838,7 +1838,7 @@ def create_stream_if_needed(realm: Realm,
             name=stream_name,
             description=stream_description,
             invite_only=invite_only,
-            is_announcement_only=is_announcement_only,
+            stream_post_policy=stream_post_policy,
             history_public_to_subscribers=history_public_to_subscribers,
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm
         )
@@ -1878,7 +1878,7 @@ def create_streams_if_needed(realm: Realm,
             realm,
             stream_dict["name"],
             invite_only=stream_dict.get("invite_only", False),
-            is_announcement_only=stream_dict.get("is_announcement_only", False),
+            stream_post_policy=stream_dict.get("stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE),
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", "")
         )
@@ -2243,14 +2243,20 @@ def validate_sender_can_write_to_stream(sender: UserProfile,
     # Our caller is responsible for making sure that `stream` actually
     # matches the realm of the sender.
 
-    if stream.is_announcement_only:
-        if sender.is_realm_admin or is_cross_realm_bot_email(sender.delivery_email):
-            pass
-        elif sender.is_bot and (sender.bot_owner is not None and
-                                sender.bot_owner.is_realm_admin):
-            pass
-        else:
-            raise JsonableError(_("Only organization administrators can send to this stream."))
+    # Organization admins can send to any stream, irrespective of the stream_post_policy value.
+    if sender.is_realm_admin or is_cross_realm_bot_email(sender.delivery_email):
+        pass
+    elif sender.is_bot and (sender.bot_owner is not None and
+                            sender.bot_owner.is_realm_admin):
+        pass
+    elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS:
+        raise JsonableError(_("Only organization administrators can send to this stream."))
+    elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS:
+        if sender.is_bot and (sender.bot_owner is not None and
+                              sender.bot_owner.is_new_member):
+            raise JsonableError(_("New members cannot send to this stream."))
+        elif sender.is_new_member:
+            raise JsonableError(_("New members cannot send to this stream."))
 
     if not (stream.invite_only or sender.is_guest):
         # This is a public stream and sender is not a guest user
@@ -3632,14 +3638,28 @@ def do_change_stream_web_public(stream: Stream, is_web_public: bool) -> None:
     stream.is_web_public = is_web_public
     stream.save(update_fields=['is_web_public'])
 
-def do_change_stream_announcement_only(stream: Stream, is_announcement_only: bool) -> None:
-    stream.is_announcement_only = is_announcement_only
-    stream.save(update_fields=['is_announcement_only'])
+def do_change_stream_post_policy(stream: Stream, stream_post_policy: int) -> None:
+    stream.stream_post_policy = stream_post_policy
+    stream.save(update_fields=['stream_post_policy'])
+    event = dict(
+        op="update",
+        type="stream",
+        property="stream_post_policy",
+        value=stream_post_policy,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+
+    # Backwards-compatibility code: We removed the
+    # is_announcement_only property in early 2020, but we send a
+    # duplicate event for legacy mobile clients that might want the
+    # data.
     event = dict(
         op="update",
         type="stream",
         property="is_announcement_only",
-        value=is_announcement_only,
+        value=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         stream_id=stream.id,
         name=stream.name,
     )
@@ -4818,6 +4838,11 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         # Backwards-compatibility for clients that haven't been
         # updated for the in_home_view => is_muted API migration.
         stream_dict['in_home_view'] = not stream_dict['is_muted']
+        # Backwards-compatibility for clients that haven't been
+        # updated for the is_announcement_only -> stream_post_policy
+        # migration.
+        stream_dict['is_announcement_only'] = \
+            stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS
 
         # Add a few computed fields not directly from the data models.
         stream_dict['is_old_stream'] = is_old_stream(stream["date_created"])
@@ -4866,6 +4891,9 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             stream_dict['is_old_stream'] = is_old_stream(stream["date_created"])
             stream_dict['stream_weekly_traffic'] = get_average_weekly_stream_traffic(
                 stream["id"], stream["date_created"], recent_traffic)
+            # Backwards-compatibility addition of removed field.
+            stream_dict['is_announcement_only'] = \
+                stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS
 
             if is_public or user_profile.is_realm_admin:
                 subscribers = subscriber_map[stream["id"]]

@@ -1504,14 +1504,13 @@ paths:
           type: boolean
           default: None
         example: false
-      - name: is_announcement_only
+      - name: stream_post_policy
         in: query
-        description: A boolean indicating if the stream is an announcements only stream.
-          Only organization admins can post to announcements only streams.
+        description: Indicates which users can post messages to the stream.
         schema:
-          type: boolean
-          default: false
-        example: false
+          type: integer
+          default: 1
+        example: 1
       - name: announce
         in: query
         description: If `announce` is `True` and one of the streams specified
@@ -2623,6 +2622,13 @@ paths:
         schema:
           type: boolean
         example: true
+        required: false
+      - name: stream_post_policy
+        in: query
+        description: Indicates which users can post messages to the stream.
+        schema:
+          type: integer
+        example: 2
         required: false
       - name: history_public_to_subscribers
         in: query

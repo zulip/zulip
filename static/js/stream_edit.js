@@ -272,6 +272,7 @@ exports.show_settings_for = function (node) {
     const html = render_subscription_settings({
         sub: sub,
         settings: exports.stream_settings(sub),
+        stream_post_policy_values: stream_data.stream_post_policy_values,
     });
     ui.get_content_element($('.subscriptions .right .settings')).html(html);
 
@@ -338,7 +339,6 @@ function stream_setting_clicked(e) {
     }
 }
 
-
 exports.bulk_set_stream_property = function (sub_data) {
     return channel.post({
         url: '/json/users/me/subscriptions/properties',
@@ -359,7 +359,7 @@ function change_stream_privacy(e) {
     const sub = stream_data.get_sub_by_id(stream_id);
 
     const privacy_setting = $('#stream_privacy_modal input[name=privacy]:checked').val();
-    const is_announcement_only = $('#stream_privacy_modal input[name=is-announcement-only]').prop('checked');
+    const stream_post_policy = parseInt($('#stream_privacy_modal input[name=stream-post-policy]:checked').val(), 10);
 
     let invite_only;
     let history_public_to_subscribers;
@@ -380,7 +380,7 @@ function change_stream_privacy(e) {
         stream_name: sub.name,
         // toggle the privacy setting
         is_private: JSON.stringify(invite_only),
-        is_announcement_only: JSON.stringify(is_announcement_only),
+        stream_post_policy: JSON.stringify(stream_post_policy),
         history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
     };
 
@@ -493,7 +493,8 @@ exports.initialize = function () {
         const template_data = {
             stream_id: stream_id,
             stream_name: stream.name,
-            is_announcement_only: stream.is_announcement_only,
+            stream_post_policy_values: stream_data.stream_post_policy_values,
+            stream_post_policy: stream.stream_post_policy,
             is_public: !stream.invite_only,
             is_private: stream.invite_only && !stream.history_public_to_subscribers,
             is_private_with_public_history: stream.invite_only &&

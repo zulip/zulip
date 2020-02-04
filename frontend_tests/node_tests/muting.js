@@ -1,3 +1,5 @@
+set_global('i18n', global.stub_i18n);
+
 zrequire('muting');
 zrequire('stream_data');
 set_global('blueslip', global.make_zblueslip());

@@ -172,7 +172,7 @@ exports.update_stream_privacy = function (sub, values) {
 
     // Update UI elements
     stream_ui_updates.update_stream_privacy_type_icon(sub);
-    stream_ui_updates.update_stream_privacy_type_text(sub);
+    stream_ui_updates.update_stream_subscription_type_text(sub);
     stream_ui_updates.update_change_stream_privacy_settings(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_subscribers_count(sub);
@@ -180,11 +180,11 @@ exports.update_stream_privacy = function (sub, values) {
     stream_list.redraw_stream_privacy(sub);
 };
 
-exports.update_stream_announcement_only = function (sub, new_value) {
-    stream_data.update_stream_announcement_only(sub, new_value);
+exports.update_stream_post_policy = function (sub, new_value) {
+    stream_data.update_stream_post_policy(sub, new_value);
     stream_data.update_calculated_fields(sub);
 
-    stream_ui_updates.update_stream_privacy_type_text(sub);
+    stream_ui_updates.update_stream_subscription_type_text(sub);
 };
 
 exports.set_color = function (stream_id, color) {
@@ -549,6 +549,8 @@ exports.setup_page = function (callback) {
             max_name_length: page_params.stream_name_max_length,
             max_description_length: page_params.stream_description_max_length,
             is_admin: page_params.is_admin,
+            stream_post_policy_values: stream_data.stream_post_policy_values,
+            stream_post_policy: stream_data.stream_post_policy_values.everyone.code,
         };
 
         const rendered = render_subscription_table_body(template_data);

@@ -5,6 +5,8 @@ set_global('location', {
     host: 'example.com',
 });
 set_global('to_$', () => window_stub);
+set_global('i18n', global.stub_i18n);
+
 zrequire('people');
 zrequire('hash_util');
 zrequire('hashchange');

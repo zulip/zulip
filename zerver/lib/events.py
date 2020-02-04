@@ -477,7 +477,7 @@ def apply_event(state: Dict[str, Any],
                         stream_data['subscribers'] = []
                     stream_data['stream_weekly_traffic'] = None
                     stream_data['is_old_stream'] = False
-                    stream_data['is_announcement_only'] = False
+                    stream_data['stream_post_policy'] = Stream.STREAM_POST_POLICY_EVERYONE
                     # Add stream to never_subscribed (if not invite_only)
                     state['never_subscribed'].append(stream_data)
                 state['streams'].append(stream)

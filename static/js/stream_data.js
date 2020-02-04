@@ -89,6 +89,21 @@ let filter_out_inactives = false;
 const stream_ids_by_name = new FoldDict();
 const default_stream_ids = new Set();
 
+exports.stream_post_policy_values = {
+    everyone: {
+        code: 1,
+        description: i18n.t("Allow everyone to post"),
+    },
+    admins: {
+        code: 2,
+        description: i18n.t("Restrict posting to only organization administrators"),
+    },
+    non_new_members: {
+        code: 3,
+        description: i18n.t("Restrict new members from posting"),
+    },
+};
+
 exports.clear_subscriptions = function () {
     stream_info = new BinaryDict(function (sub) {
         return sub.subscribed;
@@ -375,8 +390,8 @@ exports.get_subscriber_count = function (stream_name) {
     return sub.subscribers.size;
 };
 
-exports.update_stream_announcement_only = function (sub, is_announcement_only) {
-    sub.is_announcement_only = is_announcement_only;
+exports.update_stream_post_policy = function (sub, stream_post_policy) {
+    sub.stream_post_policy = stream_post_policy;
 };
 
 exports.update_stream_privacy = function (sub, values) {
@@ -505,12 +520,12 @@ exports.get_invite_only = function (stream_name) {
     return sub.invite_only;
 };
 
-exports.get_announcement_only = function (stream_name) {
+exports.get_stream_post_policy = function (stream_name) {
     const sub = exports.get_sub(stream_name);
     if (sub === undefined) {
         return false;
     }
-    return sub.is_announcement_only;
+    return sub.stream_post_policy;
 };
 
 exports.all_topics_in_cache = function (sub) {
