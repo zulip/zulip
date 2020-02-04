@@ -1,4 +1,5 @@
 import "core-js/features/promise";
+import "core-js/features/symbol";
 import "jquery/dist/jquery.js";
 import "underscore/underscore.js";
 import "../page_params.js";

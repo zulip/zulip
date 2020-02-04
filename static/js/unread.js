@@ -297,7 +297,7 @@ exports.unread_topic_counter = (function () {
 
             return {
                 pretty_name: topic_name,
-                message_id: Math.max(...msgs),
+                message_id: Math.max(...Array.from(msgs)),
             };
         });
 
