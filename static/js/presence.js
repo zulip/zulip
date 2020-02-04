@@ -1,6 +1,9 @@
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
 
+// Dictionary mapping user_id -> presence data.  May contain user_id
+// values that are not yet registered in people.js (see long comment
+// in `set_info` below for details).
 exports.presence_info = {};
 
 
@@ -97,6 +100,18 @@ exports.set_info_for_user = function (user_id, info, server_time) {
 exports.set_info = function (presences, server_timestamp) {
     exports.presence_info = {};
     _.each(presences, function (info, user_id_str) {
+        // Note: In contrast with essentially every other piece of
+        // state updates we receive from the server, precense updates
+        // are pulled independently from server_events_dispatch.js.
+        //
+        // This means that if we're coming back from offline and new
+        // users were created in the meantime, we'll be populating
+        // exports.presence_info with user IDs not yet present in
+        // people.js.  This is safe because we always access
+        // exports.presence_info as a filter on sets of users obtained
+        // elsewhere, but we need to be careful to avoid trying to
+        // look up user_ids obtained via presence_info in other data
+        // sources.
         const status = status_from_timestamp(server_timestamp,
                                              info);
 
