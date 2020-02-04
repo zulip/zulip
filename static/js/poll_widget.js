@@ -44,7 +44,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
         const options = [];
 
         for (const [key, obj] of key_to_option) {
-            const voters = [...obj.votes.keys()];
+            const voters = Array.from(obj.votes.keys());
             const current_user_vote = _.contains(voters, me);
 
             options.push({
