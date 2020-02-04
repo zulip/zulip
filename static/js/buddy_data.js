@@ -330,14 +330,8 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
 };
 
 exports.get_items_for_users = function (user_ids) {
-    const user_info = _.map(user_ids, exports.info_for).filter(function (person) {
-        // filtered bots and yourself are set to "undefined" in the `info_for`
-        // function.
-        return typeof person !== "undefined";
-    });
-
+    const user_info = _.map(user_ids, exports.info_for);
     compose_fade.update_user_info(user_info, fade_config);
-
     return user_info;
 };
 
