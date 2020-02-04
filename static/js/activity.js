@@ -120,7 +120,7 @@ exports.process_loaded_messages = function (messages) {
 };
 
 exports.get_huddles = function () {
-    let huddles = [...huddle_timestamps.keys()];
+    let huddles = Array.from(huddle_timestamps.keys());
     huddles = _.sortBy(huddles, function (huddle) {
         return huddle_timestamps.get(huddle);
     });

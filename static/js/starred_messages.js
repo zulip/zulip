@@ -27,7 +27,7 @@ exports.count = function () {
 };
 
 exports.get_starred_msg_ids = function () {
-    return [...exports.ids];
+    return Array.from(exports.ids);
 };
 
 exports.rerender_ui = function () {
