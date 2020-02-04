@@ -96,6 +96,16 @@ exports.update_change_stream_privacy_settings = function (sub) {
     }
 };
 
+exports.update_notification_setting_checkbox = function (notification_name) {
+    const stream_row = $('#subscriptions_table .stream-row.active');
+    if (!stream_row.length) {
+        return;
+    }
+    const stream_id = stream_row.data('stream-id');
+    $(`#${notification_name}_${stream_id}`).prop("checked", stream_data.receives_notifications(
+        stream_data.maybe_get_stream_name(stream_id), notification_name));
+};
+
 exports.update_stream_row_in_settings_tab = function (sub) {
     // This function display/hide stream row in stream settings tab,
     // used to display immediate effect of add/removal subscription event.
