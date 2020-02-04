@@ -311,9 +311,9 @@ function stream_setting_clicked(e) {
     if (e.currentTarget.id === 'sub_is_muted_setting') {
         return;
     }
-    const checkbox_div = $(e.target).closest(".sub_setting_checkbox");
+
+    const checkbox = $(e.currentTarget).find('.sub_setting_control');
     const sub = get_sub_for_target(e.target);
-    const checkbox = checkbox_div.find('.sub_setting_control');
     const setting = checkbox.attr('name');
     if (!sub) {
         blueslip.error('undefined sub in stream_setting_clicked()');
