@@ -61,7 +61,7 @@ the development environment][authentication-dev-server].
   the one you use for manual testing in the UI, so changes you make to
   the database manually will never affect the automated tests.
 
-## Web application
+## Web
 
 * Once the development server (`run-dev.py`) is running, you can visit
   <http://localhost:9991/> in your browser.
@@ -87,7 +87,7 @@ the development environment][authentication-dev-server].
   profilers in their built-in developer tools.
 * `debug.js` has some occasionally useful JavaScript profiling code.
 
-## Mobile apps
+## Mobile
 
 See the mobile project's documentation on [using a development server
 for mobile development][mobile-dev-server].
