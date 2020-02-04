@@ -1,4 +1,5 @@
 <ul class="grey-box">
+    <h4>{{t 'Who can access the stream?'}}</h4>
     <li>
         <label class="radio">
             <input type="radio" name="privacy" value="public" {{#if is_public}}checked{{/if}} />
@@ -18,12 +19,14 @@
         </label>
     </li>
     {{#if is_admin}}
-    <li>
-        <label class="checkbox">
-            <input type="checkbox" name="is-announcement-only" value="is-announcement-only" {{#if is_announcement_only}}checked{{/if}}/>
-            <span></span>
-            {{t 'Restrict posting to organization administrators' }}
-        </label>
-    </li>
+        <h4>{{t 'Who can post to the stream?'}}</h4>
+        {{#each stream_post_policy_values}}
+        <li>
+            <label class="radio">
+                <input type="radio" name="stream-post-policy" value="{{ this.code }}" {{#if (eq this.code ../stream_post_policy) }}checked{{/if}} />
+                {{ this.description }}
+            </label>
+        </li>
+        {{/each}}
     {{/if}}
 </ul>

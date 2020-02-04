@@ -41,7 +41,8 @@
         </div>
         <div class="subscription-type">
             <div class="subscription-type-text">
-                {{> subscription_type}}
+                {{> subscription_type
+                  stream_post_policy_values=../stream_post_policy_values}}
             </div>
             <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>

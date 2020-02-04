@@ -5,6 +5,7 @@ set_global('i18n', global.stub_i18n);
 set_global('page_params', {});
 zrequire('settings_notifications');
 zrequire('stream_edit');
+zrequire('stream_data');
 
 const { JSDOM } = require("jsdom");
 const { window } = new JSDOM();
@@ -1281,6 +1282,7 @@ run_test('subscription_stream_privacy_modal', () => {
         stream_id: 999,
         is_private: true,
         is_admin: true,
+        stream_post_policy_values: stream_data.stream_post_policy_values,
     };
     const html = render('subscription_stream_privacy_modal', args);
 
@@ -1289,8 +1291,13 @@ run_test('subscription_stream_privacy_modal', () => {
     assert.equal(other_options[1].value, 'invite-only-public-history');
     assert.equal(other_options[2].value, 'invite-only');
 
-    const is_announcement_only = $(html).find("input[name=is-announcement-only]");
-    assert.equal(is_announcement_only.prop('checked'), false);
+    const stream_post_policy = $(html).find("input[name=stream-post-policy]");
+    assert.equal(stream_post_policy[0].value,
+                 stream_data.stream_post_policy_values.everyone.code);
+    assert.equal(stream_post_policy[1].value,
+                 stream_data.stream_post_policy_values.admins.code);
+    assert.equal(stream_post_policy[2].value,
+                 stream_data.stream_post_policy_values.non_new_members.code);
 
     const button = $(html).find("#change-stream-privacy-button");
     assert(button.hasClass("btn-danger"));

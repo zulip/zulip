@@ -1,3 +1,5 @@
+set_global('i18n', global.stub_i18n);
+
 zrequire('people');
 zrequire('Filter', 'js/filter');
 zrequire('stream_data');

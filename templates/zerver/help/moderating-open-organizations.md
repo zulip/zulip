@@ -17,9 +17,9 @@ Zulip has many features designed to simplify moderation:
 * Link to a code of conduct in your
   [organization description](/help/create-your-organization-profile)
   (displayed on the registration page).
-* Create at least one
-  [default stream](/help/set-default-streams-for-new-users) where
-  [only admins can post](/help/announcement-only-streams).
+* Create a [default stream](/help/set-default-streams-for-new-users)
+  for announcements where [only admins can
+  post](/help/stream-sending-policy).
 * Add a [waiting period](/help/restrict-permissions-of-new-members) before
   new users can take disruptive actions.
 * [Restrict email visibility](/help/restrict-visibility-of-email-addresses)

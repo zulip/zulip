@@ -1,6 +1,8 @@
 zrequire('hash_util');
 set_global('katex', zrequire('katex', 'katex/dist/katex.min.js'));
 set_global('marked', zrequire('marked', 'third/marked/lib/marked'));
+set_global('i18n', global.stub_i18n);
+
 zrequire('util');
 zrequire('fenced_code');
 zrequire('stream_data');

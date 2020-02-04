@@ -1373,8 +1373,18 @@ class Stream(models.Model):
     # Whether this stream's content should be published by the web-public archive features
     is_web_public = models.BooleanField(default=False)  # type: bool
 
-    # Whether only organization administrators can send messages to this stream
-    is_announcement_only = models.BooleanField(default=False)  # type: bool
+    STREAM_POST_POLICY_EVERYONE = 1
+    STREAM_POST_POLICY_ADMINS = 2
+    STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS = 3
+    # TODO: Implement policy to restrict posting to a user group or admins.
+
+    # Who in the organization has permission to send messages to this stream.
+    stream_post_policy = models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE)  # type: int
+    STREAM_POST_POLICY_TYPES = [
+        STREAM_POST_POLICY_EVERYONE,
+        STREAM_POST_POLICY_ADMINS,
+        STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+    ]
 
     # The unique thing about Zephyr public streams is that we never list their
     # users.  We may try to generalize this concept later, but for now
@@ -1434,7 +1444,7 @@ class Stream(models.Model):
         "rendered_description",
         "invite_only",
         "is_web_public",
-        "is_announcement_only",
+        "stream_post_policy",
         "history_public_to_subscribers",
         "first_message_id",
     ]
@@ -1447,6 +1457,7 @@ class Stream(models.Model):
                 result['stream_id'] = self.id
                 continue
             result[field_name] = getattr(self, field_name)
+        result['is_announcement_only'] = self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
         return result
 
 post_save.connect(flush_stream, sender=Stream)

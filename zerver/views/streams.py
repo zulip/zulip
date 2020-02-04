@@ -17,19 +17,18 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
     do_change_stream_description, do_get_streams, \
-    do_remove_default_stream, \
+    do_remove_default_stream, do_change_stream_post_policy, do_delete_messages, \
     do_create_default_stream_group, do_add_streams_to_default_stream_group, \
     do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
-    do_change_default_stream_group_description, do_change_default_stream_group_name, \
-    do_change_stream_announcement_only, \
-    do_delete_messages
+    do_change_default_stream_group_description, do_change_default_stream_group_name
 from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
     list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
 from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
-    check_bool, check_variable_type, check_capped_string, check_color, check_dict_only
+    check_bool, check_variable_type, check_capped_string, check_color, check_dict_only, \
+    check_int_in
 from zerver.models import UserProfile, Stream, Realm, UserMessage, \
     get_system_bot, get_active_user
 
@@ -150,6 +149,8 @@ def update_stream_backend(
             Stream.MAX_DESCRIPTION_LENGTH), default=None),
         is_private: Optional[bool]=REQ(validator=check_bool, default=None),
         is_announcement_only: Optional[bool]=REQ(validator=check_bool, default=None),
+        stream_post_policy: Optional[int]=REQ(validator=check_int_in(
+            Stream.STREAM_POST_POLICY_TYPES), default=None),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         new_name: Optional[str]=REQ(validator=check_string, default=None),
 ) -> HttpResponse:
@@ -171,7 +172,15 @@ def update_stream_backend(
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name, user_profile)
     if is_announcement_only is not None:
-        do_change_stream_announcement_only(stream, is_announcement_only)
+        # is_announcement_only is a legacy way to specify
+        # stream_post_policy.  We can probably just delete this code,
+        # since we're not aware of clients that used it, but we're
+        # keeping it for backwards-compatibility for now.
+        stream_post_policy = Stream.STREAM_POST_POLICY_EVERYONE
+        if is_announcement_only:
+            stream_post_policy = Stream.STREAM_POST_POLICY_ADMINS
+    if stream_post_policy is not None:
+        do_change_stream_post_policy(stream, stream_post_policy)
 
     # But we require even realm administrators to be actually
     # subscribed to make a private stream public.
@@ -296,7 +305,8 @@ def add_subscriptions_backend(
                 ])
             )),
         invite_only: bool=REQ(validator=check_bool, default=False),
-        is_announcement_only: bool=REQ(validator=check_bool, default=False),
+        stream_post_policy: int=REQ(validator=check_int_in(
+            Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         announce: bool=REQ(validator=check_bool, default=False),
         principals: List[str]=REQ(validator=check_list(check_string), default=[]),
@@ -319,7 +329,7 @@ def add_subscriptions_backend(
         # Strip the stream name here.
         stream_dict_copy['name'] = stream_dict_copy['name'].strip()
         stream_dict_copy["invite_only"] = invite_only
-        stream_dict_copy["is_announcement_only"] = is_announcement_only
+        stream_dict_copy["stream_post_policy"] = stream_post_policy
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
         stream_dicts.append(stream_dict_copy)
 

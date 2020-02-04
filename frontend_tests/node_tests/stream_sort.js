@@ -1,3 +1,5 @@
+set_global('i18n', global.stub_i18n);
+
 zrequire('util');
 zrequire('stream_data');
 zrequire('stream_sort');

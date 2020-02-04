@@ -142,7 +142,7 @@ class TestCreateStreams(ZulipTestCase):
             [{"name": stream_name,
               "description": stream_description,
               "invite_only": True,
-              "is_announcement_only": True}
+              "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS}
              for (stream_name, stream_description) in zip(stream_names, stream_descriptions)])
 
         self.assertEqual(len(new_streams), 3)
@@ -154,7 +154,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
         for stream in new_streams:
             self.assertTrue(stream.invite_only)
-            self.assertTrue(stream.is_announcement_only)
+            self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
@@ -264,7 +264,7 @@ class TestCreateStreams(ZulipTestCase):
             "invite_only": 'false',
             "announce": 'true',
             "principals": '["iago@zulip.com", "AARON@zulip.com", "cordelia@zulip.com", "hamlet@zulip.com"]',
-            "is_announcement_only": 'false'
+            "stream_post_policy": '1'
         }
 
         response = self.client_post("/json/users/me/subscriptions", data)
@@ -780,7 +780,7 @@ class StreamAdminTest(ZulipTestCase):
                                    {'description': ujson.dumps('Test description')})
         self.assert_json_error(result, 'Must be an organization administrator')
 
-    def test_change_stream_announcement_only(self) -> None:
+    def test_change_to_stream_post_policy_admins(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
 
@@ -792,9 +792,9 @@ class StreamAdminTest(ZulipTestCase):
                                    {'is_announcement_only': ujson.dumps(True)})
         self.assert_json_success(result)
         stream = get_stream('stream_name1', user_profile.realm)
-        self.assertEqual(True, stream.is_announcement_only)
+        self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
 
-    def test_change_stream_announcement_only_requires_realm_admin(self) -> None:
+    def test_change_stream_post_policy_requires_realm_admin(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)
 
@@ -803,7 +803,17 @@ class StreamAdminTest(ZulipTestCase):
 
         stream_id = get_stream('stream_name1', user_profile.realm).id
         result = self.client_patch('/json/streams/%d' % (stream_id,),
-                                   {'is_announcement_only': ujson.dumps(True)})
+                                   {'stream_post_policy': ujson.dumps(
+                                       Stream.STREAM_POST_POLICY_ADMINS)})
+        self.assert_json_error(result, 'Must be an organization administrator')
+
+        do_set_realm_property(user_profile.realm, 'waiting_period_threshold', 10)
+        self.assertTrue(user_profile.is_new_member)
+
+        stream_id = get_stream('stream_name1', user_profile.realm).id
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'stream_post_policy': ujson.dumps(
+                                       Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)})
         self.assert_json_error(result, 'Must be an organization administrator')
 
     def set_up_stream_for_deletion(self, stream_name: str, invite_only: bool=False,
@@ -2570,7 +2580,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [self.example_user("iago").id])
 
-    def test_subscibe_to_announce_only_stream(self) -> None:
+    def test_subscribe_to_stream_post_policy_admins_stream(self) -> None:
         """
         Members can subscribe to streams where only admins can post
         but not create those streams, only realm admins can
@@ -2581,7 +2591,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         streams_raw = [{
             'name': 'new_stream',
-            'is_announcement_only': True,
+            'stream_post_policy': Stream.STREAM_POST_POLICY_ADMINS,
         }]
         with self.assertRaisesRegex(
                 JsonableError, "User cannot create a stream with these settings."):
@@ -2592,7 +2602,56 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_length(result[0], 0)
         self.assert_length(result[1], 1)
         self.assertEqual(result[1][0].name, 'new_stream')
-        self.assertEqual(result[1][0].is_announcement_only, True)
+        self.assertTrue(result[1][0].stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
+
+    def test_subscribe_to_stream_post_policy_restrict_new_members_stream(self) -> None:
+        """
+        New members can subscribe to streams where they can neither post
+        nor create those streams, only realm admins can can.
+        """
+        new_member_email = self.nonreg_email('test')
+        self.register(new_member_email, "test")
+        new_member = self.nonreg_user('test')
+
+        do_set_realm_property(new_member.realm, 'waiting_period_threshold', 10)
+        streams_raw = [{
+            'name': 'new_stream',
+            'stream_post_policy': Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+        }]
+
+        # new members cannot create STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams.
+        self.assertTrue(new_member.is_new_member)
+        with self.assertRaisesRegex(
+                JsonableError, "User cannot create a stream with these settings."):
+            list_to_streams(streams_raw, new_member, autocreate=True)
+
+        # Non admins can create STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams.
+        # However, they must not be a new user.
+        non_admin = self.example_user("AARON")
+        non_admin.date_joined = timezone_now() - timedelta(days=11)
+        non_admin.save()
+        self.assertFalse(non_admin.is_new_member)
+        self.assertFalse(non_admin.is_realm_admin)
+        result = list_to_streams(streams_raw, non_admin, autocreate=True)
+        self.assert_length(result[0], 0)
+        self.assert_length(result[1], 1)
+        self.assertEqual(result[1][0].name, 'new_stream')
+        self.assertTrue(result[1][0].stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
+
+        streams_raw = [{
+            'name': 'newer_stream',
+            'stream_post_policy': Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+        }]
+
+        # Admins can create STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
+        # irrespective of whether they are new members or not.
+        admin = self.example_user("iago")
+        self.assertTrue(admin.is_realm_admin)
+        result = list_to_streams(streams_raw, admin, autocreate=True)
+        self.assert_length(result[0], 0)
+        self.assert_length(result[1], 1)
+        self.assertEqual(result[1][0].name, 'newer_stream')
+        self.assertTrue(result[1][0].stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
 
     def test_guest_user_subscribe(self) -> None:
         """Guest users cannot subscribe themselves to anything"""
@@ -2611,7 +2670,7 @@ class SubscriptionAPITest(ZulipTestCase):
             'invite_only': False,
             'history_public_to_subscribers': None,
             'name': 'new_stream',
-            'is_announcement_only': False
+            'stream_post_policy': Stream.STREAM_POST_POLICY_EVERYONE
         }]
 
         with self.assertRaisesRegex(JsonableError, "User cannot create streams."):

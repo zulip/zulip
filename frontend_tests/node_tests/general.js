@@ -59,6 +59,7 @@ const denmark_stream = {
 // prefer to test with a clean slate.
 
 set_global('page_params', {});
+set_global('i18n', global.stub_i18n);
 
 zrequire('stream_data');
 set_global('i18n', global.stub_i18n);

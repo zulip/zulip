@@ -81,6 +81,13 @@ people.small_avatar_url_for_person = function () {
     return 'http://example.com/example.png';
 };
 
+const new_user = {
+    email: 'new_user@example.com',
+    user_id: 101,
+    full_name: 'New User',
+    date_joined: new Date(),
+};
+
 const me = {
     email: 'me@example.com',
     user_id: 30,
@@ -100,6 +107,7 @@ const bob = {
     full_name: 'Bob',
 };
 
+people.add(new_user);
 people.add(me);
 people.initialize_current_user(me.user_id);
 
@@ -315,30 +323,30 @@ run_test('validate_stream_message', () => {
     assert($("#compose-all-everyone").visible());
 });
 
-run_test('test_validate_stream_message_announcement_only', () => {
+run_test('test_validate_stream_message_post_policy', () => {
     // This test is in continuation with test_validate but it has been seperated out
     // for better readabilty. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
-    // as `get_announcement_only` is reset at the end.
+    // as `get_stream_post_policy` is reset at the end.
     page_params.is_admin = false;
     const sub = {
         stream_id: 102,
         name: 'stream102',
         subscribed: true,
-        announcement_only: true,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
     };
-    stream_data.get_announcement_only = function () {
-        return true;
+    stream_data.get_stream_post_policy = function () {
+        return 2;
     };
     compose_state.topic('subject102');
     stream_data.add_sub('stream102', sub);
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t("Only organization admins are allowed to post to this stream."));
 
-    // reset `get_announcement_only` so that any tests occurung after this
+    // reset `get_stream_post_policy` so that any tests occurung after this
     // do not reproduce this error.
-    stream_data.get_announcement_only = function () {
-        return false;
+    stream_data.get_stream_post_policy = function () {
+        return stream_data.stream_post_policy_values.everyone.code;
     };
 });
 
