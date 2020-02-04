@@ -2,8 +2,17 @@ const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
 const IntDict = require('./int_dict').IntDict;
 
-// See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html for notes on
-// how this system is designed.
+// The unread module tracks the message IDs and locations of the
+// user's unread messages.  The tracking is initialized with
+// server-provided data of the total set of unread messages in the
+// user's history via page_params.unread_msgs (well, it cuts off at
+// MAX_UNREAD_MESSAGES unreads for performance reasons).  As a result,
+// it can contain many thousands of messages that we don't have full
+// data for in `message_store`, so we cannot in general look these
+// messages up there.
+
+// See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html
+// for more details on how this system is designed.
 
 exports.suppress_unread_counts = true;
 exports.set_suppress_unread_counts = function (value) {
