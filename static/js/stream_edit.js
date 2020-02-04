@@ -650,16 +650,10 @@ exports.initialize = function () {
         }
     });
 
-    $(document).on('peer_subscribe.zulip', function (e, data) {
+    $(document).on('peer_subscribe.zulip peer_unsubscribe.zulip', function (e, data) {
         const sub = stream_data.get_sub(data.stream_name);
         subs.rerender_subscriptions_settings(sub);
     });
-
-    $(document).on('peer_unsubscribe.zulip', function (e, data) {
-        const sub = stream_data.get_sub(data.stream_name);
-        subs.rerender_subscriptions_settings(sub);
-    });
-
 };
 
 window.stream_edit = exports;
