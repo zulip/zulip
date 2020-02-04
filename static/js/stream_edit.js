@@ -308,6 +308,9 @@ function stream_is_muted_clicked(e) {
 }
 
 function stream_setting_clicked(e) {
+    if (e.currentTarget.id === 'sub_is_muted_setting') {
+        return;
+    }
     const checkbox_div = $(e.target).closest(".sub_setting_checkbox");
     const sub = get_sub_for_target(e.target);
     const checkbox = checkbox_div.find('.sub_setting_control');
@@ -517,13 +520,8 @@ exports.initialize = function () {
     $("#subscriptions_table").on("click", "#sub_is_muted_setting",
                                  stream_is_muted_clicked);
 
-    _.each(Object.keys(settings_labels), function (setting) {
-        if (setting === "is_muted") {
-            return;
-        }
-        $("#subscriptions_table").on("click", "#sub_" + setting + "_setting",
-                                     stream_setting_clicked);
-    });
+    $("#subscriptions_table").on("click", ".sub_setting_checkbox",
+                                 stream_setting_clicked);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
