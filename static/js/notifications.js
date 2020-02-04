@@ -756,6 +756,12 @@ exports.handle_global_notification_updates = function (notification_name, settin
         page_params[notification_name] = setting;
     }
 
+    if (settings_notifications.all_notifications.settings.stream_notification_settings.indexOf(
+        notification_name) !== -1) {
+        notification_name = notification_name.replace("enable_stream_", "");
+        stream_ui_updates.update_notification_setting_checkbox(notification_name);
+    }
+
     if (notification_name === "notification_sound") {
         // Change the sound source with the new page `notification_sound`.
         update_notification_sound_source();
