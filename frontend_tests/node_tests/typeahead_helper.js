@@ -445,7 +445,7 @@ run_test('sort broadcast mentions', () => {
     // Reverse the list to test actual sorting
     // and ensure test coverage for the defensive
     // code.  Also, add in some people users.
-    const test_objs = [...ct.broadcast_mentions()].reverse();
+    const test_objs = Array.from(ct.broadcast_mentions()).reverse();
     test_objs.unshift(zman);
     test_objs.push(a_user);
 

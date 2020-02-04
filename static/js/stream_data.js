@@ -166,7 +166,7 @@ exports.is_subscriber_subset = function (sub1, sub2) {
     if (sub1.subscribers && sub2.subscribers) {
         const sub2_set = sub2.subscribers;
 
-        return _.every([...sub1.subscribers.keys()], (key) => {
+        return _.every(Array.from(sub1.subscribers.keys()), (key) => {
             return sub2_set.has(key);
         });
     }
@@ -286,7 +286,7 @@ exports.delete_sub = function (stream_id) {
 };
 
 exports.get_non_default_stream_names = function () {
-    let subs = [...stream_info.values()];
+    let subs = Array.from(stream_info.values());
     subs = _.reject(subs, function (sub) {
         return exports.is_default_stream_id(sub.stream_id) || !sub.subscribed && sub.invite_only;
     });
@@ -295,14 +295,14 @@ exports.get_non_default_stream_names = function () {
 };
 
 exports.get_unsorted_subs = function () {
-    return [...stream_info.values()];
+    return Array.from(stream_info.values());
 };
 
 exports.get_updated_unsorted_subs = function () {
     // This function is expensive in terms of calculating
     // some values (particularly stream counts) but avoids
     // prematurely sorting subs.
-    let all_subs = [...stream_info.values()];
+    let all_subs = Array.from(stream_info.values());
 
     // Add in admin options and stream counts.
     _.each(all_subs, function (sub) {
@@ -324,11 +324,11 @@ exports.num_subscribed_subs = function () {
 };
 
 exports.subscribed_subs = function () {
-    return [...stream_info.true_values()];
+    return Array.from(stream_info.true_values());
 };
 
 exports.unsubscribed_subs = function () {
-    return [...stream_info.false_values()];
+    return Array.from(stream_info.false_values());
 };
 
 exports.subscribed_streams = function () {
@@ -788,7 +788,7 @@ exports.get_streams_for_admin = function () {
         return util.strcmp(a.name, b.name);
     }
 
-    const subs = [...stream_info.values()];
+    const subs = Array.from(stream_info.values());
 
     subs.sort(by_name);
 

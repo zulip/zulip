@@ -718,7 +718,7 @@ exports.filter_all_persons = function (pred) {
 };
 
 exports.get_realm_persons = function () {
-    return [...active_user_dict.values()];
+    return Array.from(active_user_dict.values());
 };
 
 exports.get_active_human_persons = function () {
@@ -730,7 +730,7 @@ exports.get_active_human_persons = function () {
 
 exports.get_active_user_ids = function () {
     // This includes active users and active bots.
-    return [...active_user_dict.keys()];
+    return Array.from(active_user_dict.keys());
 };
 
 exports.is_cross_realm_email = function (email) {

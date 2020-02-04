@@ -6,7 +6,7 @@ run_test('basic', () => {
 
     assert.equal(d.size, 0);
 
-    assert.deepEqual([...d.keys()], []);
+    assert.deepEqual(Array.from(d.keys()), []);
 
     d.set('foo', 'bar');
     assert.equal(d.get('foo'), 'bar');
@@ -24,15 +24,15 @@ run_test('basic', () => {
     assert.equal(d.has('bar'), true);
     assert.equal(d.has('baz'), false);
 
-    assert.deepEqual([...d.keys()], ['foo', 'bar']);
-    assert.deepEqual([...d.values()], ['baz', 'qux']);
-    assert.deepEqual([...d], [['foo', 'baz'], ['bar', 'qux']]);
+    assert.deepEqual(Array.from(d.keys()), ['foo', 'bar']);
+    assert.deepEqual(Array.from(d.values()), ['baz', 'qux']);
+    assert.deepEqual(Array.from(d), [['foo', 'baz'], ['bar', 'qux']]);
 
     d.delete('bar');
     assert.equal(d.has('bar'), false);
     assert.strictEqual(d.get('bar'), undefined);
 
-    assert.deepEqual([...d.keys()], ['foo']);
+    assert.deepEqual(Array.from(d.keys()), ['foo']);
 
     const val = ['foo'];
     const res = d.set('abc', val);
@@ -83,12 +83,12 @@ run_test('restricted_keys', () => {
 run_test('construction', () => {
     const d1 = new Dict();
 
-    assert.deepEqual([...d1], []);
+    assert.deepEqual(Array.from(d1), []);
 
     const d2 = new Dict();
     d2.set('foo', 'bar');
     d2.set('baz', 'qux');
-    assert.deepEqual([...d2], [['foo', 'bar'], ['baz', 'qux']]);
+    assert.deepEqual(Array.from(d2), [['foo', 'bar'], ['baz', 'qux']]);
 });
 
 run_test('each', () => {
@@ -97,7 +97,7 @@ run_test('each', () => {
     d.set('banana', 50);
     d.set('carrot', 60);
 
-    let unseen_keys = [...d.keys()];
+    let unseen_keys = Array.from(d.keys());
 
     let cnt = 0;
     for (const [k, v] of d) {
