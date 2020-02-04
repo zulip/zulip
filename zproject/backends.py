@@ -200,7 +200,7 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
     if not settings.RATE_LIMITING_AUTHENTICATE:
         return auth_func(*args, **kwargs)
 
-    request = kwargs['request']
+    request = args[1]
     username = kwargs['username']
     if not hasattr(request, 'client') or not client_is_exempt_from_rate_limiting(request):
         # Django cycles through enabled authentication backends until one succeeds,
@@ -245,7 +245,8 @@ class ZulipDummyBackend(ZulipAuthMixin):
     when explicitly requested by including the use_dummy_backend kwarg.
     """
 
-    def authenticate(self, *, username: str, realm: Realm,
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     username: str, realm: Realm,
                      use_dummy_backend: bool=False,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if use_dummy_backend:
@@ -278,7 +279,8 @@ class EmailAuthBackend(ZulipAuthMixin):
     """
 
     @rate_limit_auth
-    def authenticate(self, *, request: HttpRequest, username: str, password: str,
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     username: str, password: str,
                      realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         """ Authenticate a user based on email address as the user name. """
@@ -588,7 +590,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
     @rate_limit_auth
-    def authenticate(self, *, request: HttpRequest, username: str, password: str, realm: Realm,
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     username: str, password: str, realm: Realm,
                      prereg_user: Optional[PreregistrationUser]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         self._realm = realm
@@ -615,7 +618,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         # against the LDAP database, and assuming those are correct,
         # end up calling `self.get_or_build_user` with the
         # authenticated user's data from LDAP.
-        return super().authenticate(request=None, username=username, password=password)
+        return super().authenticate(request=request, username=username, password=password)
 
     def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
         """The main function of our authentication backend extension of
@@ -723,7 +726,8 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
     registration for organizations that use a different SSO solution
     for managing login (often via RemoteUserBackend).
     """
-    def authenticate(self, *, username: str, password: str, realm: Realm,
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     username: str, password: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         return None
 
@@ -841,7 +845,8 @@ def query_ldap(email: str) -> List[str]:
 class DevAuthBackend(ZulipAuthMixin):
     """Allow logging in as any user without a password.  This is used for
     convenience when developing Zulip, and is disabled in production."""
-    def authenticate(self, *, dev_auth_username: str, realm: Realm,
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     dev_auth_username: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if not dev_auth_enabled(realm):
             return None
@@ -907,7 +912,8 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
 
     create_unknown_user = False
 
-    def authenticate(self, *, remote_user: str, realm: Realm,
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     remote_user: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if not auth_enabled_helper(["RemoteUser"], realm):
             return None
