@@ -33,13 +33,6 @@ const social = {
 };
 stream_data.add_sub('social', social);
 
-const message_dict = new IntDict();
-message_store.get = msg_id => message_dict.get(msg_id);
-function add_message(message) {
-    message_dict.set(message.id, message);
-    return message;
-}
-
 const zero_counts = {
     private_message_count: 0,
     home_unread_messages: 0,
@@ -82,27 +75,27 @@ run_test('empty_counts_while_home', () => {
 run_test('changing_topics', () => {
     // Summary: change the topic of a message from 'lunch'
     // to 'dinner' using update_unread_topics().
-    let count = unread.num_unread_for_topic('social', 'lunch');
+    let count = unread.num_unread_for_topic(social.stream_id, 'lunch');
     assert.equal(count, 0);
 
     const stream_id = 100;
     const wrong_stream_id = 110;
 
-    const message = add_message({
+    const message = {
         id: 15,
         type: 'stream',
         stream_id: stream_id,
         topic: 'luNch',
         unread: true,
-    });
+    };
 
-    const other_message = add_message({
+    const other_message = {
         id: 16,
         type: 'stream',
         stream_id: stream_id,
         topic: 'lunCH',
         unread: true,
-    });
+    };
 
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
     assert.deepEqual(unread.get_unread_messages([message, other_message]), []);
@@ -170,13 +163,22 @@ run_test('changing_topics', () => {
     unread.update_unread_topics(other_message, event);
 
     // Update a message that was never marked as unread.
-    const sticky_message = add_message({
+    const sticky_message = {
         id: 17,
         type: 'stream',
         stream_id: stream_id,
         topic: 'sticky',
         unread: true,
-    });
+    };
+
+    const message_dict = new IntDict();
+    message_dict.set(message.id, message);
+    message_dict.set(other_message.id, other_message);
+    message_dict.set(sticky_message.id, sticky_message);
+
+    message_store.get = function (msg_id) {
+        return message_dict.get(msg_id);
+    };
 
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, 'sticky');
@@ -215,13 +217,13 @@ run_test('muting', () => {
     const stream_id = social.stream_id;
     const unknown_stream_id = 555;
 
-    const message = add_message({
+    const message = {
         id: 15,
         type: 'stream',
         stream_id: stream_id,
         topic: 'test_muting',
         unread: true,
-    });
+    };
 
     unread.process_loaded_messages([message]);
     let counts = unread.get_counts();
@@ -261,18 +263,19 @@ run_test('num_unread_for_topic', () => {
     let count = unread.num_unread_for_topic(stream_id, 'lunch');
     assert.equal(count, 0);
 
+    const message = {
+        type: 'stream',
+        stream_id: stream_id,
+        topic: 'LuncH',
+        unread: true,
+    };
+
     // Put messages into list in reverse order to try to confuse
     // our sort.
     const num_msgs = 500;
     let i;
     for (i = num_msgs; i > 0; i -= 1) {
-        const message = add_message({
-            id: i,
-            type: 'stream',
-            stream_id: stream_id,
-            topic: 'LuncH',
-            unread: true,
-        });
+        message.id = i;
         unread.process_loaded_messages([message]);
     }
 
@@ -305,8 +308,9 @@ run_test('num_unread_for_topic', () => {
 
     assert.deepEqual(missing_topics, []);
 
-    for (i = 1; i <= num_msgs; i += 1) {
-        unread.mark_as_read(i);
+    for (i = 0; i < num_msgs; i += 1) {
+        message.id = i + 1;
+        unread.mark_as_read(message.id);
     }
 
     count = unread.num_unread_for_topic(stream_id, 'lunch');
@@ -336,13 +340,13 @@ run_test('home_messages', () => {
         };
     };
 
-    const message = add_message({
+    const message = {
         id: 15,
         type: 'stream',
         stream_id: stream_id,
         topic: 'lunch',
         unread: true,
-    });
+    };
 
     let counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
@@ -359,7 +363,6 @@ run_test('home_messages', () => {
     assert.equal(counts.home_unread_messages, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 
-    message.unread = true;
     unread.process_loaded_messages([message]);
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 1);
@@ -376,12 +379,12 @@ run_test('home_messages', () => {
 });
 
 run_test('phantom_messages', () => {
-    const message = add_message({
+    const message = {
         id: 999,
         type: 'stream',
         stream_id: 555,
         topic: 'phantom',
-    });
+    };
 
     stream_data.get_sub_by_id = function () { return; };
 
@@ -402,7 +405,7 @@ run_test('private_messages', () => {
     };
     people.add_in_realm(anybody);
 
-    const message = add_message({
+    const message = {
         id: 15,
         type: 'private',
         display_recipient: [
@@ -410,7 +413,7 @@ run_test('private_messages', () => {
             {id: me.user_id},
         ],
         unread: true,
-    });
+    };
 
     unread.process_loaded_messages([message]);
 
@@ -447,12 +450,12 @@ run_test('private_messages', () => {
     assert.deepEqual(unread.get_msg_ids_for_person(), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), []);
 
-    const message = add_message({
+    const message = {
         id: 15,
         display_recipient: [{id: alice.user_id}],
         type: 'private',
         unread: true,
-    });
+    };
 
     const read_message = {
         flags: ['read'],
@@ -490,7 +493,7 @@ run_test('mentions', () => {
 
     muting.add_muted_topic(401, 'lunch');
 
-    const mention_me_message = add_message({
+    const mention_me_message = {
         id: 15,
         type: 'stream',
         stream_id: 400,
@@ -498,9 +501,9 @@ run_test('mentions', () => {
         mentioned: true,
         mentioned_me_directly: true,
         unread: true,
-    });
+    };
 
-    const mention_all_message = add_message({
+    const mention_all_message = {
         id: 16,
         type: 'stream',
         stream_id: 400,
@@ -508,10 +511,10 @@ run_test('mentions', () => {
         mentioned: true,
         mentioned_me_directly: false,
         unread: true,
-    });
+    };
 
     // This message shouldn't affect the unread mention counts.
-    const muted_mention_all_message = add_message({
+    const muted_mention_all_message = {
         id: 17,
         type: 'stream',
         stream_id: muted_stream_id,
@@ -519,7 +522,7 @@ run_test('mentions', () => {
         mentioned: true,
         mentioned_me_directly: false,
         unread: true,
-    });
+    };
 
     unread.process_loaded_messages([mention_me_message,
                                     mention_all_message,
@@ -548,13 +551,13 @@ run_test('starring', () => {
 });
 
 run_test('declare_bankruptcy', () => {
-    const message = add_message({
+    const message = {
         id: 16,
         type: 'whatever',
         stream_id: 1999,
         topic: 'whatever',
         mentioned: true,
-    });
+    };
 
     unread.process_loaded_messages([message]);
 
