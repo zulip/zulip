@@ -472,6 +472,10 @@ exports.set_up = function () {
                             image_version += 1;
                             image.find('img').attr('src', data.avatar_url + '&v=' + image_version.toString());
                         }
+                        // If the edit is a success then close the sidebar
+                        const $sidebar = $(".form-sidebar");
+                        $sidebar.removeClass("show");
+                        $sidebar.find("#edit_bot").empty();
                     },
                     error: function (xhr) {
                         loading.destroy_indicator(spinner);
