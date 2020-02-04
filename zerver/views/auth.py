@@ -57,7 +57,7 @@ ExtraContext = Optional[Dict[str, Any]]
 redis_client = get_redis_client()
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
-    is_url_safe = is_safe_url(url=url, host=redirect_host)
+    is_url_safe = is_safe_url(url=url, allowed_hosts=set(redirect_host))
     if is_url_safe:
         return urllib.parse.urljoin(redirect_host, url)
     else:
