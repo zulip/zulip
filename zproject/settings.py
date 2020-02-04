@@ -161,7 +161,6 @@ MIDDLEWARE = (
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',
     'zerver.middleware.FlushDisplayRecipientCache',
-    'django_cookies_samesite.middleware.CookiesSameSite',
     'django.middleware.common.CommonMiddleware',
     'zerver.middleware.SessionHostDomainMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -390,9 +389,6 @@ if PRODUCTION:
     domain = get_config('django', 'cookie_domain', None)
     if domain is not None:
         CSRF_COOKIE_DOMAIN = '.' + domain
-
-# Enable SameSite cookies (default in Django 2.1)
-SESSION_COOKIE_SAMESITE = 'Lax'
 
 # Prevent Javascript from reading the CSRF token from cookies.  Our code gets
 # the token from the DOM, which means malicious code could too.  But hiding the
