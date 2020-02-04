@@ -314,13 +314,13 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
     user_ids = _.filter(user_ids, function (user_id) {
         const person = people.get_person_from_user_id(user_id);
 
-        if (person) {
-            // if the user is bot, do not show in presence data.
-            if (person.is_bot) {
-                return false;
-            }
+        if (!person) {
+            blueslip.warn('Got user_id in presence but not people: ' + user_id);
+            return false;
         }
-        return true;
+
+        // if the user is bot, do not show in presence data.
+        return !person.is_bot;
     });
 
 
