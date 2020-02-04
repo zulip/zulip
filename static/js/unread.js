@@ -18,7 +18,7 @@ const unread_messages = new Set();
 
 function make_bucketer(options) {
     const self = {};
-    const key_to_bucket = new Map();
+    const key_to_bucket = new options.KeyDict();
     const reverse_lookup = new IntDict();
 
     self.clear = function () {
@@ -31,10 +31,10 @@ function make_bucketer(options) {
         const item_id = opts.item_id;
         const add_callback = opts.add_callback;
 
-        let bucket = self.get_bucket(bucket_key);
+        let bucket = key_to_bucket.get(bucket_key);
         if (!bucket) {
             bucket = options.make_bucket();
-            key_to_bucket.set(options.fold_case ? bucket_key.toLowerCase() : bucket_key, bucket);
+            key_to_bucket.set(bucket_key, bucket);
         }
         if (add_callback) {
             add_callback(bucket, item_id);
@@ -53,15 +53,15 @@ function make_bucketer(options) {
     };
 
     self.get_bucket = function (bucket_key) {
-        return key_to_bucket.get(options.fold_case ? bucket_key.toLowerCase() : bucket_key);
+        return key_to_bucket.get(bucket_key);
     };
 
     self.each = function (callback) {
-        key_to_bucket.forEach(callback);
+        key_to_bucket.each(callback);
     };
 
     self.keys = function () {
-        return [...key_to_bucket.keys()];
+        return key_to_bucket.keys();
     };
 
     return self;
@@ -71,7 +71,7 @@ exports.unread_pm_counter = (function () {
     const self = {};
 
     const bucketer = make_bucketer({
-        fold_case: false,
+        KeyDict: Dict,
         make_bucket: () => new Set(),
     });
 
@@ -176,7 +176,7 @@ exports.unread_pm_counter = (function () {
 
 function make_per_stream_bucketer() {
     return make_bucketer({
-        fold_case: true, // bucket keys are topics
+        KeyDict: FoldDict, // bucket keys are topics
         make_bucket: () => new Set(),
     });
 }
@@ -185,7 +185,7 @@ exports.unread_topic_counter = (function () {
     const self = {};
 
     const bucketer = make_bucketer({
-        fold_case: false, // bucket keys are stream_ids
+        KeyDict: IntDict, // bucket keys are stream_ids
         make_bucket: make_per_stream_bucketer,
     });
 
@@ -281,13 +281,10 @@ exports.unread_topic_counter = (function () {
 
         const result = _.map(topic_names, function (topic_name) {
             const msgs = per_stream_bucketer.get_bucket(topic_name);
-            const message_id = Math.max(...msgs);
 
             return {
-                // retrieve the topic with its original case, since topic_name
-                // has been lowercased
-                pretty_name: message_store.get(message_id).topic,
-                message_id,
+                pretty_name: topic_name,
+                message_id: Math.max(...msgs),
             };
         });
 

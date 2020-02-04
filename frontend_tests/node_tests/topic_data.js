@@ -2,11 +2,9 @@ zrequire('unread');
 zrequire('util');
 zrequire('stream_data');
 zrequire('topic_data');
-const IntDict = zrequire('int_dict').IntDict;
 
 set_global('channel', {});
 set_global('message_list', {});
-set_global('message_store', {});
 
 run_test('basics', () => {
     const stream_id = 55;
@@ -218,14 +216,10 @@ run_test('test_unread_logic', () => {
         { id: 20, topic: 'UNREAD2' },
     ];
 
-    const message_dict = new IntDict();
-    message_store.get = msg_id => message_dict.get(msg_id);
-
     _.each(msgs, (msg) => {
         msg.type = 'stream';
         msg.stream_id = stream_id;
         msg.unread = true;
-        message_dict.set(msg.id, msg);
     });
 
     unread.process_loaded_messages(msgs);
