@@ -292,12 +292,12 @@ class ZulipTestCase(TestCase):
     def notification_bot(self) -> UserProfile:
         return get_system_bot(settings.NOTIFICATION_BOT)
 
-    def create_test_bot(self, short_name: str, user_profile: UserProfile,
+    def create_test_bot(self, short_name: str, user_profile: UserProfile, full_name: str='Foo Bot',
                         assert_json_error_msg: str=None, **extras: Any) -> Optional[UserProfile]:
         self.login(user_profile.delivery_email)
         bot_info = {
             'short_name': short_name,
-            'full_name': 'Foo Bot',
+            'full_name': full_name,
         }
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)

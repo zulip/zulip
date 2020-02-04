@@ -13,6 +13,8 @@ set_global('$', global.make_zjquery());
 set_global('compose_pm_pill', {
 });
 
+set_global('i18n', global.stub_i18n);
+
 zrequire('people');
 zrequire('compose_ui');
 zrequire('compose');

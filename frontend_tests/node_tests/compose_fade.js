@@ -1,4 +1,5 @@
 set_global('blueslip', {});
+set_global('i18n', global.stub_i18n);
 global.blueslip.warn = function () {};
 
 zrequire('util');

@@ -8,8 +8,10 @@
 {{else}}
     {{t 'This is a <i class="hash" aria-hidden="true"></i> <b>public stream</b>. Any member of the organization can join without an invitation.' }}
 {{/if}}
-{{#if is_announcement_only}}
+{{#if (eq stream_post_policy stream_post_policy_values.admins.code)}}
 {{t 'Only organization administrators can post.'}}
+{{else if (eq stream_post_policy stream_post_policy_values.non_new_members.code)}}
+{{t 'New members cannot post.'}}
 {{else}}
 {{t 'All stream members can post.'}}
 {{/if}}

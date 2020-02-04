@@ -58,7 +58,7 @@ run_test('basics', () => {
         stream_id: 2,
         is_muted: false,
         invite_only: true,
-        is_announcement_only: true,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
     };
     const test = {
         subscribed: true,
@@ -88,8 +88,8 @@ run_test('basics', () => {
 
     assert(stream_data.get_invite_only('social'));
     assert(!stream_data.get_invite_only('unknown'));
-    assert(stream_data.get_announcement_only('social'));
-    assert(!stream_data.get_announcement_only('unknown'));
+    assert(stream_data.get_stream_post_policy('social'));
+    assert(!stream_data.get_stream_post_policy('unknown'));
 
     assert.equal(stream_data.get_color('social'), 'red');
     assert.equal(stream_data.get_color('unknown'), global.stream_color.default_color);
@@ -458,7 +458,7 @@ run_test('stream_settings', () => {
         subscribed: true,
         invite_only: true,
         history_public_to_subscribers: true,
-        is_announcement_only: true,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub(cinnamon.name, cinnamon);
@@ -479,18 +479,20 @@ run_test('stream_settings', () => {
     assert.equal(sub_rows[2].invite_only, false);
 
     assert.equal(sub_rows[0].history_public_to_subscribers, true);
-    assert.equal(sub_rows[0].is_announcement_only, true);
+    assert.equal(sub_rows[0].stream_post_policy ===
+        stream_data.stream_post_policy_values.admins.code, true);
 
     const sub = stream_data.get_sub('a');
     stream_data.update_stream_privacy(sub, {
         invite_only: false,
         history_public_to_subscribers: false,
     });
-    stream_data.update_stream_announcement_only(sub, false);
+    stream_data.update_stream_post_policy(sub, 1);
     stream_data.update_calculated_fields(sub);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
-    assert.equal(sub.is_announcement_only, false);
+    assert.equal(sub.stream_post_policy,
+                 stream_data.stream_post_policy_values.everyone.code);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_data.get_updated_unsorted_subs();

@@ -141,7 +141,7 @@ exports.update_stream_privacy_type_icon = function (sub) {
     }
 };
 
-exports.update_stream_privacy_type_text = function (sub) {
+exports.update_stream_subscription_type_text = function (sub) {
     const stream_settings = stream_edit.settings_for_sub(sub);
     const html = render_subscription_type(sub);
     if (stream_edit.is_sub_settings_active(sub)) {

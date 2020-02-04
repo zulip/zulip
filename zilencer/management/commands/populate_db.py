@@ -526,7 +526,8 @@ class Command(BaseCommand):
                 zulip_stream_dict = {
                     "devel": {"description": "For developing"},
                     "all": {"description": "For **everything**"},
-                    "announce": {"description": "For announcements", 'is_announcement_only': True},
+                    "announce": {"description": "For announcements",
+                                 'stream_post_policy': Stream.STREAM_POST_POLICY_ADMINS},
                     "design": {"description": "For design"},
                     "support": {"description": "For support"},
                     "social": {"description": "For socializing"},

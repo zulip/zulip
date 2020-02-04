@@ -1,3 +1,5 @@
+set_global('i18n', global.stub_i18n);
+
 zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('narrow_state');
