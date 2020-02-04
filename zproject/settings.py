@@ -200,7 +200,6 @@ INSTALLED_APPS = [
     'django_otp',
     'django_otp.plugins.otp_static',
     'django_otp.plugins.otp_totp',
-    'two_factor',
 ]
 if USING_PGROONGA:
     INSTALLED_APPS += ['pgroonga']

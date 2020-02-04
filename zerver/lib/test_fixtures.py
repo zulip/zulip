@@ -107,10 +107,8 @@ def get_migration_status(**options: Any) -> str:
         '--list',
         app_label=app_label,
         database=db,
-        no_color=options.get('no_color', False),
         settings=options.get('settings', os.environ['DJANGO_SETTINGS_MODULE']),
         stdout=out,
-        traceback=options.get('traceback', True),
         verbosity=verbosity,
     )
     connections.close_all()
