@@ -1,5 +1,7 @@
 set_global('$', global.make_zjquery());
+set_global('XDate', zrequire('XDate', 'xdate'));
 
+zrequire('timerender');
 zrequire('settings_muting');
 zrequire('stream_data');
 zrequire('muting');
@@ -15,10 +17,17 @@ stream_data.add_sub(frontend);
 
 run_test('settings', () => {
 
-    muting.add_muted_topic(frontend.stream_id, 'js');
+    muting.add_muted_topic(frontend.stream_id, 'js', 1577836800);
     let set_up_ui_called = false;
     muting_ui.set_up_muted_topics_ui = function (opts) {
-        assert.deepEqual(opts, [[frontend.stream_id, 'js']]);
+        assert.deepEqual(opts, [
+            {
+                date_muted: 1577836800000,
+                date_muted_str: 'Jan 01',
+                stream: frontend.name,
+                stream_id: frontend.stream_id,
+                topic: 'js',
+            }]);
         set_up_ui_called = true;
     };
 
