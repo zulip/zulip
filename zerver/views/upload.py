@@ -9,7 +9,7 @@ from zerver.lib.upload import upload_message_image_from_request, get_local_file_
     get_signed_upload_url, check_upload_within_quota, INLINE_MIME_TYPES
 from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
-from sendfile import sendfile
+from django_sendfile import sendfile
 from mimetypes import guess_type
 
 def serve_s3(request: HttpRequest, url_path: str) -> HttpResponse:
