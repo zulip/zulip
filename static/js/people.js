@@ -1013,6 +1013,9 @@ exports.extract_people_from_message = function (message) {
     case 'private':
         involved_people = message.display_recipient;
         break;
+
+    default:
+        involved_people = [];
     }
 
     // Add new people involved in this message to the people list
