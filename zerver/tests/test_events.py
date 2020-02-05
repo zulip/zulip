@@ -1507,7 +1507,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_muted_topics_events(self) -> None:
         muted_topics_checker = self.check_events_dict([
             ('type', equals('muted_topics')),
-            ('muted_topics', check_list(check_list(check_string, 2))),
+            ('muted_topics', check_list(check_list(sub_validator=None, length=3))),
         ])
         stream = get_stream('Denmark', self.user_profile.realm)
         recipient = stream.recipient

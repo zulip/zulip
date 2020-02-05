@@ -1,6 +1,7 @@
 from django.utils.timezone import now as timezone_now
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import Any, Dict
+import mock
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -69,12 +70,14 @@ class MutedTopicsTests(ZulipTestCase):
             {'stream_id': stream.id, 'topic': 'Verona3', 'op': 'add'},
         ]
 
+        mock_date_muted = datetime.timestamp(datetime(2020, 1, 1))
         for data in payloads:
-            result = self.api_patch(user, url, data)
-            self.assert_json_success(result)
+            with mock.patch('zerver.views.muting.timezone_now',
+                            return_value=datetime(2020, 1, 1)):
+                result = self.api_patch(user, url, data)
+                self.assert_json_success(result)
 
-            self.assertIn([stream.name, 'Verona3'], get_topic_mutes(user))
-
+            self.assertIn([stream.name, 'Verona3', mock_date_muted], get_topic_mutes(user))
             self.assertTrue(topic_is_muted(user, stream.id, 'Verona3'))
             self.assertTrue(topic_is_muted(user, stream.id, 'verona3'))
 
@@ -97,6 +100,7 @@ class MutedTopicsTests(ZulipTestCase):
             {'stream': stream.name, 'topic': 'vERONA3', 'op': 'remove'},
             {'stream_id': stream.id, 'topic': 'vEroNA3', 'op': 'remove'},
         ]
+        mock_date_muted = datetime.timestamp(datetime(2020, 1, 1))
 
         for data in payloads:
             add_topic_mute(
@@ -104,14 +108,14 @@ class MutedTopicsTests(ZulipTestCase):
                 stream_id=stream.id,
                 recipient_id=recipient.id,
                 topic_name='Verona3',
-                date_muted=timezone_now(),
+                date_muted=datetime(2020, 1, 1),
             )
-            self.assertIn([stream.name, 'Verona3'], get_topic_mutes(user))
+            self.assertIn([stream.name, 'Verona3', mock_date_muted], get_topic_mutes(user))
 
             result = self.api_patch(user, url, data)
 
             self.assert_json_success(result)
-            self.assertNotIn([stream.name, 'Verona3'], get_topic_mutes(user))
+            self.assertNotIn([stream.name, 'Verona3', mock_date_muted], get_topic_mutes(user))
             self.assertFalse(topic_is_muted(user, stream.id, 'verona3'))
 
     def test_muted_topic_add_invalid(self) -> None:
