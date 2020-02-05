@@ -286,7 +286,7 @@ exports.view.insert_new_reaction = function (opts) {
 
     if (opts.reaction_type !== 'unicode_emoji') {
         context.is_realm_emoji = true;
-        context.url = emoji.all_realm_emojis[emoji_code].emoji_url;
+        context.url = emoji.all_realm_emojis.get(emoji_code).emoji_url;
     }
 
     context.count = 1;
@@ -428,7 +428,7 @@ exports.get_message_reactions = function (message) {
 
         if (reaction.reaction_type !== 'unicode_emoji') {
             reaction.is_realm_emoji = true;
-            reaction.url = emoji.all_realm_emojis[reaction.emoji_code].emoji_url;
+            reaction.url = emoji.all_realm_emojis.get(reaction.emoji_code).emoji_url;
         }
         if (reaction.user_ids.indexOf(page_params.user_id) !== -1) {
             reaction.class = "message_reaction reacted";

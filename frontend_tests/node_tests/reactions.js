@@ -5,7 +5,7 @@ zrequire('people');
 zrequire('reactions');
 
 set_global('emoji', {
-    all_realm_emojis: {
+    all_realm_emojis: new Map(Object.entries({
         991: {
             id: '991',
             emoji_name: 'realm_emoji',
@@ -24,7 +24,7 @@ set_global('emoji', {
             emoji_url: 'TBD',
             deactivated: false,
         },
-    },
+    })),
     active_realm_emojis: {
         realm_emoji: {
             id: '991',
