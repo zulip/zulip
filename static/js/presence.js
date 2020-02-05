@@ -14,12 +14,6 @@ const OFFLINE_THRESHOLD_SECS = 140;
 
 const BIG_REALM_COUNT = 250;
 
-const MOBILE_DEVICES = ["Android", "ZulipiOS", "ios"];
-
-function is_mobile(device) {
-    return MOBILE_DEVICES.indexOf(device) !== -1;
-}
-
 exports.is_active = function (user_id) {
     if (exports.presence_info[user_id]) {
         const status = exports.presence_info[user_id].status;
@@ -49,24 +43,15 @@ exports.get_user_ids = function () {
 function status_from_timestamp(baseline_time, info) {
     let status = 'offline';
     let last_active = 0;
-    let mobileAvailable = false;
-    let nonmobileAvailable = false;
+
     _.each(info, function (device_presence, device) {
         const age = baseline_time - device_presence.timestamp;
         if (last_active < device_presence.timestamp) {
             last_active = device_presence.timestamp;
         }
-        if (is_mobile(device)) {
-            mobileAvailable = device_presence.pushable || mobileAvailable;
-        }
         if (age < OFFLINE_THRESHOLD_SECS) {
             switch (device_presence.status) {
             case 'active':
-                if (is_mobile(device)) {
-                    mobileAvailable = true;
-                } else {
-                    nonmobileAvailable = true;
-                }
                 status = device_presence.status;
                 break;
             case 'idle':
@@ -85,7 +70,6 @@ function status_from_timestamp(baseline_time, info) {
         }
     });
     return {status: status,
-            mobile: !nonmobileAvailable && mobileAvailable,
             last_active: last_active };
 }
 
@@ -153,7 +137,6 @@ exports.update_info_for_small_realm = function () {
 
         exports.presence_info[user_id] = {
             status: status,
-            mobile: false,
             last_active: undefined,
         };
     });

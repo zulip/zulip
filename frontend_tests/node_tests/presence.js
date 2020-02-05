@@ -53,8 +53,7 @@ run_test('my user', () => {
     assert.equal(presence.get_status(me.user_id), 'active');
 });
 
-run_test('on_mobile_property', () => {
-    // TODO: move this test to a new test module directly testing presence.js
+run_test('status_from_timestamp', () => {
     const status_from_timestamp = presence._status_from_timestamp;
 
     const base_time = 500;
@@ -66,69 +65,59 @@ run_test('on_mobile_property', () => {
     };
     let status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.mobile, false);
 
-    info.Android = {
+    info.random_client = {
         status: "active",
         timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
         pushable: false,
     };
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS, info);
-    assert.equal(status.mobile, true);
     assert.equal(status.status, "active");
 
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.mobile, false);
     assert.equal(status.status, "active");
 
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS * 2, info);
-    assert.equal(status.mobile, false);
     assert.equal(status.status, "offline");
 
-    info.Android = {
+    info.random_client = {
         status: "idle",
         timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
         pushable: true,
     };
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS, info);
-    assert.equal(status.mobile, true);
     assert.equal(status.status, "idle");
 
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.mobile, false);
     assert.equal(status.status, "active");
 
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS * 2, info);
-    assert.equal(status.mobile, true);
     assert.equal(status.status, "offline");
 
-    info.Android = {
+    info.random_client = {
         status: "offline",
         timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
         pushable: true,
     };
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS, info);
-    assert.equal(status.mobile, true);
     assert.equal(status.status, "offline");
 
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.mobile, false);
     assert.equal(status.status, "active"); // website
 
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS * 2, info);
-    assert.equal(status.mobile, true);
     assert.equal(status.status, "offline");
 
-    info.Android = {
+    info.random_client = {
         status: "unknown",
         timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
         pushable: true,
@@ -136,13 +125,12 @@ run_test('on_mobile_property', () => {
     let called = false;
     blueslip.error = function () {
         assert.equal(arguments[0], 'Unexpected status');
-        assert.deepEqual(arguments[1].presence_object, info.Android);
+        assert.deepEqual(arguments[1].presence_object, info.random_client);
         assert.equal(arguments[2], undefined);
         called = true;
     };
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.mobile, false);
     assert.equal(status.status, "active"); // website
     assert(called);
 });
@@ -175,19 +163,19 @@ run_test('set_presence_info', () => {
     presence.set_info(presences, base_time);
 
     assert.deepEqual(presence.presence_info[alice.user_id],
-                     { status: 'active', mobile: false, last_active: 500}
+                     { status: 'active', last_active: 500}
     );
 
     assert.deepEqual(presence.presence_info[fred.user_id],
-                     { status: 'idle', mobile: false, last_active: 500}
+                     { status: 'idle', last_active: 500}
     );
 
     assert.deepEqual(presence.presence_info[me.user_id],
-                     { status: 'active', mobile: false, last_active: 500}
+                     { status: 'active', last_active: 500}
     );
 
     assert.deepEqual(presence.presence_info[zoe.user_id],
-                     { status: 'offline', mobile: false, last_active: undefined}
+                     { status: 'offline', last_active: undefined}
     );
 
     assert(!presence.presence_info[bot.user_id]);
@@ -224,6 +212,6 @@ run_test('set_info_for_user', () => {
     presence.presence_info[alice.user_id] = undefined;
     presence.set_info_for_user(alice.user_id, info, server_time);
 
-    const expected = { status: 'active', mobile: false, last_active: 500 };
+    const expected = { status: 'active', last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);
 });
