@@ -431,7 +431,7 @@ S3_SECRET_KEY = get_secret("s3_secret_key")
 
 if LOCAL_UPLOADS_DIR is not None:
     if SENDFILE_BACKEND is None:
-        SENDFILE_BACKEND = 'sendfile.backends.nginx'
+        SENDFILE_BACKEND = 'django_sendfile.backends.nginx'
     SENDFILE_ROOT = os.path.join(LOCAL_UPLOADS_DIR, "files")
     SENDFILE_URL = '/serve_uploads'
 

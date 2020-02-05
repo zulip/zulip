@@ -258,8 +258,8 @@ django-phonenumber-field==1.3.0 \
 django-pylibmc==0.6.1 \
     --hash=sha256:02b591933a029eb552388cced713028f3c6cbb021639fc8de388bd1ca87981d4 \
     --hash=sha256:9cffdee703aaf9ebc029d9dbdee8abdd0723564b95e4b2ac59e4a668b8e58f93
-django-sendfile2==0.4.3 \
-    --hash=sha256:267cdd817a5fe7e649df9139ac3efbe8675c61ccdab43146d1e8cbd9bab70554
+django-sendfile2==0.5.1 \
+    --hash=sha256:695c635bdc26fe35e22565f046c92126a03fafb587e11415baec6da9df1be04e
 django-statsd-mozilla==0.4.0 \
     --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8 \
     --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3
