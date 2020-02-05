@@ -135,7 +135,7 @@ function populate_users(realm_people_data) {
             user.bot_type = settings_bots.type_id_to_string(user.bot_type);
 
             if (user.bot_owner_id !== null) {
-                user.bot_owner_full_name = people.get_person_from_user_id(
+                user.bot_owner_full_name = people.get_by_user_id(
                     user.bot_owner_id).full_name;
             } else {
                 user.no_owner = true;
@@ -331,7 +331,7 @@ exports.on_load_success = function (realm_people_data) {
 
         const row = $(e.target).closest(".user_row");
         const user_id = row.data('user-id');
-        const user = people.get_person_from_user_id(user_id);
+        const user = people.get_by_user_id(user_id);
         modal_elem.find(".email").text(user.email);
         modal_elem.find(".user_name").text(user.full_name);
         modal_elem.modal("show");
@@ -406,7 +406,7 @@ exports.on_load_success = function (realm_people_data) {
 
     $('.admin_bot_table').on('click', '.user_row .view_user_profile', function (e) {
         const owner_id = $(e.target).attr('data-owner-id');
-        const owner = people.get_person_from_user_id(owner_id);
+        const owner = people.get_by_user_id(owner_id);
         popovers.show_user_profile(owner);
         e.stopPropagation();
         e.preventDefault();
@@ -414,7 +414,7 @@ exports.on_load_success = function (realm_people_data) {
 
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
         const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        const person = people.get_person_from_user_id(user_id);
+        const person = people.get_by_user_id(user_id);
 
         if (!person) {
             return;

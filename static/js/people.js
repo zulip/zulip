@@ -43,9 +43,9 @@ function split_to_ints(lst) {
     });
 }
 
-exports.get_person_from_user_id = function (user_id) {
+exports.get_by_user_id = function (user_id) {
     if (!people_by_user_id_dict.has(user_id)) {
-        blueslip.error('Unknown user_id in get_person_from_user_id: ' + user_id);
+        blueslip.error('Unknown user_id in get_by_user_id: ' + user_id);
         return;
     }
     return people_by_user_id_dict.get(user_id);
@@ -223,7 +223,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
 };
 
 exports.get_user_time_preferences = function (user_id) {
-    const user_timezone = exports.get_person_from_user_id(user_id).timezone;
+    const user_timezone = exports.get_by_user_id(user_id).timezone;
     if (user_timezone) {
         if (page_params.twenty_four_hour_time) {
             return {
@@ -246,7 +246,7 @@ exports.get_user_time = function (user_id) {
 };
 
 exports.get_user_type = function (user_id) {
-    const user_profile = exports.get_person_from_user_id(user_id);
+    const user_profile = exports.get_by_user_id(user_id);
 
     if (user_profile.is_admin) {
         return i18n.t("Administrator");
@@ -468,7 +468,7 @@ exports.pm_with_url = function (message) {
     if (user_ids.length > 1) {
         suffix = 'group';
     } else {
-        const person = exports.get_person_from_user_id(user_ids[0]);
+        const person = exports.get_by_user_id(user_ids[0]);
         if (person && person.email) {
             suffix = person.email.split('@')[0].toLowerCase();
         } else {
@@ -592,7 +592,7 @@ exports.format_small_avatar_url = function (raw_url) {
 
 exports.sender_is_bot = function (message) {
     if (message.sender_id) {
-        const person = exports.get_person_from_user_id(message.sender_id);
+        const person = exports.get_by_user_id(message.sender_id);
         return person.is_bot;
     }
     return false;
@@ -600,7 +600,7 @@ exports.sender_is_bot = function (message) {
 
 exports.sender_is_guest = function (message) {
     if (message.sender_id) {
-        const person = exports.get_person_from_user_id(message.sender_id);
+        const person = exports.get_by_user_id(message.sender_id);
         return person.is_guest;
     }
     return false;
@@ -634,7 +634,7 @@ exports.small_avatar_url = function (message) {
         // We should always have message.sender_id, except for in the
         // tutorial, where it's ok to fall back to the url in the fake
         // messages.
-        person = exports.get_person_from_user_id(message.sender_id);
+        person = exports.get_by_user_id(message.sender_id);
     }
 
     // The first time we encounter a sender in a message, we may

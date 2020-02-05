@@ -186,7 +186,7 @@ run_test('errors', () => {
         display_recipient: [{id: 92714}],
     };
 
-    blueslip.set_test_data('error', 'Unknown user_id in get_person_from_user_id: 92714');
+    blueslip.set_test_data('error', 'Unknown user_id in get_by_user_id: 92714');
     blueslip.set_test_data('error', 'Unknown user id 92714'); // From person.js
 
     // Expect each to throw two blueslip errors

@@ -78,7 +78,7 @@ exports._get_convos = function () {
         } else {
             const user_id = parseInt(user_ids_string, 10);
             user_circle_class = buddy_data.get_user_circle_class(user_id);
-            const recipient_user_obj = people.get_person_from_user_id(user_id);
+            const recipient_user_obj = people.get_by_user_id(user_id);
 
             if (recipient_user_obj.is_bot) {
                 user_circle_class = 'user_circle_green';

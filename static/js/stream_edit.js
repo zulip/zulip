@@ -36,7 +36,7 @@ exports.is_sub_settings_active = function (sub) {
 
 exports.get_email_of_subscribers = function (subscribers) {
     return subscribers.map(function (user_id) {
-        return people.get_person_from_user_id(user_id).email;
+        return people.get_by_user_id(user_id).email;
     });
 };
 

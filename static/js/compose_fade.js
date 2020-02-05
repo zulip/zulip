@@ -123,7 +123,7 @@ const user_fade_config = {
 
 function update_user_row_when_fading(li, conf) {
     const user_id = conf.get_user_id(li);
-    const email = people.get_person_from_user_id(user_id).email;
+    const email = people.get_by_user_id(user_id).email;
     const would_receive = exports.would_receive_message(email);
 
     if (would_receive || people.is_my_user_id(user_id)) {
