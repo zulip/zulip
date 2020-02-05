@@ -4,7 +4,7 @@
 // (We should do bot updates here too.)
 
 exports.update_person = function update(person) {
-    const person_obj = people.get_person_from_user_id(person.user_id);
+    const person_obj = people.get_by_user_id(person.user_id);
 
     if (!person_obj) {
         blueslip.error("Got update_person event for unexpected user " + person.user_id);

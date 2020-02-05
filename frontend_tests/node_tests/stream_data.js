@@ -289,7 +289,7 @@ run_test('subscribers', () => {
     assert(!ok);
 
     // Verify that we don't crash and return false for a bad user id.
-    blueslip.set_test_data('error', 'Unknown user_id in get_person_from_user_id: 9999999');
+    blueslip.set_test_data('error', 'Unknown user_id in get_by_user_id: 9999999');
     blueslip.set_test_data('error', 'We tried to add invalid subscriber: 9999999');
     ok = stream_data.add_subscriber('Rome', 9999999);
     assert(!ok);

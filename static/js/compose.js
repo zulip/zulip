@@ -490,7 +490,7 @@ function validate_stream_message_post_policy(stream_name) {
         return false;
     }
 
-    const person = people.get_person_from_user_id(page_params.user_id);
+    const person = people.get_by_user_id(page_params.user_id);
     const current_datetime = new Date(Date.now());
     const person_date_joined = new Date(person.date_joined);
     const days = new Date(current_datetime - person_date_joined).getDate();
@@ -583,7 +583,7 @@ function validate_private_message() {
     if (page_params.realm_private_message_policy === 2) {
         // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED
         const user_ids = compose_pm_pill.get_user_ids();
-        if (user_ids.length !== 1 || !people.get_person_from_user_id(user_ids[0]).is_bot) {
+        if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
             // Unless we're composing to a bot
             compose_error(i18n.t("Private messages are disabled in this organization."),
                           $("#private_message_recipient"));

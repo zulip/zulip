@@ -106,7 +106,7 @@ function update_user_custom_profile_fields(fields, method) {
 }
 
 exports.append_custom_profile_fields = function (element_id, user_id) {
-    const person = people.get_person_from_user_id(user_id);
+    const person = people.get_by_user_id(user_id);
     if (person.is_bot) {
         return;
     }
@@ -180,7 +180,7 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
     const field_types = page_params.custom_profile_field_types;
     const user_pills = new IntDict();
 
-    const person = people.get_person_from_user_id(user_id);
+    const person = people.get_by_user_id(user_id);
     if (person.is_bot) {
         return user_pills;
     }
@@ -215,7 +215,7 @@ exports.initialize_custom_user_type_fields = function (element_id, user_id, is_e
                 const field_value = JSON.parse(field_value_raw);
                 if (field_value) {
                     field_value.forEach(function (pill_user_id) {
-                        const user = people.get_person_from_user_id(pill_user_id);
+                        const user = people.get_by_user_id(pill_user_id);
                         user_pill.append_user(user, pills);
                     });
                 }
@@ -533,7 +533,7 @@ exports.set_up = function () {
 
     $("#show_my_user_profile_modal").on('click', function () {
         overlays.close_overlay("settings");
-        const user = people.get_person_from_user_id(people.my_current_user_id());
+        const user = people.get_by_user_id(people.my_current_user_id());
         setTimeout(function () {
             popovers.show_user_profile(user);
         }, 100);

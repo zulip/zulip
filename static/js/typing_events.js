@@ -42,7 +42,7 @@ function get_users_typing_for_narrow() {
 
 exports.render_notifications_for_narrow = function () {
     const user_ids = get_users_typing_for_narrow();
-    const users_typing = user_ids.map(people.get_person_from_user_id);
+    const users_typing = user_ids.map(people.get_by_user_id);
     if (users_typing.length === 0) {
         $('#typing_notifications').hide();
     } else {
@@ -73,7 +73,7 @@ exports.display_notification = function (event) {
     recipients.sort();
 
     const sender_id = event.sender.user_id;
-    event.sender.name = people.get_person_from_user_id(sender_id).full_name;
+    event.sender.name = people.get_by_user_id(sender_id).full_name;
 
     typing_data.add_typist(recipients, sender_id);
 

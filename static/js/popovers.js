@@ -197,7 +197,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         if (is_cross_realm_bot) {
             args.is_cross_realm_bot = is_cross_realm_bot;
         } else if (bot_owner_id) {
-            const bot_owner = people.get_person_from_user_id(bot_owner_id);
+            const bot_owner = people.get_by_user_id(bot_owner_id);
             args.bot_owner = bot_owner;
         }
     }
@@ -341,7 +341,7 @@ function get_user_info_popover_items() {
 function fetch_group_members(member_ids) {
     return member_ids
         .map(function (m) {
-            return people.get_person_from_user_id(m);
+            return people.get_by_user_id(m);
         })
         .filter(function (m) {
             return m !== undefined;
@@ -685,7 +685,7 @@ exports.show_sender_info = function () {
     const $sender = $message.find('.sender_info_hover');
 
     const message = current_msg_list.get(rows.id($message));
-    const user = people.get_person_from_user_id(message.sender_id);
+    const user = people.get_by_user_id(message.sender_id);
     show_user_info_popover($sender[0], user, message);
     if (current_message_info_popover_elem) {
         focus_user_info_popover_item();
@@ -714,7 +714,7 @@ exports.register_click_handlers = function () {
         const row = $(this).closest(".message_row");
         e.stopPropagation();
         const message = current_msg_list.get(rows.id(row));
-        const user = people.get_person_from_user_id(message.sender_id);
+        const user = people.get_by_user_id(message.sender_id);
 
         show_user_info_popover(this, user, message);
     });
@@ -733,7 +733,7 @@ exports.register_click_handlers = function () {
         let user;
         if (id_string) {
             const user_id = parseInt(id_string, 10);
-            user = people.get_person_from_user_id(user_id);
+            user = people.get_by_user_id(user_id);
         } else {
             user = people.get_by_email(email);
         }
@@ -757,7 +757,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.info_popover_actions .narrow_to_private_messages', function (e) {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const email = people.get_person_from_user_id(user_id).email;
+        const email = people.get_by_user_id(user_id).email;
         exports.hide_message_info_popover();
         narrow.by('pm-with', email, {trigger: 'user sidebar popover'});
         e.stopPropagation();
@@ -766,7 +766,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.info_popover_actions .narrow_to_messages_sent', function (e) {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const email = people.get_person_from_user_id(user_id).email;
+        const email = people.get_by_user_id(user_id).email;
         exports.hide_message_info_popover();
         narrow.by('sender', email, {trigger: 'user sidebar popover'});
         e.stopPropagation();
@@ -778,7 +778,7 @@ exports.register_click_handlers = function () {
             compose_actions.start('stream', {trigger: 'sidebar user actions'});
         }
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const name = people.get_person_from_user_id(user_id).full_name;
+        const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
         exports.hide_user_sidebar_popover();
@@ -792,7 +792,7 @@ exports.register_click_handlers = function () {
             compose_actions.respond_to_message({trigger: 'user sidebar popover'});
         }
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const name = people.get_person_from_user_id(user_id).full_name;
+        const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
         exports.hide_message_info_popover();
@@ -802,7 +802,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.info_popover_actions .view_user_profile', function (e) {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const user = people.get_person_from_user_id(user_id);
+        const user = people.get_by_user_id(user_id);
         exports.show_user_profile(user);
         e.stopPropagation();
         e.preventDefault();
@@ -822,7 +822,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.bot-owner-name', function (e) {
         const user_id = $(e.target).attr('data-bot-owner-id');
-        const user = people.get_person_from_user_id(user_id);
+        const user = people.get_by_user_id(user_id);
         exports.show_user_profile(user);
     });
 
@@ -882,7 +882,7 @@ exports.register_click_handlers = function () {
             stream_popover.show_streamlist_sidebar();
         }
 
-        const user = people.get_person_from_user_id(user_id);
+        const user = people.get_by_user_id(user_id);
         const popover_placement = userlist_placement === "left" ? "right" : "left";
 
         render_user_info_popover(user, target, false, "compose_private_message",
@@ -972,7 +972,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.respond_personal_button, .compose_private_message', function (e) {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const email = people.get_person_from_user_id(user_id).email;
+        const email = people.get_by_user_id(user_id).email;
         compose_actions.start('private', {
             trigger: 'popover send private',
             private_message_recipient: email});

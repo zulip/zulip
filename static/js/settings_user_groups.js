@@ -58,7 +58,7 @@ exports.populate_user_groups = function () {
 
         const userg = $('div.user-group[id="' + data.id + '"]');
         data.members.forEach(function (user_id) {
-            const user = people.get_person_from_user_id(user_id);
+            const user = people.get_by_user_id(user_id);
             user_pill.append_user(user, pills);
         });
 

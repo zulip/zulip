@@ -763,7 +763,7 @@ run_test('initialize', () => {
         assert.equal(appended_name, 'Othello, the Moor of Venice');
 
         let appended_names = [];
-        people.get_person_from_user_id = function (user_id) {
+        people.get_by_user_id = function (user_id) {
             const users = {100: hamlet, 104: lear};
             return users[user_id];
         };

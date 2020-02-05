@@ -629,7 +629,7 @@ exports.add_subscriber = function (stream_name, user_id) {
         blueslip.warn("We got an add_subscriber call for a non-existent stream.");
         return false;
     }
-    const person = people.get_person_from_user_id(user_id);
+    const person = people.get_by_user_id(user_id);
     if (person === undefined) {
         blueslip.error("We tried to add invalid subscriber: " + user_id);
         return false;

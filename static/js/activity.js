@@ -137,7 +137,7 @@ exports.full_huddle_name = function (huddle) {
     const user_ids = huddle_split(huddle);
 
     const names = _.map(user_ids, function (user_id) {
-        const person = people.get_person_from_user_id(user_id);
+        const person = people.get_by_user_id(user_id);
         return person.full_name;
     });
 
@@ -149,7 +149,7 @@ exports.short_huddle_name = function (huddle) {
 
     const num_to_show = 3;
     let names = _.map(user_ids, function (user_id) {
-        const person = people.get_person_from_user_id(user_id);
+        const person = people.get_by_user_id(user_id);
         return person.full_name;
     });
 
@@ -418,7 +418,7 @@ exports.narrow_for_user = function (opts) {
 };
 
 exports.narrow_for_user_id = function (opts) {
-    const person = people.get_person_from_user_id(opts.user_id);
+    const person = people.get_by_user_id(opts.user_id);
     const email = person.email;
 
     narrow.by('pm-with', email, {trigger: 'sidebar'});

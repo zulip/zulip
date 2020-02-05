@@ -353,7 +353,7 @@ run_test('update_user_event', () => {
     // stubbed out above.
     server_events_dispatch.dispatch_normal_event(event);
 
-    const user = people.get_person_from_user_id(bob.user_id);
+    const user = people.get_by_user_id(bob.user_id);
 
     // Verify that the code actually did its main job:
     assert.equal(user.full_name, 'The Artist Formerly Known as Bob');

@@ -88,9 +88,9 @@ run_test('pills', () => {
         }
     };
 
-    let get_person_from_user_id_called = false;
-    people.get_person_from_user_id = function (id) {
-        get_person_from_user_id_called = true;
+    let get_by_user_id_called = false;
+    people.get_by_user_id = function (id) {
+        get_by_user_id_called = true;
         if (id === othello.user_id) {
             return othello;
         }
@@ -148,7 +148,7 @@ run_test('pills', () => {
     compose_pm_pill.set_from_emails('othello@example.com');
     assert(compose_pm_pill.widget);
 
-    assert(get_person_from_user_id_called);
+    assert(get_by_user_id_called);
     assert(pills_cleared);
     assert(appendValue_called);
     assert(text_cleared);

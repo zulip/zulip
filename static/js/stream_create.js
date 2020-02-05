@@ -102,7 +102,7 @@ function ajaxSubscribeForCreation(stream_name, description, user_ids, invite_onl
     // TODO: We can eliminate the user_ids -> principals conversion
     //       once we upgrade the backend to accept user_ids.
     const persons = _.compact(_.map(user_ids, (user_id) => {
-        return people.get_person_from_user_id(user_id);
+        return people.get_by_user_id(user_id);
     }));
 
     const principals = _.map(persons, (person) => person.email);
@@ -271,7 +271,7 @@ exports.show_new_stream_modal = function () {
 
     const all_users = people.get_people_for_stream_create();
     // Add current user on top of list
-    all_users.unshift(people.get_person_from_user_id(page_params.user_id));
+    all_users.unshift(people.get_by_user_id(page_params.user_id));
     const html = render_new_stream_users({
         users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
