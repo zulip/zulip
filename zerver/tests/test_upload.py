@@ -56,7 +56,7 @@ import shutil
 import re
 import datetime
 from django.utils.timezone import now as timezone_now
-from sendfile import _get_sendfile
+from django_sendfile.sendfile import _get_sendfile
 
 def destroy_uploads() -> None:
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
@@ -688,7 +688,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_serve_local(self) -> None:
         def check_xsend_links(name: str, name_str_for_test: str,
                               content_disposition: str='') -> None:
-            with self.settings(SENDFILE_BACKEND='sendfile.backends.nginx'):
+            with self.settings(SENDFILE_BACKEND='django_sendfile.backends.nginx'):
                 _get_sendfile.clear()  # To clearout cached version of backend from djangosendfile
                 self.login(self.example_email("hamlet"))
                 fp = StringIO("zulip!")
