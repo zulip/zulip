@@ -174,7 +174,7 @@ set_global('compose', {
     finish: noop,
 });
 
-emoji.active_realm_emojis = {};
+emoji.active_realm_emojis = new Map();
 emoji.emojis_by_name = emojis_by_name;
 emoji.emojis = emoji_list;
 

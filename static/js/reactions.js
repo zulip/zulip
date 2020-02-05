@@ -119,13 +119,13 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
         emoji_name: emoji_name,
     };
 
-    if (emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
+    if (emoji.active_realm_emojis.has(emoji_name)) {
         if (emoji_name === 'zulip') {
             reaction_info.reaction_type = 'zulip_extra_emoji';
         } else {
             reaction_info.reaction_type = 'realm_emoji';
         }
-        reaction_info.emoji_code = emoji.active_realm_emojis[emoji_name].id;
+        reaction_info.emoji_code = emoji.active_realm_emojis.get(emoji_name).id;
     } else if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
         reaction_info.reaction_type = 'unicode_emoji';
         reaction_info.emoji_code = emoji_codes.name_to_codepoint[emoji_name];

@@ -4,7 +4,7 @@
 exports.emojis_by_name = new Map();
 
 exports.all_realm_emojis = new Map();
-exports.active_realm_emojis = {};
+exports.active_realm_emojis = new Map();
 exports.default_emoji_aliases = {};
 
 const zulip_emoji = {
@@ -20,7 +20,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     // to it. This makes sure that in case of deletion, the deleted realm_emojis
     // don't persist in exports.active_realm_emojis.
     exports.all_realm_emojis.clear();
-    exports.active_realm_emojis = {};
+    exports.active_realm_emojis.clear();
 
     _.each(realm_emojis, function (data) {
         exports.all_realm_emojis.set(data.id, {
@@ -30,14 +30,16 @@ exports.update_emojis = function update_emojis(realm_emojis) {
             deactivated: data.deactivated,
         });
         if (data.deactivated !== true) {
-            exports.active_realm_emojis[data.name] = {id: data.id,
-                                                      emoji_name: data.name,
-                                                      emoji_url: data.source_url};
+            exports.active_realm_emojis.set(data.name, {
+                id: data.id,
+                emoji_name: data.name,
+                emoji_url: data.source_url,
+            });
         }
     });
     // Add the Zulip emoji to the realm emojis list
-    exports.all_realm_emojis.zulip = zulip_emoji;
-    exports.active_realm_emojis.zulip = zulip_emoji;
+    exports.all_realm_emojis.set("zulip", zulip_emoji);
+    exports.active_realm_emojis.set("zulip", zulip_emoji);
 
     exports.build_emoji_data(exports.active_realm_emojis);
 };
@@ -76,7 +78,7 @@ exports.initialize = function initialize() {
 exports.build_emoji_data = function (realm_emojis) {
     exports.emojis_by_name.clear();
     let emoji_dict;
-    _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
+    for (const [realm_emoji_name, realm_emoji] of realm_emojis) {
         emoji_dict = {
             name: realm_emoji_name,
             display_name: realm_emoji_name,
@@ -86,7 +88,7 @@ exports.build_emoji_data = function (realm_emojis) {
             has_reacted: false,
         };
         exports.emojis_by_name.set(realm_emoji_name, emoji_dict);
-    });
+    }
 
     _.each(emoji_codes.emoji_catalog, function (codepoints) {
         _.each(codepoints, function (codepoint) {
@@ -129,7 +131,7 @@ exports.build_emoji_upload_widget = function () {
 };
 
 exports.get_canonical_name = function (emoji_name) {
-    if (exports.active_realm_emojis.hasOwnProperty(emoji_name)) {
+    if (exports.active_realm_emojis.has(emoji_name)) {
         return emoji_name;
     }
     if (!emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {

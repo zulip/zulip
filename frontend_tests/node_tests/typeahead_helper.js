@@ -652,9 +652,9 @@ run_test('render_emoji', () => {
         emoji_name: 'thumbs_up',
         emoji_code: '1f44d',
     };
-    emoji.active_realm_emojis = {
+    emoji.active_realm_emojis = new Map(Object.entries({
         realm_emoji: 'TBD',
-    };
+    }));
 
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');

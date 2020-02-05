@@ -189,8 +189,8 @@ function handleUnicodeEmoji(unicode_emoji) {
 function handleEmoji(emoji_name) {
     const alt_text = ':' + emoji_name + ':';
     const title = emoji_name.split("_").join(" ");
-    if (emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
-        const emoji_url = emoji.active_realm_emojis[emoji_name].emoji_url;
+    if (emoji.active_realm_emojis.has(emoji_name)) {
+        const emoji_url = emoji.active_realm_emojis.get(emoji_name).emoji_url;
         return '<img alt="' + alt_text + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + title + '">';
