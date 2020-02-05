@@ -1,7 +1,7 @@
 // `emojis_by_name` is the central data source that is supposed to be
 // used by every widget in the webapp for gathering data for displaying
 // emojis. Emoji picker uses this data to derive data for its own use.
-exports.emojis_by_name = {};
+exports.emojis_by_name = new Map();
 
 exports.all_realm_emojis = {};
 exports.active_realm_emojis = {};
@@ -72,7 +72,7 @@ exports.initialize = function initialize() {
 };
 
 exports.build_emoji_data = function (realm_emojis) {
-    exports.emojis_by_name = {};
+    exports.emojis_by_name.clear();
     let emoji_dict;
     _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
         emoji_dict = {
@@ -83,14 +83,14 @@ exports.build_emoji_data = function (realm_emojis) {
             url: realm_emoji.emoji_url,
             has_reacted: false,
         };
-        exports.emojis_by_name[realm_emoji_name] = emoji_dict;
+        exports.emojis_by_name.set(realm_emoji_name, emoji_dict);
     });
 
     _.each(emoji_codes.emoji_catalog, function (codepoints) {
         _.each(codepoints, function (codepoint) {
             if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
                 const emoji_name = emoji_codes.codepoint_to_name[codepoint];
-                if (!exports.emojis_by_name.hasOwnProperty(emoji_name)) {
+                if (!exports.emojis_by_name.has(emoji_name)) {
                     emoji_dict = {
                         name: emoji_name,
                         display_name: emoji_name,
@@ -99,7 +99,7 @@ exports.build_emoji_data = function (realm_emojis) {
                         emoji_code: codepoint,
                         has_reacted: false,
                     };
-                    exports.emojis_by_name[emoji_name] = emoji_dict;
+                    exports.emojis_by_name.set(emoji_name, emoji_dict);
                 }
             }
         });
