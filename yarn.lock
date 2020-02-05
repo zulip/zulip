@@ -3727,15 +3727,15 @@ elliptic@^6.0.0:
   resolved "https://registry.yarnpkg.com/emoji-datasource-google/-/emoji-datasource-google-3.0.0.tgz#d6f77b56385338e10667d2b150dbe9f9b5a4e921"
   integrity sha1-1vd7VjhTOOEGZ9KxUNvp+bWk6SE=
 
-emoji-datasource-google@^4.0.4:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/emoji-datasource-google/-/emoji-datasource-google-4.1.0.tgz#d69be74d48c76ee2bb9fcb4e7920f27fa12dde9e"
-  integrity sha1-1pvnTUjHbuK7n8tOeSDyf6Et3p4=
+emoji-datasource-google@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/emoji-datasource-google/-/emoji-datasource-google-5.0.1.tgz#81ac5bdbbd153976196a516d840e04303f19375d"
+  integrity sha512-JLlz6tcuNRqg/BUhfWjWmOAaj8VhBvF7E88yRblMh+6c3IBmSeAqlYbepsavS1QPEhhvZICGUkch7+yxWTrRlQ==
 
-emoji-datasource-twitter@^4.0.4:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/emoji-datasource-twitter/-/emoji-datasource-twitter-4.1.0.tgz#e374a6ec87e071561e47b07ddb00b3bf4326d2a2"
-  integrity sha1-43Sm7IfgcVYeR7B92wCzv0Mm0qI=
+emoji-datasource-twitter@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/emoji-datasource-twitter/-/emoji-datasource-twitter-5.0.1.tgz#a4e1c85e4def8235cadbcd85fbce32a2335d165c"
+  integrity sha512-PiQav2Y6V/P3FjA6p5GJRhzbINv/yc6pn/YCuyJFmk/ZZzI++COXyPCC7SUv9HUeKnJWK+gdj1josUK0vCjvvA==
 
 emoji-regex@^7.0.1:
   version "7.0.3"
