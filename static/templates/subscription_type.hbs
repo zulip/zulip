@@ -11,7 +11,7 @@
 {{#if (eq stream_post_policy stream_post_policy_values.admins.code)}}
 {{t 'Only organization administrators can post.'}}
 {{else if (eq stream_post_policy stream_post_policy_values.non_new_members.code)}}
-{{t 'New members cannot post.'}}
+{{t 'Only organization full members can post.'}}
 {{else}}
 {{t 'All stream members can post.'}}
 {{/if}}
