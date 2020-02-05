@@ -725,7 +725,7 @@ class ZulipTestCase(TestCase):
             yield
 
     def create_default_device(self, user_profile: UserProfile,
-                              number: str="+12223334444") -> None:
+                              number: str="+12125550100") -> None:
         phone_device = PhoneDevice(user=user_profile, name='default',
                                    confirmed=True, number=number,
                                    key='abcd', method='sms')
