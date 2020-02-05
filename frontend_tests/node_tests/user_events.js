@@ -112,12 +112,12 @@ run_test('updates', () => {
     assert.equal(full_name, 'Me V2');
 
     user_events.update_person({user_id: isaac.user_id, new_email: 'newton@example.com'});
-    person = people.get_person_from_user_id(isaac.user_id);
+    person = people.get_by_user_id(isaac.user_id);
     assert.equal(person.email, 'newton@example.com');
     assert.equal(person.full_name, 'Sir Isaac');
 
     user_events.update_person({user_id: me.user_id, new_email: 'meforu@example.com'});
-    person = people.get_person_from_user_id(me.user_id);
+    person = people.get_by_user_id(me.user_id);
     assert.equal(person.email, 'meforu@example.com');
     assert.equal(person.full_name, 'Me V2');
 
@@ -151,7 +151,7 @@ run_test('updates', () => {
     assert(person.timezone);
 
     blueslip.set_test_data('error', 'Got update_person event for unexpected user 29');
-    blueslip.set_test_data('error', 'Unknown user_id in get_person_from_user_id: 29');
+    blueslip.set_test_data('error', 'Unknown user_id in get_by_user_id: 29');
     assert(!user_events.update_person({user_id: 29, full_name: 'Sir Isaac Newton'}));
     assert.equal(blueslip.get_test_logs('error').length, 2);
     blueslip.clear_test_data();

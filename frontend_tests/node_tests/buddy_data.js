@@ -286,7 +286,7 @@ run_test('user_last_seen_time_status', () => {
 
 run_test('error handling', () => {
     presence.get_user_ids = () => [42];
-    blueslip.set_test_data('error', 'Unknown user_id in get_person_from_user_id: 42');
+    blueslip.set_test_data('error', 'Unknown user_id in get_by_user_id: 42');
     blueslip.set_test_data('warn', 'Got user_id in presence but not people: 42');
     buddy_data.get_filtered_and_sorted_user_ids();
     assert.equal(blueslip.get_test_logs('error').length, 1);

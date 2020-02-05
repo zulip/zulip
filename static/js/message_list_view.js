@@ -552,7 +552,7 @@ MessageListView.prototype = {
                 // mention text to show the user's current name,
                 // assuming that you're not searching for text
                 // inside the highlight.
-                const person = people.get_person_from_user_id(user_id);
+                const person = people.get_by_user_id(user_id);
                 if (person !== undefined) {
                     // Note that person might be undefined in some
                     // unpleasant corner cases involving data import.

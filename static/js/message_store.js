@@ -32,7 +32,7 @@ exports.each = function (f) {
 exports.get_pm_emails = function (message) {
 
     function email(user_id) {
-        const person = people.get_person_from_user_id(user_id);
+        const person = people.get_by_user_id(user_id);
         if (!person) {
             blueslip.error('Unknown user id ' + user_id);
             return '?';
@@ -49,7 +49,7 @@ exports.get_pm_emails = function (message) {
 exports.get_pm_full_names = function (message) {
 
     function name(user_id) {
-        const person = people.get_person_from_user_id(user_id);
+        const person = people.get_by_user_id(user_id);
         if (!person) {
             blueslip.error('Unknown user id ' + user_id);
             return '?';
@@ -141,7 +141,7 @@ exports.add_message_metadata = function (message) {
     people.extract_people_from_message(message);
     people.maybe_incr_recipient_count(message);
 
-    const sender = people.get_person_from_user_id(message.sender_id);
+    const sender = people.get_by_user_id(message.sender_id);
     if (sender) {
         message.sender_full_name = sender.full_name;
         message.sender_email = sender.email;

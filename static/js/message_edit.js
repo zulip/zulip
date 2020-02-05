@@ -656,7 +656,7 @@ exports.show_history = function (message) {
                     display_date: moment(timestamp).format("MMMM D, YYYY"),
                 };
                 if (msg.user_id) {
-                    const person = people.get_person_from_user_id(msg.user_id);
+                    const person = people.get_by_user_id(msg.user_id);
                     item.edited_by = person.full_name;
                 }
 

@@ -138,8 +138,8 @@ run_test('populate_user_groups', () => {
         user_groups_list_append_called = true;
     };
 
-    let get_person_from_user_id_called = false;
-    people.get_person_from_user_id = function (user_id) {
+    let get_by_user_id_called = false;
+    people.get_by_user_id = function (user_id) {
         if (user_id === iago.user_id) {
             return iago;
         }
@@ -148,7 +148,7 @@ run_test('populate_user_groups', () => {
         }
         assert.equal(user_id, 4);
         blueslip.set_test_data('warn', 'Undefined user in function append_user');
-        get_person_from_user_id_called = true;
+        get_by_user_id_called = true;
     };
 
     settings_user_groups.can_edit = function () {
@@ -320,7 +320,7 @@ run_test('populate_user_groups', () => {
     settings_user_groups.set_up();
     assert(templates_render_called);
     assert(user_groups_list_append_called);
-    assert(get_person_from_user_id_called);
+    assert(get_by_user_id_called);
     assert(input_typeahead_called);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
@@ -353,7 +353,7 @@ run_test('with_external_user', () => {
         return noop;
     });
 
-    people.get_person_from_user_id = function () {
+    people.get_by_user_id = function () {
         return noop;
     };
 

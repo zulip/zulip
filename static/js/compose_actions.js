@@ -341,7 +341,7 @@ exports.respond_to_message = function (opts) {
             // reply_to for private messages is everyone involved, so for
             // personals replies we need to set the private message
             // recipient to just the sender
-            pm_recipient = people.get_person_from_user_id(message.sender_id).email;
+            pm_recipient = people.get_by_user_id(message.sender_id).email;
         } else {
             pm_recipient = people.pm_reply_to(message);
         }

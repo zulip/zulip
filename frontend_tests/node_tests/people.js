@@ -235,7 +235,7 @@ run_test('updates', () => {
     assert.equal(people.get_by_name('Me the Third').email, 'me@example.com');
 });
 
-run_test('get_person_from_user_id', () => {
+run_test('get_by_user_id', () => {
     let person = {
         email: 'mary@example.com',
         user_id: 42,
@@ -244,11 +244,11 @@ run_test('get_person_from_user_id', () => {
     people.add(person);
     person = people.get_by_email('mary@example.com');
     assert.equal(person.full_name, 'Mary');
-    person = people.get_person_from_user_id(42);
+    person = people.get_by_user_id(42);
     assert.equal(person.email, 'mary@example.com');
 
     people.set_full_name(person, 'Mary New');
-    person = people.get_person_from_user_id(42);
+    person = people.get_by_user_id(42);
     assert.equal(person.full_name, 'Mary New');
 
     // deactivate() should eventually just take a user_id, but
@@ -257,7 +257,7 @@ run_test('get_person_from_user_id', () => {
     people.deactivate(person);
     person = people.get_active_user_for_email('mary@example.com');
     assert.equal(person, undefined);
-    person = people.get_person_from_user_id(42);
+    person = people.get_by_user_id(42);
     assert.equal(person.user_id, 42);
 });
 
@@ -894,7 +894,7 @@ run_test('initialize', () => {
     assert(!people.is_valid_bulk_emails_for_compose(['not@valid.com', 'alice@example.com']));
     assert(people.is_my_user_id(42));
 
-    const fetched_retiree = people.get_person_from_user_id(15);
+    const fetched_retiree = people.get_by_user_id(15);
     assert.equal(fetched_retiree.full_name, 'Retiree');
 
     assert.equal(global.page_params.realm_users, undefined);

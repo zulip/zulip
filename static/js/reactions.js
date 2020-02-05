@@ -151,7 +151,7 @@ function full_name(user_id) {
     if (user_id === page_params.user_id) {
         return 'You (click to remove)';
     }
-    return people.get_person_from_user_id(user_id).full_name;
+    return people.get_by_user_id(user_id).full_name;
 }
 
 function generate_title(emoji_name, user_ids) {

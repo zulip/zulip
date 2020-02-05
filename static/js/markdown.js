@@ -67,7 +67,7 @@ exports.apply_markdown = function (message) {
             if (match) {
                 const user_id = parseInt(match[2], 10);
                 if (people.is_known_user_id(user_id)) {
-                    person = people.get_person_from_user_id(user_id);
+                    person = people.get_by_user_id(user_id);
                     if (person.full_name !== match[1]) { // Invalid Syntax
                         return;
                     }

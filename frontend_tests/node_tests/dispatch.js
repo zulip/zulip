@@ -1098,7 +1098,7 @@ with_overrides(function (override) {
     // realm_user
     let event = event_fixtures.realm_user__add;
     dispatch(event);
-    const added_person = people.get_person_from_user_id(event.person.user_id);
+    const added_person = people.get_by_user_id(event.person.user_id);
     assert.equal(added_person.full_name, 'Added Person');
     assert(people.is_active_user_for_popover(event.person.user_id));
 
@@ -1107,7 +1107,7 @@ with_overrides(function (override) {
     dispatch(event);
 
     // We don't actually remove the person, we just deactivate them.
-    const removed_person = people.get_person_from_user_id(event.person.user_id);
+    const removed_person = people.get_by_user_id(event.person.user_id);
     assert.equal(removed_person.full_name, 'Added Person');
     assert(!people.is_active_user_for_popover(event.person.user_id));
 
@@ -1208,7 +1208,7 @@ with_overrides(function (override) {
 
     // This next section can go away when we start handling
     // user_ids more directly in some of subscriptions code.
-    override('people.get_person_from_user_id', function (user_id) {
+    override('people.get_by_user_id', function (user_id) {
         assert_same(user_id, 555);
         return {email: 'this-is-not-really-used-in-the-test'};
     });

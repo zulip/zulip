@@ -201,7 +201,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'update') {
             if (_.has(event.bot, 'owner_id')) {
-                event.bot.owner = people.get_person_from_user_id(event.bot.owner_id).email;
+                event.bot.owner = people.get_by_user_id(event.bot.owner_id).email;
             }
             bot_data.update(event.bot.user_id, event.bot);
             settings_users.update_user_data(event.bot.user_id, event.bot);

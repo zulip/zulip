@@ -95,8 +95,8 @@ exports.compare_function = function (a, b) {
     }
 
     // Sort equivalent PM names alphabetically
-    const person_a = people.get_person_from_user_id(a);
-    const person_b = people.get_person_from_user_id(b);
+    const person_a = people.get_by_user_id(a);
+    const person_b = people.get_by_user_id(b);
 
     const full_name_a = person_a ? person_a.full_name : '';
     const full_name_b = person_b ? person_b.full_name : '';
@@ -123,7 +123,7 @@ function filter_user_ids(filter_text, user_ids) {
     });
 
     const persons = _.map(user_ids, function (user_id) {
-        return people.get_person_from_user_id(user_id);
+        return people.get_by_user_id(user_id);
     });
 
     const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
@@ -181,7 +181,7 @@ exports.user_last_seen_time_status = function (user_id) {
 
 exports.info_for = function (user_id) {
     const user_circle_class = exports.get_user_circle_class(user_id);
-    const person = people.get_person_from_user_id(user_id);
+    const person = people.get_by_user_id(user_id);
     const my_user_status = exports.my_user_status(user_id);
     const user_circle_status = exports.status_description(user_id);
 
@@ -218,12 +218,12 @@ exports.get_title_data = function (user_ids_string, is_group) {
 
     // Since it's not a group, user_ids_string is a single user ID.
     const user_id = parseInt(user_ids_string, 10);
-    const person = people.get_person_from_user_id(user_id);
+    const person = people.get_by_user_id(user_id);
 
     if (person.is_bot) {
         // Bot has an owner.
         if (person.bot_owner_id !== null) {
-            person.bot_owner_full_name = people.get_person_from_user_id(
+            person.bot_owner_full_name = people.get_by_user_id(
                 person.bot_owner_id).full_name;
 
             const bot_owner_name = i18n.t('Owner: __name__', {name: person.bot_owner_full_name});
@@ -312,7 +312,7 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
     }
 
     user_ids = _.filter(user_ids, function (user_id) {
-        const person = people.get_person_from_user_id(user_id);
+        const person = people.get_by_user_id(user_id);
 
         if (!person) {
             blueslip.warn('Got user_id in presence but not people: ' + user_id);
