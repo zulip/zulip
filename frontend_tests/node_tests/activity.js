@@ -806,7 +806,7 @@ run_test('update_presence_info', () => {
     activity.update_presence_info(alice.user_id, info, server_time);
     assert(inserted);
 
-    const expected = { status: 'active', mobile: false, last_active: 500 };
+    const expected = { status: 'active', last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);
 });
 
