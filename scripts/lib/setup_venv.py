@@ -274,8 +274,8 @@ def do_patch_activate_script(venv_path):
     with open(script_path, 'w') as f:
         f.write("".join(lines))
 
-def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, patch_activate_script=False):
-    # type: (Optional[str], str, Optional[List[str]], bool) -> str
+def setup_virtualenv(target_venv_path, requirements_file, python2=False, patch_activate_script=False):
+    # type: (Optional[str], str, bool, bool) -> str
 
     # Check if a cached version already exists
     path = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
@@ -287,7 +287,7 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
         cached_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, os.path.basename(target_venv_path))
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
     if not os.path.exists(success_stamp):
-        do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args or [])
+        do_setup_virtualenv(cached_venv_path, requirements_file, python2)
         with open(success_stamp, 'w') as f:
             f.close()
 
@@ -305,8 +305,8 @@ def add_cert_to_pipconf():
     os.makedirs(confdir, exist_ok=True)
     run(["crudini", "--set", conffile, "global", "cert", os.environ["CUSTOM_CA_CERTIFICATES"]])
 
-def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
-    # type: (str, str, List[str]) -> None
+def do_setup_virtualenv(venv_path, requirements_file, python2):
+    # type: (str, str, bool) -> None
 
     # Setup Python virtualenv
     new_packages = set(get_package_names(requirements_file))
@@ -315,7 +315,7 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     if not try_to_copy_venv(venv_path, new_packages):
         # Create new virtualenv.
         run_as_root(["mkdir", "-p", venv_path])
-        run_as_root(["virtualenv"] + virtualenv_args + [venv_path])
+        run_as_root(["virtualenv", "-p", "python2.7" if python2 else "python3", venv_path])
         run_as_root(["chown", "-R",
                      "{}:{}".format(os.getuid(), os.getgid()), venv_path])
         create_log_entry(get_logfile_name(venv_path), "", set(), new_packages)

@@ -32,8 +32,6 @@ else:
     print("Unsupported platform: {}".format(distro_info['ID']))
     sys.exit(1)
 
-python_version = sys.version_info[0]
-
 # Set the current working directory to the Zulip checkout, so the api/
 # relative path in requirements/common.in works.
 os.chdir(ZULIP_PATH)
@@ -41,8 +39,7 @@ os.chdir(ZULIP_PATH)
 venv_name = "zulip-py3-venv"
 cached_venv_path = setup_virtualenv(
     os.path.join(args.deploy_path, venv_name),
-    os.path.join(ZULIP_PATH, "requirements", "prod.txt"),
-    virtualenv_args=['-p', 'python{}'.format(python_version)])
+    os.path.join(ZULIP_PATH, "requirements", "prod.txt"))
 
 current_venv_path = os.path.join(args.deploy_path, 'zulip-current-venv')
 overwrite_symlink(venv_name, current_venv_path)
