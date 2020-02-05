@@ -145,13 +145,7 @@ social-auth-app-django
 lxml
 
 # Needed for 2-factor authentication
-django-two-factor-auth
-
-# Required by django-phonenumber-field which is a dependency of django-two-factor-auth.
-# Developers can install either phonenumberslite or phonenumbers. Developers of
-# django-two-factor-auth has not specified which package to install so we are going
-# with phonenumberslite since it has less memory footprint.
-phonenumberslite
+django-two-factor-auth[phonenumberslite]
 
 twilio
 
