@@ -150,12 +150,7 @@ class ClientDescriptor:
         self.current_handler_id = None
         self._timeout_handle = None
 
-    def add_event(self, event: Dict[str, Any]) -> None:
-        # Any dictionary passed into this function must be a unique
-        # dictionary (potentially a shallow copy of a shared data
-        # structure), since the event_queue data structures will
-        # mutate it to add the queue-specific unique `id` of that
-        # event to the outer event dictionary.
+    def add_event(self, event: Mapping[str, Any]) -> None:
         if self.current_handler_id is not None:
             handler = get_handler_by_id(self.current_handler_id)
             async_request_timer_restart(handler._request)
@@ -274,7 +269,14 @@ class EventQueue:
         ret.virtual_events = d.get("virtual_events", {})
         return ret
 
-    def push(self, event: Dict[str, Any]) -> None:
+    def push(self, orig_event: Mapping[str, Any]) -> None:
+        # By default, we make a shallow copy of the event dictionary
+        # to push into the target event queue; this allows the calling
+        # code to send the same "event" object to multiple queues.
+        # This behavior is important because the event_queue system is
+        # about to mutate the event dictionary, minimally to add the
+        # event_id attribute.
+        event = dict(orig_event)
         event['id'] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
@@ -486,7 +488,7 @@ def send_restart_events(immediate: bool=False) -> None:
         event['immediate'] = True
     for client in clients.values():
         if client.accepts_event(event):
-            client.add_event(event.copy())
+            client.add_event(event)
 
 def setup_event_queue(port: int) -> None:
     if not settings.TEST_SUITE:
@@ -911,8 +913,6 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
                 sending_client.lower() == client.client_type_name.lower()):
             continue
 
-        # We don't need to create a new dict here, since the
-        # `user_event` was already constructed from scratch above.
         client.add_event(user_event)
 
 def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
@@ -943,7 +943,7 @@ def process_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
     for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):
-                client.add_event(dict(event))
+                client.add_event(event)
 
 def process_userdata_event(event_template: Mapping[str, Any], users: Iterable[Mapping[str, Any]]) -> None:
     for user_data in users:
@@ -955,9 +955,7 @@ def process_userdata_event(event_template: Mapping[str, Any], users: Iterable[Ma
 
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(user_event):
-                # We need to do another shallow copy, or we risk
-                # sending the same event to multiple clients.
-                client.add_event(dict(user_event))
+                client.add_event(user_event)
 
 def process_message_update_event(event_template: Mapping[str, Any],
                                  users: Iterable[Mapping[str, Any]]) -> None:
@@ -999,7 +997,7 @@ def process_message_update_event(event_template: Mapping[str, Any],
             if client.accepts_event(user_event):
                 # We need to do another shallow copy, or we risk
                 # sending the same event to multiple clients.
-                client.add_event(dict(user_event))
+                client.add_event(user_event)
 
 def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
                                                    message_id: int,
