@@ -20,7 +20,7 @@ exports.emoji_collection = [];
 
 exports.update_emoji_data = function () {
     exports.emoji_collection = [];
-    _.each(emoji.emojis_by_name, function (emoji_dict) {
+    for (const emoji_dict of emoji.emojis_by_name.values()) {
         if (emoji_dict.is_realm_emoji === true) {
             exports.emoji_collection.push({
                 emoji_name: emoji_dict.name,
@@ -35,7 +35,7 @@ exports.update_emoji_data = function () {
                 });
             });
         }
-    });
+    }
 };
 
 exports.topics_seen_for = function (stream_name) {

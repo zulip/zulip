@@ -103,19 +103,18 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     exports.complete_emoji_catalog = {};
     exports.complete_emoji_catalog.Custom = [];
     _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
-        exports.complete_emoji_catalog.Custom.push(emoji.emojis_by_name[realm_emoji_name]);
+        exports.complete_emoji_catalog.Custom.push(emoji.emojis_by_name.get(realm_emoji_name));
     });
 
     _.each(emoji_codes.emoji_catalog, function (codepoints, category) {
         exports.complete_emoji_catalog[category] = [];
         _.each(codepoints, function (codepoint) {
             if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-                const emoji_name = emoji_codes.codepoint_to_name[codepoint];
-                if (emoji.emojis_by_name.hasOwnProperty(emoji_name) &&
-                    emoji.emojis_by_name[emoji_name].is_realm_emoji !== true) {
-                    exports.complete_emoji_catalog[category].push(
-                        emoji.emojis_by_name[emoji_name]
-                    );
+                const emoji_dict = emoji.emojis_by_name.get(
+                    emoji_codes.codepoint_to_name[codepoint]
+                );
+                if (emoji_dict !== undefined && emoji_dict.is_realm_emoji !== true) {
+                    exports.complete_emoji_catalog[category].push(emoji_dict);
                 }
             }
         });
@@ -124,9 +123,9 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     exports.complete_emoji_catalog.Popular = [];
     _.each(typeahead.popular_emojis, function (codepoint) {
         if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-            const emoji_name = emoji_codes.codepoint_to_name[codepoint];
-            if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {
-                exports.complete_emoji_catalog.Popular.push(emoji.emojis_by_name[emoji_name]);
+            const emoji_dict = emoji.emojis_by_name.get(emoji_codes.codepoint_to_name[codepoint]);
+            if (emoji_dict !== undefined) {
+                exports.complete_emoji_catalog.Popular.push(emoji_dict);
             }
         }
     });
@@ -149,11 +148,11 @@ const generate_emoji_picker_content = function (id) {
     if (id !== undefined) {
         emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
     }
-    _.each(emoji.emojis_by_name, function (emoji_dict) {
+    for (const emoji_dict of emoji.emojis_by_name.values()) {
         emoji_dict.has_reacted = _.any(emoji_dict.aliases, function (alias) {
             return _.contains(emojis_used, alias);
         });
-    });
+    }
 
     return render_emoji_popover_content({
         message_id: id,
@@ -315,7 +314,7 @@ function update_emoji_showcase($focused_emoji) {
     // of converting emoji names like :100:, :1234: etc to number.
     const focused_emoji_name = $focused_emoji.attr("data-emoji-name");
     const canonical_name = emoji.get_canonical_name(focused_emoji_name);
-    const focused_emoji_dict = emoji.emojis_by_name[canonical_name];
+    const focused_emoji_dict = emoji.emojis_by_name.get(canonical_name);
 
     const emoji_dict = _.extend({}, focused_emoji_dict, {
         name: focused_emoji_name.replace(/_/g, ' '),

@@ -66,6 +66,7 @@ _.each(ignore_modules, (mod) => {
     });
 });
 
+emoji.emojis_by_name = new Map();
 
 zrequire('util');
 

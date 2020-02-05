@@ -107,7 +107,7 @@ const emoji_headphones = {
     emoji_code: '1f3a7',
 };
 
-const emojis_by_name = {
+const emojis_by_name = new Map(Object.entries({
     tada: emoji_tada,
     moneybag: emoji_moneybag,
     stadium: emoji_stadium,
@@ -118,8 +118,8 @@ const emojis_by_name = {
     thermometer: emoji_thermometer,
     heart: emoji_heart,
     headphones: emoji_headphones,
-};
-const emoji_list = _.map(emojis_by_name, function (emoji_dict) {
+}));
+const emoji_list = Array.from(emojis_by_name.values(), emoji_dict => {
     if (emoji_dict.is_realm_emoji === true) {
         return {
             emoji_name: emoji_dict.name,
