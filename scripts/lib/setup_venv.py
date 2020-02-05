@@ -99,9 +99,9 @@ YUM_THUMBOR_VENV_DEPENDENCIES = [
     "gifsicle",
 ]
 
-def install_venv_deps(pip, requirements_file):
-    # type: (str, str) -> None
-    pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip.txt")
+def install_venv_deps(pip, requirements_file, python2):
+    # type: (str, str, bool) -> None
+    pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip2.txt" if python2 else "pip.txt")
     run([pip, "install", "--force-reinstall", "--require-hashes", "--requirement", pip_requirements])
     run([pip, "install", "--no-deps", "--require-hashes", "--requirement", requirements_file])
 
@@ -330,10 +330,10 @@ def do_setup_virtualenv(venv_path, requirements_file, python2):
         add_cert_to_pipconf()
 
     try:
-        install_venv_deps(pip, requirements_file)
+        install_venv_deps(pip, requirements_file, python2)
     except subprocess.CalledProcessError:
         # Might be a failure due to network connection issues. Retrying...
         print(WARNING + "`pip install` failed; retrying..." + ENDC)
-        install_venv_deps(pip, requirements_file)
+        install_venv_deps(pip, requirements_file, python2)
 
     run_as_root(["chmod", "-R", "a+rX", venv_path])
