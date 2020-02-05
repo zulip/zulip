@@ -102,9 +102,9 @@ function show_emoji_catalog() {
 exports.generate_emoji_picker_data = function (realm_emojis) {
     exports.complete_emoji_catalog = {};
     exports.complete_emoji_catalog.Custom = [];
-    _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
+    for (const realm_emoji_name of realm_emojis.keys()) {
         exports.complete_emoji_catalog.Custom.push(emoji.emojis_by_name.get(realm_emoji_name));
-    });
+    }
 
     _.each(emoji_codes.emoji_catalog, function (codepoints, category) {
         exports.complete_emoji_catalog[category] = [];
@@ -243,7 +243,7 @@ function get_alias_to_be_used(message_id, emoji_name) {
     // the passed name as it is.
     const message = message_store.get(message_id);
     let aliases = [emoji_name];
-    if (!emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
+    if (!emoji.active_realm_emojis.has(emoji_name)) {
         if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
             const codepoint = emoji_codes.name_to_codepoint[emoji_name];
             aliases = emoji.default_emoji_aliases[codepoint];

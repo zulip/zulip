@@ -61,9 +61,9 @@ run_test('initialize', () => {
 });
 
 run_test('get_canonical_name', () => {
-    emoji.active_realm_emojis = {
+    emoji.active_realm_emojis = new Map(Object.entries({
         realm_emoji: 'TBD',
-    };
+    }));
     let canonical_name = emoji.get_canonical_name('realm_emoji');
     assert.equal(canonical_name, 'realm_emoji');
 
@@ -79,9 +79,9 @@ run_test('get_canonical_name', () => {
     canonical_name = emoji.get_canonical_name('+1');
     assert.equal(canonical_name, 'thumbs_up');
 
-    emoji.active_realm_emojis = {
+    emoji.active_realm_emojis = new Map(Object.entries({
         '+1': 'TBD',
-    };
+    }));
     canonical_name = emoji.get_canonical_name('+1');
     assert.equal(canonical_name, '+1');
 

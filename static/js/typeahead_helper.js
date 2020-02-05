@@ -148,7 +148,7 @@ exports.render_emoji = function (item) {
         is_emoji: true,
         primary: item.emoji_name.split("_").join(" "),
     };
-    if (emoji.active_realm_emojis.hasOwnProperty(item.emoji_name)) {
+    if (emoji.active_realm_emojis.has(item.emoji_name)) {
         args.img_src = item.emoji_url;
     } else {
         args.emoji_code = item.emoji_code;
