@@ -1,6 +1,9 @@
 
+zrequire('timerender');
 zrequire('muting');
 zrequire('stream_data');
+set_global('i18n', global.stub_i18n);
+set_global('XDate', zrequire('XDate', 'xdate'));
 set_global('page_params', {});
 
 run_test('edge_cases', () => {
@@ -61,27 +64,49 @@ run_test('basics', () => {
 
 run_test('get_and_set_muted_topics', () => {
     assert.deepEqual(muting.get_muted_topics(), []);
-    muting.add_muted_topic(office.stream_id, 'gossip');
-    muting.add_muted_topic(devel.stream_id, 'java');
+    muting.add_muted_topic(office.stream_id, 'gossip', 1577836800);
+    muting.add_muted_topic(devel.stream_id, 'java', 1577836800);
     assert.deepEqual(muting.get_muted_topics().sort(), [
-        [devel.stream_id, 'java'],
-        [office.stream_id, 'gossip'],
-    ]);
+        {
+            date_muted: 1577836800000,
+            date_muted_str: 'Jan 01',
+            stream: devel.name,
+            stream_id: devel.stream_id,
+            topic: 'java',
+        },
+        {
+            date_muted: 1577836800000,
+            date_muted_str: 'Jan 01',
+            stream: office.name,
+            stream_id: office.stream_id,
+            topic: 'gossip',
+        }]);
 
     blueslip.expect('warn', 'Unknown stream in set_muted_topics: BOGUS STREAM');
 
     page_params.muted_topics = [
-        ['social', 'breakfast'],
-        ['design', 'typography'],
-        ['BOGUS STREAM', 'whatever'],
+        ['social', 'breakfast', 1577836800],
+        ['design', 'typography', 1577836800],
+        ['BOGUS STREAM', 'whatever', 1577836800],
     ];
     muting.initialize();
 
 
     assert.deepEqual(muting.get_muted_topics().sort(), [
-        [design.stream_id, 'typography'],
-        [social.stream_id, 'breakfast'],
-    ]);
+        {
+            date_muted: 1577836800000,
+            date_muted_str: 'Jan 01',
+            stream: social.name,
+            stream_id: social.stream_id,
+            topic: 'breakfast',
+        },
+        {
+            date_muted: 1577836800000,
+            date_muted_str: 'Jan 01',
+            stream: design.name,
+            stream_id: design.stream_id,
+            topic: 'typography',
+        }]);
 });
 
 run_test('case_insensitivity', () => {

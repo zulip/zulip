@@ -2,13 +2,17 @@ const FoldDict = require('./fold_dict').FoldDict;
 
 const muted_topics = new Map();
 
-exports.add_muted_topic = function (stream_id, topic) {
+exports.add_muted_topic = function (stream_id, topic, date_muted) {
     let sub_dict = muted_topics.get(stream_id);
     if (!sub_dict) {
         sub_dict = new FoldDict();
         muted_topics.set(stream_id, sub_dict);
     }
-    sub_dict.set(topic, true);
+    let time = date_muted * 1000;
+    if (!date_muted) {
+        time = Date.now();
+    }
+    sub_dict.set(topic, time);
 };
 
 exports.remove_muted_topic = function (stream_id, topic) {
@@ -29,8 +33,17 @@ exports.is_topic_muted = function (stream_id, topic) {
 exports.get_muted_topics = function () {
     const topics = [];
     for (const [stream_id, sub_dict] of muted_topics) {
+        const stream = stream_data.maybe_get_stream_name(stream_id);
         for (const topic of sub_dict.keys()) {
-            topics.push([stream_id, topic]);
+            const date_muted = sub_dict.get(topic);
+            const date_muted_str = timerender.render_now(new XDate(date_muted)).time_str;
+            topics.push({
+                stream_id: stream_id,
+                stream: stream,
+                topic: topic,
+                date_muted: date_muted,
+                date_muted_str: date_muted_str,
+            });
         }
     }
     return topics;
@@ -42,6 +55,7 @@ exports.set_muted_topics = function (tuples) {
     for (const tuple of tuples) {
         const stream_name = tuple[0];
         const topic = tuple[1];
+        const date_muted = tuple[2];
 
         const stream_id = stream_data.get_stream_id(stream_name);
 
@@ -50,7 +64,7 @@ exports.set_muted_topics = function (tuples) {
             continue;
         }
 
-        exports.add_muted_topic(stream_id, topic);
+        exports.add_muted_topic(stream_id, topic, date_muted);
     }
 };
 

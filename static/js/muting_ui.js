@@ -68,29 +68,25 @@ exports.update_muted_topics = function (muted_topics) {
 };
 
 exports.set_up_muted_topics_ui = function (muted_topics) {
-    const muted_topics_table = $("#muted_topics_table tbody");
-    muted_topics_table.empty();
+    const muted_topics_table = $("#muted_topics_table").expectOne();
+    const $search_input = $("#muted_topics_search");
 
-    for (const tup of muted_topics) {
-        const stream_id = tup[0];
-        const topic = tup[1];
-
-        const stream = stream_data.maybe_get_stream_name(stream_id);
-
-        if (!stream) {
-            blueslip.warn('Unknown stream_id in set_up_muted_topics_ui: ' + stream_id);
-            continue;
-        }
-
-        const template_data = {
-            stream: stream,
-            stream_id: stream_id,
-            topic: topic,
-        };
-
-        const row = render_muted_topic_ui_row(template_data);
-        muted_topics_table.append(row);
-    }
+    list_render.create(muted_topics_table, muted_topics, {
+        name: "muted-topics-list",
+        modifier: function (muted_topics) {
+            return render_muted_topic_ui_row({ muted_topics: muted_topics });
+        },
+        filter: {
+            element: $search_input,
+            predicate: function (item, value) {
+                return item.topic.toLocaleLowerCase().indexOf(value) >= 0;
+            },
+            onupdate: function () {
+                ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));
+            },
+        },
+        parent_container: $('#muted-topic-settings').expectOne(),
+    });
 };
 
 exports.mute = function (stream_id, topic) {
@@ -114,7 +110,6 @@ exports.mute = function (stream_id, topic) {
         title_text: i18n.t("Topic muted"),
         undo_button_text: i18n.t("Unmute"),
     });
-    exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
 
 exports.unmute = function (stream_id, topic) {
@@ -126,7 +121,6 @@ exports.unmute = function (stream_id, topic) {
     unread_ui.update_unread_counts();
     exports.rerender();
     exports.persist_unmute(stream_id, topic);
-    exports.set_up_muted_topics_ui(muting.get_muted_topics());
     feedback_widget.dismiss();
 };
 
