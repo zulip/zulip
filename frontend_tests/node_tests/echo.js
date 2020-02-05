@@ -104,6 +104,8 @@ run_test('build_display_recipient', () => {
             user_id: 21,
         },
     ];
+    page_params.realm_non_active_users = [];
+    page_params.cross_realm_bots = [];
     people.initialize();
 
     let message = {
@@ -166,6 +168,8 @@ run_test('insert_local_message', () => {
             email: "iago@zulip.com",
         },
     ];
+    page_params.realm_non_active_users = [];
+    page_params.cross_realm_bots = [];
     people.initialize();
 
     let apply_markdown_called = false;
