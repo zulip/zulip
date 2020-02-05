@@ -3,7 +3,7 @@
 // emojis. Emoji picker uses this data to derive data for its own use.
 exports.emojis_by_name = new Map();
 
-exports.all_realm_emojis = {};
+exports.all_realm_emojis = new Map();
 exports.active_realm_emojis = {};
 exports.default_emoji_aliases = {};
 
@@ -19,14 +19,16 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     // exports.all_realm_emojis is emptied before adding the realm-specific emoji
     // to it. This makes sure that in case of deletion, the deleted realm_emojis
     // don't persist in exports.active_realm_emojis.
-    exports.all_realm_emojis = {};
+    exports.all_realm_emojis.clear();
     exports.active_realm_emojis = {};
 
     _.each(realm_emojis, function (data) {
-        exports.all_realm_emojis[data.id] = {id: data.id,
-                                             emoji_name: data.name,
-                                             emoji_url: data.source_url,
-                                             deactivated: data.deactivated};
+        exports.all_realm_emojis.set(data.id, {
+            id: data.id,
+            emoji_name: data.name,
+            emoji_url: data.source_url,
+            deactivated: data.deactivated,
+        });
         if (data.deactivated !== true) {
             exports.active_realm_emojis[data.name] = {id: data.id,
                                                       emoji_name: data.name,
