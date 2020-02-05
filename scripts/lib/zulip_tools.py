@@ -318,10 +318,17 @@ def generate_sha1sum_emoji(zulip_path):
     dependency_data = parsed_package_file['dependencies']
 
     if 'emoji-datasource-google' in dependency_data:
-        emoji_datasource_version = dependency_data['emoji-datasource-google'].encode('utf-8')
+        with open(os.path.join(zulip_path, "yarn.lock")) as fp:
+            (emoji_datasource_version,) = re.findall(
+                r"^emoji-datasource-google@"
+                + re.escape(dependency_data["emoji-datasource-google"])
+                + r':\n  version "(.*)"',
+                fp.read(),
+                re.M,
+            )
     else:
-        emoji_datasource_version = b"0"
-    sha.update(emoji_datasource_version)
+        emoji_datasource_version = "0"
+    sha.update(emoji_datasource_version.encode())
 
     return sha.hexdigest()
 

@@ -29,8 +29,9 @@ let edit_message_id = null;
 
 function get_all_emoji_categories() {
     return [
-        { name: "Popular", icon: "fa-thumbs-o-up" },
-        { name: "Smileys & People", icon: "fa-smile-o" },
+        { name: "Popular", icon: "fa-star-o" },
+        { name: "Smileys & Emotion", icon: "fa-smile-o" },
+        { name: "People & Body", icon: "fa-thumbs-o-up" },
         { name: "Animals & Nature", icon: "fa-leaf" },
         { name: "Food & Drink", icon: "fa-cutlery" },
         { name: "Activities", icon: "fa-soccer-ball-o" },
