@@ -25,7 +25,7 @@ set_global('emoji', {
             deactivated: false,
         },
     })),
-    active_realm_emojis: {
+    active_realm_emojis: new Map(Object.entries({
         realm_emoji: {
             id: '991',
             emoji_name: 'realm_emoji',
@@ -36,7 +36,7 @@ set_global('emoji', {
             emoji_name: 'zulip',
             emoji_url: 'TBD',
         },
-    },
+    })),
     deactivated_realm_emojis: {
         inactive_realm_emoji: {
             emoji_name: 'inactive_realm_emoji',
