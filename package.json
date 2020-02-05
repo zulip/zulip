@@ -54,7 +54,7 @@
     "sorttable": "^1.0.2",
     "source-sans-pro": "^3.6.0",
     "spectrum-colorpicker": "^1.8.0",
-    "stacktrace-gps": "^3.0.3",
+    "stacktrace-gps": "^3.0.4",
     "style-loader": "^1.0.0",
     "terser-webpack-plugin": "^2.1.0",
     "turndown": "^5.0.3",
