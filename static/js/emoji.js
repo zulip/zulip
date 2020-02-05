@@ -5,7 +5,7 @@ exports.emojis_by_name = new Map();
 
 exports.all_realm_emojis = new Map();
 exports.active_realm_emojis = new Map();
-exports.default_emoji_aliases = {};
+exports.default_emoji_aliases = new Map();
 
 const zulip_emoji = {
     id: 'zulip',
@@ -49,10 +49,10 @@ exports.initialize = function initialize() {
     _.each(emoji_codes.names, function (value) {
         const base_name = emoji_codes.name_to_codepoint[value];
 
-        if (exports.default_emoji_aliases.hasOwnProperty(base_name)) {
-            exports.default_emoji_aliases[base_name].push(value);
+        if (exports.default_emoji_aliases.has(base_name)) {
+            exports.default_emoji_aliases.get(base_name).push(value);
         } else {
-            exports.default_emoji_aliases[base_name] = [value];
+            exports.default_emoji_aliases.set(base_name, [value]);
         }
     });
 
@@ -98,7 +98,7 @@ exports.build_emoji_data = function (realm_emojis) {
                     emoji_dict = {
                         name: emoji_name,
                         display_name: emoji_name,
-                        aliases: exports.default_emoji_aliases[codepoint],
+                        aliases: exports.default_emoji_aliases.get(codepoint),
                         is_realm_emoji: false,
                         emoji_code: codepoint,
                         has_reacted: false,
