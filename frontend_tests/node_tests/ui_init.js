@@ -142,9 +142,22 @@ page_params.subscriptions = [];
 page_params.unsubscribed = [];
 page_params.never_subscribed = [];
 page_params.realm_notifications_stream_id = -1;
-page_params.unread_msgs = {};
+page_params.unread_msgs = {
+    huddles: [],
+    pms: [],
+    streams: [],
+    mentions: [],
+};
 page_params.recent_private_conversations = [];
 page_params.user_status = {};
+page_params.realm_users = [];
+page_params.realm_non_active_users = [];
+page_params.cross_realm_bots = [];
+page_params.muted_topics = [];
+page_params.realm_user_groups = [];
+page_params.realm_bots = [];
+page_params.realm_filters = [];
+page_params.starred_messages = [];
 
 $('#tab_bar').append = () => {};
 $('#compose').filedrop = () => {};
