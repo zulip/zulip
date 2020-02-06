@@ -23,8 +23,9 @@ from zerver.models import UserActivity, UserPresence, UserProfile, \
 
 def get_status_list(requesting_user_profile: UserProfile,
                     slim_presence: bool) -> Dict[str, Any]:
-    return {'presences': get_status_dict(requesting_user_profile, slim_presence),
-            'server_timestamp': time.time()}
+    server_timestamp = time.time()
+    presences = get_status_dict(requesting_user_profile, slim_presence)
+    return dict(presences=presences, server_timestamp=server_timestamp)
 
 def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
                          email: str) -> HttpResponse:
