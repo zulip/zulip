@@ -27,7 +27,10 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
-from zerver.lib.presence import get_status_dict, get_status_dict_by_user
+from zerver.lib.presence import (
+    get_presences_for_realm,
+    get_status_dict_by_user
+)
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.realm_icon import realm_icon_url
@@ -122,7 +125,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['pointer'] = user_profile.pointer
 
     if want('presence'):
-        state['presences'] = get_status_dict(user_profile, slim_presence)
+        state['presences'] = get_presences_for_realm(realm, slim_presence)
 
     if want('realm'):
         for property_name in Realm.property_types:
