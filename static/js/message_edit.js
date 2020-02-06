@@ -2,7 +2,7 @@ const render_message_edit_form = require('../templates/message_edit_form.hbs');
 const render_message_edit_history = require('../templates/message_edit_history.hbs');
 const render_topic_edit_form = require('../templates/topic_edit_form.hbs');
 
-const currently_editing_messages = {};
+const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 const currently_echoing_messages = {};
 
@@ -229,7 +229,7 @@ function edit_message(row, raw_content) {
     }));
 
     const edit_obj = {form: form, raw_content: raw_content};
-    currently_editing_messages[message.id] = edit_obj;
+    currently_editing_messages.set(message.id, edit_obj);
     current_msg_list.show_edit_message(row, edit_obj);
 
     form.keydown(_.partial(handle_edit_keydown, false));
@@ -264,7 +264,7 @@ function edit_message(row, raw_content) {
         const edit_id = "#message_edit_content_" + rows.id(row);
         const listeners = resize.watch_manual_resize(edit_id);
         if (listeners) {
-            currently_editing_messages[rows.id(row)].listeners = listeners;
+            currently_editing_messages.get(rows.id(row)).listeners = listeners;
         }
         composebox_typeahead.initialize_compose_typeahead(edit_id);
         compose.handle_keyup(null, $(edit_id).expectOne());
@@ -422,18 +422,18 @@ exports.start_topic_edit = function (recipient_row) {
 };
 
 exports.is_editing = function (id) {
-    return currently_editing_messages[id] !== undefined;
+    return currently_editing_messages.has(id);
 };
 
 exports.end = function (row) {
     const message = current_msg_list.get(rows.id(row));
     if (message !== undefined &&
-        currently_editing_messages[message.id] !== undefined) {
-        const scroll_by = currently_editing_messages[message.id].scrolled_by;
+        currently_editing_messages.has(message.id)) {
+        const scroll_by = currently_editing_messages.get(message.id).scrolled_by;
         message_viewport.scrollTop(message_viewport.scrollTop() - scroll_by);
 
         // Clean up resize event listeners
-        const listeners = currently_editing_messages[message.id].listeners;
+        const listeners = currently_editing_messages.get(message.id).listeners;
         const edit_box = document.querySelector("#message_edit_content_" + message.id);
         if (listeners !== undefined) {
             // Event listeners to cleanup are only set in some edit types
@@ -441,7 +441,7 @@ exports.end = function (row) {
             document.body.removeEventListener("mouseup", listeners[1]);
         }
 
-        delete currently_editing_messages[message.id];
+        currently_editing_messages.delete(message.id);
         current_msg_list.hide_edit_message(row);
     }
     if (row !== undefined) {
@@ -600,8 +600,8 @@ exports.save = function (row, from_topic_edited_only) {
 };
 
 exports.maybe_show_edit = function (row, id) {
-    if (currently_editing_messages[id] !== undefined) {
-        current_msg_list.show_edit_message(row, currently_editing_messages[id]);
+    if (currently_editing_messages.has(id)) {
+        current_msg_list.show_edit_message(row, currently_editing_messages.get(id));
     }
 };
 
@@ -759,12 +759,12 @@ exports.delete_topic = function (stream_id, topic_name) {
 };
 
 exports.handle_narrow_deactivated = function () {
-    _.each(currently_editing_messages, function (elem, idx) {
+    for (const [idx, elem] of currently_editing_messages) {
         if (current_msg_list.get(idx) !== undefined) {
             const row = current_msg_list.get_row(idx);
             current_msg_list.show_edit_message(row, elem);
         }
-    });
+    }
 };
 
 window.message_edit = exports;
