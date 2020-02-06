@@ -34,35 +34,36 @@ run_test('filter_table', () => {
     };
 
     // set-up sub rows stubs
-    const sub_row_data = {};
-    sub_row_data[1] = {
-        elem: 'denmark',
-        subscribed: false,
-        name: 'Denmark',
-        stream_id: 1,
-        description: 'Copenhagen',
-    };
-    sub_row_data[2] = {
-        elem: 'poland',
-        subscribed: true,
-        name: 'Poland',
-        stream_id: 2,
-        description: 'monday',
-    };
-    sub_row_data[3] = {
-        elem: 'pomona',
-        subscribed: true,
-        name: 'Pomona',
-        stream_id: 3,
-        description: 'college',
-    };
-    sub_row_data[4] = {
-        elem: 'cpp',
-        subscribed: true,
-        name: 'C++',
-        stream_id: 4,
-        description: 'programming lang',
-    };
+    const sub_row_data = [
+        {
+            elem: 'denmark',
+            subscribed: false,
+            name: 'Denmark',
+            stream_id: 1,
+            description: 'Copenhagen',
+        },
+        {
+            elem: 'poland',
+            subscribed: true,
+            name: 'Poland',
+            stream_id: 2,
+            description: 'monday',
+        },
+        {
+            elem: 'pomona',
+            subscribed: true,
+            name: 'Pomona',
+            stream_id: 3,
+            description: 'college',
+        },
+        {
+            elem: 'cpp',
+            subscribed: true,
+            name: 'C++',
+            stream_id: 4,
+            description: 'programming lang',
+        },
+    ];
 
     _.each(sub_row_data, function (sub) {
         stream_data.add_sub(sub.name, sub);
