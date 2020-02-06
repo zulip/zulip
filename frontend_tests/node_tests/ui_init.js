@@ -144,6 +144,7 @@ page_params.never_subscribed = [];
 page_params.realm_notifications_stream_id = -1;
 page_params.unread_msgs = {};
 page_params.recent_private_conversations = [];
+page_params.user_status = {};
 
 $('#tab_bar').append = () => {};
 $('#compose').filedrop = () => {};
