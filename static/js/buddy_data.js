@@ -336,7 +336,7 @@ exports.get_items_for_users = function (user_ids) {
 };
 
 exports.huddle_fraction_present = function (huddle) {
-    const user_ids = huddle.split(',');
+    const user_ids = huddle.split(',').map(s => parseInt(s, 10));
 
     let num_present = 0;
     _.each(user_ids, function (user_id) {

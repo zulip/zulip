@@ -229,7 +229,7 @@ run_test('level', () => {
 });
 
 run_test('level', () => {
-    presence.presence_info = {};
+    presence.presence_info.clear();
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 3);
 
