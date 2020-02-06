@@ -22,7 +22,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     exports.all_realm_emojis.clear();
     exports.active_realm_emojis.clear();
 
-    _.each(realm_emojis, function (data) {
+    for (const data of Object.values(realm_emojis)) {
         exports.all_realm_emojis.set(data.id, {
             id: data.id,
             emoji_name: data.name,
@@ -36,7 +36,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
                 emoji_url: data.source_url,
             });
         }
-    });
+    }
     // Add the Zulip emoji to the realm emojis list
     exports.all_realm_emojis.set("zulip", zulip_emoji);
     exports.active_realm_emojis.set("zulip", zulip_emoji);

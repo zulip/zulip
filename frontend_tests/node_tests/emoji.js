@@ -1,6 +1,7 @@
 set_global('$', global.make_zjquery());
 set_global('page_params', {
     emojiset: 'google',
+    realm_emoji: {},
 });
 set_global('upload_widget', {});
 set_global('blueslip', global.make_zblueslip());
