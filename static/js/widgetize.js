@@ -1,9 +1,9 @@
-const widgets = {};
-
-widgets.poll = poll_widget;
-widgets.tictactoe = tictactoe_widget;
-widgets.todo = todo_widget;
-widgets.zform = zform;
+const widgets = new Map([
+    ["poll", poll_widget],
+    ["tictactoe", tictactoe_widget],
+    ["todo", todo_widget],
+    ["zform", zform],
+]);
 
 const widget_contents = {};
 exports.widget_contents = widget_contents;
@@ -23,7 +23,7 @@ exports.activate = function (in_opts) {
 
     events.shift();
 
-    if (!widgets[widget_type]) {
+    if (!widgets.has(widget_type)) {
         blueslip.warn('unknown widget_type', widget_type);
         return;
     }
@@ -51,7 +51,7 @@ exports.activate = function (in_opts) {
     // the HTML that will eventually go in this div.
     widget_elem = $('<div>').addClass('widget-content');
 
-    widgets[widget_type].activate({
+    widgets.get(widget_type).activate({
         elem: widget_elem,
         callback: callback,
         message: message,
