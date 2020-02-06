@@ -1,3 +1,4 @@
+const pygments_data = require("../generated/pygments_data.json");
 const typeahead = require("../shared/js/typeahead");
 const autosize = require('autosize');
 

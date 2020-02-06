@@ -320,7 +320,7 @@ implementation of that tool.
 
 The list of languages supported by our markdown syntax highlighting
 comes from the [pygments][] package.  `tools/setup/build_pygments_data` is
-responsible for generating `static/generated/pygments_data.js` so that
+responsible for generating `static/generated/pygments_data.json` so that
 our JavaScript markdown processor has access to the supported list.
 
 ### Authors data
