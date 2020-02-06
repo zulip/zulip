@@ -240,11 +240,27 @@ class LogRequests(MiddlewareMixin):
     # method here too
     def process_request(self, request: HttpRequest) -> None:
         maybe_tracemalloc_listen()
+
+        if hasattr(request, "_log_data"):
+            # Sanity check to ensure this is being called from the
+            # Tornado code path that returns responses asynchronously.
+            assert getattr(request, "saved_response", False)
+
+            # Avoid re-initializing request._log_data if it's already there.
+            return
+
         request._log_data = dict()
         record_request_start_data(request._log_data)
 
     def process_view(self, request: HttpRequest, view_func: ViewFuncT,
                      args: List[str], kwargs: Dict[str, Any]) -> None:
+        if hasattr(request, "saved_response"):
+            # The below logging adjustments are unnecessary (because
+            # we've already imported everything) and incorrect
+            # (because they'll overwrite data from pre-long-poll
+            # request processing) when returning a saved response.
+            return
+
         # process_request was already run; we save the initialization
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
@@ -256,6 +272,12 @@ class LogRequests(MiddlewareMixin):
 
     def process_response(self, request: HttpRequest,
                          response: StreamingHttpResponse) -> StreamingHttpResponse:
+        if getattr(response, "asynchronous", False):
+            # This special Tornado "asynchronous" response is
+            # discarded after going through this code path as Tornado
+            # intends to block, so we stop here to avoid unnecessary work.
+            return response
+
         # The reverse proxy might have sent us the real external IP
         remote_ip = request.META.get('HTTP_X_REAL_IP')
         if remote_ip is None:
@@ -371,6 +393,12 @@ class FlushDisplayRecipientCache(MiddlewareMixin):
 
 class SessionHostDomainMiddleware(SessionMiddleware):
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+        if getattr(response, "asynchronous", False):
+            # This special Tornado "asynchronous" response is
+            # discarded after going through this code path as Tornado
+            # intends to block, so we stop here to avoid unnecessary work.
+            return response
+
         try:
             request.get_host()
         except DisallowedHost:
