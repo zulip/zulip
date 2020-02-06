@@ -60,30 +60,6 @@ webhook_unexpected_events_logger = logging.getLogger("zulip.zerver.lib.webhooks.
 log_to_file(webhook_unexpected_events_logger,
             settings.WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH)
 
-class _RespondAsynchronously:
-    pass
-
-# Return RespondAsynchronously from an @asynchronous view if the
-# response will be provided later by calling handler.zulip_finish(),
-# or has already been provided this way. We use this for longpolling
-# mode.
-RespondAsynchronously = _RespondAsynchronously()
-
-AsyncWrapperT = Callable[..., Union[HttpResponse, _RespondAsynchronously]]
-def asynchronous(method: Callable[..., Union[HttpResponse, _RespondAsynchronously]]) -> AsyncWrapperT:
-    # TODO: this should be the correct annotation when mypy gets fixed: type:
-    #   (Callable[[HttpRequest, base.BaseHandler, Sequence[Any], Dict[str, Any]],
-    #     Union[HttpResponse, _RespondAsynchronously]]) ->
-    #   Callable[[HttpRequest, Sequence[Any], Dict[str, Any]], Union[HttpResponse, _RespondAsynchronously]]
-    # TODO: see https://github.com/python/mypy/issues/1655
-    @wraps(method)
-    def wrapper(request: HttpRequest, *args: Any,
-                **kwargs: Any) -> Union[HttpResponse, _RespondAsynchronously]:
-        return method(request, handler=request._tornado_handler, *args, **kwargs)
-    if getattr(method, 'csrf_exempt', False):  # nocoverage # Our one @asynchronous route requires CSRF
-        wrapper.csrf_exempt = True  # type: ignore # https://github.com/JukkaL/mypy/issues/1170
-    return wrapper
-
 def cachify(method: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
     dct = {}  # type: Dict[Tuple[Any, ...], ReturnT]
 
