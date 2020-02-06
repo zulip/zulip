@@ -114,7 +114,7 @@ const LAST_ACTIVE_NEVER = -1;
 const LAST_ACTIVE_UNKNOWN = -2;
 
 function get_last_active(user) {
-    const presence_info = presence.presence_info[user.user_id];
+    const presence_info = presence.presence_info.get(user.user_id);
     if (!presence_info) {
         return LAST_ACTIVE_UNKNOWN;
     }
