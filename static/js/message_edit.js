@@ -4,7 +4,7 @@ const render_topic_edit_form = require('../templates/topic_edit_form.hbs');
 
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
-const currently_echoing_messages = {};
+const currently_echoing_messages = new Map();
 
 const editability_types = {
     NO: 1,
@@ -78,7 +78,7 @@ function get_editability(message, edit_limit_seconds_buffer) {
         return editability_types.FULL;
     }
 
-    if (currently_echoing_messages[message.id]) {
+    if (currently_echoing_messages.has(message.id)) {
         return editability_types.NO;
     }
 
@@ -520,7 +520,7 @@ exports.save = function (row, from_topic_edited_only) {
         // If the topic isn't changed, and the new message content
         // could have been locally echoed, than we can locally echo
         // the edit.
-        currently_echoing_messages[message_id] = {
+        currently_echoing_messages.set(message_id, {
             raw_content: new_content,
             orig_content: message.content,
             orig_raw_content: message.raw_content,
@@ -538,7 +538,7 @@ exports.save = function (row, from_topic_edited_only) {
             alerted: message.alerted,
             mentioned: message.mentioned,
             mentioned_me_directly: message.mentioned,
-        };
+        });
         edit_locally_echoed = true;
 
         // Settings these attributes causes a "SAVING" notice to
@@ -546,7 +546,7 @@ exports.save = function (row, from_topic_edited_only) {
         // the message is acknowledged by the server.
         message.local_edit_timestamp = Math.round(new Date().getTime() / 1000);
 
-        echo.edit_locally(message, currently_echoing_messages[message_id]);
+        echo.edit_locally(message, currently_echoing_messages.get(message_id));
 
         row = current_msg_list.get_row(message_id);
         message_edit.end(row);
@@ -561,7 +561,7 @@ exports.save = function (row, from_topic_edited_only) {
 
             if (edit_locally_echoed) {
                 delete message.local_edit_timestamp;
-                delete currently_echoing_messages[message_id];
+                currently_echoing_messages.delete(message_id);
             }
         },
         error: function (xhr) {
@@ -570,10 +570,10 @@ exports.save = function (row, from_topic_edited_only) {
 
                 if (edit_locally_echoed) {
                     const echoed_message = message_store.get(message_id);
-                    const echo_data = currently_echoing_messages[message_id];
+                    const echo_data = currently_echoing_messages.get(message_id);
 
                     delete echoed_message.local_edit_timestamp;
-                    delete currently_echoing_messages[message_id];
+                    currently_echoing_messages.delete(message_id);
 
                     // Restore the original content.
                     echo.edit_locally(echoed_message, {
