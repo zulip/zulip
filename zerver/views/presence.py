@@ -21,8 +21,8 @@ from zerver.lib.validator import check_bool, check_capped_string
 from zerver.models import UserActivity, UserPresence, UserProfile, \
     get_active_user_by_delivery_email
 
-def get_status_list(requesting_user_profile: UserProfile,
-                    slim_presence: bool) -> Dict[str, Any]:
+def get_presence_response(requesting_user_profile: UserProfile,
+                          slim_presence: bool) -> Dict[str, Any]:
     server_timestamp = time.time()
     presences = get_status_dict(requesting_user_profile, slim_presence)
     return dict(presences=presences, server_timestamp=server_timestamp)
@@ -96,7 +96,7 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
     if ping_only:
         ret = {}  # type: Dict[str, Any]
     else:
-        ret = get_status_list(user_profile, slim_presence)
+        ret = get_presence_response(user_profile, slim_presence)
 
     if user_profile.realm.is_zephyr_mirror_realm:
         # In zephyr mirroring realms, users can't see the presence of other
@@ -118,4 +118,4 @@ def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> H
     # This isn't used by the webapp; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
-    return json_success(get_status_list(user_profile, slim_presence=False))
+    return json_success(get_presence_response(user_profile, slim_presence=False))
