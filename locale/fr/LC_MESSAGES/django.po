@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Alexandre de Lespinasse <alex.del@posteo.net>, 2018
 # Benjamin Somers <benjamin.somers@telecom-bretagne.eu>, 2019
@@ -2490,8 +2490,8 @@ msgstr "Trouver votre compte Zulip"
 msgid "Email addresses"
 msgstr "Courriels"
 
-#: templates/zerver/find_account.html:43
-msgid "Find accounts"
+#: templates/zerver/find_account.html:45
+msgid "Find teams"
 msgstr "Trouver des comptes"
 
 #: templates/zerver/footer.html:3

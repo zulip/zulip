@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Apecengo, 2020
 # Bruno Orcha García <gimcoo@gmail.com>, 2019
@@ -2482,9 +2482,9 @@ msgstr "Encontrar tus cuentas de Zulip"
 msgid "Email addresses"
 msgstr "Direcciones de correo electrónico"
 
-#: templates/zerver/find_account.html:43
-msgid "Find accounts"
-msgstr "Encontrar cuentas"
+#: templates/zerver/find_account.html:45
+msgid "Find teams"
+msgstr "Encontrar equipos"
 
 #: templates/zerver/footer.html:3
 msgid "About Zulip"

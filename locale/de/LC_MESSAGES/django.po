@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Akira Tenchi <jimjan2002@gmail.com>, 2019
 # Ansgar Hofmann <ansgar@trollgames.de>, 2016
@@ -2500,8 +2500,8 @@ msgstr "Finde deine Zulip-Accounts"
 msgid "Email addresses"
 msgstr "E-Mail-Adressen"
 
-#: templates/zerver/find_account.html:43
-msgid "Find accounts"
+#: templates/zerver/find_account.html:45
+msgid "Find teams"
 msgstr "Accounts finden"
 
 #: templates/zerver/footer.html:3

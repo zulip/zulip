@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Denis Ivanov, 2019
 # Mykola Ronik <mantikor.san@gmail.com>, 2018-2020
@@ -2477,8 +2477,8 @@ msgstr "Знайдіть свої облікові записи Zulip"
 msgid "Email addresses"
 msgstr "Електронні адреси"
 
-#: templates/zerver/find_account.html:43
-msgid "Find accounts"
+#: templates/zerver/find_account.html:45
+msgid "Find teams"
 msgstr "Знайти облікові записи"
 
 #: templates/zerver/footer.html:3

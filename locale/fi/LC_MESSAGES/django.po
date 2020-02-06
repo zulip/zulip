@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Aarni Koskela, 2018
 # Jari Winberg <winjar@autistici.org>, 2018
@@ -2476,8 +2476,8 @@ msgstr "Löydä Zulip tilisi"
 msgid "Email addresses"
 msgstr "Sähköpostiosoitteet"
 
-#: templates/zerver/find_account.html:43
-msgid "Find accounts"
+#: templates/zerver/find_account.html:45
+msgid "Find teams"
 msgstr "Löydä tilit"
 
 #: templates/zerver/footer.html:3

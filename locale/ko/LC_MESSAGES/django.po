@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # cozyplanes <laonsonic@gmail.com>, 2018
 # EUNJEUNG <rislove418@gmail.com>, 2018
@@ -2484,8 +2484,8 @@ msgstr "귀하의 Zulip 계정을 찾으세요."
 msgid "Email addresses"
 msgstr "이메일 주소"
 
-#: templates/zerver/find_account.html:43
-msgid "Find accounts"
+#: templates/zerver/find_account.html:45
+msgid "Find teams"
 msgstr "계정 찾기"
 
 #: templates/zerver/footer.html:3

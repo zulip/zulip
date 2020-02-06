@@ -40,7 +40,9 @@
                             <input type="text" autofocus id="emails" name="emails" required />
                             <label for="emails">{{ _('Email addresses') }}</label>
                         </div>
-                        <button type="submit">{{ _('Find accounts') }}</button>
+                        <br>
+                        <a id="output">Enter email</a>
+                        <button id="submitButton" type="submit">{{ _('Find teams') }}</button>
                     </div>
                     <div><i>{{ form.emails.help_text }}</i></div>
                 </form>
@@ -55,4 +57,5 @@
         </div>
     </div>
 </div>
+<script type="text/javascript" src="/static/js/portico/email_validate.js"></script>
 {% endblock %}

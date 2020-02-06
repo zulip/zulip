@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Ken Li Hsieh <ozakiyuyu@gmail.com>, 2017
 # Kir <note351@hotmail.com>, 2017
@@ -2475,8 +2475,8 @@ msgstr "尋找您的 Zulip 帳戶"
 msgid "Email addresses"
 msgstr "信箱位址"
 
-#: templates/zerver/find_account.html:43
-msgid "Find accounts"
+#: templates/zerver/find_account.html:45
+msgid "Find teams"
 msgstr "尋找帳戶"
 
 #: templates/zerver/footer.html:3

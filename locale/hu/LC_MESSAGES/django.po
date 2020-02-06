@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Barna Kovács <vonbraun22@gmail.com>, 2018
 # Hrotkó Gábor <hrotko.gabor@gmail.com>, 2016-2017
@@ -2479,8 +2479,8 @@ msgstr ""
 msgid "Email addresses"
 msgstr ""
 
-#: templates/zerver/find_account.html:43
-msgid "Find accounts"
+#: templates/zerver/find_account.html:45
+msgid "Find teams"
 msgstr "Fiókok keresése"
 
 #: templates/zerver/footer.html:3

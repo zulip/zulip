@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # David Wood <ZXFEIIKBVHB0Y6EIYWUMV68EL@david.davidtw.co>, 2019
 # David Wood <ZXFEIIKBVHB0Y6EIYWUMV68EL@david.davidtw.co>, 2019-2020
@@ -2475,9 +2475,9 @@ msgstr "Find your Zulip accounts"
 msgid "Email addresses"
 msgstr "Email addresses"
 
-#: templates/zerver/find_account.html:43
-msgid "Find accounts"
-msgstr "Find accounts"
+#: templates/zerver/find_account.html:45
+msgid "Find teams"
+msgstr "Find teams"
 
 #: templates/zerver/footer.html:3
 msgid "About Zulip"
