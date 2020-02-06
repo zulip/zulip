@@ -221,7 +221,6 @@ export default (env?: string): webpack.Configuration[] => {
         { path: "clipboard/dist/clipboard.js", name: "ClipboardJS" },
         { path: "xdate/src/xdate.js", name: "XDate" },
         { path: "../static/third/marked/lib/marked.js" },
-        { path: "../static/generated/emoji/emoji_codes.js" },
         { path: "../static/generated/pygments_data.js" },
         { path: "../static/js/debug.js" },
         { path: "../static/js/blueslip.js" },

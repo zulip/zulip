@@ -1,3 +1,4 @@
+const emoji_codes = require("../generated/emoji/emoji_codes.json");
 const typeahead = require("../shared/js/typeahead");
 
 const render_emoji_popover = require('../templates/emoji_popover.hbs');

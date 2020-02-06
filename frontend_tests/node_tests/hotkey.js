@@ -192,11 +192,6 @@ run_test('basic_chars', () => {
     set_global('emoji_picker', {
         reactions_popped: return_false,
     });
-    set_global('emoji_codes', {
-        codepoint_to_name: {
-            '1f44d': 'thumbs_up',
-        },
-    });
     set_global('hotspots', {
         is_open: return_false,
     });

@@ -16,7 +16,6 @@ import html
 import time
 import functools
 from io import StringIO
-import ujson
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element
 import ahocorasick
@@ -33,10 +32,10 @@ from markdown.extensions import codehilite, nl2br, tables, sane_lists
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
-from zerver.lib.emoji import translate_emoticons, emoticon_regex
+from zerver.lib.emoji import translate_emoticons, emoticon_regex, \
+    name_to_codepoint, codepoint_to_name
 from zerver.lib.mention import possible_mentions, \
     possible_user_group_mentions, extract_user_group
-from zerver.lib.storage import static_path
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.thumbnail import user_uploads_or_external
 from zerver.lib.timeout import timeout, TimeoutExpired
@@ -1203,14 +1202,6 @@ def possible_avatar_emails(content: str) -> Set[str]:
                 emails.add(email)
 
     return emails
-
-path_to_name_to_codepoint = static_path("generated/emoji/name_to_codepoint.json")
-with open(path_to_name_to_codepoint) as name_to_codepoint_file:
-    name_to_codepoint = ujson.load(name_to_codepoint_file)
-
-path_to_codepoint_to_name = static_path("generated/emoji/codepoint_to_name.json")
-with open(path_to_codepoint_to_name) as codepoint_to_name_file:
-    codepoint_to_name = ujson.load(codepoint_to_name_file)
 
 # All of our emojis(non ZWJ sequences) belong to one of these unicode blocks:
 # \U0001f100-\U0001f1ff - Enclosed Alphanumeric Supplement
