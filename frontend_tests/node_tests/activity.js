@@ -816,6 +816,7 @@ run_test('initialize', () => {
         buddy_list.container = $('#user_presences');
         buddy_list.container.append = () => {};
         clear_buddy_list();
+        page_params.presences = {};
     }
 
     clear();
@@ -843,12 +844,12 @@ run_test('initialize', () => {
     activity.client_is_active = false;
 
     activity.initialize();
+    assert.equal(page_params.presences, undefined);
     clear();
 
     assert(scroll_handler_started);
     assert(!activity.new_user_input);
     assert(!$('#zephyr-mirror-error').hasClass('show'));
-    assert.equal(page_params.presences, undefined);
     assert(activity.client_is_active);
     $(window).idle = function (params) {
         params.onIdle();
@@ -856,6 +857,7 @@ run_test('initialize', () => {
     channel.post = function (payload) {
         payload.success({
             zephyr_mirror_active: false,
+            presences: {},
         });
     };
     global.setInterval = (func) => func();

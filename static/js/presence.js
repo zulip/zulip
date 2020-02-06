@@ -42,7 +42,7 @@ function status_from_timestamp(baseline_time, info) {
     let status = 'offline';
     let last_active = 0;
 
-    _.each(info, function (device_presence, device) {
+    for (const [device, device_presence] of Object.entries(info)) {
         const age = baseline_time - device_presence.timestamp;
         if (last_active < device_presence.timestamp) {
             last_active = device_presence.timestamp;
@@ -66,7 +66,7 @@ function status_from_timestamp(baseline_time, info) {
                 blueslip.error('Unexpected status', {presence_object: device_presence, device: device}, undefined);
             }
         }
-    });
+    }
     return {status: status,
             last_active: last_active };
 }
@@ -81,7 +81,7 @@ exports.set_info_for_user = function (user_id, info, server_time) {
 
 exports.set_info = function (presences, server_timestamp) {
     exports.presence_info.clear();
-    _.each(presences, function (info, user_id_str) {
+    for (const [user_id_str, info] of Object.entries(presences)) {
         // Note: In contrast with essentially every other piece of
         // state updates we receive from the server, precense updates
         // are pulled independently from server_events_dispatch.js.
@@ -99,7 +99,7 @@ exports.set_info = function (presences, server_timestamp) {
 
         const user_id = parseInt(user_id_str, 10);
         exports.presence_info.set(user_id, status);
-    });
+    }
     exports.update_info_for_small_realm();
 };
 
