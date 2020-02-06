@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 /* WARNING:
 
     This file is only included when Django's DEBUG = True and your
