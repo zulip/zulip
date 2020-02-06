@@ -14,7 +14,8 @@ zrequire('stream_data');
 zrequire('narrow');
 zrequire('hash_util');
 zrequire('marked', 'third/marked/lib/marked');
-const actual_pygments_data = zrequire('actual_pygments_data', 'generated/pygments_data');
+const pygments_data = zrequire('pygments_data', 'generated/pygments_data.json');
+const actual_pygments_data = Object.assign({}, pygments_data);
 zrequire('settings_org');
 const ct = zrequire('composebox_typeahead');
 const th = zrequire('typeahead_helper');
@@ -96,7 +97,7 @@ run_test('sort_streams', () => {
 });
 
 run_test('sort_languages', () => {
-    set_global('pygments_data', {langs:
+    Object.assign(pygments_data, {langs:
         {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
     });
 
@@ -107,7 +108,7 @@ run_test('sort_languages', () => {
     assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
 
     // Test if popularity between two languages are the same
-    global.pygments_data.langs.php = 40;
+    pygments_data.langs.php = 40;
     test_langs = ["pascal", "perl", "php", "python", "javascript"];
     test_langs = th.sort_languages(test_langs, "p");
 
@@ -118,7 +119,7 @@ run_test('sort_languages', () => {
     // We may eventually want to use human-readable names like
     // "JavaScript" with several machine-readable aliases for what the
     // user typed, which might help provide a better user experience.
-    global.pygments_data = actual_pygments_data;
+    Object.assign(pygments_data, actual_pygments_data);
     test_langs = ["j", "java", "javascript", "js"];
 
     // Sort acccording to priority only.
