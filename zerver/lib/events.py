@@ -43,6 +43,8 @@ from zerver.lib.actions import (
     default_stream_groups_to_dicts_sorted,
     get_owned_bot_dicts,
     get_available_notification_sounds,
+    get_web_public_subs,
+    get_web_public_streams,
 )
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data
 from zerver.lib.user_groups import user_groups_in_realm_serialized
@@ -79,13 +81,12 @@ def always_want(msg_type: str) -> bool:
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
-def fetch_initial_state_data(user_profile: UserProfile,
+def fetch_initial_state_data(realm: Realm, user_profile: Optional[UserProfile],
                              event_types: Optional[Iterable[str]],
                              queue_id: str, client_gravatar: bool,
                              slim_presence: bool = False,
                              include_subscribers: bool = True) -> Dict[str, Any]:
     state = {'queue_id': queue_id}  # type: Dict[str, Any]
-    realm = user_profile.realm
 
     if event_types is None:
         # return True always
@@ -94,7 +95,10 @@ def fetch_initial_state_data(user_profile: UserProfile,
         want = set(event_types).__contains__
 
     if want('alert_words'):
-        state['alert_words'] = user_alert_words(user_profile)
+        if user_profile is not None:
+            state['alert_words'] = user_alert_words(user_profile)
+        else:
+            state['alert_words'] = []
 
     if want('custom_profile_fields'):
         fields = custom_profile_fields_for_realm(realm.id)
@@ -102,26 +106,42 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES_DICT
 
     if want('hotspots'):
-        state['hotspots'] = get_next_hotspots(user_profile)
+        if user_profile is not None:
+            state['hotspots'] = get_next_hotspots(user_profile)
+        else:
+            state['hotspots'] = []
 
     if want('message'):
         # The client should use get_messages() to fetch messages
         # starting with the max_message_id.  They will get messages
         # newer than that ID via get_events()
-        messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
-        if messages:
-            state['max_message_id'] = messages[0].id
+        if user_profile is not None:
+            messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
+            if messages:
+                state['max_message_id'] = messages[0].id
+            else:
+                state['max_message_id'] = -1
         else:
+            # TODO: This is buggy; it should be the max message the user can access.
             state['max_message_id'] = -1
 
     if want('muted_topics'):
-        state['muted_topics'] = get_topic_mutes(user_profile)
+        if user_profile is not None:
+            state['muted_topics'] = get_topic_mutes(user_profile)
+        else:
+            state['muted_topics'] = []
 
     if want('pointer'):
-        state['pointer'] = user_profile.pointer
+        if user_profile is not None:
+            state['pointer'] = user_profile.pointer
+        else:
+            state['pointer'] = -1
 
     if want('presence'):
-        state['presences'] = get_status_dict(user_profile, slim_presence)
+        if user_profile is not None:
+            state['presences'] = get_status_dict(user_profile, slim_presence)
+        else:
+            state['presences'] = {}
 
     if want('realm'):
         for property_name in Realm.property_types:
@@ -147,7 +167,10 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_bot_domain'] = realm.get_bot_domain()
         state['realm_uri'] = realm.uri
         state['realm_available_video_chat_providers'] = realm.VIDEO_CHAT_PROVIDERS
-        state['realm_presence_disabled'] = realm.presence_disabled
+        if user_profile is not None:
+            state['realm_presence_disabled'] = realm.presence_disabled
+        else:
+            state['realm_presence_disabled'] = True
         state['settings_send_digest_emails'] = settings.SEND_DIGEST_EMAILS
         state['realm_digest_emails_enabled'] = realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
@@ -185,6 +208,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_user_groups'] = user_groups_in_realm_serialized(realm)
 
     if want('realm_user'):
+        if user_profile is None:
+            # TODO: Come up with a strategy for these values.
+            raise AssertionError("Not implemented yet")
         state['raw_users'] = get_raw_user_data(
             realm=realm,
             user_profile=user_profile,
@@ -219,7 +245,10 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['full_name'] = user_profile.full_name
 
     if want('realm_bot'):
-        state['realm_bots'] = get_owned_bot_dicts(user_profile)
+        if user_profile is not None:
+            state['realm_bots'] = get_owned_bot_dicts(user_profile)
+        else:
+            state['realm_bots'] = []
 
     # This does not yet have an apply_event counterpart, since currently,
     # new entries for EMBEDDED_BOTS can only be added directly in the codebase.
@@ -254,11 +283,17 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # intermediate form as a dictionary keyed by recipient_id,
         # which is more efficient to update, and is rewritten to the
         # final format in post_process_state.
-        state['raw_recent_private_conversations'] = get_recent_private_conversations(user_profile)
+        if user_profile is not None:
+            state['raw_recent_private_conversations'] = get_recent_private_conversations(user_profile)
+        else:
+            state['raw_recent_private_conversations'] = []
 
     if want('subscription'):
-        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
-            user_profile, include_subscribers=include_subscribers)
+        if user_profile is not None:
+            subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
+                user_profile, include_subscribers=include_subscribers)
+        else:
+            subscriptions, unsubscribed, never_subscribed = get_web_public_subs(realm)
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
         state['never_subscribed'] = never_subscribed
@@ -268,23 +303,32 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # message updates. This is due to the fact that new messages will not
         # generate a flag update so we need to use the flags field in the
         # message event.
-        state['raw_unread_msgs'] = get_raw_unread_data(user_profile)
+        if user_profile is not None:
+            state['raw_unread_msgs'] = get_raw_unread_data(user_profile)
+        else:
+            state['raw_unread_msgs'] = {}
 
     if want('starred_messages'):
-        state['starred_messages'] = get_starred_message_ids(user_profile)
+        if user_profile is not None:
+            state['starred_messages'] = get_starred_message_ids(user_profile)
+        else:
+            state['starred_messages'] = []
 
     if want('stream'):
-        state['streams'] = do_get_streams(user_profile)
+        if user_profile is not None:
+            state['streams'] = do_get_streams(user_profile)
+        else:
+            state['streams'] = get_web_public_streams(realm)
         state['stream_name_max_length'] = Stream.MAX_NAME_LENGTH
         state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):
-        if user_profile.is_guest:
+        if user_profile is None or user_profile.is_guest:
             state['realm_default_streams'] = []
         else:
             state['realm_default_streams'] = streams_to_dicts_sorted(
                 get_default_streams_for_realm(realm.id))
     if want('default_stream_groups'):
-        if user_profile.is_guest:
+        if user_profile is None or user_profile.is_guest:
             state['realm_default_stream_groups'] = []
         else:
             state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
@@ -293,18 +337,30 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('stop_words'):
         state['stop_words'] = read_stop_words()
 
+    # Used for the case where UserProfile=None to get default properties.
+    # TODO: Clean this up.
+    fake_user = UserProfile()
     if want('update_display_settings'):
         for prop in UserProfile.property_types:
-            state[prop] = getattr(user_profile, prop)
-        state['emojiset_choices'] = user_profile.emojiset_choices()
+            if user_profile is not None:
+                state[prop] = getattr(user_profile, prop)
+            else:
+                state[prop] = getattr(fake_user, prop)
+            state['emojiset_choices'] = user_profile.emojiset_choices()
 
     if want('update_global_notifications'):
         for notification in UserProfile.notification_setting_types:
-            state[notification] = getattr(user_profile, notification)
+            if user_profile is not None:
+                state[notification] = getattr(user_profile, notification)
+            else:
+                state[notification] = getattr(fake_user, notification)
         state['available_notification_sounds'] = get_available_notification_sounds()
 
     if want('user_status'):
-        state['user_status'] = get_user_info_dict(realm_id=realm.id)
+        if user_profile is not None:
+            state['user_status'] = get_user_info_dict(realm_id=realm.id)
+        else:
+            state['user_status'] = {}
 
     if want('zulip_version'):
         state['zulip_version'] = ZULIP_VERSION

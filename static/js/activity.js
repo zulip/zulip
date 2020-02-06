@@ -298,6 +298,9 @@ function send_presence_to_server(want_redraw) {
         blueslip.log("Skipping querying presence because reload in progress");
         return;
     }
+    if (page_params.is_web_public_guest) {
+        return;
+    }
 
     channel.post({
         url: '/json/users/me/presence',
