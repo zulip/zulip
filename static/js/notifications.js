@@ -1,7 +1,7 @@
 const render_compose_notification = require('../templates/compose_notification.hbs');
 const render_notification = require('../templates/notification.hbs');
 
-let notice_memory = {};
+const notice_memory = new Map();
 
 // When you start Zulip, window_has_focus should be true, but it might not be the
 // case after a server-initiated reload.
@@ -66,10 +66,10 @@ exports.initialize = function () {
     $(window).focus(function () {
         window_has_focus = true;
 
-        _.each(notice_memory, function (notice_mem_entry) {
+        for (const notice_mem_entry of notice_memory.values()) {
             cancel_notification_object(notice_mem_entry.obj);
-        });
-        notice_memory = {};
+        }
+        notice_memory.clear();
 
         // Update many places on the DOM to reflect unread
         // counts.
@@ -363,10 +363,10 @@ function process_notification(notification) {
         content += " [...]";
     }
 
-    if (notice_memory[key] !== undefined) {
-        msg_count = notice_memory[key].msg_count + 1;
+    if (notice_memory.has(key)) {
+        msg_count = notice_memory.get(key).msg_count + 1;
         title = msg_count + " messages from " + title;
-        notification_object = notice_memory[key].obj;
+        notification_object = notice_memory.get(key).obj;
         cancel_notification_object(notification_object);
     }
 
@@ -399,12 +399,13 @@ function process_notification(notification) {
     // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
     if (notification.desktop_notify && /webkit/i.test(navigator.userAgent)) {
         const icon_url = people.small_avatar_url(message);
-        notice_memory[key] = {
-            obj: notifications_api.createNotification(icon_url, title, content, message.id),
+        notification_object =
+            notifications_api.createNotification(icon_url, title, content, message.id);
+        notice_memory.set(key, {
+            obj: notification_object,
             msg_count: msg_count,
             message_id: message.id,
-        };
-        notification_object = notice_memory[key].obj;
+        });
         notification_object.onclick = function () {
             notification_object.cancel();
             if (feature_flags.clicking_notification_causes_narrow) {
@@ -413,7 +414,7 @@ function process_notification(notification) {
             window.focus();
         };
         notification_object.onclose = function () {
-            delete notice_memory[key];
+            notice_memory.delete(key);
         };
         notification_object.show();
     } else if (notification.desktop_notify && typeof Notification !== "undefined" && /mozilla/i.test(navigator.userAgent)) {
@@ -444,12 +445,12 @@ function process_notification(notification) {
 exports.process_notification = process_notification;
 
 exports.close_notification = function (message) {
-    _.each(Object.keys(notice_memory), function (key) {
-        if (notice_memory[key].message_id === message.id) {
-            cancel_notification_object(notice_memory[key].obj);
-            delete notice_memory[key];
+    for (const [key, notice_mem_entry] of notice_memory) {
+        if (notice_mem_entry.message_id === message.id) {
+            cancel_notification_object(notice_mem_entry.obj);
+            notice_memory.delete(key);
         }
-    });
+    }
 };
 
 exports.message_is_notifiable = function (message) {
