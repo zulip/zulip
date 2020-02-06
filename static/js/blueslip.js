@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 // System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 
 // This must be included before the first call to $(document).ready
