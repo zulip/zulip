@@ -77,9 +77,8 @@ exports.initialize = function initialize() {
 
 exports.build_emoji_data = function (realm_emojis) {
     exports.emojis_by_name.clear();
-    let emoji_dict;
     for (const [realm_emoji_name, realm_emoji] of realm_emojis) {
-        emoji_dict = {
+        const emoji_dict = {
             name: realm_emoji_name,
             display_name: realm_emoji_name,
             aliases: [realm_emoji_name],
@@ -90,12 +89,12 @@ exports.build_emoji_data = function (realm_emojis) {
         exports.emojis_by_name.set(realm_emoji_name, emoji_dict);
     }
 
-    _.each(emoji_codes.emoji_catalog, function (codepoints) {
-        _.each(codepoints, function (codepoint) {
+    for (const codepoints of Object.values(emoji_codes.emoji_catalog)) {
+        for (const codepoint of codepoints) {
             if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
                 const emoji_name = emoji_codes.codepoint_to_name[codepoint];
                 if (!exports.emojis_by_name.has(emoji_name)) {
-                    emoji_dict = {
+                    const emoji_dict = {
                         name: emoji_name,
                         display_name: emoji_name,
                         aliases: exports.default_emoji_aliases.get(codepoint),
@@ -106,8 +105,8 @@ exports.build_emoji_data = function (realm_emojis) {
                     exports.emojis_by_name.set(emoji_name, emoji_dict);
                 }
             }
-        });
-    });
+        }
+    }
 };
 
 exports.build_emoji_upload_widget = function () {
