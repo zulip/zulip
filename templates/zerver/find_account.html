@@ -40,12 +40,17 @@
                             <input type="text" autofocus id="emails" name="emails" required />
                             <label for="emails">{{ _('Email addresses') }}</label>
                         </div>
-                        <button type="submit">{{ _('Find accounts') }}</button>
+                        <button id="myBtn" type="submit">{{ _('Find teams') }}</button>
                     </div>
                     <div><i>{{ form.emails.help_text }}</i></div>
                 </form>
                 <div id="errors"></div>
                 {% if form.emails.errors %}
+                  <script type = "text/javascript">
+                    function disable(){
+                      document.getElementById("myBtn").disabled = true;
+                    }
+                  </script>
                     {% for error in form.emails.errors %}
                     <div class="alert alert-error">{{ error }}</div>
                     {% endfor %}
