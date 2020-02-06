@@ -5,13 +5,33 @@ import time
 
 from django.utils.timezone import now as timezone_now
 
-from typing import Any, Dict
+from typing import Any, Dict, Set
 from zerver.models import (
     query_for_ids,
     PushDeviceToken,
     UserPresence,
     UserProfile,
 )
+
+def get_status_dict_by_user(user_profile_id: int,
+                            slim_presence: bool=False) -> Dict[str, Dict[str, Any]]:
+    query = UserPresence.objects.filter(user_profile_id=user_profile_id).values(
+        'client__name',
+        'status',
+        'timestamp',
+        'user_profile__email',
+        'user_profile__id',
+        'user_profile__enable_offline_push_notifications',
+    )
+    presence_rows = list(query)
+
+    mobile_user_ids = set()  # type: Set[int]
+    if PushDeviceToken.objects.filter(user_id=user_profile_id).exists():  # nocoverage
+        # TODO: Add a test, though this is low priority, since we don't use mobile_user_ids yet.
+        mobile_user_ids.add(user_profile_id)
+
+    return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
+
 
 def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict[str, Dict[str, Any]]:
     user_profile_ids = UserProfile.objects.filter(
