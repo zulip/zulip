@@ -1,3 +1,5 @@
+from datetime import timedelta
+from django.utils.timezone import now as timezone_now
 from typing import Any, Callable
 
 from zerver.lib.sessions import (
@@ -7,6 +9,8 @@ from zerver.lib.sessions import (
     delete_realm_user_sessions,
     delete_all_user_sessions,
     delete_all_deactivated_user_sessions,
+    get_expirable_session_var,
+    set_expirable_session_var,
 )
 
 from zerver.models import (
@@ -15,6 +19,7 @@ from zerver.models import (
 
 from zerver.lib.test_classes import ZulipTestCase
 
+import mock
 
 class TestSessions(ZulipTestCase):
 
@@ -93,3 +98,35 @@ class TestSessions(ZulipTestCase):
         delete_all_deactivated_user_sessions()
         result = self.client_get("/")
         self.assertEqual('/login/', result.url)
+
+class TestExpirableSessionVars(ZulipTestCase):
+    def setUp(self) -> None:
+        self.session = self.client.session
+        super().setUp()
+
+    def test_set_and_get_basic(self) -> None:
+        start_time = timezone_now()
+        with mock.patch('zerver.lib.sessions.timezone_now', return_value=start_time):
+            set_expirable_session_var(self.session, 'test_set_and_get_basic', 'some_value', expiry_seconds=10)
+            value = get_expirable_session_var(self.session, 'test_set_and_get_basic')
+            self.assertEqual(value, 'some_value')
+        with mock.patch('zerver.lib.sessions.timezone_now', return_value=start_time + timedelta(seconds=11)):
+            value = get_expirable_session_var(self.session, 'test_set_and_get_basic')
+            self.assertEqual(value, None)
+
+    def test_set_and_get_with_delete(self) -> None:
+        set_expirable_session_var(self.session, 'test_set_and_get_with_delete', 'some_value', expiry_seconds=10)
+        value = get_expirable_session_var(self.session, 'test_set_and_get_with_delete', delete=True)
+        self.assertEqual(value, 'some_value')
+        self.assertEqual(get_expirable_session_var(self.session, 'test_set_and_get_with_delete'), None)
+
+    def test_get_var_not_set(self) -> None:
+        value = get_expirable_session_var(self.session, 'test_get_var_not_set', default_value='default')
+        self.assertEqual(value, 'default')
+
+    def test_get_var_is_not_expirable(self) -> None:
+        self.session["test_get_var_is_not_expirable"] = 0
+        with mock.patch('zerver.lib.sessions.logging.warning') as mock_warn:
+            value = get_expirable_session_var(self.session, 'test_get_var_is_not_expirable', default_value='default')
+            self.assertEqual(value, 'default')
+            mock_warn.assert_called_once()
