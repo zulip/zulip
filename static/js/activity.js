@@ -99,7 +99,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 exports.process_loaded_messages = function (messages) {
     let need_resize = false;
 
-    _.each(messages, function (message) {
+    for (const message of messages) {
         const huddle_string = people.huddle_string(message);
 
         if (huddle_string) {
@@ -110,7 +110,7 @@ exports.process_loaded_messages = function (messages) {
                 need_resize = true;
             }
         }
-    });
+    }
 
     exports.update_huddles();
 
@@ -259,10 +259,10 @@ exports.update_huddles = function () {
     const html = render_group_pms({group_pms: group_pms});
     ui.get_content_element($('#group-pms')).html(html);
 
-    _.each(huddles, function (user_ids_string) {
+    for (const user_ids_string of huddles) {
         const count = unread.num_unread_for_person(user_ids_string);
         set_group_count(user_ids_string, count);
-    });
+    }
 
     show_huddles();
 };

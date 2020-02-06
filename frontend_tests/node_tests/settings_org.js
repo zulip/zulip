@@ -8,9 +8,9 @@ let form_data;
 
 const _jQuery = {
     each: function (lst, f) {
-        _.each(lst, function (v, k) {
+        for (const [k, v] of lst.entries()) {
             f(k, v);
-        });
+        }
     },
 };
 

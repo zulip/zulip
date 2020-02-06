@@ -32,7 +32,7 @@ exports.process_read_messages_event = function (message_ids) {
         return;
     }
 
-    _.each(message_ids, function (message_id) {
+    for (const message_id of message_ids) {
         if (current_msg_list === message_list.narrowed) {
             // I'm not sure this entirely makes sense for all server
             // notifications.
@@ -46,7 +46,7 @@ exports.process_read_messages_event = function (message_ids) {
         if (message) {
             process_newly_read_message(message, options);
         }
-    });
+    }
 
     unread_ui.update_unread_counts();
 };
@@ -63,14 +63,14 @@ exports.notify_server_messages_read = function (messages, options) {
 
     message_flags.send_read(messages);
 
-    _.each(messages, function (message) {
+    for (const message of messages) {
         if (current_msg_list === message_list.narrowed) {
             unread.set_messages_read_in_narrow(true);
         }
 
         unread.mark_as_read(message.id);
         process_newly_read_message(message, options);
-    });
+    }
 
     unread_ui.update_unread_counts();
 };

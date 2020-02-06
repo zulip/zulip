@@ -41,14 +41,14 @@ run_test('get_list_info w/real topic_data', () => {
         num_possible_topics: 0,
     });
 
-    _.each(_.range(7), (i) => {
+    for (const i of _.range(7)) {
         const topic_name = 'topic ' + i;
         topic_data.add_message({
             stream_id: general.stream_id,
             topic_name: topic_name,
             message_id: 1000 + i,
         });
-    });
+    }
 
     narrow_state.topic = () => 'topic 6';
 

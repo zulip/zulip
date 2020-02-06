@@ -58,9 +58,9 @@ exports.activate = function (opts) {
         // Assign idx values to each of our choices so that
         // our template can create data-idx values for our
         // JS code to use later.
-        _.each(data.choices, function (choice, idx) {
+        for (const [idx, choice] of data.choices.entries()) {
             choice.idx = idx;
-        });
+        }
 
         const html = render_widgets_zform_choices(data);
         const elem = $(html);

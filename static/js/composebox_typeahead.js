@@ -28,12 +28,12 @@ exports.update_emoji_data = function () {
                 is_realm_emoji: true,
             });
         } else {
-            _.each(emoji_dict.aliases, function (alias) {
+            for (const alias of emoji_dict.aliases) {
                 exports.emoji_collection.push({
                     emoji_name: alias,
                     emoji_code: emoji_dict.emoji_code,
                 });
-            });
+            }
         }
     }
 };

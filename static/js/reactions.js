@@ -333,11 +333,11 @@ exports.remove_reaction = function (event) {
 
     // Do the data part first:
     // Remove reactions from our message object.
-    _.each(message.reactions, function (reaction, index) {
+    for (const [index, reaction] of message.reactions.entries()) {
         if (reaction.local_id === local_id && reaction.user.id === user_id) {
             i = index;
         }
-    });
+    }
 
     if (i !== -1) {
         message.reactions.splice(i, 1);
@@ -401,13 +401,14 @@ exports.get_emojis_used_by_user_for_message_id = function (message_id) {
 
 exports.get_message_reactions = function (message) {
     const message_reactions = new Dict();
-    _.each(message.reactions, function (reaction) {
+
+    for (const reaction of message.reactions) {
         const user_id = reaction.user.id;
         reaction.local_id = exports.get_local_reaction_id(reaction);
         if (!people.is_known_user_id(user_id)) {
             blueslip.warn('Unknown user_id ' + user_id +
                           ' in reaction for message ' + message.id);
-            return;
+            continue;
         }
         reaction.user_ids = [];
         let collapsed_reaction = message_reactions.get(reaction.local_id);
@@ -416,7 +417,8 @@ exports.get_message_reactions = function (message) {
             message_reactions.set(reaction.local_id, collapsed_reaction);
         }
         collapsed_reaction.user_ids.push(user_id);
-    });
+    }
+
     const reactions = Array.from(message_reactions.values(), reaction => {
         reaction.local_id = reaction.local_id;
         reaction.reaction_type = reaction.reaction_type;

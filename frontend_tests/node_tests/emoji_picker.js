@@ -14,9 +14,9 @@ run_test('initialize', () => {
         assert.equal(ele.icon, icon);
         assert.equal(ele.emojis.length, num);
         function check_emojis(val) {
-            _.each(ele.emojis, function (emoji) {
+            for (const emoji of ele.emojis) {
                 assert.equal(emoji.is_realm_emoji, val);
-            });
+            }
         }
         if (ele.name === 'Custom') {
             check_emojis(true);

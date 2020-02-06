@@ -27,13 +27,15 @@ exports.highlight_with_escaping_and_regex = function (regex, item) {
 
     const pieces = item.split(regex);
     let result = "";
-    _.each(pieces, function (piece) {
+
+    for (const piece of pieces) {
         if (piece.match(regex)) {
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
         } else {
             result += Handlebars.Utils.escapeExpression(piece);
         }
-    });
+    }
+
     return result;
 };
 
@@ -304,7 +306,6 @@ exports.sort_recipients = function (
     groups,
     max_num_items
 ) {
-
     if (!groups) {
         groups = [];
     }
@@ -356,11 +357,12 @@ exports.sort_recipients = function (
     */
 
     let items = [];
-    _.each(getters, (getter) => {
+
+    for (const getter of getters) {
         if (items.length < max_num_items) {
             items = items.concat(getter());
         }
-    });
+    }
 
     return items.slice(0, max_num_items);
 };

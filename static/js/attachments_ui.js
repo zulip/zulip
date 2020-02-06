@@ -100,11 +100,11 @@ function render_attachments_ui() {
 }
 
 function format_attachment_data(new_attachments) {
-    _.each(new_attachments, function (attachment) {
+    for (const attachment of new_attachments) {
         const time = new XDate(attachment.create_time);
         attachment.create_time_str = timerender.render_now(time).time_str;
         attachment.size_str = exports.bytes_to_size(attachment.size);
-    });
+    }
 }
 
 exports.update_attachments = function (event) {

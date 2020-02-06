@@ -53,14 +53,14 @@ const bot_with_owner = {
 };
 
 function make_people() {
-    _.each(_.range(1002, 2000), (i) => {
+    for (const i of _.range(1002, 2000)) {
         const person = {
             user_id: i,
             full_name: `Human ${i}`,
             email: `person${i}@example.com`,
         };
         people.add_in_realm(person);
-    });
+    }
 
     people.add_in_realm(bot);
     people.add_in_realm(bot_with_owner);
@@ -85,15 +85,14 @@ function activate_people() {
     presence.set_info_for_user(selma.user_id, info, server_time);
     presence.set_info_for_user(me.user_id, info, server_time);
 
-    _.each(_.range(1000, 1400), (user_id) => {
+    for (const user_id of _.range(1000, 1400)) {
         presence.set_info_for_user(user_id, info, server_time);
-    });
-
+    }
 
     // And then 300 not active
-    _.each(_.range(1400, 1700), (user_id) => {
+    for (const user_id of _.range(1400, 1700)) {
         presence.set_info_for_user(user_id, {}, server_time);
-    });
+    }
 }
 
 

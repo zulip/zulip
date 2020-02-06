@@ -30,9 +30,11 @@ exports.t = function (str, context) {
             suffix: key.slice(key.length - 2, key.length),
         };
     });
-    _.each(substitutions, function (item) {
+
+    for (const item of substitutions) {
         str = str.replace(item.prefix + item.keyword + item.suffix,
                           context[item.keyword]);
-    });
+    }
+
     return 'translated: ' + str;
 };

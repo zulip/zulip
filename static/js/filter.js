@@ -260,7 +260,8 @@ Filter.parse = function (str) {
     if (matches === null) {
         return operators;
     }
-    _.each(matches, function (token) {
+
+    for (const token of matches) {
         let operator;
         const parts = token.split(':');
         if (token[0] === '"' || parts.length === 1) {
@@ -283,12 +284,13 @@ Filter.parse = function (str) {
             if (Filter.operator_to_prefix(operator, negated) === '') {
                 // Put it as a search term, to not have duplicate operators
                 search_term.push(token);
-                return;
+                continue;
             }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
         }
-    });
+    }
+
     // NB: Callers of 'parse' can assume that the 'search' operator is last.
     if (search_term.length > 0) {
         operator = 'search';
@@ -543,7 +545,7 @@ Filter.prototype = {
     },
 
     update_email: function (user_id, new_email) {
-        _.each(this._operators, function (term) {
+        for (const term of this._operators) {
             switch (term.operator) {
             case 'group-pm-with':
             case 'pm-with':
@@ -555,7 +557,7 @@ Filter.prototype = {
                     new_email
                 );
             }
-        });
+        }
     },
 
     // Build a filter function from a list of operators.

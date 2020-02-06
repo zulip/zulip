@@ -71,9 +71,10 @@ exports.recent = (function () {
     };
 
     self.initialize = function () {
-        _.each(page_params.recent_private_conversations, function (conversation) {
+        for (const conversation of page_params.recent_private_conversations) {
             self.insert(conversation.user_ids, conversation.max_message_id);
-        });
+        }
+
         delete page_params.recent_private_messages;
     };
 

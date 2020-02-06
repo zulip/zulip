@@ -93,9 +93,9 @@ run_test('basics', () => {
     });
     assert_contents(mld, [120, 130, 140, 145]);
 
-    _.each(mld.all_messages(), (msg) => {
+    for (const msg of mld.all_messages()) {
         msg.unread = false;
-    });
+    }
 
     assert.equal(mld.first_unread_message_id(), 145);
 });

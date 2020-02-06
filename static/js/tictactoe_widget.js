@@ -138,9 +138,10 @@ exports.activate = function (opts) {
     }
 
     elem.handle_events = function (events) {
-        _.each(events, function (event) {
+        for (const event of events) {
             tictactoe_data.handle_event(event.sender_id, event.data);
-        });
+        }
+
         render();
     };
 

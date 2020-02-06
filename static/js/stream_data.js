@@ -305,9 +305,9 @@ exports.get_updated_unsorted_subs = function () {
     let all_subs = Array.from(stream_info.values());
 
     // Add in admin options and stream counts.
-    _.each(all_subs, function (sub) {
+    for (const sub of all_subs) {
         exports.update_calculated_fields(sub);
-    });
+    }
 
     // We don't display unsubscribed streams to guest users.
     if (page_params.is_guest) {
@@ -447,9 +447,9 @@ exports.update_calculated_fields = function (sub) {
     exports.update_subscribers_count(sub);
 
     // Apply the defaults for our notification settings for rendering.
-    _.each(stream_notification_settings, function (setting) {
+    for (const setting of stream_notification_settings) {
         sub[setting + "_display"] = exports.receives_notifications(sub.name, setting);
-    });
+    }
 };
 
 exports.all_subscribed_streams_are_in_home_view = function () {
@@ -672,14 +672,14 @@ exports.is_user_subscribed = function (stream_name, user_id) {
 };
 
 exports.create_streams = function (streams) {
-    _.each(streams, function (stream) {
+    for (const stream of streams) {
         // We handle subscriber stuff in other events.
         const attrs = _.defaults(stream, {
             subscribers: [],
             subscribed: false,
         });
         exports.create_sub_from_server_data(stream.name, attrs);
-    });
+    }
 };
 
 exports.create_sub_from_server_data = function (stream_name, attrs) {
@@ -754,9 +754,9 @@ exports.get_streams_for_settings_page = function () {
     const all_subs = unsubscribed_rows.concat(subscribed_rows);
 
     // Add in admin options and stream counts.
-    _.each(all_subs, function (sub) {
+    for (const sub of all_subs) {
         exports.update_calculated_fields(sub);
-    });
+    }
 
     return all_subs;
 };

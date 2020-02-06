@@ -613,10 +613,10 @@ function make_attacher(base) {
     };
 
     self.attach_many = function (suggestions) {
-        _.each(suggestions, function (suggestion) {
+        for (const suggestion of suggestions) {
             prepend_base(suggestion);
             self.push(suggestion);
-        });
+        }
     };
 
     return self;
@@ -718,12 +718,12 @@ exports.get_search_result = function (base_query, query) {
 
     const max_items = exports.max_num_of_search_results;
 
-    _.each(filterers, function (filterer) {
+    for (const filterer of filterers) {
         if (attacher.result.length < max_items) {
             const suggestions = filterer(last, base_operators);
             attacher.attach_many(suggestions);
         }
-    });
+    }
 
     return attacher.result.slice(0, max_items);
 };
@@ -804,12 +804,12 @@ exports.get_search_result_legacy = function (query) {
 
     const max_items = exports.max_num_of_search_results;
 
-    _.each(filterers, function (filterer) {
+    for (const filterer of filterers) {
         if (attacher.result.length < max_items) {
             const suggestions = filterer(last, base_operators);
             attacher.attach_many(suggestions);
         }
-    });
+    }
 
     // This is unique to the legacy search system.  With pills
     // it is difficult to "suggest" a subset of operators,
@@ -835,17 +835,19 @@ exports.get_suggestions = function (base_query, query) {
 };
 
 exports.finalize_search_result = function (result) {
-    _.each(result, function (sug) {
+    for (const sug of result) {
         const first = sug.description.charAt(0).toUpperCase();
         sug.description = first + sug.description.slice(1);
-    });
+    }
 
     // Typeahead expects us to give it strings, not objects,
     // so we maintain our own hash back to our objects
     const lookup_table = {};
-    _.each(result, function (obj) {
+
+    for (const obj of result) {
         lookup_table[obj.search_string] = obj;
-    });
+    }
+
     const strings = _.map(result, function (obj) {
         return obj.search_string;
     });

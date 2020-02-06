@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
 const SwaggerParser = require('swagger-parser');
-const _ = require('underscore');
 
 function check_duplicate_operationids(file, api) {
     const operation_ids = [];
 
-    _.each(api.paths, function (endpoint) {
-        _.each(endpoint, function (value) {
+    for (const endpoint of api.paths) {
+        for (const value of endpoint) {
             const operation_id = value.operationId;
             if (operation_id !== undefined) {
                 if (operation_ids.indexOf(operation_id) >= 0) {
@@ -18,8 +17,8 @@ function check_duplicate_operationids(file, api) {
                     operation_ids.push(operation_id);
                 }
             }
-        });
-    });
+        }
+    }
 }
 
 function validate_swagger(file) {

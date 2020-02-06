@@ -110,10 +110,10 @@ run_test('msg_edited_vars', () => {
         const message_group = build_message_group(messages);
         const list = build_list([message_group]);
 
-        _.each(messages, function (message_container) {
+        for (const message_container of messages) {
             list._maybe_format_me_message(message_container);
             list._add_msg_edited_vars(message_container);
-        });
+        }
 
         const result = list._message_groups[0].message_containers;
 
@@ -564,11 +564,11 @@ run_test('render_windows', () => {
         // the list where we can move the pointer without forcing
         // a re-render.  The code avoids hasty re-renders for
         // performance reasons.
-        _.each(_.range(start, end), function (idx) {
+        for (const idx of _.range(start, end)) {
             list.selected_idx = function () { return idx; };
             const rendered = view.maybe_rerender();
             assert.equal(rendered, false);
-        });
+        }
     }
 
     function verify_move(idx, range) {

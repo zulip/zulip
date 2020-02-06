@@ -114,19 +114,19 @@ exports.update_info_for_small_realm = function () {
     // that the server didn't include in its presence update.
     const persons = people.get_realm_persons();
 
-    _.each(persons, function (person) {
+    for (const person of persons) {
         const user_id = person.user_id;
         let status = "offline";
 
         if (exports.presence_info.has(user_id)) {
             // this is normal, we have data for active
             // users that we don't want to clobber.
-            return;
+            continue;
         }
 
         if (person.is_bot) {
             // we don't show presence for bots
-            return;
+            continue;
         }
 
         if (people.is_my_user_id(user_id)) {
@@ -137,7 +137,7 @@ exports.update_info_for_small_realm = function () {
             status: status,
             last_active: undefined,
         });
-    });
+    }
 };
 
 exports.last_active_date = function (user_id) {

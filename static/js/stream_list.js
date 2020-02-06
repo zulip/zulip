@@ -74,9 +74,9 @@ exports.create_initial_sidebar_rows = function () {
     // structures that are kept in stream_data.js.
     const subs = stream_data.subscribed_subs();
 
-    _.each(subs, function (sub) {
+    for (const sub of subs) {
         exports.create_sidebar_row(sub);
-    });
+    }
 };
 
 exports.build_stream_list = function () {

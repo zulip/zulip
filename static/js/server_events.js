@@ -20,7 +20,7 @@ function get_events_success(events) {
         return _.pick(event, 'id', 'type', 'op');
     };
 
-    _.each(events, function (event) {
+    for (const event of events) {
         try {
             get_events_params.last_event_id = Math.max(get_events_params.last_event_id,
                                                        event.id);
@@ -29,7 +29,7 @@ function get_events_success(events) {
                            {event: clean_event(event)},
                            ex.stack);
         }
-    });
+    }
 
     if (waiting_on_homeview_load) {
         events_stored_while_loading = events_stored_while_loading.concat(events);
@@ -77,7 +77,7 @@ function get_events_success(events) {
         }
     };
 
-    _.each(events, function (event) {
+    for (const event of events) {
         try {
             dispatch_event(event);
         } catch (ex1) {
@@ -86,7 +86,7 @@ function get_events_success(events) {
                            {event: clean_event(event)},
                            ex1.stack);
         }
-    });
+    }
 
     if (messages.length !== 0) {
         // Sort by ID, so that if we get multiple messages back from
@@ -98,7 +98,8 @@ function get_events_success(events) {
             if (messages.length > 0) {
                 _.each(messages, message_store.set_message_booleans);
                 let sent_by_this_client = false;
-                _.each(messages, function (msg) {
+
+                for (const msg of messages) {
                     const msg_state = sent_messages.messages[msg.local_id];
                     if (msg_state) {
                         // Almost every time, this message will be the
@@ -112,7 +113,8 @@ function get_events_success(events) {
                         // correctly.
                         sent_by_this_client = true;
                     }
-                });
+                }
+
                 message_events.insert_new_messages(messages, sent_by_this_client);
             }
         } catch (ex2) {
@@ -148,9 +150,9 @@ function get_events_success(events) {
     // We do things like updating message flags and deleting messages last,
     // to avoid ordering issues that are caused by batch handling of
     // messages above.
-    _.each(post_message_events, function (event) {
+    for (const event of post_message_events) {
         server_events_dispatch.dispatch_normal_event(event);
-    });
+    }
 }
 
 function show_ui_connection_error() {

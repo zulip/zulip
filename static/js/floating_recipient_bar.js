@@ -209,11 +209,11 @@ exports.relevant_recipient_bars = function () {
         items[i].show_date = items[i].date_text !== items[i - 1].date_text;
     }
 
-    _.each(items, function (item) {
+    for (const item of items) {
         if (!item.need_frb) {
             delete item.date_html;
         }
-    });
+    }
 
     return items;
 };
@@ -303,9 +303,9 @@ exports.hide = function () {
 };
 
 exports.de_clutter_dates = function (items) {
-    _.each(items, function (item) {
+    for (const item of items) {
         item.elem.find('.recipient_row_date').toggle(item.show_date);
-    });
+    }
 };
 
 exports.update = function () {

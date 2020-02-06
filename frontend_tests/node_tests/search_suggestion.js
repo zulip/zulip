@@ -846,12 +846,12 @@ run_test('topic_suggestions', () => {
         topic_name: 'REXX',
     });
 
-    _.each(['team', 'ignore', 'test'], function (topic_name) {
+    for (const topic_name of ['team', 'ignore', 'test']) {
         topic_data.add_message({
             stream_id: office_id,
             topic_name: topic_name,
         });
-    });
+    }
 
     suggestions = get_suggestions('', 'te');
     expected = [

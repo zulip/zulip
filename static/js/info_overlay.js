@@ -28,7 +28,7 @@ exports.set_up_toggler = function () {
         return modal;
     });
 
-    _.each(modals, function (modal) {
+    for (const modal of modals) {
         keydown_util.handle({
             elem: modal,
             handlers: {
@@ -36,7 +36,7 @@ exports.set_up_toggler = function () {
                 right_arrow: exports.toggler.maybe_go_right,
             },
         });
-    });
+    }
 
     $(".informational-overlays .overlay-tabs").append(elem);
 

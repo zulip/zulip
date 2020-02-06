@@ -67,9 +67,9 @@ run_test('basics', () => {
         };
 
         self.removeClass = function (c) {
-            _.each(tabs, function (tab) {
+            for (const tab of tabs) {
                 tab.removeClass(c);
-            });
+            }
         };
 
         self.eq = function (idx) {

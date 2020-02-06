@@ -288,7 +288,7 @@ MessageListView.prototype = {
             }
         }
 
-        _.each(message_containers, function (message_container) {
+        for (const message_container of message_containers) {
             const message_reactions = reactions.get_message_reactions(message_container.msg);
             message_container.msg.message_reactions = message_reactions;
             message_container.include_recipient = false;
@@ -359,7 +359,7 @@ MessageListView.prototype = {
             self._add_msg_edited_vars(message_container);
 
             prev = message_container;
-        });
+        }
 
         finish_group();
 
@@ -513,11 +513,12 @@ MessageListView.prototype = {
         }
 
         const self = this;
-        _.each($message_rows, function (dom_row) {
+
+        for (const dom_row of $message_rows) {
             const row = $(dom_row);
             self._put_row(row);
             self._post_process_single_row(row);
-        });
+        }
     },
 
     _post_process_single_row: function (row) {
@@ -721,9 +722,9 @@ MessageListView.prototype = {
         let last_message_row;
         let last_group_row;
 
-        _.each(message_containers, function (message_container) {
+        for (const message_container of message_containers) {
             self.message_containers[message_container.msg.id] = message_container;
-        });
+        }
 
         // Render new message groups on the top
         if (message_actions.prepend_groups.length > 0) {
@@ -751,7 +752,7 @@ MessageListView.prototype = {
         if (message_actions.rerender_groups.length > 0) {
             save_scroll_position();
 
-            _.each(message_actions.rerender_groups, function (message_group) {
+            for (const message_group of message_actions.rerender_groups) {
                 const old_message_group = $('#' + message_group.message_group_id);
                 // Remove the top date_row, we'll re-add it after rendering
                 old_message_group.prev('.date_row').remove();
@@ -768,7 +769,7 @@ MessageListView.prototype = {
                 self._post_process(dom_messages);
                 old_message_group.replaceWith(rendered_groups);
                 condense.condense_and_collapse(dom_messages);
-            });
+            }
         }
 
         // Update the rendering for message rows which used to be last
@@ -780,11 +781,12 @@ MessageListView.prototype = {
         // class doesn't do anything.
         if (message_actions.rerender_messages_next_same_sender.length > 0) {
             const targets = message_actions.rerender_messages_next_same_sender;
-            _.each(targets, function (message_container) {
+
+            for (const message_container of targets) {
                 const row = self.get_row(message_container.msg.id);
                 $(row).find("div.messagebox").toggleClass("next_is_same_sender",
                                                           message_container.next_is_same_sender);
-            });
+            }
         }
 
         // Insert new messages in to the last message group
@@ -917,14 +919,14 @@ MessageListView.prototype = {
         let id_of_last_message_sent_by_us = -1;
 
         // C++ iterators would have made this less painful
-        _.each(rendered_elems.reverse(), function (elem) {
+        for (const elem of rendered_elems.reverse()) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
             if (elem.is("div")) {
                 new_messages_height += elem.height();
                 // starting from the last message, ignore message heights that weren't sent by me.
                 if (id_of_last_message_sent_by_us > -1) {
-                    return;
+                    continue;
                 }
                 const row_id = rows.id(elem);
                 // check for `row_id` NaN in case we're looking at a date row or bookend row
@@ -933,7 +935,7 @@ MessageListView.prototype = {
                     id_of_last_message_sent_by_us = rows.id(elem);
                 }
             }
-        }, this);
+        }
 
         return new_messages_height;
     },
@@ -1241,7 +1243,8 @@ MessageListView.prototype = {
 
         const message_groups = [];
         let current_group = [];
-        _.each(message_containers, function (message_container) {
+
+        for (const message_container of message_containers) {
             if (current_group.length === 0 ||
                 same_recipient(current_group[current_group.length - 1], message_container)) {
                 current_group.push(message_container);
@@ -1250,13 +1253,15 @@ MessageListView.prototype = {
                 current_group = [];
             }
             self._rerender_message(message_container, message_content_edited);
-        });
+        }
+
         if (current_group.length !== 0) {
             message_groups.push(current_group);
         }
-        _.each(message_groups, function (messages_in_group) {
+
+        for (const messages_in_group of message_groups) {
             self._rerender_header(messages_in_group, message_content_edited);
-        });
+        }
     },
 
     append: function (messages, messages_are_new) {

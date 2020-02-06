@@ -60,11 +60,11 @@ const ignore_modules = [
     'unread_ui',
 ];
 
-_.each(ignore_modules, (mod) => {
+for (const mod of ignore_modules) {
     set_global(mod, {
         initialize: () => {},
     });
-});
+}
 
 emoji.emojis_by_name = new Map();
 

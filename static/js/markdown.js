@@ -135,7 +135,8 @@ exports.add_topic_links = function (message) {
     }
     const topic = util.get_message_topic(message);
     let links = [];
-    _.each(realm_filter_list, function (realm_filter) {
+
+    for (const realm_filter of realm_filter_list) {
         const pattern = realm_filter[0];
         const url = realm_filter[1];
         let match;
@@ -152,7 +153,7 @@ exports.add_topic_links = function (message) {
             }
             links.push(link_url);
         }
-    });
+    }
 
     // Also make raw urls navigable
     const url_re = /\b(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g; // Slightly modified from third/marked.js
@@ -233,11 +234,12 @@ function handleRealmFilter(pattern, matches) {
     let url = realm_filter_map[pattern];
 
     let current_group = 1;
-    _.each(matches, function (match) {
+
+    for (const match of matches) {
         const back_ref = "\\" + current_group;
         url = url.replace(back_ref, match);
         current_group += 1;
-    });
+    }
 
     return url;
 }
@@ -281,11 +283,13 @@ function python_to_js_filter(pattern, url) {
     // flags, so keep those and ignore the rest
     if (match) {
         const py_flags = match[1].split("");
-        _.each(py_flags, function (flag) {
+
+        for (const flag of py_flags) {
             if ("im".indexOf(flag) !== -1) {
                 js_flags += flag;
             }
-        });
+        }
+
         pattern = pattern.replace(inline_flag_re, "");
     }
     // Ideally we should have been checking that realm filters
@@ -315,19 +319,20 @@ exports.set_realm_filters = function (realm_filters) {
     realm_filter_list = [];
 
     const marked_rules = [];
-    _.each(realm_filters, function (realm_filter) {
+
+    for (const realm_filter of realm_filters) {
         const pattern = realm_filter[0];
         const url = realm_filter[1];
         const js_filters = python_to_js_filter(pattern, url);
         if (!js_filters[0]) {
             // Skip any realm filters that could not be converted
-            return;
+            continue;
         }
 
         realm_filter_map[js_filters[0]] = js_filters[1];
         realm_filter_list.push([js_filters[0], js_filters[1]]);
         marked_rules.push(js_filters[0]);
-    });
+    }
 
     marked.InlineLexer.rules.zulip.realm_filters = marked_rules;
 };

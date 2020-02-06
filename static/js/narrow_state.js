@@ -49,7 +49,8 @@ exports.search_string = function () {
 function collect_single(operators) {
     const seen   = new Dict();
     const result = new Dict();
-    _.each(operators, function (elem) {
+
+    for (const elem of operators) {
         const key = elem.operator;
         if (seen.has(key)) {
             result.delete(key);
@@ -57,7 +58,8 @@ function collect_single(operators) {
             result.set(key, elem.operand);
             seen.set(key, true);
         }
-    });
+    }
+
     return result;
 }
 

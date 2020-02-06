@@ -290,11 +290,11 @@ exports.show_active_stream_in_left_panel = function () {
 };
 
 exports.add_tooltips_to_left_panel = function () {
-    _.each($("#subscriptions_table .stream-row"), function (row) {
+    for (const row of $("#subscriptions_table .stream-row")) {
         $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
             placement: 'left', animation: false,
         });
-    });
+    }
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
@@ -358,7 +358,7 @@ function get_stream_id_buckets(stream_ids, query) {
         other: [],
     };
 
-    _.each(stream_ids, function (stream_id) {
+    for (const stream_id of stream_ids) {
         const sub = stream_data.get_sub_by_id(stream_id);
         const match_status = triage_stream(query, sub);
 
@@ -369,7 +369,7 @@ function get_stream_id_buckets(stream_ids, query) {
         } else {
             buckets.other.push(stream_id);
         }
-    });
+    }
 
     stream_data.sort_for_stream_settings(buckets.name);
     stream_data.sort_for_stream_settings(buckets.desc);
@@ -404,21 +404,23 @@ exports.filter_table = function (query) {
     const streams_list_scrolltop = ui.get_scroll_element($(".streams-list")).scrollTop();
 
     const stream_ids = [];
-    _.each($("#subscriptions_table .stream-row"), function (row) {
+
+    for (const row of $("#subscriptions_table .stream-row")) {
         const stream_id = stream_id_for_row(row);
         stream_ids.push(stream_id);
-    });
+    }
 
     const buckets = get_stream_id_buckets(stream_ids, query);
 
     // If we just re-built the DOM from scratch we wouldn't need
     // all this hidden/notdisplayed logic.
     const hidden_ids = {};
-    _.each(buckets.other, function (stream_id) {
-        hidden_ids[stream_id] = true;
-    });
 
-    _.each($("#subscriptions_table .stream-row"), function (row) {
+    for (const stream_id of buckets.other) {
+        hidden_ids[stream_id] = true;
+    }
+
+    for (const row of $("#subscriptions_table .stream-row")) {
         const stream_id = stream_id_for_row(row);
 
         // Below code goes away if we don't do sort-DOM-in-place.
@@ -429,7 +431,7 @@ exports.filter_table = function (query) {
         }
 
         widgets[stream_id] = $(row).detach();
-    });
+    }
 
     exports.add_tooltips_to_left_panel();
 
@@ -441,9 +443,9 @@ exports.filter_table = function (query) {
         buckets.other
     );
 
-    _.each(all_stream_ids, function (stream_id) {
+    for (const stream_id of all_stream_ids) {
         ui.get_content_element($('#subscriptions_table .streams-list')).append(widgets[stream_id]);
-    });
+    }
 
     exports.maybe_reset_right_panel();
 
