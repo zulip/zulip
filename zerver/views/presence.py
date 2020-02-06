@@ -12,7 +12,10 @@ from zerver.lib.actions import (
     do_update_user_status,
     update_user_presence,
 )
-from zerver.lib.presence import get_presence_response
+from zerver.lib.presence import (
+    get_presence_response,
+    get_status_dict_by_user,
+)
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -32,7 +35,7 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
     if target.is_bot:
         return json_error(_('Presence is not supported for bot users.'))
 
-    presence_dict = UserPresence.get_status_dict_by_user(target.id)
+    presence_dict = get_status_dict_by_user(target.id)
     if len(presence_dict) == 0:
         return json_error(_('No presence data for %s') % (target.email,))
 
