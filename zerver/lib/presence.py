@@ -5,13 +5,76 @@ import time
 
 from django.utils.timezone import now as timezone_now
 
-from typing import Any, Dict, Set
+from typing import Any, DefaultDict, Dict, List, Set
+
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     query_for_ids,
     PushDeviceToken,
     UserPresence,
     UserProfile,
 )
+
+def get_status_dicts_for_rows(presence_rows: List[Dict[str, Any]],
+                              mobile_user_ids: Set[int],
+                              slim_presence: bool) -> Dict[str, Dict[str, Any]]:
+
+    info_row_dct = defaultdict(list)  # type: DefaultDict[str, List[Dict[str, Any]]]
+    for row in presence_rows:
+        # For now slim_presence just means that we will use
+        # user_id as a key instead of email.  We will eventually
+        # do other things based on this flag to make things simpler
+        # for the clients.
+        if slim_presence:
+            # Stringify user_id here, since it's gonna be turned
+            # into a string anyway by JSON, and it keeps mypy happy.
+            user_key = str(row['user_profile__id'])
+        else:
+            user_key = row['user_profile__email']
+
+        client_name = row['client__name']
+        status = UserPresence.status_to_string(row['status'])
+        dt = row['timestamp']
+        timestamp = datetime_to_timestamp(dt)
+        push_enabled = row['user_profile__enable_offline_push_notifications']
+        has_push_devices = row['user_profile__id'] in mobile_user_ids
+        pushable = (push_enabled and has_push_devices)
+
+        info = dict(
+            client=client_name,
+            status=status,
+            dt=dt,
+            timestamp=timestamp,
+            pushable=pushable,
+        )
+
+        info_row_dct[user_key].append(info)
+
+    user_statuses = dict()  # type: Dict[str, Dict[str, Any]]
+
+    for user_key, info_rows in info_row_dct.items():
+        # Note that datetime values have sub-second granularity, which is
+        # mostly important for avoiding test flakes, but it's also technically
+        # more precise for real users.
+        by_time = lambda row: row['dt']
+        most_recent_info = max(info_rows, key=by_time)
+
+        # We don't send datetime values to the client.
+        for r in info_rows:
+            del r['dt']
+
+        client_dict = {info['client']: info for info in info_rows}
+        user_statuses[user_key] = client_dict
+
+        # The word "aggegrated" here is possibly misleading.
+        # It's really just the most recent client's info.
+        user_statuses[user_key]['aggregated'] = dict(
+            client=most_recent_info['client'],
+            status=most_recent_info['status'],
+            timestamp=most_recent_info['timestamp'],
+        )
+
+    return user_statuses
 
 def get_status_dict_by_user(user_profile_id: int,
                             slim_presence: bool=False) -> Dict[str, Dict[str, Any]]:
@@ -30,7 +93,7 @@ def get_status_dict_by_user(user_profile_id: int,
         # TODO: Add a test, though this is low priority, since we don't use mobile_user_ids yet.
         mobile_user_ids.add(user_profile_id)
 
-    return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
+    return get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
 
 
 def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict[str, Dict[str, Any]]:
@@ -83,7 +146,7 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
     )
     mobile_user_ids = set(mobile_query)
 
-    return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
+    return get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
 
 def get_status_dict(requesting_user_profile: UserProfile,
                     slim_presence: bool) -> Dict[str, Dict[str, Dict[str, Any]]]:
