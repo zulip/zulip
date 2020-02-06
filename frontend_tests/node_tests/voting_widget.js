@@ -17,7 +17,7 @@ run_test('poll_data_holder my question', () => {
     const sender_id = 99;
     people.my_current_user_id = () => sender_id;
 
-    const data_holder = poll_widget.poll_data_holder(is_my_poll, question);
+    const data_holder = poll_widget.poll_data_holder(is_my_poll, question, []);
 
     let data = data_holder.get_widget_data();
 
