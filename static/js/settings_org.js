@@ -407,13 +407,13 @@ exports.populate_auth_methods = function (auth_methods) {
     const auth_methods_table = $("#id_realm_authentication_methods").expectOne();
     auth_methods = sort_object_by_key(auth_methods);
     let rendered_auth_method_rows = "";
-    _.each(auth_methods, function (value, auth_method) {
+    for (const [auth_method, value] of Object.entries(auth_methods)) {
         rendered_auth_method_rows += render_settings_admin_auth_methods_list({
             method: auth_method,
             enabled: value,
             is_admin: page_params.is_admin,
         });
-    });
+    }
     auth_methods_table.html(rendered_auth_method_rows);
 };
 
