@@ -1145,9 +1145,9 @@ run_test('settings_tab', () => {
     });
 
     // Re-render with checkbox booleans set to false.
-    _.each(page_param_checkbox_options, function (value, option) {
+    for (const option of Object.keys(page_param_checkbox_options)) {
         page_params[option] = false;
-    });
+    }
 
     html = render('settings_tab', {page_params: page_params});
 
