@@ -19,7 +19,7 @@ from zerver.models import Recipient, RealmEmoji, Reaction, UserProfile
 from zerver.lib.utils import (
     process_list_in_batches,
 )
-from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
+from zerver.lib.emoji import name_to_codepoint
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_stream, build_realm, build_message, create_converted_data_files, \
     make_subscriber_map, build_recipients, build_user_profile, \
@@ -233,12 +233,8 @@ def convert_huddle_data(huddle_data: List[ZerverFieldsT],
             zerver_huddle.append(huddle_dict)
     return zerver_huddle
 
-def get_name_to_codepoint_dict() -> Dict[str, str]:
-    with open(NAME_TO_CODEPOINT_PATH) as fp:
-        return ujson.load(fp)
-
 def build_reactions(realm_id: int, total_reactions: List[ZerverFieldsT], reactions: List[ZerverFieldsT],
-                    message_id: int, name_to_codepoint: ZerverFieldsT,
+                    message_id: int,
                     user_id_mapper: IdMapper, zerver_realmemoji: List[ZerverFieldsT]) -> None:
     realmemoji = {}
     for realm_emoji in zerver_realmemoji:
@@ -320,7 +316,6 @@ def process_raw_message_batch(realm_id: int,
     import html2text
     h = html2text.HTML2Text()
 
-    name_to_codepoint = get_name_to_codepoint_dict()
     pm_members = {}
 
     for raw_message in raw_messages:
@@ -371,7 +366,7 @@ def process_raw_message_batch(realm_id: int,
         )
         zerver_message.append(message)
         build_reactions(realm_id, total_reactions, raw_message["reactions"], message_id,
-                        name_to_codepoint, user_id_mapper, zerver_realmemoji)
+                        user_id_mapper, zerver_realmemoji)
 
     zerver_usermessage = make_user_messages(
         zerver_message=zerver_message,

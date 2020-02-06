@@ -6,7 +6,7 @@ set_global('page_params', {
 set_global('upload_widget', {});
 set_global('blueslip', global.make_zblueslip());
 
-set_global('emoji_codes', zrequire('emoji_codes', 'generated/emoji/emoji_codes'));
+const emoji_codes = zrequire('emoji_codes', 'generated/emoji/emoji_codes.json');
 zrequire('emoji');
 zrequire('markdown');
 zrequire('util');
@@ -68,29 +68,19 @@ run_test('get_canonical_name', () => {
     let canonical_name = emoji.get_canonical_name('realm_emoji');
     assert.equal(canonical_name, 'realm_emoji');
 
-    const orig_emoji_codes = global.emoji_codes;
-    global.emoji_codes = {
-        name_to_codepoint: {
-            '+1': '1f44d',
-        },
-        codepoint_to_name: {
-            '1f44d': 'thumbs_up',
-        },
-    };
-    canonical_name = emoji.get_canonical_name('+1');
-    assert.equal(canonical_name, 'thumbs_up');
+    canonical_name = emoji.get_canonical_name('thumbs_up');
+    assert.equal(canonical_name, '+1');
 
-    emoji.active_realm_emojis = new Map(Object.entries({
-        '+1': 'TBD',
-    }));
     canonical_name = emoji.get_canonical_name('+1');
     assert.equal(canonical_name, '+1');
+
+    canonical_name = emoji.get_canonical_name('airplane');
+    assert.equal(canonical_name, 'airplane');
 
     blueslip.set_test_data('error', 'Invalid emoji name: non_existent');
     emoji.get_canonical_name('non_existent');
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
-    global.emoji_codes = orig_emoji_codes;
 });
 
 run_test('translate_emoticons_to_names', () => {
