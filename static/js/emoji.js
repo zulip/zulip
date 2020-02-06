@@ -45,8 +45,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
 };
 
 exports.initialize = function initialize() {
-
-    _.each(emoji_codes.names, function (value) {
+    for (const value of emoji_codes.names) {
         const base_name = emoji_codes.name_to_codepoint[value];
 
         if (exports.default_emoji_aliases.has(base_name)) {
@@ -54,7 +53,7 @@ exports.initialize = function initialize() {
         } else {
             exports.default_emoji_aliases.set(base_name, [value]);
         }
-    });
+    }
 
     exports.update_emojis(page_params.realm_emoji);
 

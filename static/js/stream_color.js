@@ -11,7 +11,7 @@ function update_table_stream_color(table, stream_name, color) {
 
     const stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
 
-    _.each(stream_labels, function (label) {
+    for (const label of stream_labels) {
         const $label = $(label);
         if ($.trim($label.text()) === stream_name) {
             const messages = $label.closest(".recipient_row").children(".message_row");
@@ -21,7 +21,7 @@ function update_table_stream_color(table, stream_name, color) {
             $label.removeClass(exports.color_classes);
             $label.addClass(color_class);
         }
-    });
+    }
 }
 
 function update_stream_sidebar_swatch_color(id, color) {

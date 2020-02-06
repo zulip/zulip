@@ -116,7 +116,7 @@ run_test('translate_emoticons_to_names', () => {
         {name: 'before end of sentence', original: 'Hello <original>!', expected: 'Hello <converted>!'},
     ];
     for (const [shortcut, full_name] of Object.entries(emoji_codes.emoticon_conversions)) {
-        _.each(testcases, (t) => {
+        for (const t of testcases) {
             const converted_value = full_name;
             let original = t.original;
             let expected = t.expected;
@@ -125,6 +125,6 @@ run_test('translate_emoticons_to_names', () => {
                 .replace(/(<converted>)/g, converted_value);
             const result = emoji.translate_emoticons_to_names(original);
             assert.equal(result, expected);
-        });
+        }
     }
 });

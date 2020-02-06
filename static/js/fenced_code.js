@@ -37,14 +37,16 @@ function wrap_code(code) {
 function wrap_quote(text) {
     const paragraphs = text.split('\n\n');
     const quoted_paragraphs = [];
+
     // Prefix each quoted paragraph with > at the
     // beginning of each line
-    _.each(paragraphs, function (paragraph) {
+    for (const paragraph of paragraphs) {
         const lines = paragraph.split('\n');
         quoted_paragraphs.push(_.map(
             _.reject(lines, function (line) { return line === ''; }),
             function (line) { return '> ' + line; }).join('\n'));
-    });
+    }
+
     return quoted_paragraphs.join('\n\n');
 }
 
@@ -166,10 +168,10 @@ exports.process_fenced_code = function (content) {
     const current_handler = default_hander();
     handler_stack.push(current_handler);
 
-    _.each(input, function (line) {
+    for (const line of input) {
         const handler = handler_stack[handler_stack.length - 1];
         handler.handle_line(line);
-    });
+    }
 
     // Clean up all trailing blocks by letting them
     // insert closing fences

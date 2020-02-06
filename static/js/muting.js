@@ -40,7 +40,7 @@ exports.get_muted_topics = function () {
 exports.set_muted_topics = function (tuples) {
     muted_topics.clear();
 
-    _.each(tuples, function (tuple) {
+    for (const tuple of tuples) {
         const stream_name = tuple[0];
         const topic = tuple[1];
 
@@ -48,11 +48,11 @@ exports.set_muted_topics = function (tuples) {
 
         if (!stream_id) {
             blueslip.warn('Unknown stream in set_muted_topics: ' + stream_name);
-            return;
+            continue;
         }
 
         exports.add_muted_topic(stream_id, topic);
-    });
+    }
 };
 
 exports.initialize = function () {

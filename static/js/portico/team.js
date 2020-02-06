@@ -48,7 +48,7 @@ export default function render_tabs() {
 
     $('#tab-total').html(total_tab_html);
 
-    _.each(repos, function (repo) {
+    for (const repo of repos) {
         // Set as the loading template for now, and load when clicked.
         $('#tab-' + repo).html($('#loading-template').html());
 
@@ -73,5 +73,5 @@ export default function render_tabs() {
                 loaded_repos.push(repo);
             }
         });
-    });
+    }
 }

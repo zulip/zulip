@@ -108,7 +108,8 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
 
     for (const [category, codepoints] of Object.entries(emoji_codes.emoji_catalog)) {
         exports.complete_emoji_catalog[category] = [];
-        _.each(codepoints, function (codepoint) {
+
+        for (const codepoint of codepoints) {
             if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
                 const emoji_dict = emoji.emojis_by_name.get(
                     emoji_codes.codepoint_to_name[codepoint]
@@ -117,18 +118,19 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
                     exports.complete_emoji_catalog[category].push(emoji_dict);
                 }
             }
-        });
+        }
     }
 
     exports.complete_emoji_catalog.Popular = [];
-    _.each(typeahead.popular_emojis, function (codepoint) {
+
+    for (const codepoint of typeahead.popular_emojis) {
         if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
             const emoji_dict = emoji.emojis_by_name.get(emoji_codes.codepoint_to_name[codepoint]);
             if (emoji_dict !== undefined) {
                 exports.complete_emoji_catalog.Popular.push(emoji_dict);
             }
         }
-    });
+    }
 
     const categories = get_all_emoji_categories().filter(function (category) {
         return !!exports.complete_emoji_catalog[category.name];
@@ -206,12 +208,14 @@ function filter_emojis() {
         const categories = exports.complete_emoji_catalog;
         const search_terms = query.split(" ");
         search_results.length = 0;
-        _.each(categories, function (category) {
+
+        for (const category of categories) {
             if (category.name === "Popular") {
-                return;
+                continue;
             }
             const emojis = category.emojis;
-            _.each(emojis, function (emoji_dict) {
+
+            for (const emoji_dict of emojis) {
                 _.any(emoji_dict.aliases, function (alias) {
                     const match = _.every(search_terms, function (search_term) {
                         return alias.indexOf(search_term) >= 0;
@@ -221,8 +225,9 @@ function filter_emojis() {
                         return true;
                     }
                 });
-            });
-        });
+            }
+        }
+
         const rendered_search_results = render_emoji_popover_search_results({
             search_results: search_results,
             message_id: message_id,

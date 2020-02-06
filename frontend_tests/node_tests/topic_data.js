@@ -218,11 +218,11 @@ run_test('test_unread_logic', () => {
         { id: 20, topic: 'UNREAD2' },
     ];
 
-    _.each(msgs, (msg) => {
+    for (const msg of msgs) {
         msg.type = 'stream';
         msg.stream_id = stream_id;
         msg.unread = true;
-    });
+    }
 
     unread.process_loaded_messages(msgs);
 

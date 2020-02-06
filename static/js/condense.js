@@ -177,7 +177,7 @@ exports.show_message_expander = function (row) {
 exports.condense_and_collapse = function (elems) {
     const height_cutoff = message_viewport.height() * 0.65;
 
-    _.each(elems, function (elem) {
+    for (const elem of elems) {
         const content = $(elem).find(".message_content");
         const message = current_msg_list.get(rows.id($(elem)));
         if (content !== undefined && message !== undefined) {
@@ -194,10 +194,10 @@ exports.condense_and_collapse = function (elems) {
             // specified whether this message should be expanded or condensed.
             if (message.condensed === true) {
                 condense_row($(elem));
-                return;
+                continue;
             } else if (message.condensed === false) {
                 uncondense_row($(elem));
-                return;
+                continue;
             } else if (long_message) {
                 // By default, condense a long message.
                 condense_row($(elem));
@@ -213,7 +213,7 @@ exports.condense_and_collapse = function (elems) {
                 $(elem).find(".message_expander").show();
             }
         }
-    });
+    }
 };
 
 exports.initialize = function () {

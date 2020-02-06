@@ -384,20 +384,23 @@ exports.populate_realm_domains = function (realm_domains) {
 
     const realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
-    _.each(realm_domains, function (realm_domain) {
+
+    for (const realm_domain of realm_domains) {
         realm_domains_table_body.append(
             render_settings_admin_realm_domains_list({
                 realm_domain: realm_domain,
             })
         );
-    });
+    }
 };
 function sort_object_by_key(obj) {
     const keys = _.keys(obj).sort();
     const new_obj = {};
-    _.each(keys, function (key) {
+
+    for (const key of keys) {
         new_obj[key] = obj[key];
-    });
+    }
+
     return new_obj;
 }
 exports.populate_auth_methods = function (auth_methods) {
@@ -672,9 +675,11 @@ exports.build_page = function () {
     function get_auth_method_table_data() {
         const new_auth_methods = {};
         const auth_method_rows = $("#id_realm_authentication_methods").find('tr.method_row');
-        _.each(auth_method_rows, function (method_row) {
+
+        for (const method_row of auth_method_rows) {
             new_auth_methods[$(method_row).data('method')] = $(method_row).find('input').prop('checked');
-        });
+        }
+
         return new_auth_methods;
     }
 
@@ -711,11 +716,12 @@ exports.build_page = function () {
         subsection.find('.save-button').show();
         const properties_elements = get_subsection_property_elements(subsection);
         let show_change_process_button = false;
-        _.each(properties_elements, function (elem) {
+
+        for (const elem of properties_elements) {
             if (check_property_changed(elem)) {
                 show_change_process_button = true;
             }
-        });
+        }
 
         const save_btn_controls = subsection.find('.subsection-header .save-button-controls');
         const button_state = show_change_process_button ? "unsaved" : "discarded";
@@ -872,7 +878,8 @@ exports.build_page = function () {
     function populate_data_for_request(subsection) {
         const data = {};
         const properties_elements = get_subsection_property_elements(subsection);
-        _.each(properties_elements, function (input_elem) {
+
+        for (let input_elem of properties_elements) {
             input_elem = $(input_elem);
             if (check_property_changed(input_elem)) {
                 const input_type = input_elem.data("setting-widget-type");
@@ -880,18 +887,19 @@ exports.build_page = function () {
                     const property_name = input_elem.attr('id').replace("id_realm_", "");
                     if (input_type === 'bool') {
                         data[property_name] = JSON.stringify(input_elem.prop('checked'));
-                        return;
+                        continue;
                     }
                     if (input_type === 'text') {
                         data[property_name] = JSON.stringify(input_elem.val().trim());
-                        return;
+                        continue;
                     }
                     if (input_type === 'integer') {
                         data[property_name] = JSON.stringify(parseInt(input_elem.val().trim(), 10));
                     }
                 }
             }
-        });
+        }
+
         return data;
     }
 

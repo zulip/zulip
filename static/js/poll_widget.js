@@ -168,12 +168,12 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
     };
 
     // function to add all options added along with the /poll command
-    _.each(options, function (option, i) {
+    for (const [i, option] of options.entries()) {
         self.handle.new_option.inbound('canned', {
             idx: i,
             option: option,
         });
-    });
+    }
 
     return self;
 };
@@ -355,9 +355,10 @@ exports.activate = function (opts) {
     }
 
     elem.handle_events = function (events) {
-        _.each(events, function (event) {
+        for (const event of events) {
             poll_data.handle_event(event.sender_id, event.data);
-        });
+        }
+
         render_question();
         render_results();
     };

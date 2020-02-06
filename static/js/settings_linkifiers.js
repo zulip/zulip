@@ -121,9 +121,10 @@ exports.build_page = function () {
         pattern_status.hide();
         format_status.hide();
         const filter = {};
-        _.each($(this).serializeArray(), function (obj) {
+
+        for (const obj of $(this).serializeArray()) {
             filter[obj.name] = obj.value;
-        });
+        }
 
         channel.post({
             url: "/json/realm/filters",

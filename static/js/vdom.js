@@ -157,14 +157,14 @@ exports.update = (replace_content, find, new_dom, old_dom) => {
 
     const child_elems = find().children();
 
-    _.each(new_opts.keyed_nodes, (new_node, i) => {
+    for (const [i, new_node] of new_opts.keyed_nodes.entries()) {
         const old_node = old_opts.keyed_nodes[i];
         if (new_node.eq(old_node)) {
-            return;
+            continue;
         }
         const rendered_dom = new_node.render();
         child_elems.eq(i).replaceWith(rendered_dom);
-    });
+    }
 
     exports.update_attrs(
         find(),

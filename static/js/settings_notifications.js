@@ -97,8 +97,8 @@ exports.set_enable_digest_emails_visibility = function () {
 };
 
 exports.set_up = function () {
-    _.each(notification_settings_status, function (setting) {
-        _.each(setting.settings, function (sub_setting) {
+    for (const setting of notification_settings_status) {
+        for (const sub_setting of setting.settings) {
             $("#" + sub_setting).change(function () {
                 let value;
 
@@ -113,8 +113,8 @@ exports.set_up = function () {
                 change_notification_setting(sub_setting, value,
                                             "#" + setting.status_label);
             });
-        });
-    });
+        }
+    }
 
     update_desktop_icon_count_display();
 
@@ -138,19 +138,19 @@ exports.set_up = function () {
 };
 
 exports.update_page = function () {
-    _.each(exports.all_notification_settings_labels, function (setting) {
+    for (const setting of exports.all_notification_settings_labels) {
         if (setting === 'enable_offline_push_notifications'
             && !page_params.realm_push_notifications_enabled) {
             // If push notifications are disabled at the realm level,
             // we should just leave the checkbox always off.
-            return;
+            continue;
         } else if (setting === 'desktop_icon_count_display') {
             update_desktop_icon_count_display();
-            return;
+            continue;
         }
 
         $("#" + setting).prop('checked', page_params[setting]);
-    });
+    }
 };
 
 window.settings_notifications = exports;

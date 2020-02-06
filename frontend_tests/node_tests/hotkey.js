@@ -170,9 +170,9 @@ run_test('basic_chars', () => {
     }
 
     function assert_unmapped(s) {
-        _.each(s, function (c) {
+        for (const c of s) {
             assert.equal(process(c), false);
-        });
+        }
     }
 
     // Unmapped keys should immediately return false, without
@@ -215,18 +215,18 @@ run_test('basic_chars', () => {
         assert_unmapped('~!@#$%^*()_+{}:"<>');
     }
 
-    _.each([return_true, return_false], function (settings_open) {
-        _.each([return_true, return_false], function (is_active) {
-            _.each([return_true, return_false], function (info_overlay_open) {
+    for (const settings_open of [return_true, return_false]) {
+        for (const is_active of [return_true, return_false]) {
+            for (const info_overlay_open of [return_true, return_false]) {
                 set_global('overlays', {
                     is_active: is_active,
                     settings_open: settings_open,
                     info_overlay_open: info_overlay_open,
                 });
                 test_normal_typing();
-            });
-        });
-    });
+            }
+        }
+    }
 
     // Ok, now test keys that work when we're viewing messages.
     hotkey.processing_text = return_false;

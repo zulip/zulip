@@ -70,7 +70,8 @@ exports.update_muted_topics = function (muted_topics) {
 exports.set_up_muted_topics_ui = function (muted_topics) {
     const muted_topics_table = $("#muted_topics_table tbody");
     muted_topics_table.empty();
-    _.each(muted_topics, function (tup) {
+
+    for (const tup of muted_topics) {
         const stream_id = tup[0];
         const topic = tup[1];
 
@@ -78,7 +79,7 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
 
         if (!stream) {
             blueslip.warn('Unknown stream_id in set_up_muted_topics_ui: ' + stream_id);
-            return;
+            continue;
         }
 
         const template_data = {
@@ -89,7 +90,7 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
 
         const row = render_muted_topic_ui_row(template_data);
         muted_topics_table.append(row);
-    });
+    }
 };
 
 exports.mute = function (stream_id, topic) {

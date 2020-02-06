@@ -194,11 +194,11 @@ MessageListData.prototype = {
     },
 
     update_user_full_name: function (user_id, full_name) {
-        _.each(this._items, function (item) {
+        for (const item of this._items) {
             if (item.sender_id && item.sender_id === user_id) {
                 item.sender_full_name = full_name;
             }
-        });
+        }
     },
 
     update_user_avatar: function (user_id, avatar_url) {
@@ -206,20 +206,20 @@ MessageListData.prototype = {
         // We may want to de-dup some logic with update_user_full_name,
         // especially if we want to optimize this with some kind of
         // hash that maps sender_id -> messages.
-        _.each(this._items, function (item) {
+        for (const item of this._items) {
             if (item.sender_id && item.sender_id === user_id) {
                 item.small_avatar_url = avatar_url;
             }
-        });
+        }
     },
 
     update_stream_name: function (stream_id, new_stream_name) {
-        _.each(this._items, function (item) {
+        for (const item of this._items) {
             if (item.stream_id && item.stream_id === stream_id) {
                 item.display_recipient = new_stream_name;
                 item.stream = new_stream_name;
             }
-        });
+        }
     },
 
     add_messages: function (messages) {
@@ -240,7 +240,7 @@ MessageListData.prototype = {
             // that fail our filter predicate
             messages = self.valid_non_duplicated_messages(messages);
 
-            _.each(messages, function (msg) {
+            for (const msg of messages) {
                 // Put messages in correct order on either side of the
                 // message list.  This code path assumes that messages
                 // is a (1) sorted, and (2) consecutive block of
@@ -253,7 +253,7 @@ MessageListData.prototype = {
                 } else {
                     interior_messages.push(msg);
                 }
-            });
+            }
         }
 
         if (interior_messages.length > 0) {
@@ -330,18 +330,21 @@ MessageListData.prototype = {
 
     remove: function (messages) {
         const self = this;
-        _.each(messages, function (message) {
+
+        for (const message of messages) {
             const stored_message = self._hash[message.id];
             if (stored_message !== undefined) {
                 delete self._hash[stored_message];
             }
             delete self._local_only[message.id];
-        });
+        }
 
         const msg_ids_to_remove = {};
-        _.each(messages, function (message) {
+
+        for (const message of messages) {
             msg_ids_to_remove[message.id] = true;
-        });
+        }
+
         this._items = _.filter(this._items, function (message) {
             return !msg_ids_to_remove.hasOwnProperty(message.id);
         });
@@ -426,15 +429,15 @@ MessageListData.prototype = {
             potential_closest_matches.unshift(_.last(potential_closest_matches) - 1);
             let best_match = items[closest].id;
 
-            _.each(potential_closest_matches, function (potential_idx) {
+            for (const potential_idx of potential_closest_matches) {
                 if (potential_idx < 0) {
-                    return;
+                    continue;
                 }
                 const item = items[potential_idx];
 
                 if (item === undefined) {
                     blueslip.warn('Invalid potential_idx: ' + potential_idx);
-                    return;
+                    continue;
                 }
 
                 const potential_match = item.id;
@@ -443,7 +446,7 @@ MessageListData.prototype = {
                     best_match = potential_match;
                     closest = potential_idx;
                 }
-            });
+            }
         }
         return items[closest].id;
     },
@@ -457,9 +460,9 @@ MessageListData.prototype = {
 
         const id_set = {};
 
-        _.each(msg_ids, function (msg_id) {
+        for (const msg_id of msg_ids) {
             id_set[msg_id] = true;
-        });
+        }
 
         let idx = this.selected_idx() + 1;
         while (idx < this._items.length) {

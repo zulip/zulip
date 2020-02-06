@@ -861,11 +861,11 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
 
     // Loop through users and populate filtered_users only
     // if they include search_terms
-    _.each(users, function (user) {
+    for (const user of users) {
         const person = exports.get_by_email(user.email);
         // Get person object (and ignore errors)
         if (!person || !person.full_name) {
-            return;
+            continue;
         }
 
         // Return user emails that include search terms
@@ -876,7 +876,8 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
         if (match) {
             filtered_users.set(person.user_id, true);
         }
-    });
+    }
+
     return filtered_users;
 };
 
@@ -1019,15 +1020,15 @@ exports.extract_people_from_message = function (message) {
     }
 
     // Add new people involved in this message to the people list
-    _.each(involved_people, function (person) {
+    for (const person of involved_people) {
         if (person.unknown_local_echo_user) {
-            return;
+            continue;
         }
 
         const user_id = person.user_id || person.id;
 
         if (people_by_user_id_dict.has(user_id)) {
-            return;
+            continue;
         }
 
         exports.report_late_add(user_id, person.email);
@@ -1039,7 +1040,7 @@ exports.extract_people_from_message = function (message) {
             is_admin: person.is_realm_admin || false,
             is_bot: person.is_bot || false,
         });
-    });
+    }
 };
 
 function safe_lower(s) {
@@ -1094,15 +1095,15 @@ exports.maybe_incr_recipient_count = function (message) {
     }
 
     // Track the number of PMs we've sent to this person to improve autocomplete
-    _.each(message.display_recipient, function (recip) {
+    for (const recip of message.display_recipient) {
 
         if (recip.unknown_local_echo_user) {
-            return;
+            continue;
         }
 
         const user_id = recip.id;
         exports.incr_recipient_count(user_id);
-    });
+    }
 };
 
 exports.set_full_name = function (person_obj, new_full_name) {
@@ -1181,20 +1182,20 @@ exports.is_my_user_id = function (user_id) {
 };
 
 exports.initialize = function () {
-    _.each(page_params.realm_users, function (person) {
+    for (const person of page_params.realm_users) {
         exports.add_in_realm(person);
-    });
+    }
 
-    _.each(page_params.realm_non_active_users, function (person) {
+    for (const person of page_params.realm_non_active_users) {
         exports.add(person);
-    });
+    }
 
-    _.each(page_params.cross_realm_bots, function (person) {
+    for (const person of page_params.cross_realm_bots) {
         if (!people_dict.has(person.email)) {
             exports.add(person);
         }
         cross_realm_dict.set(person.user_id, person);
-    });
+    }
 
     exports.initialize_current_user(page_params.user_id);
 

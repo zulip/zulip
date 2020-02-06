@@ -1,8 +1,9 @@
 function maybe_add_narrowed_messages(messages, msg_list) {
     const ids = [];
-    _.each(messages, function (elem) {
+
+    for (const elem of messages) {
         ids.push(elem.id);
-    });
+    }
 
     channel.get({
         url: '/json/messages/matches_narrow',
@@ -17,14 +18,15 @@ function maybe_add_narrowed_messages(messages, msg_list) {
 
             let new_messages = [];
             const elsewhere_messages = [];
-            _.each(messages, function (elem) {
+
+            for (const elem of messages) {
                 if (data.messages.hasOwnProperty(elem.id)) {
                     util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
                 } else {
                     elsewhere_messages.push(elem);
                 }
-            });
+            }
 
             // This second call to add_message_metadata in the
             // insert_new_messages code path helps in very rare race
@@ -105,10 +107,10 @@ exports.update_messages = function update_messages(events) {
     let changed_compose = false;
     let message_content_edited = false;
 
-    _.each(events, function (event) {
+    for (const event of events) {
         const msg = message_store.get(event.message_id);
         if (msg === undefined) {
-            return;
+            continue;
         }
 
         delete msg.local_edit_timestamp;
@@ -176,10 +178,10 @@ exports.update_messages = function update_messages(events) {
                 }
             }
 
-            _.each(event.message_ids, function (id) {
+            for (const id of event.message_ids) {
                 const msg = message_store.get(id);
                 if (msg === undefined) {
-                    return;
+                    continue;
                 }
 
                 // Remove the recent topics entry for the old topics;
@@ -215,7 +217,7 @@ exports.update_messages = function update_messages(events) {
                         current_msg_list.remove_and_rerender([{id: id}]);
                     }
                 }
-            });
+            }
         }
 
         if (event.orig_content !== undefined) {
@@ -249,7 +251,7 @@ exports.update_messages = function update_messages(events) {
 
         notifications.received_messages([msg]);
         alert_words.process_message(msg);
-    });
+    }
 
     // If a topic was edited, we re-render the whole view to get any
     // propagated edits to be updated (since the topic edits can have

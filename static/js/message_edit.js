@@ -648,7 +648,8 @@ exports.show_history = function (message) {
         success: function (data) {
             const content_edit_history = [];
             let prev_timestamp;
-            _.each(data.message_history, function (msg, index) {
+
+            for (const [index, msg] of data.message_history.entries()) {
                 // Format timestamp nicely for display
                 const timestamp = timerender.get_full_time(msg.timestamp);
                 const item = {
@@ -685,7 +686,7 @@ exports.show_history = function (message) {
                 }
 
                 content_edit_history.push(item);
-            });
+            }
 
             $('#message-history').html(render_message_edit_history({
                 edited_messages: content_edit_history,

@@ -198,9 +198,9 @@ const matches = [
     zman,
 ];
 
-_.each(matches, function (person) {
+for (const person of matches) {
     global.people.add_in_realm(person);
-});
+}
 
 function get_typeahead_result(query, current_stream, current_topic) {
     const result = th.sort_recipients(

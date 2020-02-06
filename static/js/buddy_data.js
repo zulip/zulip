@@ -339,11 +339,12 @@ exports.huddle_fraction_present = function (huddle) {
     const user_ids = huddle.split(',').map(s => parseInt(s, 10));
 
     let num_present = 0;
-    _.each(user_ids, function (user_id) {
+
+    for (const user_id of user_ids) {
         if (presence.is_active(user_id)) {
             num_present += 1;
         }
-    });
+    }
 
     if (num_present === user_ids.length) {
         return 1;

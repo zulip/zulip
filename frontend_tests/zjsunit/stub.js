@@ -1,5 +1,3 @@
-const _ = require('underscore/underscore.js');
-
 // Stubs don't do any magical modifications to your namespace.  They
 // just provide you a function that records what arguments get passed
 // to it.  To use stubs as something more like "spies," use something
@@ -18,9 +16,9 @@ exports.make_stub = function () {
     self.get_args = function (...param_names) {
         const result = {};
 
-        _.each(param_names, function (name, i) {
+        for (const [i, name] of param_names.entries()) {
             result[name] = self.last_call_args[i];
-        });
+        }
 
         return result;
     };

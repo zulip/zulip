@@ -690,14 +690,14 @@ run_test('get_people_for_search_bar', () => {
     typeahead_helper.compare_by_pms = () => 0;
     message_store.user_ids = () => [];
 
-    _.each(_.range(20), (i) => {
+    for (const i of _.range(20)) {
         const person = {
             email: 'whatever@email.com',
             full_name: 'James Jones',
             user_id: 1000 + i,
         };
         people.add_in_realm(person);
-    });
+    }
 
     const big_results = people.get_people_for_search_bar('James');
 

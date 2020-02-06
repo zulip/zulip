@@ -69,9 +69,10 @@ class MarkdownComparer {
         // Sorts every attribute in every element by name.  Ensures consistent diff HTML output
 
         const attributeList = [];
-        _.forEach(node.attributes, (attr) => {
+
+        for (const attr of node.attributes) {
             attributeList.push(attr);
-        });
+        }
 
         // If put in above forEach loop, causes issues (possible nodes.attribute invalidation?)
         attributeList.forEach((attr) => {node.removeAttribute(attr.name);});
@@ -93,14 +94,14 @@ class MarkdownComparer {
         });
 
         if (node.hasChildNodes()) {
-            _.forEach(node.children, (childNode) => {
+            for (const childNode of node.children) {
                 this._reorderAttributes(childNode);
-            });
+            }
         }
         if (node.content && node.content.hasChildNodes()) {
-            _.forEach(node.content.children, (childNode) => {
+            for (const childNode of node.content.children) {
                 this._reorderAttributes(childNode);
-            });
+            }
         }
         return node;
     }

@@ -5,13 +5,15 @@ exports.render_alert_words_ui = function () {
     const word_list = $('#alert_words_list');
 
     word_list.find('.alert-word-item').remove();
-    _.each(words, function (alert_word) {
+
+    for (const alert_word of words) {
         const rendered_alert_word = render_alert_word_settings_item({
             word: alert_word,
             editing: false,
         });
         word_list.append(rendered_alert_word);
-    });
+    }
+
     const new_alert_word_form = render_alert_word_settings_item({
         word: '',
         editing: true,

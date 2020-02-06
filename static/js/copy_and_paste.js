@@ -109,9 +109,11 @@ function remove_div(div, ranges, selection) {
     window.setTimeout(function () {
         selection = window.getSelection();
         selection.removeAllRanges();
-        _.each(ranges, function (range) {
+
+        for (const range of ranges) {
             selection.addRange(range);
-        });
+        }
+
         $('#copytempdiv').remove();
     }, 0);
 }

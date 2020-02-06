@@ -257,7 +257,7 @@ exports.process_from_server = function process_from_server(messages) {
     const msgs_to_rerender = [];
     const non_echo_messages = [];
 
-    _.each(messages, function (message) {
+    for (const message of messages) {
         // In case we get the sent message before we get the send ACK, reify here
 
         const client_message = waiting_for_ack[message.local_id];
@@ -266,7 +266,7 @@ exports.process_from_server = function process_from_server(messages) {
             // the "main" codepath that doesn't have to id reconciliation.
             // We simply return non-echo messages to our caller.
             non_echo_messages.push(message);
-            return;
+            continue;
         }
 
         exports.reify_message_id(message.local_id, message.id);
@@ -297,7 +297,7 @@ exports.process_from_server = function process_from_server(messages) {
 
         msgs_to_rerender.push(client_message);
         delete waiting_for_ack[client_message.id];
-    });
+    }
 
     if (msgs_to_rerender.length > 0) {
         // In theory, we could just rerender messages where there were
@@ -326,9 +326,9 @@ exports.message_send_error = function message_send_error(local_id, error_respons
 
 function abort_message(message) {
     // Remove in all lists in which it exists
-    _.each([message_list.all, home_msg_list, current_msg_list], function (msg_list) {
+    for (const msg_list of [message_list.all, home_msg_list, current_msg_list]) {
         msg_list.remove_and_rerender([message]);
-    });
+    }
 }
 
 exports.initialize = function () {

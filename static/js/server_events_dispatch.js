@@ -273,13 +273,14 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_streams.update_default_streams_table();
         } else if (event.op === 'create') {
             stream_data.create_streams(event.streams);
-            _.each(event.streams, function (stream) {
+
+            for (const stream of event.streams) {
                 const sub = stream_data.get_sub_by_id(stream.stream_id);
                 stream_data.update_calculated_fields(sub);
                 subs.add_sub_to_table(sub);
-            });
+            }
         } else if (event.op === 'delete') {
-            _.each(event.streams, function (stream) {
+            for (const stream of event.streams) {
                 const was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
                 subs.remove_stream(stream.stream_id);
                 stream_data.delete_sub(stream.stream_id);
@@ -298,7 +299,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     settings_org.render_notifications_stream_ui(
                         page_params.realm_signup_notifications_stream_id, 'signup_notifications');
                 }
-            });
+            }
         }
         break;
 
@@ -319,7 +320,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'subscription':
         if (event.op === 'add') {
-            _.each(event.subscriptions, function (rec) {
+            for (const rec of event.subscriptions) {
                 const sub = stream_data.get_sub_by_id(rec.stream_id);
                 if (sub) {
                     stream_data.update_stream_email_address(sub, rec.email_address);
@@ -327,28 +328,28 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 } else {
                     blueslip.error('Subscribing to unknown stream with ID ' + rec.stream_id);
                 }
-            });
+            }
         } else if (event.op === 'peer_add') {
-            _.each(event.subscriptions, function (sub) {
+            for (const sub of event.subscriptions) {
                 if (stream_data.add_subscriber(sub, event.user_id)) {
                     $(document).trigger('peer_subscribe.zulip', {stream_name: sub});
                 } else {
                     blueslip.warn('Cannot process peer_add event');
                 }
-            });
+            }
         } else if (event.op === 'peer_remove') {
-            _.each(event.subscriptions, function (sub) {
+            for (const sub of event.subscriptions) {
                 if (stream_data.remove_subscriber(sub, event.user_id)) {
                     $(document).trigger('peer_unsubscribe.zulip', {stream_name: sub});
                 } else {
                     blueslip.warn('Cannot process peer_remove event.');
                 }
-            });
+            }
         } else if (event.op === 'remove') {
-            _.each(event.subscriptions, function (rec) {
+            for (const rec of event.subscriptions) {
                 const sub = stream_data.get_sub_by_id(rec.stream_id);
                 stream_events.mark_unsubscribed(sub);
-            });
+            }
         } else if (event.op === 'update') {
             stream_events.update_property(
                 event.stream_id,
@@ -469,9 +470,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         const new_value = event.operation === "add";
         switch (event.flag) {
         case 'starred':
-            _.each(event.messages, function (message_id) {
+            for (const message_id of event.messages) {
                 message_flags.update_starred_flag(message_id, new_value);
-            });
+            }
+
             if (event.operation === "add") {
                 starred_messages.add(event.messages);
             } else {

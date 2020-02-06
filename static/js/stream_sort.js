@@ -48,7 +48,7 @@ exports.sort_groups = function (streams, search_term) {
     const normal_streams = [];
     const dormant_streams = [];
 
-    _.each(streams, function (stream) {
+    for (const stream of streams) {
         const sub = stream_data.get_sub(stream);
         const pinned = sub.pin_to_top;
         if (pinned) {
@@ -58,7 +58,7 @@ exports.sort_groups = function (streams, search_term) {
         } else {
             dormant_streams.push(stream);
         }
-    });
+    }
 
     pinned_streams.sort(util.strcmp);
     normal_streams.sort(util.strcmp);

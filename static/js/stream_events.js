@@ -133,12 +133,12 @@ exports.mark_unsubscribed = function (sub) {
 exports.remove_deactivated_user_from_all_streams = function (user_id) {
     const all_subs = stream_data.get_unsorted_subs();
 
-    _.each(all_subs, function (sub) {
+    for (const sub of all_subs) {
         if (stream_data.is_user_subscribed(sub.name, user_id)) {
             stream_data.remove_subscriber(sub.name, user_id);
             subs.rerender_subscriptions_settings(sub);
         }
-    });
+    }
 };
 
 

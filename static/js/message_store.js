@@ -67,9 +67,9 @@ exports.process_message_for_recent_private_messages = function (message) {
         return;
     }
 
-    _.each(user_ids, function (user_id) {
+    for (const user_id of user_ids) {
         pm_conversations.set_partner(user_id);
-    });
+    }
 
     pm_conversations.recent.insert(user_ids, message.id);
 };
@@ -176,9 +176,9 @@ exports.add_message_metadata = function (message) {
         exports.process_message_for_recent_private_messages(message);
 
         if (people.is_my_user_id(message.sender_id)) {
-            _.each(message.display_recipient, (recip) => {
+            for (const recip of message.display_recipient) {
                 message_user_ids.add(recip.id);
-            });
+            }
         }
         break;
     }
@@ -202,7 +202,7 @@ exports.reify_message_id = function (opts) {
         stored_messages.delete(old_id);
     }
 
-    _.each([message_list.all, home_msg_list, message_list.narrowed], function (msg_list) {
+    for (const msg_list of [message_list.all, home_msg_list, message_list.narrowed]) {
         if (msg_list !== undefined) {
             msg_list.change_message_id(old_id, new_id);
 
@@ -210,7 +210,7 @@ exports.reify_message_id = function (opts) {
                 msg_list.view.change_message_id(old_id, new_id);
             }
         }
-    });
+    }
 };
 
 window.message_store = exports;

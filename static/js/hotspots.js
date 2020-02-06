@@ -236,9 +236,10 @@ exports.close_hotspot_icon = function (elem) {
 
 function close_read_hotspots(new_hotspots) {
     const unwanted_hotspots = _.difference(_.keys(HOTSPOT_LOCATIONS), _.pluck(new_hotspots, 'name'));
-    _.each(unwanted_hotspots, function (hotspot_name) {
+
+    for (const hotspot_name of unwanted_hotspots) {
         exports.close_hotspot_icon($('#hotspot_' + hotspot_name + '_icon'));
-    });
+    }
 }
 
 exports.load_new = function (new_hotspots) {

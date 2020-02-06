@@ -44,18 +44,18 @@ exports.reset_scrollbar = function (element_selector) {
 };
 
 function update_message_in_all_views(message_id, callback) {
-    _.each([message_list.all, home_msg_list, message_list.narrowed], function (list) {
+    for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
         if (list === undefined) {
-            return;
+            continue;
         }
         const row = list.get_row(message_id);
         if (row === undefined) {
             // The row may not exist, e.g. if you do an action on a message in
             // a narrowed view
-            return;
+            continue;
         }
         callback(row);
-    });
+    }
 }
 
 exports.show_error_for_unsupported_platform = function () {
@@ -78,11 +78,13 @@ exports.find_message = function (message_id) {
     // (if it was loaded when narrowed), or only in the message_list.all
     // (if received from the server while in a different narrow)
     let message;
-    _.each([message_list.all, home_msg_list, message_list.narrowed], function (msg_list) {
+
+    for (const msg_list of [message_list.all, home_msg_list, message_list.narrowed]) {
         if (msg_list !== undefined && message === undefined) {
             message = msg_list.get(message_id);
         }
-    });
+    }
+
     return message;
 };
 
@@ -113,15 +115,15 @@ exports.show_message_failed = function (message_id, failed_msg) {
 };
 
 exports.remove_message = function (message_id) {
-    _.each([message_list.all, home_msg_list, message_list.narrowed], function (list) {
+    for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
         if (list === undefined) {
-            return;
+            continue;
         }
         const row = list.get_row(message_id);
         if (row !== undefined) {
             list.remove_and_rerender([{id: message_id}]);
         }
-    });
+    }
 };
 
 exports.show_failed_message_success = function (message_id) {

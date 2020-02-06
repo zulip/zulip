@@ -83,9 +83,10 @@ exports.get_services = function bot_data__get_services(bot_id) {
 };
 
 exports.initialize = function () {
-    _.each(page_params.realm_bots, function (bot) {
+    for (const bot of page_params.realm_bots) {
         exports.add(bot);
-    });
+    }
+
     delete page_params.realm_bots;
 };
 

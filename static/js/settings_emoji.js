@@ -134,9 +134,11 @@ exports.set_up = function () {
         $('#admin_emoji_submit').attr('disabled', true);
         const emoji = {};
         const formData = new FormData();
-        _.each($(this).serializeArray(), function (obj) {
+
+        for (const obj of $(this).serializeArray()) {
             emoji[obj.name] = obj.value;
-        });
+        }
+
         $.each($('#emoji_file_input')[0].files, function (i, file) {
             formData.append('file-' + i, file);
         });

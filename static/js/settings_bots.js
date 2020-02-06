@@ -77,7 +77,7 @@ exports.render_bots = function () {
     const all_bots_for_current_user = bot_data.get_all_bots_for_current_user();
     let user_owns_an_active_bot = false;
 
-    _.each(all_bots_for_current_user, function (elem) {
+    for (const elem of all_bots_for_current_user) {
         add_bot_row({
             name: elem.full_name,
             email: elem.email,
@@ -89,7 +89,7 @@ exports.render_bots = function () {
             zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
         });
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
-    });
+    }
 
     if (exports.can_create_new_bots()) {
         if (!user_owns_an_active_bot) {
@@ -217,12 +217,14 @@ exports.set_up = function () {
     $('#download_botserverrc').click(function () {
         const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
         let content = "";
-        _.each(bot_data.get_all_bots_for_current_user(), function (bot) {
+
+        for (const bot of bot_data.get_all_bots_for_current_user()) {
             if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
                 const bot_token = bot_data.get_services(bot.user_id)[0].token;
                 content += exports.generate_botserverrc_content(bot.email, bot.api_key, bot_token);
             }
-        });
+        }
+
         $(this).attr("href", "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content));
     });
 
