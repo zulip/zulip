@@ -139,7 +139,7 @@ cryptography==2.8 \
     --hash=sha256:df6b4dca2e11865e6cfbfb708e800efb18370f5a46fd601d3755bc7f85b3a8a2 \
     --hash=sha256:ecadccc7ba52193963c0475ac9f6fa28ac01e01349a2ca48509667ef41ffd2cf \
     --hash=sha256:fb81c17e0ebe3358486cd8cc3ad78adbae58af12fc2bf2bc0bb84e8090fa5ce8 \
-    # via apns2, pyopenssl, requests
+    # via apns2, pyopenssl, requests, social-auth-core
 cssselect==1.1.0 \
     --hash=sha256:f612ee47b749c877ebae5bb77035d8f4202c6ad0f0fc1271b3c18ad6c4468ecf \
     --hash=sha256:f95f8dedd925fd8f54edb3d2dfb44c190d9d18512377d3c1e2388d16126879bc \
@@ -454,7 +454,8 @@ python3-openid==3.1.0 \
 python3-saml==1.9.0 \
     --hash=sha256:38aa4a338b9514f3c1e2e5a92b76ae6d41c7cc561a0bfeb68b04463fcd4fcd97 \
     --hash=sha256:68ca2e5591769a1a87c9aac1779ff2c0852ddc89fb0b0371f50f781d354323da \
-    --hash=sha256:9c18fa906ef86f56812511124813ae3444e4ea50c11d7ea2d70f2c6bba28c784
+    --hash=sha256:9c18fa906ef86f56812511124813ae3444e4ea50c11d7ea2d70f2c6bba28c784 \
+    # via social-auth-core
 pytz==2019.3 \
     --hash=sha256:1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d \
     --hash=sha256:b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be
@@ -515,11 +516,10 @@ social-auth-app-django==3.1.0 \
     --hash=sha256:6d0dd18c2d9e71ca545097d57b44d26f59e624a12833078e8e52f91baf849778 \
     --hash=sha256:9237e3d7b6f6f59494c3b02e0cce6efc69c9d33ad9d1a064e3b2318bcbe89ae3 \
     --hash=sha256:f151396e5b16e2eee12cd2e211004257826ece24fc4ae97a147df386c1cd7082
-social-auth-core==3.2.0 \
+social-auth-core[azuread,saml]==3.2.0 \
     --hash=sha256:47cd2458c8fefd02466b0c514643e02ad8b61d8b4b69f7573e80882e3a97b0f0 \
     --hash=sha256:8320666548a532eb158968eda542bbe1863682357c432d8c4e28034a7f1e3b58 \
-    --hash=sha256:d81ed681e3c0722300b61a0792c5db5d21206793f95ca810f010c1cc931c8d89 \
-    # via social-auth-app-django
+    --hash=sha256:d81ed681e3c0722300b61a0792c5db5d21206793f95ca810f010c1cc931c8d89
 soupsieve==1.9.5 \
     --hash=sha256:bdb0d917b03a1369ce964056fc195cfdff8819c40de04695a80bc813c3cfa1f5 \
     --hash=sha256:e2c1c5dee4a1c36bcb790e0fabd5492d874b8ebd4617622c4f6a731701060dda \

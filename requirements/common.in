@@ -140,6 +140,7 @@ py3dns
 
 # Install Python Social Auth
 social-auth-app-django
+social-auth-core[azuread,saml]
 
 # Needed for messages' rendered content parsing in push notifications.
 lxml
@@ -172,9 +173,6 @@ pyahocorasick
 # Needed for function decorators that don't break introspection.
 # Used for rate limiting authentication.
 decorator
-
-# Needed for SAML authentication.
-python3-saml
 
 # Use SameSite cookies in legacy Django (remove with Django 2.1)
 django-cookies-samesite
