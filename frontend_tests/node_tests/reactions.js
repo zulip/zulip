@@ -50,14 +50,6 @@ set_global('blueslip', global.make_zblueslip());
 set_global('page_params', {user_id: 5});
 
 set_global('channel', {});
-set_global('emoji_codes', {
-    name_to_codepoint: {
-        alien: '1f47d',
-        smile: '1f604',
-        frown: '1f626',
-        octopus: '1f419',
-    },
-});
 set_global('emoji_picker', {
     hide_emoji_popover: function () {},
 });
@@ -84,15 +76,15 @@ people.add_in_realm(cali);
 const message = {
     id: 1001,
     reactions: [
-        {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '1f604'},
-        {emoji_name: 'smile', user: {id: 6}, reaction_type: 'unicode_emoji', emoji_code: '1f604'},
-        {emoji_name: 'frown', user: {id: 7}, reaction_type: 'unicode_emoji', emoji_code: '1f626'},
+        {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '263a'},
+        {emoji_name: 'smile', user: {id: 6}, reaction_type: 'unicode_emoji', emoji_code: '263a'},
+        {emoji_name: 'frown', user: {id: 7}, reaction_type: 'unicode_emoji', emoji_code: '1f641'},
         {emoji_name: 'inactive_realm_emoji', user: {id: 5}, reaction_type: 'realm_emoji',
          emoji_code: '992'},
 
         // add some bogus user_ids
         {emoji_name: 'octopus', user: {id: 8888}, reaction_type: 'unicode_emoji', emoji_code: '1f419'},
-        {emoji_name: 'frown', user: {id: 9999}, reaction_type: 'unicode_emoji', emoji_code: '1f626'},
+        {emoji_name: 'frown', user: {id: 9999}, reaction_type: 'unicode_emoji', emoji_code: '1f641'},
     ],
 };
 
@@ -148,8 +140,8 @@ run_test('basics', () => {
     const result = reactions.get_message_reactions(message);
     assert.equal(blueslip.get_test_logs('warn').length, 2);
     blueslip.clear_test_data();
-    assert(reactions.current_user_has_reacted_to_emoji(message, '1f604', 'unicode_emoji'));
-    assert(!reactions.current_user_has_reacted_to_emoji(message, '1f626', 'unicode_emoji'));
+    assert(reactions.current_user_has_reacted_to_emoji(message, '263a', 'unicode_emoji'));
+    assert(!reactions.current_user_has_reacted_to_emoji(message, '1f641', 'unicode_emoji'));
 
     result.sort(function (a, b) { return a.count - b.count; });
 
@@ -157,8 +149,8 @@ run_test('basics', () => {
         {
             emoji_name: 'frown',
             reaction_type: 'unicode_emoji',
-            emoji_code: '1f626',
-            local_id: 'unicode_emoji,frown,1f626',
+            emoji_code: '1f641',
+            local_id: 'unicode_emoji,frown,1f641',
             count: 1,
             user_ids: [7],
             label: 'Cali reacted with :frown:',
@@ -181,8 +173,8 @@ run_test('basics', () => {
         {
             emoji_name: 'smile',
             reaction_type: 'unicode_emoji',
-            emoji_code: '1f604',
-            local_id: 'unicode_emoji,smile,1f604',
+            emoji_code: '263a',
+            local_id: 'unicode_emoji,smile,263a',
             count: 2,
             user_ids: [5, 6],
             label: 'You (click to remove) and Bob van Roberts reacted with :smile:',
@@ -210,7 +202,7 @@ run_test('sending', () => {
         assert.deepEqual(args.data, {
             reaction_type: 'unicode_emoji',
             emoji_name: 'smile',
-            emoji_code: '1f604',
+            emoji_code: '263a',
         });
         // args.success() does nothing; just make sure it doesn't crash
         args.success();
@@ -301,7 +293,7 @@ run_test('get_reaction_section', () => {
 
 run_test('emoji_reaction_title', () => {
     const message_id = 1001;
-    const local_id = 'unicode_emoji,smile,1f604';
+    const local_id = 'unicode_emoji,smile,263a';
 
     assert.equal(reactions.get_reaction_title_data(message_id, local_id),
                  "You (click to remove) and Bob van Roberts reacted with :smile:");
@@ -706,11 +698,11 @@ run_test('process_reaction_click', () => {
     expected_reaction_info = {
         reaction_type: 'unicode_emoji',
         emoji_name: 'smile',
-        emoji_code: '1f604',
+        emoji_code: '263a',
     };
     global.with_stub(function (stub) {
         global.channel.del = stub.f;
-        reactions.process_reaction_click(message_id, 'unicode_emoji,smile,1f604');
+        reactions.process_reaction_click(message_id, 'unicode_emoji,smile,263a');
         const args = stub.get_args('args').args;
         assert.equal(args.url, '/json/messages/1001/reactions');
         assert.deepEqual(args.data, expected_reaction_info);

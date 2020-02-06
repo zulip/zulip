@@ -11,19 +11,12 @@ from zerver.lib.upload import upload_backend
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 
-EMOJI_PATH = static_path("generated/emoji")
-NAME_TO_CODEPOINT_PATH = os.path.join(EMOJI_PATH, "name_to_codepoint.json")
-CODEPOINT_TO_NAME_PATH = os.path.join(EMOJI_PATH, "codepoint_to_name.json")
-EMOTICON_CONVERSIONS_PATH = os.path.join(EMOJI_PATH, "emoticon_conversions.json")
+with open(static_path("generated/emoji/emoji_codes.json")) as fp:
+    emoji_codes = ujson.load(fp)
 
-with open(NAME_TO_CODEPOINT_PATH) as fp:
-    name_to_codepoint = ujson.load(fp)
-
-with open(CODEPOINT_TO_NAME_PATH) as fp:
-    codepoint_to_name = ujson.load(fp)
-
-with open(EMOTICON_CONVERSIONS_PATH) as fp:
-    EMOTICON_CONVERSIONS = ujson.load(fp)
+name_to_codepoint = emoji_codes["name_to_codepoint"]
+codepoint_to_name = emoji_codes["codepoint_to_name"]
+EMOTICON_CONVERSIONS = emoji_codes["emoticon_conversions"]
 
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
 possible_emoticon_regexes = (re.escape(emoticon) for emoticon in possible_emoticons)

@@ -6,6 +6,8 @@
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
 
+const emoji_codes = require("../generated/emoji/emoji_codes.json");
+
 let realm_filter_map = {};
 let realm_filter_list = [];
 

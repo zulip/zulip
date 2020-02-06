@@ -24,7 +24,7 @@ from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
-from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
+from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.upload import resize_logo
 from urllib.parse import urlencode
 
@@ -681,10 +681,6 @@ def channel_message_to_zerver_message(realm_id: int,
     zerver_attachment = []  # type: List[ZerverFieldsT]
     reaction_list = []  # type: List[ZerverFieldsT]
 
-    # For unicode emoji
-    with open(NAME_TO_CODEPOINT_PATH) as fp:
-        name_to_codepoint = ujson.load(fp)
-
     total_user_messages = 0
     total_skipped_user_messages = 0
     for message in all_messages:
@@ -736,7 +732,7 @@ def channel_message_to_zerver_message(realm_id: int,
 
         if 'reactions' in message.keys():
             build_reactions(reaction_list, message['reactions'], slack_user_id_to_zulip_user_id,
-                            message_id, name_to_codepoint, zerver_realmemoji)
+                            message_id, zerver_realmemoji)
 
         # Process different subtypes of slack messages
 
@@ -895,7 +891,6 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
 
 def build_reactions(reaction_list: List[ZerverFieldsT], reactions: List[ZerverFieldsT],
                     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT, message_id: int,
-                    name_to_codepoint: ZerverFieldsT,
                     zerver_realmemoji: List[ZerverFieldsT]) -> None:
     realmemoji = {}
     for realm_emoji in zerver_realmemoji:

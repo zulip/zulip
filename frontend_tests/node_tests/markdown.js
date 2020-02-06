@@ -8,7 +8,7 @@ zrequire('fenced_code');
 zrequire('stream_data');
 zrequire('people');
 zrequire('user_groups');
-set_global('emoji_codes', zrequire('emoji_codes', 'generated/emoji/emoji_codes'));
+const emoji_codes = zrequire('emoji_codes', 'generated/emoji/emoji_codes.json');
 zrequire('emoji');
 zrequire('message_store');
 zrequire('markdown');

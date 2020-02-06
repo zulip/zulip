@@ -1,3 +1,4 @@
+const emoji_codes = require("../generated/emoji/emoji_codes.json");
 const render_message_reaction = require('../templates/message_reaction.hbs');
 const Dict = require('./dict').Dict;
 
