@@ -29,7 +29,7 @@ from zerver.lib.message import (
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
 from zerver.lib.presence import (
     get_presences_for_realm,
-    get_status_dict_by_user
+    get_presence_for_user,
 )
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
@@ -616,7 +616,7 @@ def apply_event(state: Dict[str, Any],
             user_key = str(event['user_id'])
         else:
             user_key = event['email']
-        state['presences'][user_key] = get_status_dict_by_user(
+        state['presences'][user_key] = get_presence_for_user(
             event['user_id'], slim_presence)[user_key]
     elif event['type'] == "update_message":
         # We don't return messages in /register, so we don't need to
