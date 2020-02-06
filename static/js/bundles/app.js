@@ -17,7 +17,6 @@ import "handlebars/dist/cjs/handlebars.runtime.js";
 import "flatpickr/dist/flatpickr.js";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.js";
 import "sortablejs/Sortable.js";
-import "../../generated/pygments_data.js";
 
 // Import App JS
 import "../translations.js";

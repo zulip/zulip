@@ -8,7 +8,7 @@
 # From emoji
 /generated/emoji
 # From passing pygments data to the frontend
-/generated/pygments_data.js
+/generated/pygments_data.json
 # From `tools/update-authors-json`
 /generated/github-contributors.json
 

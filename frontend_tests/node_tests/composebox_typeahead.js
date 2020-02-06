@@ -178,9 +178,7 @@ emoji.active_realm_emojis = new Map();
 emoji.emojis_by_name = emojis_by_name;
 emoji.emojis = emoji_list;
 
-set_global('pygments_data', {langs:
-    {python: 0, javscript: 1, html: 2, css: 3},
-});
+const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 
 const alice = {
     email: 'alice@zulip.com',
