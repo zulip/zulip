@@ -433,6 +433,10 @@ exports.set_up = function () {
         };
         settings_ui.do_settings_change(channel.patch, '/json/settings', data,
                                        $('#account-settings-status').expectOne(), opts);
+        
+        // I'm just changing the text in the full_name_value object if the change is a success
+        const name_val = $('#full_name_value');
+        name_val.text(data.full_name);                               
     });
 
     $('#change_email_button').on('click', function (e) {
