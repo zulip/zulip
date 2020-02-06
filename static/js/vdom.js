@@ -174,30 +174,20 @@ exports.update = (replace_content, find, new_dom, old_dom) => {
 };
 
 exports.update_attrs = (elem, new_attrs, old_attrs) => {
-    function make_dict(attrs) {
-        const dict = {};
-        _.each(attrs, (attr) => {
-            const k = attr[0];
-            const v = attr[1];
-            dict[k] = v;
-        });
-        return dict;
-    }
+    const new_dict = new Map(new_attrs);
+    const old_dict = new Map(old_attrs);
 
-    const new_dict = make_dict(new_attrs);
-    const old_dict = make_dict(old_attrs);
-
-    _.each(new_dict, (v, k) => {
-        if (v !== old_dict[k]) {
+    for (const [k, v] of new_attrs) {
+        if (v !== old_dict.get(k)) {
             elem.attr(k, v);
         }
-    });
+    }
 
-    _.each(old_dict, (v, k) => {
-        if (new_dict[k] === undefined) {
+    for (const [k] of old_attrs) {
+        if (!new_dict.has(k)) {
             elem.removeAttr(k);
         }
-    });
+    }
 };
 
 window.vdom = exports;
