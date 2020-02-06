@@ -152,7 +152,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 window.electron_bridge.send_event('realm_name', event.value);
             }
         } else if (event.op === 'update_dict' && event.property === 'default') {
-            _.each(event.data, function (value, key) {
+            for (const [key, value] of Object.entries(event.data)) {
                 page_params['realm_' + key] = value;
                 if (key === 'allow_message_editing') {
                     message_edit.update_message_topic_editing_pencil();
@@ -160,7 +160,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (_.has(realm_settings, key)) {
                     settings_org.sync_realm_settings(key);
                 }
-            });
+            }
             if (event.data.authentication_methods !== undefined) {
                 settings_org.populate_auth_methods(event.data.authentication_methods);
             }
