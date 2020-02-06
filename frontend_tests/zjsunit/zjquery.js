@@ -398,17 +398,11 @@ exports.make_zjquery = function (opts) {
     // Our fn structure helps us simulate extending jQuery.
     const fn = {};
 
-    function add_extensions(obj) {
-        _.each(fn, (v, k) => {
-            obj[k] = v;
-        });
-    }
-
     function new_elem(selector) {
         const elem = exports.make_new_elem(selector, {
             silent: opts.silent,
         });
-        add_extensions(elem);
+        Object.assign(elem, fn);
 
         // Create a proxy handler to detect missing stubs.
         //
