@@ -189,11 +189,11 @@ const DRAFT_LIFETIME = 30;
 exports.remove_old_drafts = function () {
     const old_date  = new Date().setDate(new Date().getDate() - DRAFT_LIFETIME);
     const drafts = draft_model.get();
-    _.each(drafts, function (draft, id) {
+    for (const [id, draft] of Object.entries(drafts)) {
         if (draft.updatedAt < old_date) {
             draft_model.deleteDraft(id);
         }
-    });
+    }
 };
 
 exports.format_draft = function (draft) {
@@ -295,9 +295,9 @@ function remove_draft(draft_row) {
 
 exports.launch = function () {
     function format_drafts(data) {
-        _.each(data, function (draft, id) {
+        for (const [id, draft] of Object.entries(data)) {
             draft.id = id;
-        });
+        }
 
         const unsorted_raw_drafts = _.values(data);
 
