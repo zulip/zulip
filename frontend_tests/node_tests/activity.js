@@ -148,10 +148,10 @@ people.initialize_current_user(me.user_id);
 const real_update_huddles = activity.update_huddles;
 activity.update_huddles = () => {};
 
-const presence_info = {};
-presence_info[alice.user_id] = { status: 'inactive' };
-presence_info[fred.user_id] = { status: 'active' };
-presence_info[jill.user_id] = { status: 'active' };
+const presence_info = new Map();
+presence_info.set(alice.user_id, { status: 'inactive' });
+presence_info.set(fred.user_id, { status: 'active' });
+presence_info.set(jill.user_id, { status: 'active' });
 
 presence.presence_info = presence_info;
 
@@ -280,11 +280,11 @@ run_test('huddle_fraction_present', () => {
     let huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
-    let presence_info = {};
-    presence_info[alice.user_id] = { status: 'active' }; // counts as present
-    presence_info[fred.user_id] = { status: 'idle' }; // doest not count as present
+    let presence_info = new Map();
+    presence_info.set(alice.user_id, { status: 'active' }); // counts as present
+    presence_info.set(fred.user_id, { status: 'idle' }); // doest not count as present
     // jill not in list
-    presence_info[mark.user_id] = { status: 'offline' }; // does not count
+    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
     presence.presence_info = presence_info;
 
     assert.equal(
@@ -293,11 +293,11 @@ run_test('huddle_fraction_present', () => {
 
     huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
     huddle = people.emails_strings_to_user_ids_string(huddle);
-    presence_info = {};
-    presence_info[alice.user_id] = { status: 'idle' };
-    presence_info[fred.user_id] = { status: 'idle' }; // does not count as present
+    presence_info = new Map();
+    presence_info.set(alice.user_id, { status: 'idle' });
+    presence_info.set(fred.user_id, { status: 'idle' }); // does not count as present
     // jill not in list
-    presence_info[mark.user_id] = { status: 'offline' }; // does not count
+    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
     presence.presence_info = presence_info;
 
     assert.equal(
@@ -305,14 +305,14 @@ run_test('huddle_fraction_present', () => {
         undefined);
 });
 
-presence.presence_info = {};
-presence.presence_info[alice.user_id] = { status: activity.IDLE };
-presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
-presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
-presence.presence_info[mark.user_id] = { status: activity.IDLE };
-presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
-presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
-presence.presence_info[me.user_id] = { status: activity.ACTIVE };
+presence.presence_info = new Map();
+presence.presence_info.set(alice.user_id, { status: activity.IDLE });
+presence.presence_info.set(fred.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(jill.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(mark.user_id, { status: activity.IDLE });
+presence.presence_info.set(norbert.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(zoe.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(me.user_id, { status: activity.ACTIVE });
 
 function clear_buddy_list() {
     buddy_list.populate({
@@ -517,13 +517,13 @@ run_test('handlers', () => {
     }());
 });
 
-presence.presence_info = {};
-presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
-presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
-presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
-presence.presence_info[mark.user_id] = { status: activity.IDLE };
-presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
-presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
+presence.presence_info = new Map();
+presence.presence_info.set(alice.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(fred.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(jill.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(mark.user_id, { status: activity.IDLE });
+presence.presence_info.set(norbert.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(zoe.user_id, { status: activity.ACTIVE });
 
 reset_setup();
 
@@ -589,13 +589,13 @@ run_test('filter_user_ids', () => {
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 
-    presence.presence_info[alice.user_id] = { status: activity.IDLE };
+    presence.presence_info.set(alice.user_id, { status: activity.IDLE });
     user_filter.val('fr,al'); // match fred and alice partials and idle user
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, [fred.user_id, alice.user_id]);
 
     $.stub_selector('.user-list-filter', []);
-    presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
+    presence.presence_info.set(alice.user_id, { status: activity.ACTIVE });
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 });
@@ -797,17 +797,17 @@ run_test('update_presence_info', () => {
         inserted = true;
     };
 
-    presence.presence_info[me.user_id] = undefined;
+    presence.presence_info.delete(me.user_id);
     activity.update_presence_info(me.user_id, info, server_time);
     assert(inserted);
-    assert.deepEqual(presence.presence_info[me.user_id].status, 'active');
+    assert.deepEqual(presence.presence_info.get(me.user_id).status, 'active');
 
-    presence.presence_info[alice.user_id] = undefined;
+    presence.presence_info.delete(alice.user_id);
     activity.update_presence_info(alice.user_id, info, server_time);
     assert(inserted);
 
     const expected = { status: 'active', last_active: 500 };
-    assert.deepEqual(presence.presence_info[alice.user_id], expected);
+    assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
 });
 
 run_test('initialize', () => {

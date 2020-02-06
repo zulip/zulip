@@ -4,7 +4,7 @@
 // Dictionary mapping user_id -> presence data.  May contain user_id
 // values that are not yet registered in people.js (see long comment
 // in `set_info` below for details).
-exports.presence_info = {};
+exports.presence_info = new Map();
 
 
 /* Mark users as offline after 140 seconds since their last checkin,
@@ -15,8 +15,8 @@ const OFFLINE_THRESHOLD_SECS = 140;
 const BIG_REALM_COUNT = 250;
 
 exports.is_active = function (user_id) {
-    if (exports.presence_info[user_id]) {
-        const status = exports.presence_info[user_id].status;
+    if (exports.presence_info.has(user_id)) {
+        const status = exports.presence_info.get(user_id).status;
         if (status && status === "active") {
             return true;
         }
@@ -28,16 +28,14 @@ exports.get_status = function (user_id) {
     if (people.is_my_user_id(user_id)) {
         return "active";
     }
-    if (user_id in exports.presence_info) {
-        return exports.presence_info[user_id].status;
+    if (exports.presence_info.has(user_id)) {
+        return exports.presence_info.get(user_id).status;
     }
     return "offline";
 };
 
 exports.get_user_ids = function () {
-    const user_ids = Object.keys(exports.presence_info).map(s => parseInt(s, 10));
-
-    return user_ids;
+    return Array.from(exports.presence_info.keys());
 };
 
 function status_from_timestamp(baseline_time, info) {
@@ -78,11 +76,11 @@ exports._status_from_timestamp = status_from_timestamp;
 
 exports.set_info_for_user = function (user_id, info, server_time) {
     const status = status_from_timestamp(server_time, info);
-    exports.presence_info[user_id] = status;
+    exports.presence_info.set(user_id, status);
 };
 
 exports.set_info = function (presences, server_timestamp) {
-    exports.presence_info = {};
+    exports.presence_info.clear();
     _.each(presences, function (info, user_id_str) {
         // Note: In contrast with essentially every other piece of
         // state updates we receive from the server, precense updates
@@ -100,7 +98,7 @@ exports.set_info = function (presences, server_timestamp) {
                                              info);
 
         const user_id = parseInt(user_id_str, 10);
-        exports.presence_info[user_id] = status;
+        exports.presence_info.set(user_id, status);
     });
     exports.update_info_for_small_realm();
 };
@@ -120,7 +118,7 @@ exports.update_info_for_small_realm = function () {
         const user_id = person.user_id;
         let status = "offline";
 
-        if (exports.presence_info[user_id]) {
+        if (exports.presence_info.has(user_id)) {
             // this is normal, we have data for active
             // users that we don't want to clobber.
             return;
@@ -135,15 +133,15 @@ exports.update_info_for_small_realm = function () {
             status = "active";
         }
 
-        exports.presence_info[user_id] = {
+        exports.presence_info.set(user_id, {
             status: status,
             last_active: undefined,
-        };
+        });
     });
 };
 
 exports.last_active_date = function (user_id) {
-    const info = exports.presence_info[user_id];
+    const info = exports.presence_info.get(user_id);
 
     if (!info || !info.last_active) {
         return;
