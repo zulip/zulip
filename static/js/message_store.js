@@ -1,4 +1,4 @@
-const stored_messages = {};
+const stored_messages = new Map();
 
 /*
     We keep a set of user_ids for all people
@@ -20,13 +20,11 @@ exports.user_ids = function () {
 };
 
 exports.get = function get(message_id) {
-    return stored_messages[message_id];
+    return stored_messages.get(message_id);
 };
 
 exports.each = function (f) {
-    _.each(stored_messages, function (message) {
-        f(message);
-    });
+    stored_messages.forEach(f);
 };
 
 exports.get_pm_emails = function (message) {
@@ -126,7 +124,7 @@ exports.update_booleans = function (message, flags) {
 };
 
 exports.add_message_metadata = function (message) {
-    const cached_msg = stored_messages[message.id];
+    const cached_msg = stored_messages.get(message.id);
     if (cached_msg !== undefined) {
         // Copy the match topic and content over if they exist on
         // the new message
@@ -189,7 +187,7 @@ exports.add_message_metadata = function (message) {
     if (!message.reactions) {
         message.reactions = [];
     }
-    stored_messages[message.id] = message;
+    stored_messages.set(message.id, message);
     return message;
 };
 
@@ -199,9 +197,9 @@ exports.reify_message_id = function (opts) {
     if (pointer.furthest_read === old_id) {
         pointer.set_furthest_read(new_id);
     }
-    if (stored_messages[old_id]) {
-        stored_messages[new_id] = stored_messages[old_id];
-        delete stored_messages[old_id];
+    if (stored_messages.has(old_id)) {
+        stored_messages.set(new_id, stored_messages.get(old_id));
+        stored_messages.delete(old_id);
     }
 
     _.each([message_list.all, home_msg_list, message_list.narrowed], function (msg_list) {
