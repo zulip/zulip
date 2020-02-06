@@ -27,7 +27,7 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
-from zerver.lib.presence import get_status_dict
+from zerver.lib.presence import get_status_dict, get_status_dict_by_user
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.realm_icon import realm_icon_url
@@ -50,7 +50,7 @@ from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_status import get_user_info_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import (
-    Client, Message, Realm, UserPresence, UserProfile,
+    Client, Message, Realm, UserProfile,
     get_user_profile_by_id, realm_filters_for_realm,
     custom_profile_fields_for_realm, get_realm_domains,
     get_default_stream_groups, CustomProfileField, Stream
@@ -613,7 +613,7 @@ def apply_event(state: Dict[str, Any],
             user_key = str(event['user_id'])
         else:
             user_key = event['email']
-        state['presences'][user_key] = UserPresence.get_status_dict_by_user(
+        state['presences'][user_key] = get_status_dict_by_user(
             event['user_id'], slim_presence)[user_key]
     elif event['type'] == "update_message":
         # We don't return messages in /register, so we don't need to
