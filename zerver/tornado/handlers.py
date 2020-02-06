@@ -324,19 +324,19 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
         return response
 
 class AsyncDjangoHandler(AsyncDjangoHandlerBase):
-    def zulip_finish(self, response: Dict[str, Any], request: HttpRequest,
+    def zulip_finish(self, result_dict: Dict[str, Any], request: HttpRequest,
                      apply_markdown: bool) -> None:
         # Make sure that Markdown rendering really happened, if requested.
         # This is a security issue because it's where we escape HTML.
         # c.f. ticket #64
         #
         # apply_markdown=True is the fail-safe default.
-        if response['result'] == 'success' and 'messages' in response and apply_markdown:
-            for msg in response['messages']:
+        if result_dict['result'] == 'success' and 'messages' in result_dict and apply_markdown:
+            for msg in result_dict['messages']:
                 if msg['content_type'] != 'text/html':
                     self.set_status(500)
                     self.finish('Internal error: bad message format')
-        if response['result'] == 'error':
+        if result_dict['result'] == 'error':
             self.set_status(400)
 
         # Call the Django response middleware on our object so that
@@ -344,8 +344,8 @@ class AsyncDjangoHandler(AsyncDjangoHandlerBase):
         # the headers from that since sending those to Tornado seems
         # tricky; instead just send the (already json-rendered)
         # content on to Tornado
-        django_response = json_response(res_type=response['result'],
-                                        data=response, status=self.get_status())
+        django_response = json_response(res_type=result_dict['result'],
+                                        data=result_dict, status=self.get_status())
         django_response = self.apply_response_middleware(request, django_response,
                                                          request._resolver)
         # Pass through the content-type from Django, as json content should be
