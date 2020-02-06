@@ -1,5 +1,4 @@
 import datetime
-import time
 
 from django.conf import settings
 from typing import Any, Dict, Optional
@@ -11,21 +10,15 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import human_users_only
 from zerver.lib.actions import (
     do_update_user_status,
-    get_status_dict,
     update_user_presence,
 )
+from zerver.lib.presence import get_presence_response
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool, check_capped_string
 from zerver.models import UserActivity, UserPresence, UserProfile, \
     get_active_user_by_delivery_email
-
-def get_presence_response(requesting_user_profile: UserProfile,
-                          slim_presence: bool) -> Dict[str, Any]:
-    server_timestamp = time.time()
-    presences = get_status_dict(requesting_user_profile, slim_presence)
-    return dict(presences=presences, server_timestamp=server_timestamp)
 
 def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
                          email: str) -> HttpResponse:

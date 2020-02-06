@@ -4989,15 +4989,6 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     idle_user_ids = user_ids - active_user_ids
     return sorted(list(idle_user_ids))
 
-def get_status_dict(requesting_user_profile: UserProfile,
-                    slim_presence: bool) -> Dict[str, Dict[str, Dict[str, Any]]]:
-
-    if requesting_user_profile.realm.presence_disabled:
-        # Return an empty dict if presence is disabled in this realm
-        return defaultdict(dict)
-
-    return UserPresence.get_status_dict_by_realm(requesting_user_profile.realm_id, slim_presence)
-
 def do_send_confirmation_email(invitee: PreregistrationUser,
                                referrer: UserProfile) -> str:
     """

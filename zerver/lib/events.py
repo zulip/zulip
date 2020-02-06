@@ -27,6 +27,7 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
+from zerver.lib.presence import get_status_dict
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.realm_icon import realm_icon_url
@@ -39,7 +40,7 @@ from zerver.lib.actions import (
     do_get_streams,
     get_default_streams_for_realm,
     gather_subscriptions_helper,
-    get_status_dict, streams_to_dicts_sorted,
+    streams_to_dicts_sorted,
     default_stream_groups_to_dicts_sorted,
     get_owned_bot_dicts,
     get_available_notification_sounds,
