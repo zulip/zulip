@@ -150,9 +150,9 @@ run_test('test tab clicks', () => {
 
     $('#bots_lists_navbar .active').removeClass = (cls) => {
         assert.equal(cls, 'active');
-        _.each(tabs, (tab) => {
+        for (const tab of Object.values(tabs)) {
             tab.removeClass('active');
-        });
+        }
     };
 
     const forms = {
