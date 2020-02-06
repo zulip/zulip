@@ -29,6 +29,7 @@ from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
+from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
@@ -82,6 +83,8 @@ def create_preregistration_user(email: str, request: HttpRequest, realm_creation
     )
 
 def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str='',
+                               mobile_flow_otp: Optional[str]=None,
+                               desktop_flow_otp: Optional[str]=None,
                                is_signup: bool=False, password_required: bool=True,
                                multiuse_object_key: str='',
                                full_name_validated: bool=False) -> HttpResponse:
@@ -92,6 +95,31 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
     depending on is_signup, whether the email address can join the
     organization (checked in HomepageForm), and similar details.
     """
+
+    # In the desktop and mobile registration flows, the sign up
+    # happens in the browser so the user can use their
+    # already-logged-in social accounts.  Then at the end, with the
+    # user account created, we pass the appropriate data to the app
+    # via e.g. a `zulip://` redirect.  We store the OTP keys for the
+    # mobile/desktop flow in the session with 1-hour expiry, because
+    # we want this configuration of having a successful authentication
+    # result in being logged into the app to persist if the user makes
+    # mistakes while trying to authenticate (E.g. clicks the wrong
+    # Google account, hits back, etc.) during a given browser session,
+    # rather than just logging into the webapp in the target browser.
+    #
+    # We can't use our usual pre-account-creation state storage
+    # approach of putting something in PreregistrationUser, because
+    # that would apply to future registration attempts on other
+    # devices, e.g. just creating an account on the web on their laptop.
+    assert not (mobile_flow_otp and desktop_flow_otp)
+    if mobile_flow_otp:
+        set_expirable_session_var(request.session, 'registration_mobile_flow_otp', mobile_flow_otp,
+                                  expiry_seconds=3600)
+    elif desktop_flow_otp:
+        set_expirable_session_var(request.session, 'registration_desktop_flow_otp', desktop_flow_otp,
+                                  expiry_seconds=3600)
+
     if multiuse_object_key:
         from_multiuse_invite = True
         multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
@@ -172,7 +200,9 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
     context = login_context(request)
     extra_context = {'form': form, 'current_url': lambda: url,
                      'from_multiuse_invite': from_multiuse_invite,
-                     'multiuse_object_key': multiuse_object_key}  # type: Mapping[str, Any]
+                     'multiuse_object_key': multiuse_object_key,
+                     'mobile_flow_otp': mobile_flow_otp,
+                     'desktop_flow_otp': desktop_flow_otp}  # type: Mapping[str, Any]
     context.update(extra_context)
     return render(request, 'zerver/accounts_home.html', context=context)
 
@@ -183,6 +213,8 @@ def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
 
 def register_remote_user(request: HttpRequest, remote_username: str,
                          full_name: str='',
+                         mobile_flow_otp: Optional[str]=None,
+                         desktop_flow_otp: Optional[str]=None,
                          is_signup: bool=False,
                          multiuse_object_key: str='',
                          full_name_validated: bool=False) -> HttpResponse:
@@ -191,6 +223,8 @@ def register_remote_user(request: HttpRequest, remote_username: str,
     # there's no associated Zulip user account.  Consider sending
     # the request to registration.
     return maybe_send_to_registration(request, email, full_name, password_required=False,
+                                      mobile_flow_otp=mobile_flow_otp,
+                                      desktop_flow_otp=desktop_flow_otp,
                                       is_signup=is_signup, multiuse_object_key=multiuse_object_key,
                                       full_name_validated=full_name_validated)
 
@@ -222,7 +256,10 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
     """
     if user_profile is None or user_profile.is_mirror_dummy:
         return register_remote_user(request, remote_username, full_name,
-                                    is_signup=is_signup, multiuse_object_key=multiuse_object_key,
+                                    is_signup=is_signup,
+                                    mobile_flow_otp=mobile_flow_otp,
+                                    desktop_flow_otp=desktop_flow_otp,
+                                    multiuse_object_key=multiuse_object_key,
                                     full_name_validated=full_name_validated)
 
     # Otherwise, the user has successfully authenticated to an
@@ -526,6 +563,8 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     full_name = data.get('name', '')
     is_signup = data.get('is_signup', False)
     redirect_to = data.get('next', '')
+    mobile_flow_otp = data.get('mobile_flow_otp')
+    desktop_flow_otp = data.get('desktop_flow_otp')
     full_name_validated = data.get('full_name_validated', False)
     multiuse_object_key = data.get('multiuse_object_key', '')
 
@@ -561,6 +600,8 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name,
                                          is_signup=is_signup, redirect_to=redirect_to,
+                                         mobile_flow_otp=mobile_flow_otp,
+                                         desktop_flow_otp=desktop_flow_otp,
                                          multiuse_object_key=multiuse_object_key,
                                          full_name_validated=full_name_validated)
 
@@ -580,10 +621,14 @@ def get_login_data(token: str, should_delete: bool=True) -> Optional[Dict[str, A
 
 def redirect_and_log_into_subdomain(realm: Realm, full_name: str, email_address: str,
                                     is_signup: bool=False, redirect_to: str='',
+                                    mobile_flow_otp: Optional[str]=None,
+                                    desktop_flow_otp: Optional[str]=None,
                                     multiuse_object_key: str='',
-                                    full_name_validated: bool=False) -> HttpResponse:
+                                    full_name_validated: bool=False,) -> HttpResponse:
     data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
             'is_signup': is_signup, 'next': redirect_to,
+            'mobile_flow_otp': mobile_flow_otp,
+            'desktop_flow_otp': desktop_flow_otp,
             'multiuse_object_key': multiuse_object_key,
             'full_name_validated': full_name_validated}
     token = store_login_data(data)
