@@ -1168,20 +1168,25 @@ def social_auth_finish(backend: Any,
             extra_kwargs["desktop_flow_otp"] = desktop_flow_otp
             extra_kwargs["realm"] = realm
 
-        # For mobile and desktop app authentication, login_or_register_remote_user
-        # will redirect to a special zulip:// URL that is handled by
-        # the app after a successful authentication; so we can
-        # redirect directly from here, saving a round trip over what
-        # we need to do to create session cookies on the right domain
-        # in the web login flow (below).
-        return login_or_register_remote_user(
-            strategy.request, email_address,
-            user_profile, full_name,
-            is_signup=is_signup,
-            redirect_to=redirect_to,
-            full_name_validated=full_name_validated,
-            **extra_kwargs
-        )
+        if user_profile is not None and not user_profile.is_mirror_dummy:
+            # For mobile and desktop app authentication, login_or_register_remote_user
+            # will redirect to a special zulip:// URL that is handled by
+            # the app after a successful authentication; so we can
+            # redirect directly from here, saving a round trip over what
+            # we need to do to create session cookies on the right domain
+            # in the web login flow (below).
+            return login_or_register_remote_user(
+                strategy.request, email_address,
+                user_profile, full_name,
+                is_signup=is_signup,
+                redirect_to=redirect_to,
+                full_name_validated=full_name_validated,
+                **extra_kwargs
+            )
+        else:
+            # The user needs to register, so we need to go the realm's
+            # subdomain for that.
+            pass
 
     # If this authentication code were executing on
     # subdomain.zulip.example.com, we would just call
@@ -1201,7 +1206,9 @@ def social_auth_finish(backend: Any,
         is_signup=is_signup,
         redirect_to=redirect_to,
         multiuse_object_key=multiuse_object_key,
-        full_name_validated=full_name_validated
+        full_name_validated=full_name_validated,
+        mobile_flow_otp=mobile_flow_otp,
+        desktop_flow_otp=desktop_flow_otp
     )
 
 class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):

@@ -965,7 +965,9 @@ class SocialAuthBase(ZulipTestCase):
 
     def stage_two_of_registration(self, result: HttpResponse, realm: Realm, subdomain: str,
                                   email: str, name: str, expected_final_name: str,
-                                  skip_registration_form: bool) -> None:
+                                  skip_registration_form: bool,
+                                  mobile_flow_otp: Optional[str]=None,
+                                  desktop_flow_otp: Optional[str]=None) -> None:
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], email)
         self.assertEqual(data['name'], name)
@@ -1003,6 +1005,35 @@ class SocialAuthBase(ZulipTestCase):
                  'key': confirmation_key,
                  'terms': True})
 
+        # Mobile and desktop flow have additional steps:
+        if mobile_flow_otp:
+            self.assertEqual(result.status_code, 302)
+            redirect_url = result['Location']
+            parsed_url = urllib.parse.urlparse(redirect_url)
+            query_params = urllib.parse.parse_qs(parsed_url.query)
+            self.assertEqual(parsed_url.scheme, 'zulip')
+            self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
+            self.assertEqual(query_params["email"], [email])
+            encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+            user_api_keys = get_all_api_keys(get_user(email, realm))
+            self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), user_api_keys)
+            return
+        elif desktop_flow_otp:
+            self.assertEqual(result.status_code, 302)
+            redirect_url = result['Location']
+            parsed_url = urllib.parse.urlparse(redirect_url)
+            query_params = urllib.parse.parse_qs(parsed_url.query)
+            self.assertEqual(parsed_url.scheme, 'zulip')
+            self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
+            self.assertEqual(query_params["email"], [email])
+
+            encrypted_key = query_params["otp_encrypted_login_key"][0]
+            decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
+            auth_url = 'http://zulip.testserver/accounts/login/subdomain/{}'.format(decrypted_key)
+
+            result = self.client_get(auth_url)
+            # Now the desktop app is logged in, continue with the logged in check:
+
         self.assertEqual(result.status_code, 302)
         user_profile = get_user(email, realm)
         self.assert_logged_in_user_id(user_profile.id)
@@ -1023,6 +1054,40 @@ class SocialAuthBase(ZulipTestCase):
                                        subdomain=subdomain, is_signup='1')
         self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                        self.BACKEND_CLASS.full_name_validated)
+
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_mobile_registration(self) -> None:
+        email = "newuser@zulip.com"
+        name = 'Full Name'
+        subdomain = 'zulip'
+        realm = get_realm("zulip")
+        mobile_flow_otp = '1234abcd' * 8
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        result = self.social_auth_test(account_data_dict, subdomain='zulip',
+                                       expect_choose_email_screen=True,
+                                       is_signup='1',
+                                       mobile_flow_otp=mobile_flow_otp)
+        self.stage_two_of_registration(result, realm, subdomain, email, name, name,
+                                       self.BACKEND_CLASS.full_name_validated,
+                                       mobile_flow_otp=mobile_flow_otp)
+
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_desktop_registration(self) -> None:
+        email = "newuser@zulip.com"
+        name = 'Full Name'
+        subdomain = 'zulip'
+        realm = get_realm("zulip")
+        desktop_flow_otp = '1234abcd' * 8
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        result = self.social_auth_test(account_data_dict, subdomain='zulip',
+                                       expect_choose_email_screen=True,
+                                       is_signup='1',
+                                       desktop_flow_otp=desktop_flow_otp)
+        self.stage_two_of_registration(result, realm, subdomain, email, name, name,
+                                       self.BACKEND_CLASS.full_name_validated,
+                                       desktop_flow_otp=desktop_flow_otp)
 
     @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration_invitation_exists(self) -> None:

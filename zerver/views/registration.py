@@ -26,12 +26,13 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, \
     do_login
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
+from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.views.auth import create_preregistration_user, redirect_and_log_into_subdomain, \
-    redirect_to_deactivation_notice, get_safe_redirect_to
+    redirect_to_deactivation_notice, get_safe_redirect_to, finish_desktop_flow, finish_mobile_flow
 
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, \
     ZulipLDAPExceptionNoMatchingLDAPUser, email_auth_enabled, ZulipLDAPAuthBackend, \
@@ -380,6 +381,15 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     )
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    mobile_flow_otp = get_expirable_session_var(request.session, 'registration_mobile_flow_otp',
+                                                delete=True)
+    desktop_flow_otp = get_expirable_session_var(request.session, 'registration_desktop_flow_otp',
+                                                 delete=True)
+    if mobile_flow_otp is not None:
+        return finish_mobile_flow(request, user_profile, mobile_flow_otp)
+    elif desktop_flow_otp is not None:
+        return finish_desktop_flow(request, user_profile, user_profile.realm, desktop_flow_otp)
+
     do_login(request, user_profile)
     return HttpResponseRedirect(user_profile.realm.uri + reverse('zerver.views.home.home'))
 

@@ -85,6 +85,8 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
                                     'full_name_validated': False,
                                     'subdomain': realm.subdomain,
                                     'is_signup': False,
+                                    'desktop_flow_otp': None,
+                                    'mobile_flow_otp': None,
                                     'multiuse_object_key': ''})
 
         response = redirect_and_log_into_subdomain(realm, name, email,
@@ -96,6 +98,8 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
                                     'full_name_validated': False,
                                     'subdomain': realm.subdomain,
                                     'is_signup': True,
+                                    'desktop_flow_otp': None,
+                                    'mobile_flow_otp': None,
                                     'multiuse_object_key': 'key'
                                     })
 
@@ -109,6 +113,8 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
                                     'full_name_validated': True,
                                     'subdomain': realm.subdomain,
                                     'is_signup': True,
+                                    'desktop_flow_otp': None,
+                                    'mobile_flow_otp': None,
                                     'multiuse_object_key': 'key'
                                     })
 
