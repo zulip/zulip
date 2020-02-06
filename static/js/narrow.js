@@ -296,10 +296,11 @@ exports.activate = function (raw_operators, opts) {
 
     if (page_params.search_pills_enabled && opts.trigger !== 'search') {
         search_pill_widget.widget.clear(true);
-        _.each(operators, function (operator) {
+
+        for (const operator of operators) {
             const search_string = Filter.unparse([operator]);
             search_pill.append_search_string(search_string, search_pill_widget.widget);
-        });
+        }
     }
 
     if (filter.contains_only_private_messages()) {
@@ -887,7 +888,7 @@ function show_search_query() {
         search_string_display.append($('<span>').text(stream_topic_string));
     }
 
-    _.each(query_words, function (query_word) {
+    for (const query_word of query_words) {
         search_string_display.append(' ');
 
         // if query contains stop words, it is enclosed by a <del> tag
@@ -899,7 +900,7 @@ function show_search_query() {
             // We use .text("...") to sanitize the user-given query_string.
             search_string_display.append($('<span>').text(query_word));
         }
-    });
+    }
 
     if (query_contains_stop_words) {
         search_string_display.html(i18n.t(

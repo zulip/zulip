@@ -578,13 +578,13 @@ exports.request_desktop_notifications_permission = function () {
 };
 
 exports.received_messages = function (messages) {
-    _.each(messages, function (message) {
+    for (const message of messages) {
         if (!exports.message_is_notifiable(message)) {
-            return;
+            continue;
         }
         if (!unread.message_unread(message)) {
             // The message is already read; Zulip is currently in focus.
-            return;
+            continue;
         }
 
         message.notification_sent = true;
@@ -598,7 +598,7 @@ exports.received_messages = function (messages) {
         if (exports.should_send_audible_notification(message) && supports_sound) {
             $("#notifications-area").find("audio")[0].play();
         }
-    });
+    }
 };
 
 function get_message_header(message) {
@@ -656,13 +656,13 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
         sent_messages.messages here.
     */
 
-    _.each(messages, function (message) {
+    for (const message of messages) {
         if (!people.is_my_user_id(message.sender_id)) {
             // This can happen if the client is offline for a while
             // around the time this client sends a message; see the
             // caller of message_events.insert_new_messages.
             blueslip.info('Slightly unexpected: A message not sent by us batches with those that were.');
-            return;
+            continue;
         }
 
         let reason = exports.get_local_notify_mix_reason(message);
@@ -678,7 +678,7 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
 
             // This is the HAPPY PATH--for most messages we do nothing
             // other than maybe sending the above message.
-            return;
+            continue;
         }
 
         const link_msg_id = message.id;
@@ -687,15 +687,15 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
                                  {message_recipient: get_message_header(message)});
 
         exports.notify_above_composebox(reason, link_class, link_msg_id, link_text);
-    });
+    }
 };
 
 // for callback when we have to check with the server if a message should be in
 // the current_msg_list (!can_apply_locally; a.k.a. "a search").
 exports.notify_messages_outside_current_search = function (messages) {
-    _.each(messages, function (message) {
+    for (const message of messages) {
         if (!people.is_current_user(message.sender_email)) {
-            return;
+            continue;
         }
         const link_text = i18n.t("Narrow to __- message_recipient__",
                                  {message_recipient: get_message_header(message)});
@@ -703,7 +703,7 @@ exports.notify_messages_outside_current_search = function (messages) {
                                         "compose_notification_narrow_by_topic",
                                         message.id,
                                         link_text);
-    });
+    }
 };
 
 exports.clear_compose_notifications = function () {
@@ -718,14 +718,14 @@ exports.reify_message_id = function (opts) {
 
     // If a message ID that we're currently storing (as a link) has changed,
     // update that link as well
-    _.each($('#out-of-view-notification a'), function (e) {
+    for (const e of $('#out-of-view-notification a')) {
         const elem = $(e);
         const message_id = elem.data('message-id');
 
         if (message_id === old_id) {
             elem.data('message-id', new_id);
         }
-    });
+    }
 };
 
 exports.register_click_handlers = function () {

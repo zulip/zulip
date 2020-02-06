@@ -93,7 +93,8 @@ exports.operators_to_hash = function (operators) {
 
     if (operators !== undefined) {
         hash = '#narrow';
-        _.each(operators, function (elem) {
+
+        for (const elem of operators) {
             // Support legacy tuples.
             const operator = elem.operator;
             const operand = elem.operand;
@@ -101,7 +102,7 @@ exports.operators_to_hash = function (operators) {
             const sign = elem.negated ? '-' : '';
             hash += '/' + sign + exports.encodeHashComponent(operator)
                   + '/' + exports.encode_operand(operator, operand);
-        });
+        }
     }
 
     return hash;

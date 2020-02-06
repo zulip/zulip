@@ -93,26 +93,26 @@ exports.unread_pm_counter = (function () {
     };
 
     self.set_pms = function (pms) {
-        _.each(pms, function (obj) {
+        for (const obj of pms) {
             const user_ids_string = obj.sender_id.toString();
             self.set_message_ids(user_ids_string, obj.unread_message_ids);
-        });
+        }
     };
 
     self.set_huddles = function (huddles) {
-        _.each(huddles, function (obj) {
+        for (const obj of huddles) {
             const user_ids_string = people.pm_lookup_key(obj.user_ids_string);
             self.set_message_ids(user_ids_string, obj.unread_message_ids);
-        });
+        }
     };
 
     self.set_message_ids = function (user_ids_string, unread_message_ids) {
-        _.each(unread_message_ids, function (msg_id) {
+        for (const msg_id of unread_message_ids) {
             bucketer.add({
                 bucket_key: user_ids_string,
                 item_id: msg_id,
             });
-        });
+        }
     };
 
     self.add = function (message) {
@@ -208,15 +208,15 @@ exports.unread_topic_counter = (function () {
 
 
     self.set_streams = function (objs) {
-        _.each(objs, function (obj) {
+        for (const obj of objs) {
             const stream_id = obj.stream_id;
             const topic = obj.topic;
             const unread_message_ids = obj.unread_message_ids;
 
-            _.each(unread_message_ids, function (msg_id) {
+            for (const msg_id of unread_message_ids) {
                 self.add(stream_id, topic, msg_id);
-            });
-        });
+            }
+        }
     };
 
     self.add = function (stream_id, topic, msg_id) {
@@ -424,9 +424,9 @@ exports.update_unread_topics = function (msg, event) {
 };
 
 exports.process_loaded_messages = function (messages) {
-    _.each(messages, function (message) {
+    for (const message of messages) {
         if (!message.unread) {
-            return;
+            continue;
         }
 
         unread_messages.add(message.id);
@@ -449,7 +449,7 @@ exports.process_loaded_messages = function (messages) {
         if (message.mentioned_me_directly || is_unmuted_mention) {
             exports.unread_mentions_counter.add(message.id);
         }
-    });
+    }
 };
 
 exports.mark_as_read = function (message_id) {
@@ -584,18 +584,24 @@ exports.initialize = function () {
     exports.unread_pm_counter.set_huddles(unread_msgs.huddles);
     exports.unread_pm_counter.set_pms(unread_msgs.pms);
     exports.unread_topic_counter.set_streams(unread_msgs.streams);
-    _.each(unread_msgs.mentions, message_id => exports.unread_mentions_counter.add(message_id));
 
-    _.each(unread_msgs.huddles, function (obj) {
-        _.each(obj.unread_message_ids, message_id => unread_messages.add(message_id));
-    });
-    _.each(unread_msgs.pms, function (obj) {
-        _.each(obj.unread_message_ids, message_id => unread_messages.add(message_id));
-    });
-    _.each(unread_msgs.streams, function (obj) {
-        _.each(obj.unread_message_ids, message_id => unread_messages.add(message_id));
-    });
-    _.each(unread_msgs.mentions, message_id => unread_messages.add(message_id));
+    for (const message_id of unread_msgs.mentions) {
+        exports.unread_mentions_counter.add(message_id);
+    }
+
+    for (const obj of unread_msgs.huddles) {
+        for (const message_id of obj.unread_message_ids) {unread_messages.add(message_id);}
+    }
+
+    for (const obj of unread_msgs.pms) {
+        for (const message_id of obj.unread_message_ids) {unread_messages.add(message_id);}
+    }
+
+    for (const obj of unread_msgs.streams) {
+        for (const message_id of obj.unread_message_ids) {unread_messages.add(message_id);}
+    }
+
+    for (const message_id of unread_msgs.mentions) {unread_messages.add(message_id);}
 };
 
 window.unread = exports;

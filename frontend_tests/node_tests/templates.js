@@ -119,26 +119,29 @@ run_test('admin_default_streams_list', () => {
     const streams = ['devel', 'trac', 'zulip'];
 
     // When the logged in user is admin
-    _.each(streams, function (stream) {
+    for (const stream of streams) {
         const args = {
             stream: {name: stream, invite_only: false},
             can_modify: true,
         };
         html += render('admin_default_streams_list', args);
-    });
+    }
+
     html += "</table>";
     let span = $(html).find(".default_stream_name").first();
     assert.equal(span.text(), "devel");
 
     // When the logged in user is not admin
     html = '<table>';
-    _.each(streams, function (stream) {
+
+    for (const stream of streams) {
         const args = {
             stream: {name: stream, invite_only: false},
             can_modify: false,
         };
         html += render('admin_default_streams_list', args);
-    });
+    }
+
     html += "</table>";
     span = $(html).find(".default_stream_name").first();
     assert.equal(span.text(), "devel");
@@ -259,7 +262,8 @@ run_test('admin_invites_list', () => {
     let html = '<table>';
     const invites = ['alice', 'bob', 'carl'];
     let invite_id = 0;
-    _.each(invites, function (invite) {
+
+    for (const invite of invites) {
         const args = {
             invite: {
                 email: invite + '@zulip.com',
@@ -271,7 +275,8 @@ run_test('admin_invites_list', () => {
         };
         html += render('admin_invites_list', args);
         invite_id += 1;
-    });
+    }
+
     html += "</table>";
     const buttons = $(html).find('.button');
 
@@ -294,9 +299,11 @@ run_test('admin_tab', () => {
     const html = render('admin_tab', args);
     const admin_features = ["admin_users_table", "admin_bots_table",
                             "admin_deactivated_users_table", "admin_invites_table"];
-    _.each(admin_features, function (admin_feature) {
+
+    for (const admin_feature of admin_features) {
         assert.notEqual($(html).find("#" + admin_feature).length, 0);
-    });
+    }
+
     assert.equal($(html).find("input.admin-realm-name").val(), 'Zulip');
 });
 
@@ -330,7 +337,7 @@ run_test('admin_user_list', () => {
     const users = ['alice', 'bob', 'carl'];
 
     // When the logged in user is admin
-    _.each(users, function (user) {
+    for (const user of users) {
         const args = {
             user: {
                 is_active: true,
@@ -341,7 +348,8 @@ run_test('admin_user_list', () => {
             can_modify: true,
         };
         html += render('admin_user_list', args);
-    });
+    }
+
     html += "</table>";
 
     let buttons = $(html).find('.button');
@@ -354,7 +362,8 @@ run_test('admin_user_list', () => {
 
     // When the logged in user is not admin
     html = '<table>';
-    _.each(users, function (user) {
+
+    for (const user of users) {
         const args = {
             user: {
                 is_active: true,
@@ -365,7 +374,8 @@ run_test('admin_user_list', () => {
             can_modify: false,
         };
         html += render('admin_user_list', args);
-    });
+    }
+
     html += "</table>";
 
     buttons = $(html).find('.button');
@@ -377,12 +387,14 @@ run_test('alert_word_settings_item', () => {
     let html = '<ul id="alert-words">';
     const words = ['lunch', 'support'];
     let args;
-    _.each(words, function (word) {
+
+    for (const word of words) {
         args = {
             word: word,
         };
         html += render('alert_word_settings_item', args);
-    });
+    }
+
     args = {
         word: '',
         editing: true,
@@ -410,7 +422,6 @@ run_test('alert_word_settings_item', () => {
     assert.equal(textbox.attr('class'), 'required');
     assert.equal(button.length, 1);
     assert.equal(button.text().trim(), 'translated: Add alert word');
-
 });
 
 run_test('all_messages_sidebar_actions', () => {
@@ -1140,9 +1151,9 @@ run_test('settings_tab', () => {
     });
 
     // All checkboxes should be checked.
-    _.each(checkbox_ids, function (checkbox) {
+    for (const checkbox of checkbox_ids) {
         assert.equal($(html).find("#" + checkbox).is(":checked"), true);
-    });
+    }
 
     // Re-render with checkbox booleans set to false.
     for (const option of Object.keys(page_param_checkbox_options)) {
@@ -1152,9 +1163,9 @@ run_test('settings_tab', () => {
     html = render('settings_tab', {page_params: page_params});
 
     // All checkboxes should be unchecked.
-    _.each(checkbox_ids, function (checkbox) {
+    for (const checkbox of checkbox_ids) {
         assert.equal($(html).find("#" + checkbox).is(":checked"), false);
-    });
+    }
 
     // Check if enable_desktop_notifications setting disables subsetting too.
     const parent_elem = $('#pm_content_in_desktop_notifications_label').wrap("<div></div>");
@@ -1170,7 +1181,6 @@ run_test('settings_tab', () => {
         assert(!parent_elem.hasClass('control-label-disabled'));
         assert.equal($('#pm_content_in_desktop_notifications').attr('disabled'), undefined);
     });
-
 });
 
 run_test('stream_member_list_entry', () => {
@@ -1180,23 +1190,27 @@ run_test('stream_member_list_entry', () => {
     // First, as non-admin.
     let html = render('stream_member_list_entry',
                       {name: "King Hamlet", email: "hamlet@zulip.com"});
-    _.each(everyone_items, function (item) {
+
+    for (const item of everyone_items) {
         assert.equal($(html).find("." + item).length, 1);
-    });
-    _.each(admin_items, function (item) {
+    }
+
+    for (const item of admin_items) {
         assert.equal($(html).find("." + item).length, 0);
-    });
+    }
 
     // Now, as admin.
     html = render('stream_member_list_entry',
                   {name: "King Hamlet", email: "hamlet@zulip.com",
                    displaying_for_admin: true});
-    _.each(everyone_items, function (item) {
+
+    for (const item of everyone_items) {
         assert.equal($(html).find("." + item).length, 1);
-    });
-    _.each(admin_items, function (item) {
+    }
+
+    for (const item of admin_items) {
         assert.equal($(html).find("." + item).length, 1);
-    });
+    }
 });
 
 run_test('stream_sidebar_actions', () => {

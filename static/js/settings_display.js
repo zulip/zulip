@@ -77,7 +77,7 @@ exports.set_up = function () {
         overlays.close_modal('default_language_modal');
     });
 
-    _.each(exports.all_display_settings.settings.user_display_settings, function (setting) {
+    for (const setting of exports.all_display_settings.settings.user_display_settings) {
         $("#" + setting).change(function () {
             const data = {};
             data[setting] = JSON.stringify($(this).prop('checked'));
@@ -91,7 +91,7 @@ exports.set_up = function () {
                 change_display_setting(data, "#display-settings-status");
             }
         });
-    });
+    }
 
     $("#default_language_modal .language").click(function (e) {
         e.preventDefault();

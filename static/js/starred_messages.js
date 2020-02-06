@@ -2,23 +2,27 @@ exports.ids = new Set();
 
 exports.initialize = function () {
     exports.ids.clear();
-    _.each(page_params.starred_messages, function (id) {
+
+    for (const id of page_params.starred_messages) {
         exports.ids.add(id);
-    });
+    }
+
     exports.rerender_ui();
 };
 
 exports.add = function (ids) {
-    _.each(ids, function (id) {
+    for (const id of ids) {
         exports.ids.add(id);
-    });
+    }
+
     exports.rerender_ui();
 };
 
 exports.remove = function (ids) {
-    _.each(ids, function (id) {
+    for (const id of ids) {
         exports.ids.delete(id);
-    });
+    }
+
     exports.rerender_ui();
 };
 

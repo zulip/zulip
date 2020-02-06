@@ -247,13 +247,13 @@ function set_up_choices_field_edit_form(profile_field, field_data) {
 
     const choices_data = exports.parse_field_choices_from_field_data(field_data);
 
-    _.each(choices_data, function (choice) {
+    for (const choice of choices_data) {
         choice_list.append(
             render_settings_profile_field_choice({
                 text: choice.text,
             })
         );
-    });
+    }
 
     // Add blank choice at last
     create_choice_row(choice_list);
@@ -350,7 +350,8 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
     profile_fields_table.find("tr.profile-field-row").remove();  // Clear all rows.
     profile_fields_table.find("tr.profile-field-form").remove();  // Clear all rows.
     order = [];
-    _.each(profile_fields_data, function (profile_field) {
+
+    for (const profile_field of profile_fields_data) {
         order.push(profile_field.id);
         let field_data = {};
         if (profile_field.field_data) {
@@ -377,7 +378,8 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
                 realm_default_external_accounts: page_params.realm_default_external_accounts,
             })
         );
-    });
+    }
+
     if (page_params.is_admin) {
         const field_list = $("#admin_profile_fields_table")[0];
         Sortable.create(field_list, {

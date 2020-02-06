@@ -134,15 +134,15 @@ function update_user_row_when_fading(li, conf) {
 }
 
 function display_users_normally(items, conf) {
-    _.each(items, function (li) {
+    for (const li of items) {
         conf.unfade(li);
-    });
+    }
 }
 
 function fade_users(items, conf) {
-    _.each(items, function (li) {
+    for (const li of items) {
         update_user_row_when_fading(li, conf);
-    });
+    }
 }
 
 function want_normal_display() {
@@ -232,12 +232,12 @@ exports.update_rendered_message_groups = function (message_groups, get_element) 
     // This loop is superficially similar to some code in fade_messages, but an
     // important difference here is that we look at each message individually, whereas
     // the other code takes advantage of blocks beneath recipient bars.
-    _.each(message_groups, function (message_group) {
+    for (const message_group of message_groups) {
         const elt = get_element(message_group);
         const first_message = message_group.message_containers[0].msg;
         const should_fade = exports.should_fade_message(first_message);
         change_fade_state(elt, should_fade);
-    });
+    }
 };
 
 exports.initialize = function () {

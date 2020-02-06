@@ -117,10 +117,11 @@ exports.initialize = function () {
     fragment = fragment.replace(/^reload:/, "");
     const keyvals = fragment.split("+");
     const vars = {};
-    _.each(keyvals, function (str) {
+
+    for (const str of keyvals) {
         const pair = str.split("=");
         vars[pair[0]] = decodeURIComponent(pair[1]);
-    });
+    }
 
     if (vars.msg !== undefined) {
         const send_now = parseInt(vars.send_after_reload, 10);

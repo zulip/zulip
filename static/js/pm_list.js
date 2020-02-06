@@ -53,12 +53,11 @@ exports.get_active_user_ids_string = function () {
 };
 
 exports._get_convos = function () {
-
     const private_messages = pm_conversations.recent.get();
     const display_messages = [];
     const active_user_ids_string = exports.get_active_user_ids_string();
 
-    _.each(private_messages, function (private_message_obj) {
+    for (const private_message_obj of private_messages) {
         const user_ids_string = private_message_obj.user_ids_string;
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
         const recipients_string = people.get_recipients(user_ids_string);
@@ -97,7 +96,8 @@ exports._get_convos = function () {
             is_group: is_group,
         };
         display_messages.push(display_message);
-    });
+    }
+
     return display_messages;
 };
 

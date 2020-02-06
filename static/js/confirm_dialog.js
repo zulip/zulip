@@ -40,11 +40,11 @@ exports.launch = function (conf) {
         'parent',
     ];
 
-    _.each(conf_fields, function (f) {
+    for (const f of conf_fields) {
         if (!conf[f]) {
             blueslip.error('programmer omitted ' + f);
         }
-    });
+    }
 
     conf.parent.append(confirm_dialog);
 

@@ -929,8 +929,7 @@ run_test('warn_if_private_stream_is_linked', () => {
     compose.warn_if_private_stream_is_linked(denmark);
     assert.equal($('#compose_private_stream_alert').visible(), true);
 
-    _.each(checks, function (f) { f(); });
-
+    for (const f of checks) { f(); }
 });
 
 
@@ -1175,7 +1174,7 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
     compose.warn_if_mentioning_unsubscribed_user(mentioned);
     assert.equal($('#compose_invite_users').visible(), true);
 
-    _.each(checks, function (f) { f(); });
+    for (const f of checks) { f(); }
 
 
     // Simulate that the row was added to the DOM.

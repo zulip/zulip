@@ -19,7 +19,7 @@ exports.process_message = function (message) {
         return;
     }
 
-    _.each(exports.words, function (word) {
+    for (const word of exports.words) {
         const clean = escape_user_regex(word);
         const before_punctuation = '\\s|^|>|[\\(\\".,\';\\[]';
         const after_punctuation = '\\s|$|<|[\\)\\"\\?!:.,\';\\]!]';
@@ -44,7 +44,7 @@ exports.process_message = function (message) {
             }
             return before + "<span class='alert-word'>" + word + "</span>" + after;
         });
-    });
+    }
 };
 
 exports.notifies = function (message) {

@@ -20,11 +20,11 @@ function test_with(fixture) {
     // invarariant that the first unread message we find
     // does indeed satisfy our filter.
     if (fixture.unread_info.flavor === 'found') {
-        _.each(fixture.all_messages, (msg) => {
+        for (const msg of fixture.all_messages) {
             if (msg.id === fixture.unread_info.msg_id) {
                 assert(filter.predicate()(msg));
             }
-        });
+        }
     }
 
     const muting_enabled = narrow_state.muting_enabled();

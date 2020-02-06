@@ -80,7 +80,7 @@ exports.with_overrides = function (test_function) {
 
     test_function(override);
 
-    _.each(clobber_callbacks, function (f) {
+    for (const f of clobber_callbacks) {
         f();
-    });
+    }
 };

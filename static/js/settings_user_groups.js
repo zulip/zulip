@@ -38,10 +38,10 @@ exports.can_edit = function (group_id) {
 };
 
 exports.populate_user_groups = function () {
-
     const user_groups_section = $('#user-groups').expectOne();
     const user_groups_array = user_groups.get_realm_user_groups();
-    _.each(user_groups_array, function (data) {
+
+    for (const data of user_groups_array) {
         user_groups_section.append(render_admin_user_group_list({
             user_group: {
                 name: data.name,
@@ -257,7 +257,7 @@ exports.populate_user_groups = function () {
                 }, 100);
             });
         }());
-    });
+    }
 };
 
 exports.set_up = function () {
@@ -273,12 +273,13 @@ exports.set_up = function () {
         const group = {
             members: JSON.stringify([people.my_current_user_id()]),
         };
-        _.each($(this).serializeArray(), function (obj) {
+
+        for (const obj of $(this).serializeArray()) {
             if (obj.value.trim() === "") {
-                return;
+                continue;
             }
             group[obj.name] = obj.value;
-        });
+        }
 
         channel.post({
             url: "/json/user_groups/create",

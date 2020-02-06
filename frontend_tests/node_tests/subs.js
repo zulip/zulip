@@ -65,9 +65,9 @@ run_test('filter_table', () => {
         },
     ];
 
-    _.each(sub_row_data, function (sub) {
+    for (const sub of sub_row_data) {
         stream_data.add_sub(sub.name, sub);
-    });
+    }
 
     let populated_subs;
 
@@ -79,7 +79,8 @@ run_test('filter_table', () => {
     subs.populate_stream_settings_left_panel();
 
     const sub_stubs = [];
-    _.each(populated_subs, function (data) {
+
+    for (const data of populated_subs) {
         const sub_row = ".stream-row-" + data.elem;
         sub_stubs.push(sub_row);
 
@@ -88,7 +89,7 @@ run_test('filter_table', () => {
         $(sub_row).detach = function () {
             return sub_row;
         };
-    });
+    }
 
     let tooltip_called = false;
     $(".tooltip").tooltip = function (obj) {

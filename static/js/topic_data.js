@@ -114,7 +114,7 @@ exports.topic_history = function (stream_id) {
         // server.  We have less data about these than the
         // client can maintain for newer topics.
 
-        _.each(server_history, function (obj) {
+        for (const obj of server_history) {
             const name = obj.name;
             const message_id = obj.max_id;
 
@@ -124,7 +124,7 @@ exports.topic_history = function (stream_id) {
                 if (!existing.historical) {
                     // Trust out local data more, since it
                     // maintains counts.
-                    return;
+                    continue;
                 }
             }
 
@@ -137,7 +137,7 @@ exports.topic_history = function (stream_id) {
                 pretty_name: name,
                 historical: true,
             });
-        });
+        }
     };
 
     self.get_recent_names = function () {

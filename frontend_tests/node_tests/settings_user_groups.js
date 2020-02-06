@@ -641,11 +641,12 @@ run_test('on_events', () => {
         };
 
         // Any of the blur_exceptions trigger blur event.
-        _.each(blur_event_classes, function (class_name) {
+        for (const class_name of blur_event_classes) {
             const handler = $(user_group_selector).get_on_handler("blur", class_name);
             const blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
                                               class_name);
-            _.each(blur_exceptions, function (blur_exception) {
+
+            for (const blur_exception of blur_exceptions) {
                 api_endpoint_called = false;
                 fake_this.closest = function (class_name) {
                     if (class_name === blur_exception || class_name === user_group_selector) {
@@ -655,7 +656,7 @@ run_test('on_events', () => {
                 };
                 handler.call(fake_this, event);
                 assert(!api_endpoint_called);
-            });
+            }
 
             api_endpoint_called = false;
             fake_this.closest = function (class_name) {
@@ -682,8 +683,7 @@ run_test('on_events', () => {
             handler.call(fake_this, event);
             assert(!api_endpoint_called);
             assert(settings_user_groups_reload_called);
-        });
-
+        }
     }());
 
     (function test_update_cancel_button() {

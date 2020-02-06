@@ -100,9 +100,10 @@ function update_user_custom_profile_fields(fields, method) {
     if (method === undefined) {
         blueslip.error("Undefined method in update_user_custom_profile_fields");
     }
-    _.each(fields, function (field) {
+
+    for (const field of fields) {
         update_custom_profile_field(field, method);
-    });
+    }
 }
 
 exports.append_custom_profile_fields = function (element_id, user_id) {

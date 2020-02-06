@@ -883,12 +883,12 @@ run_test('is_subscriber_subset', () => {
         [bogus, bogus, false],
     ];
 
-    _.each(matrix, (row) => {
+    for (const row of matrix) {
         assert.equal(
             stream_data.is_subscriber_subset(row[0], row[1]),
             row[2]
         );
-    });
+    }
 });
 
 run_test('invite_streams', () => {
