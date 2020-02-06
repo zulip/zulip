@@ -9,14 +9,13 @@ exports.make_stub = function () {
     const self = {};
     self.num_calls = 0;
 
-    self.f = function () {
-        self.last_call_args = _.clone(arguments);
+    self.f = function (...args) {
+        self.last_call_args = args;
         self.num_calls += 1;
         return true;
     };
 
-    self.get_args = function () {
-        const param_names = arguments;
+    self.get_args = function (...param_names) {
         const result = {};
 
         _.each(param_names, function (name, i) {
