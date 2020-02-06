@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
-var SwaggerParser = require('swagger-parser'),
-    _             = require('underscore');
+const SwaggerParser = require('swagger-parser');
+const _ = require('underscore');
 
-function check_duplicate_operationids(api) {
-    var operation_ids = [];
+function check_duplicate_operationids(file, api) {
+    const operation_ids = [];
 
-    _.each(api.paths, function(endpoint) {
-        _.each(endpoint, function(value) {
-            var operation_id = value.operationId;
-            if(operation_id !== undefined) {
-                if(operation_ids.indexOf(operation_id) >= 0) {
+    _.each(api.paths, function (endpoint) {
+        _.each(endpoint, function (value) {
+            const operation_id = value.operationId;
+            if (operation_id !== undefined) {
+                if (operation_ids.indexOf(operation_id) >= 0) {
                     console.error('In', file + ':');
                     console.error('Duplicate operationId:', operation_id);
                     process.exitCode = 1;
@@ -24,14 +24,14 @@ function check_duplicate_operationids(api) {
 
 function validate_swagger(file) {
     SwaggerParser.validate(file)
-        .then(function(api) {
+        .then(function (api) {
             // Let's make sure that there aren't any duplicate operationids,
             // until this issue is fixed:
             // https://github.com/BigstickCarpet/swagger-parser/issues/68
-            check_duplicate_operationids(api);
+            check_duplicate_operationids(file, api);
             return;
         })
-        .catch(function(err) {
+        .catch(function (err) {
             // There is something wrong. Display the validation errors
             console.error('In', file + ':');
             console.error(err.message);
@@ -42,10 +42,9 @@ function validate_swagger(file) {
 // Iterate through the changed files, passed in the arguments.
 // The two first arguments are the call to the Node interpreter and this
 // script, hence the starting point at 2.
-for(var i = 2; i < process.argv.length; i++) {
-    var file = process.argv[i];
+for (const file of process.argv.slice(2)) {
     // Run the validator only for YAML files inside static/swagger
-    if(file.startsWith('static/swagger')) {
+    if (file.startsWith('static/swagger')) {
         validate_swagger(file);
     }
 }
