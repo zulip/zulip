@@ -106,7 +106,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
         exports.complete_emoji_catalog.Custom.push(emoji.emojis_by_name.get(realm_emoji_name));
     }
 
-    _.each(emoji_codes.emoji_catalog, function (codepoints, category) {
+    for (const [category, codepoints] of Object.entries(emoji_codes.emoji_catalog)) {
         exports.complete_emoji_catalog[category] = [];
         _.each(codepoints, function (codepoint) {
             if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
@@ -118,7 +118,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
                 }
             }
         });
-    });
+    }
 
     exports.complete_emoji_catalog.Popular = [];
     _.each(typeahead.popular_emojis, function (codepoint) {

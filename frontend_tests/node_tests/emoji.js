@@ -115,7 +115,7 @@ run_test('translate_emoticons_to_names', () => {
         {name: 'between symbols', original: 'Hello.<original>! World.', expected: 'Hello.<original>! World.'},
         {name: 'before end of sentence', original: 'Hello <original>!', expected: 'Hello <converted>!'},
     ];
-    _.each(emoji_codes.emoticon_conversions, (full_name, shortcut) => {
+    for (const [shortcut, full_name] of Object.entries(emoji_codes.emoticon_conversions)) {
         _.each(testcases, (t) => {
             const converted_value = full_name;
             let original = t.original;
@@ -126,5 +126,5 @@ run_test('translate_emoticons_to_names', () => {
             const result = emoji.translate_emoticons_to_names(original);
             assert.equal(result, expected);
         });
-    });
+    }
 });
