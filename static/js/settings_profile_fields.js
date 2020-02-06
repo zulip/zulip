@@ -215,13 +215,13 @@ function get_profile_field(id) {
 
 exports.parse_field_choices_from_field_data = function (field_data) {
     const choices = [];
-    _.each(field_data, function (choice, value) {
+    for (const [value, choice] of Object.entries(field_data)) {
         choices.push({
             value: value,
             text: choice.text,
             order: choice.order,
         });
-    });
+    }
 
     return choices;
 };
