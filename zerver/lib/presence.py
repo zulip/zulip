@@ -1,11 +1,12 @@
 from collections import defaultdict
 
 import datetime
+import itertools
 import time
 
 from django.utils.timezone import now as timezone_now
 
-from typing import Any, DefaultDict, Dict, List, Set
+from typing import Any, Dict, List, Set
 
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
@@ -16,23 +17,49 @@ from zerver.models import (
     UserProfile,
 )
 
-def get_status_dicts_for_rows(presence_rows: List[Dict[str, Any]],
+def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
                               mobile_user_ids: Set[int],
                               slim_presence: bool) -> Dict[str, Dict[str, Any]]:
 
-    info_row_dct = defaultdict(list)  # type: DefaultDict[str, List[Dict[str, Any]]]
-    for row in presence_rows:
-        # For now slim_presence just means that we will use
-        # user_id as a key instead of email.  We will eventually
-        # do other things based on this flag to make things simpler
-        # for the clients.
-        if slim_presence:
-            # Stringify user_id here, since it's gonna be turned
-            # into a string anyway by JSON, and it keeps mypy happy.
-            user_key = str(row['user_profile__id'])
-        else:
-            user_key = row['user_profile__email']
+    # Note that datetime values have sub-second granularity, which is
+    # mostly important for avoiding test flakes, but it's also technically
+    # more precise for real users.
+    # We could technically do this sort with the database, but doing it
+    # here prevents us from having to assume the caller is playing nice.
+    all_rows = sorted(
+        all_rows,
+        key = lambda row: (row['user_profile__id'], row['timestamp'])
+    )
 
+    # For now slim_presence just means that we will use
+    # user_id as a key instead of email.  We will eventually
+    # do other things based on this flag to make things simpler
+    # for the clients.
+    if slim_presence:
+        # Stringify user_id here, since it's gonna be turned
+        # into a string anyway by JSON, and it keeps mypy happy.
+        get_user_key = lambda row: str(row['user_profile__id'])
+    else:
+        get_user_key = lambda row: row['user_profile__email']
+
+    user_statuses = dict()  # type: Dict[str, Dict[str, Any]]
+
+    for user_key, presence_rows in itertools.groupby(all_rows, get_user_key):
+        info = get_legacy_user_info(
+            list(presence_rows),
+            mobile_user_ids
+        )
+        user_statuses[user_key] = info
+
+    return user_statuses
+
+def get_legacy_user_info(presence_rows: List[Dict[str, Any]],
+                         mobile_user_ids: Set[int]) -> Dict[str, Any]:
+
+    # The format of data here is for legacy users of our API,
+    # including old versions of the mobile app.
+    info_rows = []
+    for row in presence_rows:
         client_name = row['client__name']
         status = UserPresence.status_to_string(row['status'])
         dt = row['timestamp']
@@ -44,38 +71,31 @@ def get_status_dicts_for_rows(presence_rows: List[Dict[str, Any]],
         info = dict(
             client=client_name,
             status=status,
-            dt=dt,
             timestamp=timestamp,
             pushable=pushable,
         )
 
-        info_row_dct[user_key].append(info)
+        info_rows.append(info)
 
-    user_statuses = dict()  # type: Dict[str, Dict[str, Any]]
+    most_recent_info = info_rows[-1]
 
-    for user_key, info_rows in info_row_dct.items():
-        # Note that datetime values have sub-second granularity, which is
-        # mostly important for avoiding test flakes, but it's also technically
-        # more precise for real users.
-        by_time = lambda row: row['dt']
-        most_recent_info = max(info_rows, key=by_time)
+    result = dict()
 
-        # We don't send datetime values to the client.
-        for r in info_rows:
-            del r['dt']
+    # The word "aggegrated" here is possibly misleading.
+    # It's really just the most recent client's info.
+    result['aggregated'] = dict(
+        client=most_recent_info['client'],
+        status=most_recent_info['status'],
+        timestamp=most_recent_info['timestamp'],
+    )
 
-        client_dict = {info['client']: info for info in info_rows}
-        user_statuses[user_key] = client_dict
+    # Build a dictionary of client -> info.  There should
+    # only be one row per client, but to be on the safe side,
+    # we always overwrite with rows that are later in our list.
+    for info in info_rows:
+        result[info['client']] = info
 
-        # The word "aggegrated" here is possibly misleading.
-        # It's really just the most recent client's info.
-        user_statuses[user_key]['aggregated'] = dict(
-            client=most_recent_info['client'],
-            status=most_recent_info['status'],
-            timestamp=most_recent_info['timestamp'],
-        )
-
-    return user_statuses
+    return result
 
 def get_presence_for_user(user_profile_id: int,
                           slim_presence: bool=False) -> Dict[str, Dict[str, Any]]:
