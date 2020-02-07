@@ -1,8 +1,6 @@
 set_global('bridge', false);
 
-set_global('blueslip', global.make_zblueslip({
-    error: false, // Ignore errors. We only check for warnings in this module.
-}));
+set_global('blueslip', global.make_zblueslip({}));
 
 const noop = function () {};
 
@@ -874,6 +872,7 @@ function test_raw_file_drop(raw_drop_func) {
 run_test('warn_if_private_stream_is_linked', () => {
     stream_data.add_sub(compose_state.stream_name(), {
         subscribers: new LazySet([1, 2]),
+        stream_id: 99,
     });
 
     let denmark = {
@@ -1659,7 +1658,15 @@ run_test('create_message_object', () => {
 
 
     let message = compose.create_message_object();
-    assert.equal(message.to, 'social');
+    assert.equal(message.to, sub.stream_id);
+    assert.equal(message.topic, 'lunch');
+    assert.equal(message.content, 'burrito');
+
+    blueslip.set_test_data('error', 'Trying to send message with bad stream name: BOGUS STREAM');
+
+    page['#stream_message_recipient_stream'] = 'BOGUS STREAM';
+    message = compose.create_message_object();
+    assert.equal(message.to, 'BOGUS STREAM');
     assert.equal(message.topic, 'lunch');
     assert.equal(message.content, 'burrito');
 
