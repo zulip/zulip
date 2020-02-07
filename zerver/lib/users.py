@@ -15,8 +15,7 @@ from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import UserProfile, Service, Realm, \
     get_user_profile_by_id_in_realm, CustomProfileFieldValue, \
-    get_realm_user_dicts, \
-    CustomProfileField
+    get_realm_user_dicts, CustomProfileField
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
@@ -375,10 +374,8 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
 
     return result
 
-def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
-    # TODO: Consider optimizing this query away with caching.
-    custom_profile_field_values = CustomProfileFieldValue.objects.select_related(
-        "field").filter(user_profile__realm_id=realm_id)
+def get_custom_profile_field_values(custom_profile_field_values:
+                                    List[CustomProfileFieldValue]) -> Dict[int, Dict[str, Any]]:
     profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
     for profile_field in custom_profile_field_values:
         user_id = profile_field.user_profile_id
@@ -400,7 +397,11 @@ def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: b
     custom_profile_field_data = None
 
     if include_custom_profile_fields:
-        profiles_by_user_id = get_custom_profile_field_values(realm.id)
+        base_query = CustomProfileFieldValue.objects.select_related("field")
+        # TODO: Consider optimizing this query away with caching.
+        custom_profile_field_values = base_query.filter(user_profile__realm_id=realm.id)
+        profiles_by_user_id = get_custom_profile_field_values(custom_profile_field_values)
+
     result = {}
     for row in user_dicts:
         if profiles_by_user_id is not None:
