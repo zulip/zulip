@@ -1,11 +1,14 @@
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
 
-// Dictionary mapping user_id -> presence data.  May contain user_id
-// values that are not yet registered in people.js (see long comment
-// in `set_info` below for details).
-exports.presence_info = new Map();
+// The following Maps have user_id as the key.  Some of the
+// user_ids may not yet be registered in people.js.
+// See the long comment in `set_info` below for details.
 
+// In future commits we'll use raw_info to facilitate
+// handling server events and/or timeout events.
+const raw_info = new Map();
+exports.presence_info = new Map();
 
 /* Mark users as offline after 140 seconds since their last checkin,
  * Keep in sync with zerver/tornado/event_queue.py:receiver_is_idle
@@ -17,7 +20,7 @@ const BIG_REALM_COUNT = 250;
 exports.is_active = function (user_id) {
     if (exports.presence_info.has(user_id)) {
         const status = exports.presence_info.get(user_id).status;
-        if (status && status === "active") {
+        if (status === "active") {
             return true;
         }
     }
@@ -74,14 +77,22 @@ function status_from_timestamp(baseline_time, info) {
 // For testing
 exports._status_from_timestamp = status_from_timestamp;
 
-exports.set_info_for_user = function (user_id, info, server_time) {
+exports.update_info_from_event = function (user_id, info, server_time) {
+    raw_info.set(user_id, {
+        info: info,
+        server_time: server_time,
+    });
+
     const status = status_from_timestamp(server_time, info);
     exports.presence_info.set(user_id, status);
 };
 
 exports.set_info = function (presences, server_timestamp) {
+    raw_info.clear();
     exports.presence_info.clear();
     for (const [user_id_str, info] of Object.entries(presences)) {
+        const user_id = parseInt(user_id_str, 10);
+
         // Note: In contrast with essentially every other piece of
         // state updates we receive from the server, precense updates
         // are pulled independently from server_events_dispatch.js.
@@ -89,15 +100,18 @@ exports.set_info = function (presences, server_timestamp) {
         // This means that if we're coming back from offline and new
         // users were created in the meantime, we'll be populating
         // exports.presence_info with user IDs not yet present in
-        // people.js.  This is safe because we always access
-        // exports.presence_info as a filter on sets of users obtained
-        // elsewhere, but we need to be careful to avoid trying to
-        // look up user_ids obtained via presence_info in other data
-        // sources.
+        // people.js.  This is safe because we when we build the
+        // buddy list, we only process user_ids that are in people.js
+        // (because we need their name, etc.).
+
+        raw_info.set(user_id, {
+            info: info,
+            server_time: server_timestamp,
+        });
+
         const status = status_from_timestamp(server_timestamp,
                                              info);
 
-        const user_id = parseInt(user_id_str, 10);
         exports.presence_info.set(user_id, status);
     }
     exports.update_info_for_small_realm();
