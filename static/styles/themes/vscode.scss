@@ -45,23 +45,25 @@ body.theme-vscode {
 
     #compose {
       background: transparent;
-      a.button, button {
+      a.button,
+      button {
         background-color: $dark !important;
         font-weight: 600 !important;
         border-color: $darker;
         border-radius: 0;
       }
-
     }
 
-    #add-stream-link a, #invite-user-link {
+    #add-stream-link a,
+    #invite-user-link {
       color: #3fa4ea;
     }
     #invite-user-link {
       margin-left: 6px;
     }
 
-    .dropdown .dropdown-menu, .popover-content {
+    .dropdown .dropdown-menu,
+    .popover-content {
       background: $dark;
     }
 
@@ -78,26 +80,75 @@ body.theme-vscode {
       background-color: transparent;
     }
 
-    .app-main > .column-middle {
-      background: $darker;
-      margin-left: 250px;
-      padding: 0 15px;
+    #compose_controls {
+      border-color: $dark;
+      border-top-width: 0px;
     }
 
-    .app-main .column-left .left-sidebar {
-      margin-top: 41px;
-      width: 250px;
+    .app-main > .column-middle {
+      background: $darker;
+    }
+
+    #streams_header {
+      margin-top: 0;
+    }
+
+    @media screen and (max-width: 768px) {
+      #left-sidebar {
+        padding-top: 0;
+        padding-left: 0;
+      }
+
+      #right-sidebar {
+        padding: 0;
+        margin-right: 15px;
+      }
+
+      #right-sidebar,
+      #left-sidebar {
+        background: $light;
+        margin-top: 40px !important;
+      }
+    }
+
+    #right-sidebar,
+    #left-sidebar {
+      padding: 0;
+      background: $light;
+    }
+
+    @media screen and (max-width: 500px) {
+      #right-sidebar,
+      #left-sidebar {
+        background: $light;
+        margin-top: 30px !important;
+      }
+    }
+
+    @media screen and (min-width: 768px) {
+      .app-main > .column-middle {
+        margin-left: 250px;
+        padding: 0 15px;
+      }
+      .app-main .column-left .left-sidebar {
+        margin-top: 41px;
+        width: 250px;
+      }
+
+      #right-sidebar {
+        width: 251px !important;
+        margin-top: 42px !important;
+      }
+    }
+
+    #userlist-header,
+    #group-pm-header {
+      margin-right: 0;
     }
 
     #floating_recipient_bar {
       top: 40px !important;
       left: -23px !important;
-    }
-
-    #right-sidebar {
-      margin-left: 5px !important;
-      width: 250px !important;
-      margin-top: 42px !important;
     }
 
     #user_presences {
@@ -165,6 +216,11 @@ body.theme-vscode {
     .top_left_row {
       border-radius: 0 !important;
     }
+  }
+
+  .user-mention {
+    background-color: #4b86f9 !important;
+    font-weight: bold;
   }
 
   #global_filters {
