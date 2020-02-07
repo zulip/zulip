@@ -503,7 +503,7 @@ definitions:
       - avatar_url
       - flags
       - sender_email
-      - subject_links
+      - topic_links
       - sender_realm_str
       - subject
       - type
@@ -546,7 +546,7 @@ definitions:
           type: string
       sender_email:
         type: string
-      subject_links:
+      topic_links:
         type: array
         items:
           type: string
