@@ -88,6 +88,7 @@ zrequire('invite');
 zrequire('tab_bar');
 zrequire('narrow_state');
 zrequire('people');
+zrequire('presence');
 zrequire('search_pill_widget');
 zrequire('user_groups');
 zrequire('unread');
@@ -158,6 +159,7 @@ page_params.realm_user_groups = [];
 page_params.realm_bots = [];
 page_params.realm_filters = [];
 page_params.starred_messages = [];
+page_params.presences = [];
 
 $('#tab_bar').append = () => {};
 $('#compose').filedrop = () => {};

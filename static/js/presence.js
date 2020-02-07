@@ -151,4 +151,10 @@ exports.last_active_date = function (user_id) {
     return date;
 };
 
+exports.initialize = function () {
+    presence.set_info(page_params.presences,
+                      page_params.initial_servertime);
+    delete page_params.presences;
+};
+
 window.presence = exports;

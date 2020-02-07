@@ -844,7 +844,6 @@ run_test('initialize', () => {
     activity.client_is_active = false;
 
     activity.initialize();
-    assert.equal(page_params.presences, undefined);
     clear();
 
     assert(scroll_handler_started);
