@@ -204,7 +204,7 @@ run_test('last_active_date', () => {
     assert.deepEqual(presence.last_active_date(alice.user_id), {seconds: 500000});
 });
 
-run_test('set_info_for_user', () => {
+run_test('update_info_from_event', () => {
     const server_time = 500;
     const info = {
         website: {
@@ -214,7 +214,7 @@ run_test('set_info_for_user', () => {
     };
 
     presence.presence_info.delete(alice.user_id);
-    presence.set_info_for_user(alice.user_id, info, server_time);
+    presence.update_info_from_event(alice.user_id, info, server_time);
 
     const expected = { status: 'active', last_active: 500 };
     assert.deepEqual(presence.presence_info.get(alice.user_id), expected);

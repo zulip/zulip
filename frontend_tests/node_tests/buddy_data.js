@@ -240,8 +240,8 @@ run_test('level', () => {
             timestamp: server_time,
         },
     };
-    presence.set_info_for_user(me.user_id, info, server_time);
-    presence.set_info_for_user(selma.user_id, info, server_time);
+    presence.update_info_from_event(me.user_id, info, server_time);
+    presence.update_info_from_event(selma.user_id, info, server_time);
 
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 1);
