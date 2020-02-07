@@ -259,13 +259,11 @@ exports.sorted_ids = function (ids) {
 };
 
 exports.set_topic_links = function (obj, topic_links) {
-    // subject_links is a legacy name
-    obj.subject_links = topic_links;
+    obj.topic_links = topic_links;
 };
 
 exports.get_topic_links = function (obj) {
-    // subject_links is a legacy name
-    return obj.subject_links;
+    return obj.topic_links;
 };
 
 exports.set_match_data = function (target, source) {
