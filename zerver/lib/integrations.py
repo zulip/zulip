@@ -227,6 +227,12 @@ EMBEDDED_BOTS = [
 
 WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake', ['monitoring']),
+    WebhookIntegration(
+        'alertmanager',
+        ['monitoring'],
+        display_name='Prometheus AlertManager',
+        logo='images/integrations/logos/prometheus.svg'
+    ),
     WebhookIntegration('ansibletower', ['deployment'], display_name='Ansible Tower'),
     WebhookIntegration('appfollow', ['customer-support'], display_name='AppFollow'),
     WebhookIntegration('appveyor', ['continuous-integration'], display_name='AppVeyor'),
