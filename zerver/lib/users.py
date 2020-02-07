@@ -393,7 +393,7 @@ def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
             }
     return profiles_by_user_id
 
-def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: bool,
+def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: bool,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
     user_dicts = get_realm_user_dicts(realm.id)
     profiles_by_user_id = None
@@ -407,7 +407,7 @@ def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: 
             custom_profile_field_data = profiles_by_user_id.get(row['id'], {})
 
         result[row['id']] = format_user_row(realm,
-                                            acting_user = user_profile,
+                                            acting_user = acting_user,
                                             row=row,
                                             client_gravatar= client_gravatar,
                                             custom_profile_field_data = custom_profile_field_data

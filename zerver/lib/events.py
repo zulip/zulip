@@ -189,11 +189,8 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_user_groups'] = user_groups_in_realm_serialized(realm)
 
     if want('realm_user'):
-        state['raw_users'] = get_raw_user_data(
-            realm=realm,
-            user_profile=user_profile,
-            client_gravatar=client_gravatar,
-        )
+        state['raw_users'] = get_raw_user_data(realm, user_profile,
+                                               client_gravatar=client_gravatar)
 
         # For the user's own avatar URL, we force
         # client_gravatar=False, since that saves some unnecessary
