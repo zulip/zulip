@@ -377,7 +377,7 @@ exports.initialize = function () {
 };
 
 exports.update_presence_info = function (user_id, info, server_time) {
-    presence.set_info_for_user(user_id, info, server_time);
+    presence.update_info_from_event(user_id, info, server_time);
     exports.redraw_user(user_id);
     exports.update_huddles();
     pm_list.update_private_messages();
