@@ -6,9 +6,7 @@ set_global('reload_state', {
     is_in_progress: return_false,
 });
 
-set_global('blueslip', global.make_zblueslip({
-    debug: true, // testing for debug is disabled by default.
-}));
+set_global('blueslip', global.make_zblueslip());
 
 const me = {
     email: 'me@example.com',
@@ -134,4 +132,10 @@ run_test('blueslip', () => {
     assert.equal(uri.indexOf('unk'), uri.length - 3);
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
+
+    blueslip.set_test_data('error', 'Undefined field id');
+    assert.equal(people.my_custom_profile_data(undefined), undefined);
+
+    blueslip.set_test_data('error', 'Trying to set undefined field id');
+    people.set_custom_profile_field_data(maria.user_id, {});
 });

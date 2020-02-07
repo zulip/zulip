@@ -1,9 +1,7 @@
 zrequire('util');
 zrequire('people');
 
-set_global('blueslip', global.make_zblueslip({
-    error: false, // We check for errors in people_errors.js
-}));
+set_global('blueslip', global.make_zblueslip());
 set_global('message_store', {});
 set_global('page_params', {});
 set_global('settings_org', {});
@@ -154,7 +152,6 @@ run_test('my_custom_profile_data', () => {
     person.profile_data = {3: 'My address', 4: 'My phone number'};
     assert.equal(people.my_custom_profile_data(3), 'My address');
     assert.equal(people.my_custom_profile_data(4), 'My phone number');
-    assert.equal(people.my_custom_profile_data(undefined), undefined);
 });
 
 run_test('bot_custom_profile_data', () => {
@@ -198,6 +195,7 @@ run_test('user_timezone', () => {
 run_test('user_type', () => {
     const realm_admin = {
         email: 'realm_admin@example.com',
+        full_name: 'Realm Admin',
         user_id: 32,
         is_admin: true,
         is_guest: false,
@@ -205,6 +203,7 @@ run_test('user_type', () => {
     };
     const guest = {
         email: 'guest@example.com',
+        full_name: 'Guest User',
         user_id: 33,
         is_admin: false,
         is_guest: true,
@@ -212,6 +211,7 @@ run_test('user_type', () => {
     };
     const bot = {
         email: 'bot@example.com',
+        full_name: 'Example Bot',
         user_id: 34,
         is_admin: false,
         is_guest: false,
@@ -267,8 +267,6 @@ run_test('set_custom_profile_field_data', () => {
     const person = people.get_by_email(me.email);
     me.profile_data = {};
     const field = {id: 3, name: 'Custom long field', type: 'text', value: 'Field value', rendered_value: '<p>Field value</p>'};
-    people.set_custom_profile_field_data(person.user_id, {});
-    assert.deepEqual(person.profile_data, {});
     people.set_custom_profile_field_data(person.user_id, field);
     assert.equal(person.profile_data[field.id].value, 'Field value');
     assert.equal(person.profile_data[field.id].rendered_value, '<p>Field value</p>');
@@ -311,7 +309,7 @@ initialize();
 
 run_test('recipient_counts', () => {
     const user_id = 99;
-    assert.equal(people.get_recipient_count({id: user_id}), 0);
+    assert.equal(people.get_recipient_count({user_id: user_id}), 0);
     people.incr_recipient_count(user_id);
     people.incr_recipient_count(user_id);
     assert.equal(people.get_recipient_count({user_id: user_id}), 2);
@@ -499,6 +497,7 @@ run_test('message_methods', () => {
                  'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50'
     );
 
+    blueslip.set_test_data('error', 'Unknown user_id in get_by_user_id: 9999999');
     message = {
         avatar_url: undefined,
         sender_email: 'foo@example.com',

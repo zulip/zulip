@@ -1,9 +1,7 @@
-exports.make_zblueslip = function (opts) {
-
+exports.make_zblueslip = function () {
     const lib = {};
 
-    // Apply defaults
-    opts = Object.assign({
+    const opts = {
         // Silently swallow all debug, log and info calls.
         debug: false,
         log: false,
@@ -12,7 +10,7 @@ exports.make_zblueslip = function (opts) {
         warn: true,
         error: true,
         fatal: true,
-    }, opts);
+    };
 
     // Store valid test data for options.
     lib.test_data = {};

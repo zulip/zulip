@@ -1115,7 +1115,7 @@ exports.set_full_name = function (person_obj, new_full_name) {
 
 exports.set_custom_profile_field_data = function (user_id, field) {
     if (field.id === undefined) {
-        blueslip.error("Unknown field id " + field.id);
+        blueslip.error("Trying to set undefined field id");
         return;
     }
     people_by_user_id_dict.get(user_id).profile_data[field.id] = {
