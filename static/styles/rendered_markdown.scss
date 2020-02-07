@@ -137,21 +137,21 @@
 
     /* Highlighting for message edit history */
     .highlight_text_inserted {
-        color: hsl(122, 72%, 30%);
-	background-color: hsl(117,57%,88%);
-	padding-left:0.7%;
-	padding-right:0.7%;
-	border-radius:15%;
+            color: hsl(122, 72%, 30%);
+	    background-color: hsl(117,57%,88%);
+	    padding-left:0.7%;
+	    padding-right:0.7%;
+            border-radius:15%;
     }
 
     .highlight_text_deleted {
-	color: hsl(332,65%,-28%);
-	background-color: hsl(7, 70%, 87%);
-	padding-left:0.7%;
-	padding-right:0.7%;
-	border-radius:15%;
-        text-decoration: line-through;
-        word-break: break-all;
+	    color: hsl(332,65%,-28%);
+            background-color: hsl(7, 70%, 87%);
+	    padding-left:0.7%;
+	    padding-right:0.7%;
+	    border-radius:15%;
+            text-decoration: line-through;
+            word-break: break-all;
     }
 
     /* LaTeX styling */
