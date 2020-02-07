@@ -379,6 +379,24 @@ run_test('quote_and_reply', () => {
         assert.equal(replacement, '@_**Bob Roberts|40** [said](link_to_message):\n````quote\n```\nmultiline code block\nshoudln\'t mess with quotes\n```\n````');
     };
     quote_and_reply(opts);
+
+    current_msg_list.selected_message = function () {
+        return {
+            type: 'stream',
+            stream: 'devel',
+            topic: 'test',
+            reply_to: 'bob',
+            sender_full_name: 'Bob Roberts',
+            sender_id: 40,
+            raw_content: '![image](http://image.com/url.jpg) Explicitly inlined images get reduced to implicit inlining syntax.',
+        };
+    };
+    compose_ui.replace_syntax = function (syntax, replacement) {
+        assert.equal(syntax, '[Quoting…]');
+        assert.equal(replacement, '@_**Bob Roberts|40** [said](link_to_message):\n```quote\n[image](http://image.com/url.jpg) Explicitly inlined images get reduced to implicit inlining syntax.\n```');
+    };
+
+    quote_and_reply(opts);
 });
 
 run_test('get_focus_area', () => {

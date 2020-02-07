@@ -1054,8 +1054,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         unique_urls = {found_url.result[0] for found_url in found_urls}
         # Collect unique URLs which are not quoted as we don't do
         # inline previews for links inside blockquotes.
-        unique_previewable_urls = {found_url.result[0] for found_url in found_urls
-                                   if not found_url.family.in_blockquote}
+        unique_previewable_urls = {found_url.result[0] for found_url in found_urls}
 
         # Set has_link and similar flags whenever a message is processed by bugdown
         if self.markdown.zulip_message:
@@ -1106,6 +1105,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if self.is_image(url):
                     self.handle_image_inlining(root, found_url)
                 # We don't have a strong use case for doing url preview for relative links.
+                continue
+
+            if found_url.family.in_blockquote:
                 continue
 
             dropbox_image = self.dropbox_image(url)
