@@ -7,6 +7,7 @@ set_global('server_events', {});
 set_global('reload_state', {
     is_in_progress: return_false,
 });
+set_global('XDate', function (ms) { return {seconds: ms}; });
 
 const OFFLINE_THRESHOLD_SECS = 140;
 
@@ -28,6 +29,12 @@ const fred = {
     full_name: "Fred Flintstone",
 };
 
+const sally = {
+    email: 'sally@example.com',
+    user_id: 3,
+    full_name: 'Sally Jones',
+};
+
 const zoe = {
     email: 'zoe@example.com',
     user_id: 6,
@@ -44,6 +51,7 @@ const bot = {
 people.add(me);
 people.add(alice);
 people.add(fred);
+people.add(sally);
 people.add(zoe);
 people.add(bot);
 people.initialize_current_user(me.user_id);
@@ -74,135 +82,160 @@ run_test('unknown user', () => {
     reload_state.is_in_progress = () => false;
 });
 
-run_test('status_from_timestamp', () => {
-    const status_from_timestamp = presence._status_from_timestamp;
+run_test('status_from_raw', () => {
+    const status_from_raw = presence.status_from_raw;
 
-    const base_time = 500;
-    const info = {
-        website: {
-            status: "active",
-            timestamp: base_time,
-        },
-    };
-    let status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
+    const now = 5000;
+    let raw;
 
-    info.random_client = {
-        status: "active",
-        timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
-        pushable: false,
-    };
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS, info);
-    assert.equal(status.status, "active");
-
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.status, "active");
-
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS * 2, info);
-    assert.equal(status.status, "offline");
-
-    info.random_client = {
-        status: "idle",
-        timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
-        pushable: true,
-    };
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS, info);
-    assert.equal(status.status, "idle");
-
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.status, "active");
-
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS * 2, info);
-    assert.equal(status.status, "offline");
-
-    info.random_client = {
-        status: "offline",
-        timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
-        pushable: true,
-    };
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS, info);
-    assert.equal(status.status, "offline");
-
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    assert.equal(status.status, "active"); // website
-
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS * 2, info);
-    assert.equal(status.status, "offline");
-
-    info.random_client = {
-        status: "unknown",
-        timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
-        pushable: true,
+    raw = {
+        server_timestamp: now,
+        active_timestamp: now - OFFLINE_THRESHOLD_SECS / 2,
     };
 
-    blueslip.expect('error', 'Unexpected status');
-    status = status_from_timestamp(
-        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
-    blueslip.reset();
-    assert.equal(status.status, "active"); // website
+    assert.deepEqual(
+        status_from_raw(raw),
+        {
+            status: 'active',
+            last_active: raw.active_timestamp,
+        }
+    );
+
+    raw = {
+        server_timestamp: now,
+        active_timestamp: now - OFFLINE_THRESHOLD_SECS * 2,
+    };
+
+    assert.deepEqual(
+        status_from_raw(raw),
+        {
+            status: 'offline',
+            last_active: raw.active_timestamp,
+        }
+    );
+
+    raw = {
+        server_timestamp: now,
+        idle_timestamp: now - OFFLINE_THRESHOLD_SECS / 2,
+    };
+
+    assert.deepEqual(
+        status_from_raw(raw),
+        {
+            status: 'idle',
+            last_active: raw.active_timestamp,
+        }
+    );
 });
 
 run_test('set_presence_info', () => {
     const presences = {};
-    const base_time = 500;
+    const now = 5000;
+    const recent = now + 1 - OFFLINE_THRESHOLD_SECS;
+    const a_while_ago = now - OFFLINE_THRESHOLD_SECS * 2;
 
     presences[alice.user_id.toString()] = {
-        website: {
-            status: 'active',
-            timestamp: base_time,
-        },
+        active_timestamp: recent,
     };
 
     presences[fred.user_id.toString()] = {
-        website: {
-            status: 'idle',
-            timestamp: base_time,
-        },
+        active_timestamp: a_while_ago,
+        idle_timestamp: now,
     };
 
     presences[me.user_id.toString()] = {
-        website: {
-            status: 'active',
-            timestamp: base_time,
-        },
+        active_timestamp: now,
+    };
+
+    presences[sally.user_id.toString()] = {
+        active_timestamp: a_while_ago,
     };
 
     const params = {};
     params.presences = presences;
-    params.initial_servertime = base_time;
+    params.initial_servertime = now;
     presence.initialize(params);
 
     assert.deepEqual(presence.presence_info.get(alice.user_id),
-                     { status: 'active', last_active: 500}
+                     { status: 'active', last_active: recent}
+    );
+    assert.equal(presence.get_status(alice.user_id), 'active');
+    assert.deepEqual(
+        presence.last_active_date(alice.user_id),
+        {seconds: recent * 1000}
     );
 
     assert.deepEqual(presence.presence_info.get(fred.user_id),
-                     { status: 'idle', last_active: 500}
+                     { status: 'idle', last_active: a_while_ago}
     );
+    assert.equal(presence.get_status(fred.user_id), 'idle');
 
     assert.deepEqual(presence.presence_info.get(me.user_id),
-                     { status: 'active', last_active: 500}
+                     { status: 'active', last_active: now}
     );
+    assert.equal(presence.get_status(me.user_id), 'active');
+
+    assert.deepEqual(presence.presence_info.get(sally.user_id),
+                     { status: 'offline', last_active: a_while_ago}
+    );
+    assert.equal(presence.get_status(sally.user_id), 'offline');
 
     assert.deepEqual(presence.presence_info.get(zoe.user_id),
                      { status: 'offline', last_active: undefined}
     );
+    assert.equal(presence.get_status(zoe.user_id), 'offline');
+    assert.equal(presence.last_active_date(zoe.user_id), undefined);
 
     assert(!presence.presence_info.has(bot.user_id));
+    assert.equal(presence.get_status(bot.user_id), 'offline');
+});
 
-    // Make it seem like realm has a lot of people
+run_test('falsy values', () => {
+    /*
+        When a user does not have a relevant active timestamp,
+        the server just leaves off the `active_timestamp` field
+        to save bandwidth, which looks like `undefined` to us
+        if we try to dereference it.
+
+        Our code should just treat all falsy values the same way,
+        though, to defend against bugs where we say the person
+        was last online in 1970 or silly things like that.
+    */
+    const now = 2000000;
+    const a_bit_ago = now - 5;
+    const presences = {};
+
+    for (const falsy_value of [undefined, 0, null]) {
+        presences[zoe.user_id.toString()] = {
+            active_timestamp: falsy_value,
+            idle_timestamp: a_bit_ago,
+        };
+
+        presence.set_info(presences, now);
+
+        assert.deepEqual(
+            presence.presence_info.get(zoe.user_id),
+            { status: 'idle', last_active: undefined }
+        );
+    }
+});
+
+run_test('big realms', () => {
+    const presences = {};
+    const now = 5000;
+
+    presences[sally.user_id.toString()] = {
+        active_timestamp: now,
+    };
+
+    // Make it seem like realm has a lot of people, in
+    // which case we will not provide default values for
+    // users that aren't in our presences payload.
     const get_active_human_count = people.get_active_human_count;
     people.get_active_human_count = function () { return 1000; };
-    assert.equal(presence.set_info(presences, base_time), undefined);
+    presence.set_info(presences, now);
+    assert(presence.presence_info.has(sally.user_id));
+    assert(!presence.presence_info.has(zoe.user_id));
     people.get_active_human_count = get_active_human_count;
 });
 
@@ -211,7 +244,6 @@ run_test('last_active_date', () => {
     presence.presence_info.clear();
     presence.presence_info.set(alice.user_id, { last_active: 500 });
     presence.presence_info.set(fred.user_id, {});
-    set_global('XDate', function (ms) { return {seconds: ms}; });
 
     assert.equal(presence.last_active_date(unknown_id), undefined);
     assert.equal(presence.last_active_date(fred.user_id), undefined);
@@ -219,17 +251,46 @@ run_test('last_active_date', () => {
 });
 
 run_test('update_info_from_event', () => {
-    const server_time = 500;
-    const info = {
+    let info;
+
+    info = {
         website: {
             status: "active",
-            timestamp: server_time,
+            timestamp: 500,
         },
     };
 
     presence.presence_info.delete(alice.user_id);
-    presence.update_info_from_event(alice.user_id, info, server_time);
+    presence.update_info_from_event(alice.user_id, info, 500);
 
-    const expected = { status: 'active', last_active: 500 };
-    assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
+    assert.deepEqual(
+        presence.presence_info.get(alice.user_id),
+        { status: 'active', last_active: 500 }
+    );
+
+    info = {
+        mobile: {
+            status: "idle",
+            timestamp: 510,
+        },
+    };
+    presence.update_info_from_event(alice.user_id, info, 510);
+
+    assert.deepEqual(
+        presence.presence_info.get(alice.user_id),
+        { status: 'active', last_active: 500 }
+    );
+
+    info = {
+        mobile: {
+            status: "idle",
+            timestamp: 1000,
+        },
+    };
+    presence.update_info_from_event(alice.user_id, info, 1000);
+
+    assert.deepEqual(
+        presence.presence_info.get(alice.user_id),
+        { status: 'idle', last_active: 500 }
+    );
 });

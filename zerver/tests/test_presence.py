@@ -106,7 +106,8 @@ class UserPresenceModelTests(ZulipTestCase):
         slim_presence = True
         presence_dct = get_status_dict_by_realm(user_profile.realm_id, slim_presence)
         self.assertEqual(len(presence_dct), 1)
-        self.assertEqual(presence_dct[str(user_profile.id)]['website']['status'], 'active')
+        info = presence_dct[str(user_profile.id)]
+        self.assertEqual(set(info.keys()), {'active_timestamp'})
 
         def back_date(num_weeks: int) -> None:
             user_presence = UserPresence.objects.filter(user_profile=user_profile)[0]
@@ -166,50 +167,93 @@ class UserPresenceTests(ZulipTestCase):
 
         self.login_user(hamlet)
 
-        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
+        params = dict(status='idle')
+        result = self.client_post("/json/users/me/presence", params)
         self.assert_json_success(result)
         json = result.json()
         self.assertEqual(json['presences'][hamlet.email][client]['status'], 'idle')
         self.assertIn('timestamp', json['presences'][hamlet.email][client])
         self.assertIsInstance(json['presences'][hamlet.email][client]['timestamp'], int)
-        self.assertEqual(list(json['presences'].keys()), [hamlet.email])
-        timestamp = json['presences'][hamlet.email][client]['timestamp']
+        self.assertEqual(set(json['presences'].keys()), {hamlet.email})
 
         self.login_user(othello)
-
-        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
+        params = dict(status='idle', slim_presence='true')
+        result = self.client_post("/json/users/me/presence", params)
         json = result.json()
-        self.assertEqual(json['presences'][othello.email][client]['status'], 'idle')
-        self.assertEqual(json['presences'][hamlet.email][client]['status'], 'idle')
-        self.assertEqual(set(json['presences'].keys()), {hamlet.email, othello.email})
-        newer_timestamp = json['presences'][othello.email][client]['timestamp']
-        self.assertGreaterEqual(newer_timestamp, timestamp)
+        presences = json['presences']
+        self.assertEqual(
+            set(presences.keys()),
+            {str(hamlet.id), str(othello.id)}
+        )
+        hamlet_info = presences[str(hamlet.id)]
+        othello_info = presences[str(othello.id)]
+
+        self.assertEqual(set(hamlet_info.keys()), {'idle_timestamp'})
+        self.assertEqual(set(othello_info.keys()), {'idle_timestamp'})
+
+        self.assertGreaterEqual(
+            othello_info['idle_timestamp'],
+            hamlet_info['idle_timestamp']
+        )
 
     def test_set_active(self) -> None:
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
 
         self.login_user(hamlet)
-
         client = 'website'
 
-        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
-
+        params = dict(status='idle')
+        result = self.client_post("/json/users/me/presence", params)
         self.assert_json_success(result)
+
         self.assertEqual(result.json()['presences'][hamlet.email][client]['status'], 'idle')
 
         self.login('othello')
-        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
+        params = dict(status='idle')
+        result = self.client_post("/json/users/me/presence", params)
         self.assert_json_success(result)
         json = result.json()
+
         self.assertEqual(json['presences'][othello.email][client]['status'], 'idle')
         self.assertEqual(json['presences'][hamlet.email][client]['status'], 'idle')
 
-        result = self.client_post("/json/users/me/presence", {'status': 'active'})
+        params = dict(status='active')
+        result = self.client_post("/json/users/me/presence", params)
         self.assert_json_success(result)
         json = result.json()
+
         self.assertEqual(json['presences'][othello.email][client]['status'], 'active')
         self.assertEqual(json['presences'][hamlet.email][client]['status'], 'idle')
+
+        self.login_user(hamlet)
+        params = dict(status='active', slim_presence='true')
+        result = self.client_post("/json/users/me/presence", params)
+        self.assert_json_success(result)
+        json = result.json()
+
+        presences = json['presences']
+        self.assertEqual(
+            set(presences.keys()),
+            {str(hamlet.id), str(othello.id)}
+        )
+        othello_info = presences[str(othello.id)]
+        hamlet_info = presences[str(hamlet.id)]
+
+        self.assertEqual(
+            set(othello_info.keys()),
+            {'active_timestamp'}
+        )
+
+        self.assertEqual(
+            set(hamlet_info.keys()),
+            {'active_timestamp'}
+        )
+
+        self.assertGreaterEqual(
+            hamlet_info['active_timestamp'],
+            othello_info['active_timestamp']
+        )
 
     @mock.patch("stripe.Customer.list", return_value=[])
     def test_new_user_input(self, unused_mock: mock.Mock) -> None:

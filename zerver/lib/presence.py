@@ -31,27 +31,55 @@ def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
         key = lambda row: (row['user_profile__id'], row['timestamp'])
     )
 
-    # For now slim_presence just means that we will use
-    # user_id as a key instead of email.  We will eventually
-    # do other things based on this flag to make things simpler
-    # for the clients.
     if slim_presence:
         # Stringify user_id here, since it's gonna be turned
         # into a string anyway by JSON, and it keeps mypy happy.
         get_user_key = lambda row: str(row['user_profile__id'])
+        get_user_info = get_modern_user_info
     else:
         get_user_key = lambda row: row['user_profile__email']
+        get_user_info = get_legacy_user_info
 
     user_statuses = dict()  # type: Dict[str, Dict[str, Any]]
 
     for user_key, presence_rows in itertools.groupby(all_rows, get_user_key):
-        info = get_legacy_user_info(
+        info = get_user_info(
             list(presence_rows),
-            mobile_user_ids
+            mobile_user_ids=mobile_user_ids,
         )
         user_statuses[user_key] = info
 
     return user_statuses
+
+def get_modern_user_info(presence_rows: List[Dict[str, Any]],
+                         mobile_user_ids: Set[int]) -> Dict[str, Any]:
+
+    active_timestamp = None
+    for row in reversed(presence_rows):
+        if row['status'] == UserPresence.ACTIVE:
+            active_timestamp = datetime_to_timestamp(
+                row['timestamp'])
+            break
+
+    idle_timestamp = None
+    for row in reversed(presence_rows):
+        if row['status'] == UserPresence.IDLE:
+            idle_timestamp = datetime_to_timestamp(
+                row['timestamp'])
+            break
+
+    # Be stingy about bandwidth, and don't even include
+    # keys for entities that have None values.  JS
+    # code should just do a falsy check here.
+    result = dict()
+
+    if active_timestamp is not None:
+        result['active_timestamp'] = active_timestamp
+
+    if idle_timestamp is not None:
+        result['idle_timestamp'] = idle_timestamp
+
+    return result
 
 def get_legacy_user_info(presence_rows: List[Dict[str, Any]],
                          mobile_user_ids: Set[int]) -> Dict[str, Any]:
