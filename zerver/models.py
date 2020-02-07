@@ -972,6 +972,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         DEMOTE_STREAMS_ALWAYS,
         DEMOTE_STREAMS_NEVER
     ]
+
+    theme = models.CharField(default=u'default', max_length=128)
     demote_inactive_streams = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
 
     # A timezone name from the `tzdata` database, as found in pytz.all_timezones.
@@ -1025,6 +1027,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     property_types = dict(
         default_language=str,
         demote_inactive_streams=int,
+        theme=str,
         dense_mode=bool,
         emojiset=str,
         fluid_layout_width=bool,

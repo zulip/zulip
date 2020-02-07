@@ -135,6 +135,7 @@ def update_display_settings_backend(
         fluid_layout_width: Optional[bool]=REQ(validator=check_bool, default=None),
         high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
+        theme: Optional[str]=REQ(validator=check_string, default=None),
         translate_emoticons: Optional[bool]=REQ(validator=check_bool, default=None),
         default_language: Optional[bool]=REQ(validator=check_string, default=None),
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
