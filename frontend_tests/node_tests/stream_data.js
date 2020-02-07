@@ -245,13 +245,8 @@ run_test('subscribers', () => {
     assert(!ok);
     assert.equal(blueslip.get_test_logs('warn').length, 2);
 
-    // Defensive code will give warnings, which we ignore for the
-    // tests, but the defensive code needs to not actually blow up.
-    set_global('blueslip', global.make_zblueslip({
-        warn: false,
-    }));
-
     // verify that removing an already-removed subscriber is a noop
+    blueslip.set_test_data('warn', 'We tried to remove invalid subscriber: 104');
     ok = stream_data.remove_subscriber('Rome', brutus.user_id);
     assert(!ok);
     assert(!stream_data.is_user_subscribed('Rome', brutus.user_id));
@@ -278,6 +273,9 @@ run_test('subscribers', () => {
     stream_data.add_subscriber('Rome', brutus.user_id);
     assert.equal(stream_data.is_user_subscribed('Rome', brutus.user_id), true);
 
+    blueslip.set_test_data(
+        'warn',
+        'We got a is_user_subscribed call for a non-existent or inaccessible stream.');
     sub.invite_only = true;
     stream_data.update_calculated_fields(sub);
     assert.equal(stream_data.is_user_subscribed('Rome', brutus.user_id), undefined);
@@ -285,6 +283,9 @@ run_test('subscribers', () => {
     assert.equal(stream_data.is_user_subscribed('Rome', brutus.user_id), undefined);
 
     // Verify that we don't crash and return false for a bad stream.
+    blueslip.set_test_data(
+        'warn',
+        'We got an add_subscriber call for a non-existent stream.');
     ok = stream_data.add_subscriber('UNKNOWN', brutus.user_id);
     assert(!ok);
 
@@ -564,8 +565,6 @@ run_test('delete_sub', () => {
     assert(!stream_data.get_sub('Canada'));
     assert(!stream_data.get_sub_by_id(canada.stream_id));
 
-    // We had earlier disabled warnings, so we need to remake zblueslip.
-    set_global('blueslip', global.make_zblueslip());
     blueslip.set_test_data('warn', 'Failed to delete stream 99999');
     stream_data.delete_sub(99999);
     assert.equal(blueslip.get_test_logs('warn').length, 1);

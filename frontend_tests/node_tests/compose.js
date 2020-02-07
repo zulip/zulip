@@ -1,6 +1,6 @@
 set_global('bridge', false);
 
-set_global('blueslip', global.make_zblueslip({}));
+set_global('blueslip', global.make_zblueslip());
 
 const noop = function () {};
 
