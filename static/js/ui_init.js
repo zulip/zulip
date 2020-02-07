@@ -339,6 +339,7 @@ exports.initialize_everything = function () {
     hashchange.initialize();
     pointer.initialize();
     unread_ui.initialize();
+    presence.initialize();
     activity.initialize();
     emoji_picker.initialize();
     compose_fade.initialize();

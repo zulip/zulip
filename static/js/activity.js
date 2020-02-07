@@ -354,10 +354,6 @@ exports.initialize = function () {
                     onActive: mark_client_active,
                     keepTracking: true});
 
-    presence.set_info(page_params.presences,
-                      page_params.initial_servertime);
-    delete page_params.presences;
-
     exports.set_cursor_and_filter();
 
     exports.build_user_sidebar();
