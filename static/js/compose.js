@@ -1096,6 +1096,10 @@ exports.initialize = function () {
         })
     );
 
+    $(window).focus(function () {
+        $('#compose-textarea').focus();
+    });
+
     $("#compose-textarea").focus(function () {
         const opts = {
             message_type: compose_state.get_message_type(),

@@ -255,28 +255,33 @@ exports.start = function (msg_type, opts) {
 };
 
 exports.cancel = function () {
-    $("#compose-textarea").height(40 + "px");
-
-    if (page_params.narrow !== undefined) {
-        // Never close the compose box in narrow embedded windows, but
-        // at least clear the topic and unfade.
+    if (page_params.persistent_edit) {
+        exports.blur_textarea();
         compose_fade.clear_compose();
-        if (page_params.narrow_topic !== undefined) {
-            compose_state.topic(page_params.narrow_topic);
-        } else {
-            compose_state.topic("");
+    } else {
+        $("#compose-textarea").height(40 + "px");
+
+        if (page_params.narrow !== undefined) {
+            // Never close the compose box in narrow embedded windows, but
+            // at least clear the topic and unfade.
+            compose_fade.clear_compose();
+            if (page_params.narrow_topic !== undefined) {
+                compose_state.topic(page_params.narrow_topic);
+            } else {
+                compose_state.topic("");
+            }
+            return;
         }
-        return;
+        hide_box();
+        $("#compose_close").hide();
+        resize.resize_bottom_whitespace();
+        clear_box();
+        notifications.clear_compose_notifications();
+        compose.abort_xhr();
+        compose_state.set_message_type(false);
+        compose_pm_pill.clear();
+        $(document).trigger($.Event('compose_canceled.zulip'));
     }
-    hide_box();
-    $("#compose_close").hide();
-    resize.resize_bottom_whitespace();
-    clear_box();
-    notifications.clear_compose_notifications();
-    compose.abort_xhr();
-    compose_state.set_message_type(false);
-    compose_pm_pill.clear();
-    $(document).trigger($.Event('compose_canceled.zulip'));
 };
 
 exports.respond_to_message = function (opts) {
@@ -467,11 +472,15 @@ exports.on_narrow = function (opts) {
     // We use force_close when jumping between PM narrows with the "p" key,
     // so that we don't have an open compose box that makes it difficult
     // to cycle quickly through unread messages.
-    if (opts.force_close) {
+    if (opts.force_close && !page_params.persistent_edit) {
         // This closes the compose box if it was already open, and it is
         // basically a noop otherwise.
         exports.cancel();
         return;
+    }
+
+    if (page_params.persistent_edit) {
+        exports.start("stream", {});
     }
 
     if (opts.trigger === "narrow_to_compose_target") {

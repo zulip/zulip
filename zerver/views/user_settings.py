@@ -140,7 +140,8 @@ def update_display_settings_backend(
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
         emojiset: Optional[str]=REQ(validator=check_string, default=None),
         demote_inactive_streams: Optional[int]=REQ(validator=check_int, default=None),
-        timezone: Optional[str]=REQ(validator=check_string, default=None)) -> HttpResponse:
+        timezone: Optional[str]=REQ(validator=check_string, default=None),
+        persistent_edit: Optional[bool]=REQ(validator=check_bool, default=None)) -> HttpResponse:
 
     if (default_language is not None and
             default_language not in get_available_language_codes()):

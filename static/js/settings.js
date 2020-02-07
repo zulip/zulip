@@ -90,6 +90,7 @@ function setup_settings_label() {
         high_contrast_mode: i18n.t("High contrast mode"),
         left_side_userlist: i18n.t("User list on left sidebar in narrow windows"),
         night_mode: i18n.t("Night mode"),
+        persistent_edit: i18n.t("Persistent edit box"),
         starred_message_counts: i18n.t("Show counts for starred messages"),
         twenty_four_hour_time: i18n.t("Time format"),
         translate_emoticons: i18n.t("Convert emoticons before sending (<code>:)</code> becomes 😃)"),

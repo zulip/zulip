@@ -252,6 +252,10 @@ exports.activate = function (raw_operators, opts) {
                 }
                 msg_list.network_time = new Date();
                 maybe_report_narrow_time(msg_list);
+
+                if (page_params.persistent_edit) {
+                    compose_actions.respond_to_message({trigger: 'hotkey'});
+                }
             },
             pre_scroll_cont: function () {
                 // Potentially display the notice that lets users know

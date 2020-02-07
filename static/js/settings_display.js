@@ -49,6 +49,7 @@ exports.all_display_settings = {
         user_display_settings: [
             "dense_mode",
             "night_mode",
+            "persistent_edit",
             "high_contrast_mode",
             "left_side_userlist",
             "starred_message_counts",
@@ -201,6 +202,7 @@ exports.update_page = function () {
     $("#default_language_name").text(page_params.default_language_name);
     $("#translate_emoticons").prop('checked', page_params.translate_emoticons);
     $("#night_mode").prop('checked', page_params.night_mode);
+    $("#persistent_edit").prop('checked', page_params.persistent_edit);
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
     // TODO: Set emojiset selector here.

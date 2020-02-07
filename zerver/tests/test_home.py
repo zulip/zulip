@@ -114,6 +114,7 @@ class HomeTest(ZulipTestCase):
             "notification_sound",
             "password_min_guesses",
             "password_min_length",
+            "persistent_edit",
             "plan_includes_wide_organization_logo",
             "pm_content_in_desktop_notifications",
             "pointer",

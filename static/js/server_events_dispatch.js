@@ -382,6 +382,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'fluid_layout_width',
             'high_contrast_mode',
             'night_mode',
+            'persistent_edit',
             'left_side_userlist',
             'timezone',
             'twenty_four_hour_time',
