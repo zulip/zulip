@@ -73,25 +73,26 @@ function make_people() {
 
 
 function activate_people() {
-    const server_time = 9999;
-    const info = {
-        website: {
-            status: "active",
-            timestamp: server_time,
-        },
-    };
+    presence.presence_info.clear();
+
+    function set_presence(user_id, status) {
+        presence.presence_info.set(user_id, {
+            status: status,
+            last_active: 9999,
+        });
+    }
 
     // Make 400 of the users active
-    presence.set_info_for_user(selma.user_id, info, server_time);
-    presence.set_info_for_user(me.user_id, info, server_time);
+    set_presence(selma.user_id, 'active');
+    set_presence(me.user_id, 'active');
 
     for (const user_id of _.range(1000, 1400)) {
-        presence.set_info_for_user(user_id, info, server_time);
+        set_presence(user_id, 'active');
     }
 
     // And then 300 not active
     for (const user_id of _.range(1400, 1700)) {
-        presence.set_info_for_user(user_id, {}, server_time);
+        set_presence(user_id, 'offline');
     }
 }
 
