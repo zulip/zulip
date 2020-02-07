@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
 TOPIC_NAME = "subject"
-TOPIC_LINKS = "subject_links"
+TOPIC_LINKS = "topic_links"
 MATCH_TOPIC = "match_subject"
 
 # This constant is actually embedded into
