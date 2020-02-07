@@ -198,7 +198,8 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
     return target
 
 def access_user_by_id(user_profile: UserProfile, user_id: int,
-                      allow_deactivated: bool=False, allow_bots: bool=False) -> UserProfile:
+                      allow_deactivated: bool=False, allow_bots: bool=False,
+                      read_only: bool=False) -> UserProfile:
     try:
         target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -207,6 +208,9 @@ def access_user_by_id(user_profile: UserProfile, user_id: int,
         raise JsonableError(_("No such user"))
     if not target.is_active and not allow_deactivated:
         raise JsonableError(_("User is deactivated"))
+    if read_only:
+        # Administrative access is not required just to read a user.
+        return target
     if not user_profile.can_admin_user(target):
         raise JsonableError(_("Insufficient permission"))
     return target
