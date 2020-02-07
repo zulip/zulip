@@ -187,7 +187,6 @@ def template_database_status(
         database_name: str='zulip_test_template',
         migration_status: Optional[str]=None,
         settings: str='zproject.test_settings',
-        status_dir: Optional[str]=None,
         check_files: Optional[List[str]]=None,
         check_settings: Optional[List[str]]=None) -> str:
     # This function returns a status string specifying the type of
@@ -206,13 +205,19 @@ def template_database_status(
         check_settings = [
             'REALM_INTERNAL_BOTS',
         ]
-    if status_dir is None:
-        status_dir = os.path.join(UUID_VAR_DIR, 'test_db_status')
-    if migration_status is None:
-        migration_status = os.path.join(UUID_VAR_DIR, 'migration_status_test')
 
+    # Construct a directory to store hashes named after the target database.
+    status_dir = os.path.join(UUID_VAR_DIR, database_name + '_db_status')
     if not os.path.exists(status_dir):
         os.mkdir(status_dir)
+
+    # Arguably we should move this inside status_dir, but it'd require
+    # a bit of work since generate_fixtures expects to also know the
+    # path, and make the directory.  We may also want to refactor this
+    # logic to be inside a couple class objects for the two databases,
+    # rather than a random-feeling set of option flags.
+    if migration_status is None:
+        migration_status = os.path.join(UUID_VAR_DIR, 'migration_status_test')
 
     if database_exists(database_name):
         # To ensure Python evaluates all the hash tests (and thus creates the
