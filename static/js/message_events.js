@@ -142,7 +142,7 @@ exports.update_messages = function update_messages(events) {
             // where the user initiated the edit.
             topic_edited = true;
 
-            const going_forward_change = _.indexOf(['change_later', 'change_all'], event.propagate_mode) >= 0;
+            const going_forward_change = ['change_later', 'change_all'].indexOf(event.propagate_mode) >= 0;
 
             const stream_name = stream_data.get_sub_by_id(event.stream_id).name;
             const compose_stream_name = compose_state.stream_name();
@@ -161,7 +161,7 @@ exports.update_messages = function update_messages(events) {
             const current_filter = narrow_state.filter();
             if (going_forward_change) {
                 const current_id = current_msg_list.selected_id();
-                const selection_changed_topic = _.indexOf(event.message_ids, current_id) >= 0;
+                const selection_changed_topic = event.message_ids.indexOf(current_id) >= 0;
                 if (selection_changed_topic) {
                     if (current_filter && stream_name) {
                         if (current_filter.has_topic(stream_name, orig_topic)) {
