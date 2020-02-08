@@ -278,7 +278,7 @@ run_test('initialize', () => {
 
 function simulate_narrow() {
     const filter = {
-        predicate: function () { return true; },
+        predicate: () => () => false,
     };
 
     narrow_state.active = function () { return true; };
