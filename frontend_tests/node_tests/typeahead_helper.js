@@ -46,7 +46,7 @@ run_test('sort_streams', () => {
         {name: 'Denmark', pin_to_top: true, subscribers: popular, subscribed: true},
         {name: 'dead', pin_to_top: false, subscribers: unpopular, subscribed: true},
     ];
-    _.each(test_streams, stream_data.update_calculated_fields);
+    test_streams.forEach(stream_data.update_calculated_fields);
 
     global.stream_data.is_active = function (sub) {
         return sub.name !== 'dead';
@@ -67,7 +67,7 @@ run_test('sort_streams', () => {
         {name: 'Denmark', description: 'visiting Denmark', subscribers: popular, subscribed: true},
         {name: 'dead', description: 'dead stream', subscribers: unpopular, subscribed: true},
     ];
-    _.each(test_streams, stream_data.update_calculated_fields);
+    test_streams.forEach(stream_data.update_calculated_fields);
     test_streams = th.sort_streams(test_streams, 'wr');
     assert.deepEqual(test_streams[0].name, "Docs"); // Description match
     assert.deepEqual(test_streams[1].name, "Denmark"); // Popular stream
@@ -84,7 +84,7 @@ run_test('sort_streams', () => {
         {name: 'Ether', description: 'Destroying ether', subscribed: false, subscribers: popular},
         {name: 'Mew', description: 'Cat mews', subscribed: false, subscribers: popular},
     ];
-    _.each(test_streams, stream_data.update_calculated_fields);
+    test_streams.forEach(stream_data.update_calculated_fields);
 
     test_streams = th.sort_streams(test_streams, 'd');
     assert.deepEqual(test_streams[0].name, "Dev"); // Subscribed and stream name starts with query

@@ -25,7 +25,7 @@ function process_result(data, opts) {
         narrow.show_empty_narrow_message();
     }
 
-    _.each(messages, message_store.set_message_booleans);
+    messages.forEach(message_store.set_message_booleans);
     messages = messages.map(message_store.add_message_metadata);
 
     // In case any of the newly fetched messages are new, add them to
