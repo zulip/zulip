@@ -128,15 +128,13 @@ exports.get_huddles = function () {
 };
 
 function huddle_split(huddle) {
-    return _.map(huddle.split(','), function (s) {
-        return parseInt(s, 10);
-    });
+    return huddle.split(',').map(s => parseInt(s, 10));
 }
 
 exports.full_huddle_name = function (huddle) {
     const user_ids = huddle_split(huddle);
 
-    const names = _.map(user_ids, function (user_id) {
+    const names = user_ids.map(user_id => {
         const person = people.get_by_user_id(user_id);
         return person.full_name;
     });
@@ -148,7 +146,7 @@ exports.short_huddle_name = function (huddle) {
     const user_ids = huddle_split(huddle);
 
     const num_to_show = 3;
-    let names = _.map(user_ids, function (user_id) {
+    let names = user_ids.map(user_id => {
         const person = people.get_by_user_id(user_id);
         return person.full_name;
     });
@@ -246,15 +244,13 @@ exports.update_huddles = function () {
         return;
     }
 
-    const group_pms = _.map(huddles, function (huddle) {
-        return {
-            user_ids_string: huddle,
-            name: exports.full_huddle_name(huddle),
-            href: hash_util.huddle_with_uri(huddle),
-            fraction_present: buddy_data.huddle_fraction_present(huddle),
-            short_name: exports.short_huddle_name(huddle),
-        };
-    });
+    const group_pms = huddles.map(huddle => ({
+        user_ids_string: huddle,
+        name: exports.full_huddle_name(huddle),
+        href: hash_util.huddle_with_uri(huddle),
+        fraction_present: buddy_data.huddle_fraction_present(huddle),
+        short_name: exports.short_huddle_name(huddle),
+    }));
 
     const html = render_group_pms({group_pms: group_pms});
     ui.get_content_element($('#group-pms')).html(html);

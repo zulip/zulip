@@ -26,7 +26,7 @@ exports.pm_ul = (convos) => {
     ];
     return vdom.ul({
         attrs: attrs,
-        keyed_nodes: _.map(convos, exports.keyed_pm_li),
+        keyed_nodes: convos.map(exports.keyed_pm_li),
     });
 };
 

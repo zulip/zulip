@@ -325,19 +325,22 @@ exports.tokenize_compose_str = function (s) {
 };
 
 exports.broadcast_mentions = function () {
-    return _.map(['all', 'everyone', 'stream'], function (mention, idx) {
-        return {
-            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                      {wildcard_mention_token: mention}),
-            email: mention,
-            // Always sort above, under the assumption that names will
-            // be longer and only contain "all" as a substring.
-            pm_recipient_count: Infinity,
-            full_name: mention,
-            is_broadcast: true,
-            idx: idx, // used for sorting
-        };
-    });
+    return ['all', 'everyone', 'stream'].map((mention, idx) => ({
+        special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
+                                  {wildcard_mention_token: mention}),
+
+        email: mention,
+
+        // Always sort above, under the assumption that names will
+        // be longer and only contain "all" as a substring.
+        pm_recipient_count: Infinity,
+
+        full_name: mention,
+        is_broadcast: true,
+
+        // used for sorting
+        idx: idx,
+    }));
 };
 
 function filter_mention_name(current_token) {

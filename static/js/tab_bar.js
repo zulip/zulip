@@ -61,7 +61,7 @@ function make_tab_data() {
 
             if (filter.has_operator("pm-with")) {
                 const emails = filter.operands("pm-with")[0].split(',');
-                const names = _.map(emails, function (email) {
+                const names = emails.map(email => {
                     if (!people.get_by_email(email)) {
                         return email;
                     }

@@ -39,9 +39,7 @@ exports.render_tag = (tag) => {
     */
     const opts = tag.opts;
     const tag_name = tag.tag_name;
-    const attr_str = _.map(opts.attrs, (attr) => {
-        return ' ' + attr[0] + '="' + util.escape_html(attr[1]) + '"';
-    }).join('');
+    const attr_str = opts.attrs.map(attr => ' ' + attr[0] + '="' + util.escape_html(attr[1]) + '"').join('');
 
     const start_tag = '<' + tag_name + attr_str + '>';
     const end_tag = '</' + tag_name + '>';
@@ -51,9 +49,7 @@ exports.render_tag = (tag) => {
         return;
     }
 
-    const innards = _.map(opts.keyed_nodes, (node) => {
-        return node.render();
-    }).join('\n');
+    const innards = opts.keyed_nodes.map(node => node.render()).join('\n');
     return start_tag + '\n' + innards + '\n' + end_tag;
 };
 

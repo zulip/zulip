@@ -228,7 +228,7 @@ exports.format_draft = function (draft) {
         };
     } else {
         const emails = util.extract_pm_recipients(draft.private_message_recipient);
-        const recipients = _.map(emails, function (email) {
+        const recipients = emails.map(email => {
             email = email.trim();
             const person = people.get_by_email(email);
             if (person !== undefined) {
@@ -305,7 +305,7 @@ exports.launch = function () {
             return draft_b.updatedAt - draft_a.updatedAt;
         });
 
-        const sorted_formatted_drafts = _.filter(_.map(sorted_raw_drafts, exports.format_draft));
+        const sorted_formatted_drafts = _.filter(sorted_raw_drafts.map(exports.format_draft));
 
         return sorted_formatted_drafts;
     }

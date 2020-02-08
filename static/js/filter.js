@@ -310,7 +310,7 @@ Filter.parse = function (str) {
    might need to support multiple operators of the same type.
 */
 Filter.unparse = function (operators) {
-    const parts = _.map(operators, function (elem) {
+    const parts = operators.map(elem => {
 
         if (elem.operator === 'search') {
             // Search terms are the catch-all case.
@@ -481,13 +481,11 @@ Filter.prototype = {
     },
 
     _canonicalize_operators: function (operators_mixed_case) {
-        return _.map(operators_mixed_case, function (tuple) {
-            return Filter.canonicalize_term(tuple);
-        });
+        return operators_mixed_case.map(tuple => Filter.canonicalize_term(tuple));
     },
 
     filter_with_new_topic: function (new_topic) {
-        const terms = _.map(this._operators, function (term) {
+        const terms = this._operators.map(term => {
             const new_term = _.clone(term);
             if (new_term.operator === 'topic' && !new_term.negated) {
                 new_term.operand = new_topic;
@@ -503,7 +501,7 @@ Filter.prototype = {
 
     sorted_term_types: function () {
         const terms = this._operators;
-        const term_types = _.map(terms, Filter.term_type);
+        const term_types = terms.map(Filter.term_type);
         const sorted_terms = Filter.sorted_term_types(term_types);
         return sorted_terms;
     },
@@ -712,7 +710,7 @@ function describe_unescaped(operators) {
         }
     }
 
-    const more_parts = _.map(operators, function (elem) {
+    const more_parts = operators.map(elem => {
         const operand = elem.operand;
         const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
         if (canonicalized_operator === 'is') {

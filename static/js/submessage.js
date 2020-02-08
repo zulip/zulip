@@ -15,12 +15,10 @@ exports.get_message_events = function (message) {
         return parseInt(m1.id, 10) - parseInt(m2.id, 10);
     });
 
-    const events = _.map(message.submessages, function (obj) {
-        return {
-            sender_id: obj.sender_id,
-            data: JSON.parse(obj.content),
-        };
-    });
+    const events = message.submessages.map(obj => ({
+        sender_id: obj.sender_id,
+        data: JSON.parse(obj.content),
+    }));
 
     return events;
 };

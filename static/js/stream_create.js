@@ -101,11 +101,9 @@ function ajaxSubscribeForCreation(stream_name, description, user_ids, invite_onl
                                   stream_post_policy, announce, history_public_to_subscribers) {
     // TODO: We can eliminate the user_ids -> principals conversion
     //       once we upgrade the backend to accept user_ids.
-    const persons = _.compact(_.map(user_ids, (user_id) => {
-        return people.get_by_user_id(user_id);
-    }));
+    const persons = _.compact(user_ids.map(user_id => people.get_by_user_id(user_id)));
 
-    const principals = _.map(persons, (person) => person.email);
+    const principals = persons.map(person => person.email);
 
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({

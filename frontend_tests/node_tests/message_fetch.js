@@ -132,9 +132,9 @@ function config_process_results(messages) {
 }
 
 function message_range(start, end) {
-    return _.map(_.range(start, end), function (idx) {
-        return { id: idx };
-    });
+    return _.range(start, end).map(idx => ({
+        id: idx,
+    }));
 }
 
 const initialize_data = {
