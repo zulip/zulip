@@ -80,7 +80,7 @@ exports.wrap = function (lst, val) {
         return exports.list_generator(lst);
     }
 
-    const i = _.indexOf(lst, val);
+    const i = lst.indexOf(val);
     if (i < 0) {
         return exports.list_generator(lst);
     }
@@ -98,7 +98,7 @@ exports.wrap_exclude = function (lst, val) {
         return exports.list_generator(lst);
     }
 
-    const i = _.indexOf(lst, val);
+    const i = lst.indexOf(val);
     if (i < 0) {
         return exports.list_generator(lst);
     }
@@ -116,7 +116,7 @@ exports.reverse_wrap_exclude = function (lst, val) {
         return exports.reverse_list_generator(lst);
     }
 
-    const i = _.indexOf(lst, val);
+    const i = lst.indexOf(val);
     if (i < 0) {
         return exports.reverse_list_generator(lst);
     }

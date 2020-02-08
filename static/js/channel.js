@@ -9,7 +9,7 @@ function add_pending_request(jqXHR) {
 }
 
 function remove_pending_request(jqXHR) {
-    const pending_request_index = _.indexOf(pending_requests, jqXHR);
+    const pending_request_index = pending_requests.indexOf(jqXHR);
     if (pending_request_index !== -1) {
         pending_requests.splice(pending_request_index, 1);
     }
