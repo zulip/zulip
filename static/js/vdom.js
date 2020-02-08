@@ -13,9 +13,7 @@ exports.eq_array = (a, b, eq) => {
         return false;
     }
 
-    return _.all(a, (item, i) => {
-        return eq(item, b[i]);
-    });
+    return a.every((item, i) => eq(item, b[i]));
 };
 
 exports.ul = (opts) => {
