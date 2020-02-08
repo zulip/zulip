@@ -169,13 +169,10 @@ function update_announce_stream_state() {
 }
 
 function get_principals() {
-    return _.map(
-        $("#stream_creation_form input:checkbox[name=user]:checked"),
-        function (elem) {
-            const label = $(elem).closest('.add-user-label');
-            return parseInt(label.attr('data-user-id'), 10);
-        }
-    );
+    return Array.from($("#stream_creation_form input:checkbox[name=user]:checked"), elem => {
+        const label = $(elem).closest(".add-user-label");
+        return parseInt(label.attr("data-user-id"), 10);
+    });
 }
 
 function create_stream() {
