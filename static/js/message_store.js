@@ -78,7 +78,7 @@ exports.set_message_booleans = function (message) {
     const flags = message.flags || [];
 
     function convert_flag(flag_name) {
-        return flags.indexOf(flag_name) >= 0;
+        return flags.includes(flag_name);
     }
 
     message.unread = !convert_flag('read');
@@ -115,7 +115,7 @@ exports.update_booleans = function (message, flags) {
     // we are vulnerable to race conditions, so only update flags
     // that are driven by message content.
     function convert_flag(flag_name) {
-        return flags.indexOf(flag_name) >= 0;
+        return flags.includes(flag_name);
     }
 
     message.mentioned = convert_flag('mentioned') || convert_flag('wildcard_mentioned');

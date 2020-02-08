@@ -165,7 +165,7 @@ exports.maybe_show_deprecation_notice = function (key) {
         }
     }
 
-    if (shown_deprecation_notices.indexOf(key) === -1) {
+    if (!shown_deprecation_notices.includes(key)) {
         $('#deprecation-notice-modal').modal('show');
         $('#deprecation-notice-message').text(message);
         $('#close-deprecation-notice').focus();

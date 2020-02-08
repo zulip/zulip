@@ -797,9 +797,9 @@ run_test('initialize', () => {
     assert(!stream_data.is_filtering_inactives());
 
     const stream_names = stream_data.get_streams_for_admin().map(elem => elem.name);
-    assert(stream_names.indexOf('subscriptions') !== -1);
-    assert(stream_names.indexOf('unsubscribed') !== -1);
-    assert(stream_names.indexOf('never_subscribed') !== -1);
+    assert(stream_names.includes('subscriptions'));
+    assert(stream_names.includes('unsubscribed'));
+    assert(stream_names.includes('never_subscribed'));
     assert(!page_params.subscriptions);
     assert(!page_params.unsubscribed);
     assert(!page_params.never_subscribed);

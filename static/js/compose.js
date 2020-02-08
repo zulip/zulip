@@ -891,7 +891,7 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
             return $(user_row).data('useremail');
         });
 
-        if (existing_invites.indexOf(email) === -1) {
+        if (!existing_invites.includes(email)) {
             const context = {
                 email: email,
                 name: mentioned.full_name,

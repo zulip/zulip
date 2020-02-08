@@ -50,7 +50,7 @@ exports.topics_seen_for = function (stream_name) {
 function get_language_matcher(query) {
     query = query.toLowerCase();
     return function (lang) {
-        return lang.indexOf(query) !== -1;
+        return lang.includes(query);
     };
 }
 
@@ -557,7 +557,7 @@ exports.get_candidates = function (query) {
 
     // We will likely want to extend this list to be more i18n-friendly.
     const terminal_symbols = ',.;?!()[] "\'\n\t';
-    if (rest !== '' && terminal_symbols.indexOf(rest[0]) === -1) {
+    if (rest !== '' && !terminal_symbols.includes(rest[0])) {
         return false;
     }
 
@@ -974,7 +974,7 @@ exports.initialize = function () {
         },
         sorter: function (items) {
             const sorted = typeahead_helper.sorter(this.query, items, function (x) {return x;});
-            if (sorted.length > 0 && sorted.indexOf(this.query) === -1) {
+            if (sorted.length > 0 && !sorted.includes(this.query)) {
                 sorted.unshift(this.query);
             }
             return sorted;
@@ -1002,7 +1002,7 @@ exports.initialize = function () {
                     // filter out inserted users and current user from pill insertion
                     const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
                     const current_user = people.is_current_user(user.email);
-                    if (inserted_users.indexOf(user.user_id) === -1 && !current_user) {
+                    if (!inserted_users.includes(user.user_id) && !current_user) {
                         compose_pm_pill.set_from_typeahead(user);
                     }
                 }

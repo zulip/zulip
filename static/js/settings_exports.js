@@ -47,7 +47,7 @@ exports.populate_exports_table = function (exports) {
         filter: {
             element: exports_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
-                return people.get_full_name(item.acting_user_id).toLowerCase().indexOf(value) >= 0;
+                return people.get_full_name(item.acting_user_id).toLowerCase().includes(value);
             },
             onupdate: function () {
                 ui.reset_scrollbar(exports_table);

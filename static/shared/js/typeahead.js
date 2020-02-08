@@ -64,7 +64,7 @@ function query_matches_string(query, source_str, split_char) {
     }
 
     // For a single token, the match can be anywhere in the string.
-    return source_str.indexOf(query) !== -1;
+    return source_str.includes(query);
 }
 
 // This function attempts to match a query with source's attributes.

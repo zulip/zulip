@@ -18,7 +18,7 @@ exports.vanilla_match = function (opts) {
     */
     const val = opts.val.toLowerCase();
     return _.any(opts.search_terms, function (term) {
-        if (val.indexOf(term) !== -1) {
+        if (val.includes(term)) {
             return true;
         }
     });

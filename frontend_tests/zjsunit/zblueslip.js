@@ -63,8 +63,8 @@ exports.make_zblueslip = function () {
         }
         lib[name] = function (message, more_info, stack) {
             lib.test_logs[name].push({message, more_info, stack});
-            const exact_match_fail = lib.test_data[name].indexOf(message) === -1;
-            const string_match_fail = lib.test_data[name].indexOf(message.toString()) === -1;
+            const exact_match_fail = !lib.test_data[name].includes(message);
+            const string_match_fail = !lib.test_data[name].includes(message.toString());
             if (exact_match_fail && string_match_fail) {
                 const error = Error(`Invalid ${name} message: "${message}".`);
                 error.blueslip = true;

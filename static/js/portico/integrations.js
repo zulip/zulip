@@ -115,7 +115,7 @@ const update_integrations = _.debounce(function () {
             const display_name = INTEGRATIONS[$integration.data('name')];
             const display =
                 common.phrase_match(state.query, display_name) &&
-                ($integration.data('categories').indexOf(CATEGORIES[state.category]) !== -1 ||
+                ($integration.data('categories').includes(CATEGORIES[state.category]) ||
                  state.category === 'all');
 
             if (display) {

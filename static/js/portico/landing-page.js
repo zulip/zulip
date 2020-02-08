@@ -73,7 +73,7 @@ const apps_events = function () {
         const parts = path_parts();
 
         Object.keys(info).forEach(function (version) {
-            if (parts.indexOf(version) !== -1) {
+            if (parts.includes(version)) {
                 result = version;
             }
         });
@@ -160,11 +160,11 @@ const events = function () {
         e.stopPropagation();
     });
 
-    if (path_parts().indexOf("apps") !== -1) {
+    if (path_parts().includes("apps")) {
         apps_events();
     }
 
-    if (path_parts().indexOf('hello') !== -1) {
+    if (path_parts().includes('hello')) {
         hello_events();
     }
 };
