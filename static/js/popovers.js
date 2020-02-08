@@ -439,10 +439,15 @@ exports.toggle_actions_popover = function (element, id) {
                 topic &&
                 muting.is_topic_muted(message.stream_id, topic);
 
-        const should_display_edit_history_option = _.any(message.edit_history, function (entry) {
-            const prev_topic = util.get_edit_event_prev_topic(entry);
-            return entry.prev_content !== undefined || prev_topic !== undefined;
-        }) && page_params.realm_allow_edit_history;
+        const should_display_edit_history_option =
+            message.edit_history &&
+            _.any(
+                message.edit_history,
+                entry =>
+                    entry.prev_content !== undefined ||
+                    util.get_edit_event_prev_topic(entry) !== undefined
+            ) &&
+            page_params.realm_allow_edit_history;
 
         // Disabling this for /me messages is a temporary workaround
         // for the fact that we don't have a styling for how that
