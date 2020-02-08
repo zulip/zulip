@@ -38,9 +38,7 @@ exports.init = function () {
 exports.init();
 
 function split_to_ints(lst) {
-    return _.map(lst.split(','), function (s) {
-        return parseInt(s, 10);
-    });
+    return lst.split(',').map(s => parseInt(s, 10));
 }
 
 exports.get_by_user_id = function (user_id) {
@@ -137,9 +135,7 @@ exports.huddle_string = function (message) {
         return;
     }
 
-    let user_ids = _.map(message.display_recipient, function (recip) {
-        return recip.id;
-    });
+    let user_ids = message.display_recipient.map(recip => recip.id);
 
     function is_huddle_recip(user_id) {
         return user_id &&
@@ -161,11 +157,9 @@ exports.huddle_string = function (message) {
 exports.user_ids_string_to_emails_string = function (user_ids_string) {
     const user_ids = split_to_ints(user_ids_string);
 
-    let emails = _.map(user_ids, function (user_id) {
+    let emails = user_ids.map(user_id => {
         const person = people_by_user_id_dict.get(user_id);
-        if (person) {
-            return person.email;
-        }
+        return person && person.email;
     });
 
     if (!_.all(emails)) {
@@ -173,9 +167,7 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
         return;
     }
 
-    emails = _.map(emails, function (email) {
-        return email.toLowerCase();
-    });
+    emails = emails.map(email => email.toLowerCase());
 
     emails.sort();
 
@@ -184,9 +176,7 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
 
 exports.user_ids_string_to_ids_array = function (user_ids_string) {
     const user_ids = user_ids_string.split(',');
-    const ids = _.map(user_ids, function (id) {
-        return Number(id);
-    });
+    const ids = user_ids.map(id => Number(id));
     return ids;
 };
 
@@ -206,11 +196,9 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
     // invalid data.
     const emails = emails_string.split(',');
 
-    let user_ids = _.map(emails, function (email) {
+    let user_ids = emails.map(email => {
         const person = exports.get_by_email(email);
-        if (person) {
-            return person.user_id;
-        }
+        return person && person.user_id;
     });
 
     if (!_.all(user_ids)) {
@@ -264,11 +252,9 @@ exports.emails_strings_to_user_ids_string = function (emails_string) {
 };
 
 exports.email_list_to_user_ids_string = function (emails) {
-    let user_ids = _.map(emails, function (email) {
+    let user_ids = emails.map(email => {
         const person = exports.get_by_email(email);
-        if (person) {
-            return person.user_id;
-        }
+        return person && person.user_id;
     });
 
     if (!_.all(user_ids)) {
@@ -282,11 +268,9 @@ exports.email_list_to_user_ids_string = function (emails) {
 };
 
 exports.safe_full_names = function (user_ids) {
-    let names = _.map(user_ids, function (user_id) {
+    let names = user_ids.map(user_id => {
         const person = people_by_user_id_dict.get(user_id);
-        if (person) {
-            return person.full_name;
-        }
+        return person && person.full_name;
     });
 
     names = _.filter(names);
@@ -309,7 +293,7 @@ exports.get_recipients = function (user_ids_string) {
         return exports.my_full_name();
     }
 
-    const names = _.map(other_ids, exports.get_full_name).sort();
+    const names = other_ids.map(exports.get_full_name).sort();
     return names.join(', ');
 };
 
@@ -330,7 +314,7 @@ exports.pm_reply_to = function (message) {
         return;
     }
 
-    const emails = _.map(user_ids, function (user_id) {
+    const emails = user_ids.map(user_id => {
         const person = people_by_user_id_dict.get(user_id);
         if (!person) {
             blueslip.error('Unknown user id in message: ' + user_id);
@@ -386,9 +370,7 @@ exports.all_user_ids_in_pm = function (message) {
         return;
     }
 
-    let user_ids = _.map(message.display_recipient, function (recip) {
-        return recip.id;
-    });
+    let user_ids = message.display_recipient.map(recip => recip.id);
 
     user_ids = sort_numerically(user_ids);
     return user_ids;
@@ -404,9 +386,7 @@ exports.pm_with_user_ids = function (message) {
         return;
     }
 
-    const user_ids = _.map(message.display_recipient, function (recip) {
-        return recip.id;
-    });
+    const user_ids = message.display_recipient.map(recip => recip.id);
 
     return sorted_other_user_ids(user_ids);
 };
@@ -421,9 +401,7 @@ exports.group_pm_with_user_ids = function (message) {
         return;
     }
 
-    const user_ids = _.map(message.display_recipient, function (recip) {
-        return recip.id;
-    });
+    const user_ids = message.display_recipient.map(recip => recip.id);
     const is_user_present = _.some(user_ids, function (user_id) {
         return exports.is_my_user_id(user_id);
     });
@@ -488,9 +466,7 @@ exports.update_email_in_reply_to = function (reply_to, user_id, new_email) {
     // and we don't warn on any errors.
     let emails = reply_to.split(',');
 
-    const persons = _.map(emails, function (email) {
-        return people_dict.get(email.trim());
-    });
+    const persons = emails.map(email => people_dict.get(email.trim()));
 
     if (!_.all(persons)) {
         return reply_to;
@@ -504,7 +480,7 @@ exports.update_email_in_reply_to = function (reply_to, user_id, new_email) {
         return reply_to;
     }
 
-    emails = _.map(persons, function (person) {
+    emails = persons.map(person => {
         if (person.user_id === user_id) {
             return new_email;
         }
@@ -516,10 +492,8 @@ exports.update_email_in_reply_to = function (reply_to, user_id, new_email) {
 
 exports.pm_with_operand_ids = function (operand) {
     let emails = operand.split(',');
-    emails = _.map(emails, function (email) { return email.trim(); });
-    let persons = _.map(emails, function (email) {
-        return people_dict.get(email);
-    });
+    emails = emails.map(email => email.trim());
+    let persons = emails.map(email => people_dict.get(email));
 
     // If your email is included in a PM group with other people, just ignore it
     if (persons.length > 1) {
@@ -530,9 +504,7 @@ exports.pm_with_operand_ids = function (operand) {
         return;
     }
 
-    let user_ids = _.map(persons, function (person) {
-        return person.user_id;
-    });
+    let user_ids = persons.map(person => person.user_id);
 
     user_ids = sort_numerically(user_ids);
 
@@ -788,9 +760,7 @@ exports.get_message_people = function () {
         semantics
     */
     const message_people = _.compact(
-        _.map(message_store.user_ids(), (user_id) => {
-            return people_by_user_id_dict.get(user_id);
-        })
+        message_store.user_ids().map(user_id => people_by_user_id_dict.get(user_id))
     );
 
     return message_people;
@@ -835,7 +805,7 @@ exports.build_person_matcher = function (query) {
     query = query.trim();
 
     const termlets = query.toLowerCase().split(/\s+/);
-    const termlet_matchers = _.map(termlets, exports.build_termlet_matcher);
+    const termlet_matchers = termlets.map(exports.build_termlet_matcher);
 
     return function (user) {
         const email = user.email.toLowerCase();
@@ -855,9 +825,7 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
 
     // Build our matchers outside the loop to avoid some
     // search overhead that is not user-specific.
-    const matchers = _.map(search_terms, function (search_term) {
-        return exports.build_person_matcher(search_term);
-    });
+    const matchers = search_terms.map(search_term => exports.build_person_matcher(search_term));
 
     // Loop through users and populate filtered_users only
     // if they include search_terms

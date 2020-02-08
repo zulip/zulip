@@ -344,8 +344,8 @@ exports.get_invite_stream_data = function () {
             default_stream: exports.get_default_status(sub.name),
         };
     };
-    const invite_stream_data = _.map(exports.subscribed_subs(), filter_stream_data);
-    const default_stream_data = _.map(page_params.realm_default_streams, filter_stream_data);
+    const invite_stream_data = exports.subscribed_subs().map(filter_stream_data);
+    const default_stream_data = page_params.realm_default_streams.map(filter_stream_data);
 
     // Since, union doesn't work on array of objects we are using filter
     const is_included = {};
@@ -462,9 +462,7 @@ exports.home_view_stream_names = function () {
     const home_view_subs = _.filter(exports.subscribed_subs(), function (sub) {
         return !sub.is_muted;
     });
-    return _.map(home_view_subs, function (sub) {
-        return sub.name;
-    });
+    return home_view_subs.map(sub => sub.name);
 };
 
 exports.canonicalized_name = function (stream_name) {
@@ -571,7 +569,7 @@ exports.set_realm_default_streams = function (realm_default_streams) {
 };
 
 exports.get_default_stream_names = function () {
-    const streams = _.map(Array.from(default_stream_ids), exports.get_sub_by_id);
+    const streams = Array.from(default_stream_ids).map(exports.get_sub_by_id);
     const default_stream_names = _.pluck(streams, 'name');
     return default_stream_names;
 };

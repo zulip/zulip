@@ -22,7 +22,7 @@ function make_msg(msg_id) {
 }
 
 function make_msgs(msg_ids) {
-    return _.map(msg_ids, make_msg);
+    return msg_ids.map(make_msg);
 }
 
 function assert_contents(mld, msg_ids) {

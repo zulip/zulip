@@ -97,9 +97,7 @@ function make_child(i, name) {
 }
 
 function make_children(lst) {
-    return _.map(lst, (i) => {
-        return make_child(i, 'foo' + i);
-    });
+    return lst.map(i => make_child(i, 'foo' + i));
 }
 
 run_test('children', () => {

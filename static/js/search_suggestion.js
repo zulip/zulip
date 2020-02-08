@@ -45,11 +45,9 @@ function format_as_suggestion(terms) {
 }
 
 function compare_by_huddle(huddle) {
-    huddle = _.map(huddle.slice(0, -1), function (person) {
+    huddle = huddle.slice(0, -1).map(person => {
         person = people.get_by_email(person);
-        if (person) {
-            return person.user_id;
-        }
+        return person && person.user_id;
     });
 
     // Construct dict for all huddles, so we can lookup each's recency
@@ -99,7 +97,7 @@ function get_stream_suggestions(last, operators) {
     const regex = typeahead_helper.build_highlight_regex(query);
     const hilite = typeahead_helper.highlight_with_escaping_and_regex;
 
-    const objs = _.map(streams, function (stream) {
+    const objs = streams.map(stream => {
         const prefix = 'stream';
         const highlighted_stream = hilite(regex, stream);
         const verb = last.negated ? 'exclude ' : '';
@@ -160,7 +158,7 @@ function get_group_suggestions(last, operators) {
 
     const highlight_person = make_person_highlighter(last_part);
 
-    const suggestions = _.map(persons, function (person) {
+    const suggestions = persons.map(person => {
         const term = {
             operator: 'pm-with',
             operand: all_but_last_part + ',' + person.email,
@@ -240,7 +238,7 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
 
     const highlight_person = make_person_highlighter(query);
 
-    const objs = _.map(persons, function (person) {
+    const objs = persons.map(person => {
         const name = highlight_person(person);
         const description = prefix + ' ' + name;
         const terms = [{
@@ -363,7 +361,7 @@ function get_topic_suggestions(last, operators) {
     // care about case.
     topics.sort();
 
-    return _.map(topics, function (topic) {
+    return topics.map(topic => {
         const topic_term = {operator: 'topic', operand: topic, negated: negated};
         const operators = suggest_operators.concat([topic_term]);
         return format_as_suggestion(operators);
@@ -394,13 +392,11 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     // Negating suggestions on is_search_operand_negated is required for
     // suggesting negated operators.
     if (last.negated || is_search_operand_negated) {
-        suggestions = _.map(suggestions, function (suggestion) {
-            return {
-                search_string: '-' + suggestion.search_string,
-                description: 'exclude ' + suggestion.description,
-                invalid: suggestion.invalid,
-            };
-        });
+        suggestions = suggestions.map(suggestion => ({
+            search_string: '-' + suggestion.search_string,
+            description: 'exclude ' + suggestion.description,
+            invalid: suggestion.invalid,
+        }));
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
@@ -583,7 +579,7 @@ function get_operator_suggestions(last) {
         return common.phrase_match(last_operand, choice);
     });
 
-    return _.map(choices, function (choice) {
+    return choices.map(choice => {
         const op = [{operator: choice, operand: '', negated: negated}];
         return format_as_suggestion(op);
     });
@@ -848,9 +844,7 @@ exports.finalize_search_result = function (result) {
         lookup_table[obj.search_string] = obj;
     }
 
-    const strings = _.map(result, function (obj) {
-        return obj.search_string;
-    });
+    const strings = result.map(obj => obj.search_string);
     return {
         strings: strings,
         lookup_table: lookup_table,

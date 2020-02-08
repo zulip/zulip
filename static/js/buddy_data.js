@@ -118,13 +118,9 @@ function filter_user_ids(filter_text, user_ids) {
     user_ids = _.reject(user_ids, people.is_my_user_id);
 
     let search_terms = filter_text.toLowerCase().split(/[|,]+/);
-    search_terms = _.map(search_terms, function (s) {
-        return s.trim();
-    });
+    search_terms = search_terms.map(s => s.trim());
 
-    const persons = _.map(user_ids, function (user_id) {
-        return people.get_by_user_id(user_id);
-    });
+    const persons = user_ids.map(user_id => people.get_by_user_id(user_id));
 
     const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
     return Array.from(user_id_dict.keys());
@@ -330,7 +326,7 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
 };
 
 exports.get_items_for_users = function (user_ids) {
-    const user_info = _.map(user_ids, exports.info_for);
+    const user_info = user_ids.map(exports.info_for);
     compose_fade.update_user_info(user_info, fade_config);
     return user_info;
 };

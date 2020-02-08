@@ -167,9 +167,7 @@ run_test('merge_message_groups', () => {
     }
 
     function extract_message_ids(lst) {
-        return _.map(lst, (item) => {
-            return item.msg.id;
-        });
+        return lst.map(item => item.msg.id);
     }
 
     function assert_message_list_equal(list1, list2) {
@@ -184,8 +182,8 @@ run_test('merge_message_groups', () => {
     }
 
     function assert_message_groups_list_equal(list1, list2) {
-        const ids1 = _.map(list1, extract_group);
-        const ids2 = _.map(list2, extract_group);
+        const ids1 = list1.map(extract_group);
+        const ids2 = list2.map(extract_group);
         assert(ids1.length);
         assert.deepEqual(ids1, ids2);
     }
@@ -547,11 +545,9 @@ run_test('render_windows', () => {
     let messages;
 
     function reset_list(opts) {
-        messages = _.map(_.range(opts.count), function (i) {
-            return {
-                id: i,
-            };
-        });
+        messages = _.range(opts.count).map(i => ({
+            id: i,
+        }));
         list.selected_idx = function () { return 0; };
         list.clear();
 
