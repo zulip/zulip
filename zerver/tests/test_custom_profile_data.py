@@ -6,6 +6,7 @@ from zerver.lib.actions import try_add_realm_custom_profile_field, \
     do_update_user_custom_profile_data_if_changed, do_remove_realm_custom_profile_field, \
     try_reorder_realm_custom_profile_fields
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import queries_captured
 from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.models import CustomProfileField, \
     custom_profile_fields_for_realm, CustomProfileFieldValue, get_realm
@@ -644,7 +645,11 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         assert(test_bot)
 
         url = "/json/users?client_gravatar=false&include_custom_profile_fields=true"
-        response = self.client_get(url)
+        with queries_captured() as queries:
+            response = self.client_get(url)
+
+        self.assertEqual(len(queries), 4)
+
         self.assertEqual(response.status_code, 200)
         raw_users_data = response.json()["members"]
 
