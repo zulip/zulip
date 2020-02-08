@@ -794,8 +794,6 @@ class TestCurlExampleGeneration(ZulipTestCase):
     }
 
     def curl_example(self, endpoint: str, method: str, *args: Any, **kwargs: Any) -> List[str]:
-        print(generate_curl_example(endpoint, method,
-                                     "http://localhost:9991/api", *args, **kwargs), "*****************************")
         return generate_curl_example(endpoint, method,
                                      "http://localhost:9991/api", *args, **kwargs)
 
