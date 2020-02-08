@@ -145,18 +145,11 @@ string, use the `id` function, as it will simplify future code changes.
 In most contexts in JavaScript where a string is needed, you can pass a
 number without any explicit conversion.
 
-### JavaScript `var`
+### JavaScript `const` and `let`
 
-Always declare JavaScript variables using `var`.  JavaScript has
-function scope only, not block scope. This means that a `var`
-declaration inside a `for` or `if` acts the same as a `var`
-declaration at the beginning of the surrounding `function`. To avoid
-confusion, declare all variables at the top of a function.
-
-#### TypeScript `const` and `let`
-
-When writing TypeScript, we prefer to use `const` or `let` where
-possible.
+Always declare JavaScript variables using `const` or `let` rather than
+`var`, except in the Casper tests (since Casper does not support
+`const` and `let`).
 
 ### JavaScript and TypeScript `for (i in myArray)`
 
@@ -180,33 +173,22 @@ in both development and production.
 
 ## JS array/object manipulation
 
-For generic functions that operate on arrays or JavaScript objects, you
-should generally use [Underscore](http://underscorejs.org/). We used to
-use jQuery's utility functions, but the Underscore equivalents are more
-consistent, better-behaved and offer more choices.
-
-A quick conversion table:
-
-       $.each → _.each (parameters to the callback reversed)
-       $.inArray → _.indexOf (parameters reversed)
-       $.grep → _.filter
-       $.map → _.map
-       $.extend → _.extend
-
-There's a subtle difference in the case of `_.extend`; it will replace
-attributes with undefined, whereas jQuery won't:
-
-       $.extend({foo: 2}, {foo: undefined});  // yields {foo: 2}, BUT...
-       _.extend({foo: 2}, {foo: undefined});  // yields {foo: undefined}!
-
-Also, `_.each` does not let you break out of the iteration early by
-returning false, the way jQuery's version does. If you're doing this,
-you probably want `_.find`, `_.every`, or `_.any`, rather than 'each'.
-
-Some Underscore functions have multiple names. You should always use the
-canonical name (given in large print in the Underscore documentation),
-with the exception of `_.any`, which we prefer over the less clear
-'some'.
+For functions that operate on arrays or JavaScript objects, you should
+generally use modern
+[ECMAScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Language_Resources)
+primitives such as [`for … of`
+loops](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of),
+[`Array.prototype.{entries, every, filter, find, indexOf, map,
+some}`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array),
+[`Object.{assign, entries, keys,
+values}`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object),
+[spread
+syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax),
+and so on. Our Babel configuration automatically transpiles and
+polyfills these using [`core-js`](https://github.com/zloirock/core-js)
+when necessary. We used to use the
+[Underscore](http://underscorejs.org/) library, but that should be
+avoided in new code.
 
 ## More arbitrary style things
 
@@ -222,7 +204,7 @@ code a lot uglier, in which case it's fine to go up to 120 or so.
 When calling a function with an anonymous function as an argument, use
 this style:
 
-    my_function('foo', function (data) {
+    my_function('foo', data => {
         var x = ...;
         // ...
     });
