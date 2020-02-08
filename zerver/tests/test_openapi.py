@@ -794,6 +794,8 @@ class TestCurlExampleGeneration(ZulipTestCase):
     }
 
     def curl_example(self, endpoint: str, method: str, *args: Any, **kwargs: Any) -> List[str]:
+        print(generate_curl_example(endpoint, method,
+                                     "http://localhost:9991/api", *args, **kwargs), "*****************************")
         return generate_curl_example(endpoint, method,
                                      "http://localhost:9991/api", *args, **kwargs)
 
@@ -850,7 +852,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             '```curl',
             'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
-            "    -d 'anchor=42' \\",
+            "    -d 'anchor=first_unread' \\",
             "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",
@@ -918,7 +920,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             '```curl',
             'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
-            "    -d 'anchor=42' \\",
+            "    -d 'anchor=first_unread' \\",
             "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",

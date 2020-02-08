@@ -298,6 +298,13 @@ paths:
             - type: integer
         example: first_unread
         required: true
+      - name: use_first_unread_anchor
+        in: query
+        description: --**Deprecated**-- Whether to use the (computed by the server) first unread message
+         matching the narrow as the anchor. Mutually exclusive with anchor. Defaults to false.
+        schema:
+          type: boolean
+        example: true
       - name: num_before
         in: query
         description: The number of messages with IDs less than the anchor to retrieve.
