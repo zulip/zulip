@@ -139,9 +139,9 @@ exports.set_up = function () {
             emoji[obj.name] = obj.value;
         }
 
-        $.each($('#emoji_file_input')[0].files, function (i, file) {
+        for (const [i, file] of Array.prototype.entries.call($('#emoji_file_input')[0].files)) {
             formData.append('file-' + i, file);
-        });
+        }
         channel.post({
             url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
             data: formData,

@@ -1084,9 +1084,9 @@ exports.build_page = function () {
         const form_data = new FormData();
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
-        jQuery.each(file_input[0].files, function (i, file) {
+        for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
             form_data.append('file-' + i, file);
-        });
+        }
 
         const error_field = $("#realm_icon_file_input_error");
         error_field.hide();
@@ -1121,9 +1121,9 @@ exports.build_page = function () {
         let button_text;
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
-        jQuery.each(file_input[0].files, function (i, file) {
+        for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
             form_data.append('file-' + i, file);
-        });
+        }
         if (night) {
             error_field = $("#night-logo-section .realm-logo-file-input-error");
             spinner = $("#night-logo-section .upload-logo-spinner");
