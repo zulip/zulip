@@ -305,7 +305,7 @@ exports.launch = function () {
             return draft_b.updatedAt - draft_a.updatedAt;
         });
 
-        const sorted_formatted_drafts = _.filter(sorted_raw_drafts.map(exports.format_draft));
+        const sorted_formatted_drafts = sorted_raw_drafts.map(exports.format_draft).filter(Boolean);
 
         return sorted_formatted_drafts;
     }

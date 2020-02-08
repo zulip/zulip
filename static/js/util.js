@@ -71,9 +71,7 @@ exports.is_pm_recipient = function (email, message) {
 };
 
 exports.extract_pm_recipients = function (recipients) {
-    return _.filter(recipients.split(/\s*[,;]\s*/), function (recipient) {
-        return recipient.trim() !== "";
-    });
+    return recipients.split(/\s*[,;]\s*/).filter(recipient => recipient.trim() !== "");
 };
 
 exports.same_recipient = function util_same_recipient(a, b) {
@@ -109,7 +107,7 @@ exports.normalize_recipients = function (recipients) {
     // with exactly one comma and no spaces between each.
     recipients = recipients.split(',').map(s => s.trim());
     recipients = recipients.map(s => s.toLowerCase());
-    recipients = _.filter(recipients, function (s) { return s.length > 0; });
+    recipients = recipients.filter(s => s.length > 0);
     recipients.sort();
     return recipients.join(',');
 };

@@ -25,7 +25,7 @@ exports.check_record = function (var_name, val, fields) {
         return f(field_name, val[field_name]);
     });
 
-    const msg = _.filter(field_results).sort().join(', ');
+    const msg = field_results.filter(Boolean).sort().join(', ');
 
     if (msg) {
         return 'in ' + var_name + ' ' + msg;

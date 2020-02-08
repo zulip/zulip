@@ -193,7 +193,7 @@ exports.next_topic = function (streams, get_topics, has_unread_messages, curr_st
 exports.get_next_topic = function (curr_stream, curr_topic) {
     let my_streams = stream_sort.get_streams();
 
-    my_streams = _.filter(my_streams, function (stream_name) {
+    my_streams = my_streams.filter(stream_name => {
         if (!stream_data.is_stream_muted_by_name(stream_name)) {
             return true;
         }

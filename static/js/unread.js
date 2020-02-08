@@ -392,13 +392,11 @@ exports.message_unread = function (message) {
 };
 
 exports.get_unread_message_ids = function (message_ids) {
-    return _.filter(message_ids, message_id => unread_messages.has(message_id));
+    return message_ids.filter(message_id => unread_messages.has(message_id));
 };
 
 exports.get_unread_messages = function (messages) {
-    return _.filter(messages, function (message) {
-        return unread_messages.has(message.id);
-    });
+    return messages.filter(message => unread_messages.has(message.id));
 };
 
 exports.update_unread_topics = function (msg, event) {

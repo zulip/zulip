@@ -67,7 +67,7 @@ exports.append_person = function (opts) {
 exports.get_user_ids = function (pill_widget) {
     const items = pill_widget.items();
     let user_ids = _.pluck(items, 'user_id');
-    user_ids = _.filter(user_ids); // be defensive about undefined users
+    user_ids = user_ids.filter(Boolean); // be defensive about undefined users
 
     return user_ids;
 };
@@ -94,9 +94,7 @@ exports.typeahead_source = function (pill_widget) {
 
 exports.filter_taken_users = function (items, pill_widget) {
     const taken_user_ids = exports.get_user_ids(pill_widget);
-    items = _.filter(items, function (item) {
-        return !taken_user_ids.includes(item.user_id);
-    });
+    items = items.filter(item => !taken_user_ids.includes(item.user_id));
     return items;
 };
 

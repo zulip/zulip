@@ -349,7 +349,7 @@ exports.get_invite_stream_data = function () {
 
     // Since, union doesn't work on array of objects we are using filter
     const is_included = {};
-    const streams = _.filter(default_stream_data.concat(invite_stream_data), function (sub) {
+    const streams = default_stream_data.concat(invite_stream_data).filter(sub => {
         if (is_included[sub.name]) {
             return false;
         }
@@ -459,9 +459,7 @@ exports.all_subscribed_streams_are_in_home_view = function () {
 };
 
 exports.home_view_stream_names = function () {
-    const home_view_subs = _.filter(exports.subscribed_subs(), function (sub) {
-        return !sub.is_muted;
-    });
+    const home_view_subs = exports.subscribed_subs().filter(sub => !sub.is_muted);
     return home_view_subs.map(sub => sub.name);
 };
 
