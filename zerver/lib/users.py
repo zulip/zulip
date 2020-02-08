@@ -413,7 +413,6 @@ def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: b
     if include_custom_profile_fields:
         base_query = CustomProfileFieldValue.objects.select_related("field")
         # TODO: Consider optimizing this query away with caching.
-        custom_profile_field_values = base_query.filter(user_profile__realm_id=realm.id)
         if target_user is not None:
             custom_profile_field_values = base_query.filter(user_profile=target_user)
         else:
