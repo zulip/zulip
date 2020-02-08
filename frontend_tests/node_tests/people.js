@@ -43,14 +43,14 @@ function get_all_persons() {
 run_test('basics', () => {
     const persons = get_all_persons();
 
-    assert.equal(_.size(persons), 1);
+    assert.equal(persons.length, 1);
     assert.equal(persons[0].full_name, 'Me Myself');
 
     let realm_persons = people.get_realm_persons();
     assert.equal(realm_persons[0].full_name, 'Me Myself');
 
     realm_persons = people.get_realm_persons();
-    assert.equal(_.size(realm_persons), 1);
+    assert.equal(realm_persons.length, 1);
     assert.equal(people.get_realm_count(), 1);
 
     const full_name = 'Isaac Newton';
@@ -75,7 +75,7 @@ run_test('basics', () => {
     assert.equal(person.email, email);
 
     realm_persons = people.get_realm_persons();
-    assert.equal(_.size(realm_persons), 2);
+    assert.equal(realm_persons.length, 2);
 
     const active_user_ids = people.get_active_user_ids().sort();
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
