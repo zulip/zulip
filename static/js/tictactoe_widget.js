@@ -38,7 +38,7 @@ const tictactoe_data_holder = function () {
             return square_values[i];
         }
 
-        return lines.some(line_won) || _.all(board, filled);
+        return lines.some(line_won) || board.every(filled);
     }
 
     self.get_widget_data = function () {

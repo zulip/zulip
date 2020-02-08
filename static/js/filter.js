@@ -572,7 +572,7 @@ Filter.prototype = {
         // build JavaScript code in a string and then eval() it.
 
         return function (message) {
-            return _.all(operators, function (term) {
+            return operators.every(term => {
                 let ok = message_matches_search_term(message, term.operator, term.operand);
                 if (term.negated) {
                     ok = !ok;
