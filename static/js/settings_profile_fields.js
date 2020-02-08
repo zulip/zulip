@@ -18,25 +18,18 @@ let order = [];
 const field_types = page_params.custom_profile_field_types;
 
 exports.field_type_id_to_string = function (type_id) {
-    let field_type_str;
-
-    _.every(field_types, function (field_type) {
+    for (const field_type of Object.values(field_types)) {
         if (field_type.id === type_id) {
             // Few necessary modifications in field-type-name for
             // table-list view of custom fields UI in org settings
             if (field_type.name === "Date picker") {
-                field_type_str = "Date";
+                return "Date";
             } else if (field_type.name === "Person picker") {
-                field_type_str = "Person";
-            } else {
-                field_type_str = field_type.name;
+                return "Person";
             }
-
-            return false;
+            return field_type.name;
         }
-        return true;
-    });
-    return field_type_str;
+    }
 };
 
 function update_profile_fields_table_element() {
