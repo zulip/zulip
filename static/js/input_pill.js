@@ -219,9 +219,7 @@ exports.create = function (opts) {
         },
 
         getByID: function (id) {
-            return _.find(store.pills, function (pill) {
-                return pill.id === id;
-            });
+            return store.pills.find(pill => pill.id === id);
         },
 
         items: function () {

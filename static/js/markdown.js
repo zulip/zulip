@@ -40,14 +40,12 @@ exports.set_name_in_mention_element = function (element, name) {
 exports.contains_backend_only_syntax = function (content) {
     // Try to guess whether or not a message has bugdown in it
     // If it doesn't, we can immediately render it client-side
-    const markedup = _.find(backend_only_markdown_re, function (re) {
-        return re.test(content);
-    });
+    const markedup = backend_only_markdown_re.find(re => re.test(content));
 
     // If a realm filter doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    const false_filter_match = _.find(realm_filter_list, function (re) {
+    const false_filter_match = realm_filter_list.find(re => {
         const pattern = /(?:[^\s'"\(,:<])/.source + re[0].source + /(?![\w])/.source;
         const regex = new RegExp(pattern);
         return regex.test(content);
