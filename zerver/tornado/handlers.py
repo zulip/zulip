@@ -165,6 +165,31 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
 
         return request
 
+    def write_django_response_as_tornado_response(self, response: HttpResponse) -> None:
+        # This takes a Django HttpResponse and copies its HTTP status
+        # code, headers, cookies, and content onto this
+        # tornado.web.RequestHandler (which is how Tornado prepares a
+        # response to write).
+
+        # Copy the HTTP status code.
+        self.set_status(response.status_code)
+
+        # Copy the HTTP headers (iterating through a Django
+        # HttpResponse is the way to access its headers as key/value pairs)
+        for h in response.items():
+            self.set_header(h[0], h[1])
+
+        # Copy any cookies
+        if not hasattr(self, "_new_cookies"):
+            self._new_cookies = []  # type: List[http.cookie.SimpleCookie[str]]
+        self._new_cookies.append(response.cookies)
+
+        # Copy the response content
+        self.write(response.content)
+
+        # Close the connection.
+        self.finish()
+
     def get(self, *args: Any, **kwargs: Any) -> None:
         request = self.convert_tornado_request_to_django_request()
 
@@ -176,16 +201,7 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
         finally:
             signals.request_finished.send(sender=self.__class__)
 
-        self.set_status(response.status_code)
-        for h in response.items():
-            self.set_header(h[0], h[1])
-
-        if not hasattr(self, "_new_cookies"):
-            self._new_cookies = []  # type: List[http.cookie.SimpleCookie[str]]
-        self._new_cookies.append(response.cookies)
-
-        self.write(response.content)
-        self.finish()
+        self.write_django_response_as_tornado_response(response)
 
     def head(self, *args: Any, **kwargs: Any) -> None:
         self.get(*args, **kwargs)
