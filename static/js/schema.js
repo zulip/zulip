@@ -37,19 +37,12 @@ exports.check_array = function (var_name, val, checker) {
         return var_name + ' is not an array';
     }
 
-    let msg;
+    for (const item of val) {
+        const msg = checker('item', item);
 
-    _.find(val, function (item) {
-        const res = checker('item', item);
-
-        if (res) {
-            msg = res;
-            return msg;
+        if (msg) {
+            return 'in ' + var_name + ' we found an item where ' + msg;
         }
-    });
-
-    if (msg) {
-        return 'in ' + var_name + ' we found an item where ' + msg;
     }
 };
 
