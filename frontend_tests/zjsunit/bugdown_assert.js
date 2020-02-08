@@ -58,10 +58,8 @@ class MarkdownComparer {
         if (node1.content.childNodes.length !== node2.content.childNodes.length) {
             return false;
         }
-        return _.reduce(
-            _.zip(node1.content.childNodes, node2.content.childNodes),
-            (prev, nodePair) => { return prev && nodePair[0].isEqualNode(nodePair[1]); },
-            true
+        return _.zip(node1.content.childNodes, node2.content.childNodes).every(([child1, child2]) =>
+            child1.isEqualNode(child2)
         );
     }
 
