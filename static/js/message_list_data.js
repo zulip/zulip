@@ -156,14 +156,12 @@ MessageListData.prototype = {
     valid_non_duplicated_messages: function (messages) {
         const predicate = this._get_predicate();
         const self = this;
-        return _.filter(messages, function (msg) {
-            return self.get(msg.id) === undefined && predicate(msg);
-        });
+        return messages.filter(msg => self.get(msg.id) === undefined && predicate(msg));
     },
 
     filter_incoming: function (messages) {
         const predicate = this._get_predicate();
-        return _.filter(messages, predicate);
+        return messages.filter(predicate);
     },
 
     unmuted_messages: function (messages) {
@@ -345,13 +343,11 @@ MessageListData.prototype = {
             msg_ids_to_remove[message.id] = true;
         }
 
-        this._items = _.filter(this._items, function (message) {
-            return !msg_ids_to_remove.hasOwnProperty(message.id);
-        });
+        this._items = this._items.filter(message => !msg_ids_to_remove.hasOwnProperty(message.id));
         if (this.muting_enabled) {
-            this._all_items = _.filter(this._all_items, function (message) {
-                return !msg_ids_to_remove.hasOwnProperty(message.id);
-            });
+            this._all_items = this._all_items.filter(
+                message => !msg_ids_to_remove.hasOwnProperty(message.id)
+            );
         }
     },
 

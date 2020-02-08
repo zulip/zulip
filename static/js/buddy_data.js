@@ -288,7 +288,7 @@ function maybe_shrink_list(user_ids, filter_text) {
         return user_ids;
     }
 
-    user_ids = _.filter(user_ids, user_is_recently_active);
+    user_ids = user_ids.filter(user_is_recently_active);
 
     return user_ids;
 }
@@ -307,7 +307,7 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
         user_ids = presence.get_user_ids();
     }
 
-    user_ids = _.filter(user_ids, function (user_id) {
+    user_ids = user_ids.filter(user_id => {
         const person = people.get_by_user_id(user_id);
 
         if (!person) {

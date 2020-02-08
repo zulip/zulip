@@ -427,7 +427,7 @@ exports.get_person_suggestions = function (query, opts) {
         if (opts.want_broadcast) {
             persons = persons.concat(exports.broadcast_mentions());
         }
-        return _.filter(persons, person_matcher);
+        return persons.filter(person_matcher);
     }
 
     let groups;
@@ -438,7 +438,7 @@ exports.get_person_suggestions = function (query, opts) {
         groups = [];
     }
 
-    const filtered_groups = _.filter(groups, group_matcher);
+    const filtered_groups = groups.filter(group_matcher);
 
     /*
         Let's say you're on a big realm and type
@@ -536,9 +536,7 @@ exports.get_sorted_filtered_items = function (query) {
 exports.filter_and_sort_candidates = function (completing, candidates, token) {
     const matcher = exports.compose_content_matcher(completing, token);
 
-    const small_results = _.filter(candidates, function (item) {
-        return matcher(item);
-    });
+    const small_results = candidates.filter(item => matcher(item));
 
     const sorted_results = exports.sort_results(completing, small_results, token);
 

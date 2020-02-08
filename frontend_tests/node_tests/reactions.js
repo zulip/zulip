@@ -465,9 +465,7 @@ run_test('add_and_remove_reaction', () => {
     const result = reactions.get_message_reactions(message);
     assert.equal(blueslip.get_test_logs('warn').length, 2);
     blueslip.clear_test_data();
-    const realm_emoji_data = _.filter(result, function (v) {
-        return v.emoji_name === 'realm_emoji';
-    })[0];
+    const realm_emoji_data = result.filter(v => v.emoji_name === 'realm_emoji')[0];
 
     assert.equal(realm_emoji_data.count, 2);
     assert.equal(realm_emoji_data.is_realm_emoji, true);
