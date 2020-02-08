@@ -105,6 +105,8 @@ function config_process_results(messages) {
         messages_processed_for_bools.push(message);
     };
 
+    message_store.add_message_metadata = message => message;
+
     message_util.do_unread_count_updates = function (arg) {
         assert.deepEqual(arg, messages);
     };

@@ -16,7 +16,7 @@ exports.t = function (str, context) {
     We have to munge in the context here.
     */
     const keyword_regex = /__(- )?(\w)+__/g;
-    const keys_in_str = str.match(keyword_regex);
+    const keys_in_str = str.match(keyword_regex) || [];
     const substitutions = _.map(keys_in_str, function (key) {
         let prefix_length;
         if (key.startsWith("__- ")) {

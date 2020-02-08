@@ -8,7 +8,8 @@ set_global("page_params", {
     realm_bots: [{api_key: 'QadL788EkiottHmukyhHgePUFHREiu8b',
                   email: 'error-bot@zulip.org',
                   full_name: 'Error bot',
-                  user_id: 1},
+                  user_id: 1,
+                  services: []},
     ],
 });
 

@@ -974,7 +974,7 @@ run_test('stream_completion', () => {
 });
 
 function people_suggestion_setup() {
-    global.stream_data.subscribed_streams = noop;
+    global.stream_data.subscribed_streams = () => [];
     global.narrow_state.stream = noop;
 
     const ted = {
