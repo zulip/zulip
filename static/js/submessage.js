@@ -90,9 +90,7 @@ exports.update_message = function (submsg) {
         message.submessages = [];
     }
 
-    const existing = _.find(message.submessages, function (sm) {
-        return sm.id === submsg.id;
-    });
+    const existing = message.submessages.find(sm => sm.id === submsg.id);
 
     if (existing !== undefined) {
         blueslip.warn("Got submessage multiple times: " + submsg.id);

@@ -530,7 +530,7 @@ Filter.prototype = {
     first_valid_id_from: function (msg_ids) {
         const predicate = this.predicate();
 
-        const first_id = _.find(msg_ids, function (msg_id) {
+        const first_id = msg_ids.find(msg_id => {
             const message = message_store.get(msg_id);
 
             if (message === undefined) {

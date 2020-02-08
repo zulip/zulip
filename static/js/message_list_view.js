@@ -1156,12 +1156,12 @@ MessageListView.prototype = {
         // groups are merged etc.) , but we only call this from flows
         // like message editing, so it's not a big performance
         // problem.
-        return _.find(this._message_groups, function (message_group) {
+        return this._message_groups.find(
             // Since we don't have a way to get a message group from
             // the containing message container, we just do a search
             // to find it.
-            return message_group.message_group_id === message_group_id;
-        });
+            message_group => message_group.message_group_id === message_group_id
+        );
     },
 
     _rerender_header: function (message_containers) {
