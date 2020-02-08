@@ -3842,10 +3842,11 @@ class MissedMessageTest(ZulipTestCase):
             )
             self.assertEqual(sorted(user_ids), sorted(presence_idle_user_ids))
 
-        def set_presence(user_id: int, client_name: str, ago: int) -> None:
+        def set_presence(user: UserProfile, client_name: str, ago: int) -> None:
             when = timezone_now() - datetime.timedelta(seconds=ago)
             UserPresence.objects.create(
-                user_profile_id=user_id,
+                user_profile_id=user.id,
+                realm_id=user.realm_id,
                 client=get_client(client_name),
                 timestamp=when,
             )
@@ -3857,10 +3858,10 @@ class MissedMessageTest(ZulipTestCase):
         user_flags[hamlet.id] = ['mentioned']
         assert_missing([hamlet.id])
 
-        set_presence(hamlet.id, 'iPhone', ago=5000)
+        set_presence(hamlet, 'iPhone', ago=5000)
         assert_missing([hamlet.id])
 
-        set_presence(hamlet.id, 'webapp', ago=15)
+        set_presence(hamlet, 'webapp', ago=15)
         assert_missing([])
 
         message_type = 'private'

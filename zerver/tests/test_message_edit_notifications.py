@@ -271,6 +271,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         UserPresence.objects.create(
             user_profile_id=cordelia.id,
+            realm_id=cordelia.realm_id,
             status=UserPresence.ACTIVE,
             client=get_client('web'),
             timestamp=timezone_now(),
