@@ -97,47 +97,6 @@ const stream_name_error = (function () {
     return self;
 }());
 
-function ajaxSubscribeForCreation(stream_name, description, user_ids, invite_only,
-                                  stream_post_policy, announce, history_public_to_subscribers) {
-    // TODO: We can eliminate the user_ids -> principals conversion
-    //       once we upgrade the backend to accept user_ids.
-    const persons = user_ids.map(user_id => people.get_by_user_id(user_id)).filter(Boolean);
-
-    const principals = persons.map(person => person.email);
-
-    // Subscribe yourself and possible other people to a new stream.
-    return channel.post({
-        url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([{name: stream_name,
-                                               description: description}]),
-               principals: JSON.stringify(principals),
-               invite_only: JSON.stringify(invite_only),
-               stream_post_policy: JSON.stringify(stream_post_policy),
-               announce: JSON.stringify(announce),
-               history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
-        },
-        success: function () {
-            $("#create_stream_name").val("");
-            $("#create_stream_description").val("");
-            ui_report.success(i18n.t("Stream successfully created!"), $(".stream_create_info"));
-            loading.destroy_indicator($('#stream_creating_indicator'));
-            // The rest of the work is done via the subscribe event we will get
-        },
-        error: function (xhr) {
-            const msg = JSON.parse(xhr.responseText).msg;
-            if (msg.includes('access')) {
-                // If we can't access the stream, we can safely assume it's
-                // a duplicate stream that we are not invited to.
-                stream_name_error.report_already_exists(stream_name);
-                stream_name_error.select();
-            }
-
-            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_create_info"));
-            loading.destroy_indicator($('#stream_creating_indicator'));
-        },
-    });
-}
-
 // Within the new stream modal...
 function update_announce_stream_state() {
 
@@ -174,20 +133,24 @@ function get_principals() {
 }
 
 function create_stream() {
+    const data = {};
     const stream_name = $.trim($("#create_stream_name").val());
     const description = $.trim($("#create_stream_description").val());
-    const privacy_setting = $('#stream_creation_form input[name=privacy]:checked').val();
-    let stream_post_policy = parseInt($('#stream_creation_form input[name=stream-post-policy]').val(), 10);
-    const principals = get_principals();
+    created_stream = stream_name;
+
+    // Even though we already check to make sure that while typing the user cannot enter
+    // newline characters (by pressing the enter key) it would still be possible to copy
+    // and paste over a description with newline characters in it. Prevent that.
+    if (description.includes('\n')) {
+        ui_report.message(i18n.t("The stream description cannot contain newline characters."),
+                          $(".stream_create_info"), 'alert-error');
+        return;
+    }
+    data.subscriptions = JSON.stringify([{name: stream_name, description: description}]);
 
     let invite_only;
     let history_public_to_subscribers;
-
-    // Because the stream_post_policy field is hidden when non-administrators create streams,
-    // we need to set the default value here.
-    if (isNaN(stream_post_policy)) {
-        stream_post_policy = stream_data.stream_post_policy_values.everyone.code;
-    }
+    const privacy_setting = $('#stream_creation_form input[name=privacy]:checked').val();
 
     if (privacy_setting === 'invite-only') {
         invite_only = true;
@@ -199,31 +162,61 @@ function create_stream() {
         invite_only = false;
         history_public_to_subscribers = true;
     }
+    data.invite_only = JSON.stringify(invite_only);
+    data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
-    created_stream = stream_name;
+    let stream_post_policy = parseInt($('#stream_creation_form input[name=stream-post-policy]:checked').val(), 10);
+
+    // Because the stream_post_policy field is hidden when non-administrators create streams,
+    // we need to set the default value here.
+    if (isNaN(stream_post_policy)) {
+        stream_post_policy = stream_data.stream_post_policy_values.everyone.code;
+    }
+    data.stream_post_policy = JSON.stringify(stream_post_policy);
 
     const announce = !!page_params.notifications_stream &&
         $('#announce-new-stream input').prop('checked');
+    data.announce = JSON.stringify(announce);
 
-    // Even though we already check to make sure that while typing the user cannot enter
-    // newline characters (by pressing the enter key) it would still be possible to copy
-    // and paste over a description with newline characters in it. Prevent that.
-    if (description.includes('\n')) {
-        ui_report.message(i18n.t("The stream description cannot contain newline characters."), $(".stream_create_info"), 'alert-error');
-        return;
-    }
+    // TODO: We can eliminate the user_ids -> principals conversion
+    //       once we upgrade the backend to accept user_ids.
+    const user_ids = get_principals();
+    const persons = user_ids.map(user_id => people.get_by_user_id(user_id)).filter(Boolean);
+    const principals = persons.map(person => person.email);
+    data.principals = JSON.stringify(principals);
 
     loading.make_indicator($('#stream_creating_indicator'), {text: i18n.t('Creating stream...')});
 
-    ajaxSubscribeForCreation(
-        stream_name,
-        description,
-        principals,
-        invite_only,
-        stream_post_policy,
-        announce,
-        history_public_to_subscribers
-    );
+    // Subscribe yourself and possible other people to a new stream.
+    return channel.post({
+        url: "/json/users/me/subscriptions",
+        data: data,
+        success: function () {
+            $("#create_stream_name").val("");
+            $("#create_stream_description").val("");
+            ui_report.success(i18n.t("Stream successfully created!"), $(".stream_create_info"));
+            loading.destroy_indicator($('#stream_creating_indicator'));
+            // The rest of the work is done via the subscribe event we will get
+        },
+        error: function (xhr) {
+            const msg = JSON.parse(xhr.responseText).msg;
+            if (msg.includes('access')) {
+                // If we can't access the stream, we can safely assume it's
+                // a duplicate stream that we are not invited to.
+                //
+                // BUG: This check should be using error codes, not
+                // parsing the error string, so it works correctly
+                // with i18n.  And likely we should be reporting the
+                // error text directly rather than turning it into
+                // "Error creating stream"?
+                stream_name_error.report_already_exists(stream_name);
+                stream_name_error.select();
+            }
+
+            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_create_info"));
+            loading.destroy_indicator($('#stream_creating_indicator'));
+        },
+    });
 }
 
 exports.new_stream_clicked = function (stream_name) {
