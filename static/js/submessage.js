@@ -88,6 +88,10 @@ exports.update_message = function (submsg) {
         return;
     }
 
+    if (message.submessages === undefined) {
+        message.submessages = [];
+    }
+
     const existing = _.find(message.submessages, function (sm) {
         return sm.id === submsg.id;
     });
@@ -95,10 +99,6 @@ exports.update_message = function (submsg) {
     if (existing !== undefined) {
         blueslip.warn("Got submessage multiple times: " + submsg.id);
         return;
-    }
-
-    if (message.submessages === undefined) {
-        message.submessages = [];
     }
 
     message.submessages.push(submsg);
