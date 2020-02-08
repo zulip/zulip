@@ -96,7 +96,7 @@ function get_events_success(events) {
         try {
             messages = echo.process_from_server(messages);
             if (messages.length > 0) {
-                _.each(messages, message_store.set_message_booleans);
+                messages.forEach(message_store.set_message_booleans);
                 let sent_by_this_client = false;
 
                 for (const msg of messages) {

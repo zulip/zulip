@@ -599,7 +599,7 @@ function make_attacher(base) {
     };
 
     self.concat = function (suggestions) {
-        _.each(suggestions, self.push);
+        suggestions.forEach(self.push);
     };
 
     self.attach_many = function (suggestions) {

@@ -109,7 +109,7 @@ exports.build_stream_list = function () {
 
     parent.empty();
 
-    _.each(stream_groups.pinned_streams, add_sidebar_li);
+    stream_groups.pinned_streams.forEach(add_sidebar_li);
 
     const any_pinned_streams = stream_groups.pinned_streams.length > 0;
     const any_normal_streams = stream_groups.normal_streams.length > 0;
@@ -119,13 +119,13 @@ exports.build_stream_list = function () {
         elems.push('<hr class="stream-split">');
     }
 
-    _.each(stream_groups.normal_streams, add_sidebar_li);
+    stream_groups.normal_streams.forEach(add_sidebar_li);
 
     if (any_dormant_streams && any_normal_streams) {
         elems.push('<hr class="stream-split">');
     }
 
-    _.each(stream_groups.dormant_streams, add_sidebar_li);
+    stream_groups.dormant_streams.forEach(add_sidebar_li);
 
     parent.append(elems);
 };
