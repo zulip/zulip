@@ -151,9 +151,7 @@ const generate_emoji_picker_content = function (id) {
         emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
     }
     for (const emoji_dict of emoji.emojis_by_name.values()) {
-        emoji_dict.has_reacted = _.any(emoji_dict.aliases, function (alias) {
-            return emojis_used.includes(alias);
-        });
+        emoji_dict.has_reacted = emoji_dict.aliases.some(alias => emojis_used.includes(alias));
     }
 
     return render_emoji_popover_content({

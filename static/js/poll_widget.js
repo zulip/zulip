@@ -162,9 +162,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
     // function to check whether option already exists
     self.is_option_present = function (data, latest_option) {
-        return _.any(data, function (el) {
-            return el.option === latest_option;
-        });
+        return data.some(el => el.option === latest_option);
     };
 
     // function to add all options added along with the /poll command

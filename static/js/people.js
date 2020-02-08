@@ -400,9 +400,7 @@ exports.group_pm_with_user_ids = function (message) {
     }
 
     const user_ids = message.display_recipient.map(recip => recip.id);
-    const is_user_present = _.some(user_ids, function (user_id) {
-        return exports.is_my_user_id(user_id);
-    });
+    const is_user_present = user_ids.some(user_id => exports.is_my_user_id(user_id));
     if (is_user_present) {
         user_ids.sort();
         if (user_ids.length > 2) {
@@ -470,9 +468,7 @@ exports.update_email_in_reply_to = function (reply_to, user_id, new_email) {
         return reply_to;
     }
 
-    const needs_patch = _.any(persons, function (person) {
-        return person.user_id === user_id;
-    });
+    const needs_patch = persons.some(person => person.user_id === user_id);
 
     if (!needs_patch) {
         return reply_to;
@@ -791,11 +787,7 @@ exports.build_termlet_matcher = function (termlet) {
         }
         const names = full_name.toLowerCase().split(' ');
 
-        return _.any(names, function (name) {
-            if (name.startsWith(termlet)) {
-                return true;
-            }
-        });
+        return names.some(name => name.startsWith(termlet));
     };
 };
 
@@ -835,9 +827,7 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
         }
 
         // Return user emails that include search terms
-        const match = _.any(matchers, function (matcher) {
-            return matcher(user);
-        });
+        const match = matchers.some(matcher => matcher(user));
 
         if (match) {
             filtered_users.set(person.user_id, true);

@@ -32,11 +32,9 @@ exports.open_reactions_popover = function () {
 
 exports.current_user_has_reacted_to_emoji = function (message, emoji_code, type) {
     const user_id = page_params.user_id;
-    return _.any(message.reactions, function (r) {
-        return r.user.id === user_id &&
-               r.reaction_type === type &&
-               r.emoji_code === emoji_code;
-    });
+    return message.reactions.some(r => r.user.id === user_id &&
+           r.reaction_type === type &&
+           r.emoji_code === emoji_code);
 };
 
 function get_message(message_id) {
