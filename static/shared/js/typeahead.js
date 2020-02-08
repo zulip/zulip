@@ -164,7 +164,7 @@ exports.sort_emojis = function (objs, query) {
     }
 
     const popular_emoji_matches = objs.filter(is_popular);
-    const others = _.reject(objs, is_popular);
+    const others = objs.filter(obj => !is_popular(obj));
 
     const triage_results = exports.triage(
         query,

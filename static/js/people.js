@@ -286,7 +286,7 @@ exports.get_recipients = function (user_ids_string) {
     // See message_store.get_pm_full_names() for a similar function.
 
     const user_ids = split_to_ints(user_ids_string);
-    const other_ids = _.reject(user_ids, exports.is_my_user_id);
+    const other_ids = user_ids.filter(user_id => !exports.is_my_user_id(user_id));
 
     if (other_ids.length === 0) {
         // private message with oneself
@@ -550,7 +550,7 @@ exports.exclude_me_from_string = function (user_ids_string) {
         return user_ids.join(',');
     }
 
-    user_ids = _.reject(user_ids, exports.is_my_user_id);
+    user_ids = user_ids.filter(user_id => !exports.is_my_user_id(user_id));
 
     return user_ids.join(',');
 };

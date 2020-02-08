@@ -478,9 +478,7 @@ Filter.prototype = {
             return terms;
         }
 
-        return _.reject(terms, (term) => {
-            return Filter.term_type(term) === 'is-private';
-        });
+        return terms.filter(term => Filter.term_type(term) !== 'is-private');
     },
 
     _canonicalize_operators: function (operators_mixed_case) {
