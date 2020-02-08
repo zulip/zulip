@@ -80,9 +80,7 @@ exports.has_unconverted_data = function (pill_widget) {
     }
 
     const items = pill_widget.items();
-    const has_unknown_items = _.any(items, function (item) {
-        return item.user_id === undefined;
-    });
+    const has_unknown_items = items.some(item => item.user_id === undefined);
 
     return has_unknown_items;
 };

@@ -17,13 +17,11 @@ function filter_streams_by_search(streams, search_term) {
     let search_terms = search_term.toLowerCase().split(",");
     search_terms = search_terms.map(s => s.trim());
 
-    const filtered_streams = streams.filter(stream => _.any(search_terms, function (search_term) {
+    const filtered_streams = streams.filter(stream => search_terms.some(search_term => {
         const lower_stream_name = stream.toLowerCase();
         const cands = lower_stream_name.split(" ");
         cands.push(lower_stream_name);
-        return _.any(cands, function (name) {
-            return name.startsWith(search_term);
-        });
+        return cands.some(name => name.startsWith(search_term));
     }));
 
     return filtered_streams;

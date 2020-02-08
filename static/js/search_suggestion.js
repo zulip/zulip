@@ -17,7 +17,7 @@ function make_person_highlighter(query) {
 
 function match_criteria(operators, criteria) {
     const filter = new Filter(operators);
-    return _.any(criteria, function (cr) {
+    return criteria.some(cr => {
         if (_.has(cr, 'operand')) {
             return filter.has_operand(cr.operator, cr.operand);
         }

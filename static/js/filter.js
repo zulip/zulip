@@ -362,19 +362,19 @@ Filter.prototype = {
     },
 
     has_negated_operand: function (operator, operand) {
-        return _.any(this._operators, function (elem) {
-            return elem.negated && (elem.operator === operator && elem.operand === operand);
-        });
+        return this._operators.some(
+            elem => elem.negated && (elem.operator === operator && elem.operand === operand)
+        );
     },
 
     has_operand: function (operator, operand) {
-        return _.any(this._operators, function (elem) {
-            return !elem.negated && (elem.operator === operator && elem.operand === operand);
-        });
+        return this._operators.some(
+            elem => !elem.negated && (elem.operator === operator && elem.operand === operand)
+        );
     },
 
     has_operator: function (operator) {
-        return _.any(this._operators, function (elem) {
+        return this._operators.some(elem => {
             if (elem.negated && !['search', 'has'].includes(elem.operator)) {
                 return false;
             }
@@ -474,7 +474,7 @@ Filter.prototype = {
             return Filter.term_type(term) === 'pm-with';
         };
 
-        if (!_.any(terms, is_pm_with)) {
+        if (!terms.some(is_pm_with)) {
             return terms;
         }
 

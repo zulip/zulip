@@ -21,9 +21,7 @@ exports.task_data_holder = function () {
 
     self.check_task = {
         task_exists: function (task) {
-            const task_exists = _.any(all_tasks, function (item) {
-                return item.task === task;
-            });
+            const task_exists = all_tasks.some(item => item.task === task);
             return task_exists;
         },
     };
