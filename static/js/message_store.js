@@ -39,7 +39,7 @@ exports.get_pm_emails = function (message) {
     }
 
     const user_ids = people.pm_with_user_ids(message);
-    const emails = _.map(user_ids, email).sort();
+    const emails = user_ids.map(email).sort();
 
     return emails.join(', ');
 };
@@ -56,7 +56,7 @@ exports.get_pm_full_names = function (message) {
     }
 
     const user_ids = people.pm_with_user_ids(message);
-    const names = _.map(user_ids, name).sort();
+    const names = user_ids.map(name).sort();
 
     return names.join(', ');
 };

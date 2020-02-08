@@ -10,9 +10,10 @@ set_global('blueslip', global.make_zblueslip());
 set_global('page_params', {});
 
 function set_filter(operators) {
-    operators = _.map(operators, function (op) {
-        return {operator: op[0], operand: op[1]};
-    });
+    operators = operators.map(op => ({
+        operator: op[0],
+        operand: op[1],
+    }));
     narrow_state.set_current_filter(new Filter(operators));
 }
 

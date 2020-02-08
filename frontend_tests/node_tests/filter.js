@@ -35,7 +35,7 @@ people.add(steve);
 people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {
-    terms = _.map(terms, function (term) {
+    terms = terms.map(term => {
         // If negated flag is undefined, we explicitly
         // set it to false.
         let negated = term.negated;
@@ -508,9 +508,10 @@ run_test('canonicalizations', () => {
 });
 
 function get_predicate(operators) {
-    operators = _.map(operators, function (op) {
-        return {operator: op[0], operand: op[1]};
-    });
+    operators = operators.map(op => ({
+        operator: op[0],
+        operand: op[1],
+    }));
     return new Filter(operators).predicate();
 }
 

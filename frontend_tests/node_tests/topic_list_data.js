@@ -82,9 +82,7 @@ run_test('get_list_info unreads', () => {
     // Going forward, we just stub get_recent_names
     // for simpler test setup.
     topic_data.get_recent_names = () => {
-        return _.map(_.range(15), (i) => {
-            return 'topic ' + i;
-        });
+        return _.range(15).map(i => 'topic ' + i);
     };
 
     const unread_cnt = {};
@@ -111,7 +109,7 @@ run_test('get_list_info unreads', () => {
     assert.equal(list_info.num_possible_topics, 15);
 
     assert.deepEqual(
-        _.map(list_info.items, (li) => li.topic_name),
+        list_info.items.map(li => li.topic_name),
         [
             'topic 0',
             'topic 1',
@@ -131,7 +129,7 @@ run_test('get_list_info unreads', () => {
     assert.equal(list_info.num_possible_topics, 15);
 
     assert.deepEqual(
-        _.map(list_info.items, (li) => li.topic_name),
+        list_info.items.map(li => li.topic_name),
         [
             'topic 0',
             'topic 1',
@@ -158,7 +156,7 @@ run_test('get_list_info unreads', () => {
     assert.equal(list_info.num_possible_topics, 15);
 
     assert.deepEqual(
-        _.map(list_info.items, (li) => li.topic_name),
+        list_info.items.map(li => li.topic_name),
         [
             'topic 0',
             'topic 1',

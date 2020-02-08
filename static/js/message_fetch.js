@@ -26,7 +26,7 @@ function process_result(data, opts) {
     }
 
     _.each(messages, message_store.set_message_booleans);
-    messages = _.map(messages, message_store.add_message_metadata);
+    messages = messages.map(message_store.add_message_metadata);
 
     // In case any of the newly fetched messages are new, add them to
     // our unread data structures.  It's important that this run even
@@ -118,7 +118,7 @@ function handle_operators_supporting_id_based_api(data) {
     }
 
     data.narrow = JSON.parse(data.narrow);
-    data.narrow = _.map(data.narrow, function (filter) {
+    data.narrow = data.narrow.map(filter => {
         if (operators_supporting_ids.includes(filter.operator)) {
             filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
         }

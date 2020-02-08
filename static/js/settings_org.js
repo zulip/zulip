@@ -373,9 +373,9 @@ exports.populate_realm_domains = function (realm_domains) {
         return;
     }
 
-    const domains_list = _.map(realm_domains, function (realm_domain) {
-        return realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain;
-    });
+    const domains_list = realm_domains.map(
+        realm_domain => realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain
+    );
     let domains = domains_list.join(', ');
     if (domains.length === 0) {
         domains = i18n.t("None");

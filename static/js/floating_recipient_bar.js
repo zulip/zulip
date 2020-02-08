@@ -175,7 +175,7 @@ exports.relevant_recipient_bars = function () {
         return [];
     }
 
-    const items = _.map(elems, function (elem, i) {
+    const items = elems.map((elem, i) => {
         let date_html;
         let need_frb;
 

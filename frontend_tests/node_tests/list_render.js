@@ -268,7 +268,7 @@ run_test('sorting', () => {
     };
 
     function html_for(people) {
-        return _.map(people, opts.modifier).join('');
+        return people.map(opts.modifier).join('');
     }
 
     list_render.create(container, list, opts);

@@ -15,9 +15,7 @@ function filter_streams_by_search(streams, search_term) {
     }
 
     let search_terms = search_term.toLowerCase().split(",");
-    search_terms = _.map(search_terms, function (s) {
-        return s.trim();
-    });
+    search_terms = search_terms.map(s => s.trim());
 
     const filtered_streams = _.filter(streams, function (stream) {
         return _.any(search_terms, function (search_term) {

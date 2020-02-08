@@ -34,7 +34,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
             // edited in between when they sent the message and when
             // we hear back from the server and can echo the new
             // message.  Arguably, it's counterproductive complexity.
-            new_messages = _.map(new_messages, message_store.add_message_metadata);
+            new_messages = new_messages.map(message_store.add_message_metadata);
 
             message_util.add_new_messages(new_messages, msg_list);
             unread_ops.process_visible();
@@ -54,7 +54,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
 
 
 exports.insert_new_messages = function insert_new_messages(messages, sent_by_this_client) {
-    messages = _.map(messages, message_store.add_message_metadata);
+    messages = messages.map(message_store.add_message_metadata);
 
     unread.process_loaded_messages(messages);
 

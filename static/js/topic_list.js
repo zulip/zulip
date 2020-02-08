@@ -136,8 +136,7 @@ exports.widget = function (parent_elem, my_stream_id) {
             ['class', 'topic-list'],
         ];
 
-        const nodes = _.map(
-            list_info.items, exports.keyed_topic_li);
+        const nodes = list_info.items.map(exports.keyed_topic_li);
 
         if (spinner) {
             nodes.push(exports.spinner_li());

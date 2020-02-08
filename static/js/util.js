@@ -107,8 +107,8 @@ exports.normalize_recipients = function (recipients) {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = _.map(recipients.split(','), function (s) { return s.trim(); });
-    recipients = _.map(recipients, function (s) { return s.toLowerCase(); });
+    recipients = recipients.split(',').map(s => s.trim());
+    recipients = recipients.map(s => s.toLowerCase());
     recipients = _.filter(recipients, function (s) { return s.length > 0; });
     recipients.sort();
     return recipients.join(',');
@@ -249,7 +249,7 @@ function to_int(s) {
 exports.sorted_ids = function (ids) {
     // This mapping makes sure we are using ints, and
     // it also makes sure we don't mutate the list.
-    let id_list = _.map(ids, to_int);
+    let id_list = ids.map(to_int);
     id_list.sort(function (a, b) {
         return a - b;
     });

@@ -19,9 +19,7 @@ exports.send_read = (function () {
         const real_msgs = _.filter(queue, function (msg) {
             return !msg.locally_echoed;
         });
-        const real_msg_ids = _.map(real_msgs, function (msg) {
-            return msg.id;
-        });
+        const real_msg_ids = real_msgs.map(msg => msg.id);
 
         if (real_msg_ids.length === 0) {
             setTimeout(start, 100);

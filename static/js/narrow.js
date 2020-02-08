@@ -115,8 +115,7 @@ exports.activate = function (raw_operators, opts) {
     notifications.hide_history_limit_message();
     $(".all-messages-search-caution").hide();
 
-    blueslip.debug("Narrowed", {operators: _.map(operators,
-                                                 function (e) { return e.operator; }),
+    blueslip.debug("Narrowed", {operators: operators.map(e => e.operator),
                                 trigger: opts ? opts.trigger : undefined,
                                 previous_id: current_msg_list.selected_id()});
 

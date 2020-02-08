@@ -283,7 +283,7 @@ exports.unread_topic_counter = (function () {
             return topic_dict.has(topic_name);
         });
 
-        const result = _.map(topic_names, function (topic_name) {
+        const result = topic_names.map(topic_name => {
             const msgs = per_stream_bucketer.get_bucket(topic_name);
 
             return {

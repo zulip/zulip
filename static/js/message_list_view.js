@@ -684,7 +684,7 @@ MessageListView.prototype = {
         // all messages lists. To prevent having both list views overwriting
         // each others data we will make a new message object to add data to
         // for rendering.
-        const message_containers = _.map(messages, function (message) {
+        const message_containers = messages.map(message => {
             if (message.starred) {
                 message.starred_status = i18n.t("Unstar");
             } else {
@@ -793,9 +793,7 @@ MessageListView.prototype = {
         if (message_actions.append_messages.length > 0) {
             last_message_row = table.find('.message_row').last().expectOne();
             last_group_row = rows.get_message_recipient_row(last_message_row);
-            dom_messages = $(_.map(message_actions.append_messages, function (message_container) {
-                return self._get_message_template(message_container);
-            }).join('')).filter('.message_row');
+            dom_messages = $(message_actions.append_messages.map(message_container => self._get_message_template(message_container)).join('')).filter('.message_row');
 
             self._post_process(dom_messages);
             last_group_row.append(dom_messages);
@@ -1233,9 +1231,7 @@ MessageListView.prototype = {
         const self = this;
 
         // Convert messages to list messages
-        let message_containers = _.map(messages, function (message) {
-            return self.message_containers[message.id];
-        });
+        let message_containers = messages.map(message => self.message_containers[message.id]);
         // We may not have the message_container if the stream or topic was muted
         message_containers = _.reject(message_containers, function (message_container) {
             return message_container === undefined;

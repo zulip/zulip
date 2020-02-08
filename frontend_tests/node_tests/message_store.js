@@ -68,13 +68,11 @@ global.people.initialize_current_user(me.user_id);
 
 function convert_recipients(people) {
     // Display_recipient uses `id` for user_ids.
-    return _.map(people, (p) => {
-        return {
-            email: p.email,
-            id: p.user_id,
-            full_name: p.full_name,
-        };
-    });
+    return people.map(p => ({
+        email: p.email,
+        id: p.user_id,
+        full_name: p.full_name,
+    }));
 }
 
 run_test('add_message_metadata', () => {

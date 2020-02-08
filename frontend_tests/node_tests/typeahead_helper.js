@@ -24,8 +24,8 @@ let next_id = 0;
 
 function assertSameEmails(lst1, lst2) {
     assert.deepEqual(
-        _.map(lst1, (r) => r.email),
-        _.map(lst2, (r) => r.email)
+        lst1.map(r => r.email),
+        lst2.map(r => r.email)
     );
 }
 
@@ -209,9 +209,7 @@ function get_typeahead_result(query, current_stream, current_topic) {
         current_stream,
         current_topic
     );
-    return _.map(result, function (person) {
-        return person.email;
-    });
+    return result.map(person => person.email);
 }
 
 run_test('sort_recipients', () => {
@@ -363,9 +361,7 @@ run_test('sort_recipients dup bots', () => {
     const dup_objects = matches.concat([a_bot]);
 
     const recipients = th.sort_recipients(dup_objects, "b", "", "");
-    const recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
+    const recipients_email = recipients.map(person => person.email);
     const expected = [
         'b_bot@example.com',
         'b_user_3@zulip.net',
@@ -402,9 +398,7 @@ run_test('sort_recipients subscribers', () => {
     // b_user_2 is a subscriber and b_user_1 is not.
     const small_matches = [b_user_2, b_user_1];
     const recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev Topic");
-    const recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
+    const recipients_email = recipients.map(person => person.email);
     const expected = [
         'b_user_2@zulip.net',
         'b_user_1@zulip.net',
@@ -417,9 +411,7 @@ run_test('sort_recipients pm partners', () => {
     // both are not subscribered to the stream Linux.
     const small_matches = [b_user_3, b_user_2];
     const recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux Topic");
-    const recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
+    const recipients_email = recipients.map(person => person.email);
     const expected = [
         'b_user_3@zulip.net',
         'b_user_2@zulip.net',
@@ -438,7 +430,7 @@ run_test('sort broadcast mentions', () => {
         '');
 
     assert.deepEqual(
-        _.map(results, (r) => r.email),
+        results.map(r => r.email),
         ['all', 'everyone', 'stream']
     );
 
@@ -455,7 +447,7 @@ run_test('sort broadcast mentions', () => {
         '');
 
     assert.deepEqual(
-        _.map(results2, (r) => r.email),
+        results2.map(r => r.email),
         ['all',
          'everyone',
          'stream',
@@ -715,9 +707,7 @@ run_test('sort_slash_commands', () => {
 
 run_test('sort_recipientbox_typeahead', () => {
     let recipients = th.sort_recipientbox_typeahead("b, a", matches, ""); // search "a"
-    let recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
+    let recipients_email = recipients.map(person => person.email);
     assert.deepEqual(recipients_email, [
         'a_user@zulip.org', // matches "a"
         'a_bot@zulip.com', // matches "a"
@@ -729,9 +719,7 @@ run_test('sort_recipientbox_typeahead', () => {
     ]);
 
     recipients = th.sort_recipientbox_typeahead("b, a, b", matches, ""); // search "b"
-    recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
+    recipients_email = recipients.map(person => person.email);
     assert.deepEqual(recipients_email, [
         'b_bot@example.com',
         'b_user_3@zulip.net',

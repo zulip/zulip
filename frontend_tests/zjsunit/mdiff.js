@@ -118,7 +118,7 @@ function diff_strings(string_0, string_1) {
     const emphasize_codes = (string) => {
         return "\u001b[34m" + string.slice(0, 1) + "\u001b[0m" + string.slice(1);
     };
-    output_lines = _.map(output_lines, emphasize_codes);
+    output_lines = output_lines.map(emphasize_codes);
 
     return output_lines.join("\n");
 }
