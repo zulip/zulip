@@ -33,7 +33,7 @@ exports.check_record = function (var_name, val, fields) {
 };
 
 exports.check_array = function (var_name, val, checker) {
-    if (!_.isArray(val)) {
+    if (!Array.isArray(val)) {
         return var_name + ' is not an array';
     }
 
