@@ -216,15 +216,15 @@ function filter_emojis() {
             const emojis = category.emojis;
 
             for (const emoji_dict of emojis) {
-                _.any(emoji_dict.aliases, function (alias) {
+                for (const alias of emoji_dict.aliases) {
                     const match = _.every(search_terms, function (search_term) {
                         return alias.indexOf(search_term) >= 0;
                     });
                     if (match) {
                         search_results.push(_.extend({}, emoji_dict, {name: alias}));
-                        return true;
+                        break;  // We only need the first matching alias per emoji.
                     }
-                });
+                }
             }
         }
 
