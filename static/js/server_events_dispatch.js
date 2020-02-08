@@ -388,7 +388,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'translate_emoticons',
             'starred_message_counts',
         ];
-        if (_.contains(user_display_settings, event.setting_name)) {
+        if (user_display_settings.includes(event.setting_name)) {
             page_params[event.setting_name] = event.setting;
         }
         if (event.setting_name === 'default_language') {

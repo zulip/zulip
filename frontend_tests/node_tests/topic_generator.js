@@ -288,7 +288,7 @@ run_test('topics', () => {
     };
 
     global.unread.topic_has_any_unread = function (stream_id) {
-        return _.contains([devel_stream_id, muted_stream_id], stream_id);
+        return [devel_stream_id, muted_stream_id].includes(stream_id);
     };
 
     global.muting.is_topic_muted = function (stream_name, topic) {

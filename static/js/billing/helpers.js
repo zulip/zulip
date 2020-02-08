@@ -20,7 +20,7 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null) {
     }
 
     form.serializeArray().forEach(function (item) {
-        if (_.contains(numeric_inputs, item.name)) {
+        if (numeric_inputs.includes(item.name)) {
             data[item.name] = item.value;
         } else {
             data[item.name] = JSON.stringify(item.value);
@@ -34,7 +34,7 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null) {
             $(form_loading).hide();
             $(form_error).hide();
             $(form_success).show();
-            if (_.contains(["autopay", "invoice"], form_name)) {
+            if (["autopay", "invoice"].includes(form_name)) {
                 if ("pushState" in history) {
                     history.pushState("", document.title, location.pathname + location.search);
                 } else {
