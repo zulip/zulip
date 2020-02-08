@@ -963,7 +963,7 @@ exports.build_page = function () {
         const node = $("#allowed_domains_label").parent();
         if (org_join_restrictions === 'only_selected_domain') {
             node.show();
-            if (_.isEmpty(page_params.realm_domains)) {
+            if (page_params.realm_domains.length === 0) {
                 overlays.open_modal('realm_domains_modal');
             }
         } else {
