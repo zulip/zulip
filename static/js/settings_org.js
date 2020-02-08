@@ -753,7 +753,7 @@ exports.build_page = function () {
     $('.organization').on('click', '.subsection-header .subsection-changes-discard .button', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        _.each(get_subsection_property_elements(e.target), discard_property_element_changes);
+        get_subsection_property_elements(e.target).forEach(discard_property_element_changes);
         const save_btn_controls = $(e.target).closest('.save-button-controls');
         exports.change_save_button_state(save_btn_controls, "discarded");
     });
