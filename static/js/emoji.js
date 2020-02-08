@@ -152,10 +152,10 @@ exports.translate_emoticons_to_names = function translate_emoticons_to_names(tex
         const prev_char = str[offset - 1];
         const next_char = str[offset + match.length];
 
-        const symbol_at_start = terminal_symbols.indexOf(prev_char) !== -1;
-        const symbol_at_end = terminal_symbols.indexOf(next_char) !== -1;
-        const non_space_at_start = symbols_except_space.indexOf(prev_char) !== -1;
-        const non_space_at_end = symbols_except_space.indexOf(next_char) !== -1;
+        const symbol_at_start = terminal_symbols.includes(prev_char);
+        const symbol_at_end = terminal_symbols.includes(next_char);
+        const non_space_at_start = symbols_except_space.includes(prev_char);
+        const non_space_at_end = symbols_except_space.includes(next_char);
         const valid_start = symbol_at_start || offset === 0;
         const valid_end = symbol_at_end || offset === str.length - match.length;
 

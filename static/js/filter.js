@@ -121,7 +121,7 @@ function message_matches_search_term(message, operator, operand) {
         if (!user_ids) {
             return false;
         }
-        return user_ids.indexOf(operand_ids[0]) !== -1;
+        return user_ids.includes(operand_ids[0]);
         // We should also check if the current user is in the recipient list (user_ids) of the
         // message, but it is implicit by the fact that the current user has access to the message.
     }
@@ -682,7 +682,7 @@ function describe_is_operator(operator) {
     const verb = operator.negated ? 'exclude ' : '';
     const operand = operator.operand;
     const operand_list = ['private', 'starred', 'alerted', 'unread'];
-    if (operand_list.indexOf(operand) !== -1) {
+    if (operand_list.includes(operand)) {
         return verb + operand + ' messages';
     } else if (operand === 'mentioned') {
         return verb + '@-mentions';
@@ -722,7 +722,7 @@ function describe_unescaped(operators) {
             // search_suggestion.get_suggestions takes care that this message will
             // only be shown if the `has` operator is not at the last.
             const valid_has_operands = ['image', 'images', 'link', 'links', 'attachment', 'attachments'];
-            if (valid_has_operands.indexOf(operand) === -1) {
+            if (!valid_has_operands.includes(operand)) {
                 return 'invalid ' + operand + ' operand for has operator';
             }
         }

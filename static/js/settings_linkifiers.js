@@ -38,10 +38,8 @@ exports.populate_filters = function (filters_data) {
         filter: {
             element: filters_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
-                return (
-                    item[0].toLowerCase().indexOf(value) >= 0 ||
-                    item[1].toLowerCase().indexOf(value) >= 0
-                );
+                return item[0].toLowerCase().includes(value) ||
+                item[1].toLowerCase().includes(value);
             },
             onupdate: function () {
                 ui.reset_scrollbar(filters_table);

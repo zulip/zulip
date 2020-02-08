@@ -69,7 +69,7 @@ function render_attachments_ui() {
         filter: {
             element: $search_input,
             predicate: function (item, value) {
-                return item.name.toLocaleLowerCase().indexOf(value) >= 0;
+                return item.name.toLocaleLowerCase().includes(value);
             },
             onupdate: function () {
                 ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));

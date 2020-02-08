@@ -9,7 +9,7 @@ exports.create_item_from_email = function (email, current_items) {
         if (page_params.realm_is_zephyr_mirror_realm) {
             const existing_emails = _.pluck(current_items, 'email');
 
-            if (existing_emails.indexOf(email) >= 0) {
+            if (existing_emails.includes(email)) {
                 return;
             }
 
@@ -28,7 +28,7 @@ exports.create_item_from_email = function (email, current_items) {
 
     const existing_ids = _.pluck(current_items, 'user_id');
 
-    if (existing_ids.indexOf(user.user_id) >= 0) {
+    if (existing_ids.includes(user.user_id)) {
         return;
     }
 
@@ -95,7 +95,7 @@ exports.typeahead_source = function (pill_widget) {
 exports.filter_taken_users = function (items, pill_widget) {
     const taken_user_ids = exports.get_user_ids(pill_widget);
     items = _.filter(items, function (item) {
-        return taken_user_ids.indexOf(item.user_id) === -1;
+        return !taken_user_ids.includes(item.user_id);
     });
     return items;
 };
@@ -134,8 +134,8 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func) {
         matcher: function (item) {
             let query = this.query.toLowerCase();
             query = query.replace(/\u00A0/g, String.fromCharCode(32));
-            return item.email.toLowerCase().indexOf(query) !== -1
-                    || item.full_name.toLowerCase().indexOf(query) !== -1;
+            return item.email.toLowerCase().includes(query)
+                    || item.full_name.toLowerCase().includes(query);
         },
         sorter: function (matches) {
             return typeahead_helper.sort_recipientbox_typeahead(

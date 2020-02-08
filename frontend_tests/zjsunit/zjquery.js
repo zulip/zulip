@@ -168,7 +168,7 @@ exports.make_new_elem = function (selector, opts) {
         closest: function (selector) {
             const elem = self;
             const search = selector.startsWith('.') || selector.startsWith('#') ? selector.substring(1) : selector;
-            if (elem.selector.indexOf(search) > -1) {
+            if (elem.selector.includes(search)) {
                 return elem;
             } else if (parents_result.get(selector)) {
                 return parents_result.get(selector);
@@ -486,15 +486,15 @@ exports.make_zjquery = function (opts) {
         }
 
         const valid_selector =
-            '<#.'.indexOf(selector[0]) >= 0 ||
+            '<#.'.includes(selector[0]) ||
             selector === 'window-stub' ||
             selector === 'document-stub' ||
             selector === 'body' ||
             selector === 'html' ||
             selector.location ||
-            selector.indexOf('#') >= 0 ||
-            selector.indexOf('.') >= 0 ||
-            selector.indexOf('[') >= 0 && selector.indexOf(']') >= selector.indexOf('[');
+            selector.includes('#') ||
+            selector.includes('.') ||
+            selector.includes('[') && selector.indexOf(']') >= selector.indexOf('[');
 
         assert(valid_selector,
                'Invalid selector: ' + selector +

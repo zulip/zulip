@@ -1050,10 +1050,8 @@ function safe_lower(s) {
 exports.matches_user_settings_search = function (person, value) {
     const email = exports.email_for_user_settings(person);
 
-    return (
-        safe_lower(person.full_name).indexOf(value) >= 0 ||
-        safe_lower(email).indexOf(value) >= 0
-    );
+    return safe_lower(person.full_name).includes(value) ||
+    safe_lower(email).includes(value);
 };
 
 exports.filter_for_user_settings_search = function (persons, query) {

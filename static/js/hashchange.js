@@ -66,7 +66,7 @@ function is_overlay_hash(hash) {
     const overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
     const main_hash = hash_util.get_hash_category(hash);
 
-    return overlay_list.indexOf(main_hash) > -1;
+    return overlay_list.includes(main_hash);
 }
 
 // Returns true if this function performed a narrow

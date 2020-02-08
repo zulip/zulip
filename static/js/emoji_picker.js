@@ -218,7 +218,7 @@ function filter_emojis() {
             for (const emoji_dict of emojis) {
                 for (const alias of emoji_dict.aliases) {
                     const match = _.every(search_terms, function (search_term) {
-                        return alias.indexOf(search_term) >= 0;
+                        return alias.includes(search_term);
                     });
                     if (match) {
                         search_results.push(_.extend({}, emoji_dict, {name: alias}));

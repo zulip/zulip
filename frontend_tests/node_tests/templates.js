@@ -1754,8 +1754,8 @@ run_test('recipient_row', () => {
         ],
     };
     const html = render('recipient_row', data);
-    assert(html.indexOf('<script>alert("Hello")</script>') === -1);
-    assert(html.indexOf('&lt;script&gt;alert(&quot;Hello&quot;)&lt;/script&gt;') !== -1);
+    assert(!html.includes('<script>alert("Hello")</script>'));
+    assert(html.includes('&lt;script&gt;alert(&quot;Hello&quot;)&lt;/script&gt;'));
 });
 
 run_test('invitation_failed_error', () => {

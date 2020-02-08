@@ -28,7 +28,7 @@ function match_criteria(operators, criteria) {
 function check_validity(last, operators, valid, invalid) {
     // valid: list of strings valid for the last operator
     // invalid: list of operators invalid for any previous operators except last.
-    if (valid.indexOf(last.operator) === -1) {
+    if (!valid.includes(last.operator)) {
         return false;
     }
     if (match_criteria(operators, invalid)) {
@@ -658,7 +658,7 @@ exports.get_search_result = function (base_query, query) {
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
     if (query_operators_len > 1 &&
         last.operator === 'search' &&
-        person_suggestion_ops.indexOf(query_operators[query_operators_len - 2].operator) !== -1) {
+        person_suggestion_ops.includes(query_operators[query_operators_len - 2].operator)) {
         const person_op = query_operators[query_operators_len - 2];
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
@@ -749,7 +749,7 @@ exports.get_search_result_legacy = function (query) {
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
     if (operators_len > 1 &&
         last.operator === 'search' &&
-        person_suggestion_ops.indexOf(operators[operators_len - 2].operator) !== -1) {
+        person_suggestion_ops.includes(operators[operators_len - 2].operator)) {
         const person_op = operators[operators_len - 2];
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {

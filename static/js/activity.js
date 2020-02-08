@@ -87,7 +87,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     for (const [user_ids_string, count] of counts.pm_count) {
         // TODO: just use user_ids_string in our markup
-        const is_pm = user_ids_string.indexOf(',') < 0;
+        const is_pm = !user_ids_string.includes(',');
         if (is_pm) {
             set_pm_count(user_ids_string, count);
         } else {

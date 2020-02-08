@@ -64,11 +64,11 @@ function populate_invites(invites_data) {
             filter: {
                 element: invites_table.closest(".settings-section").find(".search"),
                 predicate: function (item, value) {
-                    const referrer_email_matched = item.ref.toLowerCase().indexOf(value) >= 0;
+                    const referrer_email_matched = item.ref.toLowerCase().includes(value);
                     if (item.is_multiuse) {
                         return referrer_email_matched;
                     }
-                    const invitee_email_matched = item.email.toLowerCase().indexOf(value) >= 0;
+                    const invitee_email_matched = item.email.toLowerCase().includes(value);
                     return referrer_email_matched || invitee_email_matched;
                 },
             },

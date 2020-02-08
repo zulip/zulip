@@ -285,7 +285,7 @@ function python_to_js_filter(pattern, url) {
         const py_flags = match[1].split("");
 
         for (const flag of py_flags) {
-            if ("im".indexOf(flag) !== -1) {
+            if ("im".includes(flag)) {
                 js_flags += flag;
             }
         }

@@ -432,8 +432,8 @@ run_test('topic_links', () => {
     message = {type: 'stream', topic: "New ZBUG_123 with #456 link here"};
     markdown.add_topic_links(message);
     assert.equal(util.get_topic_links(message).length, 2);
-    assert(util.get_topic_links(message).indexOf("https://trac2.zulip.net/ticket/123") !== -1);
-    assert(util.get_topic_links(message).indexOf("https://trac.zulip.net/ticket/456") !== -1);
+    assert(util.get_topic_links(message).includes("https://trac2.zulip.net/ticket/123"));
+    assert(util.get_topic_links(message).includes("https://trac.zulip.net/ticket/456"));
 
     message = {type: 'stream', topic: "One ZGROUP_123:45 link here"};
     markdown.add_topic_links(message);
@@ -448,9 +448,9 @@ run_test('topic_links', () => {
     message = {type: 'stream', topic: "#456 https://google.com https://github.com"};
     markdown.add_topic_links(message);
     assert.equal(util.get_topic_links(message).length, 3);
-    assert(util.get_topic_links(message).indexOf("https://google.com") !== -1);
-    assert(util.get_topic_links(message).indexOf("https://github.com") !== -1);
-    assert(util.get_topic_links(message).indexOf("https://trac.zulip.net/ticket/456") !== -1);
+    assert(util.get_topic_links(message).includes("https://google.com"));
+    assert(util.get_topic_links(message).includes("https://github.com"));
+    assert(util.get_topic_links(message).includes("https://trac.zulip.net/ticket/456"));
 
     message = {type: "not-stream"};
     markdown.add_topic_links(message);

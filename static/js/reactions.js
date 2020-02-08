@@ -432,7 +432,7 @@ exports.get_message_reactions = function (message) {
             reaction.is_realm_emoji = true;
             reaction.url = emoji.all_realm_emojis.get(reaction.emoji_code).emoji_url;
         }
-        if (reaction.user_ids.indexOf(page_params.user_id) !== -1) {
+        if (reaction.user_ids.includes(page_params.user_id)) {
             reaction.class = "message_reaction reacted";
         } else {
             reaction.class = "message_reaction";

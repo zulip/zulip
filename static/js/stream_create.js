@@ -127,7 +127,7 @@ function ajaxSubscribeForCreation(stream_name, description, user_ids, invite_onl
         },
         error: function (xhr) {
             const msg = JSON.parse(xhr.responseText).msg;
-            if (msg.indexOf('access') >= 0) {
+            if (msg.includes('access')) {
                 // If we can't access the stream, we can safely assume it's
                 // a duplicate stream that we are not invited to.
                 stream_name_error.report_already_exists(stream_name);
@@ -210,7 +210,7 @@ function create_stream() {
     // Even though we already check to make sure that while typing the user cannot enter
     // newline characters (by pressing the enter key) it would still be possible to copy
     // and paste over a description with newline characters in it. Prevent that.
-    if (description.indexOf('\n') !== -1) {
+    if (description.includes('\n')) {
         ui_report.message(i18n.t("The stream description cannot contain newline characters."), $(".stream_create_info"), 'alert-error');
         return;
     }
@@ -409,7 +409,7 @@ exports.set_up_handlers = function () {
             stream_subscription_error.report_no_subs_to_stream();
             return;
         }
-        if (principals.indexOf(people.my_current_user_id()) < 0 && !page_params.is_admin) {
+        if (!principals.includes(people.my_current_user_id()) && !page_params.is_admin) {
             stream_subscription_error.cant_create_stream_without_susbscribing();
             return;
         }
