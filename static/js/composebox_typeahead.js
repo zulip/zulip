@@ -366,12 +366,7 @@ function should_show_custom_query(query, items) {
     if (!query) {
         return false;
     }
-    const matched = _.reduce(items, function (matched, elem) {
-        if (elem.toLowerCase() === query.toLowerCase()) {
-            return true;
-        }
-        return matched;
-    }, false);
+    const matched = items.some(elem => elem.toLowerCase() === query.toLowerCase());
     return !matched;
 }
 

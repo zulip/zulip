@@ -93,7 +93,8 @@ exports.create = function ($container, list, opts) {
             const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
             const finish = blueslip.start_timing('list_render ' + opts.name);
-            const html = _.reduce(slice, function (acc, item) {
+            let html = "";
+            for (const item of slice) {
                 let _item = opts.modifier(item);
 
                 // if valid jQuery selection, attempt to grab all elements within
@@ -116,9 +117,9 @@ exports.create = function ($container, list, opts) {
                     _item = _item.outerHTML;
                 }
 
-                // return the modified HTML or nothing if corrupt (null, undef, etc.).
-                return acc + (_item || "");
-            }, "");
+                // append the HTML or nothing if corrupt (null, undef, etc.).
+                html += _item || "";
+            }
 
             finish();
 
