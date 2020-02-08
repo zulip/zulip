@@ -276,9 +276,9 @@ exports.set_up = function () {
                 });
                 formData.append('config_data', JSON.stringify(config_data));
             }
-            jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
+            for (const [i, file] of Array.prototype.entries.call($('#bot_avatar_file_input')[0].files)) {
                 formData.append('file-' + i, file);
-            });
+            }
             loading.make_indicator(spinner, {text: i18n.t('Creating bot')});
             channel.post({
                 url: '/json/bots',
@@ -450,9 +450,9 @@ exports.set_up = function () {
                     });
                     formData.append('config_data', JSON.stringify(config_data));
                 }
-                jQuery.each(file_input[0].files, function (i, file) {
+                for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
                     formData.append('file-' + i, file);
-                });
+                }
                 loading.make_indicator(spinner, {text: 'Editing bot'});
                 edit_button.hide();
                 channel.patch({
