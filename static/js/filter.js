@@ -342,12 +342,15 @@ Filter.prototype = {
     },
 
     public_operators: function () {
-        const safe_to_return = _.filter(this._operators, function (value) {
+        const safe_to_return = this._operators.filter(
             // Filter out the embedded narrow (if any).
-            return !(page_params.narrow_stream !== undefined &&
-                     value.operator === "stream" &&
-                     value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase());
-        });
+            value =>
+                !(
+                    page_params.narrow_stream !== undefined &&
+                    value.operator === "stream" &&
+                    value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase()
+                )
+        );
         return safe_to_return;
     },
 

@@ -88,9 +88,7 @@ function get_stream_suggestions(last, operators) {
     const query = last.operand;
     let streams = stream_data.subscribed_streams();
 
-    streams = _.filter(streams, function (stream) {
-        return stream_matches_query(stream, query);
-    });
+    streams = streams.filter(stream => stream_matches_query(stream, query));
 
     streams = typeahead_helper.sorter(query, streams);
 
@@ -348,9 +346,7 @@ function get_topic_suggestions(last, operators) {
     topics = topics.slice(0, 300);
 
     if (guess !== '') {
-        topics = _.filter(topics, function (topic) {
-            return common.phrase_match(guess, topic);
-        });
+        topics = topics.filter(topic => common.phrase_match(guess, topic));
     }
 
     topics = topics.slice(0, 10);
@@ -400,7 +396,7 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
-    suggestions = _.filter(suggestions, function (s) {
+    suggestions = suggestions.filter(s => {
         if (match_criteria(operators, s.invalid)) {
             return false;
         }
@@ -575,9 +571,7 @@ function get_operator_suggestions(last) {
     }
 
     let choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'from', 'group-pm-with'];
-    choices = _.filter(choices, function (choice) {
-        return common.phrase_match(last_operand, choice);
-    });
+    choices = choices.filter(choice => common.phrase_match(last_operand, choice));
 
     return choices.map(choice => {
         const op = [{operator: choice, operand: '', negated: negated}];

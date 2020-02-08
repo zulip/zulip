@@ -143,7 +143,7 @@ exports.huddle_string = function (message) {
             !exports.is_my_user_id(user_id);
     }
 
-    user_ids = _.filter(user_ids, is_huddle_recip);
+    user_ids = user_ids.filter(is_huddle_recip);
 
     if (user_ids.length <= 1) {
         return;
@@ -273,7 +273,7 @@ exports.safe_full_names = function (user_ids) {
         return person && person.full_name;
     });
 
-    names = _.filter(names);
+    names = names.filter(Boolean);
 
     return names.join(', ');
 };
@@ -334,9 +334,7 @@ function sorted_other_user_ids(user_ids) {
     // This excludes your own user id unless you're the only user
     // (i.e. you sent a message to yourself).
 
-    const other_user_ids = _.filter(user_ids, function (user_id) {
-        return !exports.is_my_user_id(user_id);
-    });
+    const other_user_ids = user_ids.filter(user_id => !exports.is_my_user_id(user_id));
 
     if (other_user_ids.length >= 1) {
         user_ids = other_user_ids;
@@ -771,7 +769,7 @@ exports.get_people_for_search_bar = function (query) {
 
     const message_people = exports.get_message_people();
 
-    const small_results = _.filter(message_people, pred);
+    const small_results = message_people.filter(pred);
 
     if (small_results.length >= 5) {
         return small_results;
@@ -1034,9 +1032,7 @@ exports.filter_for_user_settings_search = function (persons, query) {
 
               See #13554 for more context.
     */
-    return _.filter(persons, (person) => {
-        return exports.matches_user_settings_search(person, query);
-    });
+    return persons.filter(person => exports.matches_user_settings_search(person, query));
 };
 
 exports.email_for_user_settings = function (person) {

@@ -56,9 +56,7 @@ exports.typeahead_source = function (pill_widget) {
 
 exports.filter_taken_users = function (items, pill_widget) {
     const taken_user_ids = exports.get_user_ids(pill_widget);
-    items = _.filter(items, function (item) {
-        return !taken_user_ids.includes(item.user_id);
-    });
+    items = items.filter(item => !taken_user_ids.includes(item.user_id));
     return items;
 };
 ```
