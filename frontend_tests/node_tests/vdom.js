@@ -262,7 +262,7 @@ run_test('error checking', () => {
 
     const replace_content = 'whatever';
     const find = 'whatever';
-    const ul = {opts: {}};
+    const ul = {opts: { attrs: [] }};
 
     vdom.update(replace_content, find, ul, ul);
     assert.equal(blueslip.get_test_logs('error').length, 1);

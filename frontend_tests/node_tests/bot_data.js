@@ -3,7 +3,8 @@ const _settings_bots = {
 };
 
 const _page_params = {
-    realm_bots: [{email: 'bot0@zulip.com', user_id: 42, full_name: 'Bot 0'},
+    realm_bots: [{email: 'bot0@zulip.com', user_id: 42, full_name: 'Bot 0',
+                  services: []},
                  {email: 'outgoingwebhook@zulip.com', user_id: 314, full_name: "Outgoing webhook",
                   services: [{base_url: "http://foo.com", interface: 1}]}],
     is_admin: false,

@@ -79,7 +79,7 @@ run_test('blueslip', () => {
     blueslip.clear_test_data();
 
     blueslip.set_test_data('warn', 'Unknown emails: ' + unknown_email);
-    people.email_list_to_user_ids_string(unknown_email);
+    people.email_list_to_user_ids_string([unknown_email]);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
 

@@ -194,7 +194,7 @@ run_test('topic', () => {
     set_filter([['stream', 'release'], ['topic', '@#$$^test']]);
     assert.equal(narrow_state.topic(), '@#$$^test');
 
-    set_filter(undefined);
+    set_filter([]);
     assert.equal(narrow_state.topic(), undefined);
 
     set_filter([
@@ -209,7 +209,7 @@ run_test('topic', () => {
 
 
 run_test('stream', () => {
-    set_filter(undefined);
+    set_filter([]);
     assert.equal(narrow_state.stream(), undefined);
     assert.equal(narrow_state.stream_id(), undefined);
 
