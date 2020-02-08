@@ -18,7 +18,7 @@ exports.check_record = function (var_name, val, fields) {
         return var_name + ' is not a record';
     }
 
-    const field_results = _.map(fields, function (f, field_name) {
+    const field_results = Object.entries(fields).map(([field_name, f]) => {
         if (val[field_name] === undefined) {
             return field_name + ' is missing';
         }
