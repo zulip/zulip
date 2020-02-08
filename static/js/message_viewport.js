@@ -141,16 +141,16 @@ function add_to_visible(candidates, visible,
                         top_of_feed, bottom_of_feed,
                         require_fully_visible,
                         row_to_id) {
-    _.every(candidates, function (row) {
+    for (const row of candidates) {
         const row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
         if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed,
                                 require_fully_visible)) {
             visible.push(row_to_id(row));
-            return true;
+        } else {
+            break;
         }
-        return false;
-    });
+    }
 }
 
 const top_of_feed = new util.CachedValue({
