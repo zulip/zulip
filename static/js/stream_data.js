@@ -287,9 +287,9 @@ exports.delete_sub = function (stream_id) {
 
 exports.get_non_default_stream_names = function () {
     let subs = Array.from(stream_info.values());
-    subs = _.reject(subs, function (sub) {
-        return exports.is_default_stream_id(sub.stream_id) || !sub.subscribed && sub.invite_only;
-    });
+    subs = subs.filter(
+        sub => !exports.is_default_stream_id(sub.stream_id) && (sub.subscribed || !sub.invite_only)
+    );
     const names = _.pluck(subs, 'name');
     return names;
 };
@@ -311,9 +311,7 @@ exports.get_updated_unsorted_subs = function () {
 
     // We don't display unsubscribed streams to guest users.
     if (page_params.is_guest) {
-        all_subs = _.reject(all_subs, function (sub) {
-            return !sub.subscribed;
-        });
+        all_subs = all_subs.filter(sub => sub.subscribed);
     }
 
     return all_subs;
@@ -835,11 +833,8 @@ exports.initialize = function () {
 };
 
 exports.remove_default_stream = function (stream_id) {
-    page_params.realm_default_streams = _.reject(
-        page_params.realm_default_streams,
-        function (stream) {
-            return stream.stream_id === stream_id;
-        }
+    page_params.realm_default_streams = page_params.realm_default_streams.filter(
+        stream => stream.stream_id !== stream_id
     );
     default_stream_ids.delete(stream_id);
 };

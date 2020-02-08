@@ -115,7 +115,7 @@ function filter_user_ids(filter_text, user_ids) {
         return user_ids;
     }
 
-    user_ids = _.reject(user_ids, people.is_my_user_id);
+    user_ids = user_ids.filter(user_id => !people.is_my_user_id(user_id));
 
     let search_terms = filter_text.toLowerCase().split(/[|,]+/);
     search_terms = search_terms.map(s => s.trim());

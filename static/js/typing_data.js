@@ -33,9 +33,7 @@ exports.remove_typist = function (group, typist) {
         return false;
     }
 
-    current = _.reject(current, function (user_id) {
-        return to_int(user_id) === to_int(typist);
-    });
+    current = current.filter(user_id => to_int(user_id) !== to_int(typist));
 
     typist_dct.set(key, current);
     return true;

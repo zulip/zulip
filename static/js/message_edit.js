@@ -729,15 +729,15 @@ exports.delete_message = function (msg_id) {
             url: "/json/messages/" + msg_id,
             success: function () {
                 $('#delete_message_modal').modal("hide");
-                currently_deleting_messages = _.reject(currently_deleting_messages, function (id) {
-                    return id === msg_id;
-                });
+                currently_deleting_messages = currently_deleting_messages.filter(
+                    id => id !== msg_id
+                );
                 hide_delete_btn_show_spinner(false);
             },
             error: function (xhr) {
-                currently_deleting_messages = _.reject(currently_deleting_messages, function (id) {
-                    return id === msg_id;
-                });
+                currently_deleting_messages = currently_deleting_messages.filter(
+                    id => id !== msg_id
+                );
                 hide_delete_btn_show_spinner(false);
                 ui_report.error(i18n.t("Error deleting message"), xhr,
                                 $("#delete-message-error"));
