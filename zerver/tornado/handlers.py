@@ -381,7 +381,5 @@ class AsyncDjangoHandler(AsyncDjangoHandlerBase):
                                         data=result_dict, status=self.get_status())
         django_response = self.apply_response_middleware(request, django_response,
                                                          request._resolver)
-        # Pass through the content-type from Django, as json content should be
-        # served as application/json
-        self.set_header("Content-Type", django_response['Content-Type'])
-        self.finish(django_response.content)
+
+        self.write_django_response_as_tornado_response(django_response)
