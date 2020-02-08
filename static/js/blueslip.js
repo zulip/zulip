@@ -26,7 +26,7 @@ Logger.prototype = (function () {
     }
 
     function make_logger_func(name) {
-        return function Logger_func() {
+        return function Logger_func(...args) {
             const now = new Date();
             const date_str =
                 now.getUTCFullYear() + '-' +
@@ -37,12 +37,7 @@ Logger.prototype = (function () {
                 pad(now.getUTCSeconds(), 2) + '.' +
                 pad(now.getUTCMilliseconds(), 3) + ' UTC';
 
-            const str_args = _.map(arguments, function (x) {
-                if (typeof x === 'object') {
-                    return JSON.stringify(x);
-                }
-                return x;
-            });
+            const str_args = args.map(x => typeof x === "object" ? JSON.stringify(x) : x);
 
             const log_entry = date_str + " " + name.toUpperCase() +
                 ': ' + str_args.join("");
@@ -54,7 +49,7 @@ Logger.prototype = (function () {
             }
 
             if (console[name] !== undefined) {
-                return console[name].apply(console, arguments);
+                return console[name](...args);
             }
             return;
         };
