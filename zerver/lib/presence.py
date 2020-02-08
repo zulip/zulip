@@ -136,7 +136,10 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
 
     two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
     query = UserPresence.objects.filter(
-        timestamp__gte=two_weeks_ago
+        realm_id=realm_id,
+        timestamp__gte=two_weeks_ago,
+        user_profile__is_active=True,
+        user_profile__is_bot=False,
     ).values(
         'client__name',
         'status',
@@ -146,11 +149,6 @@ def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict
         'user_profile__enable_offline_push_notifications',
     )
 
-    query = query_for_ids(
-        query=query,
-        user_ids=user_profile_ids,
-        field='user_profile_id'
-    )
     presence_rows = list(query)
 
     mobile_query = PushDeviceToken.objects.distinct(
