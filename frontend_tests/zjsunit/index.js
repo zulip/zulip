@@ -25,7 +25,7 @@ function immediate(f) {
 // Find the files we need to run.
 const finder = require('./finder.js');
 const files = finder.find_files_to_run(); // may write to console
-if (_.isEmpty(files)) {
+if (files.length === 0) {
     throw "No tests found";
 }
 
