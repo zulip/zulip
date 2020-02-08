@@ -143,14 +143,31 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
         # as a flag for initialization being complete.
         self._middleware_chain = handler
 
-    def get(self, *args: Any, **kwargs: Any) -> None:
+    def convert_tornado_request_to_django_request(self) -> HttpRequest:
+        # This takes the WSGI environment that Tornado received (which
+        # fully describes the HTTP request that was sent to Tornado)
+        # and pass it to Django's WSGIRequest to generate a Django
+        # HttpRequest object with the original Tornado request's HTTP
+        # headers, parameters, etc.
         environ = WSGIContainer.environ(self.request)
         environ['PATH_INFO'] = urllib.parse.unquote(environ['PATH_INFO'])
-        request = WSGIRequest(environ)
-        request._tornado_handler = self
 
+        # Django WSGIRequest setup code that should match logic from
+        # Django's WSGIHandler.__call__ before the call to
+        # `get_response()`.
         set_script_prefix(get_script_name(environ))
         signals.request_started.send(sender=self.__class__)
+        request = WSGIRequest(environ)
+
+        # Provide a way for application code to access this handler
+        # given the HttpRequest object.
+        request._tornado_handler = self
+
+        return request
+
+    def get(self, *args: Any, **kwargs: Any) -> None:
+        request = self.convert_tornado_request_to_django_request()
+
         try:
             response = self.get_response(request)
 
