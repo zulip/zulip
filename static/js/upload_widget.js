@@ -12,7 +12,7 @@ function is_image_format(file) {
     if (!type) {
         return false;
     }
-    return supported_types.indexOf(type) >= 0;
+    return supported_types.includes(type);
 }
 
 exports.build_widget = function (

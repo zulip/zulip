@@ -174,10 +174,8 @@ function populate_users(realm_people_data) {
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
-                return (
-                    item.full_name.toLowerCase().indexOf(value) >= 0 ||
-                    item.email.toLowerCase().indexOf(value) >= 0
-                );
+                return item.full_name.toLowerCase().includes(value) ||
+                item.email.toLowerCase().includes(value);
             },
             onupdate: reset_scrollbar($bots_table),
         },

@@ -714,7 +714,7 @@ run_test('sent_by_me_suggestions', () => {
 
     let query = '';
     let suggestions = get_suggestions('', query);
-    assert(suggestions.strings.indexOf('sender:bob@zulip.com') !== -1);
+    assert(suggestions.strings.includes('sender:bob@zulip.com'));
     assert.equal(suggestions.lookup_table['sender:bob@zulip.com'].description,
                  'Sent by me');
 

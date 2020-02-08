@@ -64,7 +64,7 @@ exports._get_convos = function () {
 
         const num_unread = unread.num_unread_for_person(user_ids_string);
 
-        const is_group = user_ids_string.indexOf(',') >= 0;
+        const is_group = user_ids_string.includes(',');
 
         const is_active = user_ids_string === active_user_ids_string;
 

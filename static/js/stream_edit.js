@@ -141,7 +141,7 @@ exports.sort_but_pin_current_user_on_top = function (emails) {
         return;
     }
     // Set current user top of subscription list, if subscribed.
-    if (emails.indexOf(people.my_current_email()) > -1) {
+    if (emails.includes(people.my_current_email())) {
         emails.splice(emails.indexOf(people.my_current_email()), 1);
         emails.sort();
         emails.unshift(people.my_current_email());
@@ -187,7 +187,7 @@ function show_subscription_settings(sub_row) {
                     const email = person.email.toLocaleLowerCase();
                     const full_name = person.full_name.toLowerCase();
 
-                    return email.indexOf(value) > -1 || full_name.indexOf(value) > -1;
+                    return email.includes(value) || full_name.includes(value);
                 }
             },
         },
@@ -205,8 +205,8 @@ function show_subscription_settings(sub_row) {
                 return false;
             }
             // Case-insensitive.
-            const item_matches = item.email.toLowerCase().indexOf(query) !== -1 ||
-                               item.full_name.toLowerCase().indexOf(query) !== -1;
+            const item_matches = item.email.toLowerCase().includes(query) ||
+                               item.full_name.toLowerCase().includes(query);
             const is_subscribed = stream_data.is_user_subscribed(sub.name, item.user_id);
             return item_matches && !is_subscribed;
         },
@@ -222,9 +222,9 @@ function show_subscription_settings(sub_row) {
 }
 
 exports.is_notification_setting = function (setting_label) {
-    if (setting_label.indexOf("_notifications") > -1) {
+    if (setting_label.includes("_notifications")) {
         return true;
-    } else if (setting_label.indexOf("_notify") > -1) {
+    } else if (setting_label.includes("_notify")) {
         return true;
     }
     return false;

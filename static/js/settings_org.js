@@ -463,7 +463,7 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
         filter: {
             element: search_input,
             predicate: function (item, value) {
-                return item.name.toLowerCase().indexOf(value) >= 0;
+                return item.name.toLowerCase().includes(value);
             },
             onupdate: function () {
                 ui.reset_scrollbar(dropdown_list_body);
@@ -492,7 +492,7 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
         filter: {
             element: search_input,
             predicate: function (item, value) {
-                return item.name.toLowerCase().indexOf(value) >= 0;
+                return item.name.toLowerCase().includes(value);
             },
         },
     }).init();
@@ -507,7 +507,7 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
 };
 
 function update_dependent_subsettings(property_name) {
-    if (simple_dropdown_properties.indexOf(property_name) !== -1) {
+    if (simple_dropdown_properties.includes(property_name)) {
         set_property_dropdown_value(property_name);
     } else if (property_name === 'realm_waiting_period_threshold') {
         set_realm_waiting_period_dropdown();

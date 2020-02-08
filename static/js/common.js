@@ -119,7 +119,7 @@ exports.adjust_mac_shortcuts = function (key_elem_class, require_cmd_style) {
         let key_text = $(this).text();
         const keys = key_text.match(/[^\s\+]+/g);
 
-        if (key_text.indexOf('Ctrl') > -1 && require_cmd_style) {
+        if (key_text.includes('Ctrl') && require_cmd_style) {
             $(this).addClass("mac-cmd-key");
         }
 

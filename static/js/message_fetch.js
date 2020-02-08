@@ -119,11 +119,11 @@ function handle_operators_supporting_id_based_api(data) {
 
     data.narrow = JSON.parse(data.narrow);
     data.narrow = _.map(data.narrow, function (filter) {
-        if (operators_supporting_ids.indexOf(filter.operator) !== -1) {
+        if (operators_supporting_ids.includes(filter.operator)) {
             filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
         }
 
-        if (operators_supporting_id.indexOf(filter.operator) !== -1) {
+        if (operators_supporting_id.includes(filter.operator)) {
             if (filter.operator === 'stream') {
                 const stream_id = stream_data.get_stream_id(filter.operand);
                 if (stream_id !== undefined) {

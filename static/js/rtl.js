@@ -65,10 +65,10 @@ const lr_ranges = convert_from_raw(digits, 2, '0$0}151u1<1<1|1|2222282u2w2!2#7Q7
  * @returns {'I' | 'PDI' | 'R' | 'L' | 'Other'}
  */
 function get_bidi_class(ch) {
-    if (i_chars.indexOf(ch) !== -1) {
+    if (i_chars.includes(ch)) {
         return 'I'; // LRI, RLI, FSI
     }
-    if (pdi_chars.indexOf(ch) !== -1) {
+    if (pdi_chars.includes(ch)) {
         return 'PDI';
     }
     let i = util.lower_bound(rl_ranges, ch);

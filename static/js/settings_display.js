@@ -82,7 +82,7 @@ exports.set_up = function () {
             const data = {};
             data[setting] = JSON.stringify($(this).prop('checked'));
 
-            if (["left_side_userlist"].indexOf(setting) > -1) {
+            if (["left_side_userlist"].includes(setting)) {
                 change_display_setting(
                     data,
                     "#display-settings-status",

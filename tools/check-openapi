@@ -9,7 +9,7 @@ function check_duplicate_operationids(file, api) {
         for (const value of endpoint) {
             const operation_id = value.operationId;
             if (operation_id !== undefined) {
-                if (operation_ids.indexOf(operation_id) >= 0) {
+                if (operation_ids.includes(operation_id)) {
                     console.error('In', file + ':');
                     console.error('Duplicate operationId:', operation_id);
                     process.exitCode = 1;

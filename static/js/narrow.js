@@ -83,7 +83,7 @@ function update_narrow_title(filter) {
                 exports.narrow_title = names + " and others";
             }
         } else {
-            if (emails.indexOf(',') > -1) {
+            if (emails.includes(',')) {
                 exports.narrow_title = "Invalid users";
             } else {
                 exports.narrow_title = "Invalid user";
@@ -725,7 +725,7 @@ exports.to_compose_target = function () {
         const topics = topic_data.get_recent_names(stream_id);
         const operators = [{operator: 'stream', operand: stream_name}];
         const topic = compose_state.topic();
-        if (topics.indexOf(topic) !== -1) {
+        if (topics.includes(topic)) {
             operators.push({operator: 'topic', operand: topic});
         }
         exports.activate(operators, opts);
@@ -978,12 +978,12 @@ function pick_empty_narrow_banner() {
         return $("#empty_search_narrow_message");
     } else if (first_operator === "pm-with") {
         if (!people.is_valid_bulk_emails_for_compose(first_operand.split(','))) {
-            if (first_operand.indexOf(',') === -1) {
+            if (!first_operand.includes(',')) {
                 return $("#non_existing_user");
             }
             return $("#non_existing_users");
         }
-        if (first_operand.indexOf(',') === -1) {
+        if (!first_operand.includes(',')) {
             // You have no private messages with this person
             if (people.is_current_user(first_operand)) {
                 return $("#empty_narrow_self_private_message");

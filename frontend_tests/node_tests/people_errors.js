@@ -121,7 +121,7 @@ run_test('blueslip', () => {
     };
     blueslip.set_test_data('error', 'Unknown user id in message: 42');
     const reply_to = people.pm_reply_to(message);
-    assert(reply_to.indexOf('?') > -1);
+    assert(reply_to.includes('?'));
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
 

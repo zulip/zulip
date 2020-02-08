@@ -535,7 +535,7 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
-    if (menu_dropdown_hotkeys.indexOf(event_name) !== -1) {
+    if (menu_dropdown_hotkeys.includes(event_name)) {
         if (popovers.actions_popped()) {
             popovers.actions_menu_handle_keyboard(event_name);
             return true;

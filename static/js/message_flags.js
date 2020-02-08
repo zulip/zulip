@@ -51,7 +51,7 @@ exports.send_read = (function () {
         }
 
         queue = _.filter(queue, function (message) {
-            return data.messages.indexOf(message.id) === -1;
+            return !data.messages.includes(message.id);
         });
 
         if (queue.length > 0) {
