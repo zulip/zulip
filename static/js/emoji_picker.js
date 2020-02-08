@@ -152,7 +152,7 @@ const generate_emoji_picker_content = function (id) {
     }
     for (const emoji_dict of emoji.emojis_by_name.values()) {
         emoji_dict.has_reacted = _.any(emoji_dict.aliases, function (alias) {
-            return _.contains(emojis_used, alias);
+            return emojis_used.includes(alias);
         });
     }
 
@@ -259,7 +259,7 @@ function get_alias_to_be_used(message_id, emoji_name) {
     }
     const user_id = page_params.user_id;
     const reaction = _.find(message.reactions, function (reaction) {
-        return reaction.user.id === user_id && _.contains(aliases, reaction.emoji_name);
+        return reaction.user.id === user_id && aliases.includes(reaction.emoji_name);
     });
     if (reaction) {
         return reaction.emoji_name;

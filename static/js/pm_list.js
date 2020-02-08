@@ -138,7 +138,7 @@ exports.is_all_privates = function () {
         return false;
     }
 
-    return _.contains(filter.operands('is'), "private");
+    return filter.operands('is').includes("private");
 };
 
 exports.expand = function () {

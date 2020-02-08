@@ -80,7 +80,7 @@ exports.handle_narrow_activated = function (filter) {
 exports.should_expand_pm_list = function (filter) {
     const op_is = filter.operands('is');
 
-    if (op_is.length >= 1 && _.contains(op_is, "private")) {
+    if (op_is.length >= 1 && op_is.includes("private")) {
         return true;
     }
 

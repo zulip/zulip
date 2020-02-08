@@ -53,7 +53,7 @@ export default function render_tabs() {
         $('#tab-' + repo).html($('#loading-template').html());
 
         $('#' + repo).click(function () {
-            if (!_.contains(loaded_repos, repo)) {
+            if (!loaded_repos.includes(repo)) {
                 const html = _.chain(contributors_list)
                     .filter(repo)
                     .sortBy(repo)
