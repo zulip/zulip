@@ -112,7 +112,7 @@ run_test('list_render', () => {
         filter: {
             element: search_input,
             predicate: (item, value) => {
-                return _.contains(item, value);
+                return item.includes(value);
             },
         },
         load_count: 2,

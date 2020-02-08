@@ -239,7 +239,7 @@ function encodeOperand(operand) {
 
 function decodeOperand(encoded, operator) {
     encoded = encoded.replace(/"/g, '');
-    if (_.contains(['group-pm-with', 'pm-with', 'sender', 'from'], operator) === false) {
+    if (['group-pm-with', 'pm-with', 'sender', 'from'].includes(operator) === false) {
         encoded = encoded.replace(/\+/g, ' ');
     }
     return util.robust_uri_decode(encoded).trim();
@@ -375,7 +375,7 @@ Filter.prototype = {
 
     has_operator: function (operator) {
         return _.any(this._operators, function (elem) {
-            if (elem.negated && !_.contains(['search', 'has'], elem.operator)) {
+            if (elem.negated && !['search', 'has'].includes(elem.operator)) {
                 return false;
             }
             return elem.operator === operator;
@@ -418,7 +418,7 @@ Filter.prototype = {
             return true;
         }
 
-        if (term_types.length === 1 && _.contains(['in-home', 'in-all'], term_types[0])) {
+        if (term_types.length === 1 && ['in-home', 'in-all'].includes(term_types[0])) {
             return true;
         }
 
@@ -592,7 +592,7 @@ Filter.term_type = function (term) {
 
     result += operator;
 
-    if (_.contains(['is', 'has', 'in', 'streams'], operator)) {
+    if (['is', 'has', 'in', 'streams'].includes(operator)) {
         result += '-' + operand;
     }
 

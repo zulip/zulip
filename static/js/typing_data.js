@@ -18,7 +18,7 @@ exports.add_typist = function (group, typist) {
     const key = get_key(group);
     const current = typist_dct.get(key) || [];
     typist = to_int(typist);
-    if (!_.contains(current, typist)) {
+    if (!current.includes(typist)) {
         current.push(typist);
     }
     typist_dct.set(key, util.sorted_ids(current));
@@ -29,7 +29,7 @@ exports.remove_typist = function (group, typist) {
     let current = typist_dct.get(key) || [];
 
     typist = to_int(typist);
-    if (!_.contains(current, typist)) {
+    if (!current.includes(typist)) {
         return false;
     }
 

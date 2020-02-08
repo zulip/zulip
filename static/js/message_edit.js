@@ -715,7 +715,7 @@ function hide_delete_btn_show_spinner(deleting) {
 exports.delete_message = function (msg_id) {
     $("#delete-message-error").html('');
     $('#delete_message_modal').modal("show");
-    if (_.contains(currently_deleting_messages, msg_id)) {
+    if (currently_deleting_messages.includes(msg_id)) {
         hide_delete_btn_show_spinner(true);
     } else {
         hide_delete_btn_show_spinner(false);

@@ -141,7 +141,7 @@ function get_group_suggestions(last, operators) {
 
     const person_matcher = people.build_person_matcher(last_part);
     let persons = people.filter_all_persons(function (person) {
-        if (_.contains(parts, person.email)) {
+        if (parts.includes(person.email)) {
             return false;
         }
         return last_part === '' || person_matcher(person);
