@@ -165,10 +165,11 @@ MessageListData.prototype = {
     },
 
     unmuted_messages: function (messages) {
-        return _.reject(messages, function (message) {
-            return muting.is_topic_muted(message.stream_id, util.get_message_topic(message)) &&
-                   !message.mentioned;
-        });
+        return messages.filter(
+            message =>
+                !muting.is_topic_muted(message.stream_id, util.get_message_topic(message)) ||
+                message.mentioned
+        );
     },
 
     update_items_for_muting: function () {
@@ -230,9 +231,7 @@ MessageListData.prototype = {
         // bottom_messages regardless
         if (self.selected_id() === -1 && self.empty()) {
             const narrow_messages = self.filter_incoming(messages);
-            bottom_messages = _.reject(narrow_messages, function (msg) {
-                return self.get(msg.id);
-            });
+            bottom_messages = narrow_messages.filter(msg => !self.get(msg.id));
         } else {
             // Filter out duplicates that are already in self, and all messages
             // that fail our filter predicate

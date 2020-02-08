@@ -396,7 +396,9 @@ exports.update_email = function (user_id, new_email) {
 exports.get_invalid_recipient_emails = function () {
     const private_recipients = util.extract_pm_recipients(
         compose_state.private_message_recipient());
-    const invalid_recipients = _.reject(private_recipients, people.is_valid_email_for_compose);
+    const invalid_recipients = private_recipients.filter(
+        email => !people.is_valid_email_for_compose(email)
+    );
 
     return invalid_recipients;
 };

@@ -42,7 +42,7 @@ function wrap_quote(text) {
     // beginning of each line
     for (const paragraph of paragraphs) {
         const lines = paragraph.split('\n');
-        quoted_paragraphs.push(_.reject(lines, function (line) { return line === ''; }).map(line => '> ' + line).join('\n'));
+        quoted_paragraphs.push(lines.filter(line => line !== '').map(line => '> ' + line).join('\n'));
     }
 
     return quoted_paragraphs.join('\n\n');

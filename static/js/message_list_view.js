@@ -1233,9 +1233,9 @@ MessageListView.prototype = {
         // Convert messages to list messages
         let message_containers = messages.map(message => self.message_containers[message.id]);
         // We may not have the message_container if the stream or topic was muted
-        message_containers = _.reject(message_containers, function (message_container) {
-            return message_container === undefined;
-        });
+        message_containers = message_containers.filter(
+            message_container => message_container !== undefined
+        );
 
         const message_groups = [];
         let current_group = [];
