@@ -4063,11 +4063,18 @@ def do_update_user_presence(user_profile: UserProfile,
                             log_time: datetime.datetime,
                             status: int) -> None:
     client = consolidate_client(client)
+
+    defaults = dict(
+        timestamp=log_time,
+        status=status,
+        realm_id=user_profile.realm_id
+    )
+
     (presence, created) = UserPresence.objects.get_or_create(
         user_profile = user_profile,
         client = client,
-        defaults = {'timestamp': log_time,
-                    'status': status})
+        defaults = defaults
+    )
 
     stale_status = (log_time - presence.timestamp) > datetime.timedelta(minutes=1, seconds=10)
     was_idle = presence.status == UserPresence.IDLE

@@ -464,6 +464,7 @@ class Command(BaseCommand):
                 if user.full_name[0] <= 'H':
                     client = get_client("ZulipAndroid")
                 UserPresence.objects.get_or_create(user_profile=user,
+                                                   realm_id=user.realm_id,
                                                    client=client,
                                                    timestamp=date,
                                                    status=status)
