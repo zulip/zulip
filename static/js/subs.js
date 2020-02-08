@@ -104,9 +104,9 @@ exports.toggle_pin_to_top_stream = function (sub) {
 };
 
 exports.maybe_update_realm_default_stream_name  = function (stream_id, new_name) {
-    const idx = _.findIndex(page_params.realm_default_streams, function (stream) {
-        return stream.stream_id === stream_id;
-    });
+    const idx = page_params.realm_default_streams.findIndex(
+        stream => stream.stream_id === stream_id
+    );
     if (idx === -1) {
         return;
     }
