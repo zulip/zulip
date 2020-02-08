@@ -2327,9 +2327,12 @@ class UserPresence(models.Model):
     """
     class Meta:
         unique_together = ("user_profile", "client")
+        index_together = [
+            ("realm", "timestamp")
+        ]
 
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
-    realm = models.ForeignKey(Realm, null=True)  # type: Optional[Realm]
+    realm = models.ForeignKey(Realm)  # type: Realm
     client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
 
     # The time we heard this update from the client.
