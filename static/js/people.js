@@ -162,7 +162,7 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
         return person && person.email;
     });
 
-    if (!_.all(emails)) {
+    if (!emails.every(Boolean)) {
         blueslip.warn('Unknown user ids: ' + user_ids_string);
         return;
     }
@@ -201,7 +201,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
         return person && person.user_id;
     });
 
-    if (!_.all(user_ids)) {
+    if (!user_ids.every(Boolean)) {
         return;
     }
 
@@ -257,7 +257,7 @@ exports.email_list_to_user_ids_string = function (emails) {
         return person && person.user_id;
     });
 
-    if (!_.all(user_ids)) {
+    if (!user_ids.every(Boolean)) {
         blueslip.warn('Unknown emails: ' + emails);
         return;
     }
@@ -464,7 +464,7 @@ exports.update_email_in_reply_to = function (reply_to, user_id, new_email) {
 
     const persons = emails.map(email => people_dict.get(email.trim()));
 
-    if (!_.all(persons)) {
+    if (!persons.every(Boolean)) {
         return reply_to;
     }
 
@@ -494,7 +494,7 @@ exports.pm_with_operand_ids = function (operand) {
         persons = _.without(persons, people_by_user_id_dict.get(my_user_id));
     }
 
-    if (!_.all(persons)) {
+    if (!persons.every(Boolean)) {
         return;
     }
 
@@ -643,7 +643,7 @@ exports.is_valid_email_for_compose = function (email) {
 
 exports.is_valid_bulk_emails_for_compose = function (emails) {
     // Returns false if at least one of the emails is invalid.
-    return _.every(emails, function (email) {
+    return emails.every(email => {
         if (!exports.is_valid_email_for_compose(email)) {
             return false;
         }
@@ -804,9 +804,7 @@ exports.build_person_matcher = function (query) {
             return true;
         }
 
-        return _.all(termlet_matchers, function (matcher) {
-            return matcher(user);
-        });
+        return termlet_matchers.every(matcher => matcher(user));
     };
 };
 

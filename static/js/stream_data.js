@@ -166,9 +166,7 @@ exports.is_subscriber_subset = function (sub1, sub2) {
     if (sub1.subscribers && sub2.subscribers) {
         const sub2_set = sub2.subscribers;
 
-        return _.every(Array.from(sub1.subscribers.keys()), (key) => {
-            return sub2_set.has(key);
-        });
+        return Array.from(sub1.subscribers.keys()).every(key => sub2_set.has(key));
     }
 
     return false;
@@ -451,9 +449,7 @@ exports.update_calculated_fields = function (sub) {
 };
 
 exports.all_subscribed_streams_are_in_home_view = function () {
-    return _.every(exports.subscribed_subs(), function (sub) {
-        return !sub.is_muted;
-    });
+    return exports.subscribed_subs().every(sub => !sub.is_muted);
 };
 
 exports.home_view_stream_names = function () {
