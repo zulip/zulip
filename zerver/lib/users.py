@@ -416,7 +416,7 @@ def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: b
         if target_user is not None:
             custom_profile_field_values = base_query.filter(user_profile=target_user)
         else:
-            custom_profile_field_values = base_query.filter(user_profile__realm_id=realm.id)
+            custom_profile_field_values = base_query.filter(field__realm_id=realm.id)
         profiles_by_user_id = get_custom_profile_field_values(custom_profile_field_values)
 
     result = {}
