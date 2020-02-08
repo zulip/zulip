@@ -180,9 +180,7 @@ MessageListData.prototype = {
     },
 
     first_unread_message_id: function () {
-        const first_unread = _.find(this._items, function (message) {
-            return unread.message_unread(message);
-        });
+        const first_unread = this._items.find(message => unread.message_unread(message));
 
         if (first_unread) {
             return first_unread.id;

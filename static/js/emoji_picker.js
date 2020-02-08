@@ -254,9 +254,9 @@ function get_alias_to_be_used(message_id, emoji_name) {
         }
     }
     const user_id = page_params.user_id;
-    const reaction = _.find(message.reactions, function (reaction) {
-        return reaction.user.id === user_id && aliases.includes(reaction.emoji_name);
-    });
+    const reaction = message.reactions.find(
+        reaction => reaction.user.id === user_id && aliases.includes(reaction.emoji_name)
+    );
     if (reaction) {
         return reaction.emoji_name;
     }
@@ -729,7 +729,7 @@ exports.register_click_handlers = function () {
     $("body").on("click", ".emoji-popover-tab-item", function (e) {
         e.stopPropagation();
         e.preventDefault();
-        const offset = _.find(section_head_offsets, function (o) {
+        const offset = section_head_offsets.find(function (o) {
             return o.section === $(this).attr("data-tab-name");
         }.bind(this));
 
