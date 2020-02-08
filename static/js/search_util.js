@@ -17,11 +17,7 @@ exports.vanilla_match = function (opts) {
         This is case insensitive.
     */
     const val = opts.val.toLowerCase();
-    return _.any(opts.search_terms, function (term) {
-        if (val.includes(term)) {
-            return true;
-        }
-    });
+    return opts.search_terms.some(term => val.includes(term));
 };
 
 window.search_util = exports;

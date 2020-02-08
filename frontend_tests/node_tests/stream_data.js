@@ -38,9 +38,7 @@ people.add(me);
 people.initialize_current_user(me.user_id);
 
 function contains_sub(subs, sub) {
-    return _.any(subs, function (s) {
-        return s.name === sub.name;
-    });
+    return subs.some(s => s.name === sub.name);
 }
 
 run_test('basics', () => {

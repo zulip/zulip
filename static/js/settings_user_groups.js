@@ -197,9 +197,9 @@ exports.populate_user_groups = function () {
             const blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
                                               except_class);
             if ($(event.relatedTarget).closest('#user-groups #' + data.id).length) {
-                return _.some(blur_exceptions, function (class_name) {
-                    return $(event.relatedTarget).closest(class_name).length;
-                });
+                return blur_exceptions.some(
+                    class_name => $(event.relatedTarget).closest(class_name).length
+                );
             }
             return false;
         }
