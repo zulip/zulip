@@ -51,9 +51,11 @@ const subscriptions_table_colorpicker_options = {
 };
 
 exports.set_colorpicker_color = function (colorpicker, color) {
-    colorpicker.spectrum(_.extend(subscriptions_table_colorpicker_options,
-                                  {color: color,
-                                   container: "#subscription_overlay .subscription_settings.show"}));
+    colorpicker.spectrum({
+        ...subscriptions_table_colorpicker_options,
+        color: color,
+        container: "#subscription_overlay .subscription_settings.show",
+    });
 };
 
 exports.update_stream_color = function (sub, color, opts) {

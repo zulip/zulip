@@ -640,9 +640,10 @@ MessageListView.prototype = {
     _get_message_template: function (message_container) {
         const msg_reactions = reactions.get_message_reactions(message_container.msg);
         message_container.msg.message_reactions = msg_reactions;
-        const msg_to_render = _.extend(message_container, {
+        const msg_to_render = {
+            ...message_container,
             table_name: this.table_name,
-        });
+        };
         return render_single_message(msg_to_render);
     },
 

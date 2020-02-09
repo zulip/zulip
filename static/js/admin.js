@@ -84,7 +84,7 @@ exports.build_page = function () {
     options.msg_delete_limit_dropdown_values = settings_config.msg_delete_limit_dropdown_values;
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
     options.email_address_visibility_values = settings_config.email_address_visibility_values;
-    _.extend(options, settings_org.get_organization_settings_options());
+    Object.assign(options, settings_org.get_organization_settings_options());
 
     if (options.realm_logo_source !== 'D' && options.realm_night_logo_source === 'D') {
         // If no night mode logo is specified but a day mode one is,

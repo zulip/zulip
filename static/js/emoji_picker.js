@@ -213,7 +213,7 @@ function filter_emojis() {
                 for (const alias of emoji_dict.aliases) {
                     const match = search_terms.every(search_term => alias.includes(search_term));
                     if (match) {
-                        search_results.push(_.extend({}, emoji_dict, {name: alias}));
+                        search_results.push({ ...emoji_dict, name: alias });
                         break;  // We only need the first matching alias per emoji.
                     }
                 }
@@ -313,9 +313,10 @@ function update_emoji_showcase($focused_emoji) {
     const canonical_name = emoji.get_canonical_name(focused_emoji_name);
     const focused_emoji_dict = emoji.emojis_by_name.get(canonical_name);
 
-    const emoji_dict = _.extend({}, focused_emoji_dict, {
+    const emoji_dict = {
+        ...focused_emoji_dict,
         name: focused_emoji_name.replace(/_/g, ' '),
-    });
+    };
     const rendered_showcase = render_emoji_showcase({
         emoji_dict: emoji_dict,
     });

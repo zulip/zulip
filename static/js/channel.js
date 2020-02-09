@@ -83,23 +83,23 @@ function call(args, idempotent) {
 }
 
 exports.get = function (options) {
-    const args = _.extend({type: "GET", dataType: "json"}, options);
+    const args = { type: "GET", dataType: "json", ...options };
     return call(args, options.idempotent);
 };
 
 exports.post = function (options) {
-    const args = _.extend({type: "POST", dataType: "json"}, options);
+    const args = { type: "POST", dataType: "json", ...options };
     return call(args, options.idempotent);
 };
 
 exports.put = function (options) {
-    const args = _.extend({type: "PUT", dataType: "json"}, options);
+    const args = { type: "PUT", dataType: "json", ...options };
     return call(args, options.idempotent);
 };
 
 // Not called exports.delete because delete is a reserved word in JS
 exports.del = function (options) {
-    const args = _.extend({type: "DELETE", dataType: "json"}, options);
+    const args = { type: "DELETE", dataType: "json", ...options };
     return call(args, options.idempotent);
 };
 
@@ -111,7 +111,7 @@ exports.patch = function (options) {
         // method this way
         options.data.append("method", "PATCH");
     } else {
-        options.data = _.extend({}, options.data, {method: 'PATCH'});
+        options.data = { ...options.data, method: 'PATCH' };
     }
     return exports.post(options, options.idempotent);
 };
