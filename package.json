@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "Apache-2.0",
   "description": "",
+  "private": true,
   "main": "",
   "dependencies": {
     "@babel/core": "^7.5.5",
