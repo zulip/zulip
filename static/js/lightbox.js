@@ -134,7 +134,8 @@ exports.open = function (image, options) {
             sender_full_name = people.my_full_name();
         } else {
             const $message = $parent.closest("[zid]");
-            const message = message_store.get($message.attr("zid"));
+            const zid = parseInt($message.attr("zid"), 10);
+            const message = message_store.get(zid);
             if (message === undefined) {
                 blueslip.error("Lightbox for unknown message " + $message.attr("zid"));
             }
