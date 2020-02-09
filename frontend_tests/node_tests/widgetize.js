@@ -54,7 +54,7 @@ run_test('activate', () => {
     ];
 
     const opts = {
-        events: _.clone(events),
+        events: events.slice(),
         extra_data: '',
         message: {
             id: 2001,

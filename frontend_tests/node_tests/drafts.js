@@ -122,9 +122,9 @@ run_test('draft_model', () => {
     localStorage.clear();
     (function test_addDraft() {
         stub_timestamp(1, function () {
-            const expected = _.clone(draft_1);
+            const expected = { ...draft_1 };
             expected.updatedAt = 1;
-            const id = draft_model.addDraft(_.clone(draft_1));
+            const id = draft_model.addDraft({ ...draft_1 });
 
             assert.deepEqual(ls.get("drafts")[id], expected);
         });
@@ -134,9 +134,9 @@ run_test('draft_model', () => {
     (function test_editDraft() {
         stub_timestamp(2, function () {
             ls.set("drafts", { id1: draft_1 });
-            const expected = _.clone(draft_2);
+            const expected = { ...draft_2 };
             expected.updatedAt = 2;
-            draft_model.editDraft("id1", _.clone(draft_2));
+            draft_model.editDraft("id1", { ...draft_2 });
 
             assert.deepEqual(ls.get("drafts").id1, expected);
         });
