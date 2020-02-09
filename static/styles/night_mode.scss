@@ -583,11 +583,18 @@ on a dark background, and don't change the dark labels dark either. */
         .highlight_text_inserted {
             color: hsl(122, 100%, 81%);
             background-color: hsla(120, 64%, 95%, 0.3);
+            padding-left: 0.7%;
+            padding-right: 0.7%;
+            border-radius: 15%;
         }
 
         .highlight_text_deleted {
+            color: hsl(360, 78%, 69%);
             text-decoration: line-through;
-            background-color: hsla(7, 54%, 62%, 0.38);
+            background-color: hsl(360, 90%, 19%);
+            padding-left: 0.7%;
+            padding-right: 0.7%;
+            border-radius: 15%;
         }
     }
 
