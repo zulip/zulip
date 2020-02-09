@@ -107,7 +107,7 @@ exports.insert_local_message = function (message_request, local_id_float) {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
-    const message = $.extend({}, message_request);
+    const message = { ...message_request };
 
     // Locally delivered messages cannot be unread (since we sent them), nor
     // can they alert the user.
