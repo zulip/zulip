@@ -14,7 +14,7 @@ exports.check_string = function (var_name, val) {
 };
 
 exports.check_record = function (var_name, val, fields) {
-    if (!_.isObject(val)) {
+    if (typeof val !== "object") {
         return var_name + ' is not a record';
     }
 
