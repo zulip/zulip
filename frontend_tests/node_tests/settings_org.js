@@ -29,6 +29,7 @@ const _page_params = {
         { domain: 'example.com', allow_subdomains: true },
         { domain: 'example.org', allow_subdomains: false },
     ],
+    realm_authentication_methods: {},
 };
 
 const _realm_icon = {};

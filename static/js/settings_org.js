@@ -394,7 +394,7 @@ exports.populate_realm_domains = function (realm_domains) {
     }
 };
 function sort_object_by_key(obj) {
-    const keys = _.keys(obj).sort();
+    const keys = Object.keys(obj).sort();
     const new_obj = {};
 
     for (const key of keys) {
