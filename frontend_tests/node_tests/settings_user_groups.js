@@ -155,16 +155,16 @@ run_test('populate_user_groups', () => {
         return true;
     };
 
-    const all_pills = {};
+    const all_pills = new Map();
 
     const pill_container_stub = $('.pill-container[data-group-pills="1"]');
     pills.appendValidatedData = function (item) {
         const id = item.user_id;
-        assert.equal(all_pills[id], undefined);
-        all_pills[id] = item;
+        assert(!all_pills.has(id));
+        all_pills.set(id, item);
     };
     pills.items = function () {
-        return _.values(all_pills);
+        return Array.from(all_pills.values());
     };
 
     let text_cleared;
