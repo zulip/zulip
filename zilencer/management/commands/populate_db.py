@@ -1,7 +1,7 @@
 import itertools
 import os
 import random
-from typing import Any, Callable, Dict, Iterable, List, \
+from typing import Any, Callable, Dict, List, \
     Mapping, Sequence, Tuple
 
 import ujson
@@ -735,17 +735,6 @@ def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> date
     spoofed_date += timezone_timedelta(seconds=offset_seconds)
 
     return spoofed_date
-
-def create_user_presences(user_profiles: Iterable[UserProfile]) -> None:
-    for user in user_profiles:
-        status = 1  # type: int
-        date = timezone_now()
-        client = get_client("website")
-        UserPresence.objects.get_or_create(
-            user_profile=user,
-            client=client,
-            timestamp=date,
-            status=status)
 
 def create_user_groups() -> None:
     zulip = get_realm('zulip')
