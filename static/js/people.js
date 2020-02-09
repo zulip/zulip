@@ -753,9 +753,9 @@ exports.get_message_people = function () {
         at the message_store code to see the precise
         semantics
     */
-    const message_people = _.compact(
-        message_store.user_ids().map(user_id => people_by_user_id_dict.get(user_id))
-    );
+    const message_people = message_store.user_ids().map(
+        user_id => people_by_user_id_dict.get(user_id)
+    ).filter(Boolean);
 
     return message_people;
 };
