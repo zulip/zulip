@@ -1,5 +1,3 @@
-const _ = require('underscore/underscore.js');
-
 const requires = [];
 const new_globals = new Set();
 let old_globals = {};
@@ -63,7 +61,7 @@ exports.with_overrides = function (test_function) {
         const module = parts[0];
         const func_name = parts[1];
 
-        if (!_.has(global, module)) {
+        if (!Object.prototype.hasOwnProperty.call(global, module)) {
             set_global(module, {});
         }
 

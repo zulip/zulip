@@ -11,7 +11,6 @@
  * unicode string containing their diff.
  */
 
-const _ = require('underscore');
 const difflib = require('difflib');
 
 function apply_color(input_string, changes) {
@@ -131,7 +130,7 @@ if (require.main === module) {
     // First two args are just "node" and "mdiff.js"
     const argv = require('minimist')(process.argv.slice(2));
 
-    if (_.has(argv, "help")) {
+    if (Object.prototype.hasOwnProperty.call(argv, "help")) {
         console.log(process.argv[0] + " " + process.argv[1] +
             " [ --help ]" +
             " string_0" +
