@@ -17,6 +17,8 @@ sanity_check.check_venv(__file__)
 # Import this after we do the sanity_check so it doesn't crash.
 import ujson
 
+from zulint.printer import GREEN, BOLDRED, ENDC
+
 INDEX_JS = 'frontend_tests/zjsunit/index.js'
 NODE_COVERAGE_PATH = 'var/node-coverage/coverage-final.json'
 
@@ -171,6 +173,9 @@ from tools.lib.test_script import assert_provisioning_status_ok
 
 assert_provisioning_status_ok(options.force)
 
+def print_error(msg: str) -> None:
+    print(BOLDRED + 'ERROR:' + ENDC + ' ' + msg)
+
 def run_tests_via_node_js() -> int:
     os.environ['TZ'] = 'UTC'
 
@@ -227,7 +232,7 @@ def check_line_coverage(fn, line_coverage, line_mapping, log=True):
             missing_lines.append(str(actual_line["start"]["line"]))
     if missing_lines:
         if log:
-            print("ERROR: %s no longer has complete node test coverage" % (fn,))
+            print_error("%s no longer has complete node test coverage" % (fn,))
             print("  Lines missing coverage: %s" % (", ".join(sorted(missing_lines, key=int)),))
             print()
         return False
@@ -258,7 +263,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
         path = ROOT_DIR + "/" + relative_path
         if not (path in coverage_json):
             coverage_lost = True
-            print("ERROR: %s has no node test coverage" % (relative_path,))
+            print_error("%s has no node test coverage" % (relative_path,))
             continue
         line_coverage = coverage_json[path]['s']
         line_mapping = coverage_json[path]['statementMap']
@@ -280,7 +285,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
             line_mapping = coverage_json[path]['statementMap']
             if check_line_coverage(relative_path, line_coverage, line_mapping, log=False):
                 coverage_not_enforced = True
-                print("ERROR: {} unexpectedly has 100% line coverage.".format(relative_path))
+                print_error("{} unexpectedly has 100% line coverage.".format(relative_path))
 
     if coverage_not_enforced:
         print()
@@ -303,8 +308,8 @@ print()
 if ret == 0:
     if options.coverage:
         print("View coverage reports at http://127.0.0.1:9991/node-coverage/index.html")
-    print("Test(s) passed. SUCCESS!")
+    print(GREEN + "Test(s) passed. SUCCESS!" + ENDC)
 else:
-    print("FAIL - Test(s) failed")
+    print(BOLDRED + "FAIL - Test(s) failed" + ENDC)
 
 sys.exit(ret)
