@@ -31,7 +31,7 @@ exports.restore = function () {
     requires.forEach(function (fn) {
         delete require.cache[require.resolve(fn)];
     });
-    _.extend(global, old_globals);
+    Object.assign(global, old_globals);
     old_globals = {};
     for (const name of new_globals) {
         delete global[name];

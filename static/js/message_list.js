@@ -19,9 +19,7 @@ exports.MessageList = function (opts) {
         });
     }
 
-    _.extend(opts, {
-        collapse_messages: true,
-    });
+    opts.collapse_messages = true;
 
     const collapse_messages = opts.collapse_messages;
     const table_name = opts.table_name;
@@ -125,7 +123,7 @@ exports.MessageList.prototype = {
     },
 
     clear: function  MessageList_clear(opts) {
-        opts = _.extend({clear_selected_id: true}, opts);
+        opts = { clear_selected_id: true, ...opts };
 
         this.data.clear();
         this.view.clear_rendering_state(true);
@@ -140,18 +138,18 @@ exports.MessageList.prototype = {
     },
 
     select_id: function MessageList_select_id(id, opts) {
-        opts = _.extend({
+        opts = {
             then_scroll: false,
             target_scroll_offset: undefined,
             use_closest: false,
             empty_ok: false,
             mark_read: true,
             force_rerender: false,
-        }, opts, {
+            ...opts,
             id: id,
             msg_list: this,
             previously_selected: this.data.selected_id(),
-        });
+        };
 
         function convert_id(str_id) {
             const id = parseFloat(str_id);
@@ -293,7 +291,7 @@ exports.MessageList.prototype = {
     },
 
     append_to_view: function (messages, opts) {
-        opts = _.extend({messages_are_new: false}, opts);
+        opts = { messages_are_new: false, ...opts };
 
         this.num_appends += 1;
         const render_info = this.view.append(messages, opts.messages_are_new);

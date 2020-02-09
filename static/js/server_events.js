@@ -166,7 +166,7 @@ function hide_ui_connection_error() {
 }
 
 function get_events(options) {
-    options = _.extend({dont_block: false}, options);
+    options = { dont_block: false, ...options };
 
     if (reload_state.is_in_progress()) {
         return;

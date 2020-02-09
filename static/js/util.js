@@ -175,7 +175,7 @@ exports.array_compare = function util_array_compare(a, b) {
 const unassigned_value_sentinel = {};
 exports.CachedValue = function (opts) {
     this._value = unassigned_value_sentinel;
-    _.extend(this, opts);
+    Object.assign(this, opts);
 };
 
 exports.CachedValue.prototype = {

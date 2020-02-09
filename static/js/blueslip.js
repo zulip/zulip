@@ -80,7 +80,7 @@ const reported_errors = new Set();
 const last_report_attempt = new Map();
 
 function report_error(msg, stack, opts) {
-    opts = _.extend({show_ui_msg: false}, opts);
+    opts = { show_ui_msg: false, ...opts };
 
     if (stack === undefined) {
         stack = 'No stacktrace available';

@@ -38,9 +38,10 @@ exports.maybe_disable_widgets = function () {
 };
 
 exports.get_sorted_options_list = function (option_values_object) {
-    const options_list = Object.keys(option_values_object).map((key) => {
-        return _.extend(option_values_object[key], {key: key});
-    });
+    const options_list = Object.keys(option_values_object).map(key => ({
+        ...option_values_object[key],
+        key: key,
+    }));
     let comparator = (x, y) => x.order - y.order;
     if (!options_list[0].order) {
         comparator = (x, y) => {
@@ -810,8 +811,10 @@ exports.build_page = function () {
         const subsection = subsection_id.split('-').join('_');
         const subsection_elem = save_button.closest('.org-subsection-parent');
 
-        let data = populate_data_for_request(subsection_elem);
-        data = _.extend(data, get_complete_data_for_subsection(subsection));
+        const data = {
+            ...populate_data_for_request(subsection_elem),
+            ...get_complete_data_for_subsection(subsection),
+        };
         exports.save_organization_settings(data, save_button);
     });
 

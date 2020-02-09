@@ -45,13 +45,13 @@ exports.del = function bot_data__del(bot_id) {
 
 exports.update = function bot_data__update(bot_id, bot_update) {
     const bot = bots.get(bot_id);
-    _.extend(bot, _.pick(bot_update, bot_fields));
+    Object.assign(bot, _.pick(bot_update, bot_fields));
     set_can_admin(bot);
 
     // We currently only support one service per bot.
     const service = services.get(bot_id)[0];
     if (typeof bot_update.services !== 'undefined' && bot_update.services.length > 0) {
-        _.extend(service, _.pick(bot_update.services[0], services_fields));
+        Object.assign(service, _.pick(bot_update.services[0], services_fields));
     }
     send_change_event();
 };

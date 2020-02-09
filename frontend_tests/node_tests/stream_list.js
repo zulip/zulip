@@ -714,9 +714,10 @@ run_test('refresh_pin', () => {
 
     stream_data.add_sub(sub);
 
-    const pinned_sub = _.extend(sub, {
+    const pinned_sub = {
+        ...sub,
         pin_to_top: true,
-    });
+    };
 
     const li_stub = $.create('li stub');
     li_stub.length = 0;
