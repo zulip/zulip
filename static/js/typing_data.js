@@ -45,7 +45,7 @@ exports.get_group_typists = function (group) {
 };
 
 exports.get_all_typists = function () {
-    let typists = _.flatten(Array.from(typist_dct.values()), true);
+    let typists = [].concat(...Array.from(typist_dct.values()));
     typists = util.sorted_ids(typists);
     typists = _.uniq(typists, true);
     return typists;
