@@ -11,7 +11,7 @@ exports.update_person = function update(person) {
         return;
     }
 
-    if (_.has(person, 'new_email')) {
+    if (Object.prototype.hasOwnProperty.call(person, 'new_email')) {
         const user_id = person.user_id;
         const new_email = person.new_email;
 
@@ -25,7 +25,7 @@ exports.update_person = function update(person) {
         people.update_email(user_id, new_email);
     }
 
-    if (_.has(person, 'delivery_email')) {
+    if (Object.prototype.hasOwnProperty.call(person, 'delivery_email')) {
         const delivery_email = person.delivery_email;
 
         if (people.is_my_user_id(person.user_id)) {
@@ -34,7 +34,7 @@ exports.update_person = function update(person) {
         }
     }
 
-    if (_.has(person, 'full_name')) {
+    if (Object.prototype.hasOwnProperty.call(person, 'full_name')) {
         people.set_full_name(person_obj, person.full_name);
 
         settings_users.update_user_data(person.user_id, person);
@@ -47,7 +47,7 @@ exports.update_person = function update(person) {
         }
     }
 
-    if (_.has(person, 'is_admin')) {
+    if (Object.prototype.hasOwnProperty.call(person, 'is_admin')) {
         person_obj.is_admin = person.is_admin;
         settings_users.update_user_data(person.user_id, person);
 
@@ -61,12 +61,12 @@ exports.update_person = function update(person) {
         }
     }
 
-    if (_.has(person, 'is_guest')) {
+    if (Object.prototype.hasOwnProperty.call(person, 'is_guest')) {
         person_obj.is_guest = person.is_guest;
         settings_users.update_user_data(person.user_id, person);
     }
 
-    if (_.has(person, 'avatar_url')) {
+    if (Object.prototype.hasOwnProperty.call(person, 'avatar_url')) {
         const url = person.avatar_url;
         person_obj.avatar_url = url;
 
@@ -80,15 +80,15 @@ exports.update_person = function update(person) {
         message_live_update.update_avatar(person_obj.user_id, person.avatar_url);
     }
 
-    if (_.has(person, 'custom_profile_field')) {
+    if (Object.prototype.hasOwnProperty.call(person, 'custom_profile_field')) {
         people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
     }
 
-    if (_.has(person, 'timezone')) {
+    if (Object.prototype.hasOwnProperty.call(person, 'timezone')) {
         person_obj.timezone = person.timezone;
     }
 
-    if (_.has(person, 'bot_owner_id')) {
+    if (Object.prototype.hasOwnProperty.call(person, 'bot_owner_id')) {
         person_obj.bot_owner_id = person.bot_owner_id;
     }
 };

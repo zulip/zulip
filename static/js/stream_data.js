@@ -184,7 +184,7 @@ exports.unsubscribe_myself = function (sub) {
 };
 
 exports.add_sub = function (sub) {
-    if (!_.has(sub, 'subscribers')) {
+    if (!Object.prototype.hasOwnProperty.call(sub, 'subscribers')) {
         sub.subscribers = new LazySet([]);
     }
 

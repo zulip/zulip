@@ -124,7 +124,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             zoom_api_key: noop,
             zoom_api_secret: noop,
         };
-        if (event.op === 'update' && _.has(realm_settings, event.property)) {
+        if (event.op === 'update' && Object.prototype.hasOwnProperty.call(realm_settings, event.property)) {
             page_params['realm_' + event.property] = event.value;
             realm_settings[event.property]();
             settings_org.sync_realm_settings(event.property);
@@ -157,7 +157,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (key === 'allow_message_editing') {
                     message_edit.update_message_topic_editing_pencil();
                 }
-                if (_.has(realm_settings, key)) {
+                if (Object.prototype.hasOwnProperty.call(realm_settings, key)) {
                     settings_org.sync_realm_settings(key);
                 }
             }
@@ -200,7 +200,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             bot_data.del(event.bot.user_id);
             settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'update') {
-            if (_.has(event.bot, 'owner_id')) {
+            if (Object.prototype.hasOwnProperty.call(event.bot, 'owner_id')) {
                 event.bot.owner = people.get_by_user_id(event.bot.owner_id).email;
             }
             bot_data.update(event.bot.user_id, event.bot);
