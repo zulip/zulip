@@ -60,7 +60,7 @@ const denmark = {
     stream_id: 1,
     is_muted: true,
 };
-stream_data.add_sub('Denmark', denmark);
+stream_data.add_sub(denmark);
 
 function test_helper() {
     let events = [];

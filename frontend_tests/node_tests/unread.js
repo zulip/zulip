@@ -31,7 +31,7 @@ const social = {
     subscribed: true,
     is_muted: false,
 };
-stream_data.add_sub('social', social);
+stream_data.add_sub(social);
 
 const zero_counts = {
     private_message_count: 0,

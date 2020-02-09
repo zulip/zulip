@@ -183,12 +183,12 @@ exports.unsubscribe_myself = function (sub) {
     stream_info.set_false(sub.name, sub);
 };
 
-exports.add_sub = function (stream_name, sub) {
+exports.add_sub = function (sub) {
     if (!_.has(sub, 'subscribers')) {
         sub.subscribers = new LazySet([]);
     }
 
-    stream_info.set(stream_name, sub);
+    stream_info.set(sub.name, sub);
     subs_by_stream_id.set(sub.stream_id, sub);
 };
 
@@ -730,7 +730,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
 
     exports.update_calculated_fields(sub);
 
-    exports.add_sub(stream_name, sub);
+    exports.add_sub(sub);
 
     return sub;
 };

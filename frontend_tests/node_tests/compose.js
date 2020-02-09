@@ -118,7 +118,7 @@ run_test('validate_stream_message_address_info', () => {
         name: 'social',
         subscribed: true,
     };
-    stream_data.add_sub('social', sub);
+    stream_data.add_sub(sub);
     assert(compose.validate_stream_message_address_info('social'));
 
     $('#stream_message_recipient_stream').select(noop);
@@ -126,7 +126,7 @@ run_test('validate_stream_message_address_info', () => {
     assert.equal($('#compose-error-msg').html(), "translated: <p>The stream <b>foobar</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
     sub.subscribed = false;
-    stream_data.add_sub('social', sub);
+    stream_data.add_sub(sub);
     global.stub_templates(function (template_name) {
         assert.equal(template_name, 'compose_not_subscribed');
         return 'compose_not_subscribed_stub';
@@ -144,7 +144,7 @@ run_test('validate_stream_message_address_info', () => {
 
     sub.name = 'Frontend';
     sub.stream_id = 102;
-    stream_data.add_sub('Frontend', sub);
+    stream_data.add_sub(sub);
     channel.post = function (payload) {
         assert.equal(payload.data.stream, 'Frontend');
         payload.data.subscribed = false;
@@ -296,7 +296,7 @@ run_test('validate_stream_message', () => {
         name: 'social',
         subscribed: true,
     };
-    stream_data.add_sub('social', sub);
+    stream_data.add_sub(sub);
     compose_state.stream_name('social');
     assert(compose.validate());
     assert(!$("#compose-all-everyone").visible());
@@ -339,7 +339,7 @@ run_test('test_validate_stream_message_post_policy', () => {
         return 2;
     };
     compose_state.topic('subject102');
-    stream_data.add_sub('stream102', sub);
+    stream_data.add_sub(sub);
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t("Only organization admins are allowed to post to this stream."));
 
@@ -872,7 +872,8 @@ function test_raw_file_drop(raw_drop_func) {
 }
 
 run_test('warn_if_private_stream_is_linked', () => {
-    stream_data.add_sub(compose_state.stream_name(), {
+    stream_data.add_sub({
+        name: compose_state.stream_name(),
         subscribers: new LazySet([1, 2]),
         stream_id: 99,
     });
@@ -1077,7 +1078,7 @@ run_test('needs_subscribe_warning', () => {
         name: 'random',
         subscribed: true,
     };
-    stream_data.add_sub('random', sub);
+    stream_data.add_sub(sub);
     assert.equal(compose.needs_subscribe_warning(), false);
 
     people.get_active_user_for_email = function () {
@@ -1301,7 +1302,7 @@ run_test('on_events', () => {
         blueslip.clear_test_data();
 
         // !sub will result in true here and we check the success code path.
-        stream_data.add_sub('test', subscription);
+        stream_data.add_sub(subscription);
         $('#stream_message_recipient_stream').val('test');
         let all_invite_children_called = false;
         $("#compose_invite_users").children = function () {
@@ -1365,7 +1366,7 @@ run_test('on_events', () => {
 
         assert(compose_not_subscribed_called);
 
-        stream_data.add_sub('test', subscription);
+        stream_data.add_sub(subscription);
         $('#stream_message_recipient_stream').val('test');
         $("#compose-send-status").show();
 
@@ -1633,7 +1634,7 @@ run_test('create_message_object', () => {
         name: 'social',
         subscribed: true,
     };
-    stream_data.add_sub('social', sub);
+    stream_data.add_sub(sub);
 
     const page = {
         '#stream_message_recipient_stream': 'social',
