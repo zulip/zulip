@@ -11,35 +11,35 @@ const VIEWPORT_CENTER = 'viewport_center';
 
 // popover orientation can optionally be fixed here (property: popover),
 // otherwise popovers.compute_placement is used to compute orientation
-const HOTSPOT_LOCATIONS = {
-    intro_reply: {
+const HOTSPOT_LOCATIONS = new Map([
+    ["intro_reply", {
         element: '.selected_message .messagebox-content',
         offset_x: 0.85,
         offset_y: 0.7,
         popover: BOTTOM,
-    },
-    intro_streams: {
+    }],
+    ["intro_streams", {
         element: '#streams_header .sidebar-title',
         offset_x: 1.35,
         offset_y: 0.39,
-    },
-    intro_topics: {
+    }],
+    ["intro_topics", {
         element: '.topic-name',
         offset_x: 0.8,
         offset_y: 0.39,
-    },
-    intro_gear: {
+    }],
+    ["intro_gear", {
         element: '#settings-dropdown',
         offset_x: -0.4,
         offset_y: 1.2,
         popover: LEFT_BOTTOM,
-    },
-    intro_compose: {
+    }],
+    ["intro_compose", {
         element: '#left_bar_compose_stream_button_big',
         offset_x: 0,
         offset_y: 0,
-    },
-};
+    }],
+]);
 
 // popover illustration url(s)
 const WHALE = '/static/images/hotspots/whale.svg';
@@ -235,7 +235,10 @@ exports.close_hotspot_icon = function (elem) {
 };
 
 function close_read_hotspots(new_hotspots) {
-    const unwanted_hotspots = _.difference(_.keys(HOTSPOT_LOCATIONS), _.pluck(new_hotspots, 'name'));
+    const unwanted_hotspots = _.difference(
+        Array.from(HOTSPOT_LOCATIONS.keys()),
+        _.pluck(new_hotspots, 'name')
+    );
 
     for (const hotspot_name of unwanted_hotspots) {
         exports.close_hotspot_icon($('#hotspot_' + hotspot_name + '_icon'));
@@ -245,7 +248,7 @@ function close_read_hotspots(new_hotspots) {
 exports.load_new = function (new_hotspots) {
     close_read_hotspots(new_hotspots);
     new_hotspots.forEach(function (hotspot) {
-        hotspot.location = HOTSPOT_LOCATIONS[hotspot.name];
+        hotspot.location = HOTSPOT_LOCATIONS.get(hotspot.name);
     });
     new_hotspots.forEach(insert_hotspot_into_DOM);
 };
