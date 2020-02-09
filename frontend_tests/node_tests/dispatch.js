@@ -888,11 +888,11 @@ with_overrides(function (override) {
     // realm
     function test_realm_boolean(event, parameter_name) {
         page_params[parameter_name] = true;
-        event = _.clone(event);
+        event = { ...event };
         event.value = false;
         dispatch(event);
         assert.equal(page_params[parameter_name], false);
-        event = _.clone(event);
+        event = { ...event };
         event.value = true;
         dispatch(event);
         assert.equal(page_params[parameter_name], true);

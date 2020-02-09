@@ -488,7 +488,7 @@ Filter.prototype = {
 
     filter_with_new_topic: function (new_topic) {
         const terms = this._operators.map(term => {
-            const new_term = _.clone(term);
+            const new_term = { ...term };
             if (new_term.operator === 'topic' && !new_term.negated) {
                 new_term.operand = new_topic;
             }
@@ -626,7 +626,7 @@ Filter.sorted_term_types = function (term_types) {
         return util.strcmp(a, b);
     }
 
-    return _.clone(term_types).sort(compare);
+    return term_types.slice().sort(compare);
 };
 
 Filter.operator_to_prefix = function (operator, negated) {
