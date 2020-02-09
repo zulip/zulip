@@ -666,10 +666,11 @@ exports.is_user_subscribed = function (stream_name, user_id) {
 exports.create_streams = function (streams) {
     for (const stream of streams) {
         // We handle subscriber stuff in other events.
-        const attrs = _.defaults(stream, {
+        const attrs = {
             subscribers: [],
             subscribed: false,
-        });
+            ...stream,
+        };
         exports.create_sub_from_server_data(stream.name, attrs);
     }
 };
@@ -698,7 +699,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
 
     delete attrs.subscribers;
 
-    sub = _.defaults(attrs, {
+    sub = {
         name: stream_name,
         render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
         subscribed: true,
@@ -712,7 +713,8 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         description: '',
         rendered_description: '',
         first_message_id: attrs.first_message_id,
-    });
+        ...attrs,
+    };
 
     exports.set_subscribers(sub, subscriber_user_ids);
 

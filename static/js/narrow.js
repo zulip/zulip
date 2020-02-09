@@ -120,12 +120,13 @@ exports.activate = function (raw_operators, opts) {
                                 trigger: opts ? opts.trigger : undefined,
                                 previous_id: current_msg_list.selected_id()});
 
-    opts = _.defaults({}, opts, {
+    opts = {
         then_select_id: -1,
         then_select_offset: undefined,
         change_hash: true,
         trigger: 'unknown',
-    });
+        ...opts,
+    };
 
     const id_info = {
         target_id: undefined,
@@ -678,13 +679,13 @@ exports.by_topic = function (target_id, opts) {
         {operator: 'stream', operand: original.stream},
         {operator: 'topic', operand: original.topic},
     ];
-    opts = _.defaults({}, opts, {then_select_id: target_id});
+    opts = { then_select_id: target_id, ...opts };
     exports.activate(search_terms, opts);
 };
 
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function (target_id, opts) {
-    opts = _.defaults({}, opts, {then_select_id: target_id});
+    opts = { then_select_id: target_id, ...opts };
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
 
