@@ -51,6 +51,11 @@
                     {% if google_error %}
                         {% if development_environment %}
                         {{ render_markdown_path('zerver/google-error.md', {"root_domain_uri": root_domain_uri, "settings_path": secrets_path, "secrets_path": secrets_path, "client_id_key_name": "social_auth_google_key"}) }}
+                        <p>
+                            For more information, have a look at
+                            the <a href="https://zulip.readthedocs.io/en/latest/development/authentication.html#google">authentication
+                            setup guide</a> for the development environment.
+                        </p>
                         {% else %}
                         {{ render_markdown_path('zerver/google-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path, "client_id_key_name": "SOCIAL_AUTH_GOOGLE_KEY"}) }}
                         {% endif %}
@@ -59,19 +64,18 @@
                     {% if github_error %}
                         {% if development_environment %}
                         {{ render_markdown_path('zerver/github-error.md', {"root_domain_uri": root_domain_uri, "settings_path": secrets_path, "secrets_path": secrets_path, "client_id_key_name": "social_auth_github_key"}) }}
+                        <p>
+                            For more information, have a look at
+                            the <a href="https://zulip.readthedocs.io/en/latest/development/authentication.html#github">authentication
+                            setup guide</a> for the development environment.
+                        </p>
                         {% else %}
                         {{ render_markdown_path('zerver/github-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path, "client_id_key_name": "SOCIAL_AUTH_GITHUB_KEY"}) }}
                         {% endif %}
                     {% endif %}
 
                     {% if google_error or github_error %}
-                        {% if development_environment %}
-                        <p>
-                            For more information, have a look at
-                            the <a href="https://zulip.readthedocs.io/en/latest/subsystems/settings.html#testing-google-github-authentication">authentication
-                            setup guide</a> for the development environment.
-                        </p>
-                        {% else %}
+                        {% if not development_environment %}
                         <p>
                             For more information, have a look at
                             our <a href="https://zulip.readthedocs.io/en/latest/production/authentication-methods.html">authentication
