@@ -72,6 +72,17 @@ details worth understanding:
   `social_auth_github_key` to the client ID and `social_auth_github_secret`
   to the client secret.
 
+### GitLab
+
+* Register an OAuth application with GitLab at
+  https://gitlab.com/oauth/applications.
+  Specify `http://zulipdev.com:9991/complete/gitlab` as the callback URL.
+
+* You should get a page with application details containing
+  Application ID and Secret. In `dev-secrets.conf`
+  set`social_auth_gitlab_key` to Application ID and
+  `social_auth_gitlab_secret` to Secret.
+
 ### SAML
 
 * Sign up for a [developer Okta account](https://developer.okta.com/).
