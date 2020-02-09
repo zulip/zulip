@@ -117,37 +117,37 @@ exports.private_message_policy_values = {
     },
 };
 
-const time_limit_dropdown_values = {
-    any_time: {
+const time_limit_dropdown_values = new Map([
+    ["any_time", {
         text: i18n.t("Any time"),
         seconds: 0,
-    },
-    never: {
+    }],
+    ["never", {
         text: i18n.t("Never"),
-    },
-    upto_two_min: {
+    }],
+    ["upto_two_min", {
         text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("2 minutes")}),
         seconds: 2 * 60,
-    },
-    upto_ten_min: {
+    }],
+    ["upto_ten_min", {
         text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("10 minutes")}),
         seconds: 10 * 60,
-    },
-    upto_one_hour: {
+    }],
+    ["upto_one_hour", {
         text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 hour")}),
         seconds: 60 * 60,
-    },
-    upto_one_day: {
+    }],
+    ["upto_one_day", {
         text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 day")}),
         seconds: 24 * 60 * 60,
-    },
-    upto_one_week: {
+    }],
+    ["upto_one_week", {
         text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 week")}),
         seconds: 7 * 24 * 60 * 60,
-    },
-    custom_limit: {
+    }],
+    ["custom_limit", {
         text: i18n.t("Up to N minutes after posting"),
-    },
-};
+    }],
+]);
 exports.msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;

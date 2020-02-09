@@ -93,8 +93,6 @@ exports.get_realm_time_limits_in_minutes = function (property) {
 };
 
 function get_property_value(property_name) {
-    let value;
-
     if (property_name === 'realm_message_content_edit_limit_minutes') {
         return exports.get_realm_time_limits_in_minutes('realm_message_content_edit_limit_seconds');
     }
@@ -124,26 +122,24 @@ function get_property_value(property_name) {
         if (!page_params.realm_allow_message_editing) {
             return "never";
         }
-        value = _.findKey(settings_config.msg_edit_limit_dropdown_values, function (elem) {
-            return elem.seconds === page_params.realm_message_content_edit_limit_seconds;
-        });
-        if (value === undefined) {
-            return "custom_limit";
+        for (const [value, elem] of settings_config.msg_edit_limit_dropdown_values) {
+            if (elem.seconds === page_params.realm_message_content_edit_limit_seconds) {
+                return value;
+            }
         }
-        return value;
+        return "custom_limit";
     }
 
     if (property_name === 'realm_msg_delete_limit_setting') {
         if (!page_params.realm_allow_message_deleting) {
             return "never";
         }
-        value = _.findKey(settings_config.msg_delete_limit_dropdown_values, function (elem) {
-            return elem.seconds === page_params.realm_message_content_delete_limit_seconds;
-        });
-        if (value === undefined) {
-            return "custom_limit";
+        for (const [value, elem] of settings_config.msg_delete_limit_dropdown_values) {
+            if (elem.seconds === page_params.realm_message_content_delete_limit_seconds) {
+                return value;
+            }
         }
-        return value;
+        return "custom_limit";
     }
 
     if (property_name === 'realm_org_join_restrictions') {
@@ -682,9 +678,6 @@ exports.build_page = function () {
 
     function get_complete_data_for_subsection(subsection) {
         let data = {};
-        // Hacky extra name created to avoid linter.
-        // TODO: Fix this properly by just de-nesting this function outside build_page.
-        const config = settings_config;
 
         if (subsection === 'msg_editing') {
             const edit_limit_setting_value = $("#id_realm_msg_edit_limit_setting").val();
@@ -697,7 +690,9 @@ exports.build_page = function () {
             } else {
                 data.allow_message_editing = true;
                 data.message_content_edit_limit_seconds =
-                    config.msg_edit_limit_dropdown_values[edit_limit_setting_value].seconds;
+                    settings_config.msg_edit_limit_dropdown_values.get(
+                        edit_limit_setting_value
+                    ).seconds;
             }
             const delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
             if (delete_limit_setting_value === 'never') {
@@ -709,7 +704,9 @@ exports.build_page = function () {
             } else {
                 data.allow_message_deleting = true;
                 data.message_content_delete_limit_seconds =
-                    config.msg_delete_limit_dropdown_values[delete_limit_setting_value].seconds;
+                    settings_config.msg_delete_limit_dropdown_values.get(
+                        delete_limit_setting_value
+                    ).seconds;
             }
         } else if (subsection === 'notifications') {
             data.notifications_stream_id = JSON.stringify(
