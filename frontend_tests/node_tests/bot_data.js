@@ -141,12 +141,12 @@ run_test('test_basics', () => {
         bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: 'owner@zulip.com', is_active: true});
         bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: 'not_owner@zulip.com', is_active: true});
 
-        can_admin = _.pluck(bot_data.get_editable(), 'email');
+        can_admin = bot_data.get_editable().map(bot => bot.email);
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], can_admin);
 
         page_params.is_admin = true;
 
-        can_admin = _.pluck(bot_data.get_editable(), 'email');
+        can_admin = bot_data.get_editable().map(bot => bot.email);
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], can_admin);
     }());
 

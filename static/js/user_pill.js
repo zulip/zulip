@@ -7,7 +7,7 @@ exports.create_item_from_email = function (email, current_items) {
 
     if (!user) {
         if (page_params.realm_is_zephyr_mirror_realm) {
-            const existing_emails = _.pluck(current_items, 'email');
+            const existing_emails = current_items.map(item => item.email);
 
             if (existing_emails.includes(email)) {
                 return;
@@ -26,7 +26,7 @@ exports.create_item_from_email = function (email, current_items) {
         return;
     }
 
-    const existing_ids = _.pluck(current_items, 'user_id');
+    const existing_ids = current_items.map(item => item.user_id);
 
     if (existing_ids.includes(user.user_id)) {
         return;
@@ -66,7 +66,7 @@ exports.append_person = function (opts) {
 
 exports.get_user_ids = function (pill_widget) {
     const items = pill_widget.items();
-    let user_ids = _.pluck(items, 'user_id');
+    let user_ids = items.map(item => item.user_id);
     user_ids = user_ids.filter(Boolean); // be defensive about undefined users
 
     return user_ids;

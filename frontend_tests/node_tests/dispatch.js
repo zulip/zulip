@@ -1155,7 +1155,7 @@ with_overrides(function (override) {
         override('subs.add_sub_to_table', noop);
         dispatch(event);
         const args = stub.get_args('streams');
-        assert_same(_.pluck(args.streams, 'stream_id'), [42, 99]);
+        assert_same(args.streams.map(stream => stream.stream_id), [42, 99]);
     });
 
     // stream delete

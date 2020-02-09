@@ -223,7 +223,7 @@ exports.create = function (opts) {
         },
 
         items: function () {
-            return _.pluck(store.pills, 'item');
+            return store.pills.map(pill => pill.item);
         },
     };
 
