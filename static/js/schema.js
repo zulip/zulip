@@ -8,7 +8,7 @@ side validators in zerver/lib/validator.py.
 */
 
 exports.check_string = function (var_name, val) {
-    if (!_.isString(val)) {
+    if (typeof val !== "string") {
         return var_name + ' is not a string';
     }
 };
