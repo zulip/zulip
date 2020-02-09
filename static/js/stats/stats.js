@@ -96,12 +96,18 @@ function populate_messages_sent_over_time(data) {
         });
         const common = { x: dates, type: type, hoverinfo: 'none', text: text };
         return {
-            human: $.extend({ // 5062a0
-                name: i18n.t("Humans"), y: values.human, marker: {color: '#5f6ea0'}}, common),
-            bot: $.extend({ // a09b5f bbb56e
-                name: i18n.t("Bots"), y: values.bot, marker: {color: '#b7b867'}}, common),
-            me: $.extend({
-                name: i18n.t("Me"), y: values.me, marker: {color: '#be6d68'}}, common),
+            human: { // 5062a0
+                name: i18n.t("Humans"), y: values.human, marker: {color: '#5f6ea0'},
+                ...common,
+            },
+            bot: { // a09b5f bbb56e
+                name: i18n.t("Bots"), y: values.bot, marker: {color: '#b7b867'},
+                ...common,
+            },
+            me: {
+                name: i18n.t("Me"), y: values.me, marker: {color: '#be6d68'},
+                ...common,
+            },
         };
     }
 
@@ -125,8 +131,8 @@ function populate_messages_sent_over_time(data) {
     function make_rangeselector(x, y, button1, button2) {
         return {x: x, y: y,
                 buttons: [
-                    $.extend({stepmode: 'backward'}, button1),
-                    $.extend({stepmode: 'backward'}, button2),
+                    {stepmode: 'backward', ...button1},
+                    {stepmode: 'backward', ...button2},
                     {step: 'all', label: 'All time'}]};
     }
 

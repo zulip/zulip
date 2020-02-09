@@ -522,10 +522,6 @@ exports.make_zjquery = function (opts) {
         };
     };
 
-    zjquery.extend = function (content, container) {
-        return _.extend(content, container);
-    };
-
     zjquery.fn = fn;
 
     zjquery.clear_all_elements = function () {
