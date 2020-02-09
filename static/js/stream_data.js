@@ -289,7 +289,7 @@ exports.get_non_default_stream_names = function () {
     subs = subs.filter(
         sub => !exports.is_default_stream_id(sub.stream_id) && (sub.subscribed || !sub.invite_only)
     );
-    const names = _.pluck(subs, 'name');
+    const names = subs.map(sub => sub.name);
     return names;
 };
 
@@ -329,7 +329,7 @@ exports.unsubscribed_subs = function () {
 };
 
 exports.subscribed_streams = function () {
-    return _.pluck(exports.subscribed_subs(), 'name');
+    return exports.subscribed_subs().map(sub => sub.name);
 };
 
 exports.get_invite_stream_data = function () {
@@ -358,12 +358,12 @@ exports.get_invite_stream_data = function () {
 
 exports.invite_streams = function () {
     const invite_list = exports.subscribed_streams();
-    const default_list = _.pluck(page_params.realm_default_streams, 'name');
+    const default_list = page_params.realm_default_streams.map(stream => stream.name);
     return _.union(invite_list, default_list);
 };
 
 exports.get_colors = function () {
-    return _.pluck(exports.subscribed_subs(), 'color');
+    return exports.subscribed_subs().map(sub => sub.color);
 };
 
 exports.update_subscribers_count = function (sub) {
@@ -563,7 +563,7 @@ exports.set_realm_default_streams = function (realm_default_streams) {
 
 exports.get_default_stream_names = function () {
     const streams = Array.from(default_stream_ids).map(exports.get_sub_by_id);
-    const default_stream_names = _.pluck(streams, 'name');
+    const default_stream_names = streams.map(stream => stream.name);
     return default_stream_names;
 };
 

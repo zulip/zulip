@@ -521,7 +521,7 @@ run_test('content_typeahead_selected', () => {
 });
 
 function sorted_names_from(subs) {
-    return _.pluck(subs, 'name').sort();
+    return subs.map(sub => sub.name).sort();
 }
 
 run_test('initialize', () => {

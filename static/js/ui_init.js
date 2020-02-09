@@ -221,7 +221,7 @@ exports.initialize_kitchen_sink_stuff = function () {
                     render_end: event.msg_list.view._render_win_end,
                     selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
-                        _.pluck(messages, 'id'),
+                        messages.map(message => message.id),
                         _.chain(current_msg_list.all_messages()).pluck('id').clone().value().sort()
                     ),
                     found_in_dom: row_from_dom.length,
