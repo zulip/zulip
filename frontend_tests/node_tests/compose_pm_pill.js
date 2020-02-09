@@ -45,15 +45,15 @@ run_test('pills', () => {
     recipient_stub.set_parent(pill_container_stub);
     let create_item_handler;
 
-    let all_pills = {};
+    const all_pills = new Map();
 
     pills.appendValidatedData = function (item) {
         const id = item.user_id;
-        assert.equal(all_pills[id], undefined);
-        all_pills[id] = item;
+        assert(!all_pills.has(id));
+        all_pills.set(id, item);
     };
     pills.items = function () {
-        return _.values(all_pills);
+        return Array.from(all_pills.values());
     };
 
     let text_cleared;
@@ -67,7 +67,7 @@ run_test('pills', () => {
         pills = {
             pill: {},
         };
-        all_pills = {};
+        all_pills.clear();
     };
 
     let appendValue_called;
