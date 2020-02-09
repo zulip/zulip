@@ -64,7 +64,7 @@ run_test('operators_round_trip', () => {
         name: 'Florida, USA',
         stream_id: 987,
     };
-    stream_data.add_sub(florida_stream.name, florida_stream);
+    stream_data.add_sub(florida_stream);
     operators = [
         {operator: 'stream', operand: 'Florida, USA'},
     ];

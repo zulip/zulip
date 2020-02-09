@@ -162,9 +162,9 @@ const netherland_stream = {
     subscribed: false,
 };
 
-stream_data.add_sub('Sweden', sweden_stream);
-stream_data.add_sub('Denmark', denmark_stream);
-stream_data.add_sub('The Netherlands', netherland_stream);
+stream_data.add_sub(sweden_stream);
+stream_data.add_sub(denmark_stream);
+stream_data.add_sub(netherland_stream);
 
 set_global('$', global.make_zjquery());
 

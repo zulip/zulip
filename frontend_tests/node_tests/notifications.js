@@ -49,8 +49,8 @@ const muted = {
     wildcard_mentions_notify: null,
 };
 
-stream_data.add_sub('general', general);
-stream_data.add_sub('muted', muted);
+stream_data.add_sub(general);
+stream_data.add_sub(muted);
 
 muting.add_muted_topic(general.stream_id, 'muted topic');
 

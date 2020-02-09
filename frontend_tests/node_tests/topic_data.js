@@ -72,7 +72,7 @@ run_test('is_complete_for_stream_id', () => {
         stream_id: 444,
         first_message_id: 1000,
     };
-    stream_data.add_sub(sub.name, sub);
+    stream_data.add_sub(sub);
 
     message_list.all = {
         empty: () => false,
@@ -115,7 +115,7 @@ run_test('server_history', () => {
         stream_id: 66,
     };
     const stream_id = sub.stream_id;
-    stream_data.add_sub(sub.name, sub);
+    stream_data.add_sub(sub);
 
     message_list.all.fetch_status.has_found_newest = () => false;
 

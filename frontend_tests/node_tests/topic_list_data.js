@@ -15,7 +15,7 @@ const general = {
     name: 'general',
 };
 
-stream_data.add_sub('general', general);
+stream_data.add_sub(general);
 
 function clear() {
     narrow_state.topic = () => undefined;

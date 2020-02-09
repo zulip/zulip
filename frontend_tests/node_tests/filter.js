@@ -519,7 +519,7 @@ function make_sub(name, stream_id) {
         name: name,
         stream_id: stream_id,
     };
-    global.stream_data.add_sub(name, sub);
+    global.stream_data.add_sub(sub);
 }
 
 run_test('predicate_basics', () => {

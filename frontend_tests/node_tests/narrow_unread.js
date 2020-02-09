@@ -68,7 +68,7 @@ run_test('get_unread_ids', () => {
         ],
     };
 
-    stream_data.add_sub(sub.name, sub);
+    stream_data.add_sub(sub);
 
     unread_ids = candidate_ids();
     assert.equal(unread_ids, undefined);

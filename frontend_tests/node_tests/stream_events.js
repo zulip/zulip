@@ -32,7 +32,7 @@ const frontend = {
     invite_only: false,
 };
 
-stream_data.add_sub(frontend.name, frontend);
+stream_data.add_sub(frontend);
 
 run_test('update_property', () => {
     // Invoke error for non-existent stream/property
@@ -374,7 +374,7 @@ const dev_help = {
     is_muted: true,
     invite_only: false,
 };
-stream_data.add_sub(dev_help.name, dev_help);
+stream_data.add_sub(dev_help);
 
 run_test('remove_deactivated_user_from_all_streams', () => {
     subs.rerender_subscriptions_settings = () => {};
