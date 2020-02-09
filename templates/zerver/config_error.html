@@ -77,12 +77,17 @@
                     {% if gitlab_error %}
                         {% if development_environment %}
                         {{ render_markdown_path('zerver/gitlab-error.md', {"root_domain_uri": root_domain_uri, "settings_path": secrets_path, "secrets_path": secrets_path, "client_id_key_name": "social_auth_gitlab_key"}) }}
+                        <p>
+                            For more information, have a look at
+                            the <a href="https://zulip.readthedocs.io/en/latest/development/authentication.html#gitlab">authentication
+                            setup guide</a> for the development environment.
+                        </p>
                         {% else %}
                         {{ render_markdown_path('zerver/gitlab-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path, "client_id_key_name": "SOCIAL_AUTH_GITLAB_KEY"}) }}
                         {% endif %}
                     {% endif %}
 
-                    {% if google_error or github_error %}
+                    {% if google_error or github_error or gitlab_error %}
                         {% if not development_environment %}
                         <p>
                             For more information, have a look at
