@@ -66,7 +66,7 @@ function test_with(fixture) {
     assert.deepEqual(id_info, fixture.expected_id_info);
 
     const msgs = msg_data.all_messages();
-    const msg_ids = _.pluck(msgs, 'id');
+    const msg_ids = msgs.map(message => message.id);
     assert.deepEqual(msg_ids, fixture.expected_msg_ids);
 }
 

@@ -29,7 +29,7 @@ exports.append_search_string = function (search_string, pill_widget) {
 
 exports.get_search_string_for_current_filter = function (pill_widget) {
     const items = pill_widget.items();
-    const search_strings = _.pluck(items, 'display_value');
+    const search_strings = items.map(item => item.display_value);
     return search_strings.join(' ');
 };
 

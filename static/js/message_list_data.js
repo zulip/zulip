@@ -42,7 +42,7 @@ MessageListData.prototype = {
         if (this._selected_id === -1) {
             return;
         }
-        const ids = _.pluck(this._items, 'id');
+        const ids = this._items.map(message => message.id);
 
         const i = ids.indexOf(this._selected_id);
         if (i === -1) {

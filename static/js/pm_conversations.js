@@ -67,7 +67,7 @@ exports.recent = (function () {
     self.get_strings = function () {
         // returns array of structs with user_ids_string and
         // message_id
-        return _.pluck(recent_private_messages, 'user_ids_string');
+        return recent_private_messages.map(conversation => conversation.user_ids_string);
     };
 
     self.initialize = function (params) {
