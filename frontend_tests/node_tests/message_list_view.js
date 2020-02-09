@@ -62,13 +62,15 @@ run_test('msg_edited_vars', () => {
         if (message === undefined) {
             message = {};
         }
-        message_context = _.defaults(message_context, {
+        message_context = {
             include_sender: true,
-        });
-        message_context.msg = _.defaults(message, {
+            ...message_context,
+        };
+        message_context.msg = {
             is_me_message: false,
             last_edit_timestamp: next_timestamp += 1,
-        });
+            ...message,
+        };
         return message_context;
     }
 
@@ -133,10 +135,11 @@ run_test('merge_message_groups', () => {
         if (message === undefined) {
             message = {};
         }
-        message_context = _.defaults(message_context, {
+        message_context = {
             include_sender: true,
-        });
-        message_context.msg = _.defaults(message, {
+            ...message_context,
+        };
+        message_context.msg = {
             id: _.uniqueId('test_message_'),
             status_message: false,
             type: 'stream',
@@ -144,7 +147,8 @@ run_test('merge_message_groups', () => {
             topic: 'Test Subject 1',
             sender_email: 'test@example.com',
             timestamp: next_timestamp += 1,
-        });
+            ...message,
+        };
         return message_context;
     }
 

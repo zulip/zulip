@@ -59,7 +59,7 @@ exports.set_colorpicker_color = function (colorpicker, color) {
 };
 
 exports.update_stream_color = function (sub, color, opts) {
-    opts = _.defaults({}, opts, {update_historical: false});
+    opts = { update_historical: false, ...opts };
     sub.color = color;
     const stream_id = sub.stream_id;
     // The swatch in the subscription row header.

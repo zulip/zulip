@@ -220,13 +220,14 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
 }
 
 exports.initiate = function (options) {
-    options = _.defaults({}, options, {
+    options = {
         immediate: false,
         save_pointer: true,
         save_narrow: true,
         save_compose: true,
         send_after_reload: false,
-    });
+        ...options,
+    };
 
     if (options.save_pointer === undefined ||
         options.save_narrow === undefined ||
