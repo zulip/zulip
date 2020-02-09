@@ -412,7 +412,8 @@ exports.get_message_reactions = function (message) {
         reaction.user_ids = [];
         let collapsed_reaction = message_reactions.get(reaction.local_id);
         if (collapsed_reaction === undefined) {
-            collapsed_reaction = _.omit(reaction, 'user');
+            collapsed_reaction = { ...reaction };
+            delete collapsed_reaction.user;
             message_reactions.set(reaction.local_id, collapsed_reaction);
         }
         collapsed_reaction.user_ids.push(user_id);
