@@ -149,7 +149,7 @@ run_test('start', () => {
         name: 'Denmark',
         stream_id: 1,
     };
-    stream_data.add_sub('Denmark', denmark);
+    stream_data.add_sub(denmark);
 
     global.narrow_state.set_compose_defaults = function () {
         const opts = {};
@@ -179,7 +179,7 @@ run_test('start', () => {
         name: 'social',
         stream_id: 2,
     };
-    stream_data.add_sub('social', social);
+    stream_data.add_sub(social);
 
     // More than 1 subscription, do not autofill
     opts = {};

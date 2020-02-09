@@ -111,7 +111,7 @@ run_test('show_empty_narrow_message', () => {
     assert($('#nonsubbed_private_nonexistent_stream_narrow_message').visible());
 
     // for non sub public stream
-    stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
+    stream_data.add_sub({name: 'ROME', stream_id: 99});
     stream_data.update_calculated_fields(stream_data.get_sub("ROME"));
     set_filter([['stream', 'Rome']]);
     narrow.show_empty_narrow_message();
@@ -222,8 +222,8 @@ run_test('show_invalid_narrow_message', () => {
     narrow_state.reset_current_filter();
     const display = $("#empty_search_stop_words_string");
 
-    stream_data.add_sub('streamA', {name: 'streamA', stream_id: 88});
-    stream_data.add_sub('streamB', {name: 'streamB', stream_id: 77});
+    stream_data.add_sub({name: 'streamA', stream_id: 88});
+    stream_data.add_sub({name: 'streamB', stream_id: 77});
 
     set_filter([['stream', 'streamA'], ['stream', 'streamB']]);
     narrow.show_empty_narrow_message();
@@ -270,7 +270,7 @@ run_test('narrow_to_compose_target', () => {
 
     // --- Tests for stream messages ---
     global.compose_state.get_message_type = () => 'stream';
-    stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
+    stream_data.add_sub({name: 'ROME', stream_id: 99});
     global.compose_state.stream_name = () => 'ROME';
     global.topic_data.get_recent_names = () => ['one', 'two', 'three'];
 

@@ -66,7 +66,7 @@ run_test('filter_table', () => {
     ];
 
     for (const sub of sub_row_data) {
-        stream_data.add_sub(sub.name, sub);
+        stream_data.add_sub(sub);
     }
 
     let populated_subs;

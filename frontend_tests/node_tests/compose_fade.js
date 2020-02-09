@@ -39,7 +39,7 @@ run_test('set_focused_recipient', () => {
         subscribed: true,
         can_access_subscribers: true,
     };
-    stream_data.add_sub('social', sub);
+    stream_data.add_sub(sub);
     stream_data.set_subscribers(sub, [me.user_id, alice.user_id]);
 
     global.$ = function (selector) {

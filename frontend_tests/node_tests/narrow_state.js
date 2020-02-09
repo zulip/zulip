@@ -22,7 +22,7 @@ run_test('stream', () => {
     assert(!narrow_state.active());
 
     const test_stream = {name: 'Test', stream_id: 15};
-    stream_data.add_sub('Test', test_stream);
+    stream_data.add_sub(test_stream);
 
     assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
 
@@ -160,7 +160,7 @@ run_test('set_compose_defaults', () => {
     set_filter([['topic', 'duplicate'], ['topic', 'duplicate']]);
     assert.deepEqual(narrow_state.set_compose_defaults(), {});
 
-    stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
+    stream_data.add_sub({name: 'ROME', stream_id: 99});
     set_filter([['stream', 'rome']]);
 
     const stream_test = narrow_state.set_compose_defaults();
@@ -219,7 +219,7 @@ run_test('stream', () => {
     assert.equal(narrow_state.stream_id(), undefined);
 
     const sub = {name: 'Foo', stream_id: 55};
-    stream_data.add_sub('Foo', sub);
+    stream_data.add_sub(sub);
     assert.equal(narrow_state.stream_id(), 55);
     assert.deepEqual(narrow_state.stream_sub(), sub);
 

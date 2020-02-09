@@ -153,10 +153,10 @@ const edgecase_stream_2 = {
     stream_id: 4,
     is_muted: false,
 };
-stream_data.add_sub('Denmark', denmark);
-stream_data.add_sub('social', social);
-stream_data.add_sub('Bobby <h1>Tables</h1>', edgecase_stream);
-stream_data.add_sub('Bobby <h1', edgecase_stream_2);
+stream_data.add_sub(denmark);
+stream_data.add_sub(social);
+stream_data.add_sub(edgecase_stream);
+stream_data.add_sub(edgecase_stream_2);
 // Note: edgecase_stream cannot be mentioned because it is caught by
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
 

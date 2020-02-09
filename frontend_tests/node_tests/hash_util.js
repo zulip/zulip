@@ -24,7 +24,7 @@ const frontend = {
     name: 'frontend',
 };
 
-stream_data.add_sub('frontend', frontend);
+stream_data.add_sub(frontend);
 
 run_test('hash_util', () => {
     // Test encodeHashComponent

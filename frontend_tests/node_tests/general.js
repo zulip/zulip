@@ -67,7 +67,7 @@ zrequire('settings_display');
 
 run_test('stream_data', () => {
     assert.equal(stream_data.get_sub_by_name('Denmark'), undefined);
-    stream_data.add_sub('Denmark', denmark_stream);
+    stream_data.add_sub(denmark_stream);
     const sub = stream_data.get_sub_by_name('Denmark');
     assert.equal(sub.color, 'blue');
 });
@@ -596,7 +596,7 @@ const social_stream = {
 };
 
 run_test('set_up_filter', () => {
-    stream_data.add_sub('Social', social_stream);
+    stream_data.add_sub(social_stream);
 
     const filter_terms = [
         {operator: 'stream', operand: 'Social'},
