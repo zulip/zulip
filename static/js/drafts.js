@@ -299,7 +299,7 @@ exports.launch = function () {
             draft.id = id;
         }
 
-        const unsorted_raw_drafts = _.values(data);
+        const unsorted_raw_drafts = Object.values(data);
 
         const sorted_raw_drafts = unsorted_raw_drafts.sort(function (draft_a, draft_b) {
             return draft_b.updatedAt - draft_a.updatedAt;
