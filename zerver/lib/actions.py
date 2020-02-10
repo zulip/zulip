@@ -254,16 +254,9 @@ def realm_user_count_by_role(realm: Realm) -> Dict[str, Any]:
         RealmAuditLog.ROLE_COUNT_BOTS: bot_count,
     }
 
-def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_stream: str,
-                        user_profile: UserProfile, internal: bool=False,
-                        realm: Optional[Realm]=None) -> None:
-    if internal:
-        # TODO: This should be whether this is done using manage.py
-        # vs. the web interface.  But recent refactorings mean that
-        # the internal flag isn't passed properly to this function.
-        internal_blurb = " **INTERNAL SIGNUP** "
-    else:
-        internal_blurb = " "
+def notify_new_user(user_profile: UserProfile) -> None:
+    sender_email = settings.NOTIFICATION_BOT
+    sender = get_system_bot(sender_email)
 
     user_count = realm_user_count(user_profile.realm)
     signup_notifications_stream = user_profile.realm.get_signup_notifications_stream()
@@ -272,7 +265,7 @@ def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_st
     if signup_notifications_stream is not None and user_count > 1:
         internal_send_message(
             user_profile.realm,
-            sender,
+            sender_email,
             "stream",
             signup_notifications_stream.name,
             "signups",
@@ -282,24 +275,24 @@ def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_st
         )
 
     # We also send a notification to the Zulip administrative realm
-    admin_realm = get_system_bot(sender).realm
+    admin_realm = sender.realm
     try:
         # Check whether the stream exists
-        get_stream(admin_realm_signup_notifications_stream, admin_realm)
+        get_stream("signups", admin_realm)
     except Stream.DoesNotExist:
         # If the signups stream hasn't been created in the admin
         # realm, don't auto-create it to send to it; just do nothing.
         return
+
     internal_send_message(
         admin_realm,
-        sender,
+        sender_email,
         "stream",
-        admin_realm_signup_notifications_stream,
+        "signups",
         user_profile.realm.display_subdomain,
-        "%s <`%s`> just signed up for Zulip!%s(total: **%i**)" % (
+        "%s <`%s`> just signed up for Zulip! (total: **%i**)" % (
             user_profile.full_name,
             user_profile.email,
-            internal_blurb,
             user_count,
         )
     )
@@ -309,9 +302,6 @@ def notify_invites_changed(user_profile: UserProfile) -> None:
     admin_ids = [user.id for user in
                  user_profile.realm.get_admin_users_and_bots()]
     send_event(user_profile.realm, event, admin_ids)
-
-def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
-    send_signup_message(settings.NOTIFICATION_BOT, "signups", user_profile, internal)
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
     """Give you the last ONBOARDING_TOTAL_MESSAGES messages on your public
@@ -1137,6 +1127,14 @@ def get_recipient_info(recipient: Recipient,
         #       contrived test scenario, can attempt to send messages
         #       to an inactive bot.  When we plug that hole, we can avoid
         #       this `else` clause and just `assert(user_ids)`.
+        #
+        # UPDATE: It's February 2020 (and a couple years after the above
+        #         comment was written).  We have simplified notify_new_user
+        #         so that it should be a little easier to reason about.
+        #         There is currently some cleanup to how we handle cross
+        #         realm bots that is still under development.  Once that
+        #         effort is complete, we should be able to address this
+        #         to-do.
         rows = []
 
     def get_ids_for(f: Callable[[Dict[str, Any]], bool]) -> Set[int]:
