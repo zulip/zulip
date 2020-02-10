@@ -1453,6 +1453,8 @@ class AutoLink(CompiledInlineProcessor):
         text = None
         if netloc in ['github.com', 'www.github.com']:
             text = self.shorten_github_links(path, fragment)
+        elif netloc == self.markdown.zulip_realm.host:
+            text = self.shorten_zulip_links(path, fragment)
         return text
 
     def shorten_github_links(self, path: str, fragment: str) -> Optional[str]:
@@ -1488,6 +1490,49 @@ class AutoLink(CompiledInlineProcessor):
         if artifact == 'commit':
             return '{}@{}'.format(repo_short_text, value[0:10])
         return None
+
+    def shorten_zulip_links(self, path: str, fragment: str) -> Optional[str]:
+        # 1. Only shorten narrows.
+        if not fragment.startswith('narrow'):
+            return None
+
+        # 2. Extract narrow operator pairs.
+        if fragment.endswith('/'):
+            fragment = fragment[:-1]
+        fragments = fragment.split('/')[1:]
+        if not len(fragments) % 2 == 0:
+            return None
+        operators = {}
+        iterator = iter(fragments)
+        for operator in iterator:
+            value = next(iterator)
+            if value in ['private', 'mentioned', 'starred']:
+                operator = '{}-{}'.format(operator, value)
+                value = ''
+            operators[operator] = value
+
+        # 3. Handle some specific cases.
+        text = ''
+        if 'stream' in operators:
+            text = '#{}'.format(operators.pop('stream').split('-', 1)[1])
+            if 'topic' in operators:
+                text = '{} > {}'.format(text, operators.pop('topic'))
+        if operators.pop('pm-with', False) or operators.pop('is-private', False):
+            # we can process pm-with, but we have user-ids of people so we would need to do
+            # a database lookup. Thus, we're taking a simpler way out.
+            text = 'private messages'
+
+        # 4. Append all remaining operators to end of string
+        if len(operators):
+            parts = []
+            for operator in operators:
+                string = operator
+                value = operators[operator]
+                if value:
+                    string = '{}: {}'.format(operator, value)
+                parts.append(string)
+            text = '{} ({})'.format(text, ', '.join(parts))
+        return text
 
     def handleMatch(self, match: Match[str], data: str) -> Tuple[ElementStringNone, int, int]:
         url = match.group('url')

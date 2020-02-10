@@ -48,6 +48,7 @@ import os
 import ujson
 import re
 import urllib
+import html
 
 from typing import cast, Any, Dict, List, Optional, Set, Tuple
 
@@ -1992,6 +1993,8 @@ class BugdownTest(ZulipTestCase):
         output_template = '<p><a href="{href}" title="{href}">{text}</a></p>'
 
         def assert_shortening(msg: str, text: Optional[str]) -> None:
+            if text:
+                text = html.escape(text)
             expected_output = output_template.format(href=msg, text=text or msg)
             self.assertEqual(bugdown.convert(msg, message_realm=realm, message=message), expected_output)
 
@@ -2007,6 +2010,21 @@ class BugdownTest(ZulipTestCase):
         assert_shortening('https://github.com/foo/bar/baz/zar', None)
         assert_shortening('https://github.com/foo', None)
         assert_shortening('https://github.com', None)
+
+        assert_shortening('https://zulip.testserver/#narrow/stream/217915-data-structures',
+                          '#data-structures')
+        assert_shortening('https://zulip.testserver/#narrow/stream/217915-data-structures/topic/permutations',
+                          '#data-structures > permutations')
+        assert_shortening('https://zulip.testserver/#narrow/stream/217915-data-structures/near/1000/is/mentioned',
+                          '#data-structures (near: 1000, is-mentioned)')
+        assert_shortening('https://zulip.testserver/#narrow/-is/mentioned/stream/217915-data-structures/topic/permutations',
+                          '#data-structures > permutations (-is-mentioned)')
+        assert_shortening('https://zulip.testserver/#narrow/stream/217915-data-structures/topic/permutations/near/186309775',
+                          '#data-structures > permutations (near: 186309775)')
+        assert_shortening('https://zulip.testserver/#narrow/stream/217915-data-structures/near/1000/is/mentioned',
+                          '#data-structures (near: 1000, is-mentioned)')
+        assert_shortening('https://zulip.testserver/#narrow/is/private',
+                          'private messages')
 
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
