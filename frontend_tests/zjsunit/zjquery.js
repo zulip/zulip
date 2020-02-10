@@ -165,18 +165,6 @@ exports.make_new_elem = function (selector, opts) {
             event_store.generic_event('click', arg);
             return self;
         },
-        closest: function (selector) {
-            const elem = self;
-            const search = selector.startsWith('.') || selector.startsWith('#') ? selector.substring(1) : selector;
-            if (elem.selector.includes(search)) {
-                return elem;
-            } else if (parents_result.get(selector)) {
-                return parents_result.get(selector);
-            } else if (!elem.parent()) {
-                return [];
-            }
-            return elem.parent().closest(selector);
-        },
         data: function (name, val) {
             if (val === undefined) {
                 const data_val = attrs.get('data-' + name);
