@@ -202,7 +202,7 @@ def run_tests_via_node_js() -> int:
         coverage_lcov_file = os.path.join(coverage_dir, 'lcov.info')
 
         nyc = os.path.join(ROOT_DIR, 'node_modules/.bin/nyc')
-        command = [nyc, '--extension', '.ts']
+        command = [nyc, '--extension', '.hbs', '--extension', '.ts']
         command += ['--report-dir', coverage_dir]
         command += ['--temp-directory', coverage_dir, '-r=text-summary']
         command += node_tests_cmd
