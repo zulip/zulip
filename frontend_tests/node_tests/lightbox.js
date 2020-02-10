@@ -1,9 +1,11 @@
 zrequire('lightbox');
 
 set_global('blueslip', global.make_zblueslip());
-set_global('message_store', {
-    get: () => ({}),
-});
+
+const _message_store = new Map();
+_message_store.set(1234, { sender_full_name: "Test User" });
+
+set_global('message_store', _message_store);
 set_global('Image', class Image {});
 set_global('overlays', {
     close_overlay: () => {},
@@ -21,9 +23,14 @@ run_test('pan_and_zoom', () => {
 
     const img = '<img src="./image.png" data-src-fullsize="./original.png">';
     const link = '<a href="https://zulip.com"></a>';
-    const msg = '<div [zid]></div>';
+
+    /* Due to how zquery works, we have to use a literal [zid] in the element,
+       since that's what the code looks for and we have to manually set the attr
+       that should be returned from the store. */
+    const msg = $('<div [zid]></div>');
+    msg.attr("zid", "1234");
     $(img).set_parent($(link));
-    $(link).set_parent($(msg));
+    $(link).set_parent(msg);
 
     // Used by render_lightbox_list_images
     $.stub_selector('.focused_table .message_inline_image img', []);
@@ -43,10 +50,14 @@ run_test('open_url', () => {
     const link = '<a></a>';
     $(link).attr('href', url);
     const div = '<div class="youtube-video"></div>';
-    const msg = '<div [zid]></div>';
+    /* Due to how zquery works, we have to use a literal [zid] in the element,
+       since that's what the code looks for and we have to manually set the attr
+       that should be returned from the store. */
+    const msg = $('<div [zid]></div>');
+    msg.attr("zid", "1234");
     $(img).set_parent($(link));
     $(link).set_parent($(div));
-    $(div).set_parent($(msg));
+    $(div).set_parent(msg);
 
     // Used by render_lightbox_list_images
     $.stub_selector('.focused_table .message_inline_image img', []);
