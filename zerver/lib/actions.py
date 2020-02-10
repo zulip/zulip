@@ -254,6 +254,10 @@ def realm_user_count_by_role(realm: Realm) -> Dict[str, Any]:
         RealmAuditLog.ROLE_COUNT_BOTS: bot_count,
     }
 
+def get_signups_stream(realm: Realm) -> Stream:
+    # This one-liner helps us work around a lint rule.
+    return get_stream("signups", realm)
+
 def notify_new_user(user_profile: UserProfile) -> None:
     sender_email = settings.NOTIFICATION_BOT
     sender = get_system_bot(sender_email)
@@ -263,11 +267,10 @@ def notify_new_user(user_profile: UserProfile) -> None:
     # Send notification to realm signup notifications stream if it exists
     # Don't send notification for the first user in a realm
     if signup_notifications_stream is not None and user_count > 1:
-        internal_send_message(
+        internal_send_stream_message(
             user_profile.realm,
-            sender_email,
-            "stream",
-            signup_notifications_stream.name,
+            sender,
+            signup_notifications_stream,
             "signups",
             "@_**%s|%s** just signed up for Zulip. (total: %i)" % (
                 user_profile.full_name, user_profile.id, user_count
@@ -278,24 +281,23 @@ def notify_new_user(user_profile: UserProfile) -> None:
     admin_realm = sender.realm
     try:
         # Check whether the stream exists
-        get_stream("signups", admin_realm)
+        signups_stream = get_signups_stream(admin_realm)
+        internal_send_stream_message(
+            admin_realm,
+            sender,
+            signups_stream,
+            user_profile.realm.display_subdomain,
+            "%s <`%s`> just signed up for Zulip! (total: **%i**)" % (
+                user_profile.full_name,
+                user_profile.email,
+                user_count,
+            )
+        )
+
     except Stream.DoesNotExist:
         # If the signups stream hasn't been created in the admin
         # realm, don't auto-create it to send to it; just do nothing.
-        return
-
-    internal_send_message(
-        admin_realm,
-        sender_email,
-        "stream",
-        "signups",
-        user_profile.realm.display_subdomain,
-        "%s <`%s`> just signed up for Zulip! (total: **%i**)" % (
-            user_profile.full_name,
-            user_profile.email,
-            user_count,
-        )
-    )
+        pass
 
 def notify_invites_changed(user_profile: UserProfile) -> None:
     event = dict(type="invites_changed")
@@ -3788,9 +3790,24 @@ def do_create_realm(string_id: str, name: str,
 
     # Send a notification to the admin realm
     signup_message = "Signups enabled"
-    admin_realm = get_system_bot(settings.NOTIFICATION_BOT).realm
-    internal_send_message(admin_realm, settings.NOTIFICATION_BOT, "stream",
-                          "signups", realm.display_subdomain, signup_message)
+    sender = get_system_bot(settings.NOTIFICATION_BOT)
+    admin_realm = sender.realm
+
+    try:
+        signups_stream = get_signups_stream(admin_realm)
+        topic = realm.display_subdomain
+
+        internal_send_stream_message(
+            admin_realm,
+            sender,
+            signups_stream,
+            topic,
+            signup_message
+        )
+    except Stream.DoesNotExist:  # nocoverage
+        # If the signups stream hasn't been created in the admin
+        # realm, don't auto-create it to send to it; just do nothing.
+        pass
     return realm
 
 def do_change_notification_settings(user_profile: UserProfile, name: str,
