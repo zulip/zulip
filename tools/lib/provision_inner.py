@@ -172,12 +172,7 @@ def main(options: argparse.Namespace) -> int:
         else:
             print("RabbitMQ is already configured.")
 
-        migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
-        dev_template_db_status = template_database_status(
-            migration_status=migration_status_path,
-            settings="zproject.settings",
-            database_name="zulip",
-        )
+        dev_template_db_status = template_database_status('dev')
         if options.is_force or dev_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-dev-db"])
             run(["tools/do-destroy-rebuild-database"])
@@ -186,7 +181,7 @@ def main(options: argparse.Namespace) -> int:
         elif dev_template_db_status == 'current':
             print("No need to regenerate the dev DB.")
 
-        test_template_db_status = template_database_status()
+        test_template_db_status = template_database_status('test')
         if options.is_force or test_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-test-db"])
             run(["tools/do-destroy-rebuild-test-database"])
