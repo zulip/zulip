@@ -2516,8 +2516,7 @@ def internal_prep_private_message(realm: Realm,
     )
 
 def internal_send_message(realm: Realm, sender_email: str, recipient_type_name: str,
-                          recipients: str, topic_name: str, content: str,
-                          email_gateway: Optional[bool]=False) -> Optional[int]:
+                          recipients: str, topic_name: str, content: str) -> Optional[int]:
     """internal_send_message should only be used where `sender_email` is a
     system bot."""
 
@@ -2543,7 +2542,7 @@ def internal_send_message(realm: Realm, sender_email: str, recipient_type_name: 
     if msg is None:
         return None
 
-    message_ids = do_send_messages([msg], email_gateway=email_gateway)
+    message_ids = do_send_messages([msg])
     return message_ids[0]
 
 def internal_send_private_message(realm: Realm,
@@ -2557,9 +2556,13 @@ def internal_send_private_message(realm: Realm,
     return message_ids[0]
 
 def internal_send_stream_message(
-        realm: Realm, sender: UserProfile,
-        stream: Stream, topic: str, content: str
-) -> Optional[int]:
+        realm: Realm,
+        sender: UserProfile,
+        stream: Stream,
+        topic: str,
+        content: str,
+        email_gateway: Optional[bool]=False) -> Optional[int]:
+
     message = internal_prep_stream_message(
         realm, sender, stream,
         topic, content
@@ -2567,7 +2570,7 @@ def internal_send_stream_message(
 
     if message is None:
         return None
-    message_ids = do_send_messages([message])
+    message_ids = do_send_messages([message], email_gateway=email_gateway)
     return message_ids[0]
 
 def internal_send_stream_message_by_name(

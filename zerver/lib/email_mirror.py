@@ -10,7 +10,7 @@ import email.message as message
 from django.conf import settings
 from django.utils.timezone import timedelta, now as timezone_now
 
-from zerver.lib.actions import internal_send_message, internal_send_private_message, \
+from zerver.lib.actions import internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message, \
     truncate_body, truncate_topic
 from zerver.lib.email_mirror_helpers import decode_email_address, \
@@ -65,8 +65,12 @@ def report_to_zulip(error_message: str) -> None:
         return
     error_bot = get_system_bot(settings.ERROR_BOT)
     error_stream = Stream.objects.get(name="errors", realm=error_bot.realm)
-    send_zulip(settings.ERROR_BOT, error_stream, "email mirror error",
-               """~~~\n%s\n~~~""" % (error_message,))
+    send_zulip(
+        error_bot,
+        error_stream,
+        "email mirror error",
+        """~~~\n%s\n~~~""" % (error_message,)
+    )
 
 def log_and_report(email_message: message.Message, error_message: str, to: Optional[str]) -> None:
     recipient = to or "No recipient found"
@@ -166,12 +170,11 @@ def handle_header_content(content: str) -> str:
 class ZulipEmailForwardUserError(ZulipEmailForwardError):
     pass
 
-def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
-    internal_send_message(
+def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) -> None:
+    internal_send_stream_message(
         stream.realm,
         sender,
-        "stream",
-        stream.name,
+        stream,
         truncate_topic(topic),
         truncate_body(content),
         email_gateway=True)
@@ -337,7 +340,9 @@ def process_stream_message(to: str, message: message.Message) -> None:
         options['include_quotes'] = is_forwarded(subject_header)
 
     body = construct_zulip_body(message, stream.realm, **options)
-    send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
+    send_zulip(
+        get_system_bot(settings.EMAIL_GATEWAY_BOT),
+        stream, subject, body)
     logger.info("Successfully processed email to %s (%s)" % (
         stream.name, stream.realm.string_id))
 
