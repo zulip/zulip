@@ -326,6 +326,10 @@ class PermissionTest(ZulipTestCase):
         # But does have read-only access to it.
         access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id,
                           read_only=True)
+        # Can only access cross realm users if allow_cross_realm is passed
+        bot = self.notification_bot()
+        access_user_by_id(self.example_user("cordelia"), bot.id,
+                          allow_cross_realm=True, allow_bots=True, read_only=True)
 
     def test_change_regular_member_to_guest(self) -> None:
         iago = self.example_user("iago")

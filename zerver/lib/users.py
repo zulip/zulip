@@ -14,8 +14,8 @@ from zerver.lib.request import JsonableError
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id_in_realm, CustomProfileFieldValue, \
-    get_realm_user_dicts, CustomProfileField
+    get_user_profile_by_id_in_realm, get_user_by_id_in_realm_including_cross_realm, \
+    CustomProfileFieldValue, get_realm_user_dicts, CustomProfileField
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
@@ -199,9 +199,12 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
 
 def access_user_by_id(user_profile: UserProfile, user_id: int,
                       allow_deactivated: bool=False, allow_bots: bool=False,
-                      read_only: bool=False) -> UserProfile:
+                      allow_cross_realm: bool=False, read_only: bool=False) -> UserProfile:
     try:
-        target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
+        if not allow_cross_realm:
+            target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
+        else:
+            target = get_user_by_id_in_realm_including_cross_realm(user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
     if target.is_bot and not allow_bots:
