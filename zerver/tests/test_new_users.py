@@ -6,7 +6,7 @@ from django.test import override_settings
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.signals import get_device_browser, get_device_os, JUST_CREATED_THRESHOLD
 from zerver.lib.actions import notify_new_user, do_change_notification_settings
-from zerver.models import Recipient, Stream, Realm, get_realm
+from zerver.models import Recipient, Stream, Realm
 from zerver.lib.initial_password import initial_password
 from unittest import mock
 from zerver.lib.timezone import get_timezone
@@ -171,17 +171,6 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
 
 
 class TestNotifyNewUser(ZulipTestCase):
-    def test_notify_of_new_user_internally(self) -> None:
-        new_user = self.example_user('cordelia')
-        self.make_stream('signups', get_realm(settings.SYSTEM_BOT_REALM))
-        notify_new_user(new_user, internal=True)
-
-        message = self.get_last_message()
-        actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        self.assertEqual(actual_stream.name, 'signups')
-        self.assertEqual(message.recipient.type, Recipient.STREAM)
-        self.assertIn("**INTERNAL SIGNUP**", message.content)
-
     def test_notify_realm_of_new_user(self) -> None:
         new_user = self.example_user('cordelia')
         stream = self.make_stream(Realm.INITIAL_PRIVATE_STREAM_NAME)
