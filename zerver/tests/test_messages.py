@@ -1545,7 +1545,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(bot_without_owner.email, stream_name,
                                       "Only organization administrators can send to this stream.")
 
-        # Cross realm bots should be allowed (through internal_send_message)
+        # Cross realm bots should be allowed
         notification_bot = get_system_bot("notification-bot@zulip.com")
         internal_send_stream_message(stream.realm, notification_bot, stream,
                                      'Test topic', 'Test message by notification bot')
@@ -1611,7 +1611,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(bot_without_owner.email, stream_name,
                                       "New members cannot send to this stream.")
 
-        # Cross realm bots should be allowed (through internal_send_message)
+        # Cross realm bots should be allowed
         notification_bot = get_system_bot("notification-bot@zulip.com")
         internal_send_stream_message(stream.realm, notification_bot, stream,
                                      'Test topic', 'Test message by notification bot')
