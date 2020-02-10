@@ -29,9 +29,10 @@ from zerver.models import (
     get_realm, get_user, get_stream_recipient, CustomProfileField,
     CustomProfileFieldValue, DefaultStream, PreregistrationUser,
     Realm, Recipient, Message, ScheduledEmail, UserProfile, UserMessage,
-    Stream, Subscription, flush_per_request_caches
+    Stream, Subscription, flush_per_request_caches, get_system_bot,
 )
 from zerver.lib.actions import (
+    create_stream_if_needed,
     do_change_is_admin,
     get_stream,
     do_create_default_stream_group,
@@ -1779,6 +1780,9 @@ class EmailUnsubscribeTests(ZulipTestCase):
 class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def check_able_to_create_realm(self, email: str, password: str="test") -> None:
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
+        signups_stream, _ = create_stream_if_needed(notification_bot.realm, 'signups')
+
         string_id = "zuliptest"
         # Make sure the realm does not exist
         with self.assertRaises(Realm.DoesNotExist):
@@ -1824,6 +1828,19 @@ class RealmCreationTest(ZulipTestCase):
             messages = Message.objects.filter(recipient=recipient).order_by('date_sent')
             self.assertEqual(len(messages), message_count)
             self.assertIn(text, messages[0].content)
+
+        # Check signup messages
+        recipient = get_stream_recipient(signups_stream.id)
+        messages = Message.objects.filter(recipient=recipient).order_by('id')
+        self.assertEqual(len(messages), 2)
+        self.assertIn('Signups enabled', messages[0].content)
+        self.assertIn('signed up', messages[1].content)
+        self.assertEqual('zuliptest', messages[1].topic_name())
+
+        # Piggyback a little check for how we handle
+        # empty string_ids.
+        realm.string_id = ''
+        self.assertEqual(realm.display_subdomain, '.')
 
     def test_create_realm_non_existing_email(self) -> None:
         self.check_able_to_create_realm("user1@test.com")
