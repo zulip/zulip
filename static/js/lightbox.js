@@ -138,8 +138,9 @@ exports.open = function (image, options) {
             const message = message_store.get(zid);
             if (message === undefined) {
                 blueslip.error("Lightbox for unknown message " + $message.attr("zid"));
+            } else {
+                sender_full_name = message.sender_full_name;
             }
-            sender_full_name = message.sender_full_name;
         }
         payload = {
             user: sender_full_name,
