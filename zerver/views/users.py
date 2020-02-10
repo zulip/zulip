@@ -32,8 +32,7 @@ from zerver.lib.utils import generate_api_key, generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_by_delivery_email, Service, get_user_including_cross_realm, \
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
-    EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm, Realm, \
-    InvalidFakeEmailDomain
+    EmailContainsPlusError, Realm, InvalidFakeEmailDomain
 from zproject.backends import check_password_strength
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
@@ -134,7 +133,9 @@ def avatar(request: HttpRequest, user_profile: UserProfile,
         if is_email:
             avatar_user_profile = get_user_including_cross_realm(email_or_id, realm)
         else:
-            avatar_user_profile = get_user_by_id_in_realm_including_cross_realm(int(email_or_id), realm)
+            avatar_user_profile = access_user_by_id(user_profile, int(email_or_id), allow_bots=True,
+                                                    allow_cross_realm=True, allow_deactivated=True,
+                                                    read_only=True)
         # If there is a valid user account passed in, use its avatar
         url = avatar_url(avatar_user_profile, medium=medium)
     except UserProfile.DoesNotExist:
