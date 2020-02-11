@@ -9,6 +9,7 @@ from django.test import override_settings
 from mock import patch, MagicMock
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
+from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.queue import MAX_REQUEST_RETRIES
@@ -83,8 +84,10 @@ class WorkerTest(ZulipTestCase):
         fake_client = self.FakeClient()
         worker = SlowQueryWorker()
 
+        create_stream_if_needed(error_bot.realm, 'errors')
+
         send_mock = patch(
-            'zerver.worker.queue_processors.internal_send_message'
+            'zerver.worker.queue_processors.internal_send_stream_message'
         )
 
         with send_mock as sm, loopworker_sleep_mock as tm:
@@ -105,12 +108,11 @@ class WorkerTest(ZulipTestCase):
         sm.assert_called_once()
         args = [c[0] for c in sm.call_args_list][0]
         self.assertEqual(args[0], error_bot.realm)
-        self.assertEqual(args[1], error_bot.email)
-        self.assertEqual(args[2], "stream")
-        self.assertEqual(args[3], "errors")
-        self.assertEqual(args[4], "testserver: slow queries")
+        self.assertEqual(args[1].email, error_bot.email)
+        self.assertEqual(args[2].name, "errors")
+        self.assertEqual(args[3], "testserver: slow queries")
         # Testing for specific query times can lead to test discrepancies.
-        logging_info = re.sub(r'\(db: [0-9]+ms/13q\)', '', args[5])
+        logging_info = re.sub(r'\(db: [0-9]+ms/\d+q\)', '', args[4])
         self.assertEqual(logging_info, '    127.0.0.1       GET     200 -1000ms '
                                        ' /test/ (test@zulip.com via website) (test@zulip.com)\n')
 

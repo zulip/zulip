@@ -8,7 +8,7 @@ from django.utils.translation import ugettext as _
 from typing import Any, Dict, Optional
 
 from zerver.filters import clean_data_from_query_parameters
-from zerver.models import get_system_bot
+from zerver.models import get_stream, get_system_bot
 from zerver.lib.actions import internal_send_stream_message
 from zerver.lib.response import json_success, json_error
 
