@@ -54,7 +54,7 @@ if [ -z "$repo_fq" ]; then
     # We're pretty specific about what we expect the URL to look like;
     # there are probably more cases we could legitimately cover, which
     # we can add if/when they come up for someone.
-    echo "error: couldn't parse remote URL as GitHub repo" >&2
+    echo "error: couldn't parse remote URL as GitHub repo: $remote_url" >&2
     exit 1
 fi
 
