@@ -43,7 +43,7 @@ EOF
     exit 1
 fi
 
-remote_url="$(git config remote."$remote".url)"
+remote_url="$(git remote get-url --push "$remote")"
 repo_fq="$(echo "$remote_url" | perl -lne 'print $1 if (
     m, ^ git\@github\.com:
          ([^/]+ / [^/]+?)
