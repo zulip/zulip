@@ -2028,6 +2028,35 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         return messages[0].id
     return None
 
+def extract_stream_indicator(s: str) -> Union[str, int]:
+    # Users can pass stream name as either an id or a name,
+    # and if they choose to pass a name, they may JSON encode
+    # it for legacy reasons.
+
+    try:
+        data = ujson.loads(s)
+    except (ValueError, TypeError):
+        # If there was no JSON encoding, then we just
+        # have a raw stream name.
+        return s
+
+    # We should stop supporting this odd use case
+    # once we improve our documentation.
+    if isinstance(data, list):
+        if len(data) != 1:  # nocoverage
+            raise ValueError("Expected exactly one stream")
+        data = data[0]
+
+    if isinstance(data, str):
+        # We had a JSON-encoded stream.
+        return data
+
+    if isinstance(data, int):
+        # We had a stream id.
+        return data
+
+    raise ValueError("Invalid data type for stream")
+
 def extract_recipients(s: str) -> Union[List[str], List[int]]:
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
