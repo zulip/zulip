@@ -7,7 +7,6 @@ from typing import (
 from django.urls.resolvers import LocaleRegexURLResolver
 from django.conf import settings
 from django.test import override_settings
-from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.migrations.state import StateApps
 from boto.s3.connection import S3Connection
@@ -442,36 +441,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             for untested_pattern in sorted(untested_patterns):
                 print("   %s" % (untested_pattern,))
             sys.exit(1)
-
-def get_all_templates() -> List[str]:
-    templates = []
-
-    relpath = os.path.relpath
-    isfile = os.path.isfile
-    path_exists = os.path.exists
-
-    def is_valid_template(p: str, n: str) -> bool:
-        return 'webhooks' not in p \
-               and not n.startswith('.') \
-               and not n.startswith('__init__') \
-               and not n.endswith('.md') \
-               and not n.endswith('.source.html') \
-               and isfile(p)
-
-    def process(template_dir: str, dirname: str, fnames: Iterable[str]) -> None:
-        for name in fnames:
-            path = os.path.join(dirname, name)
-            if is_valid_template(path, name):
-                templates.append(relpath(path, template_dir))
-
-    for engine in loader.engines.all():
-        template_dirs = [d for d in engine.template_dirs if path_exists(d)]
-        for template_dir in template_dirs:
-            template_dir = os.path.normpath(template_dir)
-            for dirpath, dirnames, fnames in os.walk(template_dir):
-                process(template_dir, dirpath, fnames)
-
-    return templates
 
 def load_subdomain_token(response: HttpResponse) -> Dict[str, Any]:
     assert isinstance(response, HttpResponseRedirect)
