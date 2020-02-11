@@ -16,6 +16,10 @@ merge of the PR, rather than requiring the PR to be manually
 REMOTE defaults to the value of the Git config variable
 \`zulip.zulipRemote\` if set, else to \`upstream\`.
 
+If we have a pseudo-remote-tracking branch for the PR (as created
+by \`reset-to-pull-request\`, like \`pr/1234\`), then the tracking
+branch is updated to reflect the pushed version.
+
 See also \`reset-to-pull-request\`.
 EOF
     exit 1
