@@ -652,7 +652,7 @@ class ExtractedRecipientsTest(TestCase):
             extract_recipients(s)
 
         # Empty list
-        self.assertEqual(extract_recipients([]), [])
+        self.assertEqual(extract_recipients('[]'), [])
 
         # Heterogeneous lists are not supported
         mixed = ujson.dumps(['eeshan@example.com', 3, 4])
