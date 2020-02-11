@@ -25,7 +25,7 @@ from zerver.lib.actions import (
     do_send_messages,
     do_update_message,
     do_set_realm_property,
-    extract_recipients,
+    extract_private_recipients,
     extract_stream_indicator,
     get_active_presence_idle_user_ids,
     get_client,
@@ -658,61 +658,61 @@ class ExtractTest(TestCase):
         with self.assertRaisesRegex(ValueError, 'Expected exactly one stream'):
             extract_stream_indicator('[1,2,"general"]')
 
-    def test_extract_recipients_emails(self) -> None:
+    def test_extract_private_recipients_emails(self) -> None:
 
         # JSON list w/dups, empties, and trailing whitespace
         s = ujson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com'])
-        # sorted() gets confused by extract_recipients' return type
+        # sorted() gets confused by extract_private_recipients' return type
         # For testing, ignorance here is better than manual casting
-        result = sorted(extract_recipients(s))
+        result = sorted(extract_private_recipients(s))
         self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # simple string with one name
         s = 'alice@zulip.com    '
-        self.assertEqual(extract_recipients(s), ['alice@zulip.com'])
+        self.assertEqual(extract_private_recipients(s), ['alice@zulip.com'])
 
         # JSON-encoded string
         s = '"alice@zulip.com"'
-        self.assertEqual(extract_recipients(s), ['alice@zulip.com'])
+        self.assertEqual(extract_private_recipients(s), ['alice@zulip.com'])
 
         # bare comma-delimited string
         s = 'bob@zulip.com, alice@zulip.com'
-        result = sorted(extract_recipients(s))
+        result = sorted(extract_private_recipients(s))
         self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
-        result = sorted(extract_recipients(s))
+        result = sorted(extract_private_recipients(s))
         self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # Invalid data
         s = ujson.dumps(dict(color='red'))
         with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
-            extract_recipients(s)
+            extract_private_recipients(s)
 
         # Empty list
-        self.assertEqual(extract_recipients('[]'), [])
+        self.assertEqual(extract_private_recipients('[]'), [])
 
         # Heterogeneous lists are not supported
         mixed = ujson.dumps(['eeshan@example.com', 3, 4])
         with self.assertRaisesRegex(TypeError, 'Recipient lists may contain emails or user IDs, but not both.'):
-            extract_recipients(mixed)
+            extract_private_recipients(mixed)
 
     def test_extract_recipient_ids(self) -> None:
         # JSON list w/dups
         s = ujson.dumps([3, 3, 12])
-        result = sorted(extract_recipients(s))
+        result = sorted(extract_private_recipients(s))
         self.assertEqual(result, [3, 12])
 
         # Invalid data
         ids = ujson.dumps(dict(recipient=12))
         with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
-            extract_recipients(ids)
+            extract_private_recipients(ids)
 
         # Heterogeneous lists are not supported
         mixed = ujson.dumps([3, 4, 'eeshan@example.com'])
         with self.assertRaisesRegex(TypeError, 'Recipient lists may contain emails or user IDs, but not both.'):
-            extract_recipients(mixed)
+            extract_private_recipients(mixed)
 
 class PersonalMessagesTest(ZulipTestCase):
 

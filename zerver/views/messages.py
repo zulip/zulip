@@ -17,7 +17,7 @@ from zerver.lib.zcommand import process_zcommands
 from zerver.lib.actions import recipient_for_user_profiles, do_update_message_flags, \
     compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients, truncate_body, render_incoming_message, do_delete_messages, \
+    extract_private_recipients, truncate_body, render_incoming_message, do_delete_messages, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, extract_stream_indicator, \
     get_user_info_for_message_updates, check_schedule_message
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
@@ -1351,7 +1351,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                 [stream_indicator]
             )
         else:
-            message_to = extract_recipients(req_to)
+            message_to = extract_private_recipients(req_to)
 
     # Temporary hack: We're transitioning `forged` from accepting
     # `yes` to accepting `true` like all of our normal booleans.
