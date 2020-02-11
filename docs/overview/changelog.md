@@ -7,6 +7,8 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+- Added support for GitLab authentication.
+
 ### 2.1.2 -- 2020-01-16
 
 - Corrected fix for CVE-2019-19775 (the original fix was affected by
