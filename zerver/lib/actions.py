@@ -2028,18 +2028,13 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         return messages[0].id
     return None
 
-def extract_recipients(
-        s: Union[str, Iterable[str], Iterable[int]]
-) -> Union[List[str], List[int]]:
+def extract_recipients(s: str) -> Union[List[str], List[int]]:
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
 
-    if isinstance(s, str):
-        try:
-            data = ujson.loads(s)
-        except (ValueError, TypeError):
-            data = s
-    else:
+    try:
+        data = ujson.loads(s)
+    except (ValueError, TypeError):
         data = s
 
     if isinstance(data, str):
