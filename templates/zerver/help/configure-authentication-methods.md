@@ -2,9 +2,10 @@
 
 {!admin-only.md!}
 
-By default, Zulip allows logging in via email/password, your Google
-account, or your GitHub account. You can restrict users to logging in
-via only a subset of these methods.
+By default, Zulip allows logging in via email/password as well as
+various social authentication providers like Google, GitHub, and
+GitLab. You can restrict users to logging in via only a subset of
+these methods.
 
 LDAP and various custom SSO login methods are currently restricted to
 self-hosted Zulips only.  SAML authentication is supported by Zulip

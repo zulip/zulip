@@ -112,11 +112,11 @@ Allow anyone to
 You can also link to your Zulip with a [badge](/help/linking-to-zulip)
 in your readme document.
 
-### Authenticate with GitHub
+### Authenticate with GitHub or GitLab
 
-Allow (or require) users to
-[authenticate with their GitHub account][github-auth], instead of with their
-email address.
+Allow (or require) users to authenticate with their [GitHub or GitLab
+account](/help/configure-authentication-methods), instead of with a
+username and password.
 [github-auth]: https://github.com/zulip/zulip/blob/7e9926233/zproject/prod_settings_template.py#L112
 
 ### Import from Slack, Mattermost, or Gitter
