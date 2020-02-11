@@ -1082,6 +1082,23 @@ class MarkdownTest(ZulipTestCase):
         assert_conversion('chat#123', check_topic=False)
         assert_conversion('chat#@#$%', False, check_topic=False)
 
+        # test cases for GitLab support. See https://github.com/zulip/zulip/issues/13872.
+        RealmFilter(realm=realm, pattern=r'!(?P<num>\d+)',
+                    url_format_string=r'https://trac.example.com/merge/%(num)s').save()
+        RealmFilter(realm=realm, pattern=r'~(?P<num>\d+)',
+                    url_format_string=r'https://trac.example.com/epic/%(num)s').save()
+        assert_conversion('!5')
+        assert_conversion('Hello!5', False)
+        assert_conversion('Hello!!5', False)
+        assert_conversion('Hello,!5')
+        assert_conversion('!5, World')
+
+        assert_conversion('~5')
+        assert_conversion('Hello~5', False)
+        assert_conversion('Hello!~5', False)
+        assert_conversion('Hello,~5')
+        assert_conversion('~5, World')
+
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm('zulip')
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
@@ -1118,6 +1135,7 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.example.com/ticket/ABC-123">ABC-123</a> or <a href="https://trac.example.com/ticket/16">trac ABC-123</a> today.</p>')
         # Both the links should be generated in topics.
         self.assertEqual(converted_topic, ['https://trac.example.com/ticket/ABC-123', 'https://other-trac.example.com/ticket/ABC-123'])
+
     def test_maybe_update_markdown_engines(self) -> None:
         realm = get_realm('zulip')
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
