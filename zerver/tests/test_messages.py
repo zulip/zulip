@@ -26,6 +26,7 @@ from zerver.lib.actions import (
     do_update_message,
     do_set_realm_property,
     extract_recipients,
+    extract_stream_indicator,
     get_active_presence_idle_user_ids,
     get_client,
     get_last_message_id,
@@ -618,7 +619,45 @@ class InternalPrepTest(ZulipTestCase):
         # wasn't automatically created.
         Stream.objects.get(name=stream_name, realm_id=realm.id)
 
-class ExtractedRecipientsTest(TestCase):
+class ExtractTest(TestCase):
+    def test_extract_stream_indicator(self) -> None:
+        self.assertEqual(
+            extract_stream_indicator('development'),
+            "development",
+        )
+        self.assertEqual(
+            extract_stream_indicator('commas,are,fine'),
+            "commas,are,fine",
+        )
+        self.assertEqual(
+            extract_stream_indicator('"Who hasn\'t done this?"'),
+            "Who hasn't done this?",
+        )
+        self.assertEqual(
+            extract_stream_indicator("999"),
+            999,
+        )
+
+        # For legacy reasons it's plausible that users will
+        # put a single stream into an array and then encode it
+        # as JSON.  We can probably eliminate this support
+        # by mid 2020 at the latest.
+        self.assertEqual(
+            extract_stream_indicator('["social"]'),
+            'social',
+        )
+
+        self.assertEqual(
+            extract_stream_indicator("[123]"),
+            123,
+        )
+
+        with self.assertRaisesRegex(ValueError, 'Invalid data type for stream'):
+            extract_stream_indicator('{}')
+
+        with self.assertRaisesRegex(ValueError, 'Expected exactly one stream'):
+            extract_stream_indicator('[1,2,"general"]')
+
     def test_extract_recipients_emails(self) -> None:
 
         # JSON list w/dups, empties, and trailing whitespace

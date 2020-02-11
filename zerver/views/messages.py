@@ -18,7 +18,7 @@ from zerver.lib.actions import recipient_for_user_profiles, do_update_message_fl
     compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_messages, \
-    do_mark_all_as_read, do_mark_stream_messages_as_read, \
+    do_mark_all_as_read, do_mark_stream_messages_as_read, extract_stream_indicator, \
     get_user_info_for_message_updates, check_schedule_message
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.queue import queue_json_publish
@@ -1310,9 +1310,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
 @has_request_variables
 def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_type_name: str=REQ('type'),
-                         message_to: Union[Sequence[int], Sequence[str]]=REQ(
-                             'to', type=Union[List[int], List[str]],
-                             converter=extract_recipients, default=[]),
+                         req_to: Optional[str]=REQ('to', default=None),
                          forged_str: Optional[str]=REQ("forged",
                                                        default=None,
                                                        documentation_pending=True),
@@ -1333,6 +1331,28 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          tz_guess: Optional[str]=REQ('tz_guess', default=None,
                                                      documentation_pending=True)
                          ) -> HttpResponse:
+
+    # If req_to is None, then we default to an
+    # empty list of recipients.
+    message_to = []  # type: Union[Sequence[int], Sequence[str]]
+
+    if req_to is not None:
+        if message_type_name == 'stream':
+            stream_indicator = extract_stream_indicator(req_to)
+
+            # For legacy reasons check_send_message expects
+            # a list of streams, instead of a single stream.
+            #
+            # Also, mypy can't detect that a single-item
+            # list populated from a Union[int, str] is actually
+            # a Union[Sequence[int], Sequence[str]].
+            message_to = cast(
+                Union[Sequence[int], Sequence[str]],
+                [stream_indicator]
+            )
+        else:
+            message_to = extract_recipients(req_to)
+
     # Temporary hack: We're transitioning `forged` from accepting
     # `yes` to accepting `true` like all of our normal booleans.
     forged = forged_str is not None and forged_str in ["yes", "true"]
