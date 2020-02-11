@@ -2515,36 +2515,6 @@ def internal_prep_private_message(realm: Realm,
         content=content,
     )
 
-def internal_send_message(realm: Realm, sender_email: str, recipient_type_name: str,
-                          recipients: str, topic_name: str, content: str) -> Optional[int]:
-    """internal_send_message should only be used where `sender_email` is a
-    system bot."""
-
-    # Verify the user is in fact a system bot
-    assert(is_cross_realm_bot_email(sender_email) or sender_email == settings.ERROR_BOT)
-
-    sender = get_system_bot(sender_email)
-    parsed_recipients = extract_recipients(recipients)
-
-    addressee = Addressee.legacy_build(
-        sender,
-        recipient_type_name,
-        parsed_recipients,
-        topic_name,
-        realm=realm)
-
-    msg = _internal_prep_message(
-        realm=realm,
-        sender=sender,
-        addressee=addressee,
-        content=content,
-    )
-    if msg is None:
-        return None
-
-    message_ids = do_send_messages([msg])
-    return message_ids[0]
-
 def internal_send_private_message(realm: Realm,
                                   sender: UserProfile,
                                   recipient_user: UserProfile,
