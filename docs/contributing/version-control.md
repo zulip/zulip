@@ -60,7 +60,8 @@ Other considerations:
 Zulip expects you to structure the commits in your pull requests to form
 a clean history before we will merge them.  It's best to write your
 commits following these guidelines in the first place, but if you don't,
-you can always fix your history using `git rebase -i`.
+you can always fix your history using `git rebase -i` (more on that
+[here](../git/fixing-commits.md)).
 
 Never mix multiple changes together in a single commit, but it's great
 to include several related changes, each in their own commit, in a
