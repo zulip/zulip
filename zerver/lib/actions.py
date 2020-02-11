@@ -36,7 +36,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.context_managers import lockfile
 from zerver.lib.email_mirror_helpers import encode_email_address, encode_email_address_helper
-from zerver.lib.emoji import emoji_name_to_emoji_code, get_emoji_file_name
+from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import StreamDoesNotExistError, \
     StreamWithIDDoesNotExistError
 from zerver.lib.export import get_realm_exports_serialized
@@ -1696,28 +1696,6 @@ def notify_reaction_update(user_profile: UserProfile, message: Message,
     # subscribing them to future notifications.
     ums = UserMessage.objects.filter(message=message.id)
     send_event(user_profile.realm, event, [um.user_profile_id for um in ums])
-
-def do_add_reaction_legacy(user_profile: UserProfile, message: Message, emoji_name: str) -> None:
-    (emoji_code, reaction_type) = emoji_name_to_emoji_code(user_profile.realm, emoji_name)
-    reaction = Reaction(user_profile=user_profile, message=message,
-                        emoji_name=emoji_name, emoji_code=emoji_code,
-                        reaction_type=reaction_type)
-    try:
-        reaction.save()
-    except django.db.utils.IntegrityError:  # nocoverage
-        # This can happen when a race results in the check in views
-        # code not catching an attempt to double-add a reaction, or
-        # perhaps if the emoji_name/emoji_code mapping is busted.
-        raise JsonableError(_("Reaction already exists."))
-
-    notify_reaction_update(user_profile, message, reaction, "add")
-
-def do_remove_reaction_legacy(user_profile: UserProfile, message: Message, emoji_name: str) -> None:
-    reaction = Reaction.objects.filter(user_profile=user_profile,
-                                       message=message,
-                                       emoji_name=emoji_name).get()
-    reaction.delete()
-    notify_reaction_update(user_profile, message, reaction, "remove")
 
 def do_add_reaction(user_profile: UserProfile, message: Message,
                     emoji_name: str, emoji_code: str, reaction_type: str) -> None:
