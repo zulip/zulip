@@ -94,9 +94,9 @@ def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet
 def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QuerySet:
     return query.filter(message__subject__iexact=topic_name)
 
-def messages_for_topic(stream_id: int, topic_name: str) -> QuerySet:
+def messages_for_topic(stream_recipient_id: int, topic_name: str) -> QuerySet:
     return Message.objects.filter(
-        recipient__type_id=stream_id,
+        recipient_id=stream_recipient_id,
         subject__iexact=topic_name,
     )
 

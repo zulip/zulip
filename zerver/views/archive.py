@@ -43,7 +43,7 @@ def archive(request: HttpRequest,
 
     all_messages = list(
         messages_for_topic(
-            stream_id=stream_id,
+            stream_recipient_id=stream.recipient_id,
             topic_name=topic_name,
         ).select_related('sender').order_by('date_sent')
     )

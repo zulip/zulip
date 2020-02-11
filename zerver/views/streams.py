@@ -508,7 +508,7 @@ def delete_in_topic(request: HttpRequest, user_profile: UserProfile,
                     topic_name: str=REQ("topic_name")) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
-    messages = messages_for_topic(stream.id, topic_name)
+    messages = messages_for_topic(stream.recipient_id, topic_name)
     if not stream.is_history_public_to_subscribers():
         # Don't allow the user to delete messages that they don't have access to.
         deletable_message_ids = UserMessage.objects.filter(
