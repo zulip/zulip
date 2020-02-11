@@ -2057,7 +2057,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
 
     raise ValueError("Invalid data type for stream")
 
-def extract_recipients(s: str) -> Union[List[str], List[int]]:
+def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
 
