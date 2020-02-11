@@ -2,12 +2,14 @@ import time
 from typing import List
 
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.test import override_settings
 from unittest.mock import Mock, patch
+from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.middleware import is_slow_query, write_log_line
-from zerver.models import get_realm
+from zerver.models import get_realm, get_system_bot
 
 class SlowQueryTest(ZulipTestCase):
     SLOW_QUERY_TIME = 10
@@ -33,6 +35,9 @@ class SlowQueryTest(ZulipTestCase):
     @override_settings(SLOW_QUERY_LOGS_STREAM="logs")
     @patch('logging.info')
     def test_slow_query_log(self, mock_logging_info: Mock) -> None:
+        error_bot = get_system_bot(settings.ERROR_BOT)
+        create_stream_if_needed(error_bot.realm, settings.SLOW_QUERY_LOGS_STREAM)
+
         self.log_data['time_started'] = time.time() - self.SLOW_QUERY_TIME
         write_log_line(self.log_data, path='/socket/open', method='SOCKET',
                        remote_ip='123.456.789.012', email='unknown', client_name='?')
@@ -45,13 +50,14 @@ class SlowQueryTest(ZulipTestCase):
 
     @override_settings(ERROR_BOT=None)
     @patch('logging.info')
-    @patch('zerver.lib.actions.internal_send_message')
-    def test_slow_query_log_without_error_bot(self, mock_internal_send_message: Mock,
+    @patch('zerver.lib.actions.internal_send_stream_message')
+    def test_slow_query_log_without_error_bot(self,
+                                              mock_internal_send_stream_message: Mock,
                                               mock_logging_info: Mock) -> None:
         self.log_data['time_started'] = time.time() - self.SLOW_QUERY_TIME
         write_log_line(self.log_data, path='/socket/open', method='SOCKET',
                        remote_ip='123.456.789.012', email='unknown', client_name='?')
-        mock_internal_send_message.assert_not_called()
+        mock_internal_send_stream_message.assert_not_called()
 
 class OpenGraphTest(ZulipTestCase):
     def check_title_and_description(self, path: str, title: str,
