@@ -351,6 +351,18 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         else:  # nocoverage  # in python3.5. I.E. this is used in python3.6+
             origin = getattr(t, "__origin__", None)
 
+        if sys.version_info > (3, 6):  # nocoverage  # in < python3.7
+            origin = getattr(t, "__origin__", None)
+            t_name = getattr(t, "_name", None)
+            if origin == list:
+                origin = List
+            elif origin == dict:
+                origin = Dict
+            elif t_name == "Iterable":
+                origin = Iterable
+            elif t_name == "Mapping":
+                origin = Mapping
+
         if not origin:
             # Then it's most likely one of the fundamental data types
             # I.E. Not one of the data types from the "typing" module.
