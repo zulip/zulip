@@ -289,7 +289,7 @@ run_test('huddle_fraction_present', () => {
 
     assert.equal(
         buddy_data.huddle_fraction_present(huddle),
-        '0.50');
+        0.5);
 
     huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
     huddle = people.emails_strings_to_user_ids_string(huddle);
@@ -389,7 +389,7 @@ run_test('PM_update_dom_counts', () => {
 
     activity.update_dom_with_unread_counts({pm_count: counts});
     assert(li.hasClass('user-with-count'));
-    assert.equal(value.text(), 5);
+    assert.equal(value.text(), "5");
 
     counts.set(pm_key, 0);
 
@@ -414,7 +414,7 @@ run_test('group_update_dom_counts', () => {
 
     activity.update_dom_with_unread_counts({pm_count: counts});
     assert(li.hasClass('group-with-count'));
-    assert.equal(value.text(), 5);
+    assert.equal(value.text(), "5");
 
     counts.set(pm_key, 0);
 

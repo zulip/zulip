@@ -411,7 +411,7 @@ run_test('marked', () => {
 run_test('topic_links', () => {
     let message = {type: 'stream', topic: "No links here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, []);
+    assert.equal(util.get_topic_links(message).length, 0);
 
     message = {type: 'stream', topic: "One #123 link here"};
     markdown.add_topic_links(message);
