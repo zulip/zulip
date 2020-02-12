@@ -43,7 +43,7 @@ run_test('process_from_server for un-echoed messages', () => {
     const waiting_for_ack = {};
     const server_messages = [
         {
-            local_id: 100.1,
+            local_id: "100.1",
         },
     ];
     echo._patch_waiting_for_awk(waiting_for_ack);
@@ -67,7 +67,7 @@ run_test('process_from_server for differently rendered messages', () => {
     };
     const server_messages = [
         {
-            local_id: 100.1,
+            local_id: "100.1",
             content: "<p>A server rendered message</p>",
             timestamp: new_value,
             is_me_message: new_value,
@@ -158,7 +158,7 @@ run_test('build_display_recipient', () => {
 });
 
 run_test('insert_local_message', () => {
-    const local_id = 1;
+    const local_id_float = 1;
 
     page_params.user_id = 123;
     page_params.realm_users = [
@@ -200,7 +200,7 @@ run_test('insert_local_message', () => {
         sender_full_name: "Iago",
         sender_id: 123,
     };
-    echo.insert_local_message(message_request, local_id);
+    echo.insert_local_message(message_request, local_id_float);
 
     assert(apply_markdown_called);
     assert(add_topic_links_called);
@@ -222,7 +222,7 @@ run_test('insert_local_message', () => {
         sender_full_name: "Iago",
         sender_id: 123,
     };
-    echo.insert_local_message(message_request, local_id);
+    echo.insert_local_message(message_request, local_id_float);
     assert(add_topic_links_called);
     assert(apply_markdown_called);
     assert(insert_message_called);

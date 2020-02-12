@@ -102,7 +102,7 @@ exports.build_display_recipient = function (message) {
     return display_recipient;
 };
 
-exports.insert_local_message = function (message_request, local_id) {
+exports.insert_local_message = function (message_request, local_id_float) {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
@@ -122,9 +122,9 @@ exports.insert_local_message = function (message_request, local_id) {
     message.sender_full_name = people.my_full_name();
     message.avatar_url = page_params.avatar_url;
     message.timestamp = local_message.now();
-    message.local_id = local_id;
+    message.local_id = local_id_float.toString();
     message.locally_echoed = true;
-    message.id = message.local_id;
+    message.id = local_id_float;
     markdown.add_topic_links(message);
 
     waiting_for_id[message.local_id] = message;
@@ -132,7 +132,7 @@ exports.insert_local_message = function (message_request, local_id) {
 
     message.display_recipient = echo.build_display_recipient(message);
     local_message.insert_message(message);
-    return message.local_id.toString();
+    return message.local_id;
 };
 
 exports.is_slash_command = function (content) {
@@ -153,14 +153,14 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
         return;
     }
 
-    const next_local_id = local_message.get_next_id();
+    const local_id_float = local_message.get_next_id_float();
 
-    if (!next_local_id) {
+    if (!local_id_float) {
         // This can happen for legit reasons.
         return;
     }
 
-    return exports.insert_local_message(message_request, next_local_id);
+    return exports.insert_local_message(message_request, local_id_float);
 };
 
 exports.edit_locally = function edit_locally(message, request) {
