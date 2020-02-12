@@ -555,12 +555,12 @@ run_test('send_message_success', () => {
 
     let reify_message_id_checked;
     echo.reify_message_id = function (local_id, message_id) {
-        assert.equal(local_id, 1001);
+        assert.equal(local_id, "1001");
         assert.equal(message_id, 12);
         reify_message_id_checked = true;
     };
 
-    compose.send_message_success(1001, 12, false);
+    compose.send_message_success("1001", 12, false);
 
     assert.equal($("#compose-textarea").val(), '');
     assert($("#compose-textarea").is_focused());
@@ -604,7 +604,7 @@ run_test('send_message', () => {
 
         echo.try_deliver_locally = function () {
             stub_state.local_id_counter += 1;
-            return stub_state.local_id_counter;
+            return stub_state.local_id_counter.toString();
         };
         transmit.send_message = function (payload, success) {
             const single_msg = {
@@ -618,7 +618,7 @@ run_test('send_message', () => {
                 reply_to: 'alice@example.com',
                 private_message_recipient: 'alice@example.com',
                 to_user_ids: '31',
-                local_id: 1,
+                local_id: '1',
                 locally_echoed: true,
             };
 
@@ -628,7 +628,7 @@ run_test('send_message', () => {
             stub_state.send_msg_called += 1;
         };
         echo.reify_message_id = function (local_id, message_id) {
-            assert.equal(typeof local_id, 'number');
+            assert.equal(typeof local_id, 'string');
             assert.equal(typeof message_id, 'number');
             stub_state.reify_message_id_checked += 1;
         };
@@ -667,7 +667,7 @@ run_test('send_message', () => {
     let echo_error_msg_checked;
 
     echo.message_send_error = function (local_id, error_response) {
-        assert.equal(local_id, 1);
+        assert.equal(local_id, '1');
         assert.equal(error_response, 'Error sending message: Server says 408');
         echo_error_msg_checked = true;
     };
