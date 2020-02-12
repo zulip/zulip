@@ -5,7 +5,7 @@ import { path_parts } from './landing-page';
 
 // these constants are populated immediately with data from the DOM on page load
 // name -> display name
-const INTEGRATIONS = {};
+const INTEGRATIONS = new Map();
 const CATEGORIES = {};
 
 function load_data() {
@@ -14,7 +14,7 @@ function load_data() {
         const display_name = $(integration).find('.integration-name').text().trim();
 
         if (display_name && name) {
-            INTEGRATIONS[name] = display_name;
+            INTEGRATIONS.set(name, display_name);
         }
     });
 
@@ -112,7 +112,7 @@ const update_integrations = _.debounce(function () {
         }
 
         if (!$integration.hasClass('integration-create-your-own')) {
-            const display_name = INTEGRATIONS[$integration.data('name')];
+            const display_name = INTEGRATIONS.get($integration.data('name'));
             const display =
                 common.phrase_match(state.query, display_name) &&
                 ($integration.data('categories').includes(CATEGORIES[state.category]) ||
@@ -143,7 +143,7 @@ function hide_catalog_show_integration() {
         });
 
     function show_integration(doc) {
-        $('#integration-instructions-group .name').text(INTEGRATIONS[state.integration]);
+        $('#integration-instructions-group .name').text(INTEGRATIONS.get(state.integration));
         $('#integration-instructions-group .categories .integration-category').remove();
         categories.forEach(function (category) {
             let link;
@@ -232,7 +232,7 @@ function get_state_from_path() {
     result.query = state.query;
 
     const parts = path_parts();
-    if (parts[1] === 'doc' && INTEGRATIONS[parts[2]]) {
+    if (parts[1] === 'doc' && INTEGRATIONS.get(parts[2])) {
         result.integration = parts[2];
     } else if (CATEGORIES[parts[1]]) {
         result.category = parts[1];
