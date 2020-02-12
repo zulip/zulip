@@ -377,7 +377,7 @@ exports.make_new_elem = function (selector, opts) {
 exports.make_zjquery = function (opts) {
     opts = opts || {};
 
-    let elems = {};
+    const elems = new Map();
 
     // Our fn structure helps us simulate extending jQuery.
     const fn = {};
@@ -443,10 +443,8 @@ exports.make_zjquery = function (opts) {
         // the element itself if it's been created with
         // zjquery.
         // This may happen in cases like $(this).
-        if (arg.selector) {
-            if (elems[arg.selector]) {
-                return arg;
-            }
+        if (arg.selector && elems.has(arg.selector)) {
+            return arg;
         }
 
         // We occasionally create stub objects that know
@@ -485,30 +483,30 @@ exports.make_zjquery = function (opts) {
                ' Use $.create() maybe?');
 
 
-        if (elems[selector] === undefined) {
+        if (!elems.has(selector)) {
             const elem = new_elem(selector);
-            elems[selector] = elem;
+            elems.set(selector, elem);
         }
-        return elems[selector];
+        return elems.get(selector);
     };
 
     zjquery.create = function (name)  {
-        assert(!elems[name],
+        assert(!elems.has(name),
                'You already created an object with this name!!');
         const elem = new_elem(name);
-        elems[name] = elem;
-        return elems[name];
+        elems.set(name, elem);
+        return elem;
     };
 
     zjquery.stub_selector = function (selector, stub) {
-        elems[selector] = stub;
+        elems.set(selector, stub);
     };
 
     zjquery.trim = function (s) { return s; };
 
     zjquery.state = function () {
         // useful for debugging
-        let res = Object.values(elems).map(v => v.debug());
+        let res = Array.from(elems.values(), v => v.debug());
 
         res = res.map(v => [v.selector, v.value, v.shown]);
 
@@ -531,7 +529,7 @@ exports.make_zjquery = function (opts) {
     zjquery.fn = fn;
 
     zjquery.clear_all_elements = function () {
-        elems = {};
+        elems.clear();
     };
 
     return zjquery;
