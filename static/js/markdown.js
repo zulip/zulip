@@ -8,7 +8,7 @@
 
 const emoji_codes = require("../generated/emoji/emoji_codes.json");
 
-let realm_filter_map = {};
+const realm_filter_map = new Map();
 let realm_filter_list = [];
 
 
@@ -231,7 +231,7 @@ function handleStreamTopic(streamName, topic) {
 }
 
 function handleRealmFilter(pattern, matches) {
-    let url = realm_filter_map[pattern];
+    let url = realm_filter_map.get(pattern);
 
     let current_group = 1;
 
@@ -315,23 +315,21 @@ function python_to_js_filter(pattern, url) {
 
 exports.set_realm_filters = function (realm_filters) {
     // Update the marked parser with our particular set of realm filters
-    realm_filter_map = {};
+    realm_filter_map.clear();
     realm_filter_list = [];
 
     const marked_rules = [];
 
-    for (const realm_filter of realm_filters) {
-        const pattern = realm_filter[0];
-        const url = realm_filter[1];
-        const js_filters = python_to_js_filter(pattern, url);
-        if (!js_filters[0]) {
+    for (const [pattern, url] of realm_filters) {
+        const [regex, final_url] = python_to_js_filter(pattern, url);
+        if (!regex) {
             // Skip any realm filters that could not be converted
             continue;
         }
 
-        realm_filter_map[js_filters[0]] = js_filters[1];
-        realm_filter_list.push([js_filters[0], js_filters[1]]);
-        marked_rules.push(js_filters[0]);
+        realm_filter_map.set(regex, final_url);
+        realm_filter_list.push([regex, final_url]);
+        marked_rules.push(regex);
     }
 
     marked.InlineLexer.rules.zulip.realm_filters = marked_rules;
