@@ -5,7 +5,7 @@ function MessageListData(opts) {
     }
     this._items = [];
     this._hash = new Map();
-    this._local_only = {};
+    this._local_only = new Set();
     this._selected_id = -1;
 
     let filter = opts.filter;
@@ -331,7 +331,7 @@ MessageListData.prototype = {
             if (stored_message !== undefined) {
                 self._hash.delete(stored_message);
             }
-            delete self._local_only[message.id];
+            self._local_only.delete(message.id);
         }
 
         const msg_ids_to_remove = {};
@@ -387,7 +387,7 @@ MessageListData.prototype = {
         // We directly keep track of local-only messages,
         // so if we're asked for one that we know we have,
         // just return it directly
-        if (this._local_only.hasOwnProperty(id)) {
+        if (this._local_only.has(id)) {
             return id;
         }
 
@@ -480,7 +480,7 @@ MessageListData.prototype = {
                 blueslip.fatal("Bad message id");
             }
             if (self._is_localonly_id(id)) {
-                self._local_only[id] = elem;
+                self._local_only.add(id);
             }
             if (self._hash.has(id)) {
                 blueslip.error("Duplicate message added to MessageListData");
@@ -514,11 +514,11 @@ MessageListData.prototype = {
             return;
         }
 
-        if (this._local_only.hasOwnProperty(old_id)) {
+        if (this._local_only.has(old_id)) {
             if (this._is_localonly_id(new_id)) {
-                this._local_only[new_id] = this._local_only[old_id];
+                this._local_only.add(new_id);
             }
-            delete this._local_only[old_id];
+            this._local_only.delete(old_id);
         }
 
         if (this._selected_id === old_id) {
