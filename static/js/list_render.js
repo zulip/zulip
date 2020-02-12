@@ -46,7 +46,7 @@ exports.create = function ($container, list, opts) {
         sorting_function: null,
         prop: null,
         sorting_functions: new Map(),
-        generic_sorting_functions: {},
+        generic_sorting_functions: new Map(),
         offset: 0,
         listRenders: {},
         list: list,
@@ -223,7 +223,7 @@ exports.create = function ($container, list, opts) {
             } else if (typeof sorting_function === "string") {
                 if (typeof prop === "string") {
                     /* eslint-disable max-len */
-                    meta.sorting_function = meta.generic_sorting_functions[sorting_function](prop);
+                    meta.sorting_function = meta.generic_sorting_functions.get(sorting_function)(prop);
                 } else {
                     meta.sorting_function = meta.sorting_functions.get(sorting_function);
                 }
@@ -253,7 +253,7 @@ exports.create = function ($container, list, opts) {
         // generic sorting functions are ones that will use a specified prop
         // and perform a sort on it with the given sorting function.
         add_generic_sort_function: function (name, sorting_function) {
-            meta.generic_sorting_functions[name] = sorting_function;
+            meta.generic_sorting_functions.set(name, sorting_function);
         },
 
         remove_sort: function () {
