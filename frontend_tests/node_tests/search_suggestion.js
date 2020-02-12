@@ -478,7 +478,7 @@ run_test('empty_query_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
     assert.equal(describe('is:private'), 'Private messages');
     assert.equal(describe('is:starred'), 'Starred messages');
@@ -512,7 +512,7 @@ run_test('has_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
 
     assert.equal(describe('has:link'), 'Messages with one or more link');
@@ -596,7 +596,7 @@ run_test('check_is_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
 
     assert.equal(describe('is:private'), 'Private messages');
@@ -715,7 +715,7 @@ run_test('sent_by_me_suggestions', () => {
     let query = '';
     let suggestions = get_suggestions('', query);
     assert(suggestions.strings.includes('sender:bob@zulip.com'));
-    assert.equal(suggestions.lookup_table['sender:bob@zulip.com'].description,
+    assert.equal(suggestions.lookup_table.get('sender:bob@zulip.com').description,
                  'Sent by me');
 
     query = 'sender';
@@ -862,7 +862,7 @@ run_test('topic_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
     assert.equal(describe('te'), "Search for te");
     assert.equal(describe('stream:office topic:team'), "Stream office &gt; team");
@@ -1017,7 +1017,7 @@ run_test('people_suggestions', () => {
 
     assert.deepEqual(suggestions.strings, expected);
 
-    const describe = (q) => suggestions.lookup_table[q].description;
+    const describe = (q) => suggestions.lookup_table.get(q).description;
 
     assert.equal(describe('pm-with:ted@zulip.com'),
                  "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
@@ -1087,7 +1087,7 @@ run_test('people_suggestion (Admin only email visibility)', () => {
 
     assert.deepEqual(suggestions.strings, expected);
 
-    const describe = (q) => suggestions.lookup_table[q].description;
+    const describe = (q) => suggestions.lookup_table.get(q).description;
 
     assert.equal(describe('pm-with:ted@zulip.com'),
                  'Private messages with <strong>Te</strong>d Smith');
