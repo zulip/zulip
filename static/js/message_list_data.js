@@ -334,16 +334,16 @@ MessageListData.prototype = {
             self._local_only.delete(message.id);
         }
 
-        const msg_ids_to_remove = {};
+        const msg_ids_to_remove = new Set();
 
         for (const message of messages) {
-            msg_ids_to_remove[message.id] = true;
+            msg_ids_to_remove.add(message.id);
         }
 
-        this._items = this._items.filter(message => !msg_ids_to_remove.hasOwnProperty(message.id));
+        this._items = this._items.filter(message => !msg_ids_to_remove.has(message.id));
         if (this.muting_enabled) {
             this._all_items = this._all_items.filter(
-                message => !msg_ids_to_remove.hasOwnProperty(message.id)
+                message => !msg_ids_to_remove.has(message.id)
             );
         }
     },
