@@ -101,48 +101,43 @@ function show_emoji_catalog() {
 }
 
 exports.generate_emoji_picker_data = function (realm_emojis) {
-    exports.complete_emoji_catalog = {};
-    exports.complete_emoji_catalog.Custom = [];
-    for (const realm_emoji_name of realm_emojis.keys()) {
-        exports.complete_emoji_catalog.Custom.push(emoji.emojis_by_name.get(realm_emoji_name));
-    }
+    const catalog = new Map();
+    catalog.set("Custom", Array.from(realm_emojis.keys(), realm_emoji_name =>
+        emoji.emojis_by_name.get(realm_emoji_name)
+    ));
 
     for (const [category, codepoints] of Object.entries(emoji_codes.emoji_catalog)) {
-        exports.complete_emoji_catalog[category] = [];
-
+        const emojis = [];
         for (const codepoint of codepoints) {
             if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
                 const emoji_dict = emoji.emojis_by_name.get(
                     emoji_codes.codepoint_to_name[codepoint]
                 );
                 if (emoji_dict !== undefined && emoji_dict.is_realm_emoji !== true) {
-                    exports.complete_emoji_catalog[category].push(emoji_dict);
+                    emojis.push(emoji_dict);
                 }
             }
         }
+        catalog.set(category, emojis);
     }
 
-    exports.complete_emoji_catalog.Popular = [];
-
+    const popular = [];
     for (const codepoint of typeahead.popular_emojis) {
         if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
             const emoji_dict = emoji.emojis_by_name.get(emoji_codes.codepoint_to_name[codepoint]);
             if (emoji_dict !== undefined) {
-                exports.complete_emoji_catalog.Popular.push(emoji_dict);
+                popular.push(emoji_dict);
             }
         }
     }
+    catalog.set("Popular", popular);
 
-    const categories = get_all_emoji_categories().filter(function (category) {
-        return !!exports.complete_emoji_catalog[category.name];
-    });
-    exports.complete_emoji_catalog = categories.map(function (category) {
-        return {
-            name: category.name,
-            icon: category.icon,
-            emojis: exports.complete_emoji_catalog[category.name],
-        };
-    });
+    const categories = get_all_emoji_categories().filter(category => catalog.has(category.name));
+    exports.complete_emoji_catalog = categories.map(category => ({
+        name: category.name,
+        icon: category.icon,
+        emojis: catalog.get(category.name),
+    }));
 };
 
 const generate_emoji_picker_content = function (id) {
