@@ -151,10 +151,10 @@ run_test("update_charged_amount", () => {
     page_params.seat_count = 35;
 
     helpers.update_charged_amount(prices, "annual");
-    assert.equal($("#charged_amount").text(), 80 * 35);
+    assert.equal($("#charged_amount").text(), (80 * 35).toString());
 
     helpers.update_charged_amount(prices, "monthly");
-    assert.equal($("#charged_amount").text(), 8 * 35);
+    assert.equal($("#charged_amount").text(), (8 * 35).toString());
 });
 
 run_test("show_license_section", () => {

@@ -82,7 +82,7 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
 
     const days = Math.floor(hours / 24);
     if (days === 1) {
-        return [i18n.t("Yesterday")];
+        return i18n.t("Yesterday");
     }
 
     if (days < 90) {

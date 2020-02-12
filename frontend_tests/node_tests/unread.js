@@ -6,7 +6,6 @@ zrequire('stream_data');
 zrequire('util');
 zrequire('unread');
 zrequire('settings_notifications');
-const Dict = zrequire('dict').Dict;
 const FoldDict = zrequire('fold_dict').FoldDict;
 const IntDict = zrequire('int_dict').IntDict;
 
@@ -33,13 +32,13 @@ const social = {
 };
 stream_data.add_sub(social);
 
-const zero_counts = {
-    private_message_count: 0,
-    home_unread_messages: 0,
-    mentioned_message_count: 0,
-    stream_count: new IntDict(),
-    pm_count: new Dict(),
-};
+function assert_zero_counts(counts) {
+    assert.equal(counts.private_message_count, 0);
+    assert.equal(counts.home_unread_messages, 0);
+    assert.equal(counts.mentioned_message_count, 0);
+    assert.equal(counts.stream_count.size, 0);
+    assert.equal(counts.pm_count.size, 0);
+}
 
 function test_notifiable_count(home_unread_messages, expected_notifiable_count) {
     set_global('page_params', {
@@ -61,13 +60,13 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
 
 run_test('empty_counts_while_narrowed', () => {
     const counts = unread.get_counts();
-    assert.deepEqual(counts, zero_counts);
+    assert_zero_counts(counts);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
 run_test('empty_counts_while_home', () => {
     const counts = unread.get_counts();
-    assert.deepEqual(counts, zero_counts);
+    assert_zero_counts(counts);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
@@ -563,7 +562,7 @@ run_test('declare_bankruptcy', () => {
     unread.declare_bankruptcy();
 
     const counts = unread.get_counts();
-    assert.deepEqual(counts, zero_counts);
+    assert_zero_counts(counts);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 

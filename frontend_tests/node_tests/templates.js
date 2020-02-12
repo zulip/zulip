@@ -282,11 +282,11 @@ run_test('admin_invites_list', () => {
 
     assert.equal($(buttons[0]).text().trim(), "translated: Revoke");
     assert($(buttons[0]).hasClass("revoke"));
-    assert.equal($(buttons[0]).attr("data-invite-id"), 0);
+    assert.equal($(buttons[0]).attr("data-invite-id"), "0");
 
     assert.equal($(buttons[3]).text().trim(), "translated: Resend");
     assert($(buttons[3]).hasClass("resend"));
-    assert.equal($(buttons[3]).attr("data-invite-id"), 1);
+    assert.equal($(buttons[3]).attr("data-invite-id"), "1");
 
     const span = $(html).find(".email").first();
     assert.equal(span.text(), "alice@zulip.com");
@@ -417,7 +417,7 @@ run_test('alert_word_settings_item', () => {
     assert.equal(title.length, 1);
     assert.equal(title.text().trim(), 'translated: Add a new alert word');
     assert.equal(textbox.length, 1);
-    assert.equal(textbox.attr('maxlength'), 100);
+    assert.equal(textbox.attr('maxlength'), '100');
     assert.equal(textbox.attr('placeholder'), 'translated: Alert word');
     assert.equal(textbox.attr('class'), 'required');
     assert.equal(button.length, 1);
@@ -438,7 +438,7 @@ run_test('bankruptcy_modal', () => {
     };
     const html = render('bankruptcy_modal', args);
     const count = $(html).find("p b");
-    assert.equal(count.text(), 99);
+    assert.equal(count.text(), "99");
 });
 
 run_test('settings/admin_auth_methods_list', () => {
@@ -606,7 +606,7 @@ run_test('custom_user_profile_field', () => {
     const field = {name: "GitHub user name", id: 2, hint: "Or link to profile"};
     const args = {field: field, field_value: {value: "@GitHub", rendered_value: "<p>@GitHub</p>"}, field_type: "text"};
     const html = render('settings/custom_user_profile_field', args);
-    assert.equal($(html).attr('data-field-id'), 2);
+    assert.equal($(html).attr('data-field-id'), "2");
     assert.equal($(html).find('.custom_user_field_value').val(), "@GitHub");
     assert.equal($(html).find('.field_hint').text(), "Or link to profile");
     assert.equal($(html).find('label').text(), "GitHub user name");
@@ -1307,11 +1307,11 @@ run_test('subscription_stream_privacy_modal', () => {
 
     const stream_post_policy = $(html).find("input[name=stream-post-policy]");
     assert.equal(stream_post_policy[0].value,
-                 stream_data.stream_post_policy_values.everyone.code);
+                 stream_data.stream_post_policy_values.everyone.code.toString());
     assert.equal(stream_post_policy[1].value,
-                 stream_data.stream_post_policy_values.admins.code);
+                 stream_data.stream_post_policy_values.admins.code.toString());
     assert.equal(stream_post_policy[2].value,
-                 stream_data.stream_post_policy_values.non_new_members.code);
+                 stream_data.stream_post_policy_values.non_new_members.code.toString());
 
     const button = $(html).find("#change-stream-privacy-button");
     assert(button.hasClass("btn-danger"));
@@ -1673,7 +1673,7 @@ run_test('muted_topic_ui_row', () => {
     html += '</tbody>';
     html += '</table>';
 
-    assert.equal($(html).find("tr").attr("data-stream-id"), 99);
+    assert.equal($(html).find("tr").attr("data-stream-id"), "99");
     assert.equal($(html).find("tr").attr("data-topic"), "pizza");
 });
 
