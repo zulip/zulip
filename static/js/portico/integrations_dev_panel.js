@@ -4,7 +4,7 @@
 // Data Segment: We lazy load the requested fixtures from the backend
 // as and when required and then cache them here.
 
-const loaded_fixtures = {};
+const loaded_fixtures = new Map();
 const url_base = "/api/v1/external/";
 
 // A map defining how to clear the various UI elements.
@@ -104,7 +104,7 @@ function load_fixture_body(fixture_name) {
     /* Given a fixture name, use the loaded_fixtures dictionary to set
      * the fixture body field. */
     const integration_name = get_selected_integration_name();
-    const fixture = loaded_fixtures[integration_name][fixture_name];
+    const fixture = loaded_fixtures.get(integration_name)[fixture_name];
     let fixture_body = fixture.body;
     const headers = fixture.headers;
     if (fixture_body === undefined) {
@@ -126,7 +126,7 @@ function load_fixture_options(integration_name) {
     the fixture options for the fixture_names dropdown and also set
     the fixture body to the first fixture by default. */
     const fixtures_options_dropdown = $("#fixture_name")[0];
-    const fixtures_names = Object.keys(loaded_fixtures[integration_name]).sort();
+    const fixtures_names = Object.keys(loaded_fixtures.get(integration_name)).sort();
 
     fixtures_names.forEach(function (fixture_name) {
         const new_dropdown_option = document.createElement("option");
@@ -193,7 +193,7 @@ function get_fixtures(integration_name) {
         return;
     }
 
-    if (loaded_fixtures[integration_name] !== undefined) {
+    if (loaded_fixtures.has(integration_name)) {
         load_fixture_options(integration_name);
         return;
     }
@@ -206,7 +206,7 @@ function get_fixtures(integration_name) {
         // Since the user may add or modify fixtures as they edit.
         idempotent: false,
         success: function (response) {
-            loaded_fixtures[integration_name] = response.fixtures;
+            loaded_fixtures.set(integration_name, response.fixtures);
             load_fixture_options(integration_name);
             return;
         },
