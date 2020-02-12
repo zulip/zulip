@@ -330,9 +330,8 @@ function round_to_percentages(values, total) {
 
 // Last label will turn into "Other" if time_series data has a label not in labels
 function compute_summary_chart_data(time_series_data, num_steps, labels_) {
-    const data = {};
-    let key;
-    for (key in time_series_data) {
+    const data = new Map();
+    for (const key in time_series_data) {
         if (!time_series_data.hasOwnProperty(key)) {
             continue;
         }
@@ -343,24 +342,22 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
         for (let i = 1; i <= num_steps; i += 1) {
             sum += time_series_data[key][time_series_data[key].length - i];
         }
-        data[key] = sum;
+        data.set(key, sum);
     }
     const labels = labels_.slice();
     const values = [];
     labels.forEach(function (label) {
-        if (data.hasOwnProperty(label)) {
-            values.push(data[label]);
-            delete data[label];
+        if (data.has(label)) {
+            values.push(data.get(label));
+            data.delete(label);
         } else {
             values.push(0);
         }
     });
-    if (!$.isEmptyObject(data)) {
+    if (data.size !== 0) {
         labels[labels.length - 1] = "Other";
-        for (key in data) {
-            if (data.hasOwnProperty(key)) {
-                values[labels.length - 1] += data[key];
-            }
+        for (const sum of data) {
+            values[labels.length - 1] += sum;
         }
     }
     const total = values.reduce(function (a, b) { return a + b; }, 0);
