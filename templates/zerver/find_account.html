@@ -40,9 +40,9 @@
                             <input type="text" autofocus id="emails" name="emails" required />
                             <label for="emails">{{ _('Email addresses') }}</label>
                         </div>
-                        <div id="email-errors"></div>
+                        <div id="error"></div>
                         {% if form.emails.email-errors %}
-                            {% for error in form.emails.email-errors %}
+                            {% for error in form.emails.error %}
                             <button type="submit" disabled>Find teams</button>
                             {% endfor %}
                         {% endif %}
