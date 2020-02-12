@@ -72,7 +72,7 @@ the selector and then calls info_overlay.show.
 // To do so, we need to save away the old position of the
 // scrollbar when we switch to a new tab (and restore it
 // when we switch back.)
-const scroll_positions = {};
+const scroll_positions = new Map();
 
 exports.update_org_settings_menu_item = function () {
     const item = $('.admin-menu-item').expectOne();
@@ -89,7 +89,7 @@ exports.initialize = function () {
     $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
         const old_tab = $(e.relatedTarget).attr('href');
-        scroll_positions[old_tab] = message_viewport.scrollTop();
+        scroll_positions.set(old_tab, message_viewport.scrollTop());
     });
     $('#gear-menu a[data-toggle="tab"]').on('shown', function (e) {
         const target_tab = $(e.target).attr('href');
@@ -108,8 +108,8 @@ exports.initialize = function () {
         // (we apparently have to do this after setting the hash,
         // because otherwise that action may scroll us somewhere.)
         if (target_tab === '#home') {
-            if (scroll_positions.hasOwnProperty(target_tab)) {
-                message_viewport.scrollTop(scroll_positions[target_tab]);
+            if (scroll_positions.has(target_tab)) {
+                message_viewport.scrollTop(scroll_positions.get(target_tab));
             } else {
                 navigate.scroll_to_selected();
             }
