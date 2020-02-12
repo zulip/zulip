@@ -96,16 +96,16 @@ run_test('initizalize', () => {
 
         {
             const search_suggestions = {
-                lookup_table: {
-                    'stream:Verona': {
+                lookup_table: new Map([
+                    ['stream:Verona', {
                         description: 'Stream <strong>Ver</strong>ona',
                         search_string: 'stream:Verona',
-                    },
-                    ver: {
+                    }],
+                    ['ver', {
                         description: 'Search for ver',
                         search_string: 'ver',
-                    },
-                },
+                    }],
+                ]),
                 strings: ['ver', 'stream:Verona'],
             };
 
