@@ -28,7 +28,7 @@ run_test('get_editability', () => {
     // finished being sent yet.
     assert.equal(get_editability({
         sent_by_me: true,
-        local_id: 25,
+        local_id: "25",
     }), editability_types.NO);
 
     // For the rest of these tests, we only consider messages sent by the
