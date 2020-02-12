@@ -1,6 +1,6 @@
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
-const waiting_for_id = {};
+const waiting_for_id = new Map();
 let waiting_for_ack = {};
 
 function resend_message(message, row) {
@@ -127,7 +127,7 @@ exports.insert_local_message = function (message_request, local_id_float) {
     message.id = local_id_float;
     markdown.add_topic_links(message);
 
-    waiting_for_id[message.local_id] = message;
+    waiting_for_id.set(message.local_id, message);
     waiting_for_ack[message.local_id] = message;
 
     message.display_recipient = echo.build_display_recipient(message);
@@ -234,8 +234,8 @@ exports.edit_locally = function edit_locally(message, request) {
 };
 
 exports.reify_message_id = function reify_message_id(local_id, server_id) {
-    const message = waiting_for_id[local_id];
-    delete waiting_for_id[local_id];
+    const message = waiting_for_id.get(local_id);
+    waiting_for_id.delete(local_id);
 
     // reify_message_id is called both on receiving a self-sent message
     // from the server, and on receiving the response to the send request
