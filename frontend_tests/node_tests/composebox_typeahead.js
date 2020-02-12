@@ -308,11 +308,12 @@ run_test('content_typeahead_selected', () => {
     };
     let caret_called1 = false;
     let caret_called2 = false;
-    fake_this.$element.caret = function (arg1, arg2) {
-        if (arguments.length === 0) {  // .caret() used in split_at_cursor
+    fake_this.$element.caret = function (...args) {
+        if (args.length === 0) {  // .caret() used in split_at_cursor
             caret_called1 = true;
             return fake_this.query.length;
         }
+        const [arg1, arg2] = args;
         // .caret() used in setTimeout
         assert.equal(arg1, arg2);
         caret_called2 = true;

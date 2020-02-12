@@ -21,12 +21,12 @@ $(function () {
     // will no longer cast to a Number but rather NaN. For this, we create the
     // `safeOuterHeight` and `safeOuterWidth` functions to safely return a result
     // (or 0).
-    $.fn.safeOuterHeight = function () {
-        return $(this).outerHeight.apply(this, arguments) || 0;
+    $.fn.safeOuterHeight = function (...args) {
+        return this.outerHeight(...args) || 0;
     };
 
-    $.fn.safeOuterWidth = function () {
-        return $(this).outerWidth.apply(this, arguments) || 0;
+    $.fn.safeOuterWidth = function (...args) {
+        return this.outerWidth(...args) || 0;
     };
 
     // For some reason, jQuery wants this to be attached to an element.

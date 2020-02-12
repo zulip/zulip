@@ -124,10 +124,10 @@ run_test('status_from_timestamp', () => {
         pushable: true,
     };
     let called = false;
-    blueslip.error = function () {
-        assert.equal(arguments[0], 'Unexpected status');
-        assert.deepEqual(arguments[1].presence_object, info.random_client);
-        assert.equal(arguments[2], undefined);
+    blueslip.error = function (msg, more_info, stack) {
+        assert.equal(msg, 'Unexpected status');
+        assert.deepEqual(more_info.presence_object, info.random_client);
+        assert.equal(stack, undefined);
         called = true;
     };
     status = status_from_timestamp(

@@ -54,10 +54,8 @@ exports.make_event_store = (selector) => {
             return handler;
         },
 
-        off: function () {
-            const event_name = arguments[0];
-
-            if (arguments.length === 1) {
+        off: function (event_name, ...args) {
+            if (args.length === 0) {
                 on_functions.delete(event_name);
                 return;
             }
@@ -69,15 +67,12 @@ exports.make_event_store = (selector) => {
             throw Error('zjquery does not support this call sequence');
         },
 
-        on: function () {
+        on: function (event_name, ...args) {
             // parameters will either be
             //    (event_name, handler) or
             //    (event_name, sel, handler)
-            const event_name = arguments[0];
-            let handler;
-
-            if (arguments.length === 2) {
-                handler = arguments[1];
+            if (args.length === 1) {
+                const [handler] = args;
                 if (on_functions.has(event_name)) {
                     console.info('\nEither the app or the test can be at fault here..');
                     console.info('(sometimes you just want to call $.clear_all_elements();)\n');
@@ -88,12 +83,11 @@ exports.make_event_store = (selector) => {
                 return;
             }
 
-            if (arguments.length !== 3) {
+            if (args.length !== 2) {
                 throw Error('wrong number of arguments passed in');
             }
 
-            const sel = arguments[1];
-            handler = arguments[2];
+            const [sel, handler] = args;
             assert.equal(typeof sel, 'string', 'String selectors expected here.');
             assert.equal(typeof handler, 'function', 'An handler function expected here.');
 
@@ -267,12 +261,12 @@ exports.make_new_elem = function (selector, opts) {
             event_store.generic_event('keyup', arg);
             return self;
         },
-        off: function () {
-            event_store.off.apply(undefined, arguments);
+        off: function (...args) {
+            event_store.off(...args);
             return self;
         },
-        on: function () {
-            event_store.on.apply(undefined, arguments);
+        on: function (...args) {
+            event_store.on(...args);
             return self;
         },
         parent: function () {
@@ -346,18 +340,18 @@ exports.make_new_elem = function (selector, opts) {
             event_store.trigger(ev);
             return self;
         },
-        val: function () {
-            if (arguments.length === 0) {
+        val: function (...args) {
+            if (args.length === 0) {
                 return value || '';
             }
-            value = arguments[0];
+            [value] = args;
             return self;
         },
-        css: function () {
-            if (arguments.length === 0) {
+        css: function (...args) {
+            if (args.length === 0) {
                 return css || {};
             }
-            css = arguments[0];
+            [css] = args;
             return self;
         },
         visible: function () {

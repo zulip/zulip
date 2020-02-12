@@ -437,11 +437,11 @@ exports.filter_table = function (query) {
 
     ui.reset_scrollbar($("#subscription_overlay .streams-list"));
 
-    const all_stream_ids = [].concat(
-        buckets.name,
-        buckets.desc,
-        buckets.other
-    );
+    const all_stream_ids = [
+        ...buckets.name,
+        ...buckets.desc,
+        ...buckets.other,
+    ];
 
     for (const stream_id of all_stream_ids) {
         ui.get_content_element($('#subscriptions_table .streams-list')).append(widgets[stream_id]);
