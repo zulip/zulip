@@ -13,6 +13,7 @@ exports.make_handlebars = () => {
     const compileFile = filename => {
         const name = "$" + path.relative(templates_path, filename);
         if (!compiled.has(name)) {
+            console.info('        compiling ' + name);
             compiled.add(name);
             hb.registerPartial(
                 name,
