@@ -329,9 +329,11 @@ exports.make_new_elem = function (selector, opts) {
         stop: function () {
             return self;
         },
-        text: function (arg) {
-            if (arg !== undefined) {
-                text = arg;
+        text: function (...args) {
+            if (args.length !== 0) {
+                if (args[0] !== undefined) {
+                    text = args[0].toString();
+                }
                 return self;
             }
             return text;
