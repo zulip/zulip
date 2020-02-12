@@ -216,22 +216,22 @@ function build_arg_list(msg, more_info) {
 
 exports.debug = function blueslip_debug(msg, more_info) {
     const args = build_arg_list(msg, more_info);
-    logger.debug.apply(logger, args);
+    logger.debug(...args);
 };
 
 exports.log = function blueslip_log(msg, more_info) {
     const args = build_arg_list(msg, more_info);
-    logger.log.apply(logger, args);
+    logger.log(...args);
 };
 
 exports.info = function blueslip_info(msg, more_info) {
     const args = build_arg_list(msg, more_info);
-    logger.info.apply(logger, args);
+    logger.info(...args);
 };
 
 exports.warn = function blueslip_warn(msg, more_info) {
     const args = build_arg_list(msg, more_info);
-    logger.warn.apply(logger, args);
+    logger.warn(...args);
     if (page_params.debug_mode) {
         console.trace();
     }
@@ -242,7 +242,7 @@ exports.error = function blueslip_error(msg, more_info, stack) {
         stack = Error().stack;
     }
     const args = build_arg_list(msg, more_info);
-    logger.error.apply(logger, args);
+    logger.error(...args);
     report_error(msg, stack, {more_info: more_info});
 
     if (page_params.debug_mode) {

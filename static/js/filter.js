@@ -507,7 +507,7 @@ Filter.prototype = {
         return sorted_terms;
     },
 
-    can_bucket_by: function () {
+    can_bucket_by: function (...wanted_term_types) {
         // TODO: in ES6 use spread operator
         //
         // Examples call:
@@ -520,7 +520,6 @@ Filter.prototype = {
         // a predicate to a larger list of candidate ids.
         //
         // (It's for optimization, basically.)
-        const wanted_term_types = [].slice.call(arguments);
         const all_term_types = this.sorted_term_types();
         const term_types = all_term_types.slice(0, wanted_term_types.length);
 

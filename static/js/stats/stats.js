@@ -472,7 +472,7 @@ function populate_messages_sent_by_client(data) {
         $('#id_messages_sent_by_client > div').removeClass("spinner");
         const data_ = plot_data[user_button][time_button];
         layout.height = layout.margin.b + data_.trace.x.length * 30;
-        layout.xaxis.range = [0, Math.max.apply(null, data_.trace.x) * 1.3];
+        layout.xaxis.range = [0, Math.max(...data_.trace.x) * 1.3];
         Plotly.newPlot('id_messages_sent_by_client',
                        [data_.trace, data_.trace_annotations],
                        layout,

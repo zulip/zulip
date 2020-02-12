@@ -79,7 +79,7 @@ function test_create_bot_type_input_box_toggle(f) {
     const GENERIC_BOT_TYPE = '1';
 
     $('#create_bot_type :selected').val(EMBEDDED_BOT_TYPE);
-    f.apply();
+    f();
     assert(!create_payload_url.hasClass('required'));
     assert(!payload_url_inputbox.visible());
     assert($('#select_service_name').hasClass('required'));
@@ -87,13 +87,13 @@ function test_create_bot_type_input_box_toggle(f) {
     assert(config_inputbox.visible());
 
     $('#create_bot_type :selected').val(OUTGOING_WEBHOOK_BOT_TYPE);
-    f.apply();
+    f();
     assert(create_payload_url.hasClass('required'));
     assert(payload_url_inputbox.visible());
     assert(!config_inputbox.visible());
 
     $('#create_bot_type :selected').val(GENERIC_BOT_TYPE);
-    f.apply();
+    f();
     assert(!create_payload_url.hasClass('required'));
     assert(!payload_url_inputbox.visible());
     assert(!config_inputbox.visible());

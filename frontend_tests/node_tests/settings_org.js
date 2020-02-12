@@ -429,7 +429,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     parents_obj.set_find_results('.domain', domain_obj);
     elem_obj.prop('checked', allow);
 
-    change_allow_subdomains.apply(elem_obj, [ev]);
+    change_allow_subdomains.call(elem_obj, ev);
 
     success_callback();
     assert.equal(info.val(),
@@ -440,7 +440,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     allow = false;
     elem_obj.prop('checked', allow);
-    change_allow_subdomains.apply(elem_obj, [ev]);
+    change_allow_subdomains.call(elem_obj, ev);
     success_callback();
     assert.equal(info.val(),
                  'translated: Update successful: Subdomains no longer allowed for example.com');
