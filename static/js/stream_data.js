@@ -344,12 +344,12 @@ exports.get_invite_stream_data = function () {
     const default_stream_data = page_params.realm_default_streams.map(filter_stream_data);
 
     // Since, union doesn't work on array of objects we are using filter
-    const is_included = {};
+    const is_included = new Set();
     const streams = default_stream_data.concat(invite_stream_data).filter(sub => {
-        if (is_included[sub.name]) {
+        if (is_included.has(sub.name)) {
             return false;
         }
-        is_included[sub.name] = true;
+        is_included.add(sub.name);
         return true;
     });
     return streams;
