@@ -400,7 +400,7 @@ exports.filter_table = function (query) {
         return parseInt($(row).attr('data-stream-id'), 10);
     }
 
-    const widgets = {};
+    const widgets = new Map();
     const streams_list_scrolltop = ui.get_scroll_element($(".streams-list")).scrollTop();
 
     const stream_ids = [];
@@ -430,7 +430,7 @@ exports.filter_table = function (query) {
             $(row).removeClass('notdisplayed');
         }
 
-        widgets[stream_id] = $(row).detach();
+        widgets.set(stream_id, $(row).detach());
     }
 
     exports.add_tooltips_to_left_panel();
@@ -444,7 +444,7 @@ exports.filter_table = function (query) {
     ];
 
     for (const stream_id of all_stream_ids) {
-        ui.get_content_element($('#subscriptions_table .streams-list')).append(widgets[stream_id]);
+        ui.get_content_element($('#subscriptions_table .streams-list')).append(widgets.get(stream_id));
     }
 
     exports.maybe_reset_right_panel();
