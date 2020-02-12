@@ -216,22 +216,13 @@ exports.find_wildcard_mentions = function (message_content) {
 };
 
 exports.move_array_elements_to_front = function util_move_array_elements_to_front(array, selected) {
-    let i;
-    const selected_hash = {};
-    for (i = 0; i < selected.length; i += 1) {
-        selected_hash[selected[i]] = true;
-    }
+    const selected_hash = new Set(selected);
     const selected_elements = [];
     const unselected_elements = [];
-    for (i = 0; i < array.length; i += 1) {
-        if (selected_hash[array[i]]) {
-            selected_elements.push(array[i]);
-        } else {
-            unselected_elements.push(array[i]);
-        }
+    for (const element of array) {
+        (selected_hash.has(element) ? selected_elements : unselected_elements).push(element);
     }
-    // Add the unselected elements after the selected ones
-    return selected_elements.concat(unselected_elements);
+    return [...selected_elements, ...unselected_elements];
 };
 
 // check by the userAgent string if a user's client is likely mobile.
