@@ -114,14 +114,15 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
     const all_custom_fields = page_params.custom_profile_fields;
     const all_field_types = page_params.custom_profile_field_types;
 
-    const all_field_template_types = {};
-    all_field_template_types[all_field_types.LONG_TEXT.id] = "text";
-    all_field_template_types[all_field_types.SHORT_TEXT.id] = "text";
-    all_field_template_types[all_field_types.CHOICE.id] = "choice";
-    all_field_template_types[all_field_types.USER.id] = "user";
-    all_field_template_types[all_field_types.DATE.id] = "date";
-    all_field_template_types[all_field_types.EXTERNAL_ACCOUNT.id] = "text";
-    all_field_template_types[all_field_types.URL.id] = "url";
+    const all_field_template_types = new Map([
+        [all_field_types.LONG_TEXT.id, "text"],
+        [all_field_types.SHORT_TEXT.id, "text"],
+        [all_field_types.CHOICE.id, "choice"],
+        [all_field_types.USER.id, "user"],
+        [all_field_types.DATE.id, "date"],
+        [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
+        [all_field_types.URL.id, "url"],
+    ]);
 
     all_custom_fields.forEach(function (field) {
         let field_value = people.get_custom_profile_data(user_id, field.id);
@@ -146,7 +147,7 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
 
         const html = render_settings_custom_user_profile_field({
             field: field,
-            field_type: all_field_template_types[field.type],
+            field_type: all_field_template_types.get(field.type),
             field_value: field_value,
             is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
             is_user_field: field.type === all_field_types.USER.id,
