@@ -92,7 +92,7 @@ export function check_duplicate_ids() {
  * after section b.
  */
 export function IterationProfiler() {
-    this.sections = {};
+    this.sections = new Map();
     this.last_time = window.performance.now();
 }
 
@@ -105,31 +105,25 @@ IterationProfiler.prototype = {
         const now = window.performance.now();
         const diff = now - this.last_time;
         if (diff > 1) {
-            if (this.sections._rest_of_iteration === undefined) {
-                this.sections._rest_of_iteration = 0;
-            }
-            this.sections._rest_of_iteration += diff;
+            this.sections.set(
+                "_rest_of_iteration",
+                (this.sections.get("_rest_of_iteration") || 0) + diff
+            );
         }
         this.last_time = now;
     },
 
     section: function (label) {
         const now = window.performance.now();
-        if (this.sections[label] === undefined) {
-            this.sections[label] = 0;
-        }
-        this.sections[label] += now - this.last_time;
+        this.sections.set(label, (this.sections.get(label) || 0) + (now - this.last_time));
         this.last_time = now;
     },
 
     done: function () {
         this.section('_iteration_overhead');
-        let prop;
 
-        for (prop in this.sections) {
-            if (this.sections.hasOwnProperty(prop)) {
-                console.log(prop, this.sections[prop]);
-            }
+        for (const [prop, cost] of this.sections) {
+            console.log(prop, cost);
         }
     },
 };
