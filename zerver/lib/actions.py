@@ -1364,8 +1364,9 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
 
         # Add members of the mentioned user groups into `mentions_user_ids`.
         for group_id in message['message'].mentions_user_group_ids:
-            members = message['mention_data'].get_group_members(group_id)
-            message['message'].mentions_user_ids.update(members)
+            ids = message['mention_data'].get_group_members(group_id)
+            group_mentions = {id: group_id for id in ids if id not in message['message'].mentions_user_ids}
+            message['message'].mentions_user_ids.update(group_mentions)
 
         # Only send data to Tornado about wildcard mentions if message
         # rendering determined the message had an actual wildcard
@@ -1382,7 +1383,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         who were directly mentioned in this message as eligible to
         get UserMessage rows.
         '''
-        mentioned_user_ids = message['message'].mentions_user_ids
+        mentioned_user_ids = message['message'].mentions_user_ids.keys()
         default_bot_user_ids = message['default_bot_user_ids']
         mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
         message['um_eligible_user_ids'] |= mentioned_bot_user_ids
@@ -1470,6 +1471,12 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         '''
         user_ids = message['active_user_ids'] | set(user_flags.keys())
 
+        def get_user_group_id(user_id: int, message: Message) -> Optional[int]:
+            if message.mentions_user_ids.get(user_id, None) is not True:
+                return message.mentions_user_ids.get(user_id, None)
+            else:
+                return None
+
         users = [
             dict(
                 id=user_id,
@@ -1478,6 +1485,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 stream_push_notify=(user_id in message['stream_push_user_ids']),
                 stream_email_notify=(user_id in message['stream_email_user_ids']),
                 wildcard_mention_notify=(user_id in message['wildcard_mention_user_ids']),
+                user_group_mention_id=(get_user_group_id(user_id, message['message'])),
             )
             for user_id in user_ids
         ]

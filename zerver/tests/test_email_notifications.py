@@ -20,7 +20,8 @@ from zerver.models import (
     get_realm,
     get_stream,
     UserProfile,
-    ScheduledEmail
+    ScheduledEmail,
+    UserGroup
 )
 
 class TestFollowupEmails(ZulipTestCase):
@@ -140,12 +141,14 @@ class TestMissedMessages(ZulipTestCase):
                     send_as_user: bool, verify_html_body: bool=False,
                     show_message_content: bool=True,
                     verify_body_does_not_include: Optional[List[str]]=None,
-                    trigger: str='') -> None:
+                    trigger: str='',
+                    user_group_mention_id: Optional[str]=None) -> None:
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
         tokens = self._get_tokens()
         with patch('zerver.lib.email_mirror.generate_missed_message_token', side_effect=tokens):
-            handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id, 'trigger': trigger}])
+            handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id, 'trigger': trigger,
+                                                     'user_group_mention_id': user_group_mention_id}])
         if settings.EMAIL_GATEWAY_PATTERN != "":
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (t,) for t in tokens]
             reply_to_emails = [formataddr(("Zulip", address)) for address in reply_to_addresses]
@@ -218,6 +221,44 @@ class TestMissedMessages(ZulipTestCase):
                          show_message_content=show_message_content,
                          verify_body_does_not_include=verify_body_does_not_include,
                          trigger='mentioned')
+
+    def _extra_context_in_missed_stream_messages_group_mention(self, send_as_user: bool,
+                                                               show_message_content: bool=True) -> None:
+        for i in range(0, 11):
+            self.send_stream_message(self.example_email('othello'), "Denmark", content=str(i))
+        self.send_stream_message(
+            self.example_email('othello'), "Denmark",
+            '11', topic_name='test2')
+        msg_id = self.send_stream_message(
+            self.example_email('othello'), "denmark",
+            '@*hamletcharacters*')
+        group_id = UserGroup.objects.filter(name='hamletcharacters').first().id
+        if show_message_content:
+            verify_body_include = [
+                "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 @*hamletcharacters* -- ",
+                "You are receiving this because @hamletcharacters was mentioned in Zulip Dev."
+            ]
+            email_subject = '#Denmark > test'
+            verify_body_does_not_include = []  # type: List[str]
+        else:
+            # Test in case if message content in missed email message are disabled.
+            verify_body_include = [
+                "This email does not include message content because you have disabled message ",
+                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "View or reply in Zulip",
+                " Manage email preferences: http://zulip.testserver/#settings/notifications"
+            ]
+
+            email_subject = 'New missed messages'
+            verify_body_does_not_include = ['Denmark > test', 'Othello, the Moor of Venice',
+                                            '1 2 3 4 5 6 7 8 9 10 @**King Hamlet**', 'private', 'group',
+                                            "You are receiving this because you were mentioned in Zulip Dev."
+                                            'Reply to this email directly, or view it in Zulip']
+        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user,
+                         show_message_content=show_message_content,
+                         verify_body_does_not_include=verify_body_does_not_include,
+                         trigger='user_group_mentioned',
+                         user_group_mention_id=group_id)
 
     def _extra_context_in_missed_stream_messages_wildcard_mention(self, send_as_user: bool,
                                                                   show_message_content: bool=True) -> None:
@@ -478,6 +519,13 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_extra_context_in_missed_stream_messages(self) -> None:
         self._extra_context_in_missed_stream_messages_mention(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_missed_stream_messages_as_user_group_mention(self) -> None:
+        self._extra_context_in_missed_stream_messages_group_mention(True)
+
+    def test_extra_context_in_missed_stream_messages_group_mention(self) -> None:
+        self._extra_context_in_missed_stream_messages_group_mention(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_missed_stream_messages_as_user_wildcard(self) -> None:

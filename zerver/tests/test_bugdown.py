@@ -1378,7 +1378,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p>@all test</p>')
         self.assertFalse(msg.mentions_wildcard)
-        self.assertEqual(msg.mentions_user_ids, set([]))
+        self.assertEqual(msg.mentions_user_ids, {})
 
     def test_mention_at_everyone(self) -> None:
         user_profile = self.example_user('othello')
@@ -1388,7 +1388,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p>@everyone test</p>')
         self.assertFalse(msg.mentions_wildcard)
-        self.assertEqual(msg.mentions_user_ids, set([]))
+        self.assertEqual(msg.mentions_user_ids, {})
 
     def test_mention_word_starting_with_at_wildcard(self) -> None:
         user_profile = self.example_user('othello')
@@ -1398,7 +1398,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p>test @alleycat.com test</p>')
         self.assertFalse(msg.mentions_wildcard)
-        self.assertEqual(msg.mentions_user_ids, set([]))
+        self.assertEqual(msg.mentions_user_ids, {})
 
     def test_mention_at_normal_user(self) -> None:
         user_profile = self.example_user('othello')
@@ -1408,20 +1408,20 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p>@aaron test</p>')
         self.assertFalse(msg.mentions_wildcard)
-        self.assertEqual(msg.mentions_user_ids, set([]))
+        self.assertEqual(msg.mentions_user_ids, {})
 
     def test_mention_single(self) -> None:
         sender_user_profile = self.example_user('othello')
         user_profile = self.example_user('hamlet')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         user_id = user_profile.id
-
+        mentions_user_ids = {user_profile.id: True}
         content = "@**King Hamlet**"
         self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" '
                          'data-user-id="%s">'
                          '@King Hamlet</span></p>' % (user_id,))
-        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
+        self.assertEqual(msg.mentions_user_ids, mentions_user_ids)
 
     def test_mention_silent(self) -> None:
         sender_user_profile = self.example_user('othello')
@@ -1434,7 +1434,7 @@ class BugdownTest(ZulipTestCase):
                          '<p><span class="user-mention silent" '
                          'data-user-id="%s">'
                          'King Hamlet</span></p>' % (user_id,))
-        self.assertEqual(msg.mentions_user_ids, set())
+        self.assertEqual(msg.mentions_user_ids, {})
 
     def test_possible_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str], has_wildcards: Optional[bool]=False) -> None:
@@ -1455,7 +1455,7 @@ class BugdownTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
-
+        mentions_user_ids = {hamlet.id: True, cordelia.id: True}
         content = "@**King Hamlet** and @**Cordelia Lear**, check this out"
 
         self.assertEqual(render_markdown(msg, content),
@@ -1465,13 +1465,14 @@ class BugdownTest(ZulipTestCase):
                          '<span class="user-mention" '
                          'data-user-id="%s">@Cordelia Lear</span>, '
                          'check this out</p>' % (hamlet.id, cordelia.id))
-        self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
+        self.assertEqual(msg.mentions_user_ids, mentions_user_ids)
 
     def test_mention_in_quotes(self) -> None:
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
         msg = Message(sender=othello, sending_client=get_client("test"))
+        mentions_user_ids = {hamlet.id: True, cordelia.id: True}
 
         content = "> @**King Hamlet** and @**Othello, the Moor of Venice**\n\n @**King Hamlet** and @**Cordelia Lear**"
         self.assertEqual(render_markdown(msg, content),
@@ -1485,7 +1486,7 @@ class BugdownTest(ZulipTestCase):
                          ' and '
                          '<span class="user-mention" data-user-id="%s">@Cordelia Lear</span>'
                          '</p>' % (hamlet.id, othello.id, hamlet.id, cordelia.id))
-        self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
+        self.assertEqual(msg.mentions_user_ids, mentions_user_ids)
 
         # Both fenced quote and > quote should be identical for both silent and regular syntax.
         expected = ('<blockquote>\n<p>'
@@ -1493,16 +1494,16 @@ class BugdownTest(ZulipTestCase):
                     '</p>\n</blockquote>' % (hamlet.id,))
         content = "```quote\n@**King Hamlet**\n```"
         self.assertEqual(render_markdown(msg, content), expected)
-        self.assertEqual(msg.mentions_user_ids, set())
+        self.assertEqual(msg.mentions_user_ids, {})
         content = "> @**King Hamlet**"
         self.assertEqual(render_markdown(msg, content), expected)
-        self.assertEqual(msg.mentions_user_ids, set())
+        self.assertEqual(msg.mentions_user_ids, {})
         content = "```quote\n@_**King Hamlet**\n```"
         self.assertEqual(render_markdown(msg, content), expected)
-        self.assertEqual(msg.mentions_user_ids, set())
+        self.assertEqual(msg.mentions_user_ids, {})
         content = "> @_**King Hamlet**"
         self.assertEqual(render_markdown(msg, content), expected)
-        self.assertEqual(msg.mentions_user_ids, set())
+        self.assertEqual(msg.mentions_user_ids, {})
 
     def test_mention_duplicate_full_name(self) -> None:
         realm = get_realm('zulip')
@@ -1521,6 +1522,7 @@ class BugdownTest(ZulipTestCase):
         twin2 = make_user('twin2@example.com', 'Mark Twin')
         cordelia = self.example_user('cordelia')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        mention_user_ids = {twin1.id: True, twin2.id: True, cordelia.id: True}
 
         content = "@**Mark Twin|{}**, @**Mark Twin|{}** and @**Cordelia Lear**, hi.".format(twin1.id, twin2.id)
 
@@ -1533,7 +1535,7 @@ class BugdownTest(ZulipTestCase):
                          '<span class="user-mention" '
                          'data-user-id="%s">@Cordelia Lear</span>, '
                          'hi.</p>' % (twin1.id, twin2.id, cordelia.id))
-        self.assertEqual(msg.mentions_user_ids, set([twin1.id, twin2.id, cordelia.id]))
+        self.assertEqual(msg.mentions_user_ids, mention_user_ids)
 
     def test_mention_invalid(self) -> None:
         sender_user_profile = self.example_user('othello')
@@ -1542,7 +1544,7 @@ class BugdownTest(ZulipTestCase):
         content = "Hey @**Nonexistent User**"
         self.assertEqual(render_markdown(msg, content),
                          '<p>Hey @<strong>Nonexistent User</strong></p>')
-        self.assertEqual(msg.mentions_user_ids, set())
+        self.assertEqual(msg.mentions_user_ids, {})
 
     def create_user_group_for_test(self, user_group_name: str) -> UserGroup:
         othello = self.example_user('othello')
@@ -1554,6 +1556,7 @@ class BugdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         user_id = user_profile.id
         user_group = self.create_user_group_for_test('support')
+        mentions_user_ids = {user_profile.id: True}
 
         content = "@**King Hamlet** @*support*"
         self.assertEqual(render_markdown(msg, content),
@@ -1564,7 +1567,7 @@ class BugdownTest(ZulipTestCase):
                          'data-user-group-id="%s">'
                          '@support</span></p>' % (user_id,
                                                   user_group.id))
-        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
+        self.assertEqual(msg.mentions_user_ids, mentions_user_ids)
         self.assertEqual(msg.mentions_user_group_ids, set([user_group.id]))
 
     def test_possible_user_group_mentions(self) -> None:
@@ -1732,7 +1735,7 @@ class BugdownTest(ZulipTestCase):
         content = "There #**Nonexistentstream**"
         self.assertEqual(render_markdown(msg, content),
                          '<p>There #<strong>Nonexistentstream</strong></p>')
-        self.assertEqual(msg.mentions_user_ids, set())
+        self.assertEqual(msg.mentions_user_ids, {})
 
     def test_in_app_modal_link(self) -> None:
         msg = '!modal_link(#settings, Settings page)'

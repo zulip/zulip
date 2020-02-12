@@ -1623,7 +1623,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 user_id = "*"
             elif user:
                 if not silent:
-                    self.markdown.zulip_message.mentions_user_ids.add(user['id'])
+                    self.markdown.zulip_message.mentions_user_ids.update({user['id']: True})
                 name = user['full_name']
                 user_id = str(user['id'])
             else:

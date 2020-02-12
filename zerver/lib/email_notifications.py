@@ -24,6 +24,7 @@ from zerver.models import (
     receives_offline_email_notifications,
     get_context_for_message,
     Message,
+    UserGroup,
 )
 
 from datetime import timedelta
@@ -328,13 +329,24 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     })
 
     triggers = list(message['trigger'] for message in missed_messages)
+    user_groups_mention_id = list(message['user_group_mention_id'] for message in missed_messages)
     unique_triggers = set(triggers)
+    triggers_count = triggers.count('mentioned') + triggers.count(
+        'wildcard_mentioned') + triggers.count('user_group_mentioned')
     context.update({
         'mention': 'mentioned' in unique_triggers or 'wildcard_mentioned' in unique_triggers,
+        'user_group_mentioned': 'user_group_mentioned' in unique_triggers,
         'stream_email_notify': 'stream_email_notify' in unique_triggers,
-        'mention_count': triggers.count('mentioned') + triggers.count("wildcard_mentioned"),
+        'mention_count': triggers_count,
     })
 
+    if context['user_group_mentioned']:
+        # Getting first non None user_group_id
+        user_group_id = next((id for id in (user_groups_mention_id) if id is not None), None)
+        user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        if user_group is None:
+            raise AssertionError("No matching user group found")
+        context['group_name'] = user_group.name
     # If this setting (email mirroring integration) is enabled, only then
     # can users reply to email to send message to Zulip. Thus, one must
     # ensure to display warning in the template.
@@ -380,12 +392,13 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             context.update({'huddle_display_name': huddle_display_name})
     elif (missed_messages[0]['message'].recipient.type == Recipient.PERSONAL):
         context.update({'private_message': True})
-    elif (context['mention'] or context['stream_email_notify']):
+    elif (context['mention'] or context['stream_email_notify'] or context['user_group_mentioned']):
         # Keep only the senders who actually mentioned the user
-        if context['mention']:
+        if context['mention'] or context['user_group_mentioned']:
             senders = list(set(m['message'].sender for m in missed_messages
                                if m['trigger'] == 'mentioned' or
-                               m['trigger'] == 'wildcard_mentioned'))
+                               m['trigger'] == 'wildcard_mentioned'
+                               or m['trigger'] == 'user_group_mentioned'))
         message = missed_messages[0]['message']
         stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
         stream_header = "%s > %s" % (stream.name, message.topic_name())
@@ -448,8 +461,10 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
 
 def handle_missedmessage_emails(user_profile_id: int,
                                 missed_email_events: Iterable[Dict[str, Any]]) -> None:
-    message_ids = {event.get('message_id'): event.get('trigger') for event in missed_email_events}
-
+    message_ids = {}  # type Dict[str, Any]
+    for event in missed_email_events:
+        message_id = {event.get('message_id'): [event.get('trigger'), event.get('user_group_mention_id')]}
+        message_ids.update(message_id)
     user_profile = get_user_profile_by_id(user_profile_id)
     if not receives_offline_email_notifications(user_profile):
         return
@@ -504,8 +519,15 @@ def handle_missedmessage_emails(user_profile_id: int,
         for m in messages_by_bucket[bucket_tup]:
             unique_messages[m.id] = dict(
                 message=m,
-                trigger=message_ids.get(m.id)
+                trigger=None,
+                user_group_mention_id=None
             )
+            # For non context messages
+            if message_ids.get(m.id) is not None:
+                unique_messages[m.id].update({'trigger': message_ids.get(m.id)[0]})
+                unique_messages[m.id].update({'user_group_mention_id':
+                                              message_ids.get(m.id)[1]})
+
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,
             list(unique_messages.values()),

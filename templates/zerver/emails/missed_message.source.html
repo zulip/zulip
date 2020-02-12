@@ -27,6 +27,8 @@
     &mdash;<br>
     {% if mention %}
     You are receiving this because you were mentioned in {{ realm_name }}.<br>
+    {% elif user_group_mentioned %}
+    You are receiving this because @{{ group_name }} was mentioned in {{ realm_name }}.<br>
     {% elif stream_email_notify %}
     You are receiving this because you have email notifications enabled for this stream.<br>
     {% endif %}

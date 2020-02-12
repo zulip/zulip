@@ -718,7 +718,8 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
                                 stream_push_notify: bool,
                                 stream_email_notify: bool, stream_name: Optional[str],
                                 always_push_notify: bool, idle: bool,
-                                already_notified: Dict[str, bool]) -> Dict[str, bool]:
+                                already_notified: Dict[str, bool],
+                                user_group_mention_id: Optional[int] = None) -> Dict[str, bool]:
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
@@ -729,14 +730,19 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
         notice = build_offline_notification(user_profile_id, message_id)
         if private_message:
             notice['trigger'] = 'private_message'
-        elif mentioned:
+        # Seprating group mentions from personal mentions
+        elif mentioned and user_group_mention_id is None:
             notice['trigger'] = 'mentioned'
+        elif user_group_mention_id is not None:
+            notice['trigger'] = 'user_group_mentioned'
         elif wildcard_mention_notify:
             notice['trigger'] = 'wildcard_mentioned'
         elif stream_push_notify:
             notice['trigger'] = 'stream_push_notify'
         else:
             raise AssertionError("Unknown notification trigger!")
+        if user_group_mention_id is not None:
+            notice['user_group_mention_id'] = user_group_mention_id
         notice['stream_name'] = stream_name
         if not already_notified.get("push_notified"):
             queue_json_publish("missedmessage_mobile_notifications", notice)
@@ -750,14 +756,18 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
         notice = build_offline_notification(user_profile_id, message_id)
         if private_message:
             notice['trigger'] = 'private_message'
-        elif mentioned:
+        # Seprating group mentions from personal mentions
+        elif mentioned and user_group_mention_id is None:
             notice['trigger'] = 'mentioned'
+        elif user_group_mention_id is not None:
+            notice['trigger'] = 'user_group_mentioned'
         elif wildcard_mention_notify:
             notice['trigger'] = 'wildcard_mentioned'
         elif stream_email_notify:
             notice['trigger'] = 'stream_email_notify'
         else:
             raise AssertionError("Unknown notification trigger!")
+        notice['user_group_mention_id'] = user_group_mention_id
         notice['stream_name'] = stream_name
         if not already_notified.get("email_notified"):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
@@ -859,6 +869,7 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         stream_email_notify = user_data.get('stream_email_notify', False)
         wildcard_mention_notify = (user_data.get('wildcard_mention_notify', False) and
                                    'wildcard_mentioned' in flags and 'read' not in flags)
+        user_group_mention_id = user_data.get('user_group_mention_id', None)
 
         # We first check if a message is potentially mentionable,
         # since receiver_is_off_zulip is somewhat expensive.
@@ -871,7 +882,8 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
                                                  mentioned,
                                                  wildcard_mention_notify,
                                                  stream_push_notify, stream_email_notify,
-                                                 stream_name, always_push_notify, idle, {})
+                                                 stream_name, always_push_notify, idle, {},
+                                                 user_group_mention_id,)
             result['stream_push_notify'] = stream_push_notify
             result['stream_email_notify'] = stream_email_notify
             result['wildcard_mention_notify'] = wildcard_mention_notify

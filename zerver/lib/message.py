@@ -656,7 +656,9 @@ def do_render_markdown(message: Message,
     """
 
     message.mentions_wildcard = False
-    message.mentions_user_ids = set()
+    # mention_user_ids are of type dict where user_id are mapped to either
+    # true (incase of personal mentions) or group_id (incase of Group mentions)
+    message.mentions_user_ids = dict()
     message.mentions_user_group_ids = set()
     message.alert_words = set()
     message.links_for_preview = set()

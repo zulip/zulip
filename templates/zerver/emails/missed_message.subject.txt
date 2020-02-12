@@ -1,7 +1,7 @@
 {% if show_message_content %}
     {% if group_pm %} Group PMs with {{ huddle_display_name }}
     {% elif private_message %} PMs with {{ sender_str }}
-    {% elif stream_email_notify or mention %} #{{ stream_header }}
+    {% elif stream_email_notify or mention or user_group_mentioned %} #{{ stream_header }}
     {% endif %}
 {% else %}
     New missed messages
