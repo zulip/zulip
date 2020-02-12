@@ -414,17 +414,17 @@ exports.filter_table = function (query) {
 
     // If we just re-built the DOM from scratch we wouldn't need
     // all this hidden/notdisplayed logic.
-    const hidden_ids = {};
+    const hidden_ids = new Set();
 
     for (const stream_id of buckets.other) {
-        hidden_ids[stream_id] = true;
+        hidden_ids.add(stream_id);
     }
 
     for (const row of $("#subscriptions_table .stream-row")) {
         const stream_id = stream_id_for_row(row);
 
         // Below code goes away if we don't do sort-DOM-in-place.
-        if (hidden_ids[stream_id]) {
+        if (hidden_ids.has(stream_id)) {
             $(row).addClass('notdisplayed');
         } else {
             $(row).removeClass('notdisplayed');
