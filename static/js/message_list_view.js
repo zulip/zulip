@@ -6,7 +6,7 @@ const render_single_message = require('../templates/single_message.hbs');
 function MessageListView(list, table_name, collapse_messages) {
     this.list = list;
     this.collapse_messages = collapse_messages;
-    this._rows = {};
+    this._rows = new Map();
     this.message_containers = {};
     this.table_name = table_name;
     if (this.table_name) {
@@ -500,7 +500,7 @@ MessageListView.prototype = {
     _put_row: function (row) {
         // row is a jQuery object wrapping one message row
         if (row.hasClass('message_row')) {
-            this._rows[rows.id(row)] = row;
+            this._rows.set(rows.id(row), row);
         }
     },
 
@@ -1305,13 +1305,13 @@ MessageListView.prototype = {
         // jQuery data.  This does mean, however, that we need to be
         // mindful of memory leaks.
         rows.get_table(this.table_name).children().detach();
-        this._rows = {};
+        this._rows.clear();
         this._message_groups = [];
         this.message_containers = {};
     },
 
     get_row: function (id) {
-        const row = this._rows[id];
+        const row = this._rows.get(id);
 
         if (row === undefined) {
             // For legacy reasons we need to return an empty
@@ -1345,14 +1345,14 @@ MessageListView.prototype = {
     },
 
     change_message_id: function (old_id, new_id) {
-        if (this._rows[old_id] !== undefined) {
-            const row = this._rows[old_id];
-            delete this._rows[old_id];
+        if (this._rows.has(old_id)) {
+            const row = this._rows.get(old_id);
+            this._rows.delete(old_id);
 
             row.attr('zid', new_id);
             row.attr('id', this.table_name + new_id);
             row.removeClass('local');
-            this._rows[new_id] = row;
+            this._rows.set(new_id, row);
         }
 
         if (this.message_containers[old_id] !== undefined) {
