@@ -97,23 +97,17 @@ function get_events_success(events) {
             messages = echo.process_from_server(messages);
             if (messages.length > 0) {
                 messages.forEach(message_store.set_message_booleans);
-                let sent_by_this_client = false;
 
-                for (const msg of messages) {
-                    const msg_state = sent_messages.messages[msg.local_id];
-                    if (msg_state) {
-                        // Almost every time, this message will be the
-                        // only one in messages, because multiple messages
-                        // being returned by get_events usually only
-                        // happens when a client is offline, but we know
-                        // this client just sent a message in this batch
-                        // of events.  But in any case,
-                        // insert_new_messages handles multiple messages,
-                        // only one of which was sent by this client,
-                        // correctly.
-                        sent_by_this_client = true;
-                    }
-                }
+                const sent_by_this_client = messages.some(msg =>
+                    sent_messages.messages.has(msg.local_id)
+                );
+                // If some message in this batch of events was sent by this
+                // client, almost every time, this message will be the only one
+                // in messages, because multiple messages being returned by
+                // get_events usually only happens when a client is offline.
+                // But in any case, insert_new_messages handles multiple
+                // messages, only one of which was sent by this client,
+                // correctly.
 
                 message_events.insert_new_messages(messages, sent_by_this_client);
             }
