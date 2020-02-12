@@ -1,3 +1,4 @@
+zrequire('rows');
 zrequire('lightbox');
 
 set_global('blueslip', global.make_zblueslip());

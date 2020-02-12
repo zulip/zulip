@@ -16,8 +16,8 @@ function message_unhover() {
 }
 
 function message_hover(message_row) {
-    const id = parseInt(message_row.attr("zid"), 10);
-    if (current_message_hover && message_row && current_message_hover.attr("zid") === message_row.attr("zid")) {
+    const id = rows.id(message_row);
+    if (current_message_hover && rows.id(current_message_hover) === id) {
         return;
     }
     // Don't allow on-hover editing for local-only messages
