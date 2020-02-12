@@ -40,13 +40,13 @@ set_global('message_list', {});
 set_global('current_msg_list', '');
 
 run_test('process_from_server for un-echoed messages', () => {
-    const waiting_for_ack = {};
+    const waiting_for_ack = new Map();
     const server_messages = [
         {
             local_id: "100.1",
         },
     ];
-    echo._patch_waiting_for_awk(waiting_for_ack);
+    echo._patch_waiting_for_ack(waiting_for_ack);
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, server_messages);
 });
@@ -56,15 +56,15 @@ run_test('process_from_server for differently rendered messages', () => {
     // in local echo.
     const old_value = 'old_value';
     const new_value = 'new_value';
-    const waiting_for_ack = {
-        100.1: {
+    const waiting_for_ack = new Map([
+        ["100.1", {
             content: "<p>A client rendered message</p>",
             timestamp: old_value,
             is_me_message: old_value,
             submessages: old_value,
             topic_links: old_value,
-        },
-    };
+        }],
+    ]);
     const server_messages = [
         {
             local_id: "100.1",
@@ -75,7 +75,7 @@ run_test('process_from_server for differently rendered messages', () => {
             topic_links: new_value,
         },
     ];
-    echo._patch_waiting_for_awk(waiting_for_ack);
+    echo._patch_waiting_for_ack(waiting_for_ack);
     messages_to_rerender = [];
     disparities = [];
     const non_echo_messages = echo.process_from_server(server_messages);
