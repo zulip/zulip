@@ -1758,6 +1758,22 @@ class Message(AbstractMessage):
             return True
         return False
 
+class BugdownMessage(Message):
+    class Meta:
+        proxy = True
+
+    @classmethod
+    def cast(cls, message: Optional[Message]) -> BugdownMessage:
+        """Cast a Message into a BugdownMessage."""
+        if not message:
+            return None
+        message.__class__ = cls
+        assert isinstance(message, BugdownMessage)
+        return message
+
+    def is_proxy(self):
+        return True
+
 def get_context_for_message(message: Message) -> Sequence[Message]:
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(

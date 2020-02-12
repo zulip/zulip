@@ -47,6 +47,7 @@ from zerver.models import (
     get_active_streams,
     MAX_MESSAGE_LENGTH,
     Message,
+    BugdownMessage,
     Realm,
     realm_filters_for_realm,
     UserProfile,
@@ -536,6 +537,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         title = title if title is not None else url_filename(link)
         title = title if title else ""
         desc = desc if desc is not None else ""
+
+        self.markdown.zulip_message.is_proxy()
 
         # Update message.has_image attribute.
         if 'message_inline_image' in class_attr and self.markdown.zulip_message:
@@ -2301,7 +2304,7 @@ def do_convert(content: str,
     _md_engine.reset()
 
     # Filters such as UserMentionPattern need a message.
-    _md_engine.zulip_message = message
+    _md_engine.zulip_message = BugdownMessage.cast(message)
     _md_engine.zulip_realm = message_realm
     _md_engine.zulip_db_data = None  # for now
     _md_engine.image_preview_enabled = image_preview_enabled(
