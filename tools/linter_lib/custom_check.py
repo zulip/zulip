@@ -193,7 +193,6 @@ js_rules = RuleList(
          'exclude': set([
              'frontend_tests/node_tests/copy_and_paste.js',
              'frontend_tests/node_tests/upload.js',
-             'frontend_tests/node_tests/templates.js',
              'static/js/upload.js',
              'static/js/stream_color.js',
          ]),
