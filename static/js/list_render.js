@@ -1,7 +1,7 @@
 const DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
     LOAD_COUNT: 20,
-    instances: {},
+    instances: new Map(),
 };
 
 exports.filter = (value, list, opts) => {
@@ -28,11 +28,11 @@ exports.filter = (value, list, opts) => {
 exports.create = function ($container, list, opts) {
     // this memoizes the results and will return a previously invoked
     // instance's prototype.
-    if (opts.name && DEFAULTS.instances[opts.name]) {
+    if (opts.name && DEFAULTS.instances.get(opts.name)) {
         // the false flag here means "don't run `init`". This is because a
         // user is likely reinitializing and will have put .init() afterwards.
         // This happens when the same codepath is hit multiple times.
-        return DEFAULTS.instances[opts.name]
+        return DEFAULTS.instances.get(opts.name)
         // sets the container to the new container in this prototype's args.
             .set_container($container)
         // sets the input to the new input in the args.
@@ -346,7 +346,7 @@ exports.create = function ($container, list, opts) {
 
     // Save the instance for potential future retrieval if a name is provided.
     if (opts.name) {
-        DEFAULTS.instances[opts.name] = prototype;
+        DEFAULTS.instances.set(opts.name, prototype);
     }
 
     // Attach click handler to column heads for sorting rows accordingly
@@ -358,7 +358,7 @@ exports.create = function ($container, list, opts) {
 };
 
 exports.get = function (name) {
-    return DEFAULTS.instances[name] || false;
+    return DEFAULTS.instances.get(name) || false;
 };
 
 exports.handle_sort = function () {
