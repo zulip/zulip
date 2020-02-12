@@ -7,7 +7,7 @@ function MessageListView(list, table_name, collapse_messages) {
     this.list = list;
     this.collapse_messages = collapse_messages;
     this._rows = new Map();
-    this.message_containers = {};
+    this.message_containers = new Map();
     this.table_name = table_name;
     if (this.table_name) {
         this.clear_table();
@@ -723,7 +723,7 @@ MessageListView.prototype = {
         let last_group_row;
 
         for (const message_container of message_containers) {
-            self.message_containers[message_container.msg.id] = message_container;
+            self.message_containers.set(message_container.msg.id, message_container);
         }
 
         // Render new message groups on the top
@@ -1231,7 +1231,7 @@ MessageListView.prototype = {
         const self = this;
 
         // Convert messages to list messages
-        let message_containers = messages.map(message => self.message_containers[message.id]);
+        let message_containers = messages.map(message => self.message_containers.get(message.id));
         // We may not have the message_container if the stream or topic was muted
         message_containers = message_containers.filter(
             message_container => message_container !== undefined
@@ -1307,7 +1307,7 @@ MessageListView.prototype = {
         rows.get_table(this.table_name).children().detach();
         this._rows.clear();
         this._message_groups = [];
-        this.message_containers = {};
+        this.message_containers.clear();
     },
 
     get_row: function (id) {
@@ -1355,10 +1355,10 @@ MessageListView.prototype = {
             this._rows.set(new_id, row);
         }
 
-        if (this.message_containers[old_id] !== undefined) {
-            const message_container = this.message_containers[old_id];
-            delete this.message_containers[old_id];
-            this.message_containers[new_id] = message_container;
+        if (this.message_containers.has(old_id)) {
+            const message_container = this.message_containers.get(old_id);
+            this.message_containers.delete(old_id);
+            this.message_containers.set(new_id, message_container);
         }
 
     },
