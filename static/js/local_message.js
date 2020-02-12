@@ -17,7 +17,7 @@ exports.insert_message = function (message) {
 
 exports.get_next_id_float = (function () {
 
-    const already_used = {};
+    const already_used = new Set();
 
     return function () {
         const local_id_increment = 0.01;
@@ -28,7 +28,7 @@ exports.get_next_id_float = (function () {
         latest = Math.max(0, latest);
         const local_id_float = truncate_precision(latest + local_id_increment);
 
-        if (already_used[local_id_float]) {
+        if (already_used.has(local_id_float)) {
             // If our id is already used, it is probably an edge case like we had
             // to abort a very recent message.
             blueslip.warn("We don't reuse ids for local echo.");
@@ -47,7 +47,7 @@ exports.get_next_id_float = (function () {
             return;
         }
 
-        already_used[local_id_float] = true;
+        already_used.add(local_id_float);
 
         return local_id_float;
     };
