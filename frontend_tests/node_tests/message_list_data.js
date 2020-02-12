@@ -214,7 +214,7 @@ run_test('errors', () => {
     assert.equal(blueslip.get_test_logs('fatal').length, 1);
 
     blueslip.set_test_data('error', 'Duplicate message added to MessageListData');
-    mld._hash[1] = 'taken';
+    mld._hash.set(1, 'taken');
     mld._add_to_hash(make_msgs([1]));
     assert.equal(blueslip.get_test_logs('error').length, 1);
 });

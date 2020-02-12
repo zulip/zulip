@@ -4,7 +4,7 @@ function MessageListData(opts) {
         this._all_items = [];
     }
     this._items = [];
-    this._hash = {};
+    this._hash = new Map();
     this._local_only = {};
     this._selected_id = -1;
 
@@ -108,7 +108,7 @@ MessageListData.prototype = {
         }
 
         this._items = [];
-        this._hash = {};
+        this._hash.clear();
     },
 
     get: function (id) {
@@ -116,7 +116,7 @@ MessageListData.prototype = {
         if (isNaN(id)) {
             return;
         }
-        return this._hash[id];
+        return this._hash.get(id);
     },
 
     clear_selected_id: function () {
@@ -327,9 +327,9 @@ MessageListData.prototype = {
         const self = this;
 
         for (const message of messages) {
-            const stored_message = self._hash[message.id];
+            const stored_message = self._hash.get(message.id);
             if (stored_message !== undefined) {
-                delete self._hash[stored_message];
+                self._hash.delete(stored_message);
             }
             delete self._local_only[message.id];
         }
@@ -482,11 +482,11 @@ MessageListData.prototype = {
             if (self._is_localonly_id(id)) {
                 self._local_only[id] = elem;
             }
-            if (self._hash[id] !== undefined) {
+            if (self._hash.has(id)) {
                 blueslip.error("Duplicate message added to MessageListData");
                 return;
             }
-            self._hash[id] = elem;
+            self._hash.set(id, elem);
         });
     },
 
@@ -506,10 +506,10 @@ MessageListData.prototype = {
         // Update our local cache that uses the old id to the new id
         function message_sort_func(a, b) {return a.id - b.id;}
 
-        if (this._hash.hasOwnProperty(old_id)) {
-            const msg = this._hash[old_id];
-            delete this._hash[old_id];
-            this._hash[new_id] = msg;
+        if (this._hash.has(old_id)) {
+            const msg = this._hash.get(old_id);
+            this._hash.delete(old_id);
+            this._hash.set(new_id, msg);
         } else {
             return;
         }
@@ -528,7 +528,7 @@ MessageListData.prototype = {
         // If this message is now out of order, re-order and re-render
         const self = this;
         setTimeout(function () {
-            const current_message = self._hash[new_id];
+            const current_message = self._hash.get(new_id);
             const index = self._items.indexOf(current_message);
 
             if (index === -1) {
