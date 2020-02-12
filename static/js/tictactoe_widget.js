@@ -4,7 +4,7 @@ const tictactoe_data_holder = function () {
     const self = {};
 
     const me = people.my_current_user_id();
-    const square_values = {};
+    const square_values = new Map();
     let num_filled = 0;
     let waiting = false;
     let game_over = false;
@@ -22,20 +22,20 @@ const tictactoe_data_holder = function () {
         ];
 
         function line_won(line) {
-            const token = square_values[line[0]];
+            const token = square_values.get(line[0]);
 
             if (!token) {
                 return false;
             }
 
             return (
-                square_values[line[1]] === token &&
-                square_values[line[2]] === token);
+                square_values.get(line[1]) === token &&
+                square_values.get(line[2]) === token);
         }
 
         const board = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         function filled(i) {
-            return square_values[i];
+            return square_values.get(i);
         }
 
         return lines.some(line_won) || board.every(filled);
@@ -44,9 +44,9 @@ const tictactoe_data_holder = function () {
     self.get_widget_data = function () {
         function square(i) {
             return {
-                val: square_values[i],
+                val: square_values.get(i),
                 idx: i,
-                disabled: waiting || square_values[i] || game_over,
+                disabled: waiting || square_values.get(i) || game_over,
             };
         }
 
@@ -92,13 +92,13 @@ const tictactoe_data_holder = function () {
 
                 const token = num_filled % 2 === 0 ? 'X' : 'O';
 
-                if (square_values[idx]) {
+                if (square_values.has(idx)) {
                     return;
                 }
 
                 waiting = sender_id === me;
 
-                square_values[idx] = token;
+                square_values.set(idx, token);
                 num_filled += 1;
 
                 game_over = is_game_over();
