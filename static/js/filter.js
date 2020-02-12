@@ -508,8 +508,6 @@ Filter.prototype = {
     },
 
     can_bucket_by: function (...wanted_term_types) {
-        // TODO: in ES6 use spread operator
-        //
         // Examples call:
         //     filter.can_bucket_by('stream', 'topic')
         //
