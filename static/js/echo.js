@@ -1,7 +1,7 @@
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
 const waiting_for_id = new Map();
-let waiting_for_ack = {};
+let waiting_for_ack = new Map();
 
 function resend_message(message, row) {
     message.content = message.raw_content;
@@ -128,7 +128,7 @@ exports.insert_local_message = function (message_request, local_id_float) {
     markdown.add_topic_links(message);
 
     waiting_for_id.set(message.local_id, message);
-    waiting_for_ack[message.local_id] = message;
+    waiting_for_ack.set(message.local_id, message);
 
     message.display_recipient = echo.build_display_recipient(message);
     local_message.insert_message(message);
@@ -260,7 +260,7 @@ exports.process_from_server = function process_from_server(messages) {
     for (const message of messages) {
         // In case we get the sent message before we get the send ACK, reify here
 
-        const client_message = waiting_for_ack[message.local_id];
+        const client_message = waiting_for_ack.get(message.local_id);
         if (client_message === undefined) {
             // For messages that weren't locally echoed, we go through
             // the "main" codepath that doesn't have to id reconciliation.
@@ -296,7 +296,7 @@ exports.process_from_server = function process_from_server(messages) {
         client_message.submessages = message.submessages;
 
         msgs_to_rerender.push(client_message);
-        delete waiting_for_ack[client_message.id];
+        waiting_for_ack.delete(client_message.id);
     }
 
     if (msgs_to_rerender.length > 0) {
@@ -313,7 +313,7 @@ exports.process_from_server = function process_from_server(messages) {
     return non_echo_messages;
 };
 
-exports._patch_waiting_for_awk = function _patch_waiting_for_awk(data) {
+exports._patch_waiting_for_ack = function _patch_waiting_for_ack(data) {
     // Only for testing
     waiting_for_ack = data;
 };
@@ -340,7 +340,7 @@ exports.initialize = function () {
             const message_id = rows.id(row);
             // Message should be waiting for ack and only have a local id,
             // otherwise send would not have failed
-            const message = waiting_for_ack[message_id];
+            const message = waiting_for_ack.get(message_id);
             if (message === undefined) {
                 blueslip.warn("Got resend or retry on failure request but did not find message in ack list " + message_id);
                 return;
