@@ -20,9 +20,7 @@ set_global('i18n', global.stub_i18n);
 
 zrequire('bot_data');
 zrequire('settings_bots');
-set_global('Handlebars', global.make_handlebars());
 zrequire('people');
-zrequire('templates');
 
 set_global('ClipboardJS', function (sel) {
     assert.equal(sel, '#copy_zuliprc');
