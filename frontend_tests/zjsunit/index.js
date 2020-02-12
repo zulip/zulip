@@ -11,7 +11,7 @@ require("@babel/register")({
     plugins: ["rewire-ts"],
 });
 
-global.assert = require('assert');
+global.assert = require('assert').strict;
 global._ = require('underscore/underscore.js');
 const _ = global._;
 

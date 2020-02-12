@@ -129,8 +129,8 @@ run_test('populate_profile_fields', () => {
                 hint: 'lunch',
                 type: CHOICE_NAME,
                 choices: [
-                    {order: 0, value: 0, text: 'lunch'},
-                    {order: 1, value: 1, text: 'dinner'},
+                    {order: 0, value: '0', text: 'lunch'},
+                    {order: 1, value: '1', text: 'dinner'},
                 ],
                 is_choice_field: true,
                 is_external_account_field: false,

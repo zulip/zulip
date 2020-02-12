@@ -38,9 +38,9 @@ exports.getDecimalColor = function (hexcolor) {
 };
 
 exports.getLighterColor = function (rgb, lightness) {
-    return {r: (lightness * 255 + (1 - lightness) * rgb.r).toFixed(),
-            g: (lightness * 255 + (1 - lightness) * rgb.g).toFixed(),
-            b: (lightness * 255 + (1 - lightness) * rgb.b).toFixed()};
+    return {r: Math.round(lightness * 255 + (1 - lightness) * rgb.r),
+            g: Math.round(lightness * 255 + (1 - lightness) * rgb.g),
+            b: Math.round(lightness * 255 + (1 - lightness) * rgb.b)};
 };
 
 exports.getHexColor = function (rgb) {

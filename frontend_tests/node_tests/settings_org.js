@@ -275,7 +275,7 @@ function test_submit_settings_form(submit_form) {
 
     let expected_value = {
         bot_creation_policy: '1',
-        invite_to_stream_policy: 1,
+        invite_to_stream_policy: '1',
         email_address_visibility: '1',
         add_emoji_by_admins_only: false,
         create_stream_policy: '2',
@@ -589,7 +589,7 @@ function test_sync_realm_settings() {
         page_params.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings('message_content_edit_limit_seconds');
-        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), 2);
+        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
     }
 
     {
@@ -624,7 +624,7 @@ function test_sync_realm_settings() {
         page_params.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings('message_content_edit_limit_seconds');
-        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), 2);
+        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
     }
 
     {
@@ -730,9 +730,9 @@ function test_discard_changes_button(discard_changes) {
     assert.equal(allow_edit_history.prop('checked'), true);
     assert.equal(allow_community_topic_editing.prop('checked'), true);
     assert.equal(msg_edit_limit_setting.val(), "upto_one_hour");
-    assert.equal(message_content_edit_limit_minutes.val(), 60);
+    assert.equal(message_content_edit_limit_minutes.val(), "60");
     assert.equal(msg_delete_limit_setting.val(), "upto_two_min");
-    assert.equal(message_content_delete_limit_minutes.val(), 2);
+    assert.equal(message_content_delete_limit_minutes.val(), "2");
 
     settings_org.change_save_button_state = stubbed_function;
 }

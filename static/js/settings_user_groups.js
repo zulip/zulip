@@ -115,8 +115,8 @@ exports.populate_user_groups = function () {
             if (is_user_group_changed() &&
                !cancel_button.is(':visible')) {
                 saved_button.fadeOut(0);
-                cancel_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1);
-                save_instructions.css({display: 'block', opacity: 0}).fadeTo(400, 1);
+                cancel_button.css({display: 'inline-block', opacity: '0'}).fadeTo(400, 1);
+                save_instructions.css({display: 'block', opacity: '0'}).fadeTo(400, 1);
             } else if (!is_user_group_changed() &&
                 cancel_button.is(':visible')) {
                 cancel_button.fadeOut();
@@ -131,7 +131,7 @@ exports.populate_user_groups = function () {
             if (!saved_button.is(':visible')) {
                 cancel_button.fadeOut(0);
                 save_instructions.fadeOut(0);
-                saved_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1).delay(2000).fadeTo(400, 0);
+                saved_button.css({display: 'inline-block', opacity: '0'}).fadeTo(400, 1).delay(2000).fadeTo(400, 0);
             }
         }
 
