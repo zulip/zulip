@@ -3408,6 +3408,7 @@ class MessageAccessTests(ZulipTestCase):
                                   {"messages": ujson.dumps(sent_message_ids),
                                    "op": "add",
                                    "flag": "read"})
+        self.assert_json_success(result)
 
         # We can't change flags other than "starred" on historical messages:
         result = self.client_post("/json/messages/flags",
