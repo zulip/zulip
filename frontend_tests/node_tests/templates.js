@@ -1450,7 +1450,7 @@ run_test('typing_notifications', () => {
     html += '</ul>';
 
     const li = $(html).find('li').first();
-    assert.equal(li.text(), 'Hamlet is typing...');
+    assert.equal(li.text(), 'translated: Hamlet is typing...');
 
 });
 
