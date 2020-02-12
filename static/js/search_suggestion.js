@@ -832,10 +832,10 @@ exports.finalize_search_result = function (result) {
 
     // Typeahead expects us to give it strings, not objects,
     // so we maintain our own hash back to our objects
-    const lookup_table = {};
+    const lookup_table = new Map();
 
     for (const obj of result) {
-        lookup_table[obj.search_string] = obj;
+        lookup_table.set(obj.search_string, obj);
     }
 
     const strings = result.map(obj => obj.search_string);
