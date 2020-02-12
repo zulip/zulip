@@ -85,10 +85,10 @@ run_test('get_list_info unreads', () => {
         return _.range(15).map(i => 'topic ' + i);
     };
 
-    const unread_cnt = {};
+    const unread_cnt = new Map();
     unread.num_unread_for_topic = (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
-        return unread_cnt[topic_name] || 0;
+        return unread_cnt.get(topic_name) || 0;
     };
 
     /*
@@ -100,8 +100,8 @@ run_test('get_list_info unreads', () => {
         So first we'll get 7 topics, where 2 are
         unread.
     */
-    unread_cnt['topic 8'] = 8;
-    unread_cnt['topic 9'] = 9;
+    unread_cnt.set('topic 8', 8);
+    unread_cnt.set('topic 9', 9);
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 7);
@@ -120,8 +120,8 @@ run_test('get_list_info unreads', () => {
             'topic 9',
         ]);
 
-    unread_cnt['topic 6'] = 6;
-    unread_cnt['topic 7'] = 7;
+    unread_cnt.set('topic 6', 6);
+    unread_cnt.set('topic 7', 7);
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 8);
@@ -141,9 +141,9 @@ run_test('get_list_info unreads', () => {
             'topic 8',
         ]);
 
-    unread_cnt['topic 4'] = 4;
-    unread_cnt['topic 5'] = 5;
-    unread_cnt['topic 13'] = 13;
+    unread_cnt.set('topic 4', 4);
+    unread_cnt.set('topic 5', 5);
+    unread_cnt.set('topic 13', 13);
 
     muting.is_topic_muted = (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
