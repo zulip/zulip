@@ -28,9 +28,9 @@ function elem_to_user_id(elem) {
 // ones that no longer have valid parents in the DOM.
 (function (popover) {
 
-    $.fn.popover = function () {
+    $.fn.popover = function (...args) {
         // apply the jQuery object as `this`, and popover function arguments.
-        popover.apply(this, arguments);
+        popover.apply(this, args);
 
         // if there is a valid "popover" key in the jQuery data object then
         // push it to the array.

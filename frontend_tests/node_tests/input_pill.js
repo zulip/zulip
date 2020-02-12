@@ -513,7 +513,7 @@ run_test('exit button on pill', () => {
     };
     const exit_click_handler = container.get_on_handler('click', '.exit');
 
-    exit_click_handler.apply(exit_button_stub, [e]);
+    exit_click_handler.call(exit_button_stub, e);
 
     assert(next_pill_focused);
 
@@ -548,7 +548,7 @@ run_test('misc things', () => {
         },
     };
 
-    animation_end_handler.apply(input_stub);
+    animation_end_handler.call(input_stub);
     assert(shake_class_removed);
 
     // bad data

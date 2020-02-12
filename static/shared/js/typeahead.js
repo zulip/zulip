@@ -170,9 +170,9 @@ exports.sort_emojis = function (objs, query) {
         (x) => x.emoji_name
     );
 
-    return [].concat(
-        popular_emoji_matches,
-        triage_results.matches,
-        triage_results.rest
-    );
+    return [
+        ...popular_emoji_matches,
+        ...triage_results.matches,
+        ...triage_results.rest,
+    ];
 };

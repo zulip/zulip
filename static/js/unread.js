@@ -157,14 +157,11 @@ exports.unread_pm_counter = (function () {
     };
 
     self.get_msg_ids = function () {
-        const lists = [];
+        const ids = [];
 
         for (const id_set of bucketer.values()) {
-            const members = Array.from(id_set);
-            lists.push(members);
+            ids.push(...Array.from(id_set));
         }
-
-        const ids = [].concat.apply([], lists);
 
         return util.sorted_ids(ids);
     };
@@ -333,15 +330,13 @@ exports.unread_topic_counter = (function () {
             return [];
         }
 
-        const topic_lists = [];
+        const ids = [];
         const sub = stream_data.get_sub_by_id(stream_id);
         for (const [topic, msgs] of per_stream_bucketer) {
             if (sub && !muting.is_topic_muted(stream_id, topic)) {
-                topic_lists.push(Array.from(msgs));
+                ids.push(...Array.from(msgs));
             }
         }
-
-        const ids = [].concat.apply([], topic_lists);
 
         return util.sorted_ids(ids);
     };

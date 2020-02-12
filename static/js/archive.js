@@ -118,11 +118,11 @@ function scroll_finish() {
 }
 
 $(function () {
-    $.fn.safeOuterHeight = function () {
-        return $(this).outerHeight.apply(this, arguments) || 0;
+    $.fn.safeOuterHeight = function (...args) {
+        return this.outerHeight(...args) || 0;
     };
-    $.fn.safeOuterWidth = function () {
-        return $(this).outerWidth.apply(this, arguments) || 0;
+    $.fn.safeOuterWidth = function (...args) {
+        return this.outerWidth(...args) || 0;
     };
     $('.app').scroll(_.throttle(function () {
         scroll_finish();
