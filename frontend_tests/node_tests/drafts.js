@@ -10,21 +10,21 @@ zrequire('util');
 zrequire('stream_color');
 zrequire('colorspace');
 
-let ls_container = {};
+const ls_container = new Map();
 const noop = function () { return; };
 
 set_global('localStorage', {
     getItem: function (key) {
-        return ls_container[key];
+        return ls_container.get(key);
     },
     setItem: function (key, val) {
-        ls_container[key] = val;
+        ls_container.set(key, val);
     },
     removeItem: function (key) {
-        delete ls_container[key];
+        ls_container.delete(key);
     },
     clear: function () {
-        ls_container = {};
+        ls_container.clear();
     },
 });
 set_global('compose', {});
