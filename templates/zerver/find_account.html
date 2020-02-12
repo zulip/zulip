@@ -41,7 +41,7 @@
                             <label for="emails">{{ _('Email addresses') }}</label>
                         </div>
                         <div id="error"></div>
-                        {% if form.emails.email-errors %}
+                        {% if form.emails.error %}
                             {% for error in form.emails.error %}
                             <button type="submit" disabled>Find teams</button>
                             {% endfor %}
