@@ -76,8 +76,8 @@ exports.get_log = function blueslip_get_log() {
     return logger.get_log();
 };
 
-const reported_errors = {};
-const last_report_attempt = {};
+const reported_errors = new Set();
+const last_report_attempt = new Map();
 
 function report_error(msg, stack, opts) {
     opts = _.extend({show_ui_msg: false}, opts);
@@ -93,14 +93,14 @@ function report_error(msg, stack, opts) {
     }
 
     const key = ':' + msg + stack;
-    if (reported_errors.hasOwnProperty(key)
-        || last_report_attempt.hasOwnProperty(key)
+    if (reported_errors.has(key)
+        || last_report_attempt.has(key)
             // Only try to report a given error once every 5 minutes
-            && Date.now() - last_report_attempt[key] <= 60 * 5 * 1000) {
+            && Date.now() - last_report_attempt.get(key) <= 60 * 5 * 1000) {
         return;
     }
 
-    last_report_attempt[key] = Date.now();
+    last_report_attempt.set(key, Date.now());
 
     // TODO: If an exception gets thrown before we setup ajax calls
     // to include the CSRF token, our ajax call will fail.  The
@@ -121,7 +121,7 @@ function report_error(msg, stack, opts) {
         },
         timeout: 3 * 1000,
         success: function () {
-            reported_errors[key] = true;
+            reported_errors.add(key);
             if (opts.show_ui_msg && ui_report !== undefined) {
                 // There are a few races here (and below in the error
                 // callback):
