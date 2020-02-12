@@ -26,17 +26,17 @@ export function print_elapsed_time(name, fun) {
 }
 
 export function check_duplicate_ids() {
-    const ids = {};
+    const ids = new Set();
     const collisions = [];
     let total_collisions = 0;
 
     Array.prototype.slice.call(document.querySelectorAll("*")).forEach(function (o) {
-        if (o.id && ids[o.id]) {
+        if (o.id && ids.has(o.id)) {
             const el = collisions.find(function (c) {
                 return c.id === o.id;
             });
 
-            ids[o.id] += 1;
+            ids.add(o.id);
             total_collisions += 1;
 
             if (!el) {
@@ -51,7 +51,7 @@ export function check_duplicate_ids() {
                 el.count += 1;
             }
         } else if (o.id) {
-            ids[o.id] = 1;
+            ids.add(o.id);
         }
     });
 
