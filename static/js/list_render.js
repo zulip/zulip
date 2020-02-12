@@ -48,7 +48,6 @@ exports.create = function ($container, list, opts) {
         sorting_functions: new Map(),
         generic_sorting_functions: new Map(),
         offset: 0,
-        listRenders: {},
         list: list,
         filtered_list: list,
 
