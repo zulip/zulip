@@ -91,7 +91,7 @@ elif vendor == "ubuntu" and os_version == "16.04":  # xenial
     POSTGRES_VERSION = "9.5"
 elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
     POSTGRES_VERSION = "10"
-elif vendor == "ubuntu" and os_version == "19.04":  # disco
+elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
     POSTGRES_VERSION = "11"
 elif vendor == "fedora" and os_version == "29":
     POSTGRES_VERSION = "10"
