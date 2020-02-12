@@ -52,9 +52,9 @@ function compare_by_huddle(huddle) {
 
     // Construct dict for all huddles, so we can lookup each's recency
     const huddles = activity.get_huddles();
-    const huddle_dict = {};
-    for (let i = 0; i < huddles.length; i += 1) {
-        huddle_dict[huddles[i]] = i + 1;
+    const huddle_dict = new Map();
+    for (const [i, huddle] of huddles.entries()) {
+        huddle_dict.set(huddle, i + 1);
     }
 
     return function (person1, person2) {
@@ -62,8 +62,8 @@ function compare_by_huddle(huddle) {
         const huddle2 = huddle.concat(person2.user_id).sort().join(',');
 
         // If not in the dict, assign an arbitrarily high index
-        const score1 = huddle_dict[huddle1] || 100;
-        const score2 = huddle_dict[huddle2] || 100;
+        const score1 = huddle_dict.get(huddle1) || huddles.length + 1;
+        const score2 = huddle_dict.get(huddle2) || huddles.length + 1;
         const diff = score1 - score2;
 
         if (diff !== 0) {
