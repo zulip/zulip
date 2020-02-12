@@ -53,6 +53,7 @@ from zerver.lib.realm_logo import get_realm_logo_data
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import send_email, FromAddress, send_email_to_admins, \
     clear_scheduled_emails, clear_scheduled_invitation_emails
+from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.storage import static_path
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
@@ -3732,6 +3733,9 @@ def do_create_realm(string_id: str, name: str,
                     emails_restricted_to_domains: Optional[bool]=None) -> Realm:
     if Realm.objects.filter(string_id=string_id).exists():
         raise AssertionError("Realm %s already exists!" % (string_id,))
+    if not server_initialized():
+        logging.info("Server not yet initialized. Creating the internal realm first.")
+        create_internal_realm()
 
     kwargs = {}  # type: Dict[str, Any]
     if emails_restricted_to_domains is not None:
