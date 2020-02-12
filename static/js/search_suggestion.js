@@ -582,7 +582,7 @@ function get_operator_suggestions(last) {
 function make_attacher(base) {
     const self = {};
     self.result = [];
-    const prev = {};
+    const prev = new Set();
 
     function prepend_base(suggestion) {
         if (base && base.description.length > 0) {
@@ -592,8 +592,8 @@ function make_attacher(base) {
     }
 
     self.push = function (suggestion) {
-        if (!prev[suggestion.search_string]) {
-            prev[suggestion.search_string] = suggestion;
+        if (!prev.has(suggestion.search_string)) {
+            prev.add(suggestion.search_string);
             self.result.push(suggestion);
         }
     };
