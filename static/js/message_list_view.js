@@ -500,7 +500,7 @@ MessageListView.prototype = {
     _put_row: function (row) {
         // row is a jQuery object wrapping one message row
         if (row.hasClass('message_row')) {
-            this._rows[row.attr('zid')] = row;
+            this._rows[rows.id(row)] = row;
         }
     },
 
