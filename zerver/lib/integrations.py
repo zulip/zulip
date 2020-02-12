@@ -361,6 +361,12 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration('reviewboard', ['version-control'], display_name="ReviewBoard"),
     WebhookIntegration('semaphore', ['continuous-integration', 'deployment']),
     WebhookIntegration('sentry', ['monitoring']),
+    WebhookIntegration(
+        'slack_incoming',
+        ['communication'],
+        display_name="Slack-compatible webhook",
+        logo='images/integrations/logos/slack.svg',
+    ),
     WebhookIntegration('slack', ['communication']),
     WebhookIntegration('solano', ['continuous-integration'], display_name='Solano Labs'),
     WebhookIntegration('splunk', ['monitoring'], display_name='Splunk'),
