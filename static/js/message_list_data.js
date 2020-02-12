@@ -451,16 +451,12 @@ MessageListData.prototype = {
         // messages that we have recently visited.
         let next_msg_id = 0;
 
-        const id_set = {};
-
-        for (const msg_id of msg_ids) {
-            id_set[msg_id] = true;
-        }
+        const id_set = new Set(msg_ids);
 
         let idx = this.selected_idx() + 1;
         while (idx < this._items.length) {
             const msg_id = this._items[idx].id;
-            if (!id_set[msg_id]) {
+            if (!id_set.has(msg_id)) {
                 break;
             }
             next_msg_id = msg_id;
