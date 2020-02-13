@@ -944,7 +944,7 @@ def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
     return HttpResponseRedirect(redirect_url)
 
 def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
-                                 *args: Any, **kwargs: Any) -> Optional[UserProfile]:
+                                 *args: Any, **kwargs: Any) -> Union[HttpResponse, Optional[UserProfile]]:
     """Responsible for doing the Zulip-account lookup and validation parts
     of the Zulip Social auth pipeline (similar to the authenticate()
     methods in most other auth backends in this file).
@@ -1087,7 +1087,7 @@ def social_auth_finish(backend: Any,
                        details: Dict[str, Any],
                        response: HttpResponse,
                        *args: Any,
-                       **kwargs: Any) -> Optional[UserProfile]:
+                       **kwargs: Any) -> Optional[HttpResponse]:
     """Given the determination in social_auth_associate_user for whether
     the user should be authenticated, this takes care of actually
     logging in the user (if appropriate) and redirecting the browser
