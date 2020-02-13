@@ -49,6 +49,15 @@ function call(args, idempotent) {
     args.success = function wrapped_success(data, textStatus, jqXHR) {
         remove_pending_request(jqXHR);
 
+        if (reload_state.is_in_progress()) {
+            // If we're in the process of reloading the browser,
+            // there's no point in running the success handler,
+            // because all of our state is about to be discarded
+            // anyway.
+            blueslip.log(`Ignoring ${args.type} ${args.url} response while reloading`);
+            return;
+        }
+
         if (!data && idempotent) {
             // If idempotent, retry
             blueslip.log("Retrying idempotent" + args);
