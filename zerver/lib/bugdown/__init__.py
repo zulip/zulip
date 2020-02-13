@@ -507,7 +507,7 @@ class BacktickPattern(markdown.inlinepatterns.Pattern):
         if m.group(4):
             el = markdown.util.etree.Element(self.tag)
             # Modified to not strip whitespace
-            el.text = markdown.util.AtomicString(m.group(4))
+            el.text = markdown.util.AtomicString(markdown.util.code_escape(m.group(4)))
             return el
         else:
             return m.group(2).replace('\\\\', self.ESCAPED_BSLASH)

@@ -47,6 +47,7 @@ import mock
 import os
 import ujson
 import re
+from textwrap import (dedent)
 
 from typing import cast, Any, Dict, List, Optional, Set, Tuple
 
@@ -1853,6 +1854,57 @@ class BugdownTest(ZulipTestCase):
             bugdown.convert(msg, message_realm=realm, message=message),
             '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">hello</a></p>'
         )
+
+    def test_html_entity_conversion(self) -> None:
+        msg = """\
+            Test raw: Hello, &copy;
+            Test inline code: `&copy;`
+
+            Test fenced code:
+            ```
+            &copy;
+            &copy;
+            ```
+
+            Test quote:
+            ~~~quote
+            &copy;
+            ~~~
+
+            Test a list:
+            * &copy;
+            * `&copy;`
+            * ```&copy;```
+
+            Test an indented block:
+
+                &copy;"""
+
+        expected_output = """\
+            <p>Test raw: Hello, &copy;<br>
+            Test inline code: <code>&amp;copy;</code></p>
+            <p>Test fenced code:</p>
+            <div class="codehilite"><pre><span></span>&amp;copy;
+            &amp;copy;
+            </pre></div>
+
+
+            <p>Test quote:</p>
+            <blockquote>
+            <p>&copy;</p>
+            </blockquote>
+            <p>Test a list:</p>
+            <ul>
+            <li>&copy;</li>
+            <li><code>&amp;copy;</code></li>
+            <li><code>&amp;copy;</code></li>
+            </ul>
+            <p>Test an indented block:</p>
+            <div class="codehilite"><pre><span></span>&amp;copy;
+            </pre></div>"""
+
+        converted = bugdown_convert(dedent(msg))
+        self.assertEqual(converted, dedent(expected_output))
 
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
