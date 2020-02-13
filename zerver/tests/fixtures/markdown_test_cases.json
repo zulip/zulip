@@ -42,6 +42,12 @@
       "text_content": " outer      space    "
     },
     {
+      "name": "inline_code_html_entities",
+      "input": "`<&nbsp;>`",
+      "expected_output": "<p><code>&lt;&amp;nbsp;&gt;</code></p>",
+      "text_content": "<&nbsp;>"
+    },
+    {
       "name": "codeblock_backticks",
       "input": "\n```\nfenced code\n```\n\n```inline code```\n",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\n<p><code>inline code</code></p>",

@@ -522,22 +522,18 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
             img.set("src", get_camo_url(url))
 
-class BacktickPattern(markdown.inlinepatterns.Pattern):
+class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
     """ Return a `<code>` element containing the matching text. """
-
-    def __init__(self, pattern: str) -> None:
-        markdown.inlinepatterns.Pattern.__init__(self, pattern)
-        self.ESCAPED_BSLASH = '{}{}{}'.format(markdown.util.STX, ord('\\'), markdown.util.ETX)
-        self.tag = 'code'
-
-    def handleMatch(self, m: Match[str]) -> Union[str, Element]:
-        if m.group(4):
-            el = Element(self.tag)
-            # Modified to not strip whitespace
-            el.text = markdown.util.AtomicString(m.group(4))
-            return el
-        else:
-            return m.group(2).replace('\\\\', self.ESCAPED_BSLASH)
+    def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[None, Element], int, int]:
+        # Let upstream's implementation do its job as it is, we'll
+        # just replace the text to not strip the group because it
+        # makes it impossible to put leading/trailing whitespace in
+        # an inline code block.
+        el, start, end = super().handleMatch(m, data)
+        if m.group(3):
+            # upstream's code here is: m.group(3).strip() rather than m.group(3).
+            el.text = markdown.util.AtomicString(markdown.util.code_escape(m.group(3)))
+        return el, start, end
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
@@ -1928,14 +1924,12 @@ class Bugdown(markdown.Markdown):
         EMPHASIS_RE = r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*'
         ENTITY_RE = markdown.inlinepatterns.ENTITY_RE
         STRONG_EM_RE = r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*'
-        # Inline code block without whitespace stripping
-        BACKTICK_RE = r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'
 
         # Add Inline Patterns.  We use a custom numbering of the
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
         reg = markdown.util.Registry()
-        reg.register(BacktickPattern(BACKTICK_RE), 'backtick', 105)
+        reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), 'backtick', 105)
         reg.register(markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, 'strong,em'), 'strong_em', 100)
         reg.register(UserMentionPattern(mention.find_mentions, self), 'usermention', 95)
         reg.register(Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'), 'tex', 90)
