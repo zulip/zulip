@@ -93,6 +93,8 @@ EXEMPT_FILES = {
     'static/js/pointer.js',
     'static/js/poll_widget.js',
     'static/js/popovers.js',
+    # Temporarily missing full coverage
+    'static/js/presence.js',
     'static/js/ready.js',
     'static/js/realm_icon.js',
     'static/js/realm_logo.js',
