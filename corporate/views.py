@@ -118,7 +118,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
 
     user = request.user
     customer = Customer.objects.filter(realm=user.realm).first()
-    if customer is not None and CustomerPlan.objects.filter(customer=customer).exists():
+    if customer is not None and get_current_plan(customer) is not None:
         return HttpResponseRedirect(reverse('corporate.views.billing_home'))
 
     percent_off = 0
