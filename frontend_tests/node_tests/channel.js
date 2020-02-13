@@ -2,6 +2,7 @@ set_global('blueslip', global.make_zblueslip());
 set_global('$', {});
 
 set_global('reload', {});
+zrequire('reload_state');
 zrequire('channel');
 
 

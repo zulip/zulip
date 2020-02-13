@@ -37,6 +37,8 @@ EXEMPT_FILES = {
     'static/js/billing/helpers.js',
     'static/js/blueslip.js',
     'static/js/blueslip_stacktrace.ts',
+    # Removed temporarily.
+    'static/js/channel.js',
     'static/js/click_handlers.js',
     'static/js/compose_actions.js',
     'static/js/composebox_typeahead.js',
