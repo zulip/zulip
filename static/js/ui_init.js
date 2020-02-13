@@ -1,3 +1,5 @@
+const markdown_config = require('./markdown_config');
+
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
 //       functions to other modules.
@@ -326,7 +328,10 @@ exports.initialize_everything = function () {
     message_fetch.initialize();
     message_scroll.initialize();
     emoji.initialize();
-    markdown.initialize(page_params.realm_filters); // Must happen after emoji.initialize()
+    markdown.initialize(
+        page_params.realm_filters,
+        markdown_config.get_helpers()
+    );
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
