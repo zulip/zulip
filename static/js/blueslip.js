@@ -106,6 +106,9 @@ function report_error(msg, stack, opts) {
     // to include the CSRF token, our ajax call will fail.  The
     // elegant thing to do in that case is to either wait until that
     // setup is done or do it ourselves and then retry.
+    //
+    // Important: We don't use channel.js here so that exceptions
+    // always make it to the server even if reload_state.is_in_progress.
     $.ajax({
         type: 'POST',
         url: '/json/report/error',

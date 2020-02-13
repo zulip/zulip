@@ -318,6 +318,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     channel.del({
         url: '/json/events',
         data: {queue_id: page_params.queue_id},
+        ignore_reload: true,
     });
 };
 
