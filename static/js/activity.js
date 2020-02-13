@@ -308,11 +308,6 @@ function send_presence_to_server(want_redraw) {
     // DEFAULT_EVENT_QUEUE_TIMEOUT_SECS).
     server_events.check_for_unsuspend();
 
-    if (reload_state.is_in_progress()) {
-        blueslip.log("Skipping querying presence because reload in progress");
-        return;
-    }
-
     channel.post({
         url: '/json/users/me/presence',
         data: {
