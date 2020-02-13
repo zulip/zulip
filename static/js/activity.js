@@ -305,6 +305,10 @@ function send_presence_to_server(want_redraw) {
         },
         idempotent: true,
         success: function (data) {
+            if (reload_state.is_in_progress()) {
+                blueslip.log("Ignoring presence response because reload in progress");
+                return;
+            }
 
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {
