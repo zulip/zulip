@@ -1,3 +1,4 @@
+const util = require("./util");
 const autosize = require('autosize');
 
 function update_lock_icon_for_stream(stream_name) {

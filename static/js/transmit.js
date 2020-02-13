@@ -1,3 +1,4 @@
+const util = require("./util");
 function send_message_ajax(request, success, error) {
     channel.post({
         url: '/json/messages',

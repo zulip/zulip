@@ -179,7 +179,6 @@ declare let user_pill: any;
 declare let user_search: any;
 declare let user_status: any;
 declare let user_status_ui: any;
-declare let util: any;
 declare let widgetize: any;
 declare let zcommand: any;
 declare let zform: any;

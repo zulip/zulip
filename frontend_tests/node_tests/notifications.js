@@ -27,7 +27,6 @@ zrequire('muting');
 zrequire('stream_data');
 zrequire('people');
 zrequire('ui');
-zrequire('util');
 
 zrequire('notifications');
 

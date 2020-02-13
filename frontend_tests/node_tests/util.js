@@ -1,8 +1,8 @@
 set_global('$', global.make_zjquery());
 set_global('blueslip', global.make_zblueslip());
 set_global('document', {});
+const util = zrequire('util');
 
-zrequire('util');
 
 run_test('CachedValue', () => {
     let x = 5;

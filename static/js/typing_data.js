@@ -1,3 +1,4 @@
+const util = require("./util");
 const Dict = require('./dict').Dict;
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.

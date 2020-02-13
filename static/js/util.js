@@ -307,5 +307,3 @@ exports.convert_message_topic = function (message) {
         message.topic = message.subject;
     }
 };
-
-window.util = exports;

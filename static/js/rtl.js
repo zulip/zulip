@@ -1,3 +1,4 @@
+const util = require("./util");
 // How to determine the direction of a paragraph (P1-P3): http://www.unicode.org/reports/tr9/tr9-35.html#The_Paragraph_Level
 // Embedding level: http://www.unicode.org/reports/tr9/tr9-35.html#BD2
 // How to find the matching PDI for an isolation initiator: http://www.unicode.org/reports/tr9/tr9-35.html#BD9

@@ -23,7 +23,6 @@ import "../feature_flags.js";
 import "../loading.js";
 import "../schema.js";
 import "../vdom.js";
-import "../util.js";
 import "../search_util.js";
 import "../keydown_util.js";
 import "../lightbox_canvas.js";

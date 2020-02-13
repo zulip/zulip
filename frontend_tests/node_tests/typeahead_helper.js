@@ -9,7 +9,6 @@ zrequire('recent_senders');
 zrequire('pm_conversations');
 zrequire('people');
 zrequire('emoji');
-zrequire('util');
 zrequire('stream_data');
 zrequire('narrow');
 zrequire('hash_util');

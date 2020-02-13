@@ -1,6 +1,5 @@
 set_global('i18n', global.stub_i18n);
 
-zrequire('util');
 zrequire('unread');
 zrequire('stream_data');
 zrequire('people');

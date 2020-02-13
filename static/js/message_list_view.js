@@ -1,3 +1,4 @@
+const util = require("./util");
 const render_bookend = require('../templates/bookend.hbs');
 const render_message_group = require('../templates/message_group.hbs');
 const render_recipient_row = require('../templates/recipient_row.hbs');

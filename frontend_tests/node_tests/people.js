@@ -1,4 +1,3 @@
-zrequire('util');
 zrequire('people');
 
 set_global('blueslip', global.make_zblueslip());

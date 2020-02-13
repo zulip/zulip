@@ -4,7 +4,6 @@ zrequire('people');
 zrequire('Filter', 'js/filter');
 zrequire('stream_data');
 zrequire('narrow_state');
-zrequire('util');
 
 set_global('blueslip', global.make_zblueslip());
 set_global('page_params', {});

@@ -6,7 +6,7 @@
 // The most basic unit tests load up code, call functions,
 // and assert truths:
 
-zrequire('util');
+const util = zrequire('util');
 assert(!util.find_wildcard_mentions('boring text'));
 assert(util.find_wildcard_mentions('mention @**everyone**'));
 

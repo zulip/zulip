@@ -7,7 +7,6 @@ set_global('i18n', global.stub_i18n);
 set_global('$', global.make_zjquery());
 zrequire('people');
 zrequire('presence');
-zrequire('util');
 zrequire('user_status');
 
 zrequire('buddy_data');

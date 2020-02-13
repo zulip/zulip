@@ -7,7 +7,6 @@ set_global('message_store', {
 
 set_global('i18n', global.stub_i18n);
 
-zrequire('util');
 zrequire('typeahead_helper');
 set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');

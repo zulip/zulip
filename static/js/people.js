@@ -1,3 +1,4 @@
+const util = require("./util");
 require("unorm");  // String.prototype.normalize polyfill for IE11
 const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;

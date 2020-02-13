@@ -21,7 +21,6 @@ set_global('hash_util', {
 zrequire('people');
 zrequire('compose_ui');
 zrequire('compose');
-zrequire('util');
 zrequire('compose_state');
 zrequire('compose_actions');
 zrequire('fenced_code');

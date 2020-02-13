@@ -1,3 +1,4 @@
+const util = require("./util");
 const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
 const IntDict = require('./int_dict').IntDict;

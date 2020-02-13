@@ -10,7 +10,6 @@ set_global('document', null);
 set_global('blueslip', global.make_zblueslip());
 
 zrequire('FetchStatus', 'js/fetch_status');
-zrequire('util');
 zrequire('muting');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');

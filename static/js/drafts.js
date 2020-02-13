@@ -1,3 +1,4 @@
+const util = require("./util");
 const render_draft_table_body = require('../templates/draft_table_body.hbs');
 
 const draft_model = (function () {

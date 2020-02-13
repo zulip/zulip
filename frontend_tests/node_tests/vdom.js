@@ -1,5 +1,4 @@
 set_global('blueslip', global.make_zblueslip());
-zrequire('util');
 zrequire('vdom');
 
 run_test('basics', () => {

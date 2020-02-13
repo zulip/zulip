@@ -1,3 +1,4 @@
+const util = require("./util");
 function MessageListData(opts) {
     this.muting_enabled = opts.muting_enabled;
     if (this.muting_enabled) {

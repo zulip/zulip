@@ -94,7 +94,6 @@ zrequire('message_flags');
 zrequire('message_store');
 zrequire('people');
 zrequire('starred_messages');
-zrequire('util');
 zrequire('user_status');
 zrequire('server_events_dispatch');
 

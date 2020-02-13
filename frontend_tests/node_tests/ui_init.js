@@ -18,6 +18,7 @@
     some things can happen later in a `launch` method.
 
 */
+const util = zrequire('util');
 set_global('i18n', global.stub_i18n);
 set_global('document', {
     location: {
@@ -68,7 +69,6 @@ for (const mod of ignore_modules) {
 
 emoji.emojis_by_name = new Map();
 
-zrequire('util');
 
 util.is_mobile = () => false;
 global.stub_templates(() => 'some-html');
