@@ -354,6 +354,56 @@
         padding: 5px;
         border: none;
     }
+
+    .admonition {
+        .admonition-title + * {
+            margin-top: 10px;
+        }
+
+        p.admonition-title {
+            font-weight: bold;
+        }
+
+        &.admonition-danger,
+        &.admonition-error,
+        &.admonition-critical {
+            border-color: hsl(354, 70%, 54%);
+            .admonition-title {
+                color: hsl(354, 70%, 54%);
+            }
+        }
+
+        &.admonition-warning,
+        &.admonition-caution {
+            border-color: hsl(45, 100%, 51%);
+            .admonition-title {
+                color: hsl(45, 100%, 51%);
+            }
+        }
+
+        &.admonition-success {
+            border-color: hsl(134, 61%, 41%);
+            .admonition-title {
+                color: hsl(134, 61%, 41%);
+            }
+        }
+
+        &.admonition-neutral,
+        &.admonition-secondary {
+            border-color: hsl(208, 7%, 46%);
+            .admonition-title {
+                color: hsl(208, 7%, 46%);
+            }
+        }
+
+        &.admonition-primary,
+        &.admonition-info {
+            border-color: hsl(211, 100%, 50%);
+            .admonition-title {
+                color: hsl(211, 100%, 50%);
+            }
+        }
+    }
 }
 
 @media (max-width: 600px) {

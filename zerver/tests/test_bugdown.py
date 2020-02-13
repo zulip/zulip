@@ -1854,6 +1854,69 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">hello</a></p>'
         )
 
+    def test_indented_admonition(self) -> None:
+        msg = '!!! info "This is a quote"\n    Indented\nAfter admonition'
+        converted = bugdown_convert(msg)
+        expected = """
+<blockquote class="admonition admonition-info">
+<p class="admonition-title">This is a quote</p>
+<p>Indented</p>
+</blockquote>
+<p>After admonition</p>""".strip()
+        self.assertEqual(converted, expected)
+
+    def test_invalid_admonition_markup(self) -> None:
+        # Assert that we can't inject HTML via the admonition class tags
+
+        msg = '!!! <script>alert(window.cookie)</script> "This is a quote"\n    Indented\nAfter admonition'
+        converted = bugdown_convert(msg)
+        expected = """<p>!!! &lt;script&gt;alert(window.cookie)&lt;/script&gt; "This is a quote"<br>
+    Indented<br>
+After admonition</p>
+""".strip()
+        self.assertEqual(converted, expected)
+
+    def test_invalid_admonition_class(self) -> None:
+        # Assert that only known valid admonition tags are accepted
+
+        msg = '!!! highlight "This is a quote"'
+        converted = bugdown_convert(msg)
+        expected = """
+<blockquote class="admonition">
+<p class="admonition-title">This is a quote</p>
+</blockquote>
+""".strip()
+        self.assertEqual(converted, expected)
+
+    def test_admonition_without_title(self) -> None:
+        msg = "!!! info\n    This is text without a title"
+        converted = bugdown_convert(msg)
+        expected = """
+<blockquote class="admonition admonition-info">
+<p>This is text without a title</p>
+</blockquote>
+""".strip()
+        self.assertEqual(converted, expected)
+
+    def test_admonition_with_multiple_classes(self) -> None:
+        msg = "!!! info danger"
+        converted = bugdown_convert(msg)
+        expected = """<blockquote class="admonition admonition-info admonition-danger"></blockquote>"""
+        self.assertEqual(converted, expected)
+
+    def test_multiblock_indented_admonition(self) -> None:
+        msg = '!!! info "This is a quote"\n    Indented\n\n    Also Indented\nAfter admonition'
+        converted = bugdown_convert(msg)
+        expected = """
+<blockquote class="admonition admonition-info">
+<p class="admonition-title">This is a quote</p>
+<p>Indented</p>
+<p>Also Indented</p>
+</blockquote>
+<p>After admonition</p>""".strip()
+        self.assertEqual(converted, expected)
+
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'

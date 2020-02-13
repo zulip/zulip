@@ -17,6 +17,7 @@ to allow you to easily format your messages.
 * [Status messages](#status-messages)
 * [Tables](#tables)
 * [Paragraphs and lines](#paragraphs-and-lines)
+* [Admonitions](#admonitions)
 
 ## Emphasis
 
@@ -205,6 +206,26 @@ Under the line
 ```
 
 ![](/static/images/help/markdown-paragraph.png)
+
+## [Admonitions](#admonitions)
+
+Admonitions are used to provide colorization for a block of test. You will most likely
+use them in the context of bots or webhooks.
+
+Supported statuses are:
+
+* success (green)
+* warning, caution (yellow)
+* danger, error, critical (red)
+* info, primary (blue)
+* neutral, secondary (gray)
+
+```
+!!! success "Great success!"
+    Hooray! Good things are happening! :party_ball:
+```
+
+![](/static/images/help/markdown-admonition.png)
 
 ## In-app help
 

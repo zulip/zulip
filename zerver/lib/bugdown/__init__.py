@@ -28,7 +28,7 @@ import requests
 from django.conf import settings
 from django.db.models import Q
 
-from markdown.extensions import codehilite, nl2br, tables, sane_lists
+from markdown.extensions import codehilite, nl2br, tables, sane_lists, admonition
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
@@ -1489,6 +1489,65 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         super().__init__(parser)
         parser.markdown.tab_length = 4
 
+class AdmonitionProcessor(admonition.AdmonitionProcessor):
+    """ Process !!! admonition blocks to produce colored status messages
+
+        This was modified from the standard AdmonitionProcessor to:
+
+        1. Change the element used from <div> to <blockquote> so that the
+           rendering in clients without additional CSS classes is reasonable.
+        2. Prefix classes added to the admonition blockquote with `admonition-`
+           to avoid conflicts with existing CSS classes in the stylesheet, such
+           as .info
+    """
+
+    # We constrain the accepted classes to a known list. While the danger of a user-selected
+    # class being added to the element is minimal thanks to the admonition- prefixing, this
+    # still will be helpful for warding off unexpected bugs down the line.
+    VALID_CLASSES = [
+        "danger", "error", "critical",
+        "warning", "caution",
+        "success",
+        "neutral", "secondary",
+        "primary", "info"
+    ]
+
+    def get_class_and_title(self, match: Match) -> Tuple[List[str], str]:
+        klass, title = match.group(1).lower(), match.group(2)
+        klass = self.RE_SPACES.sub(' ', klass)
+        prefixed = ["admonition-{}".format(k) for k in klass.split(" ") if k in self.VALID_CLASSES]
+        klasses = [self.CLASSNAME] + prefixed
+        return klasses, title
+
+    def run(self, parent: Element, blocks: List[str]) -> None:
+        sibling = self.lastChild(parent)
+        block = blocks.pop(0)
+        m = self.RE.search(block)
+
+        if m:
+            block = block[m.end():]  # removes the first line
+
+        block, theRest = self.detab(block)
+
+        if m:
+            klasses, title = self.get_class_and_title(m)
+            div = etree.SubElement(parent, 'blockquote')
+            div.set('class', " ".join(klasses))
+            if title:
+                p = etree.SubElement(div, 'p')
+                p.text = title
+                p.set('class', self.CLASSNAME_TITLE)
+        else:
+            div = sibling
+
+        self.parser.parseChunk(div, block)
+
+        if theRest:
+            # This block contained unindented line(s) after the first indented
+            # line. Insert these lines as the first block of the master blocks
+            # list for future processing.
+            blocks.insert(0, theRest)
+
 class HashHeaderProcessor(markdown.blockprocessors.HashHeaderProcessor):
     """ Process Hash Headers.
 
@@ -1865,6 +1924,7 @@ class Bugdown(markdown.Markdown):
         # quote - replaced by ours
         parser = markdown.blockprocessors.BlockParser(self)
         parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 85)
+        parser.blockprocessors.register(AdmonitionProcessor(parser), 'admonition', 83)
         if not self.getConfig('code_block_processor_disabled'):
             parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 80)
         parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 78)
