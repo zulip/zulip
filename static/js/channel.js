@@ -16,6 +16,13 @@ function remove_pending_request(jqXHR) {
 }
 
 function call(args, idempotent) {
+    if (reload_state.is_in_progress() && !args.ignore_reload) {
+        // If we're in the process of reloading, most HTTP requests
+        // are useless, with exceptions like cleaning up our event
+        // queue and blueslip (Which doesn't use channel.js).
+        return;
+    }
+
     // Wrap the error handlers to reload the page if we get a CSRF error
     // (What probably happened is that the user logged out in another tab).
     let orig_error = args.error;
