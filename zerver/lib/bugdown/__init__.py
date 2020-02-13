@@ -1517,6 +1517,51 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)
 
+class CodeBlockProcessor(markdown.blockprocessors.BlockProcessor):
+    """ Process code blocks.
+
+        Based on markdown.blockprocessors.CodeBlockProcessor, but don't perform code_escape
+        since we escape entities earlier.
+    """
+
+    def test(self, parent: Any, block: str) -> bool:
+        return block.startswith(' '*self.tab_length)
+
+    def run(self, parent: Element, blocks: List[str]) -> None:
+        sibling = self.lastChild(parent)
+        block = blocks.pop(0)
+        theRest = ''
+        if (sibling is not None and sibling.tag == "pre" and
+           len(sibling) and sibling[0].tag == "code"):
+            # The previous block was a code block. As blank lines do not start
+            # new code blocks, append this block to the previous, adding back
+            # linebreaks removed from the split into a list.
+            code = sibling[0]
+            block, theRest = self.detab(block)
+            code.text = markdown.util.AtomicString(
+                '{}\n{}\n'.format(code.text, block.rstrip())
+            )
+        else:
+            # This is a new codeblock. Create the elements and insert text.
+            pre = etree.SubElement(parent, 'pre')
+            code = etree.SubElement(pre, 'code')
+            block, theRest = self.detab(block)
+            code.text = markdown.util.AtomicString('%s\n' % (block.rstrip(),))
+        if theRest:
+            # This block contained unindented line(s) after the first indented
+            # line. Insert these lines as the first block of the master blocks
+            # list for future processing.
+            blocks.insert(0, theRest)
+
+class EntityEscapePreprocessor(markdown.preprocessors.Preprocessor):
+    """ Escapes user inputs of HTML entities from `&entity;` to `&amp;entity;` """
+
+    # from markdown/inlinepatterns.py with an extra capture group
+    ENTITY_RE = re.compile(r'(&(\#[0-9]+|\#x[0-9a-fA-F]+|[a-zA-Z0-9]+);)')
+
+    def run(self, lines: List[str]) -> List[str]:
+        return [self.ENTITY_RE.sub(r"&amp;\2;", line) for line in lines]
+
 class BugdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Allows list blocks that come directly after another block
         to be rendered as a list.
@@ -1847,11 +1892,15 @@ class Bugdown(markdown.Markdown):
         #
         # html_block - insecure
         # reference - references don't make sense in a chat context.
+        #
+        # We add the following preprocessors:
+        # entity_escape - escape HTML entities into &amp;(entity);
         preprocessors = markdown.util.Registry()
         preprocessors.register(BugdownListPreprocessor(self), 'hanging_lists', 35)
         preprocessors.register(markdown.preprocessors.NormalizeWhitespace(self), 'normalize_whitespace', 30)
         preprocessors.register(fenced_code.FencedBlockPreprocessor(self), 'fenced_code_block', 25)
         preprocessors.register(AlertWordsNotificationProcessor(self), 'custom_text_notifications', 20)
+        preprocessors.register(EntityEscapePreprocessor(self), 'entity_escape', 10)
         return preprocessors
 
     def build_block_parser(self) -> markdown.util.Registry:
@@ -1863,10 +1912,11 @@ class Bugdown(markdown.Markdown):
         # olist - replaced by ours
         # ulist - replaced by ours
         # quote - replaced by ours
+        # code  - replaced by ours
         parser = markdown.blockprocessors.BlockParser(self)
         parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 85)
         if not self.getConfig('code_block_processor_disabled'):
-            parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 80)
+            parser.blockprocessors.register(CodeBlockProcessor(parser), 'code', 80)
         parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 78)
         # We get priority 75 from 'table' extension
         parser.blockprocessors.register(markdown.blockprocessors.HRProcessor(parser), 'hr', 70)

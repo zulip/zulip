@@ -1854,6 +1854,62 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">hello</a></p>'
         )
 
+    def test_html_entity_conversion(self) -> None:
+        msg = """
+Test raw: Hello, &copy;
+
+Test inline code: `&copy;`
+
+Test fenced code:
+```
+&copy;
+&copy;
+```
+
+Test quote:
+
+~~~quote
+&copy;
+~~~
+
+Test a list:
+
+* &copy;
+* `&copy;`
+* ```&copy;```
+
+Test an indented block:
+
+    &copy;
+""".strip()
+        converted = bugdown_convert(msg)
+        print(converted)
+        expected_output = """
+<p>Test raw: Hello, &amp;copy;</p>
+<p>Test inline code: <code>&amp;copy;</code></p>
+<p>Test fenced code:</p>
+<div class="codehilite"><pre><span></span>&amp;copy;
+&amp;copy;
+</pre></div>
+
+
+<p>Test quote:</p>
+<blockquote>
+<p>&amp;copy;</p>
+</blockquote>
+<p>Test a list:</p>
+<ul>
+<li>&amp;copy;</li>
+<li><code>&amp;copy;</code></li>
+<li><code>&amp;copy;</code></li>
+</ul>
+<p>Test an indented block:</p>
+<div class="codehilite"><pre><span></span>&amp;copy;
+</pre></div>
+""".strip()
+        self.assertEqual(converted, expected_output)
+
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'
