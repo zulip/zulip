@@ -104,11 +104,13 @@
         "./static/js/bundles/portico.js",
         "./static/js/portico/integrations_dev_panel.js",
         "./static/styles/portico/integrations_dev_panel.css",
+        "./static/js/reload_state.js",
         "./static/js/channel.js"
     ],
     "email-log": [
         "./static/js/bundles/common.js",
         "./static/js/portico/email_log.js",
+        "./static/js/reload_state.js",
         "./static/js/channel.js"
     ],
     "stats": [
