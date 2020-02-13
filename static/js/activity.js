@@ -290,6 +290,24 @@ exports.compute_active_status = function () {
 };
 
 function send_presence_to_server(want_redraw) {
+    // Zulip has 2 data feeds coming from the server to the client:
+    // The server_events data, and this presence feed.  Data from
+    // server_events is nicely serialized, but if we've been offline
+    // and not running for a while (e.g. due to suspend), we can end
+    // up with inconsistent state where users appear in presence that
+    // don't appear in people.js.  We handle this in 2 stages.  First,
+    // here, we trigger an extra run of the clock-jump check that
+    // detects whether this device just resumed from suspend.  This
+    // ensures that server_events.suspect_offline is always up-to-date
+    // before we initiate a presence request.
+    //
+    // If we did just resume, it will also trigger an immediate
+    // server_events request to the server (the success handler to
+    // which will clear suspect_offline and potentially trigger a
+    // reload if the device was offline for more than
+    // DEFAULT_EVENT_QUEUE_TIMEOUT_SECS).
+    server_events.check_for_unsuspend();
+
     if (reload_state.is_in_progress()) {
         blueslip.log("Skipping querying presence because reload in progress");
         return;
@@ -318,19 +336,6 @@ function send_presence_to_server(want_redraw) {
             }
 
             exports.new_user_input = false;
-
-            // Zulip has 2 data feeds coming from the server to the
-            // client: The server_events data, and this presence feed.
-            // Everything in server_events is nicely serialized, but
-            // if we've been offline and not running for a while
-            // (e.g. due to suspend), we can end up throwing
-            // exceptions due to users appearing in presence that we
-            // haven't learned about yet.  We handle this in 2 stages.
-            // First, here, we make sure that we've confirmed whether
-            // we are indeed in the unsuspend case.  Then, in
-            // `presence.set_info`, we only complain about unknown
-            // users if server_events does not suspect we're offline.
-            server_events.check_for_unsuspend();
 
             if (want_redraw) {
                 presence.set_info(data.presences, data.server_timestamp);
