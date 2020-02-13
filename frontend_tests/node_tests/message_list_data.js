@@ -1,5 +1,4 @@
 zrequire('unread');
-zrequire('util');
 
 zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');

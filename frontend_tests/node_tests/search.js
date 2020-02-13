@@ -3,7 +3,6 @@ set_global('page_params', {
 });
 zrequire('search');
 zrequire('search_pill');
-zrequire('util');
 zrequire('Filter', 'js/filter');
 zrequire('search_pill_widget');
 

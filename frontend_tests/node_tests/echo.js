@@ -7,7 +7,6 @@ set_global('page_params', {});
 set_global('blueslip',  global.make_zblueslip());
 
 zrequire('echo');
-zrequire('util');
 zrequire('people');
 
 let disparities = [];

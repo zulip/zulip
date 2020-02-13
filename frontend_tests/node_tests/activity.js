@@ -86,7 +86,6 @@ zrequire('templates');
 zrequire('unread');
 zrequire('hash_util');
 zrequire('narrow');
-zrequire('util');
 zrequire('presence');
 zrequire('people');
 zrequire('buddy_data');

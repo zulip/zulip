@@ -1,3 +1,4 @@
+const util = require("./util");
 // Miscellaneous early setup.
 
 $(function () {

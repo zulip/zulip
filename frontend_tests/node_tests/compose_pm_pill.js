@@ -7,7 +7,6 @@ const _people = {
 };
 
 set_global('people', _people);
-zrequire('util');
 
 zrequire('compose_pm_pill');
 zrequire('input_pill');

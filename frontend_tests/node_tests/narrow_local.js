@@ -5,7 +5,6 @@ zrequire('MessageListData', 'js/message_list_data');
 zrequire('narrow_state');
 zrequire('narrow');
 zrequire('stream_data');
-zrequire('util');
 
 set_global('message_list', {});
 set_global('muting', {

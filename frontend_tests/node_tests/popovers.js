@@ -11,7 +11,6 @@ zrequire('user_status');
 zrequire('settings_org');
 zrequire('feature_flags');
 zrequire('message_edit');
-zrequire('util');
 
 const noop =  function () {};
 $.fn.popover = noop; // this will get wrapped by our code

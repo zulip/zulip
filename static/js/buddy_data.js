@@ -1,3 +1,4 @@
+const util = require("./util");
 /*
 
    This is the main model code for building the buddy list.

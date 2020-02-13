@@ -1,3 +1,4 @@
+const util = require("./util");
 let jwindow;
 const dimensions = {};
 let in_stoppable_autoscroll = false;

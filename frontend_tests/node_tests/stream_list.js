@@ -7,7 +7,6 @@ const IntDict = zrequire('int_dict').IntDict;
 
 zrequire('unread_ui');
 zrequire('Filter', 'js/filter');
-zrequire('util');
 zrequire('topic_data');
 zrequire('stream_sort');
 zrequire('colorspace');

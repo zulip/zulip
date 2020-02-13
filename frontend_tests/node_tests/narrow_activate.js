@@ -1,3 +1,4 @@
+const util = zrequire('util');
 set_global('i18n', global.stub_i18n);
 set_global('$', global.make_zjquery());
 
@@ -8,7 +9,6 @@ zrequire('MessageListData', 'js/message_list_data');
 zrequire('unread');
 zrequire('narrow');
 zrequire('search_pill');
-zrequire('util');
 
 set_global('blueslip', {});
 set_global('channel', {});

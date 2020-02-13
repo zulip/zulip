@@ -1,3 +1,4 @@
+const util = require("./util");
 const render_compose_notification = require('../templates/compose_notification.hbs');
 const render_notification = require('../templates/notification.hbs');
 

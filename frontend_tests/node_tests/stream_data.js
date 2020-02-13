@@ -13,7 +13,6 @@ set_global('i18n', global.stub_i18n);
 global.stub_out_jquery();
 
 zrequire('color_data');
-zrequire('util');
 zrequire('hash_util');
 zrequire('topic_data');
 zrequire('people');

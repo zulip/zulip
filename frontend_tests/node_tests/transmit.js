@@ -13,7 +13,6 @@ set_global('sent_messages', {
 set_global('blueslip', global.make_zblueslip());
 
 zrequire('people');
-zrequire('util');
 zrequire('transmit');
 
 run_test('transmit_message_ajax', () => {

@@ -1,7 +1,6 @@
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
 
-zrequire('util');
 set_global('XDate', zrequire('XDate', 'xdate/src/xdate'));
 zrequire('Filter', 'js/filter');
 zrequire('FetchStatus', 'js/fetch_status');

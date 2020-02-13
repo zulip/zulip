@@ -9,7 +9,6 @@ set_global('blueslip', global.make_zblueslip());
 const emoji_codes = zrequire('emoji_codes', 'generated/emoji/emoji_codes.json');
 zrequire('emoji');
 zrequire('markdown');
-zrequire('util');
 
 run_test('build_emoji_upload_widget', () => {
     let build_widget_stub = false;

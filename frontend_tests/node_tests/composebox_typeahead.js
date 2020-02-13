@@ -4,7 +4,6 @@ zrequire('compose_state');
 zrequire('ui_util');
 zrequire('pm_conversations');
 zrequire('emoji');
-zrequire('util');
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 zrequire('typeahead_helper');

@@ -1,7 +1,6 @@
 zrequire('message_events');
 zrequire('message_store');
 zrequire('people');
-zrequire('util');
 
 set_global('alert_words', {});
 set_global('condense', {});

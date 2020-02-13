@@ -1,5 +1,5 @@
+const util = zrequire('util');
 zrequire('pm_conversations');
-zrequire('util');
 zrequire('people');
 zrequire('message_store');
 

@@ -3,7 +3,6 @@ set_global('i18n', global.stub_i18n);
 zrequire('muting');
 zrequire('people');
 zrequire('stream_data');
-zrequire('util');
 zrequire('unread');
 zrequire('settings_notifications');
 const FoldDict = zrequire('fold_dict').FoldDict;

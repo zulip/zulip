@@ -1,3 +1,4 @@
+const util = require("./util");
 let message_type = false; // 'stream', 'private', or false-y
 
 exports.set_message_type = function (msg_type) {

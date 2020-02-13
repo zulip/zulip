@@ -2,7 +2,6 @@ set_global('blueslip', {});
 set_global('i18n', global.stub_i18n);
 global.blueslip.warn = function () {};
 
-zrequire('util');
 zrequire('stream_data');
 zrequire('people');
 zrequire('compose_fade');

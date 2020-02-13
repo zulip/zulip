@@ -1,3 +1,4 @@
+const util = require("./util");
 // Parsing routine that can be dropped in to message parsing
 // and formats code blocks
 //

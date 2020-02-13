@@ -1,3 +1,4 @@
+const util = require("./util");
 const pygments_data = require("../generated/pygments_data.json");
 const typeahead = require("../shared/js/typeahead");
 const render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');

@@ -1,4 +1,3 @@
-zrequire("util");
 zrequire("typing_data");
 
 run_test('basics', () => {

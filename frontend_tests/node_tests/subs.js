@@ -5,7 +5,6 @@ set_global('ui', {
     get_content_element: element => element,
     get_scroll_element: element => element,
 });
-zrequire('util');
 zrequire('stream_data');
 zrequire('search_util');
 set_global('page_params', {});

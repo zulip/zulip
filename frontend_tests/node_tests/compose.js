@@ -62,7 +62,7 @@ global.document.location.host = 'foo.com';
 
 zrequire('zcommand');
 zrequire('compose_ui');
-zrequire('util');
+const util = zrequire('util');
 zrequire('rtl');
 zrequire('common');
 set_global('Handlebars', global.make_handlebars());

@@ -1,3 +1,4 @@
+const util = require("./util");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
 const waiting_for_id = new Map();

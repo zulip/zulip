@@ -5,7 +5,6 @@ zrequire('hashchange');
 zrequire('narrow_state');
 zrequire('people');
 zrequire('stream_data');
-zrequire('util');
 zrequire('Filter', 'js/filter');
 set_global('i18n', global.stub_i18n);
 set_global('page_params', {

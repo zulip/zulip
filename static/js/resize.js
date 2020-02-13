@@ -1,3 +1,4 @@
+const util = require("./util");
 const autosize = require('autosize');
 
 let narrow_window = false;
