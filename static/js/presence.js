@@ -93,16 +93,37 @@ exports.set_info = function (presences, server_timestamp) {
     for (const [user_id_str, info] of Object.entries(presences)) {
         const user_id = parseInt(user_id_str, 10);
 
-        // Note: In contrast with essentially every other piece of
-        // state updates we receive from the server, precense updates
-        // are pulled independently from server_events_dispatch.js.
+        // Note: In contrast with all other state updates received
+        // receive from the server, presence data is updated via a
+        // polling process rather than the events system
+        // (server_events_dispatch.js).
         //
-        // This means that if we're coming back from offline and new
-        // users were created in the meantime, we'll be populating
-        // exports.presence_info with user IDs not yet present in
-        // people.js.  This is safe because we when we build the
-        // buddy list, we only process user_ids that are in people.js
-        // (because we need their name, etc.).
+        // This means that if we're coming back from being offline and
+        // new users were created in the meantime, we may see user IDs
+        // not yet present in people.js if server_events doesn't have
+        // current data (or we've been offline, our event queue was
+        // GC'ed, and we're about to reload).  Such user_ids being
+        // present could, in turn, create spammy downstream exceptions
+        // when rendering the buddy list.  To address this, we check
+        // if the user ID is not yet present in people.js, and if it
+        // is, we skip storing that user (we'll see them again in the
+        // next presence request in 1 minute anyway).
+        //
+        // It's important to check both suspect_offline and
+        // reload_state.is_in_progress, because races where presence
+        // returns data on users not yet received via the server_events
+        // system are common in both situations.
+        const person = people.get_by_user_id(user_id, true);
+        if (person === undefined) {
+            if (!(server_events.suspect_offline || reload_state.is_in_progress())) {
+                // If we're online, and we get a user who we don't
+                // know about in the presence data, throw an error.
+                blueslip.error('Unknown user ID in presence data: ' + user_id);
+            }
+            // Either way, we deal by skipping this user and
+            // continuing with processing everyone else.
+            continue;
+        }
 
         raw_info.set(user_id, {
             info: info,
