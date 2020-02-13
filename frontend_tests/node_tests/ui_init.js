@@ -74,6 +74,7 @@ util.is_mobile = () => false;
 global.stub_templates(() => 'some-html');
 ui.get_scroll_element = element => element;
 
+zrequire('hash_util');
 zrequire('echo');
 zrequire('colorspace');
 zrequire('stream_color');
