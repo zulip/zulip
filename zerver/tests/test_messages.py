@@ -3738,12 +3738,14 @@ class MessageHasKeywordsTest(ZulipTestCase):
         msg_contents = ["Link: foo.org",
                         "Image: https://www.google.com/images/srpr/logo4w.png",
                         "Image: https://www.google.com/images/srpr/logo4w.pdf",
-                        "[Google Link](https://www.google.com/images/srpr/logo4w.png)"]
+                        "[Google Link](https://www.google.com/images/srpr/logo4w.png)",
+                        "Image: ![Image Syntax](https://example.com/foo.jpg)",
+                        "Image: ![Image Syntax](https://example.com/foo/bar)"]
         for msg_content in msg_contents:
             msg_ids.append(self.send_stream_message(self.example_email('hamlet'),
                                                     'Denmark', content=msg_content))
         msgs = [Message.objects.get(id=id) for id in msg_ids]
-        self.assertEqual([False, True, False, True], [msg.has_image for msg in msgs])
+        self.assertEqual([False, True, False, True, True, True], [msg.has_image for msg in msgs])
 
         self.update_message(msgs[0], 'https://www.google.com/images/srpr/logo4w.png')
         self.assertTrue(msgs[0].has_image)
