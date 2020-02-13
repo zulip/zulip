@@ -6,6 +6,12 @@
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
 
+// This should be initialized with a struct
+// similar to markdown_config.get_helpers().
+// See the call to markdown.initialize() in ui_init
+// for example usage.
+let helpers;
+
 const realm_filter_map = new Map();
 let realm_filter_list = [];
 
@@ -58,7 +64,7 @@ exports.translate_emoticons_to_names = (text) => {
         return match;
     };
 
-    for (const translation of emoji.get_emoticon_translations()) {
+    for (const translation of helpers.get_emoticon_translations()) {
         // We can't pass replacement_text directly into
         // emoticon_replacer, because emoticon_replacer is
         // a callback for `replace()`.  Instead we just mutate
@@ -123,7 +129,7 @@ exports.apply_markdown = function (message) {
                 full_name = match[1];
                 user_id = parseInt(match[2], 10);
 
-                if (!people.is_valid_full_name_and_user_id(full_name, user_id)) {
+                if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
                     user_id = undefined;
                     full_name = undefined;
                 }
@@ -132,7 +138,7 @@ exports.apply_markdown = function (message) {
             if (user_id === undefined) {
                 // Handle normal syntax
                 full_name = mention;
-                user_id = people.get_user_id_from_name(full_name);
+                user_id = helpers.get_user_id_from_name(full_name);
             }
 
             if (user_id === undefined) {
@@ -147,7 +153,7 @@ exports.apply_markdown = function (message) {
             // flags on the message itself that get used by the message
             // view code and possibly our filtering code.
 
-            if (people.my_current_user_id() === user_id && !silently) {
+            if (helpers.my_user_id() === user_id && !silently) {
                 message.mentioned = true;
                 message.mentioned_me_directly = true;
             }
@@ -160,13 +166,13 @@ exports.apply_markdown = function (message) {
 
             // If I mention "@aLiCe sMITH", I still want "Alice Smith" to
             // show in the pill.
-            const actual_full_name = people.get_actual_name_from_user_id(user_id);
+            const actual_full_name = helpers.get_actual_name_from_user_id(user_id);
             return str + _.escape(actual_full_name) + '</span>';
         },
         groupMentionHandler: function (name) {
-            const group = user_groups.get_user_group_from_name(name);
+            const group = helpers.get_user_group_from_name(name);
             if (group !== undefined) {
-                if (user_groups.is_member_of(group.id, people.my_current_user_id())) {
+                if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
                     message.mentioned = true;
                 }
                 return '<span class="user-group-mention" data-user-group-id="' + group.id + '">' +
@@ -247,12 +253,14 @@ function make_emoji_span(codepoint, title, alt_text) {
 
 function handleUnicodeEmoji(unicode_emoji) {
     const codepoint = unicode_emoji.codePointAt(0).toString(16);
-    const emoji_name = emoji.get_emoji_name(codepoint);
+    const emoji_name = helpers.get_emoji_name(codepoint);
+
     if (emoji_name) {
         const alt_text = ':' + emoji_name + ':';
         const title = emoji_name.split("_").join(" ");
         return make_emoji_span(codepoint, title, alt_text);
     }
+
     return unicode_emoji;
 }
 
@@ -267,7 +275,7 @@ function handleEmoji(emoji_name) {
     // Otherwise we'll look at unicode emoji to render with an emoji
     // span using the spritesheet; and if it isn't one of those
     // either, we pass through the plain text syntax unmodified.
-    const emoji_url = emoji.get_realm_emoji_url(emoji_name);
+    const emoji_url = helpers.get_realm_emoji_url(emoji_name);
 
     if (emoji_url) {
         return '<img alt="' + alt_text + '"' +
@@ -275,7 +283,7 @@ function handleEmoji(emoji_name) {
                ' title="' + title + '">';
     }
 
-    const codepoint = emoji.get_emoji_codepoint(emoji_name);
+    const codepoint = helpers.get_emoji_codepoint(emoji_name);
     if (codepoint) {
         return make_emoji_span(codepoint, title, alt_text);
     }
@@ -289,23 +297,23 @@ function handleAvatar(email) {
            ' title="' + email + '">';
 }
 
-function handleStream(streamName) {
-    const stream = stream_data.get_sub(streamName);
+function handleStream(stream_name) {
+    const stream = helpers.get_stream_by_name(stream_name);
     if (stream === undefined) {
         return;
     }
-    const href = hash_util.by_stream_uri(stream.stream_id);
+    const href = helpers.stream_hash(stream.stream_id);
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
         'href="/' + href + '"' +
         '>' + '#' + _.escape(stream.name) + '</a>';
 }
 
-function handleStreamTopic(streamName, topic) {
-    const stream = stream_data.get_sub(streamName);
+function handleStreamTopic(stream_name, topic) {
+    const stream = helpers.get_stream_by_name(stream_name);
     if (stream === undefined || !topic) {
         return;
     }
-    const href = hash_util.by_stream_topic_uri(stream.stream_id, topic);
+    const href = helpers.stream_topic_hash(stream.stream_id, topic);
     const text = '#' + _.escape(stream.name) + ' > ' + _.escape(topic);
     return '<a class="stream-topic" data-stream-id="' + stream.stream_id + '" ' +
         'href="/' + href + '"' + '>' + text + '</a>';
@@ -416,7 +424,8 @@ exports.update_realm_filter_rules = function (realm_filters) {
     marked.InlineLexer.rules.zulip.realm_filters = marked_rules;
 };
 
-exports.initialize = function (realm_filters) {
+exports.initialize = function (realm_filters, helper_config) {
+    helpers = helper_config;
 
     function disable_markdown_regex(rules, name) {
         rules[name] = {exec: function () {
@@ -456,7 +465,7 @@ exports.initialize = function (realm_filters) {
     }
 
     function preprocess_translate_emoticons(src) {
-        if (!page_params.translate_emoticons) {
+        if (!helpers.should_translate_emoticons()) {
             return src;
         }
 

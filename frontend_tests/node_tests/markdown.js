@@ -10,6 +10,7 @@ zrequire('user_groups');
 const emoji_codes = zrequire('emoji_codes', 'generated/emoji/emoji_codes.json');
 zrequire('emoji');
 zrequire('message_store');
+const markdown_config = zrequire('markdown_config');
 zrequire('markdown');
 
 set_global('location', {
@@ -190,7 +191,10 @@ run_test('fenced_block_defaults', () => {
     assert.equal(output, expected);
 });
 
-markdown.initialize(page_params.realm_filters);
+markdown.initialize(
+    page_params.realm_filters,
+    markdown_config.get_helpers()
+);
 
 const bugdown_data = global.read_fixture_data('markdown_test_cases.json');
 
