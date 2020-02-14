@@ -1,4 +1,3 @@
-const util = require("./util");
 let message_type = false; // 'stream', 'private', or false-y
 
 exports.set_message_type = function (msg_type) {
@@ -32,7 +31,7 @@ function get_or_set(fieldname, keep_leading_whitespace) {
         if (newval !== undefined) {
             elem.val(newval);
         }
-        return keep_leading_whitespace ? util.rtrim(oldval) : $.trim(oldval);
+        return keep_leading_whitespace ? oldval.trimRight() : oldval.trim();
     };
 }
 

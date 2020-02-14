@@ -1,4 +1,3 @@
-const util = require("./util");
 // Parsing routine that can be dropped in to message parsing
 // and formats code blocks
 //
@@ -116,7 +115,7 @@ exports.process_fenced_code = function (content) {
                     if (line === fence) {
                         this.done();
                     } else {
-                        lines.push(util.rtrim(line));
+                        lines.push(line.trimRight());
                     }
                 },
 

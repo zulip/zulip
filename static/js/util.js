@@ -131,10 +131,6 @@ exports.robust_uri_decode = function (str) {
     return '';
 };
 
-exports.rtrim = function (str) {
-    return str.replace(/\s+$/, '');
-};
-
 // If we can, use a locale-aware sorter.  However, if the browser
 // doesn't support the ECMAScript Internationalization API
 // Specification, do a dumb string comparison because
