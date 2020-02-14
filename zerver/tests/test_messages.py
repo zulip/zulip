@@ -3393,7 +3393,6 @@ class MessageAccessTests(ZulipTestCase):
         """
         stream_name = "new_stream"
         self.subscribe(self.example_user("hamlet"), stream_name)
-        self.login(self.example_email("hamlet"))
         message_ids = [
             self.send_stream_message(self.example_email("hamlet"), stream_name, "test"),
         ]
@@ -3409,8 +3408,6 @@ class MessageAccessTests(ZulipTestCase):
             ),
         ]
 
-        # Now login as another user who wasn't on that stream
-        self.login(self.example_email("cordelia"))
         # Send a message to yourself to make sure we have at least one with the read flag
         sent_message_ids = [
             self.send_personal_message(
@@ -3419,6 +3416,7 @@ class MessageAccessTests(ZulipTestCase):
                 "test_read_message",
             ),
         ]
+        self.login(self.example_email("cordelia"))
         result = self.client_post("/json/messages/flags",
                                   {"messages": ujson.dumps(sent_message_ids),
                                    "op": "add",
@@ -3462,7 +3460,6 @@ class MessageAccessTests(ZulipTestCase):
         You can set a message as starred/un-starred through
         POST /json/messages/flags.
         """
-        self.login(self.example_email("hamlet"))
         message_ids = [
             self.send_personal_message(
                 self.example_email("hamlet"),
@@ -3480,11 +3477,11 @@ class MessageAccessTests(ZulipTestCase):
         stream_name = "private_stream"
         self.make_stream(stream_name, invite_only=True)
         self.subscribe(self.example_user("hamlet"), stream_name)
-        self.login(self.example_email("hamlet"))
         message_ids = [
             self.send_stream_message(self.example_email("hamlet"), stream_name, "test"),
         ]
 
+        self.login(self.example_email("hamlet"))
         # Starring private stream messages you received works
         result = self.change_star(message_ids)
         self.assert_json_success(result)
@@ -3498,7 +3495,6 @@ class MessageAccessTests(ZulipTestCase):
         self.make_stream(stream_name, invite_only=True,
                          history_public_to_subscribers=True)
         self.subscribe(self.example_user("hamlet"), stream_name)
-        self.login(self.example_email("hamlet"))
         message_ids = [
             self.send_stream_message(self.example_email("hamlet"), stream_name, "test"),
         ]
@@ -3506,7 +3502,6 @@ class MessageAccessTests(ZulipTestCase):
         # With stream.history_public_to_subscribers = True, you still
         # can't see it if you didn't receive the message and are
         # not subscribed.
-        self.login(self.example_email("cordelia"))
         result = self.change_star(message_ids)
         self.assert_json_error(result, 'Invalid message(s)')
 
@@ -3520,7 +3515,6 @@ class MessageAccessTests(ZulipTestCase):
         New messages aren't starred.
         """
         test_email = self.example_email('hamlet')
-        self.login(test_email)
         content = "Test message for star"
         self.send_stream_message(test_email, "Verona",
                                  content=content)
@@ -3537,7 +3531,6 @@ class MessageAccessTests(ZulipTestCase):
         stream_name = "public_stream"
         self.make_stream(stream_name)
         self.subscribe(normal_user, stream_name)
-        self.login(normal_user.email)
 
         message_id = [
             self.send_stream_message(normal_user.email, stream_name, "test 1")
@@ -3554,11 +3547,9 @@ class MessageAccessTests(ZulipTestCase):
         self.assert_json_success(result)
 
         # And messages sent after they join
-        self.login(normal_user.email)
         message_id = [
             self.send_stream_message(normal_user.email, stream_name, "test 2")
         ]
-        self.login(guest_user.email)
         result = self.change_star(message_id)
         self.assert_json_success(result)
 
@@ -3568,7 +3559,6 @@ class MessageAccessTests(ZulipTestCase):
         stream_name = "private_stream"
         stream = self.make_stream(stream_name, invite_only=True)
         self.subscribe(normal_user, stream_name)
-        self.login(normal_user.email)
 
         message_id = [
             self.send_stream_message(normal_user.email, stream_name, "test 1")
@@ -3593,11 +3583,9 @@ class MessageAccessTests(ZulipTestCase):
 
         # With history not public to subscribers, they can still see new messages
         do_change_stream_invite_only(stream, True, history_public_to_subscribers=False)
-        self.login(normal_user.email)
         message_id = [
             self.send_stream_message(normal_user.email, stream_name, "test 2")
         ]
-        self.login(guest_user.email)
         result = self.change_star(message_id)
         self.assert_json_success(result)
 
@@ -3649,7 +3637,6 @@ class MessageAccessTests(ZulipTestCase):
 
     def test_bulk_access_messages_private_stream(self) -> None:
         user = self.example_user("hamlet")
-        self.login(user.email)
 
         stream_name = "private_stream"
         stream = self.make_stream(stream_name, invite_only=True,
@@ -3696,7 +3683,6 @@ class MessageAccessTests(ZulipTestCase):
 
     def test_bulk_access_messages_public_stream(self) -> None:
         user = self.example_user("hamlet")
-        self.login(user.email)
 
         # Testing messages accessiblity including a public stream message
         stream_name = "public_stream"
@@ -4104,7 +4090,6 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Test if message deleting is not allowed(default).
         self.update_message_deletion_settings(False, 0)
-        self.login("hamlet@zulip.com")
         msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
 
         result = test_delete_message_by_owner(msg_id=msg_id)
