@@ -283,6 +283,12 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        query_params = {}
+        for k, v in request.GET.items():
+            query_params[k] = v
+        for k, v in request.POST.items():
+            query_params[k] = v
+
         for param in post_params:
             func_var_name = param.func_var_name
             if param.path_only:
@@ -315,9 +321,6 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             default_assigned = False
 
             post_var_name = None  # type: Optional[str]
-
-            query_params = request.GET.copy()
-            query_params.update(request.POST)
 
             for req_var in post_var_names:
                 try:

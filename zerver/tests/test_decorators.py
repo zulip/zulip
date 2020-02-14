@@ -248,11 +248,7 @@ class DecoratorTestCase(TestCase):
                         payload: Dict[str, Any]=REQ(argument_type='body')) -> Dict[str, Any]:
             return payload
 
-        class MockRequest:
-            body = {}  # type: Any
-
-        request = MockRequest()
-
+        request = HostRequestMock()
         request.body = 'notjson'
         with self.assertRaises(JsonableError) as cm:
             get_payload(request)
