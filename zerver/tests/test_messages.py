@@ -3350,6 +3350,14 @@ class MessageAccessTests(ZulipTestCase):
                               "op": "add" if add else "remove",
                               "flag": "starred"})
 
+    def add_hello_reaction(self, email: str, message_id: int) -> HttpResponse:
+        return self.api_post(email, '/api/v1/messages/{}/reactions'.format(message_id),
+                             {'emoji_name': 'smile'})
+
+    def update_message_content(self, email: str, message_id: int, content: str) -> HttpResponse:
+        return self.api_patch(email, '/api/v1/messages/{}'.format(message_id),
+                              {'content': content})
+
     def test_change_star(self) -> None:
         """
         You can set a message as starred/un-starred through
@@ -3592,6 +3600,52 @@ class MessageAccessTests(ZulipTestCase):
         self.login(guest_user.email)
         result = self.change_star(message_id)
         self.assert_json_success(result)
+
+    def test_bot_access_to_send_messages_in_private_streams(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        stream_name = "private_stream"
+        stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+
+        foo_bot = self.create_test_bot("foo", cordelia)
+        self.logout()
+        bot_email = foo_bot.email
+
+        message_id_sent_by_hamlet = self.send_stream_message(hamlet.email, stream_name, "test 1")
+        # Bot can send messages to streams in which it's owner is a member.
+        message_id_sent_by_bot = self.send_stream_message(bot_email, stream_name, "test 1")
+
+        result = self.change_star([message_id_sent_by_hamlet], bot_email=bot_email)
+        self.assert_json_error(result, 'Invalid message(s)')
+        result = self.add_hello_reaction(bot_email, message_id_sent_by_hamlet)
+        self.assert_json_error(result, 'Invalid message(s)')
+        result = self.update_message_content(bot_email, message_id_sent_by_hamlet, "New content")
+        self.assert_json_error(result, 'Invalid message(s)')
+
+        result = self.change_star([message_id_sent_by_bot], bot_email=bot_email)
+        self.assert_json_success(result)
+        result = self.add_hello_reaction(bot_email, message_id_sent_by_bot)
+        self.assert_json_success(result)
+        result = self.update_message_content(bot_email, message_id_sent_by_bot, "New content")
+        self.assert_json_success(result)
+
+        self.subscribe(foo_bot, stream_name)
+        result = self.change_star([message_id_sent_by_hamlet], bot_email=bot_email)
+        self.assert_json_error(result, 'Invalid message(s)')
+        result = self.add_hello_reaction(bot_email, message_id_sent_by_hamlet)
+        self.assert_json_error(result, 'Invalid message(s)')
+        result = self.update_message_content(bot_email, message_id_sent_by_hamlet, "New content")
+        self.assert_json_error(result, 'Invalid message(s)')
+
+        do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
+        result = self.change_star([message_id_sent_by_hamlet], bot_email=bot_email)
+        self.assert_json_success(result)
+        result = self.add_hello_reaction(bot_email, message_id_sent_by_hamlet)
+        self.assert_json_success(result)
+        result = self.update_message_content(bot_email, message_id_sent_by_hamlet, "New content")
+        self.assert_json_error(result, "You don't have permission to edit this message")
 
     def test_bulk_access_messages_private_stream(self) -> None:
         user = self.example_user("hamlet")
@@ -4118,6 +4172,37 @@ class DeleteMessageTest(ZulipTestCase):
             m.side_effect = Message.DoesNotExist()
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
+
+    def test_delete_message_by_bot(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        bot = self.create_test_bot("foo", cordelia)
+
+        stream_name = "private_stream"
+        self.make_stream(stream_name, invite_only=True)
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(hamlet, stream_name)
+
+        hamlet_msg_id = self.send_stream_message(hamlet.email, stream_name)
+        bot_msg_id = self.send_stream_message(bot.email, stream_name)
+
+        self.update_message_deletion_settings(False, 0)
+        self.logout()
+
+        result = self.api_delete(bot.email, '/json/messages/{0}'.format(hamlet_msg_id))
+        self.assert_json_error(result, "Invalid message(s)")
+
+        result = self.api_delete(bot.email, "/json/messages/{0}".format(bot_msg_id))
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        self.update_message_deletion_settings(True, 3330)
+        self.logout()
+
+        result = self.api_delete(bot.email, '/json/messages/{0}'.format(hamlet_msg_id))
+        self.assert_json_error(result, "Invalid message(s)")
+
+        result = self.api_delete(bot.email, '/json/messages/{0}'.format(bot_msg_id))
+        self.assert_json_success(result)
 
 class SoftDeactivationMessageTest(ZulipTestCase):
 
