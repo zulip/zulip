@@ -29,6 +29,7 @@
 #### Users
 
 * [Get all users](/api/get-all-users)
+* [Get a user](/api/get-user)
 * [Get profile](/api/get-profile)
 * [Create a user](/api/create-user)
 * [Set "typing" status](/api/typing)

@@ -216,6 +216,32 @@ def get_members(client):
         else:
             assert member.get('profile_data', None) is not None
 
+@openapi_test_function("/users/{user_id}:get")
+def get_single_user(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Fetch details on a user given a user ID
+    user_id = 8
+    url = 'users/' + str(user_id)
+    result = client.call_endpoint(
+        url=url,
+        method='GET'
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{user_id}', 'get', '200')
+
+    # {code_example|start}
+    # If you'd like data on custom profile fields, you can request them as follows:
+    result = client.call_endpoint(
+        url=url,
+        method='GET',
+        request={'include_custom_profile_fields': True}
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/users/{user_id}', 'get', '200')
+
 @openapi_test_function("/realm/filters:get")
 def get_realm_filters(client):
     # type: (Client) -> None
@@ -1123,6 +1149,7 @@ def test_users(client):
 
     create_user(client)
     get_members(client)
+    get_single_user(client)
     get_profile(client)
     update_notification_settings(client)
     upload_file(client)

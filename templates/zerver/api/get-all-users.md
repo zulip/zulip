@@ -1,8 +1,11 @@
 # Get all users
 
-Retrieve all users in a realm.
+Retrieve details on all users in the organization.  Optionally
+includes values of [custom profile field](/help/add-custom-profile-fields).
 
 `GET {{ api_url }}/v1/users`
+
+You can also [fetch details on a single user](/api/get-user).
 
 ## Usage examples
 
