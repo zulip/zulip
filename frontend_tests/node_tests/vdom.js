@@ -22,7 +22,31 @@ run_test('basics', () => {
     );
 });
 
-run_test('attributes', () => {
+run_test('attribute escaping', () => {
+    // So far most of the time our attributes are
+    // hard-coded classes like "expanded_private_messages",
+    // but we need to be defensive about future code
+    // that might use data from possibly malicious users.
+    const opts = {
+        keyed_nodes: [],
+        attrs: [
+            ['class', '">something evil<div class="'],
+            ['title', 'apples & oranges'],
+        ],
+    };
+
+    const ul = vdom.ul(opts);
+
+    const html = vdom.render_tag(ul);
+
+    assert.equal(
+        html,
+        '<ul class="&quot;&gt;something evil&lt;div class=&quot;" ' +
+        'title="apples &amp; oranges">\n\n</ul>'
+    );
+});
+
+run_test('attribute updates', () => {
     const opts = {
         keyed_nodes: [],
         attrs: [
