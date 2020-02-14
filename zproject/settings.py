@@ -727,10 +727,6 @@ LOGGING = {
             '()': 'django.utils.log.CallbackFilter',
             'callback': zerver.lib.logging_util.skip_200_and_304,
         },
-        'skip_boring_404s': {
-            '()': 'django.utils.log.CallbackFilter',
-            'callback': zerver.lib.logging_util.skip_boring_404s,
-        },
         'skip_site_packages_logs': {
             '()': 'django.utils.log.CallbackFilter',
             'callback': zerver.lib.logging_util.skip_site_packages_logs,
@@ -807,8 +803,14 @@ LOGGING = {
             # configured; which is what we want for it.
         },
         'django.request': {
-            'level': 'WARNING',
-            'filters': ['skip_boring_404s'],
+            # We set this to ERROR to prevent Django's default
+            # low-value logs with lines like "Not Found: /robots.txt"
+            # from being logged for every HTTP 4xx error at WARNING
+            # level, which would otherwise end up spamming our
+            # errors.log.  We'll still get logs in errors.log
+            # including tracebacks for 5xx errors (i.e. Python
+            # exceptions).
+            'level': 'ERROR',
         },
         'django.security.DisallowedHost': {
             'handlers': ['file'],
