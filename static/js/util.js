@@ -268,8 +268,20 @@ exports.set_message_topic = function (obj, topic) {
 };
 
 exports.get_message_topic = function (obj) {
+    // TODO: Kill off the below defensive code by the
+    //       end of February 2020 (giving ourselves a
+    //       little bit of time to make sure we don't
+    //       have any obscure codepaths left that weren't
+    //       properly handled in our subject/topic migration).
+    //
+    //       Also, once we are confident that all of our
+    //       internal objects have been migrated from
+    //       "subject" to "topic", we can start having
+    //       our callers just do `foo = message.topic`
+    //       and phase out the use of this function.  Or
+    //       we can just sweep the codebase.
     if (obj.topic === undefined) {
-        blueslip.warn('programming error: message has no topic');
+        blueslip.error('programming error: message has no topic');
         return obj.subject;
     }
 

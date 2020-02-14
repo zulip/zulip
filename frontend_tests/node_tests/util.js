@@ -109,7 +109,7 @@ run_test('robust_uri_decode', () => {
 });
 
 run_test('get_message_topic', () => {
-    blueslip.set_test_data('warn', 'programming error: message has no topic');
+    blueslip.set_test_data('error', 'programming error: message has no topic');
     assert.equal(util.get_message_topic({subject: 'foo'}), 'foo');
     blueslip.clear_test_data();
     assert.equal(util.get_message_topic({topic: 'bar'}), 'bar');
