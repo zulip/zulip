@@ -189,7 +189,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/default_stream_groups/{group_id}/streams',
         # Administer a user -- reactivate and/or modify settings.
         '/users/{user_id}/reactivate',
-        '/users/{user_id}',
         # Administer invitations
         '/invites',
         '/invites/multiuse',
