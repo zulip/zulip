@@ -1135,6 +1135,238 @@ paths:
                         "msg": "Email 'newbie@zulip.com' already in use",
                         "result": "error"
                     }
+
+  /users/{user_id}:
+    get:
+      description: Retrieve a user in a realm.
+      parameters:
+      - name: user_id
+        in: path
+        description: The user id of the user.
+        schema:
+          type: integer
+        example: 11
+        required: true
+      - name: client_gravatar
+        in: query
+        description: The client should pass true if it can compute its own gravatar hashes.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: include_custom_profile_fields
+        in: query
+        description: The client should pass true if it wants to include custom profile field data.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    members:
+                      type: array
+                      description: A list `member` containing a single object with
+                        details of a user in the realm (like their email, name,
+                        avatar, user type...).
+                - example:
+                    {
+                       "msg": "",
+                       "result": "success",
+                       "members": [
+                          {
+                             "date_joined": "2019-10-20T07:50:53.729659+00:00",
+                             "full_name": "King Hamlet",
+                             "is_guest": false,
+                             "profile_data": {
+                                "4": {
+                                   "value": "vim"
+                                },
+                                "2": {
+                                   "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
+                                   "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>"
+                                },
+                                "5": {
+                                   "value": "1900-1-1"
+                                },
+                                "7": {
+                                   "value": "[11]"
+                                },
+                                "6": {
+                                   "value": "https://blog.zulig.org"
+                                },
+                                "1": {
+                                   "value": "+0-11-23-456-7890",
+                                   "rendered_value": "<p>+0-11-23-456-7890</p>"
+                                },
+                                "8": {
+                                   "value": "zulipbot"
+                                },
+                                "3": {
+                                   "rendered_value": "<p>Dark chocolate</p>",
+                                   "value": "Dark chocolate"
+                                }
+                             },
+                             "user_id": 10,
+                             "is_bot": false,
+                             "bot_type": null,
+                             "timezone": "",
+                             "is_admin": false,
+                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                             "is_active": true,
+                             "email": "hamlet@zulip.com"
+                          }
+                       ]
+                    }
+
+    patch:
+      description: Update the user.
+      parameters:
+      - name: user_id
+        in: path
+        description: The user id of the user.
+        schema:
+          type: integer
+        example: 12
+        required: true
+      - name: full_name
+        in: query
+        description: The user's full name.
+        schema:
+          type: string
+          format: json
+        example: NewName
+        required: false
+      - name: is_admin
+        in: query
+        description: Whether the target user is an administrator.
+        schema:
+          type: boolean
+        example: false
+        required: false
+      - name: is_guest
+        in: query
+        description: Whether the target user is a guest.
+        schema:
+          type: boolean
+        example: true
+        required: false
+      - name: profile_data
+        in: query
+        description: A dictionary containing the to be updated custom profile field data for the user.
+        schema:
+          type: array
+          items:
+           type: object
+
+        example: [
+                    {
+                        "id":1,
+                        "value":"short text data"
+                    },
+                    {
+                        "id":2,
+                        "value":"long text data"
+                    },
+                    {
+                        "id":3,
+                        "value":"short text data"
+                    },
+                    {
+                        "id":4,
+                        "value":"vim"
+                    },
+                    {
+                        "id":5,
+                        "value":"1909-3-5"
+                    },
+                    {
+                        "id":6,
+                        "value":"https:\/\/zulipchat.com"
+                    },
+                    {
+                        "id":7,
+                        "value":[
+                          12
+                        ]
+                    },
+                    {
+                        "id":8,
+                        "value":"cordelia"
+                    }
+                  ]
+        required: false
+
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                      {
+                          "result": "success",
+                          "msg": ""
+                      }
+
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "result": "error",
+                        "msg": "Guests cannot be organization administrators",
+                        "code": "BAD_REQUEST"
+                    }
+
+    delete:
+      description: Delete the user with the passed 'user_id' from the realm.
+      parameters:
+      - name: user_id
+        in: path
+        description: The user id of the user.
+        schema:
+          type: integer
+        example: 11
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                    {
+                      "msg": "",
+                      "result": "success",
+                    }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "msg": "Cannot deactivate the only organization administrator",
+                        "result": "error"
+                    }
+
   /users/{email}/presence:
     get:
       description: Get the presence status for a specific user.
