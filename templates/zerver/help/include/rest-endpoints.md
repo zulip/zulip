@@ -31,6 +31,7 @@
 * [Get all users](/api/get-all-users)
 * [Get a user](/api/get-user)
 * [Deactivate a user](/api/deactivate-user)
+* [Update a user](/api/update-user)
 * [Get profile](/api/get-profile)
 * [Create a user](/api/create-user)
 * [Set "typing" status](/api/typing)
