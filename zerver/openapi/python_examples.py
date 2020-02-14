@@ -257,6 +257,36 @@ def deactivate_user(client):
     # {code_example|end}
     validate_against_openapi_schema(result, '/users/{user_id}', 'delete', '200')
 
+@openapi_test_function("/users/{user_id}:patch")
+def update_user(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Change a user's full name.
+    user_id = 10
+    full_name = "New Name"
+    url = 'users/' + str(user_id)
+    result = client.call_endpoint(
+        url=url,
+        method='PATCH',
+        request={'full_name': json.dumps(full_name)}
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{user_id}', 'patch', '200')
+
+    # {code_example|start}
+    # Change value of the custom profile field with ID 9.
+    user_id = 8
+    profile_data = [{'id': 9, 'value': 'some data'}]
+    url = 'users/' + str(user_id)
+    result = client.call_endpoint(
+        url=url,
+        method='PATCH',
+        request={'profile_data': json.dumps(profile_data)}
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{user_id}', 'patch', '400')
+
 @openapi_test_function("/realm/filters:get")
 def get_realm_filters(client):
     # type: (Client) -> None
@@ -1166,6 +1196,7 @@ def test_users(client):
     get_members(client)
     get_single_user(client)
     deactivate_user(client)
+    update_user(client)
     get_profile(client)
     update_notification_settings(client)
     upload_file(client)
