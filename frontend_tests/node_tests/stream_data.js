@@ -200,6 +200,8 @@ run_test('subscribers', () => {
         ]
     );
 
+    assert.equal(stream_data.potential_subscribers_length(sub), 4);
+
     stream_data.set_subscribers(sub, [me.user_id, fred.user_id, george.user_id]);
     stream_data.update_calculated_fields(sub);
     assert(stream_data.is_user_subscribed('Rome', me.user_id));
@@ -213,6 +215,8 @@ run_test('subscribers', () => {
             not_fred.user_id,
         ]
     );
+
+    assert.equal(stream_data.potential_subscribers_length(sub), 1);
 
     stream_data.set_subscribers(sub, []);
 

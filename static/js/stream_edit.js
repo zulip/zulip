@@ -83,6 +83,14 @@ function get_sub_for_target(target) {
     return sub;
 }
 
+function update_no_users_display(sub) {
+    if (stream_data.potential_subscribers_length(sub) === 0) {
+        $('.no_more_users_info').show();
+    } else {
+        $('.no_more_users_info').hide();
+    }
+}
+
 exports.open_edit_panel_for_row = function (stream_row) {
     const sub = get_sub_for_target(stream_row);
 
@@ -197,6 +205,8 @@ function show_subscription_settings(sub_row) {
 
     const users = exports.get_users_from_subscribers(sub.subscribers);
     exports.sort_but_pin_current_user_on_top(users);
+
+    update_no_users_display(sub);
 
     list_render.create(list, users, {
         name: "stream_subscribers/" + stream_id,
@@ -584,6 +594,7 @@ exports.initialize = function () {
             }
             stream_subscription_info_elem.addClass("text-success")
                 .removeClass("text-error");
+            update_no_users_display(sub);
         }
 
         function invite_failure(xhr) {
@@ -621,6 +632,7 @@ exports.initialize = function () {
             }
             stream_subscription_info_elem.addClass('text-success')
                 .removeClass('text-error');
+            $('.no_more_users_info').hide();
         }
 
         function removal_failure() {

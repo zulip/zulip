@@ -402,6 +402,10 @@ exports.potential_subscribers = function (sub) {
 
 };
 
+exports.potential_subscribers_length = function (sub) {
+    return exports.potential_subscribers(sub).length;
+};
+
 exports.update_stream_email_address = function (sub, email) {
     sub.email_address = email;
 };
