@@ -45,9 +45,11 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     do_change_user_delivery_email(user_profile, new_email)
 
     context = {'realm_name': user_profile.realm.name, 'new_email': new_email}
+    language = user_profile.default_language
     send_email('zerver/emails/notify_change_in_email', to_emails=[old_email],
-               from_name="Zulip Account Security", from_address=FromAddress.SUPPORT,
-               language=user_profile.default_language, context=context)
+               from_name=FromAddress.security_email_from_name(user_profile=user_profile),
+               from_address=FromAddress.SUPPORT, language=language,
+               context=context)
 
     ctx = {
         'new_email': new_email,

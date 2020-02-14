@@ -901,9 +901,11 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         'new_email': new_email,
         'activate_url': activation_url
     })
+    language = user_profile.default_language
     send_email('zerver/emails/confirm_new_email', to_emails=[new_email],
-               from_name='Zulip Account Security', from_address=FromAddress.tokenized_no_reply_address(),
-               language=user_profile.default_language, context=context)
+               from_name=FromAddress.security_email_from_name(language=language),
+               from_address=FromAddress.tokenized_no_reply_address(),
+               language=language, context=context)
 
 def compute_irc_user_fullname(email: str) -> str:
     return email.split("@")[0] + " (IRC)"

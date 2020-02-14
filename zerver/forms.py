@@ -284,7 +284,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             context['active_account_in_realm'] = True
             context['reset_url'] = generate_password_reset_url(user, token_generator)
             send_email('zerver/emails/password_reset', to_user_ids=[user.id],
-                       from_name="Zulip Account Security",
+                       from_name=FromAddress.security_email_from_name(user_profile=user),
                        from_address=FromAddress.tokenized_no_reply_address(),
                        context=context)
         else:
@@ -293,11 +293,11 @@ class ZulipPasswordResetForm(PasswordResetForm):
                 delivery_email__iexact=email, is_active=True)
             if active_accounts_in_other_realms:
                 context['active_accounts_in_other_realms'] = active_accounts_in_other_realms
+            language = request.LANGUAGE_CODE
             send_email('zerver/emails/password_reset', to_emails=[email],
-                       from_name="Zulip Account Security",
+                       from_name=FromAddress.security_email_from_name(language=language),
                        from_address=FromAddress.tokenized_no_reply_address(),
-                       language=request.LANGUAGE_CODE,
-                       context=context)
+                       language=language, context=context)
 
 class RateLimitedPasswordResetByEmail(RateLimitedObject):
     def __init__(self, email: str) -> None:
