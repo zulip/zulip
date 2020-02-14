@@ -39,12 +39,6 @@ run_test('is_pm_recipient', () => {
     assert(!util.is_pm_recipient('unknown@example.com', message));
 });
 
-run_test('rtrim', () => {
-    assert.equal(util.rtrim('foo'), 'foo');
-    assert.equal(util.rtrim('  foo'), '  foo');
-    assert.equal(util.rtrim('foo  '), 'foo');
-});
-
 run_test('lower_bound', () => {
     let arr = [10, 20, 30, 40, 50];
     assert.equal(util.lower_bound(arr, 5), 0);
