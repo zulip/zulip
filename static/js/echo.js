@@ -292,7 +292,7 @@ exports.process_from_server = function process_from_server(messages) {
         // the backend.
         client_message.timestamp = message.timestamp;
 
-        util.set_topic_links(client_message, util.get_topic_links(message));
+        client_message.topic_links = message.topic_links;
         client_message.is_me_message = message.is_me_message;
         client_message.submessages = message.submessages;
 

@@ -175,7 +175,7 @@ exports.apply_markdown = function (message) {
 
 exports.add_topic_links = function (message) {
     if (message.type !== 'stream') {
-        util.set_topic_links(message, []);
+        message.topic_links = [];
         return;
     }
     const topic = util.get_message_topic(message);
@@ -207,7 +207,7 @@ exports.add_topic_links = function (message) {
         links = links.concat(match);
     }
 
-    util.set_topic_links(message, links);
+    message.topic_links = links;
 };
 
 exports.is_status_message = function (raw_content) {
