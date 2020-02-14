@@ -4014,6 +4014,15 @@ class CheckMessageTest(ZulipTestCase):
         self.assertEqual(test_bot.last_reminder, None)
 
 class DeleteMessageTest(ZulipTestCase):
+    def update_message_deletion_settings(self, allow_message_deleting: bool,
+                                         message_content_delete_limit_seconds: int) -> None:
+        self.login("iago@zulip.com")
+        result = self.client_patch("/json/realm", {
+            'allow_message_deleting': ujson.dumps(allow_message_deleting),
+            'message_content_delete_limit_seconds': message_content_delete_limit_seconds
+        })
+        self.assert_json_success(result)
+
     def test_delete_message_invalid_request_format(self) -> None:
         self.login("iago@zulip.com")
         msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
@@ -4024,15 +4033,6 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_delete_message_by_user(self) -> None:
-        def set_message_deleting_params(allow_message_deleting: bool,
-                                        message_content_delete_limit_seconds: int) -> None:
-            self.login("iago@zulip.com")
-            result = self.client_patch("/json/realm", {
-                'allow_message_deleting': ujson.dumps(allow_message_deleting),
-                'message_content_delete_limit_seconds': message_content_delete_limit_seconds
-            })
-            self.assert_json_success(result)
-
         def test_delete_message_by_admin(msg_id: int) -> HttpResponse:
             self.login("iago@zulip.com")
             result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
@@ -4049,7 +4049,7 @@ class DeleteMessageTest(ZulipTestCase):
             return result
 
         # Test if message deleting is not allowed(default).
-        set_message_deleting_params(False, 0)
+        self.update_message_deletion_settings(False, 0)
         self.login("hamlet@zulip.com")
         msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
 
@@ -4064,7 +4064,7 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Test if message deleting is allowed.
         # Test if time limit is zero(no limit).
-        set_message_deleting_params(True, 0)
+        self.update_message_deletion_settings(True, 0)
         msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
         message = Message.objects.get(id=msg_id)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=600)
@@ -4077,7 +4077,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Test if time limit is non-zero.
-        set_message_deleting_params(True, 240)
+        self.update_message_deletion_settings(True, 240)
         msg_id_1 = self.send_stream_message("hamlet@zulip.com", "Scotland")
         message = Message.objects.get(id=msg_id_1)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=120)
