@@ -803,6 +803,30 @@
       "expected_output": "<ol>\n<li>\n<p>A</p>\n</li>\n<li>\n<p>B</p>\n</li>\n<li>\n<p>C</p>\n</li>\n<li>\n<p>D<br>\nordinary paragraph</p>\n</li>\n<li>\n<p>AA</p>\n</li>\n<li>\n<p>BB</p>\n</li>\n</ol>",
       "marked_expected_output": "<ol>\n<li><p>A</p>\n</li>\n<li><p>B</p>\n</li>\n<li><p>C</p>\n</li>\n<li><p>D<br>\nordinary paragraph</p>\n</li>\n<li><p>AA</p>\n</li>\n<li><p>BB</p>\n</li>\n</ol>",
       "text_content": "1. A\n2. B\n3. C\n4. D\nordinary paragraph\n5. AA\n6. BB"
+    },
+    {
+      "name": "invalid_admonition_class",
+      "input": "!!! highlight \"This is a quote\"",
+      "expected_output": "<blockquote class=\"admonition\">\n<p class=\"admonition-title\">This is a quote</p>\n</blockquote>",
+      "backend_only_rendering": true
+    },
+    {
+      "name": "admonition_without_title",
+      "input": "!!! highlight \"This is a quote\"",
+      "expected_output": "<blockquote class=\"admonition\">\n<p class=\"admonition-title\">This is a quote</p>\n</blockquote>",
+      "backend_only_rendering": true
+    },
+    {
+      "name": "admonition_with_multiple_classes",
+      "input": "!!! info danger",
+      "expected_output": "<blockquote class=\"admonition admonition-info admonition-danger\"></blockquote>",
+      "backend_only_rendering": true
+    },
+    {
+      "name": "multiblock_indented_admonition",
+      "input": "!!! info \"This is a quote\"\n    Indented\n\n    Also Indented\nAfter admonition",
+      "expected_output": "<blockquote class=\"admonition admonition-info\">\n<p class=\"admonition-title\">This is a quote</p>\n<p>Indented</p>\n<p>Also Indented</p>\n</blockquote>\n<p>After admonition</p>",
+      "backend_only_rendering": true
     }
   ],
   "linkify_tests": [
