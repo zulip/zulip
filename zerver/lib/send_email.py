@@ -3,9 +3,11 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
+from django.utils.translation import ugettext as _
 from django.template.exceptions import TemplateDoesNotExist
+
 from zerver.models import ScheduledEmail, get_user_profile_by_id, \
-    EMAIL_TYPES, Realm
+    EMAIL_TYPES, Realm, UserProfile
 
 import datetime
 from email.utils import parseaddr, formataddr
@@ -33,6 +35,16 @@ class FromAddress:
         if settings.ADD_TOKENS_TO_NOREPLY_ADDRESS:
             return parseaddr(settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS)[1].format(token=generate_key())
         return FromAddress.NOREPLY
+
+    @staticmethod
+    def security_email_from_name(language: Optional[str]=None,
+                                 user_profile: Optional[UserProfile]=None) -> str:
+        if language is None:
+            assert user_profile is not None
+            language = user_profile.default_language
+
+        with override_language(language):
+            return _("Zulip Account Security")
 
 def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                 to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
