@@ -234,14 +234,6 @@ exports.sorted_ids = function (ids) {
     return id_list;
 };
 
-exports.set_topic_links = function (obj, topic_links) {
-    obj.topic_links = topic_links;
-};
-
-exports.get_topic_links = function (obj) {
-    return obj.topic_links;
-};
-
 exports.set_match_data = function (target, source) {
     target.match_subject = source.match_subject;
     target.match_content = source.match_content;

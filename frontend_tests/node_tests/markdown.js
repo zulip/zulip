@@ -3,7 +3,6 @@ set_global('katex', zrequire('katex', 'katex/dist/katex.min.js'));
 set_global('marked', zrequire('marked', 'third/marked/lib/marked'));
 set_global('i18n', global.stub_i18n);
 
-const util = zrequire('util');
 zrequire('fenced_code');
 zrequire('stream_data');
 zrequire('people');
@@ -441,50 +440,50 @@ run_test('marked', () => {
 run_test('topic_links', () => {
     let message = {type: 'stream', topic: "No links here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 0);
+    assert.equal(message.topic_links.length, 0);
 
     message = {type: 'stream', topic: "One #123 link here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 1);
-    assert.equal(util.get_topic_links(message)[0], "https://trac.zulip.net/ticket/123");
+    assert.equal(message.topic_links.length, 1);
+    assert.equal(message.topic_links[0], "https://trac.zulip.net/ticket/123");
 
     message = {type: 'stream', topic: "Two #123 #456 link here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 2);
-    assert.equal(util.get_topic_links(message)[0], "https://trac.zulip.net/ticket/123");
-    assert.equal(util.get_topic_links(message)[1], "https://trac.zulip.net/ticket/456");
+    assert.equal(message.topic_links.length, 2);
+    assert.equal(message.topic_links[0], "https://trac.zulip.net/ticket/123");
+    assert.equal(message.topic_links[1], "https://trac.zulip.net/ticket/456");
 
     message = {type: 'stream', topic: "New ZBUG_123 link here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 1);
-    assert.equal(util.get_topic_links(message)[0], "https://trac2.zulip.net/ticket/123");
+    assert.equal(message.topic_links.length, 1);
+    assert.equal(message.topic_links[0], "https://trac2.zulip.net/ticket/123");
 
     message = {type: 'stream', topic: "New ZBUG_123 with #456 link here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 2);
-    assert(util.get_topic_links(message).includes("https://trac2.zulip.net/ticket/123"));
-    assert(util.get_topic_links(message).includes("https://trac.zulip.net/ticket/456"));
+    assert.equal(message.topic_links.length, 2);
+    assert(message.topic_links.includes("https://trac2.zulip.net/ticket/123"));
+    assert(message.topic_links.includes("https://trac.zulip.net/ticket/456"));
 
     message = {type: 'stream', topic: "One ZGROUP_123:45 link here"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 1);
-    assert.equal(util.get_topic_links(message)[0], "https://zone_45.zulip.net/ticket/123");
+    assert.equal(message.topic_links.length, 1);
+    assert.equal(message.topic_links[0], "https://zone_45.zulip.net/ticket/123");
 
     message = {type: 'stream', topic: "Hello https://google.com"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 1);
-    assert.equal(util.get_topic_links(message)[0], "https://google.com");
+    assert.equal(message.topic_links.length, 1);
+    assert.equal(message.topic_links[0], "https://google.com");
 
     message = {type: 'stream', topic: "#456 https://google.com https://github.com"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 3);
-    assert(util.get_topic_links(message).includes("https://google.com"));
-    assert(util.get_topic_links(message).includes("https://github.com"));
-    assert(util.get_topic_links(message).includes("https://trac.zulip.net/ticket/456"));
+    assert.equal(message.topic_links.length, 3);
+    assert(message.topic_links.includes("https://google.com"));
+    assert(message.topic_links.includes("https://github.com"));
+    assert(message.topic_links.includes("https://trac.zulip.net/ticket/456"));
 
     message = {type: "not-stream"};
     markdown.add_topic_links(message);
-    assert.equal(util.get_topic_links(message).length, 0);
+    assert.equal(message.topic_links.length, 0);
 });
 
 run_test('message_flags', () => {

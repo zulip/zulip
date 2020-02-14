@@ -182,7 +182,7 @@ function populate_group_from_message_container(group, message_container) {
         group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
     }
     group.display_recipient = message_container.msg.display_recipient;
-    group.topic_links = util.get_topic_links(message_container.msg);
+    group.topic_links = message_container.msg.topic_links;
 
     set_topic_edit_properties(group, message_container.msg);
     render_group_display_date(group, message_container);
