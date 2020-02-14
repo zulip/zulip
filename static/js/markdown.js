@@ -6,7 +6,6 @@
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
 
-const util = require("./util");
 const emoji_codes = require("../generated/emoji/emoji_codes.json");
 
 const realm_filter_map = new Map();
@@ -178,7 +177,7 @@ exports.add_topic_links = function (message) {
         message.topic_links = [];
         return;
     }
-    const topic = util.get_message_topic(message);
+    const topic = message.topic;
     let links = [];
 
     for (const realm_filter of realm_filter_list) {
