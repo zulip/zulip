@@ -3336,12 +3336,19 @@ class MessageAccessTests(ZulipTestCase):
                                    "flag": "mentioned"})
         self.assert_json_error(result, "Flag not editable: 'mentioned'")
 
-    def change_star(self, messages: List[int], add: bool=True, **kwargs: Any) -> HttpResponse:
-        return self.client_post("/json/messages/flags",
-                                {"messages": ujson.dumps(messages),
-                                 "op": "add" if add else "remove",
-                                 "flag": "starred"},
-                                **kwargs)
+    def change_star(self, messages: List[int], add: bool=True, bot_email: str=None,
+                    **kwargs: Any) -> HttpResponse:
+        if bot_email is None:
+            return self.client_post("/json/messages/flags",
+                                    {"messages": ujson.dumps(messages),
+                                     "op": "add" if add else "remove",
+                                     "flag": "starred"},
+                                    **kwargs)
+        return self.api_post(bot_email,
+                             "/json/messages/flags",
+                             {"messages": ujson.dumps(messages),
+                              "op": "add" if add else "remove",
+                              "flag": "starred"})
 
     def test_change_star(self) -> None:
         """
