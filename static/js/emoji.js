@@ -184,43 +184,6 @@ exports.get_canonical_name = function (emoji_name) {
     return emoji_codes.codepoint_to_name[codepoint];
 };
 
-// Translates emoticons in a string to their colon syntax.
-exports.translate_emoticons_to_names = function translate_emoticons_to_names(text) {
-    let translated = text;
-    let replacement_text;
-    const terminal_symbols = ',.;?!()[] "\'\n\t'; // From composebox_typeahead
-    const symbols_except_space = terminal_symbols.replace(' ', '');
-
-    const emoticon_replacer = function (match, g1, offset, str) {
-        const prev_char = str[offset - 1];
-        const next_char = str[offset + match.length];
-
-        const symbol_at_start = terminal_symbols.includes(prev_char);
-        const symbol_at_end = terminal_symbols.includes(next_char);
-        const non_space_at_start = symbols_except_space.includes(prev_char);
-        const non_space_at_end = symbols_except_space.includes(next_char);
-        const valid_start = symbol_at_start || offset === 0;
-        const valid_end = symbol_at_end || offset === str.length - match.length;
-
-        if (non_space_at_start && non_space_at_end) { // Hello!:)?
-            return match;
-        }
-        if (valid_start && valid_end) {
-            return replacement_text;
-        }
-        return match;
-    };
-
-    for (const translation of emoticon_translations) {
-        // We can't pass replacement_text directly into
-        // emoticon_replacer, because emoticon_replacer is
-        // a callback for `replace()`.  Instead we just mutate
-        // the `replacement_text` that the function closes on.
-        replacement_text = translation.replacement_text;
-        translated = translated.replace(translation.regex, emoticon_replacer);
-    }
-
-    return translated;
-};
+exports.get_emoticon_translations = () => emoticon_translations;
 
 window.emoji = exports;
