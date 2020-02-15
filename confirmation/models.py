@@ -45,7 +45,8 @@ def generate_key() -> str:
 
 ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
 def get_object_from_key(confirmation_key: str,
-                        confirmation_type: int) -> ConfirmationObjT:
+                        confirmation_type: int,
+                        activate_object: bool=True) -> ConfirmationObjT:
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
         raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)
@@ -60,7 +61,7 @@ def get_object_from_key(confirmation_key: str,
         raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     obj = confirmation.content_object
-    if hasattr(obj, "status"):
+    if activate_object and hasattr(obj, "status"):
         obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
         obj.save(update_fields=['status'])
     return obj

@@ -38,8 +38,7 @@ from zerver.lib.actions import (
     do_create_default_stream_group,
     do_add_default_stream,
     do_create_realm,
-    get_default_streams_for_realm,
-)
+    get_default_streams_for_realm)
 from zerver.lib.send_email import send_future_email, FromAddress, \
     deliver_email
 from zerver.lib.initial_password import initial_password
@@ -588,7 +587,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 79)
+        self.assertEqual(len(queries), 80)
         user_profile = self.nonreg_user('test')
         self.assert_logged_in_user_id(user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -1509,6 +1508,34 @@ class InvitationsTestCase(InviteUserBase):
         self.assert_json_error(error_result, "No such invitation")
         error_result = self.client_delete('/json/invites/' + str(prereg_user.id))
         self.assert_json_error(error_result, "No such invitation")
+
+    def test_prereg_user_status(self) -> None:
+        email = self.nonreg_email("alice")
+        password = "password"
+        realm = get_realm('zulip')
+        inviter = UserProfile.objects.first()
+        prereg_user = PreregistrationUser.objects.create(
+            email=email, referred_by=inviter, realm=realm)
+
+        confirmation_link = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
+        registration_key = confirmation_link.split('/')[-1]
+
+        confirmation = Confirmation.objects.get(confirmation_key=registration_key)
+        prereg_user = confirmation.content_object
+        active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', 1)
+
+        url = "/accounts/register/"
+        self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
+        self.assertEqual(prereg_user.status, 0)
+
+        result = self.submit_reg_form_for_user(email, password, key=registration_key)
+        self.assertEqual(result.status_code, 302)
+        prereg_user = PreregistrationUser.objects.get(
+            email=email, referred_by=inviter, realm=realm)
+        self.assertEqual(prereg_user.status, active_value)
+        user = UserProfile.objects.get(email=email)
+        self.assertEqual(user.short_name, "alice")
+
 
 class InviteeEmailsParserTests(TestCase):
     def setUp(self) -> None:

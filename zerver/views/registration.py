@@ -55,7 +55,7 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
         return render_confirmation_key_error(
             request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
     try:
-        get_object_from_key(confirmation_key, confirmation.type)
+        get_object_from_key(confirmation_key, confirmation.type, activate_object=False)
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
@@ -91,7 +91,6 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             return render_confirmation_key_error(
                 request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST))
         realm = prereg_user.realm
-
         try:
             email_allowed_for_realm(email, realm)
         except DomainNotAllowedForRealmError:

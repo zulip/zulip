@@ -362,7 +362,8 @@ class ZulipTestCase(TestCase):
             from_confirmation: Optional[str]='', full_name: Optional[str]=None,
             timezone: Optional[str]='', realm_in_root_domain: Optional[str]=None,
             default_stream_groups: Optional[List[str]]=[],
-            source_realm: Optional[str]='', **kwargs: Any) -> HttpResponse:
+            source_realm: Optional[str]='',
+            key: Optional[str]=None, **kwargs: Any) -> HttpResponse:
         """
         Stage two of the two-step registration process.
 
@@ -373,13 +374,12 @@ class ZulipTestCase(TestCase):
         """
         if full_name is None:
             full_name = email.replace("@", "_")
-
         payload = {
             'full_name': full_name,
             'password': password,
             'realm_name': realm_name,
             'realm_subdomain': realm_subdomain,
-            'key': find_key_by_email(email),
+            'key': key if key is not None else find_key_by_email(email),
             'timezone': timezone,
             'terms': True,
             'from_confirmation': from_confirmation,
