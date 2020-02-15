@@ -109,7 +109,7 @@ exports.apply_markdown = function (message) {
             }
 
             if (person !== undefined) {
-                if (people.is_my_user_id(person.user_id) && !silently) {
+                if (people.my_current_user_id() === person.user_id && !silently) {
                     message.mentioned = true;
                     message.mentioned_me_directly = true;
                 }
