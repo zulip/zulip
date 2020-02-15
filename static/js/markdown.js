@@ -94,6 +94,13 @@ exports.apply_markdown = function (message) {
 
     const options = {
         userMentionHandler: function (name, silently) {
+            if (name === 'all' || name === 'everyone' || name === 'stream') {
+                message.mentioned = true;
+                return '<span class="user-mention" data-user-id="*">' +
+                       '@' + name +
+                       '</span>';
+            }
+
             let person = people.get_by_name(name);
 
             const id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
@@ -120,11 +127,6 @@ exports.apply_markdown = function (message) {
                     str += '<span class="user-mention" data-user-id="' + person.user_id + '">@';
                 }
                 return str + _.escape(person.full_name) + '</span>';
-            } else if (name === 'all' || name === 'everyone' || name === 'stream') {
-                message.mentioned = true;
-                return '<span class="user-mention" data-user-id="*">' +
-                       '@' + name +
-                       '</span>';
             }
             return;
         },
