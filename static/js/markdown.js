@@ -115,20 +115,29 @@ exports.apply_markdown = function (message) {
                 }
             }
 
-            if (person !== undefined) {
-                if (people.my_current_user_id() === person.user_id && !silently) {
-                    message.mentioned = true;
-                    message.mentioned_me_directly = true;
-                }
-                let str = '';
-                if (silently) {
-                    str += '<span class="user-mention silent" data-user-id="' + person.user_id + '">';
-                } else {
-                    str += '<span class="user-mention" data-user-id="' + person.user_id + '">@';
-                }
-                return str + _.escape(person.full_name) + '</span>';
+            if (!person) {
+                // This is nothing to be concerned about--the users
+                // are allowed to hand-type mentions and they may
+                // have had a typo in the name.
+                return;
             }
-            return;
+
+            // HAPPY PATH! Note that we not only need to return the
+            // appropriate HTML snippet here; we also want to update
+            // flags on the message itself that get used by the message
+            // view code and possibly our filtering code.
+
+            if (people.my_current_user_id() === person.user_id && !silently) {
+                message.mentioned = true;
+                message.mentioned_me_directly = true;
+            }
+            let str = '';
+            if (silently) {
+                str += '<span class="user-mention silent" data-user-id="' + person.user_id + '">';
+            } else {
+                str += '<span class="user-mention" data-user-id="' + person.user_id + '">@';
+            }
+            return str + _.escape(person.full_name) + '</span>';
         },
         groupMentionHandler: function (name) {
             const group = user_groups.get_user_group_from_name(name);
