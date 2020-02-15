@@ -616,6 +616,12 @@ exports.initialize = function () {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start('stream', {trigger: 'new topic button'});
     });
+
+    $('body').on('click', '#new_topic', function () {
+        popovers.hide_mobile_message_buttons_popover();
+        compose_actions.start('stream', {trigger: 'new topic button'});
+    });
+
     $('body').on('click', '.compose_mobile_private_button', function () {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start('private');

@@ -1,6 +1,7 @@
 const render_more_topics = require('../templates/more_topics.hbs');
 const render_more_topics_spinner = require('../templates/more_topics_spinner.hbs');
 const render_topic_list_item = require('../templates/topic_list_item.hbs');
+const render_new_topic = require('../templates/new_topic.hbs');
 const topic_list_data = require('./topic_list_data');
 
 /*
@@ -115,6 +116,24 @@ exports.spinner_li = () => {
     };
 };
 
+exports.new_topic_li = () => {
+    const render = () => {
+        return render_new_topic();
+    };
+
+    const key = 'new';
+
+    const eq = () => {
+        return null;
+    };
+
+    return {
+        key: key,
+        render: render,
+        eq: eq,
+    };
+};
+
 exports.widget = function (parent_elem, my_stream_id) {
     const self = {};
 
@@ -142,6 +161,8 @@ exports.widget = function (parent_elem, my_stream_id) {
         } else if (!is_showing_all_possible_topics) {
             nodes.push(exports.more_li(more_topics_unreads));
         }
+
+        nodes.push(exports.new_topic_li());
 
         const dom = vdom.ul({
             attrs: attrs,
