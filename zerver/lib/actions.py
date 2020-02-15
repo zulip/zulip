@@ -362,6 +362,8 @@ def process_new_human_user(user_profile: UserProfile,
                            realm_creation: bool=False) -> None:
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     if prereg_user is not None:
+        prereg_user.status = confirmation_settings.STATUS_ACTIVE
+        prereg_user.save(update_fields=['status'])
         streams = prereg_user.streams.all()
         acting_user: Optional[UserProfile] = prereg_user.referred_by
     else:
