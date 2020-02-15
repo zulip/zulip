@@ -58,7 +58,37 @@ const zulip_emoji = {
     deactivated: false,
 };
 
-exports.update_emojis = function update_emojis(realm_emojis) {
+exports.get_emoji_name = (codepoint) => {
+    // get_emoji_name('1f384') === 'holiday_tree'
+    return emoji_codes.codepoint_to_name[codepoint];
+};
+
+exports.get_emoji_codepoint = (emoji_name) => {
+    // get_emoji_codepoint('avocado') === '1f951'
+    return emoji_codes.name_to_codepoint[emoji_name];
+};
+
+exports.get_realm_emoji_url = (emoji_name) => {
+    // If the emoji name is a realm emoji, returns the URL for it.
+    // Returns undefined for unicode emoji.
+    // get_realm_emoji_url('shrug') === '/user_avatars/2/emoji/images/31.png'
+
+    const data = exports.active_realm_emojis.get(emoji_name);
+
+    if (!data) {
+        // Not all emojis have urls, plus the user
+        // may have hand-typed an invalid emoji.
+        // The caller can check the result for falsiness
+        // and then try alternate ways of parsing the
+        // emoji (in the case of markdown) or just do
+        // whatever makes sense for the caller.
+        return;
+    }
+
+    return data.emoji_url;
+};
+
+exports.update_emojis = function (realm_emojis) {
     // exports.all_realm_emojis is emptied before adding the realm-specific emoji
     // to it. This makes sure that in case of deletion, the deleted realm_emojis
     // don't persist in exports.active_realm_emojis.
@@ -89,7 +119,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
 
 exports.initialize = function initialize() {
     for (const value of emoji_codes.names) {
-        const base_name = emoji_codes.name_to_codepoint[value];
+        const base_name = exports.get_emoji_codepoint(value);
 
         if (exports.default_emoji_aliases.has(base_name)) {
             exports.default_emoji_aliases.get(base_name).push(value);
@@ -134,7 +164,7 @@ exports.build_emoji_data = function (realm_emojis) {
     for (const codepoints of Object.values(emoji_codes.emoji_catalog)) {
         for (const codepoint of codepoints) {
             if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-                const emoji_name = emoji_codes.codepoint_to_name[codepoint];
+                const emoji_name = exports.get_emoji_name(codepoint);
                 if (!exports.emojis_by_name.has(emoji_name)) {
                     const emoji_dict = {
                         name: emoji_name,
@@ -179,9 +209,9 @@ exports.get_canonical_name = function (emoji_name) {
         blueslip.error("Invalid emoji name: " + emoji_name);
         return;
     }
-    const codepoint = emoji_codes.name_to_codepoint[emoji_name];
+    const codepoint = exports.get_emoji_codepoint(emoji_name);
 
-    return emoji_codes.codepoint_to_name[codepoint];
+    return exports.get_emoji_name(codepoint);
 };
 
 exports.get_emoticon_translations = () => emoticon_translations;

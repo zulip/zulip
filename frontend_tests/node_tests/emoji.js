@@ -80,3 +80,29 @@ run_test('get_canonical_name', () => {
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
 });
+
+function set_up_spain_realm_emoji_for_test() {
+    const realm_emojis = {
+        101: {
+            id: 101,
+            name: 'spain',
+            source_url: '/some/path/to/spain.png',
+            deactivated: false,
+        },
+    };
+    emoji.update_emojis(realm_emojis);
+}
+
+run_test('get_emoji_* API', () => {
+    assert.equal(emoji.get_emoji_name('1f384'), 'holiday_tree');
+    assert.equal(emoji.get_emoji_name('1f951'), 'avocado');
+    assert.equal(emoji.get_emoji_name('bogus'), undefined);
+
+    assert.equal(emoji.get_emoji_codepoint('avocado'), '1f951');
+    assert.equal(emoji.get_emoji_codepoint('holiday_tree'), '1f384');
+    assert.equal(emoji.get_emoji_codepoint('bogus'), undefined);
+
+    assert.equal(emoji.get_realm_emoji_url('spain'), undefined);
+    set_up_spain_realm_emoji_for_test();
+    assert.equal(emoji.get_realm_emoji_url('spain'), '/some/path/to/spain.png');
+});
