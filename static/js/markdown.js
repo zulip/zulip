@@ -6,8 +6,6 @@
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
 
-const emoji_codes = require("../generated/emoji/emoji_codes.json");
-
 const realm_filter_map = new Map();
 let realm_filter_list = [];
 
@@ -222,8 +220,8 @@ function make_emoji_span(codepoint, title, alt_text) {
 
 function handleUnicodeEmoji(unicode_emoji) {
     const codepoint = unicode_emoji.codePointAt(0).toString(16);
-    if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-        const emoji_name = emoji_codes.codepoint_to_name[codepoint];
+    const emoji_name = emoji.get_emoji_name(codepoint);
+    if (emoji_name) {
         const alt_text = ':' + emoji_name + ':';
         const title = emoji_name.split("_").join(" ");
         return make_emoji_span(codepoint, title, alt_text);
@@ -234,15 +232,27 @@ function handleUnicodeEmoji(unicode_emoji) {
 function handleEmoji(emoji_name) {
     const alt_text = ':' + emoji_name + ':';
     const title = emoji_name.split("_").join(" ");
-    if (emoji.active_realm_emojis.has(emoji_name)) {
-        const emoji_url = emoji.active_realm_emojis.get(emoji_name).emoji_url;
+
+    // Zulip supports both standard/unicode emoji, served by a
+    // spritesheet and custom realm-specific emoji (served by URL).
+    // We first check if this is a realm emoji, and if so, render it.
+    //
+    // Otherwise we'll look at unicode emoji to render with an emoji
+    // span using the spritesheet; and if it isn't one of those
+    // either, we pass through the plain text syntax unmodified.
+    const emoji_url = emoji.get_realm_emoji_url(emoji_name);
+
+    if (emoji_url) {
         return '<img alt="' + alt_text + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + title + '">';
-    } else if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
-        const codepoint = emoji_codes.name_to_codepoint[emoji_name];
+    }
+
+    const codepoint = emoji.get_emoji_codepoint(emoji_name);
+    if (codepoint) {
         return make_emoji_span(codepoint, title, alt_text);
     }
+
     return alt_text;
 }
 
