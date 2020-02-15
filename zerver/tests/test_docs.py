@@ -353,113 +353,11 @@ class AboutPageTest(ZulipTestCase):
         expected_result = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         self.assertEqual(split_by(flat_list, 3, None), expected_result)
 
-class ConfigErrorTest(ZulipTestCase):
-    @override_settings(SOCIAL_AUTH_GOOGLE_KEY=None)
-    def test_google(self) -> None:
-        result = self.client_get("/accounts/login/social/google")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/google')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["social_auth_google_key"], result)
-        self.assert_in_success_response(["social_auth_google_secret"], result)
-        self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
-        self.assert_not_in_success_response(["SOCIAL_AUTH_GOOGLE_KEY"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GOOGLE_KEY=None)
-    @override_settings(DEVELOPMENT=False)
-    def test_google_production_error(self) -> None:
-        result = self.client_get("/accounts/login/social/google")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/google')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SOCIAL_AUTH_GOOGLE_KEY"], result)
-        self.assert_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_in_success_response(["social_auth_google_secret"], result)
-        self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-        self.assert_not_in_success_response(["social_auth_google_key"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
-    def test_github(self) -> None:
-        result = self.client_get("/accounts/login/social/github")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/github')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["social_auth_github_key"], result)
-        self.assert_in_success_response(["social_auth_github_secret"], result)
-        self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
-        self.assert_not_in_success_response(["SOCIAL_AUTH_GITHUB_KEY"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
-    @override_settings(DEVELOPMENT=False)
-    def test_github_production_error(self) -> None:
-        """Test the !DEVELOPMENT code path of config-error."""
-        result = self.client_get("/accounts/login/social/github")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/github')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SOCIAL_AUTH_GITHUB_KEY"], result)
-        self.assert_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_in_success_response(["social_auth_github_secret"], result)
-        self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-        self.assert_not_in_success_response(["social_auth_github_key"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GITLAB_KEY=None)
-    def test_gitlab(self) -> None:
-        result = self.client_get("/accounts/login/social/gitlab")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/gitlab')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["social_auth_gitlab_key"], result)
-        self.assert_in_success_response(["social_auth_gitlab_secret"], result)
-        self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
-        self.assert_not_in_success_response(["SOCIAL_AUTH_GITLAB_KEY"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GITLAB_KEY=None)
-    @override_settings(DEVELOPMENT=False)
-    def test_gitlab_production_error(self) -> None:
-        """Test the !DEVELOPMENT code path of config-error."""
-        result = self.client_get("/accounts/login/social/gitlab")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/gitlab')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SOCIAL_AUTH_GITLAB_KEY"], result)
-        self.assert_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_in_success_response(["social_auth_gitlab_secret"], result)
-        self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-        self.assert_not_in_success_response(["social_auth_gitlab_key"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=None)
-    def test_saml_error(self) -> None:
-        result = self.client_get("/accounts/login/social/saml")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/saml')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SAML authentication"], result)
-
+class SmtpConfigErrorTest(ZulipTestCase):
     def test_smtp_error(self) -> None:
         result = self.client_get("/config-error/smtp")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["email configuration"], result)
-
-    def test_dev_direct_production_error(self) -> None:
-        result = self.client_get("/config-error/dev")
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["DevAuthBackend"], result)
 
 class PlansPageTest(ZulipTestCase):
     def test_plans_auth(self) -> None:
