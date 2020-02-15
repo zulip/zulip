@@ -798,6 +798,37 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, self.CONFIG_ERROR_URL)
 
+    def test_config_error_development(self) -> None:
+        if hasattr(self, 'CLIENT_KEY_SETTING') and hasattr(self, 'CLIENT_SECRET_SETTING'):
+            with self.settings(**{self.CLIENT_KEY_SETTING: None}):
+                result = self.client_get(self.LOGIN_URL)
+                self.assertEqual(result.status_code, 302)
+                self.assertEqual(result.url, self.CONFIG_ERROR_URL)
+                result = self.client_get(result.url)
+                self.assert_in_success_response([self.CLIENT_KEY_SETTING.lower()], result)
+                self.assert_in_success_response([self.CLIENT_SECRET_SETTING.lower()], result)
+                self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
+                self.assert_not_in_success_response([self.CLIENT_KEY_SETTING], result)
+                self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
+                self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
+                self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
+
+    @override_settings(DEVELOPMENT=False)
+    def test_config_error_production(self) -> None:
+        if hasattr(self, 'CLIENT_KEY_SETTING') and hasattr(self, 'CLIENT_SECRET_SETTING'):
+            with self.settings(**{self.CLIENT_KEY_SETTING: None}):
+                result = self.client_get(self.LOGIN_URL)
+                self.assertEqual(result.status_code, 302)
+                self.assertEqual(result.url, self.CONFIG_ERROR_URL)
+                result = self.client_get(result.url)
+                self.assert_in_success_response([self.CLIENT_KEY_SETTING], result)
+                self.assert_in_success_response(["/etc/zulip/settings.py"], result)
+                self.assert_in_success_response([self.CLIENT_SECRET_SETTING.lower()], result)
+                self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
+                self.assert_not_in_success_response([self.CLIENT_KEY_SETTING.lower()], result)
+                self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
+                self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
+
     def test_social_auth_success(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         result = self.social_auth_test(account_data_dict,
@@ -1399,6 +1430,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, self.CONFIG_ERROR_URL)
 
+    def test_config_error_page(self) -> None:
+        result = self.client_get("/accounts/login/social/saml")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/config-error/saml')
+        result = self.client_get(result.url)
+        self.assert_in_success_response(["SAML authentication"], result)
+
     def test_saml_auth_works_without_private_public_keys(self) -> None:
         with self.settings(SOCIAL_AUTH_SAML_SP_PUBLIC_CERT='', SOCIAL_AUTH_SAML_SP_PRIVATE_KEY=''):
             self.test_social_auth_success()
@@ -1562,6 +1600,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
     BACKEND_CLASS = GitHubAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GITHUB_KEY"
+    CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GITHUB_SECRET"
     LOGIN_URL = "/accounts/login/social/github"
     SIGNUP_URL = "/accounts/register/social/github"
     AUTHORIZATION_URL = "https://github.com/login/oauth/authorize"
@@ -1777,6 +1816,7 @@ class GitLabAuthBackendTest(SocialAuthBase):
 
     BACKEND_CLASS = GitLabAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GITLAB_KEY"
+    CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GITLAB_SECRET"
     LOGIN_URL = "/accounts/login/social/gitlab"
     SIGNUP_URL = "/accounts/register/social/gitlab"
     AUTHORIZATION_URL = "https://gitlab.com/oauth/authorize"
@@ -1797,6 +1837,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
     BACKEND_CLASS = GoogleAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GOOGLE_KEY"
+    CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GOOGLE_SECRET"
     LOGIN_URL = "/accounts/login/social/google"
     SIGNUP_URL = "/accounts/register/social/google"
     AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
@@ -2472,6 +2513,11 @@ class TestDevAuthBackend(ZulipTestCase):
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
             response = self.client_post('/accounts/login/local/', data)
             self.assertRedirects(response, reverse('dev_not_supported'))
+
+    def test_dev_direct_production_config_error(self) -> None:
+        result = self.client_get("/config-error/dev")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["DevAuthBackend"], result)
 
     def test_login_failure_due_to_nonexistent_user(self) -> None:
         email = 'nonexisting@zulip.com'
