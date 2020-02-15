@@ -22,7 +22,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import zulip_default_context, get_realm_from_request, \
     login_context
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
-    WRONG_SUBDOMAIN_ERROR, DEACTIVATED_ACCOUNT_ERROR, ZulipPasswordResetForm, \
+    DEACTIVATED_ACCOUNT_ERROR, ZulipPasswordResetForm, \
     AuthenticationTokenForm
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
@@ -206,11 +206,6 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
                      'desktop_flow_otp': desktop_flow_otp}  # type: Mapping[str, Any]
     context.update(extra_context)
     return render(request, 'zerver/accounts_home.html', context=context)
-
-def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
-    login_url = reverse('django.contrib.auth.views.login')
-    redirect_url = login_url + '?subdomain=1'
-    return HttpResponseRedirect(redirect_url)
 
 def register_remote_user(request: HttpRequest, email: str,
                          full_name: str='',
@@ -678,14 +673,13 @@ def add_dev_login_context(realm: Optional[Realm], context: Dict[str, Any]) -> No
     context['direct_users'] = [u for u in users if not (u.is_realm_admin or u.is_guest)]
 
 def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> None:
-    for key in ('email', 'subdomain', 'already_registered', 'is_deactivated'):
+    for key in ('email', 'already_registered', 'is_deactivated'):
         try:
             context[key] = request.GET[key]
         except KeyError:
             pass
 
     context['deactivated_account_error'] = DEACTIVATED_ACCOUNT_ERROR
-    context['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
 
 class TwoFactorLoginView(BaseTwoFactorLoginView):
     extra_context = None  # type: ExtraContext

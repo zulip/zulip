@@ -18,7 +18,7 @@ from confirmation.models import Confirmation, create_confirmation_link, Multiuse
     one_click_unsubscribe_link
 from confirmation import settings as confirmation_settings
 
-from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR, check_subdomain_available
+from zerver.forms import HomepageForm, check_subdomain_available
 from zerver.decorator import do_two_factor_login
 from zerver.views.auth import \
     redirect_and_log_into_subdomain, start_two_factor_auth
@@ -3489,10 +3489,6 @@ class DeactivateUserTest(ZulipTestCase):
         self.assert_json_error(result, "Cannot deactivate the only user.")
 
 class TestLoginPage(ZulipTestCase):
-    def test_login_page_wrong_subdomain_error(self) -> None:
-        result = self.client_get("/login/?subdomain=1")
-        self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))
-
     @patch('django.http.HttpRequest.get_host')
     def test_login_page_redirects_for_root_alias(self, mock_get_host: MagicMock) -> None:
         mock_get_host.return_value = 'www.testserver'

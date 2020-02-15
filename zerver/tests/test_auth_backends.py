@@ -885,7 +885,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             result = self.social_auth_test(account_data_dict,
                                            subdomain='invalid', next='/user_uploads/image')
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/accounts/login/?subdomain=1")
+        self.assertEqual(result.url, "/accounts/find/")
 
     def test_social_auth_invalid_email(self) -> None:
         account_data_dict = self.get_account_data_dict(email="invalid", name=self.name)

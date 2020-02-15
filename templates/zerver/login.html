@@ -96,12 +96,6 @@ page can be easily identified in it's respective JavaScript file. -->
                             </div>
                             {% endif %}
 
-                            {% if subdomain %}
-                            <div class="alert">
-                                {{ wrong_subdomain_error }}
-                            </div>
-                            {% endif %}
-
                             <button type="submit" name="button" class="full-width">
                                 <img class="loader" src="/static/images/loader.svg" alt="" />
                                 <span class="text">{{ _("Log in") }}</span>

@@ -1111,8 +1111,11 @@ def social_auth_finish(backend: Any,
     email_not_associated = return_data.get("email_not_associated")
 
     if invalid_realm:
-        from zerver.views.auth import redirect_to_subdomain_login_url
-        return redirect_to_subdomain_login_url()
+        # User has passed an invalid subdomain param - this shouldn't happen in the normal flow,
+        # unless the user manually edits the param. In any case, it's most appropriate to just take
+        # them to find_account, as there isn't even an appropriate subdomain to take them to the login
+        # form on.
+        return HttpResponseRedirect(reverse('zerver.views.registration.find_account'))
 
     if inactive_user:
         return redirect_deactivated_user_to_login()
