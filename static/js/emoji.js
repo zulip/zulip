@@ -10,6 +10,46 @@ exports.all_realm_emojis = new Map();
 exports.active_realm_emojis = new Map();
 exports.default_emoji_aliases = new Map();
 
+const emoticon_translations = (() => {
+    /*
+
+    Build a data structure that looks like something
+    like this:
+
+    [
+        { regex: /(\:\))/g, replacement_text: ':slight_smile:' },
+        { regex: /(\(\:)/g, replacement_text: ':slight_smile:' },
+        { regex: /(\:\/)/g, replacement_text: ':confused:' },
+        { regex: /(<3)/g, replacement_text: ':heart:' },
+        { regex: /(\:\()/g, replacement_text: ':frown:' },
+        { regex: /(\:\|)/g, replacement_text: ':expressionless:' }
+    ]
+
+        We build up this list of ~6 emoticon translations
+        even if page_params.translate_emoticons is false, since
+        that setting can be flipped via live update events.
+        On the other hand, we assume that emoticon_conversions
+        won't change until the next reload, which is fine for
+        now (and we want to avoid creating new regexes on
+        every new message).
+    */
+
+    const translations = [];
+    for (const emoticon in emoji_codes.emoticon_conversions) {
+        if (emoji_codes.emoticon_conversions.hasOwnProperty(emoticon)) {
+            const replacement_text = emoji_codes.emoticon_conversions[emoticon];
+            const regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
+
+            translations.push({
+                regex: regex,
+                replacement_text: replacement_text,
+            });
+        }
+    }
+
+    return translations;
+})();
+
 const zulip_emoji = {
     id: 'zulip',
     emoji_name: 'zulip',
@@ -171,12 +211,13 @@ exports.translate_emoticons_to_names = function translate_emoticons_to_names(tex
         return match;
     };
 
-    for (const emoticon in emoji_codes.emoticon_conversions) {
-        if (emoji_codes.emoticon_conversions.hasOwnProperty(emoticon)) {
-            replacement_text = emoji_codes.emoticon_conversions[emoticon];
-            const emoticon_regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
-            translated = translated.replace(emoticon_regex, emoticon_replacer);
-        }
+    for (const translation of emoticon_translations) {
+        // We can't pass replacement_text directly into
+        // emoticon_replacer, because emoticon_replacer is
+        // a callback for `replace()`.  Instead we just mutate
+        // the `replacement_text` that the function closes on.
+        replacement_text = translation.replacement_text;
+        translated = translated.replace(translation.regex, emoticon_replacer);
     }
 
     return translated;
