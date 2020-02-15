@@ -34,6 +34,45 @@ exports.set_name_in_mention_element = function (element, name) {
     }
 };
 
+exports.translate_emoticons_to_names = (text) => {
+    // Translates emoticons in a string to their colon syntax.
+    let translated = text;
+    let replacement_text;
+    const terminal_symbols = ',.;?!()[] "\'\n\t'; // From composebox_typeahead
+    const symbols_except_space = terminal_symbols.replace(' ', '');
+
+    const emoticon_replacer = function (match, g1, offset, str) {
+        const prev_char = str[offset - 1];
+        const next_char = str[offset + match.length];
+
+        const symbol_at_start = terminal_symbols.includes(prev_char);
+        const symbol_at_end = terminal_symbols.includes(next_char);
+        const non_space_at_start = symbols_except_space.includes(prev_char);
+        const non_space_at_end = symbols_except_space.includes(next_char);
+        const valid_start = symbol_at_start || offset === 0;
+        const valid_end = symbol_at_end || offset === str.length - match.length;
+
+        if (non_space_at_start && non_space_at_end) { // Hello!:)?
+            return match;
+        }
+        if (valid_start && valid_end) {
+            return replacement_text;
+        }
+        return match;
+    };
+
+    for (const translation of emoji.get_emoticon_translations()) {
+        // We can't pass replacement_text directly into
+        // emoticon_replacer, because emoticon_replacer is
+        // a callback for `replace()`.  Instead we just mutate
+        // the `replacement_text` that the function closes on.
+        replacement_text = translation.replacement_text;
+        translated = translated.replace(translation.regex, emoticon_replacer);
+    }
+
+    return translated;
+};
+
 exports.contains_backend_only_syntax = function (content) {
     // Try to guess whether or not a message has bugdown in it
     // If it doesn't, we can immediately render it client-side
@@ -376,7 +415,7 @@ exports.initialize = function () {
 
         // In this scenario, the message has to be from the user, so the only
         // requirement should be that they have the setting on.
-        return emoji.translate_emoticons_to_names(src);
+        return exports.translate_emoticons_to_names(src);
     }
 
     // Disable lheadings

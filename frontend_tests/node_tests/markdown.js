@@ -608,3 +608,39 @@ run_test('misc_helpers', () => {
     markdown.set_name_in_mention_element(elem, 'Aaron, but silent');
     assert.equal(elem.text(), 'Aaron, but silent');
 });
+
+run_test('translate_emoticons_to_names', () => {
+    // Simple test
+    const test_text = 'Testing :)';
+    const expected = 'Testing :slight_smile:';
+    const result = markdown.translate_emoticons_to_names(test_text);
+    assert.equal(expected, result);
+
+    // Extensive tests.
+    // The following code loops over the test cases and each emoticon conversion
+    // to generate multiple test cases.
+    const testcases = [
+        {name: 'only emoticon', original: '<original>', expected: '<converted>'},
+        {name: 'space at start', original: ' <original>', expected: ' <converted>'},
+        {name: 'space at end', original: '<original> ', expected: '<converted> '},
+        {name: 'symbol at end', original: '<original>!', expected: '<converted>!'},
+        {name: 'symbol at start', original: 'Hello,<original>', expected: 'Hello,<converted>'},
+        {name: 'after a word', original: 'Hello<original>', expected: 'Hello<original>'},
+        {name: 'between words', original: 'Hello<original>World', expected: 'Hello<original>World'},
+        {name: 'end of sentence', original: 'End of sentence. <original>', expected: 'End of sentence. <converted>'},
+        {name: 'between symbols', original: 'Hello.<original>! World.', expected: 'Hello.<original>! World.'},
+        {name: 'before end of sentence', original: 'Hello <original>!', expected: 'Hello <converted>!'},
+    ];
+    for (const [shortcut, full_name] of Object.entries(emoji_codes.emoticon_conversions)) {
+        for (const t of testcases) {
+            const converted_value = full_name;
+            let original = t.original;
+            let expected = t.expected;
+            original = original.replace(/(<original>)/g, shortcut);
+            expected = expected.replace(/(<original>)/g, shortcut)
+                .replace(/(<converted>)/g, converted_value);
+            const result = markdown.translate_emoticons_to_names(original);
+            assert.equal(result, expected);
+        }
+    }
+});
