@@ -715,13 +715,7 @@ exports.build_page = function () {
         subsection.find('.subsection-failed-status p').hide();
         subsection.find('.save-button').show();
         const properties_elements = get_subsection_property_elements(subsection);
-        let show_change_process_button = false;
-
-        for (const elem of properties_elements) {
-            if (check_property_changed(elem)) {
-                show_change_process_button = true;
-            }
-        }
+        const show_change_process_button = properties_elements.some(check_property_changed);
 
         const save_btn_controls = subsection.find('.subsection-header .save-button-controls');
         const button_state = show_change_process_button ? "unsaved" : "discarded";
