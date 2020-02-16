@@ -168,7 +168,7 @@ SOCIAL_AUTH_GITLAB_KEY = "key"
 SOCIAL_AUTH_GITLAB_SECRET = "secret"
 SOCIAL_AUTH_GOOGLE_KEY = "key"
 SOCIAL_AUTH_GOOGLE_SECRET = "secret"
-SOCIAL_AUTH_SUBDOMAIN = 'www'
+SOCIAL_AUTH_SUBDOMAIN = 'auth'
 
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
