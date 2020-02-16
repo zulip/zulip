@@ -248,7 +248,7 @@ exports.extract_property_name = function (elem) {
 
 function get_subsection_property_elements(element) {
     const subsection = $(element).closest('.org-subsection-parent');
-    return subsection.find('.prop-element');
+    return Array.from(subsection.find('.prop-element'));
 }
 
 const simple_dropdown_properties = ['realm_create_stream_policy',
