@@ -90,29 +90,52 @@ exports.apply_markdown = function (message) {
     message_store.init_booleans(message);
 
     const options = {
-        userMentionHandler: function (name, silently) {
-            if (name === 'all' || name === 'everyone' || name === 'stream') {
+        userMentionHandler: function (mention, silently) {
+            if (mention === 'all' || mention === 'everyone' || mention === 'stream') {
                 message.mentioned = true;
                 return '<span class="user-mention" data-user-id="*">' +
-                       '@' + name +
+                       '@' + mention +
                        '</span>';
             }
 
-            let person = people.get_by_name(name);
+            let full_name;
+            let user_id;
 
             const id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
-            const match = id_regex.exec(name);
+            const match = id_regex.exec(mention);
+
             if (match) {
-                const user_id = parseInt(match[2], 10);
-                if (people.is_known_user_id(user_id)) {
-                    person = people.get_by_user_id(user_id);
-                    if (person.full_name !== match[1]) { // Invalid Syntax
-                        return;
-                    }
+                /*
+                    If we have two users named Alice, we want
+                    users to provide mentions like this:
+
+                        alice|42
+                        alice|99
+
+                    The autocomplete feature will help users
+                    send correct mentions for duplicate names,
+                    but we also have to consider the possibility
+                    that the user will hand-type something
+                    incorrectly, in which case we'll fall
+                    through to the other code (which may be a
+                    misfeature).
+                */
+                full_name = match[1];
+                user_id = parseInt(match[2], 10);
+
+                if (!people.is_valid_full_name_and_user_id(full_name, user_id)) {
+                    user_id = undefined;
+                    full_name = undefined;
                 }
             }
 
-            if (!person) {
+            if (user_id === undefined) {
+                // Handle normal syntax
+                full_name = mention;
+                user_id = people.get_user_id_from_name(full_name);
+            }
+
+            if (user_id === undefined) {
                 // This is nothing to be concerned about--the users
                 // are allowed to hand-type mentions and they may
                 // have had a typo in the name.
@@ -124,17 +147,21 @@ exports.apply_markdown = function (message) {
             // flags on the message itself that get used by the message
             // view code and possibly our filtering code.
 
-            if (people.my_current_user_id() === person.user_id && !silently) {
+            if (people.my_current_user_id() === user_id && !silently) {
                 message.mentioned = true;
                 message.mentioned_me_directly = true;
             }
             let str = '';
             if (silently) {
-                str += '<span class="user-mention silent" data-user-id="' + person.user_id + '">';
+                str += '<span class="user-mention silent" data-user-id="' + user_id + '">';
             } else {
-                str += '<span class="user-mention" data-user-id="' + person.user_id + '">@';
+                str += '<span class="user-mention" data-user-id="' + user_id + '">@';
             }
-            return str + _.escape(person.full_name) + '</span>';
+
+            // If I mention "@aLiCe sMITH", I still want "Alice Smith" to
+            // show in the pill.
+            const actual_full_name = people.get_actual_name_from_user_id(user_id);
+            return str + _.escape(actual_full_name) + '</span>';
         },
         groupMentionHandler: function (name) {
             const group = user_groups.get_user_group_from_name(name);

@@ -52,6 +52,11 @@ run_test('blueslip', () => {
     assert.equal(blueslip.get_test_logs('debug').length, 1);
     blueslip.clear_test_data();
 
+    blueslip.set_test_data('error', 'Unknown user_id: 9999');
+    people.get_actual_name_from_user_id(9999);
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
+
     blueslip.set_test_data('error', 'Unknown email for get_user_id: ' + unknown_email);
     people.get_user_id(unknown_email);
     assert.equal(blueslip.get_test_logs('error').length, 1);
