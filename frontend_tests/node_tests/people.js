@@ -56,15 +56,23 @@ run_test('basics', () => {
     const email = 'isaac@example.com';
 
     assert(!people.is_known_user_id(32));
+    assert(!people.is_valid_full_name_and_user_id(full_name, 32));
+    assert.equal(people.get_user_id_from_name(full_name), undefined);
+
     people.add(isaac);
 
+    assert.equal(
+        people.get_actual_name_from_user_id(32),
+        full_name
+    );
+
+    assert(people.is_valid_full_name_and_user_id(full_name, 32));
     assert(people.is_known_user_id(32));
     assert.equal(people.get_realm_count(), 1);
 
-    let person = people.get_by_name(full_name);
-    assert.equal(people.get_user_id(email), 32);
-    assert.equal(person.email, email);
-    person = people.get_by_email(email);
+    assert.equal(people.get_user_id_from_name(full_name), 32);
+
+    let person = people.get_by_email(email);
     assert.equal(person.full_name, full_name);
     person = people.get_active_user_for_email(email);
     assert(!person);
@@ -231,7 +239,7 @@ run_test('updates', () => {
     people.set_full_name(person, 'Me the Third');
     assert.equal(people.my_full_name(), 'Me the Third');
     assert.equal(person.full_name, 'Me the Third');
-    assert.equal(people.get_by_name('Me the Third').email, 'me@example.com');
+    assert.equal(people.get_user_id_from_name('Me the Third'), me.user_id);
 });
 
 run_test('get_by_user_id', () => {
@@ -810,9 +818,27 @@ run_test('track_duplicate_full_names', () => {
         user_id: 603,
         full_name: 'Maria Athens',
     };
-    people.add(stephen1);
-    people.add(stephen2);
+
     people.add(maria);
+    people.add(stephen1);
+
+    assert(!people.is_duplicate_full_name('Stephen King'));
+    assert.equal(
+        people.get_user_id_from_name('Stephen King'),
+        stephen1.user_id
+    );
+
+    // Now duplicate the Stephen King name.
+    people.add(stephen2);
+
+    // For duplicate names we won't try to guess which
+    // user_id the person means; the UI should use
+    // other codepaths for disambiguation.
+    assert.equal(
+        people.get_user_id_from_name('Stephen King'),
+        undefined
+    );
+
     assert(people.is_duplicate_full_name('Stephen King'));
     assert(!people.is_duplicate_full_name('Maria Athens'));
     assert(!people.is_duplicate_full_name('Some Random Name'));
@@ -987,6 +1013,14 @@ run_test('email_for_user_settings', () => {
 
     page_params.is_admin = false;
     assert.equal(email(isaac), isaac.email);
+});
+
+initialize();
+
+run_test('is_valid_full_name_and_user_id', () => {
+    assert(!people.is_valid_full_name_and_user_id('bogus', 99));
+    assert(!people.is_valid_full_name_and_user_id(me.full_name, 99));
+    assert(people.is_valid_full_name_and_user_id(me.full_name, me.user_id));
 });
 
 run_test('emails_strings_to_user_ids_array', function () {

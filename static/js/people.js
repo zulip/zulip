@@ -836,8 +836,59 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
     return filtered_users;
 };
 
-exports.get_by_name = function (name) {
-    return people_by_name_dict.get(name);
+exports.is_valid_full_name_and_user_id = (full_name, user_id) => {
+    const person = people_by_user_id_dict.get(user_id);
+
+    if (!person) {
+        return false;
+    }
+
+    return person.full_name === full_name;
+};
+
+exports.get_actual_name_from_user_id = (user_id) => {
+    /*
+        If you are dealing with user-entered data, you
+        should validate the user_id BEFORE calling
+        this function.
+    */
+    const person = people_by_user_id_dict.get(user_id);
+
+    if (!person) {
+        blueslip.error('Unknown user_id: ' + user_id);
+        return;
+    }
+
+    return person.full_name;
+};
+
+exports.get_user_id_from_name = function (full_name) {
+    // get_user_id_from_name('Alice Smith') === 42
+
+    /*
+        This function is intended to be called
+        with a full name that is user-entered, such
+        a full name from a user mention.
+
+        We will only return a **unique** user_id
+        here.  For duplicate names, our UI should
+        force users to disambiguate names with a
+        user_id and then call is_valid_full_name_and_user_id
+        to make sure the combo is valid.  This is
+        exactly what we do with mentions.
+    */
+
+    const person = people_by_name_dict.get(full_name);
+
+    if (!person) {
+        return;
+    }
+
+    if (exports.is_duplicate_full_name(full_name)) {
+        return;
+    }
+
+    return person.user_id;
 };
 
 function people_cmp(person1, person2) {
