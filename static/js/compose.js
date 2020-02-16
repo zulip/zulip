@@ -514,7 +514,8 @@ function validate_stream_message_post_policy(stream_name) {
     const stream_post_permission_type = stream_data.stream_post_policy_values;
     const stream_post_policy = stream_data.get_stream_post_policy(stream_name);
 
-    if (stream_post_policy === stream_post_permission_type.admins.code) {
+    if (stream_post_policy === stream_post_permission_type.admins.code ||
+                stream_post_policy === stream_post_permission_type.admins_can_post_and_react.code) {
         compose_error(i18n.t("Only organization admins are allowed to post to this stream."));
         return false;
     }

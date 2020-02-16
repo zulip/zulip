@@ -10,6 +10,8 @@
 {{/if}}
 {{#if (eq stream_post_policy stream_post_policy_values.admins.code)}}
 {{t 'Only organization administrators can post.'}}
+{{else if (eq stream_post_policy stream_post_policy_values.admins_can_post_and_react.code)}}
+{{t 'Only orgainzation administrators can post and react'}}
 {{else if (eq stream_post_policy stream_post_policy_values.non_new_members.code)}}
 {{t 'Only organization full members can post.'}}
 {{else}}

@@ -117,6 +117,16 @@ function calculate_info_popover_placement(size, elt) {
     }
 }
 
+function show_add_reaction_option(message) {
+    if (!message.sent_by_me) {
+        return false;
+    }
+    if (message.stream && stream_data.get_restrict_emoji_reaction(message.stream)) {
+        return false;
+    }
+    return true;
+}
+
 function get_custom_profile_field_data(user, field, field_types, dateFormat) {
     const field_value = people.get_custom_profile_data(user.user_id, field.id);
     const field_type = field.type;
@@ -487,7 +497,7 @@ exports.toggle_actions_popover = function (element, id) {
             can_unmute_topic: can_unmute_topic,
             should_display_collapse: should_display_collapse,
             should_display_uncollapse: should_display_uncollapse,
-            should_display_add_reaction_option: message.sent_by_me,
+            should_display_add_reaction_option: show_add_reaction_option(message),
             should_display_edit_history_option: should_display_edit_history_option,
             conversation_time_uri: conversation_time_uri,
             narrowed: narrow_state.active(),

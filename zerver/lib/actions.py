@@ -3518,11 +3518,14 @@ def do_change_stream_post_policy(stream: Stream, stream_post_policy: int) -> Non
     # is_announcement_only property in early 2020, but we send a
     # duplicate event for legacy mobile clients that might want the
     # data.
+    is_announcement_only_value = (stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS or
+                                  stream.stream_post_policy ==
+                                  Stream.STREAM_POST_POLICY_ADMINS_CAN_POST_AND_REACT)
     event = dict(
         op="update",
         type="stream",
         property="is_announcement_only",
-        value=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
+        value=is_announcement_only_value,
         stream_id=stream.id,
         name=stream.name,
     )
@@ -4785,7 +4788,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         # updated for the is_announcement_only -> stream_post_policy
         # migration.
         stream_dict['is_announcement_only'] = \
-            stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS
+            stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS or \
+            stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS_CAN_POST_AND_REACT
 
         # Add a few computed fields not directly from the data models.
         stream_dict['is_old_stream'] = is_old_stream(stream["date_created"])
@@ -4836,7 +4840,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                 stream["id"], stream["date_created"], recent_traffic)
             # Backwards-compatibility addition of removed field.
             stream_dict['is_announcement_only'] = \
-                stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS
+                stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS or \
+                stream['stream_post_policy'] == Stream.STREAM_POST_POLICY_ADMINS_CAN_POST_AND_REACT
 
             if is_public or user_profile.is_realm_admin:
                 subscribers = subscriber_map[stream["id"]]

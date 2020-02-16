@@ -833,7 +833,8 @@ class StreamAdminTest(ZulipTestCase):
                                        {'stream_post_policy': ujson.dumps(policy)})
             self.assert_json_error(result, 'Must be an organization administrator')
 
-        policies = [Stream.STREAM_POST_POLICY_ADMINS, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS]
+        policies = [Stream.STREAM_POST_POLICY_ADMINS, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+                    Stream.STREAM_POST_POLICY_ADMINS_CAN_POST_AND_REACT]
 
         for policy in policies:
             test_non_admin(how_old=15, is_new=False, policy=policy)
@@ -2624,6 +2625,20 @@ class SubscriptionAPITest(ZulipTestCase):
 
         json = result.json()
         self.assertEqual(json["subscribed"], {new_member.email: ["stream1"]})
+        self.assertEqual(json["already_subscribed"], {})
+
+    def test_subscribe_to_stream_post_policy_admins_can_post_and_react_stream(self) -> None:
+        """
+        Members can subscribe to streams where only admins can post and react
+        """
+        member = self.example_user("AARON")
+        stream = self.make_stream("stream1")
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS_CAN_POST_AND_REACT)
+        result = self.common_subscribe_to_streams(member, ["stream1"])
+        self.assert_json_success(result)
+
+        json = result.json()
+        self.assertEqual(json["subscribed"], {member.email: ["stream1"]})
         self.assertEqual(json["already_subscribed"], {})
 
     def test_guest_user_subscribe(self) -> None:

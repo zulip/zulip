@@ -7,7 +7,7 @@ from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.request import JsonableError
 from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_realm, Message, Reaction, RealmEmoji, UserMessage
+from zerver.models import get_realm, Message, Reaction, RealmEmoji, Stream, UserMessage, UserProfile
 
 class ReactionEmojiTest(ZulipTestCase):
     def test_missing_emoji(self) -> None:
@@ -356,6 +356,33 @@ class ReactionTest(ZulipTestCase):
         emoji.deactivated = True
         emoji.save(update_fields=['deactivated'])
         result = self.api_delete(sender, '/api/v1/messages/1/reactions', reaction_info)
+        self.assert_json_success(result)
+
+    def test_add_reaction_in_admins_can_post_and_react_streams(self) -> None:
+        realm = get_realm('zulip')
+        sender = self.example_user('iago')
+        reaction_sender = self.example_user("hamlet")
+        reaction_sender.role = UserProfile.ROLE_MEMBER
+        reaction_sender.save()
+        emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'smile')
+        stream = self.make_stream("example1")
+        stream.save()
+        msg_id = self.send_stream_message(sender, stream.name,
+                                          topic_name="test", content="test")
+        reaction_info = {
+            'emoji_name': 'smile',
+            'emoji_code': emoji_code,
+            'reaction_type': reaction_type
+        }
+
+        stream.stream_post_policy = Stream.STREAM_POST_POLICY_ADMINS_CAN_POST_AND_REACT
+        stream.save()
+        result = self.api_post(reaction_sender, '/api/v1/messages/%s/reactions' % (msg_id,), reaction_info)
+        self.assert_json_error(result, "Only admins can react.")
+
+        stream.stream_post_policy = Stream.STREAM_POST_POLICY_ADMINS
+        stream.save()
+        result = self.api_post(reaction_sender, '/api/v1/messages/%s/reactions' % (msg_id,), reaction_info)
         self.assert_json_success(result)
 
 class ReactionEventTest(ZulipTestCase):

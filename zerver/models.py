@@ -1373,6 +1373,7 @@ class Stream(models.Model):
     STREAM_POST_POLICY_EVERYONE = 1
     STREAM_POST_POLICY_ADMINS = 2
     STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS = 3
+    STREAM_POST_POLICY_ADMINS_CAN_POST_AND_REACT = 4
     # TODO: Implement policy to restrict posting to a user group or admins.
 
     # Who in the organization has permission to send messages to this stream.
@@ -1381,6 +1382,7 @@ class Stream(models.Model):
         STREAM_POST_POLICY_EVERYONE,
         STREAM_POST_POLICY_ADMINS,
         STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+        STREAM_POST_POLICY_ADMINS_CAN_POST_AND_REACT,
     ]
 
     # The unique thing about Zephyr public streams is that we never list their
@@ -1462,7 +1464,8 @@ class Stream(models.Model):
                 result['stream_id'] = self.id
                 continue
             result[field_name] = getattr(self, field_name)
-        result['is_announcement_only'] = self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
+        result['is_announcement_only'] = self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS or \
+            self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS_CAN_POST_AND_REACT
         return result
 
 post_save.connect(flush_stream, sender=Stream)

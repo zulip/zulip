@@ -143,7 +143,14 @@ exports.update_stream_privacy_type_icon = function (sub) {
 
 exports.update_stream_subscription_type_text = function (sub) {
     const stream_settings = stream_edit.settings_for_sub(sub);
-    const html = render_subscription_type(sub);
+    const template_data = {
+        invite_only: sub.invite_only,
+        history_public_to_subscribers: sub.history_public_to_subscribers,
+        is_web_public: sub.is_web_public,
+        stream_post_policy: sub.stream_post_policy,
+        stream_post_policy_values: stream_data.stream_post_policy_values,
+    };
+    const html = render_subscription_type(template_data);
     if (stream_edit.is_sub_settings_active(sub)) {
         stream_settings.find('.subscription-type-text').expectOne().html(html);
     }

@@ -494,8 +494,8 @@ run_test('stream_settings', () => {
     assert.equal(sub_rows[2].invite_only, false);
 
     assert.equal(sub_rows[0].history_public_to_subscribers, true);
-    assert.equal(sub_rows[0].stream_post_policy ===
-        stream_data.stream_post_policy_values.admins.code, true);
+    assert.equal(sub_rows[0].stream_post_policy,
+                 stream_data.stream_post_policy_values.admins.code);
 
     const sub = stream_data.get_sub('a');
     stream_data.update_stream_privacy(sub, {
@@ -1072,4 +1072,37 @@ run_test('all_topics_in_cache', () => {
 
     sub.first_message_id = 2;
     assert.equal(stream_data.all_topics_in_cache(sub), true);
+});
+
+run_test('get_restrict_emoji_reaction', () => {
+    const general = {
+        name: 'general',
+        stream_id: 1,
+        stream_post_policy: stream_data.stream_post_policy_values.everyone.code,
+    };
+
+    const test = {
+        name: 'test',
+        stream_id: 1,
+        stream_post_policy: stream_data.stream_post_policy_values.admins_can_post_and_react.code,
+    };
+
+    stream_data.add_sub(general);
+    stream_data.add_sub(test);
+
+    page_params.is_admin = false;
+
+    let restrict_emoji_reaction = stream_data.get_restrict_emoji_reaction('general');
+    assert.equal(restrict_emoji_reaction, false);
+
+    restrict_emoji_reaction = stream_data.get_restrict_emoji_reaction('test');
+    assert.equal(restrict_emoji_reaction, true);
+
+    page_params.is_admin = true;
+
+    restrict_emoji_reaction = stream_data.get_restrict_emoji_reaction('general');
+    assert.equal(restrict_emoji_reaction, false);
+
+    restrict_emoji_reaction = stream_data.get_restrict_emoji_reaction('test');
+    assert.equal(restrict_emoji_reaction, false);
 });

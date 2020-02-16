@@ -133,7 +133,8 @@ def access_stream_for_send_message(sender: UserProfile,
     elif sender.is_bot and (sender.bot_owner is not None and
                             sender.bot_owner.is_realm_admin):
         pass
-    elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS:
+    elif (stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS or
+          stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS_CAN_POST_AND_REACT):
         raise JsonableError(_("Only organization administrators can send to this stream."))
     elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS:
         if sender.is_bot and (sender.bot_owner is not None and

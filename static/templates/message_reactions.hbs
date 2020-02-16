@@ -1,5 +1,5 @@
 {{#each this/msg/message_reactions}}
-{{> message_reaction}}
+{{> message_reaction restrict_emoji_reaction = ../restrict_emoji_reaction}}
 {{/each}}
 <div class="reaction_button" aria-label="{{t 'Add emoji reaction' }} (:)">
     <i class="fa fa-smile-o" role="button" aria-haspopup="true" tabindex="0" aria-label="{{t 'Add emoji reaction' }} (:)"></i>

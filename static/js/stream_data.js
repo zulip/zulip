@@ -103,6 +103,10 @@ exports.stream_post_policy_values = {
         code: 3,
         description: i18n.t("Only organization full members can post"),
     },
+    admins_can_post_and_react: {
+        code: 4,
+        description: i18n.t("Only organization administrators can post and react"),
+    },
 };
 
 exports.clear_subscriptions = function () {
@@ -539,6 +543,15 @@ exports.get_stream_post_policy = function (stream_name) {
         return false;
     }
     return sub.stream_post_policy;
+};
+
+exports.get_restrict_emoji_reaction = function (stream_name) {
+    const stream_post_policy = exports.get_stream_post_policy(stream_name);
+    if (stream_post_policy === exports.stream_post_policy_values.admins_can_post_and_react.code
+        && !page_params.is_admin) {
+        return true;
+    }
+    return false;
 };
 
 exports.all_topics_in_cache = function (sub) {
