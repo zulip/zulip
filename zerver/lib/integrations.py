@@ -445,6 +445,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("travis", ["continuous-integration"], display_name="Travis CI"),
     WebhookIntegration("trello", ["project-management"]),
     WebhookIntegration("updown", ["monitoring"]),
+    WebhookIntegration("uptimerobot", ["monitoring"], display_name="Uptime Robot"),
     WebhookIntegration(
         "yo",
         ["communication"],
@@ -781,6 +782,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "travis": [ScreenshotConfig("build.json", payload_as_query_param=True)],
     "trello": [ScreenshotConfig("adding_comment_to_card.json")],
     "updown": [ScreenshotConfig("check_multiple_events.json")],
+    "uptimerobot": [ScreenshotConfig("uptimerobot_monitor_up.json")],
     "wordpress": [ScreenshotConfig("publish_post.txt", "wordpress_post_created.png")],
     "yo": [
         ScreenshotConfig(
