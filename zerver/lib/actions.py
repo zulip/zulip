@@ -5918,3 +5918,19 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
     export.extra_data = ujson.dumps(export_data)
     export.save(update_fields=['extra_data'])
     notify_realm_export(user_profile)
+
+def get_markdown_messages(user_profile: UserProfile, messages: List[int]) -> str:
+
+    assert messages is not None
+
+    buffer = []
+    for message_id in messages:
+        try:
+            (message, user_message) = access_message(user_profile, message_id)
+        except JsonableError:
+            continue
+        formatted_date = message.date_sent.strftime("%Y-%m-%d %H:%M:%S")
+        buffer.append(formatted_date + " @**" + message.sender.full_name
+                      + "**: \n\n " + message.content)
+
+    return '\n\n'.join(buffer)
