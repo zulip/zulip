@@ -19,7 +19,7 @@ set_global('echo', {
 });
 
 set_global('markdown', {
-    set_realm_filters: noop,
+    update_realm_filter_rules: noop,
 });
 
 set_global('notifications', {

@@ -357,7 +357,7 @@ function python_to_js_filter(pattern, url) {
     return [final_regex, url];
 }
 
-exports.set_realm_filters = function (realm_filters) {
+exports.update_realm_filter_rules = function (realm_filters) {
     // Update the marked parser with our particular set of realm filters
     realm_filter_map.clear();
     realm_filter_list = [];
@@ -446,7 +446,7 @@ exports.initialize = function () {
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'autolink');
 
-    exports.set_realm_filters(page_params.realm_filters);
+    exports.update_realm_filter_rules(page_params.realm_filters);
 
     // Tell our fenced code preprocessor how to insert arbitrary
     // HTML into the output. This generated HTML is safe to not escape
