@@ -30,6 +30,7 @@ from zerver.lib.actions import (
     get_active_presence_idle_user_ids,
     get_client,
     get_last_message_id,
+    get_markdown_messages,
     get_user_info_for_message_updates,
     internal_prep_private_message,
     internal_prep_stream_message_by_name,
@@ -1001,6 +1002,43 @@ class StreamMessagesTest(ZulipTestCase):
             )
 
         self.assert_length(queries, 15)
+
+    def test_get_markdown_messages(self) -> None:
+
+        user_profile = self.example_user('aaron')
+
+        msg_id_1 = self.send_stream_message(self.example_email("hamlet"), "Denmark",
+                                            topic_name="programming", content="stronger")
+        msg_id_2 = self.send_stream_message(self.example_email("aaron"), "Denmark",
+                                            topic_name="programming", content="train")
+        markdown = get_markdown_messages(user_profile, [msg_id_1, msg_id_2])
+
+        self.assertIn("stronger", markdown)
+        self.assertIn("train", markdown)
+
+    def test_get_markdown_messages_list_empty(self) -> None:
+
+        user_profile = self.example_user('aaron')
+        markdown = get_markdown_messages(user_profile, [])
+
+        self.assertEqual('', markdown.strip())
+
+    def test_get_markdown_messages_list_invalid(self) -> None:
+
+        user_profile = self.example_user('aaron')
+        markdown = get_markdown_messages(user_profile, [99999])
+        self.assertEqual('', markdown.strip())
+
+    def test_get_markdown_messages_list_private(self) -> None:
+
+        user_profile = self.example_user('aaron')
+        msg_id = self.send_personal_message(self.example_email("hamlet"),
+                                            self.example_email("iago"),
+                                            content="long tank")
+
+        markdown = get_markdown_messages(user_profile, [msg_id])
+
+        self.assertEqual('', markdown.strip())
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user('iago')
