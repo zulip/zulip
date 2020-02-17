@@ -1,0 +1,18 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+<meta http-equiv="Refresh" content="2; {{ desktop_url }}">
+{% endblock %}
+
+{% block content %}
+<div class="flex">
+    <div class="desktop-redirect-box">
+        <img class="avatar desktop-redirect-image" src="{{ realm_icon_url }}" alt=""/><br>
+        Redirecting to your Zulip app...
+        <div class="desktop-redirect-links">
+            <a id="desktop-redirect-link" href="{{ desktop_url }}">If you weren't redirected, click here.</a><br>
+            <a href="{{ browser_url }}">Or, continue in your browser.</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

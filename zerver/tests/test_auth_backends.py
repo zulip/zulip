@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core import mail
@@ -598,7 +599,45 @@ class CheckPasswordStrengthTest(ZulipTestCase):
             # Good password:
             self.assertTrue(check_password_strength('f657gdGGk9'))
 
-class SocialAuthBase(ZulipTestCase):
+class DesktopFlowTestingLib(ZulipTestCase):
+    def verify_desktop_flow_end_page(self, response: HttpResponse, email: str,
+                                     desktop_flow_otp: str) -> None:
+        self.assertEqual(response.status_code, 200)
+
+        soup = BeautifulSoup(response.content, "html.parser")
+        links = [a['href'] for a in soup.find_all('a', href=True)]
+        self.assert_length(links, 2)
+        for url in links:
+            if url.startswith("zulip://"):
+                desktop_app_url = url
+            else:
+                browser_url = url
+        meta_refresh_content = soup.find('meta', {'http-equiv': lambda value: value == "Refresh"})['content']
+        auto_redirect_url = meta_refresh_content.split('; ')[1]
+
+        self.assertEqual(auto_redirect_url, desktop_app_url)
+
+        decrypted_key = self.verify_desktop_app_url_and_return_key(desktop_app_url, email, desktop_flow_otp)
+        self.assertEqual(browser_url, 'http://zulip.testserver/accounts/login/subdomain/%s' % (decrypted_key,))
+
+        result = self.client_get(browser_url)
+        self.assertEqual(result.status_code, 302)
+        realm = get_realm("zulip")
+        user_profile = get_user(email, realm)
+        self.assert_logged_in_user_id(user_profile.id)
+
+    def verify_desktop_app_url_and_return_key(self, url: str, email: str, desktop_flow_otp: str) -> str:
+        parsed_url = urllib.parse.urlparse(url)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        self.assertEqual(parsed_url.scheme, 'zulip')
+        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
+        self.assertEqual(query_params["email"], [email])
+
+        encrypted_key = query_params["otp_encrypted_login_key"][0]
+        decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
+        return decrypted_key
+
+class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     """This is a base class for testing social-auth backends. These
     methods are often overriden by subclasses:
 
@@ -736,11 +775,10 @@ class SocialAuthBase(ZulipTestCase):
                 # TODO: Generalize this testing code for use with other
                 # authentication backends; for now, we just assert that
                 # it's definitely the GitHub authentication backend.
-                self.assert_in_success_response(["Select account"], result)
-                assert self.AUTH_FINISH_URL == "/complete/github/"
-
-                result = self.client_get(self.AUTH_FINISH_URL,
-                                         dict(state=csrf_state, email=account_data_dict['email']), **headers)
+                if self.AUTH_FINISH_URL == "/complete/github/":
+                    self.assert_in_success_response(["Select account"], result)
+                    result = self.client_get(self.AUTH_FINISH_URL,
+                                             dict(state=csrf_state, email=account_data_dict['email']), **headers)
             elif self.AUTH_FINISH_URL == "/complete/github/":
                 # We want to be explicit about when we expect a test to
                 # use the "choose email" screen, but of course we should
@@ -894,22 +932,7 @@ class SocialAuthBase(ZulipTestCase):
         result = self.social_auth_test(account_data_dict, subdomain='zulip',
                                        expect_choose_email_screen=True,
                                        desktop_flow_otp=desktop_flow_otp)
-        self.assertEqual(result.status_code, 302)
-
-        redirect_url = result['Location']
-        parsed_url = urllib.parse.urlparse(redirect_url)
-        query_params = urllib.parse.parse_qs(parsed_url.query)
-        self.assertEqual(parsed_url.scheme, 'zulip')
-        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
-        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
-
-        encrypted_key = query_params["otp_encrypted_login_key"][0]
-        decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
-        auth_url = 'http://zulip.testserver/accounts/login/subdomain/{}'.format(decrypted_key)
-
-        result = self.client_get(auth_url)
-        self.assertEqual(result.status_code, 302)
-        self.assert_logged_in_user_id(self.user_profile.id)
+        self.verify_desktop_flow_end_page(result, self.email, desktop_flow_otp)
 
     def test_social_auth_session_fields_cleared_correctly(self) -> None:
         mobile_flow_otp = '1234abcd' * 8
@@ -1019,22 +1042,11 @@ class SocialAuthBase(ZulipTestCase):
             self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), user_api_keys)
             return
         elif desktop_flow_otp:
+            self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
+            # Now the desktop app is logged in, continue with the logged in check.
+        else:
             self.assertEqual(result.status_code, 302)
-            redirect_url = result['Location']
-            parsed_url = urllib.parse.urlparse(redirect_url)
-            query_params = urllib.parse.parse_qs(parsed_url.query)
-            self.assertEqual(parsed_url.scheme, 'zulip')
-            self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
-            self.assertEqual(query_params["email"], [email])
 
-            encrypted_key = query_params["otp_encrypted_login_key"][0]
-            decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
-            auth_url = 'http://zulip.testserver/accounts/login/subdomain/{}'.format(decrypted_key)
-
-            result = self.client_get(auth_url)
-            # Now the desktop app is logged in, continue with the logged in check:
-
-        self.assertEqual(result.status_code, 302)
         user_profile = get_user(email, realm)
         self.assert_logged_in_user_id(user_profile.id)
         self.assertEqual(user_profile.full_name, expected_final_name)
@@ -2468,7 +2480,7 @@ class TestDevAuthBackend(ZulipTestCase):
         response = self.client_post('/accounts/login/local/', data)
         self.assertRedirects(response, reverse('dev_not_supported'))
 
-class TestZulipRemoteUserBackend(ZulipTestCase):
+class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_success(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
@@ -2657,21 +2669,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         result = self.client_post('/accounts/login/sso/',
                                   dict(desktop_flow_otp=desktop_flow_otp),
                                   REMOTE_USER=email)
-        self.assertEqual(result.status_code, 302)
-        redirect_url = result['Location']
-        parsed_url = urllib.parse.urlparse(redirect_url)
-        query_params = urllib.parse.parse_qs(parsed_url.query)
-        self.assertEqual(parsed_url.scheme, 'zulip')
-        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
-        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
-
-        encrypted_key = query_params["otp_encrypted_login_key"][0]
-        decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
-        auth_url = 'http://zulip.testserver/accounts/login/subdomain/{}'.format(decrypted_key)
-
-        result = self.client_get(auth_url)
-        self.assertEqual(result.status_code, 302)
-        self.assert_logged_in_user_id(user_profile.id)
+        self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
     @override_settings(SSO_APPEND_DOMAIN="zulip.com")
@@ -2701,21 +2699,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         result = self.client_post('/accounts/login/sso/',
                                   dict(desktop_flow_otp=desktop_flow_otp),
                                   REMOTE_USER=remote_user)
-        self.assertEqual(result.status_code, 302)
-        redirect_url = result['Location']
-        parsed_url = urllib.parse.urlparse(redirect_url)
-        query_params = urllib.parse.parse_qs(parsed_url.query)
-        self.assertEqual(parsed_url.scheme, 'zulip')
-        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
-        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
-
-        encrypted_key = query_params["otp_encrypted_login_key"][0]
-        decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
-        auth_url = 'http://zulip.testserver/accounts/login/subdomain/{}'.format(decrypted_key)
-
-        result = self.client_get(auth_url)
-        self.assertEqual(result.status_code, 302)
-        self.assert_logged_in_user_id(user_profile.id)
+        self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
 
     def test_redirect_to(self) -> None:
         """This test verifies the behavior of the redirect_to logic in
