@@ -379,7 +379,7 @@ exports.update_realm_filter_rules = function (realm_filters) {
     marked.InlineLexer.rules.zulip.realm_filters = marked_rules;
 };
 
-exports.initialize = function () {
+exports.initialize = function (realm_filters) {
 
     function disable_markdown_regex(rules, name) {
         rules[name] = {exec: function () {
@@ -446,7 +446,7 @@ exports.initialize = function () {
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'autolink');
 
-    exports.update_realm_filter_rules(page_params.realm_filters);
+    exports.update_realm_filter_rules(realm_filters);
 
     // Tell our fenced code preprocessor how to insert arbitrary
     // HTML into the output. This generated HTML is safe to not escape

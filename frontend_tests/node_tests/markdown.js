@@ -190,7 +190,7 @@ run_test('fenced_block_defaults', () => {
     assert.equal(output, expected);
 });
 
-markdown.initialize();
+markdown.initialize(page_params.realm_filters);
 
 const bugdown_data = global.read_fixture_data('markdown_test_cases.json');
 

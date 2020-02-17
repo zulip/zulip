@@ -326,7 +326,7 @@ exports.initialize_everything = function () {
     message_fetch.initialize();
     message_scroll.initialize();
     emoji.initialize();
-    markdown.initialize(); // Must happen after emoji.initialize()
+    markdown.initialize(page_params.realm_filters); // Must happen after emoji.initialize()
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
