@@ -27,7 +27,7 @@ set_global('echo', {
     process_from_server: function (messages) {
         return messages;
     },
-    set_realm_filters: noop,
+    update_realm_filter_rules: noop,
 });
 set_global('ui_report', {
     hide_error: function () { return false; },

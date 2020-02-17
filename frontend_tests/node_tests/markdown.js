@@ -570,19 +570,19 @@ run_test('backend_only_realm_filters', () => {
 
 run_test('python_to_js_filter', () => {
     // The only way to reach python_to_js_filter is indirectly, hence the call
-    // to set_realm_filters.
-    markdown.set_realm_filters([['/a(?im)a/g'], ['/a(?L)a/g']]);
+    // to update_realm_filter_rules.
+    markdown.update_realm_filter_rules([['/a(?im)a/g'], ['/a(?L)a/g']]);
     let actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     let expected_value = [/\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
-    markdown.set_realm_filters([['#cf(?P<contest>[0-9]+)(?P<problem>[A-Z][0-9A-Z]*)', 'http://google.com']]);
+    markdown.update_realm_filter_rules([['#cf(?P<contest>[0-9]+)(?P<problem>[A-Z][0-9A-Z]*)', 'http://google.com']]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     expected_value = [/#cf([0-9]+)([A-Z][0-9A-Z]*)(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
     blueslip.set_test_data('error', 'python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group');
-    markdown.set_realm_filters([['!@#@(!#&((!&(@#(', 'http://google.com']]);
+    markdown.update_realm_filter_rules([['!@#@(!#&((!&(@#(', 'http://google.com']]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     expected_value = [];
     assert.deepEqual(actual_value, expected_value);
