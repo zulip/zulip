@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 
 
+STREAM_POST_POLICY_EVERYONE = 1
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -15,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='stream',
             name='stream_post_policy',
-            field=models.PositiveSmallIntegerField(default=1),
+            field=models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE),
         ),
     ]
