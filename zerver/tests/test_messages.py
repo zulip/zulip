@@ -19,6 +19,7 @@ from zerver.lib.actions import (
     create_mirror_user_if_needed,
     do_add_alert_words,
     do_change_stream_invite_only,
+    do_change_stream_post_policy,
     do_claim_attachments,
     do_create_user,
     do_deactivate_user,
@@ -1452,7 +1453,7 @@ class MessagePOSTTest(ZulipTestCase):
     def _send_and_verify_message(self, email: str, stream_name: str, error_msg: str=None) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(email, stream_name)
-            result = self.client_get('/json/messages/' + str(msg_id))
+            result = self.api_get(email, '/json/messages/' + str(msg_id))
             self.assert_json_success(result)
         else:
             with self.assertRaisesRegex(JsonableError, error_msg):
@@ -1532,8 +1533,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         stream_name = "Verona"
         stream = get_stream(stream_name, admin_profile.realm)
-        stream.stream_post_policy = Stream.STREAM_POST_POLICY_ADMINS
-        stream.save()
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS)
 
         # Admins and their owned bots can send to STREAM_POST_POLICY_ADMINS streams
         self._send_and_verify_message(admin_profile.email, stream_name)
@@ -1591,8 +1591,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         stream_name = "Verona"
         stream = get_stream(stream_name, admin_profile.realm)
-        stream.stream_post_policy = Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS
-        stream.save()
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
 
         # Admins and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
         # even if the admin is a new user
