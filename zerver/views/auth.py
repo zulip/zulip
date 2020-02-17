@@ -26,6 +26,7 @@ from zerver.forms import HomepageForm, OurAuthenticationForm, \
     AuthenticationTokenForm
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
+from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
@@ -289,9 +290,13 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     data = {'email': user_profile.delivery_email,
             'subdomain': realm.subdomain}
     token = store_login_data(data)
-
-    return create_response_for_otp_flow(token, otp, user_profile,
-                                        encrypted_key_field_name='otp_encrypted_login_key')
+    response = create_response_for_otp_flow(token, otp, user_profile,
+                                            encrypted_key_field_name='otp_encrypted_login_key')
+    browser_url = user_profile.realm.uri + reverse('zerver.views.auth.log_into_subdomain', args=[token])
+    context = {'desktop_url': response['Location'],
+               'browser_url': browser_url,
+               'realm_icon_url': realm_icon_url(realm)}
+    return render(request, 'zerver/desktop_redirect.html', context=context)
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
     # For the mobile Oauth flow, we send the API key and other
