@@ -8,14 +8,13 @@ from django.db.migrations.state import StateApps
 
 
 def upgrade_stream_post_policy(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    STREAM_POST_POLICY_EVERYONE = 1
-    STREAM_POST_POLICY_ADMINS = 2
-
     Stream = apps.get_model('zerver', 'Stream')
+    Stream.STREAM_POST_POLICY_EVERYONE = 1
+    Stream.STREAM_POST_POLICY_ADMINS = 2
     Stream.objects.filter(is_announcement_only=False) \
-        .update(stream_post_policy=STREAM_POST_POLICY_EVERYONE)
+        .update(stream_post_policy=Stream.STREAM_POST_POLICY_EVERYONE)
     Stream.objects.filter(is_announcement_only=True) \
-        .update(stream_post_policy=STREAM_POST_POLICY_ADMINS)
+        .update(stream_post_policy=Stream.STREAM_POST_POLICY_ADMINS)
 
 class Migration(migrations.Migration):
 

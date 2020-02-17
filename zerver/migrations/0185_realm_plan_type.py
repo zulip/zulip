@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 
 
+SELF_HOSTED = 1
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -16,6 +17,6 @@ class Migration(migrations.Migration):
             model_name='realm',
             name='plan_type',
             # Realm.SELF_HOSTED
-            field=models.PositiveSmallIntegerField(default=1),
+            field=models.PositiveSmallIntegerField(default=SELF_HOSTED),
         ),
     ]

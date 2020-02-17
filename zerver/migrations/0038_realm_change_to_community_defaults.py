@@ -2,6 +2,7 @@
 from django.db import migrations, models
 
 
+COMMUNITY = 2
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -17,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='realm',
             name='org_type',
-            field=models.PositiveSmallIntegerField(default=2),
+            field=models.PositiveSmallIntegerField(default=COMMUNITY),
         ),
         migrations.AlterField(
             model_name='realm',
