@@ -10,6 +10,7 @@ import traceback
 
 from urllib.parse import urlunparse
 
+from django.utils.autoreload import DJANGO_AUTORELOAD_ENV
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
@@ -141,7 +142,8 @@ cmds = [['./manage.py', 'runserver'] +
         manage_args + runserver_args + ['127.0.0.1:%d' % (django_port,)],
         ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
-        ['./manage.py', 'process_queue', '--all'] + manage_args,
+        ['env', '{}=true'.format(DJANGO_AUTORELOAD_ENV),
+         './manage.py', 'process_queue', '--all'] + manage_args,
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates'],
         ['./manage.py', 'deliver_scheduled_messages'],
