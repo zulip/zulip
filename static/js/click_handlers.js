@@ -51,6 +51,15 @@ exports.initialize = function () {
         drag.end(e);
     });
 
+    // Mouse cursor should not be a pointer in editing mode.
+    $('#main_div').on("mouseover", ".messagebox", function (e) {
+        const row = $(this).closest(".message_row");
+        const id = rows.id(row);
+
+        if (message_edit.is_editing(id)) {
+            e.currentTarget.style.cursor = "default";
+        }
+    });
     // MESSAGE CLICKING
 
     function is_clickable_message_element(target) {
