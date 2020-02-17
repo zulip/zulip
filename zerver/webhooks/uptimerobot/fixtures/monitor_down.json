@@ -1,0 +1,9 @@
+{
+	"monitorID": "784350743",
+	"monitorURL": "http://7d398dfc.ngrok.io",
+	"monitorFriendlyName": "ZUTesting",
+	"alertType": "1",
+	"alertTypeFriendlyName": "Down",
+	"alertDetails": "HTTP 502 - Bad Gateway",
+	"alertFriendlyDuration": "*alertFriendlyDuration*"
+}

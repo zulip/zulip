@@ -1,0 +1,9 @@
+{
+    "monitorID": "784350743",
+    "monitorURL": "http://7d398dfc.ngrok.io",
+    "monitorFriendlyName": "ZUTesting",
+    "alertType": "2",
+    "alertTypeFriendlyName": "Up",
+    "alertDetails": "HTTP 200 - OK",
+    "alertFriendlyDuration": "1 minutes and 0 seconds"
+}

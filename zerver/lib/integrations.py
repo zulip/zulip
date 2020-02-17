@@ -334,6 +334,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('travis', ['continuous-integration'], display_name='Travis CI'),
     WebhookIntegration('trello', ['project-management']),
     WebhookIntegration('updown', ['monitoring']),
+    WebhookIntegration('uptimerobot', ['monitoring'], display_name='Uptime Robot'),
     WebhookIntegration(
         'yo',
         ['communication'],
