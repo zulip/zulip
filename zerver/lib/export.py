@@ -832,18 +832,28 @@ def fetch_user_profile_cross_realm(response: TableData, config: Config, context:
     realm = context['realm']
     response['zerver_userprofile_crossrealm'] = []
 
+    bot_name_to_default_email = {
+        "NOTIFICATION_BOT": "notification-bot@zulip.com",
+        "EMAIL_GATEWAY_BOT": "emailgateway@zulip.com",
+        "WELCOME_BOT": "welcome-bot@zulip.com",
+    }
+
     if realm.string_id == settings.SYSTEM_BOT_REALM:
         return
 
-    for bot_user in [
-            get_system_bot(settings.NOTIFICATION_BOT),
-            get_system_bot(settings.EMAIL_GATEWAY_BOT),
-            get_system_bot(settings.WELCOME_BOT),
-    ]:
-        recipient_id = Recipient.objects.get(type_id=bot_user.id, type=Recipient.PERSONAL).id
+    for bot in settings.INTERNAL_BOTS:
+        bot_name = bot["var_name"]
+        if bot_name not in bot_name_to_default_email:
+            continue
+
+        bot_email = bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,)
+        bot_default_email = bot_name_to_default_email[bot_name]
+        bot_user_id = get_system_bot(bot_email).id
+
+        recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
         response['zerver_userprofile_crossrealm'].append(dict(
-            email=bot_user.email,
-            id=bot_user.id,
+            email=bot_default_email,
+            id=bot_user_id,
             recipient_id=recipient_id,
         ))
 
