@@ -1,5 +1,3 @@
-const util = require("./util");
-
 exports.get_hash_category = function (hash) {
     // given "#streams/subscribed", returns "streams"
     return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
@@ -138,7 +136,7 @@ exports.by_conversation_and_time_uri = function (message) {
 
     if (message.type === "stream") {
         return absolute_url +
-            exports.by_stream_topic_uri(message.stream_id, util.get_message_topic(message)) +
+            exports.by_stream_topic_uri(message.stream_id, message.topic) +
             suffix;
     }
 

@@ -1,4 +1,3 @@
-const util = require("./util");
 const autosize = require('autosize');
 
 function update_lock_icon_for_stream(stream_name) {
@@ -335,7 +334,7 @@ exports.respond_to_message = function (opts) {
     let pm_recipient = '';
     if (msg_type === "stream") {
         stream = message.stream;
-        topic = util.get_message_topic(message);
+        topic = message.topic;
     } else {
         pm_recipient = message.reply_to;
         if (opts.reply_type === "personal") {

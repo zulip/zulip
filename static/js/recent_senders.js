@@ -1,4 +1,3 @@
-const util = require("./util");
 const FoldDict = require('./fold_dict').FoldDict;
 const IntDict = require('./int_dict').IntDict;
 
@@ -7,7 +6,7 @@ const stream_senders = new IntDict(); // key is stream-id, value is Dict
 
 exports.process_message_for_senders = function (message) {
     const stream_id = message.stream_id;
-    const topic = util.get_message_topic(message);
+    const topic = message.topic;
 
     // Process most recent sender to topic
     const topic_dict = topic_senders.get(stream_id) || new FoldDict();
