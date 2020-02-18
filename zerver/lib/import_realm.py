@@ -966,6 +966,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_userpresence', 'client', related_table='client')
+    re_map_foreign_keys(data, 'zerver_userpresence', 'realm', related_table="realm")
     update_model_ids(UserPresence, data, 'user_presence')
     bulk_import_model(data, UserPresence)
 

@@ -9,6 +9,7 @@ from mock import patch
 from typing import Any, Dict, List, Set, Optional, Tuple, Callable, \
     FrozenSet
 from django.db.models import Q
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.export import (
     do_export_realm,
@@ -55,7 +56,8 @@ from zerver.lib.actions import (
     do_add_reaction,
     create_stream_if_needed,
     do_change_icon_source,
-    do_change_logo_source
+    do_change_logo_source,
+    do_update_user_presence,
 )
 
 from zerver.lib.test_runner import slow
@@ -79,9 +81,11 @@ from zerver.models import (
     MutedTopic,
     UserGroup,
     UserGroupMembership,
+    UserPresence,
     BotStorageData,
     BotConfigData,
     get_active_streams,
+    get_client,
     get_realm,
     get_stream,
     get_stream_recipient,
@@ -714,9 +718,9 @@ class ImportExportTest(ZulipTestCase):
         special_characters_message = "```\n'\n```\n@**Polonius**"
         self.send_stream_message(self.example_email("iago"), "Denmark", special_characters_message)
 
-        # data to test import of hotspots
         sample_user = self.example_user('hamlet')
 
+        # data to test import of hotspots
         UserHotspot.objects.create(
             user=sample_user, hotspot='intro_streams'
         )
@@ -728,6 +732,8 @@ class ImportExportTest(ZulipTestCase):
             stream_id=stream.id,
             recipient_id=get_stream_recipient(stream.id).id,
             topic_name=u'Verona2')
+
+        do_update_user_presence(sample_user, get_client("website"), timezone_now(), UserPresence.ACTIVE)
 
         # data to test import of botstoragedata and botconfigdata
         bot_profile = do_create_user(
@@ -971,6 +977,13 @@ class ImportExportTest(ZulipTestCase):
             return mention_message.content
 
         assert_realm_values(get_user_group_mention)
+
+        def get_userpresence_timestamp(r: Realm) -> Set[Any]:
+            # It should be sufficient to compare UserPresence timestamps to verify
+            # they got exported/imported correctly.
+            return set(UserPresence.objects.filter(realm=r).values_list('timestamp', flat=True))
+
+        assert_realm_values(get_userpresence_timestamp)
 
         # test to highlight that bs4 which we use to do data-**id
         # replacements modifies the HTML sometimes. eg replacing <br>
