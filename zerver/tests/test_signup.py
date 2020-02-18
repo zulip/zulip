@@ -26,7 +26,7 @@ from zerver.views.invite import get_invitee_emails_set
 from zerver.views.development.registration import confirmation_key
 
 from zerver.models import (
-    get_realm, get_user, get_stream_recipient, CustomProfileField,
+    get_realm, get_user, CustomProfileField,
     CustomProfileFieldValue, DefaultStream, PreregistrationUser,
     Realm, Recipient, Message, ScheduledEmail, UserProfile, UserMessage,
     Stream, Subscription, flush_per_request_caches, get_system_bot,
@@ -1830,13 +1830,13 @@ class RealmCreationTest(ZulipTestCase):
                 (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, 'with the topic', 3),
                 (Realm.INITIAL_PRIVATE_STREAM_NAME, 'private stream', 1)]:
             stream = get_stream(stream_name, realm)
-            recipient = get_stream_recipient(stream.id)
+            recipient = stream.recipient
             messages = Message.objects.filter(recipient=recipient).order_by('date_sent')
             self.assertEqual(len(messages), message_count)
             self.assertIn(text, messages[0].content)
 
         # Check signup messages
-        recipient = get_stream_recipient(signups_stream.id)
+        recipient = signups_stream.recipient
         messages = Message.objects.filter(recipient=recipient).order_by('id')
         self.assertEqual(len(messages), 2)
         self.assertIn('Signups enabled', messages[0].content)

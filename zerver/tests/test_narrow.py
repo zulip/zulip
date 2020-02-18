@@ -11,7 +11,7 @@ from sqlalchemy.sql.elements import ClauseElement
 from zerver.models import (
     Realm, Subscription, Recipient, Stream,
     get_display_recipient, get_realm, get_stream,
-    UserMessage, get_stream_recipient, Message
+    UserMessage, Message
 )
 from zerver.lib.actions import (
     do_set_realm_property,
@@ -68,11 +68,11 @@ def get_sqlalchemy_query_params(query: ClauseElement) -> Dict[str, object]:
 
 def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> str:
     stream = get_stream(stream_name, realm)
-    return get_stream_recipient(stream.id).id
+    return stream.recipient.id
 
 def mute_stream(realm: Realm, user_profile: str, stream_name: str) -> None:
     stream = get_stream(stream_name, realm)
-    recipient = get_stream_recipient(stream.id)
+    recipient = stream.recipient
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
     subscription.is_muted = True
     subscription.save()
@@ -1077,7 +1077,7 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids = {}  # type: Dict[str, Union[int, str]]
 
         scotland_stream = get_stream('Scotland', hamlet_user.realm)
-        query_ids['scotland_recipient'] = get_stream_recipient(scotland_stream.id).id
+        query_ids['scotland_recipient'] = scotland_stream.recipient_id
         query_ids['hamlet_id'] = hamlet_user.id
         query_ids['othello_id'] = othello_user.id
         query_ids['hamlet_recipient'] = hamlet_user.recipient_id
@@ -2628,7 +2628,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(queries), 1)
 
         stream = get_stream('Scotland', realm)
-        recipient_id = get_stream_recipient(stream.id).id
+        recipient_id = stream.recipient.id
         cond = '''AND NOT (recipient_id = {scotland} AND upper(subject) = upper('golf'))'''.format(scotland=recipient_id)
         self.assertIn(cond, queries[0]['sql'])
 

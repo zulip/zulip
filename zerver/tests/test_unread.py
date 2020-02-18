@@ -7,7 +7,6 @@ from django.db import connection
 from zerver.models import (
     get_realm,
     get_stream,
-    get_stream_recipient,
     get_user,
     Subscription,
     UserMessage,
@@ -390,7 +389,7 @@ class FixUnreadTests(ZulipTestCase):
 
         def mute_stream(stream_name: str) -> None:
             stream = get_stream(stream_name, realm)
-            recipient = get_stream_recipient(stream.id)
+            recipient = stream.recipient
             subscription = Subscription.objects.get(
                 user_profile=user,
                 recipient=recipient
@@ -400,7 +399,7 @@ class FixUnreadTests(ZulipTestCase):
 
         def mute_topic(stream_name: str, topic_name: str) -> None:
             stream = get_stream(stream_name, realm)
-            recipient = get_stream_recipient(stream.id)
+            recipient = stream.recipient
 
             add_topic_mute(
                 user_profile=user,

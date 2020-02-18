@@ -24,10 +24,6 @@ from zerver.worker import queue_processors
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.views.auth import get_login_data
 
-from zerver.lib.actions import (
-    get_stream_recipient,
-)
-
 from zerver.models import (
     get_stream,
     Client,
@@ -235,9 +231,9 @@ def most_recent_message(user_profile: UserProfile) -> Message:
 
 def get_subscription(stream_name: str, user_profile: UserProfile) -> Subscription:
     stream = get_stream(stream_name, user_profile.realm)
-    recipient = get_stream_recipient(stream.id)
+    recipient_id = stream.recipient_id
     return Subscription.objects.get(user_profile=user_profile,
-                                    recipient=recipient, active=True)
+                                    recipient_id=recipient_id, active=True)
 
 def get_user_messages(user_profile: UserProfile) -> List[Message]:
     query = UserMessage.objects. \

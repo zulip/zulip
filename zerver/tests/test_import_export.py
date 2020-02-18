@@ -88,7 +88,6 @@ from zerver.models import (
     get_client,
     get_realm,
     get_stream,
-    get_stream_recipient,
     get_huddle_hash,
 )
 
@@ -729,7 +728,7 @@ class ImportExportTest(ZulipTestCase):
         add_topic_mute(
             user_profile=sample_user,
             stream_id=stream.id,
-            recipient_id=get_stream_recipient(stream.id).id,
+            recipient_id=stream.recipient.id,
             topic_name=u'Verona2')
 
         do_update_user_presence(sample_user, get_client("website"), timezone_now(), UserPresence.ACTIVE)
@@ -788,10 +787,8 @@ class ImportExportTest(ZulipTestCase):
         )
 
         # test recipients
-        def get_recipient_stream(r: Realm) -> Stream:
-            return get_stream_recipient(
-                Stream.objects.get(name='Verona', realm=r).id
-            )
+        def get_recipient_stream(r: Realm) -> Recipient:
+            return Stream.objects.get(name='Verona', realm=r).recipient
 
         def get_recipient_user(r: Realm) -> Recipient:
             return UserProfile.objects.get(full_name='Iago', realm=r).recipient
@@ -1012,7 +1009,7 @@ class ImportExportTest(ZulipTestCase):
             self.assertEqual(user_profile.recipient_id, Recipient.objects.get(type=Recipient.PERSONAL,
                                                                               type_id=user_profile.id).id)
         for stream in Stream.objects.filter(realm=imported_realm):
-            self.assertEqual(stream.recipient_id, get_stream_recipient(stream.id).id)
+            self.assertEqual(stream.recipient_id, stream.recipient.id)
 
     def test_import_files_from_local(self) -> None:
 

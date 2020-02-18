@@ -99,7 +99,6 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, \
     get_user_profile_by_id, PreregistrationUser, \
-    get_stream_recipient, \
     email_allowed_for_realm, email_to_username, \
     get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
@@ -3676,8 +3675,8 @@ def do_rename_stream(stream: Stream,
                    'realm': stream.realm.string_id,
                    'new_name': new_name})
 
-    recipient = get_stream_recipient(stream.id)
-    messages = Message.objects.filter(recipient=recipient).only("id")
+    recipient_id = stream.recipient_id
+    messages = Message.objects.filter(recipient_id=recipient_id).only("id")
 
     # Update the display recipient and stream, which are easy single
     # items to set.
@@ -3686,7 +3685,7 @@ def do_rename_stream(stream: Stream,
     if old_cache_key != new_cache_key:
         cache_delete(old_cache_key)
         cache_set(new_cache_key, stream)
-    cache_set(display_recipient_cache_key(recipient.id), stream.name)
+    cache_set(display_recipient_cache_key(recipient_id), stream.name)
 
     # Delete cache entries for everything else, which is cheaper and
     # clearer than trying to set them. display_recipient is the out of
