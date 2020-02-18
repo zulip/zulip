@@ -223,7 +223,7 @@ function edit_message(row, raw_content) {
         is_editable: is_editable,
         is_content_editable: editability === exports.editability_types.FULL,
         has_been_editable: editability !== editability_types.NO,
-        topic: util.get_message_topic(message),
+        topic: message.topic,
         content: raw_content,
         file_upload_enabled: file_upload_enabled,
         minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
@@ -331,7 +331,7 @@ function edit_message(row, raw_content) {
 
     if (!is_editable) {
         row.find(".message_edit_close").focus();
-    } else if (message.type === 'stream' && util.get_message_topic(message) === compose.empty_topic_placeholder()) {
+    } else if (message.type === 'stream' && message.topic === compose.empty_topic_placeholder()) {
         message_edit_topic.val('');
         message_edit_topic.focus();
     } else if (editability === editability_types.TOPIC_ONLY) {
@@ -353,7 +353,7 @@ function edit_message(row, raw_content) {
     message_viewport.scrollTop(message_viewport.scrollTop() + scroll_by);
 
     if (feature_flags.propagate_topic_edits && !message.locally_echoed) {
-        const original_topic = util.get_message_topic(message);
+        const original_topic = message.topic;
         message_edit_topic.keyup(function () {
             const new_topic = message_edit_topic.val();
             message_edit_topic_propagate.toggle(new_topic !== original_topic && new_topic !== "");
@@ -413,7 +413,7 @@ exports.start_topic_edit = function (recipient_row) {
     form.keydown(_.partial(handle_edit_keydown, true));
     const msg_id = rows.id_for_recipient_row(recipient_row);
     const message = current_msg_list.get(msg_id);
-    let topic = util.get_message_topic(message);
+    let topic = message.topic;
     if (topic === compose.empty_topic_placeholder()) {
         topic = '';
     }
@@ -470,7 +470,7 @@ exports.save = function (row, from_topic_edited_only) {
     const new_content = row.find(".message_edit_content").val();
     let topic_changed = false;
     let new_topic;
-    const old_topic = util.get_message_topic(message);
+    const old_topic = message.topic;
 
     if (message.type === "stream") {
         if (from_topic_edited_only) {

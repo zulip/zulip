@@ -30,7 +30,7 @@ function zephyr_topic_name_match(message, operand) {
         related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
     }
 
-    return related_regexp.test(util.get_message_topic(message));
+    return related_regexp.test(message.topic);
 }
 
 function message_in_home(message) {
@@ -107,7 +107,7 @@ function message_matches_search_term(message, operator, operand) {
         if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
         }
-        return util.get_message_topic(message).toLowerCase() === operand;
+        return message.topic.toLowerCase() === operand;
 
 
     case 'sender':

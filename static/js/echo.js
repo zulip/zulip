@@ -180,14 +180,14 @@ exports.edit_locally = function edit_locally(message, request) {
         const new_topic = request.new_topic;
         topic_data.remove_message({
             stream_id: message.stream_id,
-            topic_name: util.get_message_topic(message),
+            topic_name: message.topic,
         });
 
         util.set_message_topic(message, new_topic);
 
         topic_data.add_message({
             stream_id: message.stream_id,
-            topic_name: util.get_message_topic(message),
+            topic_name: message.topic,
             message_id: message.id,
         });
     }

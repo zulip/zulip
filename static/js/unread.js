@@ -430,14 +430,14 @@ exports.process_loaded_messages = function (messages) {
         if (message.type === 'stream') {
             exports.unread_topic_counter.add(
                 message.stream_id,
-                util.get_message_topic(message),
+                message.topic,
                 message.id
             );
         }
 
         const is_unmuted_mention = message.type === 'stream' && message.mentioned &&
                                    !muting.is_topic_muted(message.stream_id,
-                                                          util.get_message_topic(message));
+                                                          message.topic);
         if (message.mentioned_me_directly || is_unmuted_mention) {
             exports.unread_mentions_counter.add(message.id);
         }

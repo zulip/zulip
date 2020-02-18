@@ -158,7 +158,7 @@ exports.add_message_metadata = function (message) {
 
         topic_data.add_message({
             stream_id: message.stream_id,
-            topic_name: util.get_message_topic(message),
+            topic_name: message.topic,
             message_id: message.id,
         });
 

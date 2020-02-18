@@ -1,4 +1,3 @@
-const util = require("./util");
 const render_muted_topic_ui_row = require('../templates/muted_topic_ui_row.hbs');
 const render_topic_muted = require('../templates/topic_muted.hbs');
 
@@ -133,7 +132,7 @@ exports.unmute = function (stream_id, topic) {
 
 exports.toggle_mute = function (message) {
     const stream_id = message.stream_id;
-    const topic = util.get_message_topic(message);
+    const topic = message.topic;
 
     if (muting.is_topic_muted(stream_id, topic)) {
         exports.unmute(stream_id, topic);
