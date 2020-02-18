@@ -1574,9 +1574,6 @@ def get_recipient(type: int, type_id: int) -> Recipient:
 def get_stream_recipient(stream_id: int) -> Recipient:
     return get_recipient(Recipient.STREAM, stream_id)
 
-def get_personal_recipient(user_profile_id: int) -> Recipient:
-    return get_recipient(Recipient.PERSONAL, user_profile_id)
-
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
 
     # The caller should ensure that user_profile_ids includes

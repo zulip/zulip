@@ -92,7 +92,7 @@ from zerver.models import (
     get_stream, get_stream_recipient, get_system_bot, get_user, Reaction,
     flush_per_request_caches, ScheduledMessage, get_huddle_recipient,
     bulk_get_huddle_user_ids, get_huddle_user_ids,
-    get_personal_recipient, get_display_recipient, RealmFilter,
+    get_display_recipient, RealmFilter,
 )
 
 
@@ -4620,7 +4620,7 @@ class MessageHydrationTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         message_id = self.send_personal_message(hamlet.email, cordelia.email, 'test')
 
-        cordelia_recipient = get_personal_recipient(cordelia.id)
+        cordelia_recipient = cordelia.recipient
         # Cause the display_recipient to get cached:
         get_display_recipient(cordelia_recipient)
 

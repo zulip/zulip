@@ -85,7 +85,6 @@ from zerver.models import (
     get_realm,
     get_stream,
     get_stream_recipient,
-    get_personal_recipient,
     get_huddle_hash,
 )
 
@@ -788,10 +787,8 @@ class ImportExportTest(ZulipTestCase):
                 Stream.objects.get(name='Verona', realm=r).id
             )
 
-        def get_recipient_user(r: Realm) -> UserProfile:
-            return get_personal_recipient(
-                UserProfile.objects.get(full_name='Iago', realm=r).id
-            )
+        def get_recipient_user(r: Realm) -> Recipient:
+            return UserProfile.objects.get(full_name='Iago', realm=r).recipient
 
         assert_realm_values(lambda r: get_recipient_stream(r).type)
         assert_realm_values(lambda r: get_recipient_user(r).type)
@@ -999,7 +996,8 @@ class ImportExportTest(ZulipTestCase):
 
         # Check recipient_id was generated correctly for the imported users and streams.
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
-            self.assertEqual(user_profile.recipient_id, get_personal_recipient(user_profile.id).id)
+            self.assertEqual(user_profile.recipient_id, Recipient.objects.get(type=Recipient.PERSONAL,
+                                                                              type_id=user_profile.id).id)
         for stream in Stream.objects.filter(realm=imported_realm):
             self.assertEqual(stream.recipient_id, get_stream_recipient(stream.id).id)
 
