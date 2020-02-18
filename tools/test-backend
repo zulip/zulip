@@ -347,8 +347,10 @@ def main() -> None:
     assert_provisioning_status_ok(options.force)
 
     if options.coverage:
+        import atexit
         import coverage
         cov = coverage.Coverage(config_file="tools/coveragerc", concurrency='multiprocessing')
+        atexit.register(lambda: cov.erase())  # Ensure the data file gets cleaned up at the end.
         cov.start()
     if options.profile:
         import cProfile
