@@ -825,10 +825,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
     for item in data['zerver_userprofile_crossrealm']:
-        if item['email'].startswith("emailgateway@"):
-            # The email gateway bot's email is customized to a
-            # different domain on some servers.
-            item['email'] = settings.EMAIL_GATEWAY_BOT
         logging.info("Adding to ID map: %s %s" % (item['id'], get_system_bot(item['email']).id))
         new_user_id = get_system_bot(item['email']).id
         update_id_map(table='user_profile', old_id=item['id'], new_id=new_user_id)
