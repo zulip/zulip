@@ -89,7 +89,7 @@ from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_TOPIC_NAME_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
     RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
-    get_stream, get_stream_recipient, get_system_bot, get_user, Reaction,
+    get_stream, get_system_bot, get_user, Reaction,
     flush_per_request_caches, ScheduledMessage, get_huddle_recipient,
     bulk_get_huddle_user_ids, get_huddle_user_ids,
     get_display_recipient, RealmFilter,
@@ -155,7 +155,7 @@ class TopicHistoryTest(ZulipTestCase):
         self.login(email)
 
         stream = get_stream(stream_name, user_profile.realm)
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
 
         def create_test_message(topic: str) -> int:
             # TODO: Clean this up to send messages the normal way.
@@ -925,7 +925,7 @@ class StreamMessagesTest(ZulipTestCase):
         message_content = 'whatever'
         stream = get_stream('Denmark', realm)
         topic_name = 'lunch'
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
         sending_client = make_client(name="test suite")
 
         for i in range(num_extra_users):
@@ -4164,7 +4164,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         topic_name = 'foo'
 
         def send_fake_message(message_content: str, stream: Stream) -> Message:
-            recipient = get_stream_recipient(stream.id)
+            recipient = stream.recipient
             message = Message(sender = sender,
                               recipient = recipient,
                               content = message_content,

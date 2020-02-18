@@ -1571,9 +1571,6 @@ def get_recipient_cache_key(type: int, type_id: int) -> str:
 def get_recipient(type: int, type_id: int) -> Recipient:
     return Recipient.objects.get(type_id=type_id, type=type)
 
-def get_stream_recipient(stream_id: int) -> Recipient:
-    return get_recipient(Recipient.STREAM, stream_id)
-
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
 
     # The caller should ensure that user_profile_ids includes

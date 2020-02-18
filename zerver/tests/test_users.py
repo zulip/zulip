@@ -16,7 +16,7 @@ from zerver.lib.test_classes import (
 
 from zerver.models import UserProfile, Recipient, Realm, \
     RealmDomain, UserHotspot, get_client, \
-    get_user, get_realm, get_stream, get_stream_recipient, \
+    get_user, get_realm, get_stream, \
     get_source_profile, get_system_bot, \
     ScheduledEmail, check_valid_user_ids, \
     get_user_by_id_in_realm_including_cross_realm, CustomProfileField, \
@@ -1053,7 +1053,7 @@ class RecipientInfoTest(ZulipTestCase):
             self.subscribe(user, stream_name)
 
         stream = get_stream(stream_name, realm)
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
 
         stream_topic = StreamTopicTarget(
             stream_id=stream.id,

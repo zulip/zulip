@@ -15,7 +15,6 @@ from zerver.lib.test_classes import (
 )
 
 from zerver.models import (
-    get_stream_recipient,
     Subscription,
     UserPresence,
 )
@@ -211,7 +210,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         '''
         cordelia = self.example_user('cordelia')
         stream = self.subscribe(cordelia, 'Scotland')
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
         cordelia_subscription = Subscription.objects.get(
             user_profile_id=cordelia.id,
             recipient=recipient,
