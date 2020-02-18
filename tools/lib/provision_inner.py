@@ -158,7 +158,7 @@ def main(options: argparse.Namespace) -> int:
         django.setup()
 
         from zerver.lib.test_fixtures import template_database_status, run_db_migrations, \
-            destroy_leaked_test_databases
+            destroy_leaked_test_databases, get_migration_status_path
 
         try:
             from zerver.lib.queue import SimpleQueueClient
@@ -174,8 +174,9 @@ def main(options: argparse.Namespace) -> int:
 
         dev_template_db_status = template_database_status('dev')
         if options.is_force or dev_template_db_status == 'needs_rebuild':
-            run(["tools/setup/postgres-init-dev-db"])
-            run(["tools/do-destroy-rebuild-database"])
+            migration_status_file = get_migration_status_path('dev')
+            run(["tools/setup/postgres-init-dev-db", migration_status_file])
+            run(["tools/do-destroy-rebuild-database", migration_status_file])
         elif dev_template_db_status == 'run_migrations':
             run_db_migrations('dev')
         elif dev_template_db_status == 'current':
@@ -183,8 +184,9 @@ def main(options: argparse.Namespace) -> int:
 
         test_template_db_status = template_database_status('test')
         if options.is_force or test_template_db_status == 'needs_rebuild':
-            run(["tools/setup/postgres-init-test-db"])
-            run(["tools/do-destroy-rebuild-test-database"])
+            migration_status_file = get_migration_status_path('test')
+            run(["tools/setup/postgres-init-test-db", migration_status_file])
+            run(["tools/do-destroy-rebuild-test-database", migration_status_file])
         elif test_template_db_status == 'run_migrations':
             run_db_migrations('test')
         elif test_template_db_status == 'current':

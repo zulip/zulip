@@ -25,29 +25,26 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path, run, \
     file_or_package_hash_updated, TEMPLATE_DATABASE_DIR
 
 class DatabaseType:
-    def __init__(self, database_name: str, settings: str, migration_status: str):
+    def __init__(self, database_name: str, settings: str):
         self.database_name = database_name
         self.settings = settings
-        self.migration_status = migration_status
 
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile(r'[\W\-_]')
 
 DEV_DATABASE_TYPE = DatabaseType(database_name='zulip',
-                                 settings='zproject.settings',
-                                 migration_status=os.path.join(UUID_VAR_DIR, "migration_status_dev"))
+                                 settings='zproject.settings')
 
 TEST_DATABASE_TYPE = DatabaseType(database_name='zulip_test_template',
-                                  settings='zproject.test_settings',
-                                  migration_status=os.path.join(UUID_VAR_DIR, 'migration_status_test'))
+                                  settings='zproject.test_settings')
 
 def run_db_migrations(platform: str) -> None:
     if platform == 'dev':
-        migration_status_file = 'migration_status_dev'
+        migration_status_file = get_migration_status_path('dev')
         settings = 'zproject.settings'
         db_name = 'ZULIP_DB_NAME=zulip'
     elif platform == 'test':
-        migration_status_file = 'migration_status_test'
+        migration_status_file = get_migration_status_path('test')
         settings = 'zproject.test_settings'
         db_name = 'ZULIP_DB_NAME=zulip_test_template'
 
@@ -83,7 +80,8 @@ def update_test_databases_if_required(use_force: bool=False,
 
     If use_force is specified, it will always do a full rebuild.
     """
-    generate_fixtures_command = ['tools/setup/generate-fixtures']
+    migration_status_file = get_migration_status_path('test')
+    generate_fixtures_command = ['tools/setup/generate-fixtures', migration_status_file]
     test_template_db_status = template_database_status('test')
     if use_force or test_template_db_status == 'needs_rebuild':
         generate_fixtures_command.append('--force')
@@ -105,6 +103,15 @@ def database_exists(database_name: str, **options: Any) -> bool:
         return return_value
     except OperationalError:
         return False
+
+def get_migration_status_path(database_type: str) -> str:
+    if database_type == 'test':
+        status_dir = os.path.join(UUID_VAR_DIR, TEST_DATABASE_TYPE.database_name + '_db_status')
+    elif database_type == 'dev':
+        status_dir = os.path.join(UUID_VAR_DIR, DEV_DATABASE_TYPE.database_name + '_db_status')
+    if not os.path.exists(status_dir):
+        os.mkdir(status_dir)
+    return os.path.join(status_dir, 'migration_status')
 
 def get_migration_status(**options: Any) -> str:
     verbosity = options.get('verbosity', 1)
@@ -248,7 +255,8 @@ def template_database_status(database_type: str) -> str:
         if not check_migrations:
             return 'current'
 
-        migration_op = what_to_do_with_migrations(database.migration_status, settings=database.settings)
+        migration_status = os.path.join(status_dir, 'migration_status')
+        migration_op = what_to_do_with_migrations(migration_status, settings=database.settings)
         if migration_op == 'scrap':
             return 'needs_rebuild'
 

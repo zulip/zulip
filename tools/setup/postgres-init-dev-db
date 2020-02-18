@@ -20,12 +20,12 @@ fi
 
 VAGRANTUSERNAME=$(whoami)
 
-if [[ $# == 0 ]]; then
+if [[ $# == 1 ]]; then
     USERNAME=zulip
     PASSWORD=$("$(dirname "$0")/../../scripts/get-django-setting" LOCAL_DATABASE_PASSWORD)
     DBNAME=zulip
     SEARCH_PATH="$USERNAME",public
-    STATUS_FILE_NAME="migration_status_dev"
+    STATUS_FILE_NAME="$1"
 elif [[ $# == 5 ]]; then
     USERNAME=$1
     PASSWORD=$2
