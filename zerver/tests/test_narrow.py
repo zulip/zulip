@@ -10,7 +10,7 @@ from sqlalchemy.sql.elements import ClauseElement
 
 from zerver.models import (
     Realm, Subscription, Recipient, Stream,
-    get_display_recipient, get_personal_recipient, get_realm, get_stream,
+    get_display_recipient, get_realm, get_stream,
     UserMessage, get_stream_recipient, Message
 )
 from zerver.lib.actions import (
@@ -1080,8 +1080,8 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids['scotland_recipient'] = get_stream_recipient(scotland_stream.id).id
         query_ids['hamlet_id'] = hamlet_user.id
         query_ids['othello_id'] = othello_user.id
-        query_ids['hamlet_recipient'] = get_personal_recipient(hamlet_user.id).id
-        query_ids['othello_recipient'] = get_personal_recipient(othello_user.id).id
+        query_ids['hamlet_recipient'] = hamlet_user.recipient_id
+        query_ids['othello_recipient'] = othello_user.recipient_id
         recipients = Recipient.objects.filter(
             type=Recipient.STREAM,
             type_id__in=Stream.objects.filter(realm=hamlet_user.realm, invite_only=False),
