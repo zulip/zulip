@@ -20,7 +20,7 @@ from zerver.models import UserProfile, Recipient, Realm, \
     get_source_profile, get_system_bot, \
     ScheduledEmail, check_valid_user_ids, \
     get_user_by_id_in_realm_including_cross_realm, CustomProfileField, \
-    InvalidFakeEmailDomain, get_fake_email_domain, get_personal_recipient
+    InvalidFakeEmailDomain, get_fake_email_domain
 
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.exceptions import JsonableError
@@ -647,7 +647,8 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assertEqual(new_user.short_name, 'Romeo')
 
         # Make sure the recipient field is set correctly.
-        self.assertEqual(new_user.recipient, get_personal_recipient(new_user.id))
+        self.assertEqual(new_user.recipient, Recipient.objects.get(type=Recipient.PERSONAL,
+                                                                   type_id=new_user.id))
 
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)

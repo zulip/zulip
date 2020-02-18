@@ -97,7 +97,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserHotspot, MultiuseInvite, ScheduledMessage, UserStatus, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, \
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
-    MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, \
+    MAX_MESSAGE_LENGTH, get_client, get_stream, \
     get_user_profile_by_id, PreregistrationUser, \
     get_stream_recipient, \
     email_allowed_for_realm, email_to_username, \
@@ -935,8 +935,8 @@ def create_mirror_user_if_needed(realm: Realm, email: str,
 
 def send_welcome_bot_response(message: MutableMapping[str, Any]) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
-    human_recipient = get_personal_recipient(message['message'].sender.id)
-    if Message.objects.filter(sender=welcome_bot, recipient=human_recipient).count() < 2:
+    human_recipient_id = message['message'].sender.recipient_id
+    if Message.objects.filter(sender=welcome_bot, recipient_id=human_recipient_id).count() < 2:
         internal_send_private_message(
             message['realm'], welcome_bot, message['message'].sender,
             "Congratulations on your first reply! :tada:\n\n"
