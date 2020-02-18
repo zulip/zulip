@@ -13,7 +13,7 @@ from django.utils.timezone import now as timezone_now
 from io import StringIO
 
 from zerver.models import (
-    get_client, get_stream_recipient, get_stream, get_realm, get_system_bot,
+    get_client, get_stream, get_realm, get_system_bot,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
     Attachment, PreregistrationUser, get_user_by_delivery_email, MultiuseInvite,
@@ -1528,7 +1528,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('muted_topics', check_list(check_list(check_string, 2))),
         ])
         stream = get_stream('Denmark', self.user_profile.realm)
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
         events = self.do_test(lambda: do_mute_topic(
             self.user_profile, stream, recipient, "topic"))
         error = muted_topics_checker('events[0]', events[0])
@@ -2935,7 +2935,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
                    topic_name: str) -> None:
         realm = user_profile.realm
         stream = get_stream(stream_name, realm)
-        recipient = get_stream_recipient(stream.id)
+        recipient = stream.recipient
 
         add_topic_mute(
             user_profile=user_profile,
