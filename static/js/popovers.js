@@ -430,7 +430,7 @@ exports.toggle_actions_popover = function (element, id) {
             use_edit_icon = false;
             editability_menu_item = i18n.t("View source");
         }
-        const topic = util.get_message_topic(message);
+        const topic = message.topic;
         const can_mute_topic =
                 message.stream &&
                 topic &&

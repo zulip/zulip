@@ -1,4 +1,3 @@
-const util = require("./util");
 const render_compose_notification = require('../templates/compose_notification.hbs');
 const render_notification = require('../templates/notification.hbs');
 
@@ -278,7 +277,7 @@ if (window.electron_bridge !== undefined) {
             type: message.type,
             content: reply,
             to: message.type === 'private' ? message.reply_to : message.stream,
-            topic: util.get_message_topic(message),
+            topic: message.topic,
         };
 
         function success() {
@@ -323,7 +322,7 @@ function process_notification(notification) {
     ui.replace_emoji_with_text(content);
     content = content.text();
 
-    const topic = util.get_message_topic(message);
+    const topic = message.topic;
 
     if (message.is_me_message) {
         content = message.sender_full_name + content.slice(3);
@@ -483,7 +482,7 @@ exports.message_is_notifiable = function (message) {
     }
 
     if (message.type === "stream" &&
-        muting.is_topic_muted(message.stream_id, util.get_message_topic(message))) {
+        muting.is_topic_muted(message.stream_id, message.topic)) {
         return false;
     }
 
@@ -604,7 +603,7 @@ exports.received_messages = function (messages) {
 
 function get_message_header(message) {
     if (message.type === "stream") {
-        return message.stream + " > " + util.get_message_topic(message);
+        return message.stream + " > " + message.topic;
     }
     if (message.display_recipient.length > 2) {
         return i18n.t("group private messages with __recipient__",
@@ -625,7 +624,7 @@ exports.get_local_notify_mix_reason = function (message) {
         return;
     }
 
-    if (message.type === "stream" && muting.is_topic_muted(message.stream_id, util.get_message_topic(message))) {
+    if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.topic)) {
         return i18n.t("Sent! Your message was sent to a topic you have muted.");
     }
 
