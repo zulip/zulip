@@ -183,7 +183,7 @@ exports.edit_locally = function edit_locally(message, request) {
             topic_name: message.topic,
         });
 
-        util.set_message_topic(message, new_topic);
+        message.topic = new_topic;
 
         topic_data.add_message({
             stream_id: message.stream_id,

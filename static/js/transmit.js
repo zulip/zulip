@@ -1,4 +1,3 @@
-const util = require("./util");
 function send_message_ajax(request, success, error) {
     channel.post({
         url: '/json/messages',
@@ -83,7 +82,7 @@ exports.reply_message = function (opts) {
         reply.type = 'stream';
         reply.to  = stream;
         reply.content = content;
-        util.set_message_topic(reply, message.topic);
+        reply.topic = message.topic;
 
         exports.send_message(reply, success, error);
         return;
