@@ -2,12 +2,77 @@
 
 All notable changes to the Zulip server are documented in this file.
 
-### Unreleased
+### 2.2.0 -- Unreleased
 
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+**Highlights:**
+
 - Added support for GitLab authentication.
+- Added an organization setting controlling who can use private messages.
+- Added support for default stream groups, which allow organizations
+  to offer options of sets of streams when new users sign up.
+  Currently can only be managed via the Zulip API.
+- Quote-and-reply now includes a link to the quoted message.
+- Replaced file upload frontend with one supporting chunked upload.
+  We expect this to enable uploading much larger files using Zulip.
+- Upgraded Django from 1.11.x to the latest LTS series, 2.2.x.
+- Added integrations for ErrBit and AlertManager.
+
+**Upgrade notes:**
+
+**Full feature changelog:**
+
+- Added new options to control whether the incoming email integration
+  prefers converting the plain text or HTML content of an email.
+- Added server support for creating an account from the mobile apps.
+- Added server support for desktop app social authentication being
+  done via an external browser.
+- Added an API endpoint for fetching a single user.
+- Added built-in rate limiting for password authentication attempts.
+- Added data export/import support for organization logo and icon.
+- Added documentation for several more API endpoints.
+- Extended stream-level settings for who can post to a stream.
+- Extended GET /messages API to support a more intuitive way to
+  request the first unread or latest message as the anchor.
+- Muted topics will now only appear behind "more topics".
+- Improved UI for picking which streams to invite new users to.
+- Improved UI for reviewing one's muted topics.
+- Fixed many minor issues with Zulip's markdown processors.
+- Fixed minor issues with various keyboard shortcuts.
+- Fixed performance issues with typeahead and presence in
+  organizations with 10,000s of total users.
+- Fixed guest users being added to the notifications stream
+  unconditionally.
+- Fixed inconsistencies in the APIs for fetching users and streams.
+- Added webhook support for AnsibleTower 9.x.y.
+- Removed New User Bot and Feedback Bot.  Messages they had sent are
+  migrated to have been sent by Notification Bot.
+- Optimized performance for get_events, improving Zulip's scalability.
+- Improved error messages when trying to invite a user with an
+  existing, deactivated, account.
+- Improved warnings when sending wildcard mentions to large streams.
+- Migrated the frontend codebase to use native ES6 data structures.
+- Migrated settings for notifications streams to our standard UX model.
+- Extracted the typeahead and markdown libraries for reuse in the
+  mobile apps.
+- Removed the legacy websockets-based for sending messages.  This
+  system was always a hack, was only ever used for one endpoint, and
+  did not provide a measureable latency benefit over HTTP/2.
+
+### 2.1.3 -- Unreleased
+
+- Restructured server initialization to simplify initialization of
+  Docker containers (eliminating common classes of user error).
+- Removed buggy feedback bot (`ENABLE_FEEDBACK`).
+- Fixed preview content (preheaders) for many emails.
+- Fixed buggy text in missed-message emails with PM content disabled.
+- Fixed buggy loading spinner in "emoji format" widget.
+- Fixed sorting and filtering users in organization settings.
+- Fixed email integration handling of emails with nested MIME structure.
+- Fixed unicode bugs in incoming email integration.
+- Fixed error handling for Slack data import.
 
 ### 2.1.2 -- 2020-01-16
 
