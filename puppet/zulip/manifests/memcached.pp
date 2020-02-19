@@ -22,12 +22,12 @@ class zulip::memcached {
     notify  => Exec[generate_memcached_sasldb2],
   }
   exec { 'generate_memcached_sasldb2':
-    creates => '/etc/sasl2/memcached-sasldb2',
     require => [
       Package[$memcached_packages],
       Package[$zulip::sasl_modules::sasl_module_packages],
       File['/etc/sasl2/memcached-zulip-password'],
     ],
+    refreshonly => true,
     # Pass the hostname explicitly because otherwise saslpasswd2
     # lowercases it and memcached does not.
     command => "bash -c 'saslpasswd2 -p -f /etc/sasl2/memcached-sasldb2 \
