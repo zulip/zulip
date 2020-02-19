@@ -100,6 +100,13 @@ def restore_backup(tarball_file):
         run(as_postgres + ["createdb", "-O", "zulip", "-T", "template0", "--", db_name])
 
         if settings.PRODUCTION:
+            # In case we are restoring a backup from an older Zulip
+            # version, there may be new secrets to generate.
+            subprocess.check_call([
+                os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "generate_secrets.py"),
+                "--production",
+            ])
+
             # If there is a local rabbitmq, we need to reconfigure it
             # to ensure the rabbitmq password matches the value in the
             # restored zulip-secrets.conf.  We need to be careful to
