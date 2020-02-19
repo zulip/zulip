@@ -19,6 +19,7 @@ exclude_lines =
     ^\s*\.\.\.
 
 [run]
+data_file=var/.coverage
 omit =
     */zulip-venv-cache/*
     */migrations/*
