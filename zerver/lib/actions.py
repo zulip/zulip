@@ -4656,9 +4656,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
 
 
 def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
-    message_ids = []
     for message in messages:
-        message_ids.append(message.id)
         message_type = "stream"
         if not message.is_stream_message():
             message_type = "private"
