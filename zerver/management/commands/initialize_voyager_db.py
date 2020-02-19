@@ -1,25 +1,15 @@
 from argparse import ArgumentParser
-from typing import Any, Iterable, Tuple, Optional
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_change_is_admin
-from zerver.lib.bulk_create import bulk_create_users
+from zerver.lib.server_initialization import create_users
 from zerver.models import Realm, UserProfile, \
-    email_to_username, get_client, get_system_bot
+    get_client, get_system_bot
 
 settings.TORNADO_SERVER = None
-
-def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
-                 tos_version: Optional[str]=None,
-                 bot_type: Optional[int]=None,
-                 bot_owner: Optional[UserProfile]=None) -> None:
-    user_set = set()
-    for full_name, email in name_list:
-        short_name = email_to_username(email)
-        user_set.add((email, full_name, short_name, True))
-    bulk_create_users(realm, user_set, bot_type=bot_type, bot_owner=bot_owner, tos_version=tos_version)
 
 class Command(BaseCommand):
     help = "Populate an initial database for Zulip Voyager"
