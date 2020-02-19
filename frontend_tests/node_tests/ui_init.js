@@ -44,6 +44,8 @@ const ignore_modules = [
     'gear_menu',
     'hashchange',
     'hotspots',
+    // Accesses home_msg_list, which is a lot of complexity to setup
+    'message_fetch',
     'message_scroll',
     'message_viewport',
     'panels',
@@ -93,7 +95,6 @@ zrequire('search_pill_widget');
 zrequire('user_groups');
 zrequire('unread');
 zrequire('bot_data');
-zrequire('message_fetch');
 set_global('marked', zrequire('marked', 'third/marked/lib/marked'));
 zrequire('fenced_code');
 zrequire('markdown');

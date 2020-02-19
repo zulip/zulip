@@ -193,7 +193,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                       slim_presence=True,
                                       notification_settings_null=True,
                                       narrow=narrow)
-    user_has_messages = (register_ret['max_message_id'] != -1)
     update_last_reminder(user_profile)
 
     if user_profile is not None:
@@ -205,21 +204,21 @@ def home_real(request: HttpRequest) -> HttpResponse:
             not PreregistrationUser.objects.filter(referred_by=user_profile).count()
         )
         needs_tutorial = user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
+
+        if user_profile.pointer == -1:
+            # Put the new user's pointer at the bottom
+            #
+            # This improves performance, because we limit backfilling of messages
+            # before the pointer.  It's also likely that someone joining an
+            # organization is interested in recent messages more than the very
+            # first messages on the system.
+            register_ret['pointer'] = register_ret['max_message_id']
+
     else:  # nocoverage
         first_in_realm = False
         prompt_for_invites = False
         # The current tutorial doesn't super make sense for logged-out users.
         needs_tutorial = False
-
-    if user_has_messages and user_profile.pointer == -1:
-        # Put the new user's pointer at the bottom
-        #
-        # This improves performance, because we limit backfilling of messages
-        # before the pointer.  It's also likely that someone joining an
-        # organization is interested in recent messages more than the very
-        # first messages on the system.
-
-        register_ret['pointer'] = register_ret['max_message_id']
 
     furthest_read_time = get_furthest_read_time(user_profile)
 
@@ -251,7 +250,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         search_pills_enabled            = settings.SEARCH_PILLS_ENABLED,
 
         # Misc. extra data.
-        have_initial_messages = user_has_messages,
         initial_servertime    = time.time(),  # Used for calculating relative presence age
         default_language_name = get_language_name(register_ret['default_language']),
         language_list_dbl_col = get_language_list_for_templates(register_ret['default_language']),
@@ -287,7 +285,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
         page_params["max_message_id"] = initial_pointer
         page_params["pointer"] = initial_pointer
-        page_params["have_initial_messages"] = (initial_pointer != -1)
         page_params["enable_desktop_notifications"] = False
 
     statsd.incr('views.home')

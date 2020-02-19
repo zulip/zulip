@@ -374,17 +374,13 @@ exports.initialize = function () {
 
     }
 
-    if (page_params.have_initial_messages) {
-        exports.load_messages({
-            anchor: page_params.pointer,
-            num_before: consts.num_before_pointer,
-            num_after: consts.num_after_pointer,
-            msg_list: home_msg_list,
-            cont: load_more,
-        });
-    } else {
-        server_events.home_view_loaded();
-    }
+    exports.load_messages({
+        anchor: page_params.pointer,
+        num_before: consts.num_before_pointer,
+        num_after: consts.num_after_pointer,
+        msg_list: home_msg_list,
+        cont: load_more,
+    });
 };
 
 window.message_fetch = exports;
