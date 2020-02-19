@@ -5,7 +5,7 @@ line.  To help with this, Zulip ships with over 100 command-line tools
 implemented using the [Django management commands
 framework][django-management].
 
-[django-management]: https://docs.djangoproject.com/en/1.11/ref/django-admin/#django-admin-and-manage-py
+[django-management]: https://docs.djangoproject.com/en/2.2/ref/django-admin/#django-admin-and-manage-py
 
 ## Running management commands
 

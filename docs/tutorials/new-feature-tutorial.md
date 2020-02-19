@@ -20,7 +20,7 @@ tests, use Django's tooling.
 Zulip's [directory structure](../overview/directory-structure.md)
 will also be helpful to review when creating a new feature. Many
 aspects of the structure will be familiar to Django developers. Visit
-[Django's documentation](https://docs.djangoproject.com/en/1.11/#index-first-steps)
+[Django's documentation](https://docs.djangoproject.com/en/2.2/#index-first-steps)
 for more information about how Django projects are typically
 organized.  And finally, the
 [message sending](../subsystems/sending-messages.md) documentation on

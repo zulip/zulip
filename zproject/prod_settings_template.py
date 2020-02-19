@@ -42,7 +42,7 @@ EXTERNAL_HOST = 'zulip.example.com'
 # representing the host/domain names that your users can enter in
 # their browsers to access Zulip.  This is a security measure; for
 # details, see the Django documentation:
-# https://docs.djangoproject.com/en/1.11/ref/settings/#allowed-hosts
+# https://docs.djangoproject.com/en/2.2/ref/settings/#allowed-hosts
 #
 # Zulip automatically adds to this list 'localhost', '127.0.0.1', and
 # patterns representing EXTERNAL_HOST and subdomains of it.  If you are

@@ -179,7 +179,7 @@ a new view:
 * The time when the browser was idle again after switching views
   (intended to catch issues where we generate a lot of deferred work).
 
-[django-errors]: https://docs.djangoproject.com/en/1.11/howto/error-reporting/
+[django-errors]: https://docs.djangoproject.com/en/2.2/howto/error-reporting/
 [python-logging]: https://docs.python.org/3/library/logging.html
-[django-logging]: https://docs.djangoproject.com/en/1.11/topics/logging/
+[django-logging]: https://docs.djangoproject.com/en/2.2/topics/logging/
 [sentry]: https://sentry.io
