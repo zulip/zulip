@@ -138,7 +138,7 @@ function message_range(start, end) {
 const initialize_data = {
     initial_fetch: {
         req: {
-            anchor: 444,
+            anchor: 'first_unread',
             num_before: 200,
             num_after: 200,
             client_gravatar: true,
