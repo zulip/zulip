@@ -97,6 +97,11 @@ ul {
     &.remind_me_popover .remind_icon {
         text-align: center;
     }
+
+    &.topic-move_popover {
+        max-height: 200px;
+        overflow-y: auto;
+    }
 }
 
 .user_popover {
@@ -351,4 +356,9 @@ ul {
 .user_info_status_text {
     opacity: 0.8;
     padding: 2px 0px 3px 0px;
+}
+
+#topic_stream_edit_form_error {
+    background-color: hsla(0, 70%, 87%, 0.7);
+    color: hsl(0, 100%, 50%);
 }
