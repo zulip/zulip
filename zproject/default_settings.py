@@ -312,7 +312,7 @@ STATSD_HOST = ''
 # Configuration for JWT auth.
 JWT_AUTH_KEYS = {}  # type: Dict[str, str]
 
-# https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL
+# https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.
 SERVER_EMAIL = ZULIP_ADMINISTRATOR
 # Django setting for who receives error emails.
