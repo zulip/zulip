@@ -84,10 +84,6 @@ exports.fast_forward_pointer = function () {
 
 exports.initialize = function initialize() {
     exports.server_furthest_read = page_params.pointer;
-    if (page_params.orig_initial_pointer !== undefined &&
-        page_params.orig_initial_pointer > exports.server_furthest_read) {
-        exports.server_furthest_read = page_params.orig_initial_pointer;
-    }
     exports.furthest_read = exports.server_furthest_read;
 
     // We only send pointer updates when the user has been idle for a

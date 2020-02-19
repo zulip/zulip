@@ -374,8 +374,16 @@ exports.initialize = function () {
 
     }
 
+    let anchor;
+    if (page_params.initial_pointer) {
+        // If we're doing a server-initiated reload, similar to a
+        // near: narrow query, we want to select a specific message.
+        anchor = page_params.initial_pointer;
+    } else {
+        anchor = page_params.pointer;
+    }
     exports.load_messages({
-        anchor: page_params.pointer,
+        anchor: anchor,
         num_before: consts.num_before_pointer,
         num_after: consts.num_after_pointer,
         msg_list: home_msg_list,
