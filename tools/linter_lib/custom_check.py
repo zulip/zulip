@@ -604,7 +604,7 @@ html_rules = whitespace_rules + prose_style_rules + [
     {'pattern': r'placeholder="[^{#](?:(?!\.com).)+$',
      'description': "`placeholder` value should be translatable.",
      'exclude_line': {('templates/zerver/register.html', 'placeholder="acme"'),
-                      ('templates/zerver/register.html', 'placeholder="Acme or Aκμή"')},
+                      ('templates/zerver/register.html', 'placeholder="Acme or Ακμή"')},
      'exclude': set(["templates/analytics/support.html"]),
      'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
      'bad_lines': ['<input placeholder="foo">']},
