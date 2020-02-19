@@ -169,11 +169,12 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
         raise e
 
 def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional[str]=None,
-                         from_address: Optional[str]=None, context: Dict[str, Any]={}) -> None:
+                         from_address: Optional[str]=None, language: Optional[str]=None,
+                         context: Dict[str, Any]={}) -> None:
     admins = realm.get_human_admin_users()
     admin_user_ids = [admin.id for admin in admins]
     send_email(template_prefix, to_user_ids=admin_user_ids, from_name=from_name,
-               from_address=from_address, context=context)
+               from_address=from_address, language=language, context=context)
 
 def clear_scheduled_invitation_emails(email: str) -> None:
     """Unlike most scheduled emails, invitation emails don't have an

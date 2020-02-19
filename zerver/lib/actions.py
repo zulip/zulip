@@ -5883,10 +5883,12 @@ def do_send_realm_reactivation_email(realm: Realm) -> None:
     context = {'confirmation_url': url,
                'realm_uri': realm.uri,
                'realm_name': realm.name}
+    language = realm.default_language
     send_email_to_admins(
         'zerver/emails/realm_reactivation', realm,
         from_address=FromAddress.tokenized_no_reply_address(),
-        from_name="Zulip Account Security", context=context)
+        from_name=FromAddress.security_email_from_name(language=language),
+        language=language, context=context)
 
 def get_zoom_video_call_url(realm: Realm) -> str:
     response = request_zoom_video_call_url(
