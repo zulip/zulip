@@ -202,6 +202,8 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.messages.get_message_edit_history'}),
     url(r'^messages/matches_narrow$', rest_dispatch,
         {'GET': 'zerver.views.messages.messages_in_narrow_backend'}),
+    url(r'^messages/markdown$', rest_dispatch,
+        {'GET': 'zerver.views.messages.json_fetch_raw_list_messages'}),
 
     url(r'^users/me/subscriptions/properties$', rest_dispatch,
         {'POST': 'zerver.views.streams.update_subscription_properties_backend'}),
