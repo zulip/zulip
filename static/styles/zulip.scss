@@ -2562,6 +2562,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     opacity: 0.75;
 }
 
+select.inline_select_topic_edit {
+    margin: 0;
+}
+
 // Hide the up and down arrows in the Flatpickr datepicker year
 .flatpickr-months .numInputWrapper span {
     display: none;
