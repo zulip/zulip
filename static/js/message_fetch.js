@@ -402,7 +402,9 @@ exports.initialize = function () {
         // near: narrow query, we want to select a specific message.
         anchor = page_params.initial_pointer;
     } else {
-        anchor = page_params.pointer;
+        // Otherwise, we should just use the first unread message in
+        // the user's unmuted history as our anchor.
+        anchor = "first_unread";
     }
     exports.load_messages({
         anchor: anchor,
