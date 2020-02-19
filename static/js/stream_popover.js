@@ -4,6 +4,7 @@ const render_starred_messages_sidebar_actions = require('../templates/starred_me
 const render_stream_sidebar_actions = require('../templates/stream_sidebar_actions.hbs');
 const render_topic_sidebar_actions = require('../templates/topic_sidebar_actions.hbs');
 const render_unstar_messages_modal = require("../templates/unstar_messages_modal.hbs");
+const render_move_topic_to_stream = require("../templates/move_topic_to_stream.hbs");
 
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
@@ -262,6 +263,17 @@ function build_starred_messages_popover(e) {
 
 }
 
+function build_move_topic_to_stream_popover(e, message_id, stream_id, topic_name) {
+    const streams = stream_data.subscribed_subs().filter(s => s.stream_id !== stream_id);
+    const args = { message_id, streams, topic_name };
+
+    exports.hide_topic_popover();
+
+    $("#move-a-topic-modal-holder").html(render_move_topic_to_stream(args));
+    $('#move_topic_modal').modal('show');
+    e.stopPropagation();
+}
+
 exports.register_click_handlers = function () {
     $('#stream_filters').on('click', '.stream-sidebar-arrow', function (e) {
         e.stopPropagation();
@@ -499,6 +511,38 @@ exports.register_topic_handlers = function () {
         $('#delete_topic_modal').modal('show');
 
         e.stopPropagation();
+    });
+
+    $('body').on('click', '.sidebar-popover-move-topic-messages', function (e) {
+        const topic_row = $(e.currentTarget);
+        const stream_id = topic_row.attr('data-stream-id');
+        const topic_name = topic_row.attr('data-topic-name');
+        const message = home_msg_list.all_messages()
+            .find(m => m.topic === topic_name && m.stream_id === +stream_id);
+        build_move_topic_to_stream_popover(e, message.id, stream_id, topic_name);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '#do_move_topic_button', function (e) {
+        const params = $('#move_topic_form').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+
+        const {message_id, select_stream_id, old_topic_name} = params;
+        let {topic_name} = params;
+
+        if (old_topic_name.trim() === topic_name.trim()) {
+            topic_name = undefined;
+        }
+
+        if (old_topic_name && select_stream_id) {
+            message_edit.move_message_to_stream(message_id, select_stream_id, topic_name);
+            $('#move_topic_modal').modal('hide');
+        }
+        e.stopPropagation();
+        e.preventDefault();
     });
 };
 

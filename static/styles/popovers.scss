@@ -97,6 +97,11 @@ ul {
     &.remind_me_popover .remind_icon {
         text-align: center;
     }
+
+    &.topic-move_popover {
+        max-height: 200px;
+        overflow-y: auto;
+    }
 }
 
 .user_popover {

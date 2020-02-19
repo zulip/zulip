@@ -854,4 +854,23 @@ exports.handle_narrow_deactivated = function () {
     }
 };
 
+exports.move_message_to_stream = function (message_id, stream_id, topic_name) {
+    const request = {
+        stream_id,
+        propagate_mode: 'change_all',
+        topic: topic_name,
+    };
+    channel.patch({
+        url: '/json/messages/' + message_id,
+        data: request,
+        success: function () {
+
+        },
+        error: function (xhr) {
+            ui_report.error(i18n.t("Error moving the topic"), xhr,
+                            $("#home-error"));
+        },
+    });
+};
+
 window.message_edit = exports;
