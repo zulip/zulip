@@ -340,13 +340,13 @@ exports.start_backfilling_messages = function () {
 exports.initialize = function () {
     // get the initial message list
     function load_more(data) {
-        // If we received the initially selected message, select it on the client side,
-        // but not if the user has already selected another one during load.
-        //
-        // We fall back to the closest selected id, as the user may have removed
-        // a stream from the home before already
+        // If we haven't selected a message in the home view yet, and
+        // the home view isn't empty, we select the anchor message here.
         if (home_msg_list.selected_id() === -1 && !home_msg_list.empty()) {
-            home_msg_list.select_id(page_params.pointer,
+            // We fall back to the closest selected id, as the user
+            // may have removed a stream from the home view while we
+            // were loading data.
+            home_msg_list.select_id(data.anchor,
                                     {then_scroll: true, use_closest: true,
                                      target_scroll_offset: page_params.initial_offset});
         }

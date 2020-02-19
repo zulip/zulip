@@ -143,6 +143,7 @@ const initialize_data = {
         resp: {
             messages: message_range(201, 801),
             found_newest: false,
+            anchor: 444,
         },
     },
 
