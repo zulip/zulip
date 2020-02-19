@@ -740,20 +740,6 @@ def find_first_unread_anchor(sa_conn: Any,
     if muting_conditions:
         condition = and_(condition, *muting_conditions)
 
-    # The mobile app uses narrow=[] and use_first_unread_anchor=True to
-    # determine what messages to show when you first load the app.
-    # Unfortunately, this means that if you have a years-old unread
-    # message, the mobile app could get stuck in the past.
-    #
-    # To fix this, we enforce that the "first unread anchor" must be on or
-    # after the user's current pointer location. Since the pointer
-    # location refers to the latest the user has read in the home view,
-    # we'll only apply this logic in the home view (ie, when narrow is
-    # empty).
-    if not narrow:
-        pointer_condition = inner_msg_id_col >= user_profile.pointer
-        condition = and_(condition, pointer_condition)
-
     first_unread_query = query.where(condition)
     first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
     first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
