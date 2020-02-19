@@ -1,0 +1,39 @@
+<div id="panels">
+    <div data-process="notifications" class="alert alert-info">
+        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
+        <div data-step="1">
+            {% trans %}Zulip needs your permission to
+            <a class="request-desktop-notifications alert-link">enable desktop notifications.</a>
+            {% endtrans %}
+        </div>
+        <div data-step="2" style="display: none">
+            {{ _('We strongly recommend enabling desktop notifications. They help Zulip keep your team connected.') }}
+            <span class="buttons">
+                <a class="alert-link request-desktop-notifications">{{ _('Enable notifications') }}</a>
+                &bull;
+                <a class="alert-link exit">{{ _('Ask me later') }}</a>
+                &bull;
+                <a class="alert-link reject-notifications">{{ _('Never ask on this computer') }}</a>
+            </span>
+        </div>
+    </div>
+    <div data-process="email-server" class="alert alert-info red">
+        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
+        <div data-step="1">
+            {% trans %}Zulip needs to send email to confirm users' addresses and send notifications.{% endtrans %}
+            <a class="alert-link" href="https://zulip.readthedocs.io/en/latest/production/email.html" target="_blank">
+                {% trans %}See how to configure email.{% endtrans %}
+            </a>
+        </div>
+    </div>
+    <div data-process="insecure-desktop-app" class="alert alert-info red">
+        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
+        <div data-step="1">
+            You are using an old, insecure version of the Zulip
+            desktop app that cannot auto-update.
+            <a class="alert-link" href="https://zulipchat.com/apps" target="_blank">
+                Download the latest version.
+            </a>
+        </div>
+    </div>
+</div>
