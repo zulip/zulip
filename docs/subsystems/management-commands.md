@@ -56,4 +56,4 @@ project.
   functions used by the UI are maintained to correctly live-update the
   UI if needed.
 
-[django-docs]: https://docs.djangoproject.com/en/1.11/howto/custom-management-commands/
+[django-docs]: https://docs.djangoproject.com/en/2.2/howto/custom-management-commands/
