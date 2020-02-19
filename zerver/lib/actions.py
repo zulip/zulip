@@ -4654,8 +4654,16 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     send_event(user_profile.realm, event, users_to_be_notified)
     return len(changed_messages)
 
-
 def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
+    message_ids = [message.id for message in messages]
+    usermessages = UserMessage.objects.filter(message_id__in=message_ids)
+    message_id_to_notifiable_users = {}  # type: Dict[int, List[Dict[str, int]]]
+    for um in usermessages:
+        if um.message_id not in message_id_to_notifiable_users:
+            message_id_to_notifiable_users[um.message_id] = []
+        message_id_to_notifiable_users[um.message_id].append({"id": um.user_profile_id})
+
+    events_and_users_to_notify = []
     for message in messages:
         message_type = "stream"
         if not message.is_stream_message():
@@ -4673,13 +4681,12 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         else:
             event['recipient_id'] = message.recipient_id
 
-        # TODO: Each part of the following should be changed to bulk
-        # queries, since right now if you delete 1000 messages, you'll
-        # end up doing 1000 database queries in a loop and timing out.
-        ums = [{'id': um.user_profile_id} for um in
-               UserMessage.objects.filter(message=message.id)]
-        move_messages_to_archive([message.id])
-        send_event(realm, event, ums)
+        events_and_users_to_notify.append((event, message_id_to_notifiable_users[message.id]))
+
+    move_messages_to_archive(message_ids)
+    for event, users_to_notify in events_and_users_to_notify:
+        # TODO: Figure out some kind of bulk event that we could send just one of?
+        send_event(realm, event, users_to_notify)
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
     message_ids = Message.objects.filter(sender=user).values_list('id', flat=True).order_by('id')
