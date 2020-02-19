@@ -32,7 +32,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import access_stream_by_id, get_public_streams_queryset, \
     can_access_stream_history_by_name, can_access_stream_history_by_id, \
-    get_stream_by_narrow_operand_access_unchecked
+    get_stream_by_narrow_operand_access_unchecked, get_stream_by_id
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import (
@@ -1502,6 +1502,7 @@ PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            message_id: int=REQ(converter=to_non_negative_int, path_only=True),
+                           stream_id: Optional[int]=REQ(converter=to_non_negative_int, default=None),
                            topic_name: Optional[str]=REQ_topic(),
                            propagate_mode: Optional[str]=REQ(
                                default="change_one",
@@ -1510,7 +1511,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
 
-    if propagate_mode != "change_one" and topic_name is None:
+    if propagate_mode != "change_one" and topic_name is None and stream_id is None:
         return json_error(_("Invalid propagate_mode without topic edit"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
@@ -1552,7 +1553,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
-    if topic_name is None and content is None:
+    if topic_name is None and content is None and stream_id is None:
         return json_error(_("Nothing to change"))
     if topic_name is not None:
         topic_name = topic_name.strip()
@@ -1589,8 +1590,28 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
 
         mention_user_ids = message.mentions_user_ids
 
-    number_changed = do_update_message(user_profile, message, topic_name,
-                                       propagate_mode, content, rendered_content,
+    new_stream = None
+    old_stream = None
+    number_changed = 0
+
+    if stream_id is not None:
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("You don't have permission to move this message"))
+        if content is not None:
+            raise JsonableError(_("Cannot change message content while changing stream"))
+
+        old_stream = get_stream_by_id(message.recipient.type_id)
+        new_stream = get_stream_by_id(stream_id)
+
+        if not (old_stream.is_public() and new_stream.is_public()):
+            # We'll likely decide to relax this condition in the
+            # future; it just requires more care with details like the
+            # breadcrumb messages.
+            raise JsonableError(_("Streams must be public"))
+
+    number_changed = do_update_message(user_profile, message, new_stream,
+                                       topic_name, propagate_mode,
+                                       content, rendered_content,
                                        prior_mention_user_ids,
                                        mention_user_ids, mention_data)
 

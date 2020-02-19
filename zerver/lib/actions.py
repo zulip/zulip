@@ -4367,6 +4367,30 @@ MessageUpdateUserInfoResult = TypedDict('MessageUpdateUserInfoResult', {
     'mention_user_ids': Set[int],
 })
 
+def notify_topic_moved_streams(user_profile: UserProfile,
+                               old_stream: Stream, old_topic: str,
+                               new_stream: Stream, new_topic: Optional[str]) -> None:
+    # Since moving content between streams is highly disruptive,
+    # it's worth adding a couple tombstone messages showing what
+    # happened.
+    sender = get_system_bot(settings.NOTIFICATION_BOT)
+
+    if new_topic is None:
+        new_topic = old_topic
+
+    user_mention = "@_**%s|%s**" % (user_profile.full_name, user_profile.id)
+    old_topic_link = "#**%s>%s**" % (old_stream.name, old_topic)
+    new_topic_link = "#**%s>%s**" % (new_stream.name, new_topic)
+
+    internal_send_stream_message(
+        new_stream.realm, sender, new_stream, new_topic,
+        _("This topic was moved here from %s by %s") % (old_topic_link, user_mention))
+
+    # Send a notification to the old stream that the topic was moved.
+    internal_send_stream_message(
+        old_stream.realm, sender, old_stream, old_topic,
+        _("This topic was moved by %s to %s") % (user_mention, new_topic_link))
+
 def get_user_info_for_message_updates(message_id: int) -> MessageUpdateUserInfoResult:
 
     # We exclude UserMessage.flags.historical rows since those
@@ -4475,7 +4499,8 @@ def do_update_embedded_data(user_profile: UserProfile,
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
-def do_update_message(user_profile: UserProfile, message: Message, topic_name: Optional[str],
+def do_update_message(user_profile: UserProfile, message: Message,
+                      new_stream: Optional[Stream], topic_name: Optional[str],
                       propagate_mode: str, content: Optional[str],
                       rendered_content: Optional[str], prior_mention_user_ids: Set[int],
                       mention_user_ids: Set[int], mention_data: Optional[bugdown.MentionData]=None) -> int:
@@ -4576,12 +4601,25 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         else:
             event['wildcard_mention_user_ids'] = []
 
-    if topic_name is not None:
+    if topic_name is not None or new_stream is not None:
         orig_topic_name = message.topic_name()
-        topic_name = truncate_topic(topic_name)
         event["propagate_mode"] = propagate_mode
-        message.set_topic_name(topic_name)
         event["stream_id"] = message.recipient.type_id
+
+    if new_stream is not None:
+        assert content is None
+        assert message.is_stream_message()
+        assert stream_being_edited is not None
+
+        edit_history_event['prev_stream'] = stream_being_edited.id
+        message.recipient_id = new_stream.recipient_id
+
+        event["new_stream_id"] = new_stream.id
+        event["propagate_mode"] = propagate_mode
+
+    if topic_name is not None:
+        topic_name = truncate_topic(topic_name)
+        message.set_topic_name(topic_name)
 
         # These fields have legacy field names.
         event[ORIG_TOPIC] = orig_topic_name
@@ -4590,12 +4628,13 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
 
     if propagate_mode in ["change_later", "change_all"]:
-        assert topic_name is not None
+        assert topic_name is not None or new_stream is not None
         messages_list = update_messages_for_topic_edit(
             message=message,
             propagate_mode=propagate_mode,
             orig_topic_name=orig_topic_name,
             topic_name=topic_name,
+            new_stream=new_stream
         )
         changed_messages += messages_list
 
@@ -4650,6 +4689,13 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
             users_to_be_notified += list(map(subscriber_info, subscribers_ids))
 
     send_event(user_profile.realm, event, users_to_be_notified)
+
+    if (len(changed_messages) > 0 and new_stream is not None and
+       stream_being_edited is not None):
+        # Notify users that the topic was moved.
+        notify_topic_moved_streams(user_profile, stream_being_edited, orig_topic_name,
+                                   new_stream, topic_name)
+
     return len(changed_messages)
 
 def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
@@ -5909,3 +5955,11 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
     export.extra_data = ujson.dumps(export_data)
     export.save(update_fields=['extra_data'])
     notify_realm_export(user_profile)
+
+def get_topic_messages(user_profile: UserProfile, stream: Stream,
+                       topic_name: str) -> List[Message]:
+    query = UserMessage.objects.filter(
+        user_profile=user_profile,
+        message__recipient=stream.recipient
+    ).order_by("id")
+    return [um.message for um in filter_by_topic_name_via_message(query, topic_name)]
