@@ -14,6 +14,7 @@ from zerver.lib.request import REQ
 from zerver.models import (
     Message,
     Recipient,
+    Stream,
     UserMessage,
     UserProfile,
 )
@@ -119,11 +120,15 @@ def user_message_exists_for_topic(user_profile: UserProfile,
 def update_messages_for_topic_edit(message: Message,
                                    propagate_mode: str,
                                    orig_topic_name: str,
-                                   topic_name: str) -> List[Message]:
+                                   topic_name: Optional[str],
+                                   new_stream: Optional[Stream]) -> List[Message]:
     propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
-    # We only change messages up to 7 days in the past, to avoid hammering our
-    # DB by changing an unbounded amount of messages
     if propagate_mode == 'change_all':
+        # We only change messages up to 7 days in the past, to avoid hammering our
+        # DB by changing an unbounded amount of messages
+        #
+        # TODO: Look at removing this restriction and/or add a "change_last_week"
+        # option; this behavior feels buggy.
         before_bound = timezone_now() - datetime.timedelta(days=7)
 
         propagate_query = (propagate_query & ~Q(id = message.id) &
@@ -133,14 +138,25 @@ def update_messages_for_topic_edit(message: Message,
 
     messages = Message.objects.filter(propagate_query).select_related()
 
+    update_fields = {}
+
     # Evaluate the query before running the update
     messages_list = list(messages)
-    messages.update(subject=topic_name)
 
-    for m in messages_list:
-        # The cached ORM object is not changed by messages.update()
-        # and the remote cache update requires the new value
-        m.set_topic_name(topic_name)
+    # The cached ORM objects are not changed by the upcoming
+    # messages.update(), and the remote cache update (done by the
+    # caller) requires the new value, so we manually update the
+    # objects in addition to sending a bulk query to the database.
+    if new_stream is not None:
+        update_fields["recipient"] = new_stream.recipient
+        for m in messages_list:
+            m.recipient = new_stream.recipient
+    if topic_name is not None:
+        update_fields["subject"] = topic_name
+        for m in messages_list:
+            m.set_topic_name(topic_name)
+
+    messages.update(**update_fields)
 
     return messages_list
 

@@ -675,6 +675,12 @@ paths:
         schema:
           type: string
         example: Hello
+      - name: stream_id
+        in: query
+        description: The stream ID to move the message(s) to, if moving to another stream.
+        schema:
+          type: integer
+        example: 2
       responses:
         '200':
           description: Success.

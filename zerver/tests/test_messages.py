@@ -30,6 +30,7 @@ from zerver.lib.actions import (
     get_active_presence_idle_user_ids,
     get_client,
     get_last_message_id,
+    get_topic_messages,
     get_user_info_for_message_updates,
     internal_prep_private_message,
     internal_prep_stream_message_by_name,
@@ -120,7 +121,7 @@ import mock
 from operator import itemgetter
 import time
 import ujson
-from typing import Any, Dict, List, Set, Union
+from typing import Any, Dict, List, Set, Union, Tuple
 
 from collections import namedtuple
 
@@ -3227,6 +3228,7 @@ class EditMessageTest(ZulipTestCase):
             do_update_message(
                 user_profile=user_profile,
                 message=message,
+                new_stream=None,
                 topic_name=topic_name,
                 propagate_mode="change_later",
                 content=None,
@@ -3389,6 +3391,146 @@ class EditMessageTest(ZulipTestCase):
         })
         self.assert_json_error(result, 'Invalid propagate_mode without topic edit')
         self.check_topic(id1, topic_name="topic1")
+
+    def prepare_move_topics(self, user_email: str, old_stream: str, new_stream: str, topic: str) -> Tuple[UserProfile, Stream, Stream, int, int]:
+        user_profile = self.example_user(user_email)
+        self.login(user_email)
+        stream = self.make_stream(old_stream)
+        new_stream = self.make_stream(new_stream)
+        self.subscribe(user_profile, stream.name)
+        self.subscribe(user_profile, new_stream.name)
+        msg_id = self.send_stream_message(user_profile, stream.name,
+                                          topic_name=topic, content="First")
+        msg_id_lt = self.send_stream_message(user_profile, stream.name,
+                                             topic_name=topic, content="Second")
+
+        self.send_stream_message(user_profile, stream.name,
+                                 topic_name=topic, content="third")
+
+        return (user_profile, stream, new_stream, msg_id, msg_id_lt)
+
+    def test_move_message_to_stream(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all'
+        })
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].content, "This topic was moved by @_**Iago|%s** to #**new stream>test**" % (user_profile.id,))
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 4)
+        self.assertEqual(messages[3].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%s**" % (user_profile.id,))
+
+    def test_move_message_to_stream_change_later(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id_later), {
+            'message_id': msg_id_later,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_later'
+        })
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(messages[1].content, "This topic was moved by @_**Iago|%s** to #**new stream>test**" % (user_profile.id,))
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 3)
+        self.assertEqual(messages[0].id, msg_id_later)
+        self.assertEqual(messages[2].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%d**" % (user_profile.id,))
+
+    def test_move_message_to_stream_no_allowed(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "aaron", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all'
+        })
+        self.assert_json_error(result, "You don't have permission to move this message")
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 3)
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 0)
+
+    def test_move_message_to_stream_with_content(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all',
+            'content': 'Not allowed'
+        })
+        self.assert_json_error(result, "Cannot change message content while changing stream")
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 3)
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 0)
+
+    def test_move_message_to_stream_and_topic(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all',
+            'topic': 'new topic'
+        })
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].content, "This topic was moved by @_**Iago|%s** to #**new stream>new topic**" % (user_profile.id,))
+
+        messages = get_topic_messages(user_profile, new_stream, "new topic")
+        self.assertEqual(len(messages), 4)
+        self.assertEqual(messages[3].content, "This topic was moved here from #**test move stream>test** by @_**Iago|%s**" % (user_profile.id,))
+        self.assert_json_success(result)
+
+    def test_move_message_to_stream_to_private_stream(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("test move stream")
+        new_stream = self.make_stream("new stream", None, True)
+        self.subscribe(user_profile, stream.name)
+        self.subscribe(user_profile, new_stream.name)
+        msg_id = self.send_stream_message(user_profile, stream.name,
+                                          topic_name="test", content="First")
+        self.send_stream_message(user_profile, stream.name,
+                                 topic_name="test", content="Second")
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'stream_id': new_stream.id,
+            'propagate_mode': 'change_all',
+        })
+
+        self.assert_json_error(result, "Streams must be public")
+
+        # We expect the messages to remain in the original stream/topic
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assertEqual(len(messages), 2)
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assertEqual(len(messages), 0)
 
 class MirroredMessageUsersTest(ZulipTestCase):
     def test_invalid_sender(self) -> None:
@@ -3974,7 +4116,8 @@ class MessageHasKeywordsTest(ZulipTestCase):
         realm_id = hamlet.realm.id
         rendered_content = render_markdown(msg, content)
         mention_data = bugdown.MentionData(realm_id, content)
-        do_update_message(hamlet, msg, None, "change_one", content, rendered_content, set(), set(), mention_data=mention_data)
+        do_update_message(hamlet, msg, None, None, "change_one", content,
+                          rendered_content, set(), set(), mention_data=mention_data)
 
     def test_finds_link_after_edit(self) -> None:
         hamlet = self.example_user('hamlet')

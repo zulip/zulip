@@ -746,7 +746,7 @@ class EventsRegisterTest(ZulipTestCase):
         )
 
         events = self.do_test(
-            lambda: do_update_message(self.user_profile, message, topic,
+            lambda: do_update_message(self.user_profile, message, None, topic,
                                       propagate_mode, content, rendered_content,
                                       prior_mention_user_ids,
                                       mentioned_user_ids, mention_data),
