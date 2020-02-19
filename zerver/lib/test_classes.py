@@ -763,11 +763,15 @@ class ZulipTestCase(TestCase):
         """
         directory = ujson.loads(self.fixture_data("directory.json", type="ldap"))
 
-        # Load binary attributes. If in "directory", an attribute as its value
-        # has a string starting with "file:", the rest of the string is assumed
-        # to be a path to the file from which binary data should be loaded,
-        # as the actual value of the attribute in ldap.
         for dn, attrs in directory.items():
+            if 'uid' in attrs:
+                # Generate a password for the ldap account:
+                attrs['userPassword'] = [self.ldap_password(attrs['uid'][0]), ]
+
+            # Load binary attributes. If in "directory", an attribute as its value
+            # has a string starting with "file:", the rest of the string is assumed
+            # to be a path to the file from which binary data should be loaded,
+            # as the actual value of the attribute in ldap.
             for attr, value in attrs.items():
                 if isinstance(value, str) and value.startswith("file:"):
                     with open(value[5:], 'rb') as f:
@@ -805,9 +809,8 @@ class ZulipTestCase(TestCase):
         """
         return self.example_user_ldap_username_map[username]
 
-    def ldap_password(self) -> str:
-        # Currently all ldap users have password "testing"
-        return "testing"
+    def ldap_password(self, uid: str) -> str:
+        return "{}_ldap_password".format(uid)
 
 class WebhookTestCase(ZulipTestCase):
     """
