@@ -221,7 +221,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
             # first messages on the system.
 
             register_ret['pointer'] = register_ret['max_message_id']
-            user_profile.last_pointer_updater = request.session.session_key
         furthest_read_time = None
     else:
         latest_read = get_usermessage_by_message_id(user_profile, user_profile.pointer)

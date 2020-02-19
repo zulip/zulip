@@ -841,8 +841,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # pointer points to Message.id, NOT UserMessage.id.
     pointer: int = models.IntegerField()
 
-    last_pointer_updater: str = models.CharField(max_length=64)
-
     # Whether the user has access to server-level administrator pages, like /activity
     is_staff: bool = models.BooleanField(default=False)
 
