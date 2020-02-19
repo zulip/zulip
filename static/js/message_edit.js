@@ -1,4 +1,3 @@
-const util = require("./util");
 const render_message_edit_form = require('../templates/message_edit_form.hbs');
 const render_message_edit_history = require('../templates/message_edit_history.hbs');
 const render_topic_edit_form = require('../templates/topic_edit_form.hbs');
@@ -496,7 +495,7 @@ exports.save = function (row, from_topic_edited_only) {
 
     const request = {message_id: message.id};
     if (topic_changed) {
-        util.set_message_topic(request, new_topic);
+        request.topic = new_topic;
         if (feature_flags.propagate_topic_edits) {
             const selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
             request.propagate_mode = selected_topic_propagation;

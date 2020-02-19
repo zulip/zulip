@@ -172,7 +172,7 @@ function create_message_object() {
         queue_id: page_params.queue_id,
         stream: '',
     };
-    util.set_message_topic(message, '');
+    message.topic = '';
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
@@ -207,7 +207,7 @@ function create_message_object() {
             blueslip.error('Trying to send message with bad stream name: ' + stream_name);
             message.to = stream_name;
         }
-        util.set_message_topic(message, topic);
+        message.topic = topic;
     }
     return message;
 }
