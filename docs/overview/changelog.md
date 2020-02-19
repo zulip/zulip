@@ -7,6 +7,24 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.1.3 -- 2020-02-??
+
+- Restructured server initialization to simplify initialization of
+  Docker containers (eliminating common classes of user error).
+- Removed buggy feedback bot (`ENABLE_FEEDBACK`).
+- Fixed preview content (preheaders) for many emails.
+- Fixed buggy text in missed-message emails with PM content disabled.
+- Fixed buggy loading spinner in "emoji format" widget.
+- Fixed sorting and filtering users in organization settings.
+- Fixed handling of links to deleted streams.
+- Fixed copy-to-clipboard button for outgoing webhook bots.
+- Fixed logging spam from soft_deactivation cron job.
+- Fixed email integration handling of emails with nested MIME structure.
+- Fixed unicode bugs in incoming email integration.
+- Fixed error handling for Slack data import.
+- Fixed incoming webhook support for AWX 9.x.y.
+- Fixed a couple missing translation tags.
+
 ### 2.1.2 -- 2020-01-16
 
 - Corrected fix for CVE-2019-19775 (the original fix was affected by
