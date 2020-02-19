@@ -854,4 +854,30 @@ exports.handle_narrow_deactivated = function () {
     }
 };
 
+exports.move_topic_containing_message_to_stream =
+    function (message_id, new_stream_id, new_topic_name) {
+        const request = {
+            stream_id: new_stream_id,
+            propagate_mode: 'change_all',
+            topic: new_topic_name,
+        };
+        channel.patch({
+            url: '/json/messages/' + message_id,
+            data: request,
+            success: function () {
+                // The main UI will update via receiving the event
+                // from server_events.js.
+                // TODO: This should probably remove a spinner and
+                // close the modal.
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error moving the topic"), xhr,
+                                $("#home-error"));
+                // The fadeTo method used by ui_report.message doesn't work
+                // on this. Hence we fadeOut it here.
+                setTimeout(() => { $("#home-error").fadeOut('slow'); }, 4000);
+            },
+        });
+    };
+
 window.message_edit = exports;

@@ -4,6 +4,7 @@ const render_starred_messages_sidebar_actions = require('../templates/starred_me
 const render_stream_sidebar_actions = require('../templates/stream_sidebar_actions.hbs');
 const render_topic_sidebar_actions = require('../templates/topic_sidebar_actions.hbs');
 const render_unstar_messages_modal = require("../templates/unstar_messages_modal.hbs");
+const render_move_topic_to_stream = require("../templates/move_topic_to_stream.hbs");
 
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
@@ -262,6 +263,25 @@ function build_starred_messages_popover(e) {
 
 }
 
+function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
+    // TODO: Add support for keyboard-alphabet navigation. Some orgs
+    // many streams and scrolling can be a painful process in that
+    // case.
+    //
+    // NOTE: Private streams are also included in this list.  We
+    // likely will make it possible to move messages to/from private
+    // streams in the future.
+    const available_streams = stream_data.subscribed_subs()
+        .filter(s => s.stream_id !== current_stream_id);
+    const args = { available_streams, topic_name, current_stream_id };
+
+    exports.hide_topic_popover();
+
+    $("#move-a-topic-modal-holder").html(render_move_topic_to_stream(args));
+    $('#move_topic_modal').modal('show');
+    e.stopPropagation();
+}
+
 exports.register_click_handlers = function () {
     $('#stream_filters').on('click', '.stream-sidebar-menu-icon', function (e) {
         e.stopPropagation();
@@ -499,6 +519,80 @@ exports.register_topic_handlers = function () {
         $('#delete_topic_modal').modal('show');
 
         e.stopPropagation();
+    });
+
+    $('body').on('click', '.sidebar-popover-move-topic-messages', function (e) {
+        const topic_row = $(e.currentTarget);
+        const stream_id = parseInt(topic_row.attr('data-stream-id'), 10);
+        const topic_name = topic_row.attr('data-topic-name');
+        build_move_topic_to_stream_popover(e, stream_id, topic_name);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '#topic_stream_edit_form_error .send-status-close', function () {
+        $("#topic_stream_edit_form_error").hide();
+    });
+
+    $('body').on('click', '#do_move_topic_button', function (e) {
+        const params = $('#move_topic_form').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+
+        const {old_topic_name, select_stream_id} = params;
+        let {current_stream_id, new_topic_name} = params;
+        current_stream_id = parseInt(current_stream_id, 10);
+
+        // The API endpoint for editing messages to change their
+        // content, topic, or stream requires a message ID.
+        //
+        // Because we don't have full data in the browser client, it's
+        // possible that we might display a topic in the left sidebar
+        // (and thus expose the UI for moving its topic to another
+        // stream) without having a message ID that is definitely
+        // within the topic.  (The comments in stream_topic_history.js
+        // discuss the tricky issues around message deletion that are
+        // involved here).
+        //
+        // To ensure this option works reliably at a small latency
+        // cost for a rare operation, we just ask the server for the
+        // latest message ID in the topic.
+        const data = {
+            anchor: 'newest',
+            num_before: 1,
+            num_after: 0,
+            narrow: JSON.stringify(
+                [{operator: "stream", operand: current_stream_id},
+                 {operator: "topic", operand: old_topic_name}]
+            ),
+        };
+
+        channel.get({
+            url: '/json/messages',
+            data: data,
+            idempotent: true,
+            success: function (data) {
+                const message_id = data.messages[0].id;
+
+                if (old_topic_name.trim() === new_topic_name.trim()) {
+                    // We use `undefined` to tell the server that
+                    // there has been no change in the topic name.
+                    new_topic_name = undefined;
+                }
+
+                if (old_topic_name && select_stream_id) {
+                    message_edit.move_topic_containing_message_to_stream(
+                        message_id, select_stream_id, new_topic_name);
+                    $('#move_topic_modal').modal('hide');
+                }
+            },
+            error: function (xhr) {
+                $("#topic_stream_edit_form_error .error-msg").text(xhr.responseJSON.msg);
+                $("#topic_stream_edit_form_error").show();
+            },
+        });
+        e.preventDefault();
     });
 };
 
