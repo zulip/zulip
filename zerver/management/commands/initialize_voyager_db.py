@@ -4,10 +4,8 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import do_change_is_admin
-from zerver.lib.server_initialization import create_users
-from zerver.models import Realm, UserProfile, \
-    get_client, get_system_bot
+from zerver.lib.server_initialization import create_internal_realm
+from zerver.models import Realm
 
 settings.TORNADO_SERVER = None
 
@@ -25,24 +23,7 @@ class Command(BaseCommand):
         if Realm.objects.count() > 0:
             print("Database already initialized; doing nothing.")
             return
-        realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
-
-        # Create the "website" and "API" clients:
-        get_client("website")
-        get_client("API")
-
-        internal_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
-                         for bot in settings.INTERNAL_BOTS]
-        create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
-        # Set the owners for these bots to the bots themselves
-        bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in internal_bots])
-        for bot in bots:
-            bot.bot_owner = bot
-            bot.save()
-
-        # Initialize the email gateway bot as an API Super User
-        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
-        do_change_is_admin(email_gateway_bot, True, permission="api_super_user")
+        create_internal_realm()
 
         self.stdout.write("Successfully populated database with initial data.\n")
         self.stdout.write("Please run ./manage.py generate_realm_creation_link "
