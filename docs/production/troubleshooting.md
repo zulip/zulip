@@ -56,7 +56,6 @@ zulip-workers:zulip-events-confirmation-emails                  RUNNING   pid 21
 zulip-workers:zulip-events-digest_emails                        RUNNING   pid 2205, uptime 1:13:11
 zulip-workers:zulip-events-email_mirror                         RUNNING   pid 2203, uptime 1:13:11
 zulip-workers:zulip-events-error_reports                        RUNNING   pid 2200, uptime 1:13:11
-zulip-workers:zulip-events-feedback_messages                    RUNNING   pid 2207, uptime 1:13:11
 zulip-workers:zulip-events-missedmessage_mobile_notifications   RUNNING   pid 2204, uptime 1:13:11
 zulip-workers:zulip-events-missedmessage_reminders              RUNNING   pid 2206, uptime 1:13:11
 zulip-workers:zulip-events-signups                              RUNNING   pid 2198, uptime 1:13:11

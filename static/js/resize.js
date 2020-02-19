@@ -70,7 +70,6 @@ function get_new_heights() {
 
     const usable_height = viewport_height
         - parseInt($("#right-sidebar").css("marginTop"), 10)
-        - $("#feedback_section").safeOuterHeight(true)
         - parseInt(buddy_list_wrapper.css("marginTop"), 10)
         - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
         - $("#userlist-header").safeOuterHeight(true)

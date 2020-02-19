@@ -679,27 +679,6 @@ exports.initialize = function () {
         stream_list.toggle_filter_displayed(e);
     });
 
-
-    // FEEDBACK
-
-    // Keep these 2 feedback bot triggers separate because they have to
-    // propagate the event differently.
-    $('.feedback').click(function () {
-        compose_actions.start('private', {
-            private_message_recipient: 'feedback@zulip.com',
-            trigger: 'feedback menu item'});
-
-    });
-    $('#feedback_button').click(function (e) {
-        e.stopPropagation();
-        popovers.hide_all();
-        compose_actions.start('private', {
-            private_message_recipient: 'feedback@zulip.com',
-            trigger: 'feedback button'});
-
-    });
-
-
     // WEBATHENA
 
     $('body').on('click', '.webathena_login', function (e) {

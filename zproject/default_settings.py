@@ -95,10 +95,6 @@ MAX_FILE_UPLOAD_SIZE = 25
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL = 'https://meet.jit.si/'
 
-# Feedback bot settings
-ENABLE_FEEDBACK = PRODUCTION
-FEEDBACK_EMAIL = None  # type: Optional[str]
-
 # Max state storage per user
 # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
 USER_STATE_SIZE_LIMIT = 10000000
@@ -177,12 +173,6 @@ ERROR_BOT = None  # type: Optional[str]
 # sending tests.
 NAGIOS_STAGING_SEND_BOT = None  # type: Optional[str]
 NAGIOS_STAGING_RECEIVE_BOT = None  # type: Optional[str]
-# Feedback bot, messages sent to it are by default emailed to
-# FEEDBACK_EMAIL (see above), but can be sent to a stream,
-# depending on configuration.
-FEEDBACK_BOT = 'feedback@zulip.com'
-FEEDBACK_BOT_NAME = 'Zulip Feedback Bot'
-FEEDBACK_STREAM = None  # type: Optional[str]
 # SYSTEM_BOT_REALM would be a constant always set to 'zulip',
 # except that it isn't that on zulipchat.com.  We will likely do a
 # migration and eliminate this parameter in the future.
