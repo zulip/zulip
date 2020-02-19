@@ -6,8 +6,9 @@ from unittest import mock
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import internal_send_private_message, do_add_submessage
+from zerver.lib.actions import internal_send_private_message, do_add_submessage, do_delete_messages
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import queries_captured
 from zerver.lib.upload import create_attachment
 from zerver.models import (Message, Realm, Stream, ArchivedUserMessage, SubMessage,
                            ArchivedMessage, Attachment, ArchivedAttachment, UserMessage,
@@ -743,3 +744,19 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
 
         for message in ArchivedMessage.objects.all():
             self.assertEqual(message.archive_transaction_id, remaining_transactions[0].id)
+
+class TestDoDeleteMessages(ZulipTestCase):
+    def test_do_delete_messages_multiple(self) -> None:
+        realm = get_realm("zulip")
+        cordelia_email = self.example_email('cordelia')
+        message_ids = [self.send_stream_message(cordelia_email, "Denmark", str(i)) for i in range(0, 10)]
+        messages = Message.objects.filter(id__in=message_ids)
+
+        with queries_captured() as queries:
+            do_delete_messages(realm, messages)
+        self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
+        self.assert_length(queries, 37)
+
+        archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
+        self.assertEqual(archived_messages.count(), len(message_ids))
+        self.assertEqual(len({message.archive_transaction_id for message in archived_messages}), 1)
