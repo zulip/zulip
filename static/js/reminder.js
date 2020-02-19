@@ -125,7 +125,7 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
         sender_id: page_params.user_id,
         stream: '',
     };
-    util.set_message_topic(reminder_message, '');
+    reminder_message.topic = '';
 
     const recipient = page_params.email;
     const emails = util.extract_pm_recipients(recipient);

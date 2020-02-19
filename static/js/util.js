@@ -252,10 +252,6 @@ exports.get_reload_topic = function (obj) {
     return obj.topic || obj.subject || '';
 };
 
-exports.set_message_topic = function (obj, topic) {
-    obj.topic = topic;
-};
-
 exports.get_edit_event_topic = function (obj) {
     if (obj.topic === undefined) {
         return obj.subject;

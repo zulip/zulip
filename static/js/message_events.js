@@ -196,7 +196,7 @@ exports.update_messages = function update_messages(events) {
                 // before we call set_message_topic.
                 unread.update_unread_topics(msg, event);
 
-                util.set_message_topic(msg, new_topic);
+                msg.topic = new_topic;
                 msg.topic_links = event.topic_links;
 
                 // Add the recent topics entry for the new topics; must
