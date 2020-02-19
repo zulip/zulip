@@ -4493,15 +4493,22 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     With topic edits, propagate_mode determines whether other message
     also have their topics edited.
     """
+    timestamp = timezone_now()
+    message.last_edit_time = timestamp
+
     event = {'type': 'update_message',
              # TODO: We probably want to remove the 'sender' field
              # after confirming it isn't used by any consumers.
              'sender': user_profile.email,
              'user_id': user_profile.id,
+             'edit_timestamp': datetime_to_timestamp(timestamp),
              'message_id': message.id}  # type: Dict[str, Any]
+
     edit_history_event = {
         'user_id': user_profile.id,
+        'timestamp': event['edit_timestamp'],
     }  # type: Dict[str, Any]
+
     changed_messages = [message]
 
     stream_being_edited = None
@@ -4598,10 +4605,6 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
 
             changed_messages += messages_list
 
-    message.last_edit_time = timezone_now()
-    assert message.last_edit_time is not None  # assert needed because stubs for django are missing
-    event['edit_timestamp'] = datetime_to_timestamp(message.last_edit_time)
-    edit_history_event['timestamp'] = event['edit_timestamp']
     if message.edit_history is not None:
         edit_history = ujson.loads(message.edit_history)
         edit_history.insert(0, edit_history_event)
