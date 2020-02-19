@@ -1642,6 +1642,7 @@ def json_fetch_raw_message(request: HttpRequest, user_profile: UserProfile,
     (message, user_message) = access_message(user_profile, message_id)
     return json_success({"raw_content": message.content})
 
+@has_request_variables
 def json_fetch_raw_list_messages(request: HttpRequest, user_profile: UserProfile,
                                 messages: List[int]=REQ(validator=check_list(check_int))
                                 ) -> HttpResponse:

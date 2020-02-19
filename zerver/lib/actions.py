@@ -5921,8 +5921,6 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
 
 def get_markdown_messages(user_profile: UserProfile, messages: List[int]) -> str:
 
-    print(messages[0])
-
     buffer = []
     for message_id in messages:
         try:
