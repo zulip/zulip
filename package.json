@@ -93,6 +93,7 @@
     "jsdom": "^16.1.0",
     "nyc": "^15.0.0",
     "phantomjs-prebuilt": "^2.1.16",
+    "source-map": "^0.6.1",
     "stylelint": "^13.0.0",
     "svgo": "^1.2.2",
     "swagger-parser": "^8.0.1",
