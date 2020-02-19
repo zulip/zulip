@@ -26,12 +26,13 @@
         background-color: hsl(0, 0%, 100%);
         border-radius: 50%;
         border: 1px solid hsl(205, 100%, 70%);
-        animation: pulsate 1.5s ease-out;
-        animation-iteration-count: infinite;
+        transform: scale(2.2);
+        opacity: 0;
+        animation: pulsate 5s ease-out 0.375s 5;
     }
 
     .bounce {
-        animation: bounce 0.75s infinite;
+        animation: bounce 5s 5;
 
         .bounce-icon {
             position: absolute;
@@ -47,23 +48,25 @@
 
 @keyframes pulsate {
     0% {
-        transform: scale(1.0, 1.0);
+        transform: scale(1);
         opacity: 0.8;
     }
 
+    30%,
     100% {
-        transform: scale(2.2, 2.2);
-        opacity: 0.0;
+        transform: scale(2.2);
+        opacity: 0;
     }
 }
 
 @keyframes bounce {
     0%,
+    15%,
     100% {
         transform: translateY(0px);
     }
 
-    50% {
+    7.5% {
         transform: translateY(4px);
     }
 }
