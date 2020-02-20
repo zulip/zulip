@@ -4657,11 +4657,11 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
 def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     message_ids = [message.id for message in messages]
     usermessages = UserMessage.objects.filter(message_id__in=message_ids)
-    message_id_to_notifiable_users = {}  # type: Dict[int, List[Dict[str, int]]]
+    message_id_to_notifiable_users = {}  # type: Dict[int, List[int]]
     for um in usermessages:
         if um.message_id not in message_id_to_notifiable_users:
             message_id_to_notifiable_users[um.message_id] = []
-        message_id_to_notifiable_users[um.message_id].append({"id": um.user_profile_id})
+        message_id_to_notifiable_users[um.message_id].append(um.user_profile_id)
 
     events_and_users_to_notify = []
     for message in messages:
