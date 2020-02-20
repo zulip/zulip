@@ -1462,13 +1462,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_get('/login/saml/')
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            m.assert_called_with("/login/saml/ : Bad idp param.")
+            m.assert_called_with("/login/saml/ : Bad idp param: KeyError: 'idp'.")
 
         with mock.patch('zproject.backends.logging.info') as m:
             result = self.client_get('/login/saml/?idp=bad_idp')
             self.assertEqual(result.status_code, 302)
             self.assertEqual('/login/', result.url)
-            m.assert_called_with("/login/saml/ : Bad idp param.")
+            m.assert_called_with("/login/saml/ : Bad idp param: KeyError: 'bad_idp'.")
 
     def test_social_auth_invalid_email(self) -> None:
         """
