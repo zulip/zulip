@@ -127,8 +127,9 @@ def main(options: argparse.Namespace) -> int:
 
     build_pygments_data_paths = ["tools/setup/build_pygments_data", "tools/setup/lang.json"]
     from pygments import __version__ as pygments_version
-    if file_or_package_hash_updated(build_pygments_data_paths, "build_pygments_data_hash", options.is_force,
-                                    [pygments_version]):
+    if not os.path.exists("static/generated/pygments_data.json") or file_or_package_hash_updated(
+            build_pygments_data_paths, "build_pygments_data_hash", options.is_force,
+            [pygments_version]):
         run(["tools/setup/build_pygments_data"])
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
