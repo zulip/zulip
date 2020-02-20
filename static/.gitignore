@@ -7,6 +7,7 @@
 /generated/bots/
 # From emoji
 /generated/emoji
+/generated/emoji-styles
 # From passing pygments data to the frontend
 /generated/pygments_data.json
 # From `tools/update-authors-json`

@@ -120,7 +120,7 @@ export default (env?: string): webpack.Configuration[] => {
                     use: [{
                         loader: 'file-loader',
                         options: {
-                            name: production ? '[name].[hash].[ext]' : '[name].[ext]',
+                            name: production ? '[name].[hash].[ext]' : '[path][name].[ext]',
                             outputPath: 'files/',
                         },
                     }],

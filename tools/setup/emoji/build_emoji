@@ -20,6 +20,7 @@ sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import generate_sha1sum_emoji
 
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
+TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji-styles')
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
 NODE_MODULES_PATH = os.path.join(ZULIP_PATH, 'node_modules')
@@ -42,7 +43,7 @@ div.emoji,
 span.emoji
 {
     display: inline-block;
-    background-image: url('sheet-%(emojiset)s-64.png');
+    background-image: url(~emoji-datasource-%(emojiset)s/img/%(alt_name)s/sheets-256/64.png);
     background-size: %(background_size)s;
     background-repeat: no-repeat;
 
@@ -54,7 +55,7 @@ span.emoji
 
 .emoji-1f419
 {
-    background-image: url('images-google-64/1f419.png') !important;
+    background-image: url(../emoji/images-google-64/1f419.png) !important;
     background-position: 0%% 0%% !important;
     background-size: contain !important;
 }
@@ -90,6 +91,16 @@ def main() -> None:
         os.remove(TARGET_EMOJI_DUMP)
     os.symlink(source_emoji_dump, TARGET_EMOJI_DUMP)
 
+    # These must not be symlinked so webpack can resolve module references.
+    os.makedirs(TARGET_EMOJI_STYLES, exist_ok=True)
+    to_remove = set(os.listdir(TARGET_EMOJI_STYLES))
+    for filename in os.listdir(source_emoji_dump):
+        if filename.endswith(".css"):
+            shutil.copy2(os.path.join(source_emoji_dump, filename), TARGET_EMOJI_STYLES)
+            to_remove.discard(filename)
+    for filename in to_remove:
+        os.remove(os.path.join(TARGET_EMOJI_STYLES, filename))
+
 def get_success_stamp() -> str:
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
     return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
@@ -116,7 +127,8 @@ def get_square_size(emoji_data: List[Dict[str, Any]]) -> int:
 
 def generate_sprite_css_files(cache_path: str,
                               emoji_data: List[Dict[str, Any]],
-                              emojiset: str) -> None:
+                              emojiset: str,
+                              alt_name: str) -> None:
     """
     Spritesheets are usually NxN squares.
     """
@@ -197,6 +209,7 @@ def generate_sprite_css_files(cache_path: str,
     SPRITE_CSS_PATH = os.path.join(cache_path, '%s-sprite.css' % (emojiset,))
     with open(SPRITE_CSS_PATH, 'w') as f:
         f.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
+                                            'alt_name': alt_name,
                                             'emoji_positions': emoji_positions,
                                             'background_size': background_size,
                                             })
@@ -245,19 +258,13 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         for f in os.listdir(zulip_image):
             shutil.copy2(os.path.join(zulip_image, f), target_emoji_farm, follow_symlinks=False)
 
-        # Copy spritesheets.
-        emoji_data_path = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-' + emojiset)
-        input_sprite_sheet = os.path.join(emoji_data_path, 'img', alt_name, 'sheets-256', '64.png')
-        output_sprite_sheet = os.path.join(cache_path, 'sheet-%s-64.png' % (emojiset,))
-        shutil.copyfile(input_sprite_sheet, output_sprite_sheet)
-
         # We hardcode octopus emoji image to Google emojiset's old
         # "cute octopus" image. Copy it to the emoji farms.
         input_img_file = os.path.join(EMOJI_SCRIPT_DIR_PATH, '1f419.png')
         output_img_file = os.path.join(cache_path, 'images-' + emojiset + '-64', '1f419.png')
         shutil.copyfile(input_img_file, output_img_file)
 
-        generate_sprite_css_files(cache_path, emoji_data, emojiset)
+        generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name)
 
     # Setup standard emojisets.
     for emojiset in ['google', 'twitter']:

@@ -29,7 +29,7 @@ with open(EMOJI_MAP_FILE) as fp:
     EMOJI_MAP = ujson.load(fp)
 
 EMOJI_IMAGE_TEMPLATE = """
-    <div class="emoji emoji-%(emoji_code)s %(emojiset)s" title=%(emojiset)s></div>
+    <img class="emoji" src="images-%(emojiset)s-64/%(emoji_code)s.png" title=%(emojiset)s>
 """
 
 TABLE_ROW_TEMPLATE = """
@@ -47,7 +47,6 @@ TABLE_ROW_TEMPLATE = """
 EMOJI_LISTING_TEMPLATE = """
 <html>
     <head>
-        <link rel = "stylesheet" type = "text/css" href = "/static/generated/emoji/google-sprite.css" />
         <style>
             %(table_css)s
         </style>
