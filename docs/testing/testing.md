@@ -1,4 +1,4 @@
-# Testing and writing tests
+# Testing overview
 
 Zulip takes pride in its extensive, carefully designed test suites.
 For example, `test-backend` runs a complete test suite (~98% test
