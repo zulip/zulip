@@ -997,6 +997,13 @@ if PRODUCTION:
     SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = get_from_file_if_exists("/etc/zulip/saml/zulip-cert.crt")
     SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists("/etc/zulip/saml/zulip-private-key.key")
 
+if "signatureAlgorithm" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
+    # If the configuration doesn't explicitly specify the algorithm,
+    # we set RSA1 with SHA256 to override the python3-saml default, which uses
+    # insecure SHA1.
+    default_signature_alg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+    SOCIAL_AUTH_SAML_SECURITY_CONFIG["signatureAlgorithm"] = default_signature_alg
+
 for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     if DEVELOPMENT:
         idp_dict['entity_id'] = get_secret('saml_entity_id', '')

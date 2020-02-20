@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 ################################################################
 # Zulip Server settings.
@@ -240,7 +240,7 @@ SOCIAL_AUTH_SAML_SECURITY_CONFIG = {
     # set this to True to enable signing of SAMLRequests using the
     # private key.
     "authnRequestsSigned": False,
-}
+}  # type: Dict[str, Any]
 
 # These SAML settings you likely won't need to modify.
 SOCIAL_AUTH_SAML_SP_ENTITY_ID = 'https://' + EXTERNAL_HOST
