@@ -1392,10 +1392,10 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         try:
             idp_name = self.strategy.request_data()['idp']
             auth = self._create_saml_auth(idp=self.get_idp(idp_name))
-        except KeyError:
+        except KeyError as e:
             # If the above raise KeyError, it means invalid or no idp was specified,
             # we should log that and redirect to the login page.
-            logging.info("/login/saml/ : Bad idp param.")
+            logging.info("/login/saml/ : Bad idp param: KeyError: {}.".format(e))
             return reverse('zerver.views.auth.login_page',
                            kwargs = {'template_name': 'zerver/login.html'})
 
