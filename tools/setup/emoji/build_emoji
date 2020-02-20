@@ -30,9 +30,7 @@ span.emoji
 {
     display: inline-block;
     background-image: url('sheet-%(emojiset)s-64.png');
-    -webkit-background-size: 5200%%;
-    -moz-background-size: 5200%%;
-    background-size: 5200%%;
+    background-size: %(background_size)s;
     background-repeat: no-repeat;
 
     /* Hide the text. */
@@ -53,7 +51,7 @@ span.emoji
 
 EMOJI_POS_INFO_TEMPLATE = """\
 .emoji-%(codepoint)s {
-    background-position: %(pos_x)s%% %(pos_y)s%%;
+    background-position: %(pos_x)s %(pos_y)s;
 }
 """
 
@@ -83,6 +81,9 @@ def get_success_stamp() -> str:
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
     return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
 
+def percent(f: float) -> str:
+    return '%0.3f%%' % (f * 100,)
+
 def generate_sprite_css_files(cache_path: str,
                               emoji_data: List[Dict[str, Any]],
                               emojiset: str) -> None:
@@ -95,11 +96,33 @@ def generate_sprite_css_files(cache_path: str,
                     max_val = max(max_val, img_info[field])
         return max_val
 
-    # Spritesheet CSS generation code. Spritesheets are squared using
-    # padding, so we have to take only the maximum of two dimensions.
-    nrows = get_max_val('sheet_x', emoji_data)
-    ncols = get_max_val('sheet_y', emoji_data)
-    max_dim = max(nrows, ncols)
+    """
+    Spritesheets are usually NxN squares, and we have to
+    infer N from the sheet_x/sheet_y values of emojis.
+    """
+    max_x = get_max_val('sheet_x', emoji_data)
+    max_y = get_max_val('sheet_y', emoji_data)
+    n = max(max_x, max_y) + 1
+
+    """
+    Each single emoji is 64x64, with 1px gutters on every border.
+    We just consider the gutters to be part of the image for
+    simplicity reasons, so you can think of the spritesheet as
+    an NxN square of 66x66 pre-padded emojis.  The CSS
+    background-size parameter below says to size the background
+    element as N times the size of the element that you're drawing.
+
+    Note that we use percentages here, instead of absolute
+    pixel values, because when we render emojis as actual elements,
+    their size will vary depending on which part of the UI we're
+    in (message emojis, emoji reactions, emoji popup, emoji
+    popup showcase, etc.).
+
+    (The next step is to offset the image; that will be in the
+    upcoming loop.)
+    """
+    background_size = percent(n)
+
     emoji_positions = ""
     for emoji in emoji_data:
         if emoji["has_img_google"]:
@@ -108,16 +131,56 @@ def generate_sprite_css_files(cache_path: str,
             # Google emoji (not just the universal ones), we need to
             # ensure the spritesheet is setup to correctly display
             # those google emoji (in case anyone used them).
+
+            """
+            For background-position we need to use percentages.
+            Absolute pixel values won't work, because the size
+            of the background sprite image is proportional to
+            the size of the element we're rendering, and we render
+            elements in multiple sizes.
+
+            The way that CSS background-position works is linear
+            interpolation.  When you tell CSS background-position
+            is "42% 37%", then in the `x` dimension it will align
+            the image such that 42% of the background image is to
+            the left of the 42% mark in the element itself.
+
+            For simplicity assume we render the emoji as 66px
+            (and everything will scale appropriately for other
+            size images as long as we use percentages).
+
+            The image size will be 66n.
+            The left offset of the x-th emoji (including its
+            padding) will be 66x.  And the element's width
+            will be 66.
+
+            So, solve this equation for `p`, where p is
+            the ratio that we'll later express as a
+            percentage:
+
+                <image offset> = <offset of p% mark of element>
+                (p * 66n) = 66x + p66
+                p * n = x + p
+                p * n - p = x
+                p * (n - 1) = x
+                p = x / (n - 1)
+
+            If you ever want to change the code so that the
+            gutters don't show up in the element, the algebra
+            will get more complicated.
+            """
+
             emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
                 'codepoint': get_emoji_code(emoji),
-                'pos_x': (emoji["sheet_x"] * 100) / max_dim,
-                'pos_y': (emoji["sheet_y"] * 100) / max_dim,
+                'pos_x': percent(emoji["sheet_x"] / (n - 1)),
+                'pos_y': percent(emoji["sheet_y"] / (n - 1)),
             }
 
     SPRITE_CSS_PATH = os.path.join(cache_path, '%s-sprite.css' % (emojiset,))
     with open(SPRITE_CSS_PATH, 'w') as f:
         f.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
                                             'emoji_positions': emoji_positions,
+                                            'background_size': background_size,
                                             })
 
 def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
