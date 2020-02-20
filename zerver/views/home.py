@@ -305,20 +305,11 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     csp_nonce = generate_random_token(48)
     if user_profile is not None:
-        if user_profile.emojiset == UserProfile.TEXT_EMOJISET:
-            # If current emojiset is `TEXT_EMOJISET`, then fallback to
-            # GOOGLE_EMOJISET for picking which spritesheet's CSS to
-            # include (and thus how to display emojis in the emoji picker
-            # and composebox typeahead).
-            emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
-        else:
-            emojiset = user_profile.emojiset
         night_mode = user_profile.night_mode
         is_guest = user_profile.is_guest
         is_realm_admin = user_profile.is_realm_admin
         show_webathena = user_profile.realm.webathena_enabled
     else:  # nocoverage
-        emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
         night_mode = False
         is_guest = False
         is_realm_admin = False
@@ -328,7 +319,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
-                               'emojiset': emojiset,
                                'page_params': page_params,
                                'csp_nonce': csp_nonce,
                                'show_debug':
