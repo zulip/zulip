@@ -927,18 +927,6 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['default_language'], 'es')
 
-    def test_emojiset(self) -> None:
-        user = self.example_user("hamlet")
-        user.emojiset = 'text'
-        user.save()
-        self.login(user.email)
-        result = self._get_home_page()
-        self.assertEqual(result.status_code, 200)
-
-        html = result.content.decode('utf-8')
-        self.assertIn('google-blob-sprite.css', html)
-        self.assertNotIn('text-sprite.css', html)
-
     def test_compute_show_invites_and_add_streams_admin(self) -> None:
         user = self.example_user("iago")
 

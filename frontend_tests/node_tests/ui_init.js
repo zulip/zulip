@@ -1,3 +1,5 @@
+const rewiremock = require("rewiremock/node");
+
 /*
     This test suite is designed to find errors
     in our initialization sequence.  It doesn't
@@ -122,7 +124,15 @@ zrequire('top_left_corner');
 zrequire('starred_messages');
 zrequire('user_status');
 zrequire('user_status_ui');
-const ui_init = zrequire('ui_init');
+
+const ui_init = rewiremock.proxy(
+    () => zrequire("ui_init"),
+    {
+        "../../static/js/emojisets": {
+            initialize: () => {},
+        },
+    }
+);
 
 set_global('$', global.make_zjquery());
 

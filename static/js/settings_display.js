@@ -1,3 +1,4 @@
+const emojisets = require("./emojisets.js");
 const settings_config = require("./settings_config");
 
 const meta = {
@@ -121,39 +122,24 @@ exports.set_up = function () {
     });
 };
 
-exports.report_emojiset_change = function () {
+exports.report_emojiset_change = async function () {
     // TODO: Clean up how this works so we can use
     // change_display_setting.  The challenge is that we don't want to
     // report success before the server_events request returns that
     // causes the actual sprite sheet to change.  The current
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
-    function emoji_success() {
-        if ($("#emoji-settings-status").length) {
-            loading.destroy_indicator($("#emojiset_spinner"));
-            $("#emojiset_select").val(page_params.emojiset);
-            ui_report.success(i18n.t("Emojiset changed successfully!"),
-                              $('#emoji-settings-status').expectOne());
-            const spinner = $("#emoji-settings-status").expectOne();
-            settings_ui.display_checkmark(spinner);
-        }
+
+    await emojisets.select(page_params.emojiset);
+
+    if ($("#emoji-settings-status").length) {
+        loading.destroy_indicator($("#emojiset_spinner"));
+        $("#emojiset_select").val(page_params.emojiset);
+        ui_report.success(i18n.t("Emojiset changed successfully!"),
+                          $('#emoji-settings-status').expectOne());
+        const spinner = $("#emoji-settings-status").expectOne();
+        settings_ui.display_checkmark(spinner);
     }
-
-    let emojiset = page_params.emojiset;
-
-    if (page_params.emojiset === 'text') {
-        // For `text` emojiset we fallback to `google-blob` emojiset
-        // for displaying emojis in emoji picker and typeahead.
-        emojiset = 'google-blob';
-    }
-
-    const sprite = new Image();
-    sprite.onload = function () {
-        const sprite_css_href = "/static/generated/emoji/" + emojiset + "-sprite.css";
-        $("#emoji-spritesheet").attr('href', sprite_css_href);
-        emoji_success();
-    };
-    sprite.src = "/static/generated/emoji/sheet-" + emojiset + "-64.png";
 };
 
 exports.update_page = function () {

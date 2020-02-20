@@ -129,22 +129,6 @@ exports.initialize = function initialize() {
     }
 
     exports.update_emojis(page_params.realm_emoji);
-
-    let emojiset = page_params.emojiset;
-    if (page_params.emojiset === 'text') {
-        // If the current emojiset is `text`, then we fallback to the
-        // `google` emojiset on the backend (see zerver/views/home.py)
-        // for displaying emojis in emoji picker and composebox
-        // typeahead. This logic ensures that we do sprite sheet
-        // prefetching for that case.
-        emojiset = 'google-blob';
-    }
-    // Load the sprite image and octopus image in the background, so
-    // that the browser will cache it for later use.
-    const sprite = new Image();
-    sprite.src = '/static/generated/emoji/sheet-' + emojiset + '-64.png';
-    const octopus_image = new Image();
-    octopus_image.src = '/static/generated/emoji/images-' + emojiset + '-64/1f419.png';
 };
 
 exports.build_emoji_data = function (realm_emojis) {

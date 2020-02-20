@@ -1,3 +1,4 @@
+const emojisets = require("./emojisets");
 const markdown_config = require('./markdown_config');
 
 // This is where most of our initialization takes place.
@@ -295,6 +296,7 @@ exports.initialize_kitchen_sink_stuff = function () {
 
 exports.initialize_everything = function () {
     // initialize other stuff
+    emojisets.initialize();
     people.initialize();
     scroll_bar.initialize();
     message_viewport.initialize();
