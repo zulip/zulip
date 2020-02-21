@@ -1,7 +1,7 @@
 from django.conf import settings
 
 from mock import Mock, patch
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 
 from zerver.apps import flush_cache
 from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_by_email_cache_key, cache_with_key, \
@@ -122,6 +122,30 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
         self.assertEqual(result_two, hamlet)
         self.assert_length(queries_two, 0)
+
+    def test_cache_with_key_none_values(self) -> None:
+        def cache_key_function(user_id: int) -> str:
+            return 'CacheWithKeyDecoratorTest:test_cache_with_key_none_values:{}'.format(user_id)
+
+        @cache_with_key(cache_key_function, timeout=1000)
+        def get_user_function_can_return_none(user_id: int) -> Optional[UserProfile]:
+            try:
+                return UserProfile.objects.get(id=user_id)
+            except UserProfile.DoesNotExist:
+                return None
+
+        last_user_id = UserProfile.objects.last().id
+        with queries_captured() as queries:
+            result = get_user_function_can_return_none(last_user_id + 1)
+
+        self.assertEqual(result, None)
+        self.assert_length(queries, 1)
+
+        with queries_captured() as queries:
+            result_two = get_user_function_can_return_none(last_user_id + 1)
+
+        self.assertEqual(result_two, None)
+        self.assert_length(queries, 0)
 
 class GetCacheWithKeyDecoratorTest(ZulipTestCase):
     def test_get_cache_with_good_key(self) -> None:
