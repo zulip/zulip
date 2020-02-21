@@ -1,0 +1,162 @@
+body.theme-comfy {
+  ::-webkit-scrollbar {
+    width: auto;
+  }
+
+  ::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: #3e4c57;
+  }
+
+  /* Create different-colored sidebars */
+  .left-sidebar:before {
+    content: "";
+    display: block;
+    position: fixed;
+    width: 249px;
+    top: 0;
+    bottom: 45px;
+    z-index: -1;
+  }
+
+  // Body color resets
+
+  & {
+    background: #ececec;
+
+    /* Reset the background color */
+    #compose,
+    .app-main,
+    .column-left .left-sidebar,
+    .column-middle,
+    .column-right .right-sidebar,
+    .header-main {
+      background-color: transparent;
+    }
+
+    #compose {
+      background: #ececec;
+    }
+
+    .app-main > .column-middle {
+      background: #fff;
+    }
+  }
+
+  &.night-mode {
+    background: #29333e;
+    /* prefer Lato. This 1e2834will feel familiar to Slack users */
+    font-family: Lato, "Source Sans Pro", "Helvetica Neue", Helvetica, Arial,
+      sans-serif;
+
+    /* The compose dialog should have a background, as it floats over the stream */
+    #compose {
+      background: #1e2834;
+    }
+
+    .app-main > .column-middle {
+      background: #1e2834;
+    }
+  }
+
+  &:not(.night-mode) {
+    .left-sidebar:before {
+      background: #ececec;
+    }
+  }
+
+  /* Less obnoxious selected message */
+  & .selected_message .messagebox-content {
+    box-shadow: inset rgba(0, 0, 0, 0.3) 0px 0px 0px 1px !important;
+    background-color: #fff;
+  }
+
+  &.night-mode .selected_message .messagebox-content {
+    border-right: 1px solid #aca;
+    box-shadow: rgba(0, 0, 0, 0.3) 2px 2px 7px;
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .message_row {
+    border-left-width: 0px;
+    border-right-width: 0px;
+  }
+
+  /* Better typography for messages */
+  .message_content {
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  /* Inline images bigger */
+  .message_inline_image {
+    height: auto;
+  }
+
+  .message_inline_image img {
+    max-height: 250px;
+    float: none;
+  }
+
+  /* Cleaner spacing for topic bars */
+  .stream_topic {
+    padding-left: 13px;
+  }
+
+  .stream-privacy {
+    padding-top: 3px;
+    padding-right: 5px;
+    font-size: 17px;
+  }
+
+  .stream-name {
+    font-size: 15px;
+    opacity: 0.6;
+    padding: 4px 0 !important;
+    display: block;
+  }
+
+  // Highlight streams with activity
+  .stream-with-count .stream-name {
+    font-weight: bold;
+    opacity: 1;
+  }
+
+  .show-all-streams {
+    display: block;
+  }
+
+  li.show-more-topics a {
+    margin-left: 10px;
+    opacity: 0.7;
+  }
+
+  .message_controls {
+    right: -48px;
+  }
+
+  // Lighten the unread message background, rather than using the green left marker
+  .unread_marker {
+    display: none;
+  }
+
+  .message_row.unread .messagebox {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  #user_presences {
+    display: flex;
+    flex-direction: column;
+    li {
+      order: 1;
+      &.user-fade {
+        order: 2;
+      }
+    }
+  }
+}

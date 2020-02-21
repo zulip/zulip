@@ -33,6 +33,21 @@ exports.demote_inactive_streams_values = {
     },
 };
 
+exports.themes_values = {
+    default: {
+        code: "default",
+        description: i18n.t("Default"),
+    },
+    comfy: {
+        code: "comfy",
+        description: i18n.t("Comfy"),
+    },
+    vscode: {
+        code: "vscode",
+        description: i18n.t("VS Code (Night Mode)"),
+    },
+};
+
 exports.twenty_four_hour_time_values = {
     twenty_four_hour_clock: {
         value: true,
@@ -68,6 +83,8 @@ exports.set_up = function () {
     $("#user_timezone").val(page_params.timezone);
 
     $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
+
+    $("#theme").val(page_params.theme);
 
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
@@ -118,6 +135,11 @@ exports.set_up = function () {
 
     $('#demote_inactive_streams').change(function () {
         const data = {demote_inactive_streams: this.value};
+        change_display_setting(data, '#display-settings-status');
+    });
+
+    $('#theme').change(function () {
+        const data = {theme: JSON.stringify(this.value)};
         change_display_setting(data, '#display-settings-status');
     });
 

@@ -313,6 +313,7 @@ class ChangeSettingsTest(ZulipTestCase):
             emojiset = 'google',
             timezone = 'US/Mountain',
             demote_inactive_streams = 2,
+            theme = "comfy"
         )  # type: Dict[str, Any]
 
         email = self.example_email('hamlet')
@@ -322,7 +323,7 @@ class ChangeSettingsTest(ZulipTestCase):
         if test_value is None:
             raise AssertionError('No test created for %s' % (setting_name,))
 
-        if setting_name == 'demote_inactive_streams':
+        if setting_name == 'demote_inactive_streams' or setting_name == "theme":
             invalid_value = 4  # type: Union[int, str]
         else:
             invalid_value = 'invalid_' + setting_name
@@ -342,6 +343,8 @@ class ChangeSettingsTest(ZulipTestCase):
         # displays as 'Invalid language'. Using setting_name.split('_') to format.
         if setting_name == 'demote_inactive_streams':
             self.assert_json_error(result, "Invalid setting value '%s'" % (invalid_value,))
+        elif setting_name == "theme":
+            self.assert_json_error(result, "theme is not a string")
         else:
             self.assert_json_error(result, "Invalid %s '%s'" % (setting_name.split('_')[-1],
                                                                 invalid_value))

@@ -377,6 +377,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         const user_display_settings = [
             'default_language',
             'demote_inactive_streams',
+            'theme',
             'dense_mode',
             'emojiset',
             'fluid_layout_width',
@@ -408,6 +409,17 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.setting_name === 'demote_inactive_streams') {
             stream_list.update_streams_sidebar();
             stream_data.set_filter_out_inactives();
+        }
+
+        if (event.setting_name === 'theme') {
+            const b = $("body");
+            const classes = b.attr("class").split(/\s+/);
+            for (let i = 0; i < classes.length; i += 1) {
+                if (classes[i].match(/^theme-/)) {
+                    b.removeClass(classes[i]);
+                }
+            }
+            b.addClass("theme-" + event.setting);
         }
         if (event.setting_name === 'dense_mode') {
             $("body").toggleClass("less_dense_mode");

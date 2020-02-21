@@ -109,6 +109,7 @@ exports.build_page = function () {
         timezones: moment.tz.names(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label: exports.settings_label,
+        themes_values: settings_display.themes_values,
         demote_inactive_streams_values: settings_display.demote_inactive_streams_values,
         twenty_four_hour_time_values: settings_display.twenty_four_hour_time_values,
         notification_settings: settings_notifications.all_notifications.settings,

@@ -228,5 +228,9 @@ import "../../styles/night_mode.scss";
 import "../../styles/user_status.scss";
 import "../../styles/widgets.scss";
 
+// Themes, which will override other CSS settings
+import "../../styles/themes/comfy.scss";
+import "../../styles/themes/vscode.scss";
+
 // This should be last.
 import "../ready.js";

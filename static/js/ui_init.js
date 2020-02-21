@@ -117,9 +117,13 @@ exports.initialize_kitchen_sink_stuff = function () {
         $("#navbar-buttons").addClass("right-userlist");
     }
 
+    const body = $("body");
+
     if (page_params.high_contrast_mode) {
         $("body").addClass("high-contrast");
     }
+
+    body.addClass("theme-" + page_params.theme);
 
     if (!page_params.dense_mode) {
         $("body").addClass("less_dense_mode");

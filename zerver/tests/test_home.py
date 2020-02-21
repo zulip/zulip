@@ -208,6 +208,7 @@ class HomeTest(ZulipTestCase):
             "stream_name_max_length",
             "subscriptions",
             "test_suite",
+            "theme",
             "timezone",
             "translate_emoticons",
             "translation_data",
