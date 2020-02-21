@@ -7,7 +7,7 @@ import shutil
 import sys
 import ujson
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
     get_emoji_code, generate_name_to_codepoint_map, emoji_names_for_picker, \
@@ -84,25 +84,30 @@ def get_success_stamp() -> str:
 def percent(f: float) -> str:
     return '%0.3f%%' % (f * 100,)
 
-def generate_sprite_css_files(cache_path: str,
-                              emoji_data: List[Dict[str, Any]],
-                              emojiset: str) -> None:
-    def get_max_val(field: str, emoji_data: List[Dict[str, Any]]) -> int:
-        max_val = 0
-        for emoji_dict in emoji_data:
-            max_val = max(max_val, emoji_dict[field])
-            if 'skin_variations' in emoji_dict:
-                for skin_tone, img_info in emoji_dict['skin_variations'].items():
-                    max_val = max(max_val, img_info[field])
-        return max_val
-
+def get_square_size(emoji_data: List[Dict[str, Any]]) -> int:
     """
     Spritesheets are usually NxN squares, and we have to
     infer N from the sheet_x/sheet_y values of emojis.
     """
-    max_x = get_max_val('sheet_x', emoji_data)
-    max_y = get_max_val('sheet_y', emoji_data)
-    n = max(max_x, max_y) + 1
+    def get_offsets(emoji_data: List[Dict[str, Any]]) -> Iterator[int]:
+        for emoji_dict in emoji_data:
+            yield emoji_dict['sheet_x']
+            yield emoji_dict['sheet_y']
+            if 'skin_variations' in emoji_dict:
+                for img_info in emoji_dict['skin_variations'].values():
+                    yield img_info['sheet_x']
+                    yield img_info['sheet_y']
+
+    n = max(get_offsets(emoji_data)) + 1
+    return n
+
+def generate_sprite_css_files(cache_path: str,
+                              emoji_data: List[Dict[str, Any]],
+                              emojiset: str) -> None:
+    """
+    Spritesheets are usually NxN squares.
+    """
+    n = get_square_size(emoji_data)
 
     """
     Each single emoji is 64x64, with 1px gutters on every border.
