@@ -1,3 +1,4 @@
+const settings_config = require("./settings_config");
 const render_settings_admin_auth_methods_list = require('../templates/settings/admin_auth_methods_list.hbs');
 const render_settings_admin_realm_domains_list = require("../templates/settings/admin_realm_domains_list.hbs");
 const render_settings_admin_realm_dropdown_stream_list = require("../templates/settings/admin_realm_dropdown_stream_list.hbs");
@@ -34,22 +35,6 @@ exports.maybe_disable_widgets = function () {
 
     $(".organization-box [data-name='auth-methods']")
         .find("input, button, select, checked").attr("disabled", true);
-};
-
-exports.email_address_visibility_values = {
-    everyone: {
-        code: 1,
-        description: i18n.t("Admins, members, and guests"),
-    },
-    //// Backend support for this configuration is not available yet.
-    // admins_and_members: {
-    //     code: 2,
-    //     description: i18n.t("Members and admins"),
-    // },
-    admins_only: {
-        code: 3,
-        description: i18n.t("Admins only"),
-    },
 };
 
 exports.create_stream_policy_values = {
@@ -136,11 +121,11 @@ exports.get_organization_settings_options = () => {
 exports.show_email = function () {
     // TODO: Extend this when we add support for admins_and_members above.
     if (page_params.realm_email_address_visibility ===
-        exports.email_address_visibility_values.everyone.code) {
+        settings_config.email_address_visibility_values.everyone.code) {
         return true;
     }
     if (page_params.realm_email_address_visibility ===
-        exports.email_address_visibility_values.admins_only.code) {
+        settings_config.email_address_visibility_values.admins_only.code) {
         return page_params.is_admin;
     }
 };
