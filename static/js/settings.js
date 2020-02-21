@@ -1,3 +1,4 @@
+const settings_config = require("./settings_config");
 const render_settings_tab = require('../templates/settings_tab.hbs');
 
 $("body").ready(function () {
@@ -109,13 +110,13 @@ exports.build_page = function () {
         timezones: moment.tz.names(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label: exports.settings_label,
-        demote_inactive_streams_values: settings_display.demote_inactive_streams_values,
-        twenty_four_hour_time_values: settings_display.twenty_four_hour_time_values,
+        demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
+        twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         notification_settings: settings_notifications.all_notifications.settings,
         desktop_icon_count_display_values: settings_notifications.desktop_icon_count_display_values,
         push_notification_tooltip:
             settings_notifications.all_notifications.push_notification_tooltip,
-        display_settings: settings_display.all_display_settings,
+        display_settings: settings_config.get_all_display_settings(),
         user_can_change_name: settings_account.user_can_change_name(),
         user_can_change_avatar: settings_account.user_can_change_avatar(),
     });

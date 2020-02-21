@@ -124,8 +124,6 @@ zrequire('user_status');
 zrequire('user_status_ui');
 const ui_init = zrequire('ui_init');
 
-zrequire('settings_display');
-
 set_global('$', global.make_zjquery());
 
 const document_stub = $.create('document-stub');
