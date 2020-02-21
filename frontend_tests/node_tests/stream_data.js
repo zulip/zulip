@@ -24,7 +24,7 @@ zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');
 zrequire('message_list');
-zrequire('settings_display', 'js/settings_display');
+const settings_config = zrequire("settings_config");
 
 const me = {
     email: 'me@zulip.com',
@@ -301,7 +301,7 @@ run_test('is_active', () => {
     let sub;
 
     page_params.demote_inactive_streams =
-        settings_display.demote_inactive_streams_values.automatic.code;
+        settings_config.demote_inactive_streams_values.automatic.code;
     stream_data.set_filter_out_inactives();
 
     sub = {name: 'pets', subscribed: false, stream_id: 111};
@@ -332,7 +332,7 @@ run_test('is_active', () => {
     assert(stream_data.is_active(sub));
 
     page_params.demote_inactive_streams =
-        settings_display.demote_inactive_streams_values.always.code;
+        settings_config.demote_inactive_streams_values.always.code;
     stream_data.set_filter_out_inactives();
 
     sub = {name: 'pets', subscribed: false, stream_id: 111};
@@ -360,7 +360,7 @@ run_test('is_active', () => {
     assert(stream_data.is_active(sub));
 
     page_params.demote_inactive_streams =
-        settings_display.demote_inactive_streams_values.never.code;
+        settings_config.demote_inactive_streams_values.never.code;
     stream_data.set_filter_out_inactives();
 
     sub = {name: 'pets', subscribed: false, stream_id: 111};

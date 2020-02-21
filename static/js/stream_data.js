@@ -2,6 +2,7 @@ const util = require("./util");
 const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 const LazySet = require('./lazy_set').LazySet;
+const settings_config = require("./settings_config");
 
 const BinaryDict = function (pred) {
     /*
@@ -116,10 +117,10 @@ exports.clear_subscriptions();
 
 exports.set_filter_out_inactives = function () {
     if (page_params.demote_inactive_streams ===
-            settings_display.demote_inactive_streams_values.automatic.code) {
+            settings_config.demote_inactive_streams_values.automatic.code) {
         filter_out_inactives = exports.num_subscribed_subs() >= 30;
     } else if (page_params.demote_inactive_streams ===
-            settings_display.demote_inactive_streams_values.always.code) {
+            settings_config.demote_inactive_streams_values.always.code) {
         filter_out_inactives = true;
     } else {
         filter_out_inactives = false;
