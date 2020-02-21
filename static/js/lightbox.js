@@ -133,7 +133,7 @@ exports.open = function (image, options) {
             const zid = rows.id($message);
             const message = message_store.get(zid);
             if (message === undefined) {
-                blueslip.error("Lightbox for unknown message " + rows.id($message));
+                blueslip.error("Lightbox for unknown message " + zid);
             } else {
                 sender_full_name = message.sender_full_name;
             }
