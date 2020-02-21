@@ -124,7 +124,7 @@ function get_property_value(property_name) {
         if (!page_params.realm_allow_message_editing) {
             return "never";
         }
-        value = _.findKey(exports.msg_edit_limit_dropdown_values, function (elem) {
+        value = _.findKey(settings_config.msg_edit_limit_dropdown_values, function (elem) {
             return elem.seconds === page_params.realm_message_content_edit_limit_seconds;
         });
         if (value === undefined) {
@@ -137,7 +137,7 @@ function get_property_value(property_name) {
         if (!page_params.realm_allow_message_deleting) {
             return "never";
         }
-        value = _.findKey(exports.msg_delete_limit_dropdown_values, function (elem) {
+        value = _.findKey(settings_config.msg_delete_limit_dropdown_values, function (elem) {
             return elem.seconds === page_params.realm_message_content_delete_limit_seconds;
         });
         if (value === undefined) {
@@ -237,41 +237,6 @@ function set_video_chat_provider_dropdown() {
         $(".zoom_credentials").hide();
     }
 }
-
-const time_limit_dropdown_values = {
-    any_time: {
-        text: i18n.t("Any time"),
-        seconds: 0,
-    },
-    never: {
-        text: i18n.t("Never"),
-    },
-    upto_two_min: {
-        text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("2 minutes")}),
-        seconds: 2 * 60,
-    },
-    upto_ten_min: {
-        text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("10 minutes")}),
-        seconds: 10 * 60,
-    },
-    upto_one_hour: {
-        text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 hour")}),
-        seconds: 60 * 60,
-    },
-    upto_one_day: {
-        text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 day")}),
-        seconds: 24 * 60 * 60,
-    },
-    upto_one_week: {
-        text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 week")}),
-        seconds: 7 * 24 * 60 * 60,
-    },
-    custom_limit: {
-        text: i18n.t("Up to N minutes after posting"),
-    },
-};
-exports.msg_edit_limit_dropdown_values = time_limit_dropdown_values;
-exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;
 
 function set_msg_edit_limit_dropdown() {
     const value = get_property_value("realm_msg_edit_limit_setting");
@@ -717,6 +682,8 @@ exports.build_page = function () {
 
     function get_complete_data_for_subsection(subsection) {
         let data = {};
+        const config = settings_config;
+
         if (subsection === 'msg_editing') {
             const edit_limit_setting_value = $("#id_realm_msg_edit_limit_setting").val();
             if (edit_limit_setting_value === 'never') {
@@ -728,7 +695,7 @@ exports.build_page = function () {
             } else {
                 data.allow_message_editing = true;
                 data.message_content_edit_limit_seconds =
-                    exports.msg_edit_limit_dropdown_values[edit_limit_setting_value].seconds;
+                    config.msg_edit_limit_dropdown_values[edit_limit_setting_value].seconds;
             }
             const delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
             if (delete_limit_setting_value === 'never') {
@@ -740,7 +707,7 @@ exports.build_page = function () {
             } else {
                 data.allow_message_deleting = true;
                 data.message_content_delete_limit_seconds =
-                    exports.msg_delete_limit_dropdown_values[delete_limit_setting_value].seconds;
+                    config.msg_delete_limit_dropdown_values[delete_limit_setting_value].seconds;
             }
         } else if (subsection === 'notifications') {
             data.notifications_stream_id = JSON.stringify(
