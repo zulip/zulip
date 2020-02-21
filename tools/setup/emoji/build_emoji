@@ -24,6 +24,19 @@ EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
 NODE_MODULES_PATH = os.path.join(ZULIP_PATH, 'node_modules')
 
+
+# The CSS for emoji spritesheet has somewhat tricky requirements.  One
+# is that we want to be able to use the same emoji CSS classes for
+# different display sizes of our emoji (e.g. reactions are smaller
+# than inline message emoji, which are smaller than those in the emoji
+# picker) while only downloading 1 copy of the spritesheet, having
+# good browser rendering performance, and reusing as much common CSS
+# as is possible.
+
+# Our solution to those problem is to use the `background-size` (Which
+# is e.g. 5700%) and background-position attributes to select the
+# region of the spritesheet corresponding to the target sprite and
+# display it properly scaled in an emoji span.
 SPRITE_CSS_FILE_TEMPLATE = """\
 div.emoji,
 span.emoji
