@@ -1,3 +1,4 @@
+const settings_config = require("./settings_config");
 const render_admin_tab = require('../templates/admin_tab.hbs');
 
 const admin_settings_label = {
@@ -31,7 +32,7 @@ exports.build_page = function () {
         server_inline_image_preview: page_params.server_inline_image_preview,
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
         server_inline_url_embed_preview: page_params.server_inline_url_embed_preview,
-        realm_default_twenty_four_hour_time_values: settings_display.twenty_four_hour_time_values,
+        realm_default_twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_create_stream_policy: page_params.realm_create_stream_policy,
         realm_invite_to_stream_policy: page_params.realm_invite_to_stream_policy,

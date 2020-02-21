@@ -111,6 +111,7 @@ EXEMPT_FILES = {
     'static/js/server_events.js',
     'static/js/settings_account.js',
     'static/js/settings_bots.js',
+    'static/js/settings_config.js',
     'static/js/settings_display.js',
     'static/js/settings_emoji.js',
     'static/js/settings_exports.js',

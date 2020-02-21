@@ -1,3 +1,5 @@
+const settings_config = require("./settings_config");
+
 const meta = {
     loaded: false,
 };
@@ -18,49 +20,6 @@ function change_display_setting(data, status_element, success_msg, sticky) {
     settings_ui.do_settings_change(channel.patch, '/json/settings/display', data, status_element, opts);
 }
 
-exports.demote_inactive_streams_values = {
-    automatic: {
-        code: 1,
-        description: i18n.t("Automatic"),
-    },
-    always: {
-        code: 2,
-        description: i18n.t("Always"),
-    },
-    never: {
-        code: 3,
-        description: i18n.t("Never"),
-    },
-};
-
-exports.twenty_four_hour_time_values = {
-    twenty_four_hour_clock: {
-        value: true,
-        description: i18n.t("24-hour clock (17:00)"),
-    },
-    twelve_hour_clock: {
-        value: false,
-        description: i18n.t("12-hour clock (5:00 PM)"),
-    },
-};
-
-exports.all_display_settings = {
-    settings: {
-        user_display_settings: [
-            "dense_mode",
-            "night_mode",
-            "high_contrast_mode",
-            "left_side_userlist",
-            "starred_message_counts",
-            "fluid_layout_width",
-        ],
-    },
-    render_only: {
-        high_contrast_mode: page_params.development_environment,
-        dense_mode: page_params.development_environment,
-    },
-};
-
 exports.set_up = function () {
     meta.loaded = true;
     $("#display-settings-status").hide();
@@ -77,7 +36,8 @@ exports.set_up = function () {
         overlays.close_modal('default_language_modal');
     });
 
-    for (const setting of exports.all_display_settings.settings.user_display_settings) {
+    const all_display_settings = settings_config.get_all_display_settings();
+    for (const setting of all_display_settings.settings.user_display_settings) {
         $("#" + setting).change(function () {
             const data = {};
             data[setting] = JSON.stringify($(this).prop('checked'));
