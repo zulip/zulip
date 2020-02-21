@@ -53,6 +53,8 @@ run_test('youtube', () => {
     const link = $.create('link-stub');
     const msg = $.create('msg-stub');
 
+    msg.attr("zid", "4321");
+
     $(img).attr('src', href);
 
     $(img).closest = (sel) => {
