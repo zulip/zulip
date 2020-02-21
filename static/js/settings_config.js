@@ -90,3 +90,16 @@ exports.create_stream_policy_values = {
 };
 
 exports.invite_to_stream_policy_values = exports.create_stream_policy_values;
+
+exports.user_group_edit_policy_values = {
+    by_admins_only: {
+        order: 1,
+        code: 2,
+        description: i18n.t("Admins"),
+    },
+    by_members: {
+        order: 2,
+        code: 1,
+        description: i18n.t("Admins and members"),
+    },
+};
