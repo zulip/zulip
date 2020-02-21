@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
@@ -61,6 +61,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = None  # type: Optional[Dict[str, Dict[str, str]]]
 SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = None  # type: Optional[Dict[str, str]]
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT = None  # type: Optional[Dict[str, str]]
 SOCIAL_AUTH_SAML_ENABLED_IDPS = {}  # type: Dict[str, Dict[str, str]]
+SOCIAL_AUTH_SAML_SECURITY_CONFIG = {}  # type: Dict[str, Any]
 # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
 GOOGLE_OAUTH2_CLIENT_ID = None  # type: Optional[str]
 
