@@ -64,7 +64,8 @@ def run():
                                   description="Runs the puppet parser validator, "
                                   "checking for syntax errors.")
     linter_config.external_linter('puppet-lint',
-                                  ['puppet-lint'] + PUPPET_CHECK_RULES_TO_EXCLUDE, ['pp'],
+                                  ['puppet-lint', '--fail-on-warnings'] + PUPPET_CHECK_RULES_TO_EXCLUDE,
+                                  ['pp'],
                                   fix_arg='--fix',
                                   description="Standard puppet linter"
                                   "(config: tools/linter_lib/exclude.py)")
