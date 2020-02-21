@@ -103,3 +103,16 @@ exports.user_group_edit_policy_values = {
         description: i18n.t("Admins and members"),
     },
 };
+
+exports.private_message_policy_values = {
+    by_anyone: {
+        order: 1,
+        code: 1,
+        description: i18n.t("Admins, members, and guests"),
+    },
+    disabled: {
+        order: 2,
+        code: 2,
+        description: i18n.t("Private messages disabled"),
+    },
+};

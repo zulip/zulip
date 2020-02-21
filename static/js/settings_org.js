@@ -37,19 +37,6 @@ exports.maybe_disable_widgets = function () {
         .find("input, button, select, checked").attr("disabled", true);
 };
 
-exports.private_message_policy_values = {
-    by_anyone: {
-        order: 1,
-        code: 1,
-        description: i18n.t("Admins, members, and guests"),
-    },
-    disabled: {
-        order: 2,
-        code: 2,
-        description: i18n.t("Private messages disabled"),
-    },
-};
-
 exports.get_sorted_options_list = function (option_values_object) {
     const options_list = Object.keys(option_values_object).map((key) => {
         return _.extend(option_values_object[key], {key: key});
@@ -81,7 +68,7 @@ exports.get_organization_settings_options = () => {
     options.user_group_edit_policy_values = exports.get_sorted_options_list(
         settings_config.user_group_edit_policy_values);
     options.private_message_policy_values = exports.get_sorted_options_list(
-        exports.private_message_policy_values);
+        settings_config.private_message_policy_values);
     return options;
 };
 
