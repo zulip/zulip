@@ -114,8 +114,9 @@ function submit_permissions_change() {
 casper.then(function () {
     casper.test.info("Test setting create streams policy to 'admins only'.");
     casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
+        // by_admins_only
         casper.evaluate(function () {
-            $("#id_realm_create_stream_policy").val(settings_org.create_stream_policy_values.by_admins_only.code).change();
+            $("#id_realm_create_stream_policy").val(2).change();
         });
         submit_permissions_change();
     });
@@ -133,8 +134,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting create streams policy to 'members and admins'.");
     casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
+        // by_members
         casper.evaluate(function () {
-            $("#id_realm_create_stream_policy").val(settings_org.create_stream_policy_values.by_members.code).change();
+            $("#id_realm_create_stream_policy").val(1).change();
         });
         submit_permissions_change();
     });
@@ -152,8 +154,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting create streams policy to 'waiting period.");
     casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
+        // by_full_members
         casper.evaluate(function () {
-            $("#id_realm_create_stream_policy").val(settings_org.create_stream_policy_values.by_full_members.code).change();
+            $("#id_realm_create_stream_policy").val(3).change();
         });
         submit_permissions_change();
     });
@@ -171,8 +174,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting invite to streams policy to 'admins only'.");
     casper.waitUntilVisible("#id_realm_invite_to_stream_policy", function () {
+        // by_admins_only
         casper.evaluate(function () {
-            $("#id_realm_invite_to_stream_policy").val(settings_org.create_stream_policy_values.by_admins_only.code).change();
+            $("#id_realm_invite_to_stream_policy").val(2).change();
         });
         submit_permissions_change();
     });
@@ -190,8 +194,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting invite to streams policy to 'members and admins'.");
     casper.waitUntilVisible("#id_realm_invite_to_stream_policy", function () {
+        // by_members
         casper.evaluate(function () {
-            $("#id_realm_invite_to_stream_policy").val(settings_org.create_stream_policy_values.by_members.code).change();
+            $("#id_realm_invite_to_stream_policy").val(1).change();
         });
         submit_permissions_change();
     });
@@ -209,8 +214,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting invite to streams policy to 'waiting period'.");
     casper.waitUntilVisible("#id_realm_invite_to_stream_policy", function () {
+        // by_full_members
         casper.evaluate(function () {
-            $("#id_realm_invite_to_stream_policy").val(settings_org.create_stream_policy_values.by_full_members.code).change();
+            $("#id_realm_invite_to_stream_policy").val(3).change();
         });
         submit_permissions_change();
     });

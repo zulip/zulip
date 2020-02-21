@@ -37,26 +37,6 @@ exports.maybe_disable_widgets = function () {
         .find("input, button, select, checked").attr("disabled", true);
 };
 
-exports.create_stream_policy_values = {
-    by_admins_only: {
-        order: 1,
-        code: 2,
-        description: i18n.t("Admins"),
-    },
-    by_full_members: {
-        order: 2,
-        code: 3,
-        description: i18n.t("Admins and full members"),
-    },
-    by_members: {
-        order: 3,
-        code: 1,
-        description: i18n.t("Admins and members"),
-    },
-};
-
-exports.invite_to_stream_policy_values = exports.create_stream_policy_values;
-
 exports.user_group_edit_policy_values = {
     by_admins_only: {
         order: 1,
@@ -108,9 +88,9 @@ exports.get_sorted_options_list = function (option_values_object) {
 exports.get_organization_settings_options = () => {
     const options = {};
     options.create_stream_policy_values = exports.get_sorted_options_list(
-        exports.create_stream_policy_values);
+        settings_config.create_stream_policy_values);
     options.invite_to_stream_policy_values = exports.get_sorted_options_list(
-        exports.invite_to_stream_policy_values);
+        settings_config.invite_to_stream_policy_values);
     options.user_group_edit_policy_values = exports.get_sorted_options_list(
         exports.user_group_edit_policy_values);
     options.private_message_policy_values = exports.get_sorted_options_list(

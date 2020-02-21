@@ -69,6 +69,7 @@ set_global('realm_icon', _realm_icon);
 set_global('realm_logo', _realm_logo);
 set_global('ui_report', _ui_report);
 
+const settings_config = zrequire('settings_config');
 zrequire('stream_data');
 zrequire('settings_account');
 zrequire('settings_org');
@@ -496,7 +497,7 @@ function test_sync_realm_settings() {
 
         settings_org.sync_realm_settings('create_stream_policy');
         assert.equal($("#id_realm_create_stream_policy").val(),
-                     settings_org.create_stream_policy_values.by_full_members.code);
+                     settings_config.create_stream_policy_values.by_full_members.code);
     }
 
     {
@@ -512,7 +513,7 @@ function test_sync_realm_settings() {
 
         settings_org.sync_realm_settings('create_stream_policy');
         assert.equal($("#id_realm_create_stream_policy").val(),
-                     settings_org.create_stream_policy_values.by_members.code);
+                     settings_config.create_stream_policy_values.by_members.code);
     }
 
     {
@@ -528,7 +529,7 @@ function test_sync_realm_settings() {
 
         settings_org.sync_realm_settings('create_stream_policy');
         assert.equal($("#id_realm_create_stream_policy").val(),
-                     settings_org.create_stream_policy_values.by_admins_only.code);
+                     settings_config.create_stream_policy_values.by_admins_only.code);
     }
 
     {
@@ -544,7 +545,7 @@ function test_sync_realm_settings() {
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
         assert.equal($("#id_realm_invite_to_stream_policy").val(),
-                     settings_org.create_stream_policy_values.by_full_members.code);
+                     settings_config.create_stream_policy_values.by_full_members.code);
     }
 
     {
@@ -560,7 +561,7 @@ function test_sync_realm_settings() {
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
         assert.equal($("#id_realm_invite_to_stream_policy").val(),
-                     settings_org.create_stream_policy_values.by_members.code);
+                     settings_config.create_stream_policy_values.by_members.code);
     }
 
     {
@@ -576,7 +577,7 @@ function test_sync_realm_settings() {
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
         assert.equal($("#id_realm_invite_to_stream_policy").val(),
-                     settings_org.create_stream_policy_values.by_admins_only.code);
+                     settings_config.create_stream_policy_values.by_admins_only.code);
     }
 
     {
