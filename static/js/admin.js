@@ -118,8 +118,10 @@ exports.launch = function (section) {
     settings_sections.reset_sections();
 
     overlays.open_settings();
-    settings_panel_menu.org_settings.activate_section(section);
-    settings_toggle.highlight_toggle('organization');
+    if (!(window.innerWidth <= 800  || util.is_mobile())) {
+        settings_panel_menu.org_settings.activate_section(section);
+    }
+        settings_toggle.highlight_toggle('organization');
 };
 
 window.admin = exports;

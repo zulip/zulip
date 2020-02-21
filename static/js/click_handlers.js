@@ -918,6 +918,10 @@ exports.initialize = function () {
     $(".settings-header.mobile .fa-chevron-left").on("click", function () {
         $("#settings_page").find(".right").removeClass("show");
         $(this).parent().removeClass("slide-left");
+        if(window.innerWidth <= 800 || util.is_mobile()) {
+            const hash = window.location.hash.split("/");
+            hashchange.update_browser_history(hash[0]);
+        }
     });
 };
 

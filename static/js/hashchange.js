@@ -152,7 +152,7 @@ function do_hashchange_overlay(old_hash) {
                     // We may be on a really old browser or somebody
                     // hand-typed a hash.
                     blueslip.warn('missing section for settings');
-                    section = 'your-account';
+                    section = (util.is_mobile() || window.innerWidth <= 800) ? '' : 'your-account';
                 }
                 settings_panel_menu.normal_settings.activate_section(section);
                 return;
@@ -163,7 +163,8 @@ function do_hashchange_overlay(old_hash) {
                     // We may be on a really old browser or somebody
                     // hand-typed a hash.
                     blueslip.warn('missing section for organization');
-                    section = 'organization-profile';
+                    section = (util.is_mobile() || window.innerWidth <= 800) ? '' :
+                        'organization-profile';
                 }
                 settings_panel_menu.org_settings.activate_section(section);
                 return;
@@ -201,7 +202,8 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === 'settings') {
         if (!section) {
-            section = settings_panel_menu.normal_settings.current_tab();
+            section = (util.is_mobile() || window.innerWidth <= 800) ? '' :
+                settings_panel_menu.normal_settings.current_tab();
             const settings_hash = '#settings/' + section;
             exports.replace_hash(settings_hash);
         }
@@ -212,7 +214,8 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === 'organization') {
         if (!section) {
-            section = settings_panel_menu.org_settings.current_tab();
+            section = (util.is_mobile() || window.innerWidth <= 800) ? '' :
+                settings_panel_menu.normal_settings.current_tab();
             const org_hash = '#organization/' + section;
             exports.replace_hash(org_hash);
         }

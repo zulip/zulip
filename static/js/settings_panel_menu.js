@@ -1,6 +1,6 @@
 exports.make_menu = function (opts) {
     const main_elem = opts.main_elem;
-    const hash_prefix = opts.hash_prefix;
+    const   hash_prefix = opts.hash_prefix;
     let curr_li = main_elem.children('li').eq(0);
 
     const self = {};
@@ -8,7 +8,10 @@ exports.make_menu = function (opts) {
     self.show = function () {
         main_elem.show();
         const section = self.current_tab();
-        self.activate_section(section);
+
+        if (!(window.innerWidth <= 800  || util.is_mobile())) {
+            self.activate_section(section);
+        }
         curr_li.focus();
     };
 
