@@ -108,11 +108,12 @@ TABLE_CSS = """
 """
 
 SORTED_CATEGORIES = [
-    'People',
-    'Nature',
-    'Foods',
-    'Activity',
-    'Places',
+    'Smileys & Emotion',
+    'People & Body',
+    'Animals & Nature',
+    'Food & Drink',
+    'Activities',
+    'Travel & Places',
     'Objects',
     'Symbols',
     'Flags',
