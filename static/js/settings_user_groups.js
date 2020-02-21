@@ -21,6 +21,10 @@ exports.reload = function () {
 
 const USER_GROUP_EDIT_POLICY_MEMBERS = 1;
 
+exports.user_group_edit_policy_set_to_everyone = function () {
+    return page_params.realm_user_group_edit_policy === USER_GROUP_EDIT_POLICY_MEMBERS;
+};
+
 exports.can_edit = function (group_id) {
     if (page_params.is_admin) {
         return true;
@@ -30,7 +34,7 @@ exports.can_edit = function (group_id) {
         return false;
     }
 
-    if (page_params.realm_user_group_edit_policy !== USER_GROUP_EDIT_POLICY_MEMBERS) {
+    if (!exports.user_group_edit_policy_set_to_everyone()) {
         return false;
     }
 

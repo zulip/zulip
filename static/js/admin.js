@@ -37,7 +37,7 @@ exports.build_page = function () {
         realm_create_stream_policy: page_params.realm_create_stream_policy,
         realm_invite_to_stream_policy: page_params.realm_invite_to_stream_policy,
         realm_user_group_edit_policy: page_params.realm_user_group_edit_policy,
-        USER_GROUP_EDIT_POLICY_MEMBERS: 1,
+        user_group_edit_policy_set_to_everyone: settings_user_groups.user_group_edit_policy_set_to_everyone,
         realm_private_message_policy: page_params.realm_private_message_policy,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
