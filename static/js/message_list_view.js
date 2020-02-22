@@ -917,7 +917,6 @@ MessageListView.prototype = {
         let new_messages_height = 0;
         let id_of_last_message_sent_by_us = -1;
 
-        // C++ iterators would have made this less painful
         for (const elem of rendered_elems.reverse()) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
