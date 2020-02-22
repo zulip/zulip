@@ -233,7 +233,6 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
                                   user_profile: Optional[UserProfile], full_name: str='',
                                   mobile_flow_otp: Optional[str]=None,
                                   desktop_flow_otp: Optional[str]=None,
-                                  realm: Optional[Realm]=None,
                                   is_signup: bool=False, redirect_to: str='',
                                   multiuse_object_key: str='',
                                   full_name_validated: bool=False) -> HttpResponse:
@@ -269,8 +268,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
     elif desktop_flow_otp is not None:
-        assert realm is not None
-        return finish_desktop_flow(request, user_profile, realm, desktop_flow_otp)
+        return finish_desktop_flow(request, user_profile, desktop_flow_otp)
 
     do_login(request, user_profile)
 
@@ -278,7 +276,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
     return HttpResponseRedirect(redirect_to)
 
 def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
-                        realm: Realm, otp: str) -> HttpResponse:
+                        otp: str) -> HttpResponse:
     """
     The desktop otp flow returns to the app (through a zulip:// redirect)
     a token that allows obtaining (through log_into_subdomain) a logged in session
@@ -288,14 +286,14 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     and this ensures the key can only be used for completing this authentication attempt.
     """
     data = {'email': user_profile.delivery_email,
-            'subdomain': realm.subdomain}
+            'subdomain': user_profile.realm.subdomain}
     token = store_login_data(data)
     response = create_response_for_otp_flow(token, otp, user_profile,
                                             encrypted_key_field_name='otp_encrypted_login_key')
     browser_url = user_profile.realm.uri + reverse('zerver.views.auth.log_into_subdomain', args=[token])
     context = {'desktop_url': response['Location'],
                'browser_url': browser_url,
-               'realm_icon_url': realm_icon_url(realm)}
+               'realm_icon_url': realm_icon_url(user_profile.realm)}
     return render(request, 'zerver/desktop_redirect.html', context=context)
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
@@ -375,7 +373,6 @@ def remote_user_sso(request: HttpRequest,
     return login_or_register_remote_user(request, remote_user, user_profile,
                                          mobile_flow_otp=mobile_flow_otp,
                                          desktop_flow_otp=desktop_flow_otp,
-                                         realm=realm,
                                          redirect_to=redirect_to)
 
 @csrf_exempt
