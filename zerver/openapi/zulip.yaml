@@ -2914,14 +2914,15 @@ paths:
         required: true
       - name: to
         in: query
-        description: The recipients of the message being typed, in the same format used by the
-          send_message API.  Typing notifications are only supported for private messages,
-          so this should be a JSON-encoded list of email addresses of the message's recipients.
+        description: The user_ids of the recipients of the message being typed.
+          Typing notifications are only supported for private messages.
+          Send a JSON-encoded list of user_ids. (Use a list even if there is
+          only one recipient.)
         schema:
           type: array
           items:
-            type: string
-        example: ["iago@zulip.com", "polonius@zulip.com"]
+            type: integer
+        example: [9, 10]
         required: true
       responses:
         '200':
