@@ -1077,7 +1077,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(
             lambda: check_send_typing_notification(
-                self.user_profile, [self.example_email("cordelia")], "start"),
+                self.user_profile, [self.example_user("cordelia").id], "start"),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])

@@ -976,12 +976,16 @@ def get_stream_topics(client, stream_id):
 @openapi_test_function("/typing:post")
 def set_typing_status(client):
     # type: (Client) -> None
+    ensure_users([9, 10], ['hamlet', 'iago'])
 
     # {code_example|start}
     # The user has started to type in the group PM with Iago and Polonius
+    user_id1 = 9
+    user_id2 = 10
+
     request = {
         'op': 'start',
-        'to': ['iago@zulip.com', 'polonius@zulip.com']
+        'to': [user_id1, user_id2],
     }
     result = client.set_typing_status(request)
     # {code_example|end}
@@ -990,9 +994,12 @@ def set_typing_status(client):
 
     # {code_example|start}
     # The user has finished typing in the group PM with Iago and Polonius
+    user_id1 = 9
+    user_id2 = 10
+
     request = {
         'op': 'stop',
-        'to': ['iago@zulip.com', 'polonius@zulip.com']
+        'to': [user_id1, user_id2],
     }
     result = client.set_typing_status(request)
     # {code_example|end}
