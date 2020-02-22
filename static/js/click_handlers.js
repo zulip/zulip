@@ -768,6 +768,7 @@ exports.initialize = function () {
         $("body").on("click", "[data-make-editable]", function () {
             const selector = $(this).attr("data-make-editable");
             const edit_area = $(this).parent().find(selector);
+            $(selector).removeClass("stream-name-edit-box");
             if (edit_area.attr("contenteditable") === "true") {
                 $("[data-finish-editing='" + selector + "']").hide();
                 edit_area.attr("contenteditable", false);
@@ -776,6 +777,7 @@ exports.initialize = function () {
             } else {
                 $("[data-finish-editing='" + selector + "']").show();
 
+                $(selector).addClass("stream-name-edit-box");
                 edit_area.attr("data-prev-text", edit_area.text().trim())
                     .attr("contenteditable", true);
 
@@ -791,6 +793,7 @@ exports.initialize = function () {
 
         $("body").on("click", "[data-finish-editing]", function (e) {
             const selector = $(this).attr("data-finish-editing");
+            $(selector).removeClass("stream-name-edit-box");
             if (map[selector].on_save) {
                 map[selector].on_save(e);
                 $(this).hide();
