@@ -1384,10 +1384,9 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
         # by an API superuser for your realm and (2) being sent to a
         # mirrored stream.
         #
-        # The security checks are split between the below code
-        # (especially create_mirrored_message_users which checks the
-        # same-realm constraint) and recipient_for_emails (which
-        # checks that PMs are received by the forwarding user)
+        # The most important security checks are in
+        # `create_mirrored_message_users` below, which checks the
+        # same-realm constraint.
         if "sender" not in request.POST:
             return json_error(_("Missing sender"))
         if message_type_name != "private" and not is_super_user:
