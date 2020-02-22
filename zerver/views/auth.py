@@ -361,7 +361,6 @@ def remote_user_sso(request: HttpRequest,
     # login_or_register_remote_user if appropriate.
     validate_otp_params(mobile_flow_otp, desktop_flow_otp)
 
-    subdomain = get_subdomain(request)
     if realm is None:
         user_profile = None
     else:
