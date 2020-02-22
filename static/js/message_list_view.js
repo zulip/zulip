@@ -915,23 +915,12 @@ MessageListView.prototype = {
 
     _new_messages_height: function (rendered_elems) {
         let new_messages_height = 0;
-        let id_of_last_message_sent_by_us = -1;
 
         for (const elem of rendered_elems.reverse()) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
             if (elem.is("div")) {
                 new_messages_height += elem.height();
-                // starting from the last message, ignore message heights that weren't sent by me.
-                if (id_of_last_message_sent_by_us > -1) {
-                    continue;
-                }
-                const row_id = rows.id(elem);
-                // check for `row_id` NaN in case we're looking at a date row or bookend row
-                if (row_id > -1 &&
-                    people.is_current_user(this.get_message(row_id).sender_email)) {
-                    id_of_last_message_sent_by_us = rows.id(elem);
-                }
             }
         }
 
