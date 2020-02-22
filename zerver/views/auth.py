@@ -13,6 +13,7 @@ from django.template.response import SimpleTemplateResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
+from django.views.generic import TemplateView
 from django.utils.translation import ugettext as _
 from django.utils.http import is_safe_url
 import urllib
@@ -627,11 +628,9 @@ def get_dev_users(realm: Optional[Realm]=None, extra_users_count: int=10) -> Lis
 
 def redirect_to_misconfigured_ldap_notice(error_type: int) -> HttpResponse:
     if error_type == ZulipLDAPAuthBackend.REALM_IS_NONE_ERROR:
-        url = reverse('ldap_error_realm_is_none')
+        return redirect_to_config_error('ldap')
     else:
         raise AssertionError("Invalid error type")
-
-    return HttpResponseRedirect(url)
 
 def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
@@ -803,13 +802,13 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if (not dev_auth_enabled()) or settings.PRODUCTION:
         # This check is probably not required, since authenticate would fail without
         # an enabled DevAuthBackend.
-        return HttpResponseRedirect(reverse('dev_not_supported'))
+        return redirect_to_config_error('dev')
     email = request.POST['direct_email']
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
     user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
-        return HttpResponseRedirect(reverse('dev_not_supported'))
+        return redirect_to_config_error('dev')
     do_login(request, user_profile)
 
     next = request.GET.get('next', '')
@@ -1021,3 +1020,19 @@ def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # no
                             content_type='text/xml')
 
     return HttpResponseServerError(content=', '.join(errors))
+
+def config_error_view(request: HttpRequest, error_category_name: str) -> HttpResponse:
+    contexts = {
+        'google': {'social_backend_name': 'google', 'has_markdown_file': True},
+        'github': {'social_backend_name': 'github', 'has_markdown_file': True},
+        'gitlab': {'social_backend_name': 'gitlab', 'has_markdown_file': True},
+        'ldap': {'error_name': 'ldap_error_realm_is_none'},
+        'dev': {'error_name': 'dev_not_supported_error'},
+        'saml': {'social_backend_name': 'saml'},
+        'smtp': {'error_name': 'smtp_error'},
+        'backend_disabled': {'error_name': 'remoteuser_error_backend_disabled'},
+        'remote_user_header_missing': {'error_name': 'remoteuser_error_remote_user_header_missing'}
+    }
+
+    return TemplateView.as_view(template_name='zerver/config_error.html',
+                                extra_context=contexts[error_category_name])(request)

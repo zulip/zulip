@@ -10,7 +10,7 @@
                 <div class="errorcontent">
                     <h1 class="lead">Configuration error</h1>
                     <br/>
-                    {% if ldap_error_realm_is_none %}
+                    {% if error_name == "ldap_error_realm_is_none" %}
                         {% trans %}
                         You are trying to login using LDAP without creating an
                         organization first. Please use EmailAuthBackend to create
@@ -18,7 +18,7 @@
                         {% endtrans %}
                     {% endif %}
 
-                    {% if smtp_error %}
+                    {% if error_name == "smtp_error" %}
                         <p>
                             It appears there are problems with the
                             email configuration.
@@ -44,11 +44,11 @@
                         {% endif %}
                     {% endif %}
 
-                    {% if dev_not_supported_error %}
+                    {% if error_name == "dev_not_supported_error" %}
                     {{ render_markdown_path('zerver/dev-not-supported-error.md', {"settings_path": settings_path}) }}
                     {% endif %}
 
-                    {% if backend_error %}
+                    {% if has_markdown_file %}
                         {% if development_environment %}
                         {{ render_markdown_path('zerver/'+social_backend_name+'-error.md',
                         {"root_domain_uri": root_domain_uri, "settings_path": secrets_path, "secrets_path": secrets_path,
@@ -70,7 +70,7 @@
                         {% endif %}
                     {% endif %}
 
-                    {% if saml_error %}
+                    {% if social_backend_name == "saml" %}
                         <p>
                             SAML authentication is either not enabled or misconfigured. Have a look at
                             our <a href="https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#SAML">setup guide</a>.
@@ -84,13 +84,13 @@
                         {% endif %}
                     {% endif %}
 
-                    {% if remoteuser_error_backend_disabled %}
+                    {% if error_name == "remoteuser_error_backend_disabled" %}
                     <p>
                         Authentication via the REMOTE_USER header is
                         disabled in `/etc/zulip/settings.py`.
                     </p>
                     {% endif %}
-                    {% if remoteuser_error_remote_user_header_missing %}
+                    {% if error_name == "remoteuser_error_remote_user_header_missing" %}
                     <p>
                         The REMOTE_USER header is not set.
                     </p>

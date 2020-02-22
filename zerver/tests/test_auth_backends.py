@@ -2526,7 +2526,7 @@ class TestDevAuthBackend(ZulipTestCase):
         data = {'direct_email': email}
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
             response = self.client_post('/accounts/login/local/', data)
-            self.assertRedirects(response, reverse('dev_not_supported'))
+            self.assertRedirects(response, reverse('config_error', kwargs={'error_category_name': 'dev'}))
 
     def test_dev_direct_production_config_error(self) -> None:
         result = self.client_get("/config-error/dev")
@@ -2538,7 +2538,7 @@ class TestDevAuthBackend(ZulipTestCase):
         data = {'direct_email': email}
 
         response = self.client_post('/accounts/login/local/', data)
-        self.assertRedirects(response, reverse('dev_not_supported'))
+        self.assertRedirects(response, reverse('config_error', kwargs={'error_category_name': 'dev'}))
 
 class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
     def test_login_success(self) -> None:
@@ -3883,7 +3883,7 @@ class LDAPBackendTest(ZulipTestCase):
                 mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'):
             response = self.client_post('/login/', data)
             self.assertEqual(response.status_code, 302)
-            self.assertEqual(response.url, reverse('ldap_error_realm_is_none'))
+            self.assertEqual(response.url, reverse('config_error', kwargs={'error_category_name': 'ldap'}))
             response = self.client_get(response.url)
             self.assert_in_response('You are trying to login using LDAP '
                                     'without creating an',
