@@ -212,14 +212,13 @@ def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
     redirect_url = login_url + '?subdomain=1'
     return HttpResponseRedirect(redirect_url)
 
-def register_remote_user(request: HttpRequest, remote_username: str,
+def register_remote_user(request: HttpRequest, email: str,
                          full_name: str='',
                          mobile_flow_otp: Optional[str]=None,
                          desktop_flow_otp: Optional[str]=None,
                          is_signup: bool=False,
                          multiuse_object_key: str='',
                          full_name_validated: bool=False) -> HttpResponse:
-    email = remote_user_to_email(remote_username)
     # We have verified the user controls an email address, but
     # there's no associated Zulip user account.  Consider sending
     # the request to registration.
@@ -229,7 +228,7 @@ def register_remote_user(request: HttpRequest, remote_username: str,
                                       is_signup=is_signup, multiuse_object_key=multiuse_object_key,
                                       full_name_validated=full_name_validated)
 
-def login_or_register_remote_user(request: HttpRequest, remote_username: str,
+def login_or_register_remote_user(request: HttpRequest, email: str,
                                   user_profile: Optional[UserProfile], full_name: str='',
                                   mobile_flow_otp: Optional[str]=None,
                                   desktop_flow_otp: Optional[str]=None,
@@ -237,7 +236,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
                                   multiuse_object_key: str='',
                                   full_name_validated: bool=False) -> HttpResponse:
     """Given a successful authentication showing the user controls given
-    email address (remote_username) and potentially a UserProfile
+    email address (email) and potentially a UserProfile
     object (if the user already has a Zulip account), redirect the
     browser to the appropriate place:
 
@@ -255,7 +254,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: str,
       are doing authentication using the mobile_flow_otp or desktop_flow_otp flow.
     """
     if user_profile is None or user_profile.is_mirror_dummy:
-        return register_remote_user(request, remote_username, full_name,
+        return register_remote_user(request, email, full_name,
                                     is_signup=is_signup,
                                     mobile_flow_otp=mobile_flow_otp,
                                     desktop_flow_otp=desktop_flow_otp,
@@ -369,8 +368,8 @@ def remote_user_sso(request: HttpRequest,
         user_profile = authenticate(remote_user=remote_user, realm=realm)
 
     redirect_to = request.GET.get('next', '')
-
-    return login_or_register_remote_user(request, remote_user, user_profile,
+    email = remote_user_to_email(remote_user)
+    return login_or_register_remote_user(request, email, user_profile,
                                          mobile_flow_otp=mobile_flow_otp,
                                          desktop_flow_otp=desktop_flow_otp,
                                          redirect_to=redirect_to)
