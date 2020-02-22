@@ -388,7 +388,7 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
     elif desktop_flow_otp is not None:
-        return finish_desktop_flow(request, user_profile, user_profile.realm, desktop_flow_otp)
+        return finish_desktop_flow(request, user_profile, desktop_flow_otp)
 
     do_login(request, user_profile)
     return HttpResponseRedirect(user_profile.realm.uri + reverse('zerver.views.home.home'))

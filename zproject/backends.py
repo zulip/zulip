@@ -1170,7 +1170,6 @@ def social_auth_finish(backend: Any,
             extra_kwargs["mobile_flow_otp"] = mobile_flow_otp
         elif desktop_flow_otp:
             extra_kwargs["desktop_flow_otp"] = desktop_flow_otp
-            extra_kwargs["realm"] = realm
 
         if user_profile is not None and not user_profile.is_mirror_dummy:
             # For mobile and desktop app authentication, login_or_register_remote_user
