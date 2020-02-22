@@ -83,9 +83,7 @@ Requests come into `/json/typing`.  The view mostly calls out
 to `check_send_typing_notification` to do the heavy lifting.
 
 One of the main things that the server does is to simply validate
-the recipients with a call to `recipient_for_emails`.  (We should
-streamline the payload in the request to have user ids instead of
-emails, but of course we will still need to validate recipients.)
+the recipients with a call to `recipient_for_user_ids`.
 
 Once the request has been validated, the server sends events to
 potential recipients of the message.  The event type for that
