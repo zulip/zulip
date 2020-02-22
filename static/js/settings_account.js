@@ -13,7 +13,7 @@ exports.update_email = function (new_email) {
 };
 
 exports.update_full_name = function (new_full_name) {
-    const full_name_field = $("#change_full_name button #full_name_value");
+    const full_name_field = $("#full_name_value");
     if (full_name_field) {
         full_name_field.text(new_full_name);
     }
