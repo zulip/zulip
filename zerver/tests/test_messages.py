@@ -694,6 +694,10 @@ class ExtractTest(TestCase):
         with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
             extract_private_recipients(s)
 
+        s = ujson.dumps([{}])
+        with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
+            extract_private_recipients(s)
+
         # Empty list
         self.assertEqual(extract_private_recipients('[]'), [])
 
