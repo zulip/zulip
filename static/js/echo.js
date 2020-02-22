@@ -154,6 +154,11 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
         return;
     }
 
+    if (!current_msg_list.fetch_status.has_found_newest()) {
+        blueslip.info("Skipping local echo until newest messages get loaded.");
+        return;
+    }
+
     const local_id_float = local_message.get_next_id_float();
 
     if (!local_id_float) {
