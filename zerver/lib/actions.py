@@ -1745,20 +1745,29 @@ def do_remove_reaction(user_profile: UserProfile, message: Message,
     reaction.delete()
     notify_reaction_update(user_profile, message, reaction, "remove")
 
-def do_send_typing_notification(realm: Realm, notification: Dict[str, Any]) -> None:
-    recipient_user_profiles = get_typing_user_profiles(notification['recipient'],
-                                                       notification['sender'].id)
+def do_send_typing_notification(
+        realm: Realm,
+        sender: UserProfile,
+        recipient: Recipient,
+        operator: str) -> None:
+
+    recipient_user_profiles = get_typing_user_profiles(
+        recipient,
+        sender.id,
+    )
     # Only deliver the notification to active user recipients
     user_ids_to_notify = [profile.id for profile in recipient_user_profiles if profile.is_active]
-    sender_dict = {'user_id': notification['sender'].id, 'email': notification['sender'].email}
+
+    sender_dict = {'user_id': sender.id, 'email': sender.email}
     # Include a list of recipients in the event body to help identify where the typing is happening
     recipient_dicts = [{'user_id': profile.id, 'email': profile.email}
                        for profile in recipient_user_profiles]
     event = dict(
-        type            = 'typing',
-        op              = notification['op'],
-        sender          = sender_dict,
-        recipients      = recipient_dicts)
+        type='typing',
+        op=operator,
+        sender=sender_dict,
+        recipients=recipient_dicts,
+    )
 
     send_event(realm, event, user_ids_to_notify)
 
@@ -1766,15 +1775,8 @@ def do_send_typing_notification(realm: Realm, notification: Dict[str, Any]) -> N
 # Checks the typing notification and sends it
 def check_send_typing_notification(sender: UserProfile, notification_to: Union[Sequence[str], Sequence[int]],
                                    operator: str) -> None:
-    typing_notification = check_typing_notification(sender, notification_to, operator)
-    do_send_typing_notification(sender.realm, typing_notification)
 
-# check_typing_notification:
-# Returns typing notification ready for sending with do_send_typing_notification on success
-# or the error message (string) on error.
-def check_typing_notification(sender: UserProfile,
-                              notification_to: Union[Sequence[str], Sequence[int]],
-                              operator: str) -> Dict[str, Any]:
+    realm = sender.realm
     if len(notification_to) == 0:
         raise JsonableError(_('Missing parameter: \'to\' (recipient)'))
     elif operator not in ('start', 'stop'):
@@ -1791,7 +1793,13 @@ def check_typing_notification(sender: UserProfile,
         assert isinstance(e.messages[0], str)
         raise JsonableError(e.messages[0])
     assert recipient.type != Recipient.STREAM
-    return {'sender': sender, 'recipient': recipient, 'op': operator}
+
+    do_send_typing_notification(
+        realm=realm,
+        sender=sender,
+        recipient=recipient,
+        operator=operator,
+    )
 
 def send_stream_creation_event(stream: Stream, user_ids: List[int]) -> None:
     event = dict(type="stream", op="create",
