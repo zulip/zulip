@@ -17,7 +17,7 @@ from django.views.generic import TemplateView
 from django.utils.translation import ugettext as _
 from django.utils.http import is_safe_url
 import urllib
-from typing import Any, Dict, List, Optional, Mapping
+from typing import Any, Dict, List, Optional, Mapping, cast
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import zulip_default_context, get_realm_from_request, \
@@ -28,7 +28,6 @@ from zerver.forms import HomepageForm, OurAuthenticationForm, \
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sessions import set_expirable_session_var
@@ -44,7 +43,8 @@ from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
     AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled, SAMLAuthBackend, \
-    redirect_to_config_error, ZulipRemoteUserBackend, validate_otp_params
+    redirect_to_config_error, ZulipRemoteUserBackend, validate_otp_params, ExternalAuthResult, \
+    ExternalAuthDataDict
 from version import ZULIP_VERSION, API_FEATURE_LEVEL
 
 import jwt
@@ -56,8 +56,6 @@ from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
 
 ExtraContext = Optional[Dict[str, Any]]
-
-redis_client = get_redis_client()
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
     is_url_safe = is_safe_url(url=url, allowed_hosts=set(redirect_host))
@@ -210,29 +208,19 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
     context.update(extra_context)
     return render(request, 'zerver/accounts_home.html', context=context)
 
-def register_remote_user(request: HttpRequest, email: str,
-                         full_name: str='',
-                         mobile_flow_otp: Optional[str]=None,
-                         desktop_flow_otp: Optional[str]=None,
-                         is_signup: bool=False,
-                         multiuse_object_key: str='',
-                         full_name_validated: bool=False) -> HttpResponse:
+def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> HttpResponse:
     # We have verified the user controls an email address, but
     # there's no associated Zulip user account.  Consider sending
     # the request to registration.
-    return maybe_send_to_registration(request, email, full_name, password_required=False,
-                                      mobile_flow_otp=mobile_flow_otp,
-                                      desktop_flow_otp=desktop_flow_otp,
-                                      is_signup=is_signup, multiuse_object_key=multiuse_object_key,
-                                      full_name_validated=full_name_validated)
+    kwargs = cast(Dict[str, Any], result.copy_data_dict())
+    # maybe_send_to_registration doesn't take these arguments, so delete them.
+    kwargs.pop('subdomain', None)
+    kwargs.pop('redirect_to', None)
 
-def login_or_register_remote_user(request: HttpRequest, email: str,
-                                  user_profile: Optional[UserProfile], full_name: str='',
-                                  mobile_flow_otp: Optional[str]=None,
-                                  desktop_flow_otp: Optional[str]=None,
-                                  is_signup: bool=False, redirect_to: str='',
-                                  multiuse_object_key: str='',
-                                  full_name_validated: bool=False) -> HttpResponse:
+    kwargs["password_required"] = False
+    return maybe_send_to_registration(request, **kwargs)
+
+def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> HttpResponse:
     """Given a successful authentication showing the user controls given
     email address (email) and potentially a UserProfile
     object (if the user already has a Zulip account), redirect the
@@ -251,17 +239,14 @@ def login_or_register_remote_user(request: HttpRequest, email: str,
     * A zulip:// URL to send control back to the mobile or desktop apps if they
       are doing authentication using the mobile_flow_otp or desktop_flow_otp flow.
     """
+    user_profile = result.user_profile
     if user_profile is None or user_profile.is_mirror_dummy:
-        return register_remote_user(request, email, full_name,
-                                    is_signup=is_signup,
-                                    mobile_flow_otp=mobile_flow_otp,
-                                    desktop_flow_otp=desktop_flow_otp,
-                                    multiuse_object_key=multiuse_object_key,
-                                    full_name_validated=full_name_validated)
-
+        return register_remote_user(request, result)
     # Otherwise, the user has successfully authenticated to an
     # account, and we need to do the right thing depending whether
     # or not they're using the mobile OTP flow or want a browser session.
+    mobile_flow_otp = result.data_dict.get('mobile_flow_otp')
+    desktop_flow_otp = result.data_dict.get('desktop_flow_otp')
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
     elif desktop_flow_otp is not None:
@@ -269,7 +254,7 @@ def login_or_register_remote_user(request: HttpRequest, email: str,
 
     do_login(request, user_profile)
 
-    redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
+    redirect_to = get_safe_redirect_to(result.data_dict.get('redirect_to', ''), user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
 
 def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
@@ -278,13 +263,12 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     The desktop otp flow returns to the app (through a zulip:// redirect)
     a token that allows obtaining (through log_into_subdomain) a logged in session
     for the user account we authenticated in this flow.
-    The token can only be used once and within LOGIN_KEY_EXPIRATION_SECONDS
+    The token can only be used once and within ExternalAuthResult.LOGIN_KEY_EXPIRATION_SECONDS
     of being created, as nothing more powerful is needed for the desktop flow
     and this ensures the key can only be used for completing this authentication attempt.
     """
-    data = {'email': user_profile.delivery_email,
-            'subdomain': user_profile.realm.subdomain}
-    token = store_login_data(data)
+    result = ExternalAuthResult(user_profile=user_profile)
+    token = result.store_data()
     response = create_response_for_otp_flow(token, otp, user_profile,
                                             encrypted_key_field_name='otp_encrypted_login_key')
     browser_url = user_profile.realm.uri + reverse('zerver.views.auth.log_into_subdomain', args=[token])
@@ -366,10 +350,18 @@ def remote_user_sso(request: HttpRequest,
 
     redirect_to = request.GET.get('next', '')
     email = remote_user_to_email(remote_user)
-    return login_or_register_remote_user(request, email, user_profile,
-                                         mobile_flow_otp=mobile_flow_otp,
-                                         desktop_flow_otp=desktop_flow_otp,
-                                         redirect_to=redirect_to)
+    data_dict = ExternalAuthDataDict(
+        email=email,
+        mobile_flow_otp=mobile_flow_otp,
+        desktop_flow_otp=desktop_flow_otp,
+        redirect_to=redirect_to
+    )
+    if realm:
+        data_dict["subdomain"] = realm.subdomain
+    else:
+        data_dict["subdomain"] = ''  # realm creation happens on root subdomain
+    result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
+    return login_or_register_remote_user(request, result)
 
 @csrf_exempt
 @log_view_func
@@ -403,8 +395,16 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     except Realm.DoesNotExist:
         raise JsonableError(_("Wrong subdomain"))
 
-    user_profile = authenticate_remote_user(realm, email)
-    return login_or_register_remote_user(request, email, user_profile, remote_user)
+    user_profile = authenticate(username=email,
+                                realm=realm,
+                                use_dummy_backend=True)
+    if user_profile is None:
+        result = ExternalAuthResult(data_dict={"email": email, "full_name": remote_user,
+                                               "subdomain": realm.subdomain})
+    else:
+        result = ExternalAuthResult(user_profile=user_profile)
+
+    return login_or_register_remote_user(request, result)
 
 def oauth_redirect_to_root(request: HttpRequest, url: str,
                            sso_type: str, is_signup: bool=False,
@@ -485,27 +485,7 @@ def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[
     return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True,
                                   extra_url_params=extra_url_params)
 
-def authenticate_remote_user(realm: Realm,
-                             email_address: Optional[str]) -> Optional[UserProfile]:
-    if email_address is None:
-        # No need to authenticate if email address is None. We already
-        # know that user_profile would be None as well. In fact, if we
-        # call authenticate in this case, we might get an exception from
-        # ZulipDummyBackend which doesn't accept a None as a username.
-        logging.warning("Email address was None while trying to authenticate "
-                        "remote user.")
-        return None
-
-    user_profile = authenticate(username=email_address,
-                                realm=realm,
-                                use_dummy_backend=True)
-    return user_profile
-
 _subdomain_token_salt = 'zerver.views.auth.log_into_subdomain'
-LOGIN_KEY_PREFIX = "login_key_"
-LOGIN_KEY_FORMAT = LOGIN_KEY_PREFIX + "{token}"
-LOGIN_KEY_EXPIRATION_SECONDS = 15
-LOGIN_TOKEN_LENGTH = UserProfile.API_KEY_LENGTH
 
 @log_view_func
 def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
@@ -513,102 +493,26 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     redirect_and_log_into_subdomain called on auth.zulip.example.com),
     call login_or_register_remote_user, passing all the authentication
     result data that has been stored in redis, associated with this token.
-    Obligatory fields for the data are 'subdomain' and 'email', because this endpoint
-    needs to know which user and realm to log into. Others are optional and only used
-    if the user account still needs to be made and they're passed as argument to the
-    register_remote_user function.
     """
     if not has_api_key_format(token):  # The tokens are intended to have the same format as API keys.
         logging.warning("log_into_subdomain: Malformed token given: %s" % (token,))
         return HttpResponse(status=400)
 
-    data = get_login_data(token)
-    if data is None:
+    try:
+        result = ExternalAuthResult(login_token=token)
+    except ExternalAuthResult.InvalidTokenError:
         logging.warning("log_into_subdomain: Invalid token given: %s" % (token,))
         return render(request, 'zerver/log_into_subdomain_token_invalid.html', status=400)
 
-    # We extract fields provided by the caller via the data object.
-    # The only fields that are required are email and subdomain (if we
-    # are simply doing login); more fields are expected if this is a
-    # new account registration flow or we're going to a specific
-    # narrow after login.
     subdomain = get_subdomain(request)
-    if data['subdomain'] != subdomain:
+    if result.data_dict['subdomain'] != subdomain:
         raise JsonableError(_("Invalid subdomain"))
-    email_address = data['email']
 
-    full_name = data.get('name', '')
-    is_signup = data.get('is_signup', False)
-    redirect_to = data.get('next', '')
-    mobile_flow_otp = data.get('mobile_flow_otp')
-    desktop_flow_otp = data.get('desktop_flow_otp')
-    full_name_validated = data.get('full_name_validated', False)
-    multiuse_object_key = data.get('multiuse_object_key', '')
+    return login_or_register_remote_user(request, result)
 
-    # We cannot pass the actual authenticated user_profile object that
-    # was fetched by the original authentication backend and passed
-    # into redirect_and_log_into_subdomain through a signed URL token,
-    # so we need to re-fetch it from the database.
-    if is_signup:
-        # If we are creating a new user account, user_profile will
-        # always have been None, so we set that here.  In the event
-        # that a user account with this email was somehow created in a
-        # race, the eventual registration code will catch that and
-        # throw an error, so we don't need to check for that here.
-        user_profile = None
-    else:
-        # We're just trying to login.  We can be reasonably confident
-        # that this subdomain actually has a corresponding active
-        # realm, since the signed cookie proves there was one very
-        # recently.  But as part of fetching the UserProfile object
-        # for the target user, we use DummyAuthBackend, which
-        # conveniently re-validates that the realm and user account
-        # were not deactivated in the meantime.
-
-        # Note: Ideally, we'd have a nice user-facing error message
-        # for the case where this auth fails (because e.g. the realm
-        # or user was deactivated since the signed cookie was
-        # generated < 15 seconds ago), but the authentication result
-        # is correct in those cases and such a race would be very
-        # rare, so a nice error message is low priority.
-        realm = get_realm(subdomain)
-        user_profile = authenticate_remote_user(realm, email_address)
-
-    return login_or_register_remote_user(request, email_address, user_profile,
-                                         full_name,
-                                         is_signup=is_signup, redirect_to=redirect_to,
-                                         mobile_flow_otp=mobile_flow_otp,
-                                         desktop_flow_otp=desktop_flow_otp,
-                                         multiuse_object_key=multiuse_object_key,
-                                         full_name_validated=full_name_validated)
-
-def store_login_data(data: Dict[str, Any]) -> str:
-    key = put_dict_in_redis(redis_client, LOGIN_KEY_FORMAT, data,
-                            expiration_seconds=LOGIN_KEY_EXPIRATION_SECONDS,
-                            token_length=LOGIN_TOKEN_LENGTH)
-    token = key.split(LOGIN_KEY_PREFIX, 1)[1]  # remove the prefix
-    return token
-
-def get_login_data(token: str, should_delete: bool=True) -> Optional[Dict[str, Any]]:
-    key = LOGIN_KEY_FORMAT.format(token=token)
-    data = get_dict_from_redis(redis_client, LOGIN_KEY_FORMAT, key)
-    if data is not None and should_delete:
-        redis_client.delete(key)
-    return data
-
-def redirect_and_log_into_subdomain(realm: Realm, full_name: str, email_address: str,
-                                    is_signup: bool=False, redirect_to: str='',
-                                    mobile_flow_otp: Optional[str]=None,
-                                    desktop_flow_otp: Optional[str]=None,
-                                    multiuse_object_key: str='',
-                                    full_name_validated: bool=False,) -> HttpResponse:
-    data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
-            'is_signup': is_signup, 'next': redirect_to,
-            'mobile_flow_otp': mobile_flow_otp,
-            'desktop_flow_otp': desktop_flow_otp,
-            'multiuse_object_key': multiuse_object_key,
-            'full_name_validated': full_name_validated}
-    token = store_login_data(data)
+def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
+    token = result.store_data()
+    realm = get_realm(result.data_dict["subdomain"])
     subdomain_login_uri = (realm.uri
                            + reverse('zerver.views.auth.log_into_subdomain', args=[token]))
     return redirect(subdomain_login_uri)

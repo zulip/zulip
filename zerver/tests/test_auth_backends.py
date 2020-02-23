@@ -66,10 +66,10 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin, \
     PopulateUserLDAPError, SAMLAuthBackend, saml_auth_enabled, email_belongs_to_ldap, \
     get_external_method_dicts, AzureADAuthBackend, check_password_strength, \
-    ZulipLDAPUser, RateLimitedAuthenticationByUsername
+    ZulipLDAPUser, RateLimitedAuthenticationByUsername, ExternalAuthResult, \
+    ExternalAuthDataDict
 
-from zerver.views.auth import (maybe_send_to_registration,
-                               store_login_data, LOGIN_TOKEN_LENGTH)
+from zerver.views.auth import maybe_send_to_registration
 
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -842,9 +842,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                        subdomain='zulip', next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], self.name)
+        self.assertEqual(data['full_name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
@@ -860,9 +860,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], self.name)
+        self.assertEqual(data['full_name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
@@ -1012,7 +1012,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                        subdomain='zulip', is_signup=True)
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Full Name')
+        # Verify data has the full_name consistent with the user we're logging in as.
+        self.assertEqual(data['full_name'], self.example_user("hamlet").full_name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
@@ -1031,7 +1032,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                   expect_confirm_registration_page: bool=False,) -> None:
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], email)
-        self.assertEqual(data['name'], name)
+        self.assertEqual(data['full_name'], name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
@@ -1055,9 +1056,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             do_confirm_url = result.url
         result = self.client_get(do_confirm_url, name = name)
         self.assert_in_response('action="/accounts/register/"', result)
-        data = {"from_confirmation": "1",
-                "key": confirmation_key}
-        result = self.client_post('/accounts/register/', data)
+        confirmation_data = {"from_confirmation": "1",
+                             "key": confirmation_key}
+        result = self.client_post('/accounts/register/', confirmation_data)
         if not skip_registration_form:
             self.assert_in_response("We just need you to do one last thing", result)
 
@@ -1218,7 +1219,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], email)
-        self.assertEqual(data['name'], name)
+        self.assertEqual(data['full_name'], name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
@@ -1243,7 +1244,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], email)
-        self.assertEqual(data['name'], name)
+        self.assertEqual(data['full_name'], name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
@@ -1749,7 +1750,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                            subdomain='zulip')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], self.name)
+        self.assertEqual(data['full_name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
 
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip')
@@ -1774,7 +1775,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                            subdomain='zulip')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], self.name)
+        self.assertEqual(data['full_name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
 
     def test_github_auth_enabled(self) -> None:
@@ -1800,9 +1801,9 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], 'nonprimary@zulip.com')
-        self.assertEqual(data['name'], 'Non Primary')
+        self.assertEqual(data['full_name'], 'Non Primary')
         self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
@@ -1826,9 +1827,9 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], self.name)
+        self.assertEqual(data['full_name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
@@ -1857,9 +1858,9 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], account_data_dict["email"])
-        self.assertEqual(data['name'], self.name)
+        self.assertEqual(data['full_name'], self.name)
         self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
@@ -1870,6 +1871,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         # In the login flow, if multiple of the user's verified emails
         # are associated with existing accounts, we expect the choose
         # email screen to select which account to use.
+        hamlet = self.example_user("hamlet")
         account_data_dict = dict(email='hamlet@zulip.com', name="Hamlet")
         email_data = [
             dict(email=account_data_dict["email"],
@@ -1888,9 +1890,9 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], 'hamlet@zulip.com')
-        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['full_name'], hamlet.full_name)
         self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
@@ -1942,9 +1944,9 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], account_data_dict["email"])
-        self.assertEqual(data['name'], account_data_dict["name"])
+        self.assertEqual(data['full_name'], account_data_dict["name"])
         self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
@@ -2112,10 +2114,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleAuthBackend',)):
             self.assertTrue(google_auth_enabled())
 
-    def get_log_into_subdomain(self, data: Dict[str, Any], *, subdomain: str='zulip',
+    def get_log_into_subdomain(self, data: ExternalAuthDataDict, *, subdomain: str='zulip',
                                force_token: Optional[str]=None) -> HttpResponse:
         if force_token is None:
-            token = store_login_data(data)
+            token = ExternalAuthResult(data_dict=data).store_data()
         else:
             token = force_token
         url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
@@ -2123,14 +2125,14 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
     def test_redirect_to_next_url_for_log_into_subdomain(self) -> None:
         def test_redirect_to_next_url(next: str='') -> HttpResponse:
-            data = {'name': 'Hamlet',
+            data = {'full_name': 'Hamlet',
                     'email': self.example_email("hamlet"),
                     'subdomain': 'zulip',
                     'is_signup': False,
-                    'next': next}
+                    'redirect_to': next}  # type: ExternalAuthDataDict
             user_profile = self.example_user('hamlet')
             with mock.patch(
-                    'zerver.views.auth.authenticate_remote_user',
+                    'zerver.views.auth.authenticate',
                     return_value=user_profile):
                 with mock.patch('zerver.views.auth.do_login'):
                     result = self.get_log_into_subdomain(data)
@@ -2148,24 +2150,24 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(res.url, 'http://zulip.testserver/#narrow/stream/7-test-here')
 
     def test_log_into_subdomain_when_token_is_malformed(self) -> None:
-        data = {'name': 'Full Name',
+        data = {'full_name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
                 'is_signup': False,
-                'next': ''}
+                'redirect_to': ''}  # type: ExternalAuthDataDict
         with mock.patch("logging.warning") as mock_warn:
             result = self.get_log_into_subdomain(data, force_token='nonsense')
             mock_warn.assert_called_once_with("log_into_subdomain: Malformed token given: nonsense")
         self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_token_not_found(self) -> None:
-        data = {'name': 'Full Name',
+        data = {'full_name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
                 'is_signup': False,
-                'next': ''}
+                'redirect_to': ''}  # type: ExternalAuthDataDict
         with mock.patch("logging.warning") as mock_warn:
-            token = generate_random_token(LOGIN_TOKEN_LENGTH)
+            token = generate_random_token(ExternalAuthResult.LOGIN_TOKEN_LENGTH)
             result = self.get_log_into_subdomain(data, force_token=token)
             mock_warn.assert_called_once_with("log_into_subdomain: Invalid token given: %s" % (token,))
         self.assertEqual(result.status_code, 400)
@@ -2177,21 +2179,23 @@ class GoogleAuthBackendTest(SocialAuthBase):
         existing_user.email = 'whatever@zulip.com'
         existing_user.save()
 
-        data = {'name': 'Full Name',
+        data = {'full_name': 'Full Name',
                 'email': 'existing@zulip.com',
                 'subdomain': 'zulip',
                 'is_signup': True,
-                'next': ''}
+                'redirect_to': ''}  # type: ExternalAuthDataDict
         result = self.get_log_into_subdomain(data)
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_response('existing@zulip.com already has an account', result)
+
+        # Should simply get logged into the existing account:
+        self.assertEqual(result.status_code, 302)
+        self.assert_logged_in_user_id(existing_user.id)
 
     def test_log_into_subdomain_when_is_signup_is_true_and_new_user(self) -> None:
-        data = {'name': 'New User Name',
+        data = {'full_name': 'New User Name',
                 'email': 'new@zulip.com',
                 'subdomain': 'zulip',
                 'is_signup': True,
-                'next': ''}
+                'redirect_to': ''}  # type: ExternalAuthDataDict
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
         confirmation = Confirmation.objects.all().first()
@@ -2199,10 +2203,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertIn('do_confirm/' + confirmation_key, result.url)
         result = self.client_get(result.url)
         self.assert_in_response('action="/accounts/register/"', result)
-        data = {"from_confirmation": "1",
-                "full_name": data['name'],
-                "key": confirmation_key}
-        result = self.client_post('/accounts/register/', data, subdomain="zulip")
+        confirmation_data = {"from_confirmation": "1",
+                             "full_name": data['full_name'],
+                             "key": confirmation_key}
+        result = self.client_post('/accounts/register/', confirmation_data, subdomain="zulip")
         self.assert_in_response("We just need you to do one last thing", result)
 
         # Verify that the user is asked for name but not password
@@ -2210,11 +2214,11 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_in_success_response(['id_full_name'], result)
 
     def test_log_into_subdomain_when_is_signup_is_false_and_new_user(self) -> None:
-        data = {'name': 'New User Name',
+        data = {'full_name': 'New User Name',
                 'email': 'new@zulip.com',
                 'subdomain': 'zulip',
                 'is_signup': False,
-                'next': ''}
+                'redirect_to': ''}  # type: ExternalAuthDataDict
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('No account found for', result)
@@ -2227,10 +2231,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertIn('do_confirm/' + confirmation_key, url)
         result = self.client_get(url)
         self.assert_in_response('action="/accounts/register/"', result)
-        data = {"from_confirmation": "1",
-                "full_name": data['name'],
-                "key": confirmation_key}
-        result = self.client_post('/accounts/register/', data, subdomain="zulip")
+        confirmation_data = {"from_confirmation": "1",
+                             "full_name": data['full_name'],
+                             "key": confirmation_key}
+        result = self.client_post('/accounts/register/', confirmation_data, subdomain="zulip")
         self.assert_in_response("We just need you to do one last thing", result)
 
         # Verify that the user is asked for name but not password
@@ -2238,11 +2242,11 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_in_success_response(['id_full_name'], result)
 
     def test_log_into_subdomain_when_using_invite_link(self) -> None:
-        data = {'name': 'New User Name',
+        data = {'full_name': 'New User Name',
                 'email': 'new@zulip.com',
                 'subdomain': 'zulip',
                 'is_signup': True,
-                'next': ''}
+                'redirect_to': ''}  # type: ExternalAuthDataDict
 
         realm = get_realm("zulip")
         realm.invite_required = True
@@ -2277,7 +2281,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         result = self.client_get(result.url)
         self.assert_in_response('action="/accounts/register/"', result)
         data2 = {"from_confirmation": "1",
-                 "full_name": data['name'],
+                 "full_name": data['full_name'],
                  "key": confirmation_key}
         result = self.client_post('/accounts/register/', data2, subdomain="zulip")
         self.assert_in_response("We just need you to do one last thing", result)
@@ -2298,20 +2302,21 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(sorted(new_streams), stream_names)
 
     def test_log_into_subdomain_when_email_is_none(self) -> None:
-        data = {'name': None,
+        data = {'full_name': None,
                 'email': None,
                 'subdomain': 'zulip',
                 'is_signup': False,
-                'next': ''}
+                'redirect_to': ''}  # type: ExternalAuthDataDict
 
-        with mock.patch('logging.warning'):
+        with mock.patch('logging.warning') as mock_warn:
             result = self.get_log_into_subdomain(data)
-            self.assert_in_success_response(["You need an invitation to join this organization."], result)
+            self.assertEqual(result.status_code, 400)
+            mock_warn.assert_called_once()
 
-    def test_user_cannot_log_into_wrong_subdomain_with_cookie(self) -> None:
-        data = {'name': 'Full Name',
+    def test_user_cannot_log_into_wrong_subdomain(self) -> None:
+        data = {'full_name': 'Full Name',
                 'email': self.example_email("hamlet"),
-                'subdomain': 'zephyr'}
+                'subdomain': 'zephyr'}  # type: ExternalAuthDataDict
         result = self.get_log_into_subdomain(data)
         self.assert_json_error(result, "Invalid subdomain")
 
