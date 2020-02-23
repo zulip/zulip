@@ -87,7 +87,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
 
     # Find account email
     result = client.post('/accounts/find/', {'emails': registered_email}, **host_kwargs)
-    assert result.status_code == 302
+    assert result.status_code == 200
 
     # New login email
     logged_in = client.login(dev_auth_username=registered_email, realm=realm)
