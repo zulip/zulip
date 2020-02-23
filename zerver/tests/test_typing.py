@@ -3,10 +3,6 @@
 import ujson
 from typing import Any, Mapping, List
 
-from django.conf import settings
-from django.core.exceptions import ValidationError
-
-from zerver.lib.actions import recipient_for_user_ids
 from zerver.lib.test_helpers import (
     tornado_redirected_to_list,
     queries_captured,
@@ -16,9 +12,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.models import (
     Huddle,
-    get_display_recipient,
     get_huddle_hash,
-    get_system_bot,
 )
 
 class TypingValidateOperatorTest(ZulipTestCase):
@@ -100,7 +94,7 @@ class TypingHappyPathTest(ZulipTestCase):
 
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 8)
+        self.assertEqual(len(queries), 6)
 
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
@@ -136,11 +130,12 @@ class TypingHappyPathTest(ZulipTestCase):
                 result = self.api_post(sender.email, '/api/v1/typing', params)
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 15)
+        self.assertEqual(len(queries), 7)
 
-        # TODO: Fix this somewhat evil side effect of sending
-        #       typing indicators.
-        self.assertTrue(Huddle.objects.filter(huddle_hash=huddle_hash).exists())
+        # We should not be adding new Huddles just because
+        # a user started typing in the compose box.  Let's
+        # wait till they send an actual message.
+        self.assertFalse(Huddle.objects.filter(huddle_hash=huddle_hash).exists())
 
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
@@ -289,30 +284,6 @@ class TypingHappyPathTest(ZulipTestCase):
         self.assertEqual(event['sender']['email'], sender.email)
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'stop')
-
-class TypingValidationHelpersTest(ZulipTestCase):
-    def test_recipient_for_user_ids(self) -> None:
-        hamlet = self.example_user('hamlet')
-        othello = self.example_user('othello')
-        cross_realm_bot = get_system_bot(settings.WELCOME_BOT)
-        sender = self.example_user('iago')
-        recipient_user_ids = [hamlet.id, othello.id, cross_realm_bot.id]
-
-        result = recipient_for_user_ids(recipient_user_ids, sender)
-        recipient = get_display_recipient(result)
-        recipient_ids = [recipient[0]['id'], recipient[1]['id'],  # type: ignore
-                         recipient[2]['id'], recipient[3]['id']]  # type: ignore
-
-        expected_recipient_ids = [hamlet.id, othello.id,
-                                  sender.id, cross_realm_bot.id]
-        self.assertEqual(set(recipient_ids), set(expected_recipient_ids))
-
-    def test_recipient_for_user_ids_non_existent_id(self) -> None:
-        sender = self.example_user('iago')
-        recipient_user_ids = [999]
-
-        with self.assertRaisesRegex(ValidationError, 'Invalid user ID '):
-            recipient_for_user_ids(recipient_user_ids, sender)
 
 class TypingLegacyMobileSupportTest(ZulipTestCase):
     def test_legacy_email_interface(self) -> None:

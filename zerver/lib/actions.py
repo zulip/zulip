@@ -965,30 +965,6 @@ def render_incoming_message(message: Message,
         raise JsonableError(_('Unable to render message'))
     return rendered_content
 
-def get_typing_user_profiles(recipient: Recipient, sender_id: int) -> List[UserProfile]:
-    if recipient.type == Recipient.STREAM:
-        '''
-        We don't support typing indicators for streams because they
-        are expensive and initial user feedback was they were too
-        distracting.
-        '''
-        raise ValueError('Typing indicators not supported for streams')
-
-    if recipient.type == Recipient.PERSONAL:
-        # The sender and recipient may be the same id, so
-        # de-duplicate using a set.
-        user_ids = list({recipient.type_id, sender_id})
-        assert(len(user_ids) in [1, 2])
-
-    elif recipient.type == Recipient.HUDDLE:
-        user_ids = get_huddle_user_ids(recipient)
-
-    else:
-        raise ValueError('Bad recipient type')
-
-    users = [get_user_profile_by_id(user_id) for user_id in user_ids]
-    return users
-
 RecipientInfoResult = TypedDict('RecipientInfoResult', {
     'active_user_ids': Set[int],
     'push_notify_user_ids': Set[int],
@@ -1748,17 +1724,11 @@ def do_remove_reaction(user_profile: UserProfile, message: Message,
 def do_send_typing_notification(
         realm: Realm,
         sender: UserProfile,
-        recipient: Recipient,
+        recipient_user_profiles: List[UserProfile],
         operator: str) -> None:
 
-    recipient_user_profiles = get_typing_user_profiles(
-        recipient,
-        sender.id,
-    )
-    # Only deliver the notification to active user recipients
-    user_ids_to_notify = [profile.id for profile in recipient_user_profiles if profile.is_active]
-
     sender_dict = {'user_id': sender.id, 'email': sender.email}
+
     # Include a list of recipients in the event body to help identify where the typing is happening
     recipient_dicts = [{'user_id': profile.id, 'email': profile.email}
                        for profile in recipient_user_profiles]
@@ -1768,6 +1738,13 @@ def do_send_typing_notification(
         sender=sender_dict,
         recipients=recipient_dicts,
     )
+
+    # Only deliver the notification to active user recipients
+    user_ids_to_notify = [
+        user.id
+        for user in recipient_user_profiles
+        if user.is_active
+    ]
 
     send_event(realm, event, user_ids_to_notify)
 
@@ -1782,22 +1759,50 @@ def check_send_typing_notification(sender: UserProfile, notification_to: Union[S
     elif operator not in ('start', 'stop'):
         raise JsonableError(_('Invalid \'op\' value (should be start or stop)'))
 
-    try:
-        if isinstance(notification_to[0], str):
+    '''
+    The next chunk of code will go away when we
+    upgrade old mobile users away from versions
+    of mobile that send emails.  For the tiny
+    number of mobile users, we will be sort of
+    doing double work here in terms of fetching
+    users, but this commit reduces lots of other
+    unnecessary work.
+    '''
+
+    if isinstance(notification_to[0], int):
+        user_ids = cast(List[int], notification_to)
+    else:
+        try:
             emails = cast(Sequence[str], notification_to)
             user_ids = user_ids_for_emails(realm, emails)
-        elif isinstance(notification_to[0], int):
-            user_ids = cast(List[int], notification_to)
-        recipient = recipient_for_user_ids(user_ids, sender)
-    except ValidationError as e:
-        assert isinstance(e.messages[0], str)
-        raise JsonableError(e.messages[0])
-    assert recipient.type != Recipient.STREAM
+        except ValidationError as e:
+            assert isinstance(e.messages[0], str)
+            raise JsonableError(e.messages[0])
+
+    if sender.id not in user_ids:
+        user_ids.append(sender.id)
+
+    # If any of the user_ids being sent in are invalid, we will
+    # just reject the whole request, since a partial list of user_ids
+    # can create confusion related to huddles.  Plus it's a good
+    # sign that a client is confused (or possibly even malicious) if
+    # we get bad user_ids.
+    user_profiles = []
+    for user_id in user_ids:
+        try:
+            # We include cross-bot realms as possible recipients,
+            # so that clients can know which huddle conversation
+            # is relevant here.
+            user_profile = get_user_by_id_in_realm_including_cross_realm(
+                user_id, sender.realm)
+        except UserProfile.DoesNotExist:
+            raise JsonableError(_("Invalid user ID {}").format(user_id))
+        user_profiles.append(user_profile)
 
     do_send_typing_notification(
         realm=realm,
         sender=sender,
-        recipient=recipient,
+        recipient_user_profiles=user_profiles,
         operator=operator,
     )
 
@@ -1982,23 +1987,6 @@ def user_ids_for_emails(
         user_ids.append(user_profile.id)
 
     return user_ids
-
-def recipient_for_user_ids(user_ids: Iterable[int], sender: UserProfile) -> Recipient:
-    user_profiles = []  # type: List[UserProfile]
-    for user_id in user_ids:
-        try:
-            user_profile = get_user_by_id_in_realm_including_cross_realm(
-                user_id, sender.realm)
-        except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid user ID {}").format(user_id))
-        user_profiles.append(user_profile)
-
-    return recipient_for_user_profiles(
-        user_profiles=user_profiles,
-        forwarded_mirror_message=False,
-        forwarder_user_profile=None,
-        sender=sender
-    )
 
 def recipient_for_user_profiles(user_profiles: Sequence[UserProfile], forwarded_mirror_message: bool,
                                 forwarder_user_profile: Optional[UserProfile],

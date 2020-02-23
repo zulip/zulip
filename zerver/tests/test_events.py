@@ -92,7 +92,6 @@ from zerver.lib.actions import (
     do_update_pointer,
     do_update_user_presence,
     do_update_user_status,
-    get_typing_user_profiles,
     log_event,
     lookup_default_stream_groups,
     notify_realm_custom_profile_fields,
@@ -1082,25 +1081,6 @@ class EventsRegisterTest(ZulipTestCase):
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
-
-    def test_get_typing_user_profiles(self) -> None:
-        """
-        Make sure we properly assert failures for recipient types that should not
-        get typing... notifications.
-        """
-
-        sender_profile = self.example_user('cordelia')
-        stream = get_stream('Rome', sender_profile.realm)
-
-        # Test stream
-        with self.assertRaisesRegex(ValueError, 'not supported for streams'):
-            recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-            get_typing_user_profiles(recipient, sender_profile.id)
-
-        # Test some other recipient type
-        with self.assertRaisesRegex(ValueError, 'Bad recipient type'):
-            recipient = Recipient(type=999)  # invalid type
-            get_typing_user_profiles(recipient, sender_profile.id)
 
     def test_custom_profile_fields_events(self) -> None:
         schema_checker = self.check_events_dict([

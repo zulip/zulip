@@ -83,7 +83,7 @@ Requests come into `/json/typing`.  The view mostly calls out
 to `check_send_typing_notification` to do the heavy lifting.
 
 One of the main things that the server does is to simply validate
-the recipients with a call to `recipient_for_user_ids`.
+that the `to` users are for valid, active users in the realm.
 
 Once the request has been validated, the server sends events to
 potential recipients of the message.  The event type for that
