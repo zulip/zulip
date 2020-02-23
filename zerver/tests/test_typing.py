@@ -7,7 +7,10 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from zerver.lib.actions import recipient_for_user_ids
-from zerver.lib.test_helpers import tornado_redirected_to_list
+from zerver.lib.test_helpers import (
+    tornado_redirected_to_list,
+    queries_captured,
+)
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -90,19 +93,19 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         expected_recipient_emails = set([user.email for user in expected_recipients])
         expected_recipient_ids = set([user.id for user in expected_recipients])
 
+        params = dict(
+            to=ujson.dumps([recipient_user.id]),
+            op='start',
+        )
+
         events = []  # type: List[Mapping[str, Any]]
-        with tornado_redirected_to_list(events):
-            result = self.api_post(
-                sender.email,
-                '/api/v1/typing',
-                {
-                    'to': ujson.dumps([recipient_user.id]),
-                    'op': 'start'
-                }
-            )
+        with queries_captured() as queries:
+            with tornado_redirected_to_list(events):
+                result = self.api_post(sender.email, '/api/v1/typing', params)
 
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
+        self.assertEqual(len(queries), 8)
 
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
@@ -156,12 +159,18 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         expected_recipient_emails = set([user.email for user in expected_recipients])
         expected_recipient_ids = set([user.id for user in expected_recipients])
         events = []  # type: List[Mapping[str, Any]]
-        with tornado_redirected_to_list(events):
-            result = self.api_post(sender.email, '/api/v1/typing',
-                                   {'to': ujson.dumps([user.id for user in recipient_users]),
-                                    'op': 'start'})
+
+        params = dict(
+            to=ujson.dumps([user.id for user in recipient_users]),
+            op='start',
+        )
+
+        with queries_captured() as queries:
+            with tornado_redirected_to_list(events):
+                result = self.api_post(sender.email, '/api/v1/typing', params)
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
+        self.assertEqual(len(queries), 15)
 
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
