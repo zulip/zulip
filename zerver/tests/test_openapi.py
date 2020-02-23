@@ -9,12 +9,12 @@ from unittest.mock import patch, MagicMock
 
 from django.http import HttpResponse
 
-import zerver.lib.openapi as openapi
+import zerver.openapi.openapi as openapi
 from zerver.lib.bugdown.api_code_examples import generate_curl_example, \
     render_curl_example, parse_language_and_options
 from zerver.lib.request import _REQ
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.openapi import (
+from zerver.openapi.openapi import (
     get_openapi_fixture, get_openapi_parameters,
     validate_against_openapi_schema, to_python_type,
     SchemaError, openapi_spec, get_openapi_paths
@@ -38,7 +38,7 @@ VARMAP = {
 
 class OpenAPIToolsTest(ZulipTestCase):
     """Make sure that the tools we use to handle our OpenAPI specification
-    (located in zerver/lib/openapi.py) work as expected.
+    (located in zerver/openapi/openapi.py) work as expected.
 
     These tools are mostly dedicated to fetching parts of the -already parsed-
     specification, and comparing them to objects returned by our REST API.
@@ -155,7 +155,7 @@ class OpenAPIToolsTest(ZulipTestCase):
         self.assertNotEqual(openapi_spec.last_update, 0)
 
         # Now verify calling it again doesn't call reload
-        with mock.patch('zerver.lib.openapi.openapi_spec.reload') as mock_reload:
+        with mock.patch('zerver.openapi.openapi.openapi_spec.reload') as mock_reload:
             get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD)
             self.assertFalse(mock_reload.called)
 
@@ -785,7 +785,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_default_examples(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_without_examples
         generated_curl_example = self.curl_example("/mark_stream_as_read", "POST")
@@ -799,7 +799,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_invalid_method(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_with_invalid_method
         with self.assertRaises(ValueError):
@@ -822,7 +822,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_object(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_object
         generated_curl_example = self.curl_example("/endpoint", "GET")
@@ -835,19 +835,19 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_object_without_example(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_object_without_example
         with self.assertRaises(ValueError):
             self.curl_example("/endpoint", "GET")
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_array_without_example(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_array_without_example
         with self.assertRaises(ValueError):
             self.curl_example("/endpoint", "GET")
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_param_in_path(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_param_in_path
         generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")

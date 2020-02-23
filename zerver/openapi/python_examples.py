@@ -6,7 +6,7 @@ import sys
 from functools import wraps
 
 from zerver.lib import mdiff
-from zerver.lib.openapi import validate_against_openapi_schema
+from zerver.openapi.openapi import validate_against_openapi_schema
 
 from zerver.models import get_realm, get_user
 
