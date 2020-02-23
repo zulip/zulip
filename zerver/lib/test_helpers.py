@@ -23,7 +23,6 @@ from zerver.tornado import event_queue
 from zerver.tornado.handlers import allocate_handler_id
 from zerver.worker import queue_processors
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-from zerver.views.auth import get_login_data
 
 from zerver.models import (
     get_realm,
@@ -35,6 +34,8 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+
+from zproject.backends import ExternalAuthResult, ExternalAuthDataDict
 
 if TYPE_CHECKING:
     # Avoid an import cycle; we only need these for type annotations.
@@ -445,10 +446,10 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
                 print("   %s" % (untested_pattern,))
             sys.exit(1)
 
-def load_subdomain_token(response: HttpResponse) -> Dict[str, Any]:
+def load_subdomain_token(response: HttpResponse) -> ExternalAuthDataDict:
     assert isinstance(response, HttpResponseRedirect)
     token = response.url.rsplit('/', 1)[1]
-    data = get_login_data(token, should_delete=False)
+    data = ExternalAuthResult(login_token=token, delete_stored_data=False).data_dict
     assert data is not None
     return data
 

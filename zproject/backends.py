@@ -16,7 +16,8 @@ import copy
 import logging
 import magic
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, \
+    cast
 from typing_extensions import TypedDict
 from zxcvbn import zxcvbn
 
@@ -24,7 +25,7 @@ from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, \
     _LDAPUser, ldap_error
 from decorator import decorator
 
-from django.contrib.auth import get_backends
+from django.contrib.auth import authenticate, get_backends
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -907,6 +908,92 @@ def external_auth_method(cls: Type[ExternalAuthMethod]) -> Type[ExternalAuthMeth
     EXTERNAL_AUTH_METHODS.append(cls)
     return cls
 
+# We want to be able to store this data in redis, so it has to be easy to serialize.
+# That's why we avoid having fields that could pose a problem for that.
+ExternalAuthDataDict = TypedDict('ExternalAuthDataDict', {
+    'subdomain': str,
+    'full_name': str,
+    'email': str,
+    'is_signup': bool,
+    'redirect_to': str,
+    'mobile_flow_otp': Optional[str],
+    'desktop_flow_otp': Optional[str],
+    'multiuse_object_key': str,
+    'full_name_validated': bool,
+}, total=False)
+
+class ExternalAuthResult:
+    LOGIN_KEY_PREFIX = "login_key_"
+    LOGIN_KEY_FORMAT = LOGIN_KEY_PREFIX + "{token}"
+    LOGIN_KEY_EXPIRATION_SECONDS = 15
+    LOGIN_TOKEN_LENGTH = UserProfile.API_KEY_LENGTH
+
+    def __init__(self, *, user_profile: Optional[UserProfile]=None,
+                 data_dict: ExternalAuthDataDict={},
+                 login_token: Optional[str]=None,
+                 delete_stored_data: bool=True) -> None:
+        if login_token is not None:
+            self.instantiate_with_token(login_token, delete_stored_data)
+            return
+        else:
+            self.data_dict = data_dict
+        self.user_profile = user_profile
+        if self.user_profile:
+            self._load_user_data_from_user_profile()
+
+    def copy_data_dict(self) -> ExternalAuthDataDict:
+        return self.data_dict.copy()
+
+    def store_data(self) -> str:
+        if self.user_profile:
+            self._load_user_data_from_user_profile()
+
+        key = put_dict_in_redis(redis_client, self.LOGIN_KEY_FORMAT, cast(Dict[str, Any], self.data_dict),
+                                expiration_seconds=self.LOGIN_KEY_EXPIRATION_SECONDS,
+                                token_length=self.LOGIN_TOKEN_LENGTH)
+        token = key.split(self.LOGIN_KEY_PREFIX, 1)[1]  # remove the prefix
+        return token
+
+    def _load_user_data_from_user_profile(self) -> None:
+        assert self.user_profile is not None
+        self.data_dict.update({
+            'full_name': self.user_profile.full_name,
+            'email': self.user_profile.delivery_email,
+            'subdomain': self.user_profile.realm.subdomain,
+        })
+
+        # Don't allow signup flow if we found an existing UserProfile account.
+        #
+        # TODO: It feels fragile to have this check here; should it be somewhere else?
+        if not self.user_profile.is_mirror_dummy:
+            self.data_dict['is_signup'] = False
+
+    def instantiate_with_token(self, token: str, delete_stored_data: bool=True) -> None:
+        key = self.LOGIN_KEY_FORMAT.format(token=token)
+        data = get_dict_from_redis(redis_client, self.LOGIN_KEY_FORMAT, key)
+        if data is None or None in [data.get("email"), data.get("subdomain")]:
+            raise self.InvalidTokenError
+
+        if delete_stored_data:
+            redis_client.delete(key)
+
+        self.data_dict = cast(ExternalAuthDataDict, data)
+
+        # Here we refetch the UserProfile object (if any) for this
+        # ExternalAuthResult.  Using authenticate() will re-check for
+        # (unlikely) races like the realm or user having been deactivated
+        # between generating this ExternalAuthResult and accessing it.
+        #
+        # In theory, we should return_data here so the caller can do
+        # more customized error messages for those unlikely races, but
+        # it's likely not worth implementing.
+        realm = get_realm(data['subdomain'])
+        self.user_profile = authenticate(username=data['email'], realm=realm,
+                                         use_dummy_backend=True)
+
+    class InvalidTokenError(Exception):
+        pass
+
 @external_auth_method
 class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
     """Authentication backend that reads the Apache REMOTE_USER variable.
@@ -1178,14 +1265,20 @@ def social_auth_finish(backend: Any,
     # The next step is to call login_or_register_remote_user, but
     # there are two code paths here because of an optimization to save
     # a redirect on mobile and desktop.
+    data_dict = ExternalAuthDataDict(
+        full_name=full_name,
+        email=email_address,
+        subdomain=realm.subdomain,
+        is_signup=is_signup,
+        redirect_to=redirect_to,
+        multiuse_object_key=multiuse_object_key,
+        full_name_validated=full_name_validated,
+        mobile_flow_otp=mobile_flow_otp,
+        desktop_flow_otp=desktop_flow_otp
+    )
+    result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
 
     if mobile_flow_otp or desktop_flow_otp:
-        extra_kwargs = {}
-        if mobile_flow_otp:
-            extra_kwargs["mobile_flow_otp"] = mobile_flow_otp
-        elif desktop_flow_otp:
-            extra_kwargs["desktop_flow_otp"] = desktop_flow_otp
-
         if user_profile is not None and not user_profile.is_mirror_dummy:
             # For mobile and desktop app authentication, login_or_register_remote_user
             # will redirect to a special zulip:// URL that is handled by
@@ -1193,14 +1286,7 @@ def social_auth_finish(backend: Any,
             # redirect directly from here, saving a round trip over what
             # we need to do to create session cookies on the right domain
             # in the web login flow (below).
-            return login_or_register_remote_user(
-                strategy.request, email_address,
-                user_profile, full_name,
-                is_signup=is_signup,
-                redirect_to=redirect_to,
-                full_name_validated=full_name_validated,
-                **extra_kwargs
-            )
+            return login_or_register_remote_user(strategy.request, result)
         else:
             # The user needs to register, so we need to go the realm's
             # subdomain for that.
@@ -1219,15 +1305,7 @@ def social_auth_finish(backend: Any,
     # cryptographically signed token) to a route on
     # subdomain.zulip.example.com that will verify the signature and
     # then call login_or_register_remote_user.
-    return redirect_and_log_into_subdomain(
-        realm, full_name, email_address,
-        is_signup=is_signup,
-        redirect_to=redirect_to,
-        multiuse_object_key=multiuse_object_key,
-        full_name_validated=full_name_validated,
-        mobile_flow_otp=mobile_flow_otp,
-        desktop_flow_otp=desktop_flow_otp
-    )
+    return redirect_and_log_into_subdomain(result)
 
 class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
     # Whether we expect that the full_name value obtained by the
