@@ -67,6 +67,8 @@ from zerver.lib.test_classes import (
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.context_processors import common_context
 
+from zproject.backends import ExternalAuthResult, ExternalAuthDataDict
+
 import re
 import smtplib
 import time
@@ -78,47 +80,44 @@ import urllib
 import pytz
 
 class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
-    def test_cookie_data(self) -> None:
-        realm = Realm.objects.all().first()
-        name = 'Hamlet'
-        email = self.example_email("hamlet")
-        response = redirect_and_log_into_subdomain(realm, name, email)
+    def test_data(self) -> None:
+        realm = get_realm("zulip")
+        user_profile = self.example_user("hamlet")
+        name = user_profile.full_name
+        email = user_profile.delivery_email
+        response = redirect_and_log_into_subdomain(ExternalAuthResult(user_profile=user_profile))
         data = load_subdomain_token(response)
-        self.assertDictEqual(data, {'name': name, 'next': '',
+        self.assertDictEqual(data, {'full_name': name,
                                     'email': email,
-                                    'full_name_validated': False,
                                     'subdomain': realm.subdomain,
-                                    'is_signup': False,
-                                    'desktop_flow_otp': None,
-                                    'mobile_flow_otp': None,
-                                    'multiuse_object_key': ''})
+                                    'is_signup': False})
 
-        response = redirect_and_log_into_subdomain(realm, name, email,
-                                                   is_signup=True,
-                                                   multiuse_object_key='key')
+        data_dict = ExternalAuthDataDict(is_signup=True, multiuse_object_key='key')
+        response = redirect_and_log_into_subdomain(ExternalAuthResult(user_profile=user_profile,
+                                                                      data_dict=data_dict))
         data = load_subdomain_token(response)
-        self.assertDictEqual(data, {'name': name, 'next': '',
+        self.assertDictEqual(data, {'full_name': name,
                                     'email': email,
-                                    'full_name_validated': False,
                                     'subdomain': realm.subdomain,
-                                    'is_signup': True,
-                                    'desktop_flow_otp': None,
-                                    'mobile_flow_otp': None,
+                                    # the email has an account at the subdomain,
+                                    # so is_signup get overridden to False:
+                                    'is_signup': False,
                                     'multiuse_object_key': 'key'
                                     })
 
-        response = redirect_and_log_into_subdomain(realm, name, email,
-                                                   is_signup=True,
-                                                   full_name_validated=True,
-                                                   multiuse_object_key='key')
+        data_dict = ExternalAuthDataDict(email=self.nonreg_email("alice"),
+                                         full_name="Alice",
+                                         subdomain=realm.subdomain,
+                                         is_signup=True,
+                                         full_name_validated=True,
+                                         multiuse_object_key='key')
+        response = redirect_and_log_into_subdomain(ExternalAuthResult(data_dict=data_dict))
         data = load_subdomain_token(response)
-        self.assertDictEqual(data, {'name': name, 'next': '',
-                                    'email': email,
+        self.assertDictEqual(data, {'full_name': "Alice",
+                                    'email': self.nonreg_email("alice"),
                                     'full_name_validated': True,
                                     'subdomain': realm.subdomain,
                                     'is_signup': True,
-                                    'desktop_flow_otp': None,
-                                    'mobile_flow_otp': None,
                                     'multiuse_object_key': 'key'
                                     })
 

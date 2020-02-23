@@ -37,7 +37,7 @@ from zerver.views.auth import create_preregistration_user, redirect_and_log_into
 
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, \
     ZulipLDAPExceptionNoMatchingLDAPUser, email_auth_enabled, ZulipLDAPAuthBackend, \
-    email_belongs_to_ldap, any_social_backend_enabled
+    email_belongs_to_ldap, any_social_backend_enabled, ExternalAuthResult
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
     validate_key, create_confirmation_link, get_object_from_key, \
@@ -343,7 +343,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # Because for realm creation, registration happens on the
             # root domain, we need to log them into the subdomain for
             # their new realm.
-            return redirect_and_log_into_subdomain(realm, full_name, email)
+            return redirect_and_log_into_subdomain(ExternalAuthResult(user_profile=user_profile))
 
         # This dummy_backend check below confirms the user is
         # authenticating to the correct subdomain.
