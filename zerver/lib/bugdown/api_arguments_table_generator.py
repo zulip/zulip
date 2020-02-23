@@ -5,7 +5,7 @@ import ujson
 from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from zerver.lib.openapi import get_openapi_parameters
+from zerver.openapi.openapi import get_openapi_parameters
 from typing import Any, Dict, Optional, List
 import markdown
 
