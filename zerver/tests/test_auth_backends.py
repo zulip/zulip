@@ -990,7 +990,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                   email: str, name: str, expected_final_name: str,
                                   skip_registration_form: bool,
                                   mobile_flow_otp: Optional[str]=None,
-                                  desktop_flow_otp: Optional[str]=None) -> None:
+                                  desktop_flow_otp: Optional[str]=None,
+                                  expect_confirm_registration_page: bool=False,) -> None:
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], email)
         self.assertEqual(data['name'], name)
@@ -1003,11 +1004,19 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
         result = self.client_get(result.url)
 
-        self.assertEqual(result.status_code, 302)
+        if expect_confirm_registration_page:
+            self.assertEqual(result.status_code, 200)
+        else:
+            self.assertEqual(result.status_code, 302)
         confirmation = Confirmation.objects.all().last()
         confirmation_key = confirmation.confirmation_key
-        self.assertIn('do_confirm/' + confirmation_key, result.url)
-        result = self.client_get(result.url)
+        if expect_confirm_registration_page:
+            self.assert_in_success_response(['do_confirm/' + confirmation_key], result)
+            do_confirm_url = '/accounts/do_confirm/' + confirmation_key
+        else:
+            self.assertIn('do_confirm/' + confirmation_key, result.url)
+            do_confirm_url = result.url
+        result = self.client_get(do_confirm_url, name = name)
         self.assert_in_response('action="/accounts/register/"', result)
         data = {"from_confirmation": "1",
                 "key": confirmation_key}
@@ -1792,6 +1801,32 @@ class GitHubAuthBackendTest(SocialAuthBase):
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
                                  parsed_url.path)
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+    def test_github_oauth2_login_no_account_exists(self) -> None:
+        # In the login flow, if the user has multiple verified emails,
+        # none of which are associated with an existing account, the
+        # choose email screen should be shown (which will lead to a
+        # "continue to registration" choice).
+        account_data_dict = dict(email="not-hamlet@zulip.com", name="Not Hamlet")
+        email_data = [
+            dict(email=account_data_dict["email"],
+                 verified=True),
+            dict(email="notprimary@zulip.com",
+                 verified=True),
+            dict(email="verifiedemail@zulip.com",
+                 verified=True),
+        ]
+        result = self.social_auth_test(account_data_dict,
+                                       subdomain='zulip',
+                                       email_data=email_data,
+                                       expect_choose_email_screen=True)
+        email = account_data_dict['email']
+        name = account_data_dict['name']
+        subdomain = 'zulip'
+        realm = get_realm("zulip")
+        self.stage_two_of_registration(result, realm, subdomain, email, name, name,
+                                       expect_confirm_registration_page=True,
+                                       skip_registration_form=False)
 
     def test_github_oauth2_signup_choose_existing_account(self) -> None:
         # In the sign up flow, if the user has chosen an email of an
