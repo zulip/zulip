@@ -1,13 +1,12 @@
 import logging
 import smtplib
 import urllib
-from typing import List, Dict, Optional, Tuple, Set, Any
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -615,21 +614,8 @@ def find_account(request: HttpRequest) -> HttpResponse:
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
             emails = form.cleaned_data['emails']
-<<<<<<< HEAD
-
-            # Django doesn't support __iexact__in lookup with EmailField, so we have
-            # to use Qs to get around that without needing to do multiple queries.
-            emails_q = Q()
-            for email in emails:
-                emails_q |= Q(delivery_email__iexact=email)
-
-            for user in UserProfile.objects.filter(
-                    emails_q, is_active=True, is_bot=False,
-                    realm__deactivated=False):
-=======
             good_users, bot_users = get_users(emails)
             for user in good_users:
->>>>>>> find-account: Add feature to send email(s) to non-user(s).
                 context = common_context(user)
                 context.update({
                     'email': user.delivery_email,
@@ -639,8 +625,11 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 if user.delivery_email not in emails_sent:
                     emails_sent.add(user.delivery_email)
             emails_pending = set(emails).difference(emails_sent).difference(bot_users)
+            pending_context = ({
+                'external_host': settings.EXTERNAL_HOST.split(":")[0],
+            })
             for email in emails_pending:
-                send_email('zerver/emails/find_team', to_emails=[email], context=None,
+                send_email('zerver/emails/find_team', to_emails=[email], context=pending_context,
                            from_address=FromAddress.SUPPORT)
     else:
         form = FindMyTeamForm()

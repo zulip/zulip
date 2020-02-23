@@ -1,3 +1,4 @@
+{% if realm_name %}
 {% trans -%}
 Hi {{ user_name }},
 {%- endtrans %}
@@ -16,3 +17,16 @@ You can log in to your Zulip organization, {{ realm_name }}, at the following li
 
 
 {{ _("Thanks for using Zulip!") }}
+{% else %}
+{% trans -%}
+Hi,
+{%- endtrans %}
+
+
+{% trans %}Seems like your email address isn't registered with any Zulip organization.{% endtrans %}
+
+
+{% trans %}This email address is not associated with any active Zulip account hosed by {{ external_host }}.{% endtrans %}
+
+
+{% endif%}
