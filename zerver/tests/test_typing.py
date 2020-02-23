@@ -14,7 +14,12 @@ from zerver.lib.test_helpers import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.models import get_display_recipient, get_system_bot
+from zerver.models import (
+    Huddle,
+    get_display_recipient,
+    get_huddle_hash,
+    get_system_bot,
+)
 
 class TypingNotificationOperatorTest(ZulipTestCase):
     def test_missing_parameter(self) -> None:
@@ -158,6 +163,10 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         expected_recipients = set(recipient_users) | set([sender])
         expected_recipient_emails = set([user.email for user in expected_recipients])
         expected_recipient_ids = set([user.id for user in expected_recipients])
+
+        huddle_hash = get_huddle_hash(list(expected_recipient_ids))
+        self.assertFalse(Huddle.objects.filter(huddle_hash=huddle_hash).exists())
+
         events = []  # type: List[Mapping[str, Any]]
 
         params = dict(
@@ -171,6 +180,10 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
         self.assertEqual(len(queries), 15)
+
+        # TODO: Fix this somewhat evil side effect of sending
+        #       typing indicators.
+        self.assertTrue(Huddle.objects.filter(huddle_hash=huddle_hash).exists())
 
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
