@@ -100,17 +100,27 @@ The first line of the commit message is the **summary**. The summary:
 
 ### Good summaries:
 
-Notice how the first example starts with a capital letter "**I**", ends with a
-period "**.**", and the name of the subsystem starts with a lowerecase letter
-"**p**" followed by a colon "**:**" and a single space **" "** after the colon.
+Below is an example of a good commit summary line.  It starts with the
+prefix "provision:", using lowercase "**p**".  Next, "Improve performance of
+install npm." starts with a capital "**I**", uses imperative tense,
+and ends with a period.
 
 > *provision: Improve performance of installing npm.*
 
-> *zjsunit: Fix running stream_data and node tests individually.*
+Here are some more positive examples:
 
-> *gather_subscriptions: Fix exception handling bad input.*
+> channel: Discard all HTTP responses while reloading.
 
-> *integrations: Add GitLab integration.*
+> integrations: Add GitLab integration.
+
+> typeahead: Convert to ES6 module.
+
+> tests: Compile Handlebars templates with source maps.
+
+> blueslip: Add feature to time common operations.
+
+> gather_subscriptions: Fix exception handling bad input.
+
 
 Compare "*gather_subscriptions: Fix exception handling bad input.*" with:
 
