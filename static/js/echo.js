@@ -155,6 +155,14 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
     }
 
     if (!current_msg_list.fetch_status.has_found_newest()) {
+        // If the current message list doesn't yet have the latest
+        // messages before the one we just sent, local echo would make
+        // it appear as though there were no messages between what we
+        // have and the new message we just sent, when in fact we're
+        // in the process of fetching those from the server.  In this
+        // case, it's correct to skip local echo; we'll get the
+        // message we just sent placed appropriately when we get it
+        // from either server_events or message_fetch.
         blueslip.info("Skipping local echo until newest messages get loaded.");
         return;
     }
