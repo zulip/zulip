@@ -178,8 +178,7 @@ button {
         }
     }
 
-    &.black-disabled {
-        cursor: default;
+    &.black-current-value {
         color: hsl(0, 0%, 20%);
         background-color: transparent;
         border-color: hsl(0, 0%, 53%);
@@ -2657,6 +2656,7 @@ nav ul li.active::after {
 
 .pricing-model .pricing-container .text-content .standard-price-box {
     display: flex;
+    height: 55px;
 }
 
 .pricing-model .pricing-container .text-content .price .price-cents {

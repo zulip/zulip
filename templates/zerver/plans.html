@@ -47,9 +47,9 @@
                                     </a>
                                     {% elif realm_plan_type == 2 %}
                                     <div class="pricing-details"></div>
-                                    <button class="black-disabled" type="button">
+                                    <a href='/upgrade' class="button black-current-value" type="button">
                                         Current plan
-                                    </button>
+                                    </a>
                                     {% endif %}
                                 </div>
                             </div>
@@ -82,9 +82,9 @@
                                         </div>
                                     </div>
                                     {% if realm_plan_type in [3, 4] %}
-                                    <button class="black-disabled" type="button">
+                                    <a href='/upgrade' class="button black-current-value" type="button">
                                         Current plan
-                                    </button>
+                                    </a>
                                     {% elif realm_plan_type == 2 %}
                                     <a href="/upgrade" class="button green">
                                         Buy Standard
