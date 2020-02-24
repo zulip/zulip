@@ -656,6 +656,9 @@ class ExtractTest(TestCase):
         with self.assertRaisesRegex(ValueError, 'Invalid data type for stream'):
             extract_stream_indicator('{}')
 
+        with self.assertRaisesRegex(ValueError, 'Invalid data type for stream'):
+            extract_stream_indicator('[{}]')
+
         with self.assertRaisesRegex(ValueError, 'Expected exactly one stream'):
             extract_stream_indicator('[1,2,"general"]')
 

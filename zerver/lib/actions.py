@@ -2050,7 +2050,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
         data = data[0]
 
     if isinstance(data, str):
-        # We had a JSON-encoded stream.
+        # We had a JSON-encoded stream name.
         return data
 
     if isinstance(data, int):
