@@ -346,7 +346,7 @@ exports.initialize_everything = function (params) {
     hashchange.initialize();
     pointer.initialize();
     unread_ui.initialize();
-    presence.initialize();
+    presence.initialize(params);
     activity.initialize();
     emoji_picker.initialize();
     compose_fade.initialize();
