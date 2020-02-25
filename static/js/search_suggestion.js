@@ -1,3 +1,5 @@
+const settings_data = require("./settings_data");
+
 exports.max_num_of_search_results = 12;
 
 function stream_matches_query(stream_name, q) {
@@ -8,7 +10,7 @@ function make_person_highlighter(query) {
     const hilite = typeahead_helper.make_query_highlighter(query);
 
     return function (person) {
-        if (settings_org.show_email()) {
+        if (settings_data.show_email()) {
             return hilite(person.full_name) + " &lt;" + hilite(person.email) + "&gt;";
         }
         return hilite(person.full_name);

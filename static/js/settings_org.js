@@ -73,18 +73,6 @@ exports.get_organization_settings_options = () => {
     return options;
 };
 
-exports.show_email = function () {
-    // TODO: Extend this when we add support for admins_and_members above.
-    if (page_params.realm_email_address_visibility ===
-        settings_config.email_address_visibility_values.everyone.code) {
-        return true;
-    }
-    if (page_params.realm_email_address_visibility ===
-        settings_config.email_address_visibility_values.admins_only.code) {
-        return page_params.is_admin;
-    }
-};
-
 exports.get_realm_time_limits_in_minutes = function (property) {
     let val = (page_params[property] / 60).toFixed(1);
     if (parseFloat(val, 10) === parseInt(val, 10)) {
