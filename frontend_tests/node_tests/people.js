@@ -877,7 +877,9 @@ run_test('track_duplicate_full_names', () => {
 run_test('initialize', () => {
     people.init();
 
-    global.page_params.realm_non_active_users = [
+    const params = {};
+
+    params.realm_non_active_users = [
         {
             email: 'retiree@example.com',
             user_id: 15,
@@ -885,23 +887,23 @@ run_test('initialize', () => {
         },
     ];
 
-    global.page_params.realm_users = [
+    params.realm_users = [
         {
             email: 'alice@example.com',
             user_id: 16,
             full_name: 'Alice',
         },
     ];
-    global.page_params.cross_realm_bots = [
+    params.cross_realm_bots = [
         {
             email: 'bot@example.com',
             user_id: 17,
             full_name: 'Test Bot',
         },
     ];
-    global.page_params.user_id = 42;
 
-    people.initialize();
+    const my_user_id = 42;
+    people.initialize(my_user_id, params);
 
     assert.equal(people.get_active_user_for_email('alice@example.com').full_name, 'Alice');
     assert.equal(people.is_active_user_for_popover(17), true);
