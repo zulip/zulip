@@ -32,7 +32,8 @@ exports.build_page = function () {
         server_inline_image_preview: page_params.server_inline_image_preview,
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
         server_inline_url_embed_preview: page_params.server_inline_url_embed_preview,
-        realm_default_twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
+        realm_default_twenty_four_hour_time_values:
+            settings_config.get_twenty_four_hour_time_values(),
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_create_stream_policy: page_params.realm_create_stream_policy,
         realm_invite_to_stream_policy: page_params.realm_invite_to_stream_policy,
@@ -80,10 +81,14 @@ exports.build_page = function () {
     };
 
     options.admin_settings_label = admin_settings_label;
-    options.msg_edit_limit_dropdown_values = settings_config.msg_edit_limit_dropdown_values;
-    options.msg_delete_limit_dropdown_values = settings_config.msg_delete_limit_dropdown_values;
+    options.msg_edit_limit_dropdown_values =
+        settings_config.get_msg_edit_limit_dropdown_values();
+    options.msg_delete_limit_dropdown_values =
+        settings_config.get_msg_delete_limit_dropdown_values();
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
-    options.email_address_visibility_values = settings_config.email_address_visibility_values;
+    options.email_address_visibility_values =
+        settings_config.get_email_address_visibility_values();
+
     Object.assign(options, settings_org.get_organization_settings_options());
 
     if (options.realm_logo_source !== 'D' && options.realm_night_logo_source === 'D') {

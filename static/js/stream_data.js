@@ -116,10 +116,10 @@ exports.clear_subscriptions();
 
 exports.set_filter_out_inactives = function () {
     if (page_params.demote_inactive_streams ===
-            settings_config.demote_inactive_streams_values.automatic.code) {
+            settings_config.get_demote_inactive_streams_values().automatic.code) {
         filter_out_inactives = exports.num_subscribed_subs() >= 30;
     } else if (page_params.demote_inactive_streams ===
-            settings_config.demote_inactive_streams_values.always.code) {
+            settings_config.get_demote_inactive_streams_values().always.code) {
         filter_out_inactives = true;
     } else {
         filter_out_inactives = false;

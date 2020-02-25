@@ -12,7 +12,7 @@
     API documentation) without a ton of copying.
 */
 
-exports.demote_inactive_streams_values = {
+exports.get_demote_inactive_streams_values = () => ({
     automatic: {
         code: 1,
         description: i18n.t("Automatic"),
@@ -25,9 +25,9 @@ exports.demote_inactive_streams_values = {
         code: 3,
         description: i18n.t("Never"),
     },
-};
+});
 
-exports.twenty_four_hour_time_values = {
+exports.get_twenty_four_hour_time_values = () => ({
     twenty_four_hour_clock: {
         value: true,
         description: i18n.t("24-hour clock (17:00)"),
@@ -36,7 +36,7 @@ exports.twenty_four_hour_time_values = {
         value: false,
         description: i18n.t("12-hour clock (5:00 PM)"),
     },
-};
+});
 
 exports.get_all_display_settings = () => ({
     settings: {
@@ -55,7 +55,7 @@ exports.get_all_display_settings = () => ({
     },
 });
 
-exports.email_address_visibility_values = {
+exports.get_email_address_visibility_values = () => ({
     everyone: {
         code: 1,
         description: i18n.t("Admins, members, and guests"),
@@ -69,9 +69,9 @@ exports.email_address_visibility_values = {
         code: 3,
         description: i18n.t("Admins only"),
     },
-};
+});
 
-exports.create_stream_policy_values = {
+const get_stream_policy_values = () => ({
     by_admins_only: {
         order: 1,
         code: 2,
@@ -87,11 +87,12 @@ exports.create_stream_policy_values = {
         code: 1,
         description: i18n.t("Admins and members"),
     },
-};
+});
 
-exports.invite_to_stream_policy_values = exports.create_stream_policy_values;
+exports.get_create_stream_policy_values = get_stream_policy_values;
+exports.get_invite_to_stream_policy_values = get_stream_policy_values;
 
-exports.user_group_edit_policy_values = {
+exports.get_user_group_edit_policy_values = () => ({
     by_admins_only: {
         order: 1,
         code: 2,
@@ -102,9 +103,9 @@ exports.user_group_edit_policy_values = {
         code: 1,
         description: i18n.t("Admins and members"),
     },
-};
+});
 
-exports.private_message_policy_values = {
+exports.get_private_message_policy_values = () => ({
     by_anyone: {
         order: 1,
         code: 1,
@@ -115,9 +116,9 @@ exports.private_message_policy_values = {
         code: 2,
         description: i18n.t("Private messages disabled"),
     },
-};
+});
 
-const time_limit_dropdown_values = new Map([
+const get_time_limit_dropdown_values = () => new Map([
     ["any_time", {
         text: i18n.t("Any time"),
         seconds: 0,
@@ -149,5 +150,6 @@ const time_limit_dropdown_values = new Map([
         text: i18n.t("Up to N minutes after posting"),
     }],
 ]);
-exports.msg_edit_limit_dropdown_values = time_limit_dropdown_values;
-exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;
+
+exports.get_msg_edit_limit_dropdown_values = get_time_limit_dropdown_values;
+exports.get_msg_delete_limit_dropdown_values = get_time_limit_dropdown_values;

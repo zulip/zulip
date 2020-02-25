@@ -63,24 +63,24 @@ exports.get_sorted_options_list = function (option_values_object) {
 exports.get_organization_settings_options = () => {
     const options = {};
     options.create_stream_policy_values = exports.get_sorted_options_list(
-        settings_config.create_stream_policy_values);
+        settings_config.get_create_stream_policy_values());
     options.invite_to_stream_policy_values = exports.get_sorted_options_list(
-        settings_config.invite_to_stream_policy_values);
+        settings_config.get_invite_to_stream_policy_values());
     options.user_group_edit_policy_values = exports.get_sorted_options_list(
-        settings_config.user_group_edit_policy_values);
+        settings_config.get_user_group_edit_policy_values());
     options.private_message_policy_values = exports.get_sorted_options_list(
-        settings_config.private_message_policy_values);
+        settings_config.get_private_message_policy_values());
     return options;
 };
 
 exports.show_email = function () {
     // TODO: Extend this when we add support for admins_and_members above.
     if (page_params.realm_email_address_visibility ===
-        settings_config.email_address_visibility_values.everyone.code) {
+        settings_config.get_email_address_visibility_values().everyone.code) {
         return true;
     }
     if (page_params.realm_email_address_visibility ===
-        settings_config.email_address_visibility_values.admins_only.code) {
+        settings_config.get_email_address_visibility_values().admins_only.code) {
         return page_params.is_admin;
     }
 };
@@ -123,7 +123,7 @@ function get_property_value(property_name) {
         if (!page_params.realm_allow_message_editing) {
             return "never";
         }
-        for (const [value, elem] of settings_config.msg_edit_limit_dropdown_values) {
+        for (const [value, elem] of settings_config.get_msg_edit_limit_dropdown_values()) {
             if (elem.seconds === page_params.realm_message_content_edit_limit_seconds) {
                 return value;
             }
@@ -135,7 +135,7 @@ function get_property_value(property_name) {
         if (!page_params.realm_allow_message_deleting) {
             return "never";
         }
-        for (const [value, elem] of settings_config.msg_delete_limit_dropdown_values) {
+        for (const [value, elem] of settings_config.get_msg_delete_limit_dropdown_values()) {
             if (elem.seconds === page_params.realm_message_content_delete_limit_seconds) {
                 return value;
             }
@@ -679,7 +679,6 @@ exports.build_page = function () {
 
     function get_complete_data_for_subsection(subsection) {
         let data = {};
-
         if (subsection === 'msg_editing') {
             const edit_limit_setting_value = $("#id_realm_msg_edit_limit_setting").val();
             if (edit_limit_setting_value === 'never') {
@@ -691,7 +690,7 @@ exports.build_page = function () {
             } else {
                 data.allow_message_editing = true;
                 data.message_content_edit_limit_seconds =
-                    settings_config.msg_edit_limit_dropdown_values.get(
+                    settings_config.get_msg_edit_limit_dropdown_values().get(
                         edit_limit_setting_value
                     ).seconds;
             }
@@ -705,7 +704,7 @@ exports.build_page = function () {
             } else {
                 data.allow_message_deleting = true;
                 data.message_content_delete_limit_seconds =
-                    settings_config.msg_delete_limit_dropdown_values.get(
+                    settings_config.get_msg_delete_limit_dropdown_values().get(
                         delete_limit_setting_value
                     ).seconds;
             }
