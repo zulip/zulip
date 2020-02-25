@@ -2,15 +2,14 @@ const _settings_bots = {
     render_bots: () => {},
 };
 
-const _page_params = {
+const bot_data_params = {
     realm_bots: [{email: 'bot0@zulip.com', user_id: 42, full_name: 'Bot 0',
                   services: []},
                  {email: 'outgoingwebhook@zulip.com', user_id: 314, full_name: "Outgoing webhook",
                   services: [{base_url: "http://foo.com", interface: 1}]}],
-    is_admin: false,
 };
 
-set_global('page_params', _page_params);
+set_global('page_params', {is_admin: false});
 set_global('settings_bots', _settings_bots);
 
 zrequire('people');
@@ -24,7 +23,7 @@ global.people.add({
 
 global.people.initialize_current_user(42);
 
-bot_data.initialize();
+bot_data.initialize(bot_data_params);
 // Our startup logic should have added Bot 0 from page_params.
 assert.equal(bot_data.get(42).full_name, 'Bot 0');
 assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');

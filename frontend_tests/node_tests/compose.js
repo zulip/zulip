@@ -276,11 +276,16 @@ run_test('get_invalid_recipient_emails', () => {
         user_id: 124,
         full_name: 'Welcome Bot',
     };
-    page_params.realm_users = [];
-    page_params.realm_non_active_users = [];
-    page_params.cross_realm_bots = [welcome_bot];
+
     page_params.user_id = 30;
-    people.initialize();
+
+    const params = {};
+    params.realm_users = [];
+    params.realm_non_active_users = [];
+    params.cross_realm_bots = [welcome_bot];
+
+    people.initialize(page_params.user_id, params);
+
     compose_state.private_message_recipient('welcome-bot@example.com');
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
