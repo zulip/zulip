@@ -333,9 +333,16 @@ exports.narrowed_to_search = function () {
     return current_filter !== undefined && current_filter.is_search();
 };
 
+exports.narrowed_to_starred = function () {
+    if (current_filter === undefined) {
+        return false;
+    }
+    return current_filter.has_operand("is", "starred");
+};
+
 exports.muting_enabled = function () {
     return !exports.narrowed_to_topic() && !exports.narrowed_to_search() &&
-            !exports.narrowed_to_pms();
+            !exports.narrowed_to_pms() && !exports.narrowed_to_starred();
 };
 
 exports.is_for_stream_id = function (stream_id) {
