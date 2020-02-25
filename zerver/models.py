@@ -457,9 +457,7 @@ class Realm(models.Model):
 
     @property
     def max_invites(self) -> int:
-        if self._max_invites is None:
-            return settings.INVITES_DEFAULT_REALM_DAILY_MAX
-        return self._max_invites
+        return self._max_invites or settings.INVITES_DEFAULT_REALM_DAILY_MAX
 
     @max_invites.setter
     def max_invites(self, value: int) -> None:
