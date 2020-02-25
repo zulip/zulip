@@ -245,7 +245,7 @@ function get_alias_to_be_used(message_id, emoji_name) {
             const codepoint = emoji_codes.name_to_codepoint[emoji_name];
             aliases = emoji.default_emoji_aliases.get(codepoint);
         } else {
-            blueslip.error("Invalid emoji name.");
+            blueslip.error("Invalid emoji name: " + emoji_name);
             return;
         }
     }
