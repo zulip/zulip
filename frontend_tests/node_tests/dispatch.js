@@ -87,6 +87,7 @@ zrequire('message_store');
 zrequire('people');
 zrequire('starred_messages');
 zrequire('user_status');
+zrequire('overlays');
 
 zrequire('server_events_dispatch');
 
