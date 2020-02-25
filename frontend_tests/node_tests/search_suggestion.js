@@ -7,6 +7,10 @@ set_global('message_store', {
 });
 
 
+const settings_config = zrequire('settings_config');
+page_params.realm_email_address_visibility =
+    settings_config.email_address_visibility_values.admins_only.code;
+
 zrequire('typeahead_helper');
 set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');
@@ -35,10 +39,8 @@ function init() {
 }
 init();
 
+page_params.is_admin = true;
 set_global('narrow', {});
-set_global('settings_org', {
-    show_email: () => true,
-});
 
 topic_data.reset();
 
@@ -1071,7 +1073,7 @@ run_test('people_suggestion (Admin only email visibility)', () => {
     only */
     people_suggestion_setup();
     const query = 'te';
-    settings_org.show_email = () => false;
+    page_params.is_admin = false;
     const suggestions = get_suggestions('', query);
     const expected = [
         "te",
