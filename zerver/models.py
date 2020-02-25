@@ -462,7 +462,7 @@ class Realm(models.Model):
         return self._max_invites
 
     @max_invites.setter
-    def max_invites(self, value: int) -> None:
+    def max_invites(self, value: Optional[int]) -> None:
         self._max_invites = value
 
     def upload_quota_bytes(self) -> Optional[int]:
