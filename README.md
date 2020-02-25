@@ -29,7 +29,7 @@ You might be interested in:
 
 * **Contributing code**. Check out our
   [guide for new contributors](https://zulip.readthedocs.io/en/latest/overview/contributing.html)
-  to get started. Zulip prides itself on maintaining a clean and
+  to get started.  Zulip prides itself on maintaining a clean and
   well-tested codebase, and a stock of hundreds of
   [beginner-friendly issues][beginner-friendly].
 
@@ -61,18 +61,13 @@ You might be interested in:
   experimental [Docker image](https://zulip.readthedocs.io/en/latest/production/deployment.html#zulip-in-docker).
   Commercial support is available; see <https://zulipchat.com/plans> for details.
 
-* **Using Zulip without setting up a server**. <https://zulipchat.com> offers
-  free and commercial hosting.
+* **Using Zulip without setting up a server**. <https://zulipchat.com>
+  offers free and commercial hosting, including providing our paid
+  plan for free to fellow open source projects.
 
-* **Applying for a Zulip internship**. Zulip runs internship programs with
-  [Outreachy](https://www.outreachy.org/),
-  [Google Summer of Code](https://developers.google.com/open-source/gsoc/),
-  and the
-  [MIT Externship program](https://alum.mit.edu/students/NetworkwithAlumni/ExternshipProgram). Zulip
-  also participates in
-  [Google Code-In](https://developers.google.com/open-source/gci/). More
-  information is available
-  [here](https://zulip.readthedocs.io/en/latest/overview/contributing.html#internship-programs).
+* **Participating in [outreach
+  programs](https://zulip.readthedocs.io/en/latest/overview/contributing.html#outreach-programs)**
+  like Google Summer of Code.
 
 You may also be interested in reading our [blog](http://blog.zulip.org/) or
 following us on [twitter](https://twitter.com/zulip).
