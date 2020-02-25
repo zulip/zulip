@@ -3471,7 +3471,11 @@ def do_change_plan_type(realm: Realm, plan_type: int) -> None:
                                  realm=realm, event_time=timezone_now(),
                                  extra_data={'old_value': old_value, 'new_value': plan_type})
 
-    if plan_type == Realm.STANDARD:
+    if plan_type == Realm.SELF_HOSTED:
+        realm.max_invites = None  # type: ignore # https://github.com/python/mypy/issues/3004
+        realm.message_visibility_limit = None
+        realm.upload_quota_gb = None
+    elif plan_type == Realm.STANDARD:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
