@@ -823,7 +823,7 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.bot-owner-name', function (e) {
-        const user_id = $(e.target).attr('data-bot-owner-id');
+        const user_id = parseInt($(e.target).attr('data-bot-owner-id'), 10);
         const user = people.get_by_user_id(user_id);
         exports.show_user_profile(user);
     });
