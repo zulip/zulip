@@ -170,9 +170,8 @@ labels.
 
 ## What makes a great Zulip contributor?
 
-Zulip runs a lot of [internship programs](#internship-programs), so we have
-a lot of experience with new contributors. In our experience, these are the
-best predictors of success:
+Zulip has a lot of experience working with new contributors.  In our
+experience, these are the best predictors of success:
 
 * Posting good questions. This generally means explaining your current
   understanding, saying what you've done or tried so far, and including
@@ -192,8 +191,8 @@ best predictors of success:
   able to address things within a few days.
 * Being helpful and friendly on chat.zulip.org.
 
-These are also the main criteria we use to select interns for all of our
-internship programs.
+These are also the main criteria we use to select candidates for all
+of our outreach programs.
 
 ## Reporting issues
 
@@ -238,15 +237,14 @@ to:
 * Organization: What does your organization do? How big is the organization?
   A link to your organization's website?
 
-## Internship programs
+## Outreach programs
 
-Zulip runs internship programs with
-[Outreachy](https://www.outreachy.org/),
-[Google Summer of Code (GSoC)](https://developers.google.com/open-source/gsoc/)
-[1], and the
-[MIT Externship program](https://alum.mit.edu/students/NetworkwithAlumni/ExternshipProgram),
-and has in the past taken summer interns from Harvard, MIT, and
-Stanford.
+Zulip participates in [Google Summer of Code
+(GSoC)](https://developers.google.com/open-source/gsoc/) every year.
+In the past, we've also participated in
+[Outreachy](https://www.outreachy.org/), [Google
+Code-In](https://developers.google.com/open-source/gci/), and hosted
+summer interns from Harvard, MIT, and Stanford.
 
 While each third-party program has its own rules and requirements, the
 Zulip community's approaches all of these programs with these ideas in
@@ -266,20 +264,16 @@ mind:
   application to makes mistakes in your first few PRs as long as your
   work improves.
 
-Zulip also participates in
-[Google Code-In](https://developers.google.com/open-source/gci/). Our
-selection criteria for Finalists and Grand Prize Winners is the same as our
-selection criteria for interns above.
-
-Most of our interns end up sticking around the project long-term, and many
-quickly become core team members. We hope you apply!
+Most of our outreach program participants end up sticking around the
+project long-term, and many have become core team members, maintaining
+important parts of the project. We hope you apply!
 
 ### Google Summer of Code
 
-GSoC is by far the largest of our internship programs (14 students in
-2017; 11 in 2018; 17 in 2019).  While we don't control how many slots
-Google allocates to Zulip, we hope to mentor a similar number of
-students in future summers.
+The largest outreachy program Zulip participates in in GSoc (14
+students in 2017; 11 in 2018; 17 in 2019).  While we don't control how
+many slots Google allocates to Zulip, we hope to mentor a similar
+number of students in future summers.
 
 If you're reading this well before the application deadline and want
 to make your application strong, we recommend getting involved in the
@@ -303,10 +297,6 @@ for ZSoC, we'll contact you when the GSoC results are announced.
 
 [gsoc-guide]: https://zulip.readthedocs.io/en/latest/overview/gsoc-ideas.html
 [gsoc-faq]: https://developers.google.com/open-source/gsoc/faq
-
-[1] Formally, [GSoC isn't an internship][gsoc-faq], but it is similar
-enough that we're treating it as such for the purposes of this
-documentation.
 
 ## Zulip Outreach
 
