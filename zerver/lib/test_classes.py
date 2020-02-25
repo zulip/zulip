@@ -128,7 +128,7 @@ class ZulipTestCase(TestCase):
     DEFAULT_SUBDOMAIN = "zulip"
     TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
 
-    def set_http_host(self, kwargs: Dict[str, Any]) -> None:
+    def set_http_headers(self, kwargs: Dict[str, Any]) -> None:
         if 'subdomain' in kwargs:
             kwargs['HTTP_HOST'] = Realm.host_for_subdomain(kwargs['subdomain'])
             del kwargs['subdomain']
@@ -142,7 +142,7 @@ class ZulipTestCase(TestCase):
         """
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.patch(url, encoded, **kwargs)
 
     @instrument_url
@@ -157,7 +157,7 @@ class ZulipTestCase(TestCase):
         """
         encoded = encode_multipart(BOUNDARY, info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.patch(
             url,
             encoded,
@@ -168,34 +168,34 @@ class ZulipTestCase(TestCase):
     def client_put(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.put(url, encoded, **kwargs)
 
     @instrument_url
     def client_delete(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.delete(url, encoded, **kwargs)
 
     @instrument_url
     def client_options(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.options(url, encoded, **kwargs)
 
     @instrument_url
     def client_head(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.head(url, encoded, **kwargs)
 
     @instrument_url
     def client_post(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.post(url, info, **kwargs)
 
     @instrument_url
@@ -215,7 +215,7 @@ class ZulipTestCase(TestCase):
     @instrument_url
     def client_get(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         django_client = self.client  # see WRAPPER_COMMENT
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         return django_client.get(url, info, **kwargs)
 
     example_user_map = dict(
