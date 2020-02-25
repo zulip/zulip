@@ -3,6 +3,7 @@ require("unorm");  // String.prototype.normalize polyfill for IE11
 const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 const typeahead = require("../shared/js/typeahead");
+const settings_data = require("./settings_data");
 
 let people_dict;
 let people_by_name_dict;
@@ -1054,7 +1055,7 @@ function safe_lower(s) {
 }
 
 exports.matches_user_settings_search = function (person, value) {
-    const email = exports.email_for_user_settings(person);
+    const email = settings_data.email_for_user_settings(person);
 
     return safe_lower(person.full_name).includes(value) ||
     safe_lower(email).includes(value);
@@ -1073,18 +1074,6 @@ exports.filter_for_user_settings_search = function (persons, query) {
               See #13554 for more context.
     */
     return persons.filter(person => exports.matches_user_settings_search(person, query));
-};
-
-exports.email_for_user_settings = function (person) {
-    if (!settings_org.show_email()) {
-        return;
-    }
-
-    if (page_params.is_admin && person.delivery_email) {
-        return person.delivery_email;
-    }
-
-    return person.email;
 };
 
 exports.maybe_incr_recipient_count = function (message) {

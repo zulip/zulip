@@ -992,31 +992,6 @@ run_test('matches_user_settings_search', () => {
     assert.equal(match({full_name: 'Joe Frederick'}, 're'), true);
 });
 
-run_test('email_for_user_settings', () => {
-    const email = people.email_for_user_settings;
-
-    settings_org.show_email = () => {
-        return false;
-    };
-
-    assert.equal(email(isaac), undefined);
-
-    settings_org.show_email = () => {
-        return true;
-    };
-
-    page_params.is_admin = true;
-    assert.equal(email(isaac), isaac.delivery_email);
-
-    // Fall back to email if delivery_email is not there.
-    assert.equal(
-        email({email: 'foo@example.com'}),
-        'foo@example.com');
-
-    page_params.is_admin = false;
-    assert.equal(email(isaac), isaac.email);
-});
-
 initialize();
 
 run_test('is_valid_full_name_and_user_id', () => {
