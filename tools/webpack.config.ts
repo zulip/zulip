@@ -219,6 +219,7 @@ export default (env?: string): webpack.Configuration[] => {
     // Use the unminified versions of jquery and underscore so that
     // Good error messages show up in production and development in the source maps
     const exposeOptions = [
+        { path: "./debug-require.js", name: "require" },
         { path: "blueimp-md5/js/md5.js" },
         { path: "clipboard/dist/clipboard.js", name: "ClipboardJS" },
         { path: "xdate/src/xdate.js", name: "XDate" },
