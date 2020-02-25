@@ -14,9 +14,13 @@ def create_internal_realm() -> None:
 
     realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
 
-    # Create the "website" and "API" clients:
+    # Create some client objects for common requests.  Not required;
+    # just ensures these get low IDs in production, and in development
+    # avoids an extra database write for the first HTTP requset in
+    # most tests.
     get_client("website")
-    get_client("API")
+    get_client("ZulipMobile")
+    get_client("ZulipElectron")
 
     internal_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
                      for bot in settings.INTERNAL_BOTS]
