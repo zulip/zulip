@@ -37,6 +37,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def client_get(self, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
+        kwargs['skip_user_agent'] = True
         self.set_http_headers(kwargs)
         if 'HTTP_HOST' in kwargs:
             kwargs['headers']['Host'] = kwargs['HTTP_HOST']
@@ -45,6 +46,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def fetch_async(self, method: str, path: str, **kwargs: Any) -> None:
         self.add_session_cookie(kwargs)
+        kwargs['skip_user_agent'] = True
         self.set_http_headers(kwargs)
         if 'HTTP_HOST' in kwargs:
             kwargs['headers']['Host'] = kwargs['HTTP_HOST']
@@ -57,6 +59,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         )
 
     def client_get_async(self, path: str, **kwargs: Any) -> None:
+        kwargs['skip_user_agent'] = True
         self.set_http_headers(kwargs)
         self.fetch_async('GET', path, **kwargs)
 
@@ -78,7 +81,8 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         kwargs['headers'] = headers
 
     def create_queue(self, **kwargs: Any) -> str:
-        response = self.client_get('/json/events?dont_block=true', subdomain="zulip")
+        response = self.client_get('/json/events?dont_block=true', subdomain="zulip",
+                                   skip_user_agent=True)
         self.assertEqual(response.code, 200)
         body = ujson.loads(response.body)
         self.assertEqual(body['events'], [])
