@@ -301,7 +301,7 @@ run_test('is_active', () => {
     let sub;
 
     page_params.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.automatic.code;
+        settings_config.get_demote_inactive_streams_values().automatic.code;
     stream_data.set_filter_out_inactives();
 
     sub = {name: 'pets', subscribed: false, stream_id: 111};
@@ -332,7 +332,7 @@ run_test('is_active', () => {
     assert(stream_data.is_active(sub));
 
     page_params.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.always.code;
+        settings_config.get_demote_inactive_streams_values().always.code;
     stream_data.set_filter_out_inactives();
 
     sub = {name: 'pets', subscribed: false, stream_id: 111};
@@ -360,7 +360,7 @@ run_test('is_active', () => {
     assert(stream_data.is_active(sub));
 
     page_params.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.never.code;
+        settings_config.get_demote_inactive_streams_values().never.code;
     stream_data.set_filter_out_inactives();
 
     sub = {name: 'pets', subscribed: false, stream_id: 111};
