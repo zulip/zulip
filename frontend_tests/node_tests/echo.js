@@ -105,7 +105,7 @@ run_test('build_display_recipient', () => {
     ];
     page_params.realm_non_active_users = [];
     page_params.cross_realm_bots = [];
-    people.initialize();
+    people.initialize(page_params);
 
     let message = {
         type: "stream",
@@ -169,7 +169,7 @@ run_test('insert_local_message', () => {
     ];
     page_params.realm_non_active_users = [];
     page_params.cross_realm_bots = [];
-    people.initialize();
+    people.initialize(page_params);
 
     let apply_markdown_called = false;
     let add_topic_links_called = false;

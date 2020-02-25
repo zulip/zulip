@@ -1183,27 +1183,27 @@ exports.is_my_user_id = function (user_id) {
     return user_id === my_user_id;
 };
 
-exports.initialize = function () {
-    for (const person of page_params.realm_users) {
+exports.initialize = function (params) {
+    for (const person of params.realm_users) {
         exports.add_in_realm(person);
     }
 
-    for (const person of page_params.realm_non_active_users) {
+    for (const person of params.realm_non_active_users) {
         exports.add(person);
     }
 
-    for (const person of page_params.cross_realm_bots) {
+    for (const person of params.cross_realm_bots) {
         if (!people_dict.has(person.email)) {
             exports.add(person);
         }
         cross_realm_dict.set(person.user_id, person);
     }
 
-    exports.initialize_current_user(page_params.user_id);
+    exports.initialize_current_user(params.user_id);
 
-    delete page_params.realm_users; // We are the only consumer of this.
-    delete page_params.realm_non_active_users;
-    delete page_params.cross_realm_bots;
+    delete params.realm_users; // We are the only consumer of this.
+    delete params.realm_non_active_users;
+    delete params.cross_realm_bots;
 };
 
 window.people = exports;

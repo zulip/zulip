@@ -294,10 +294,10 @@ exports.initialize_kitchen_sink_stuff = function () {
     }
 };
 
-exports.initialize_everything = function () {
+exports.initialize_everything = function (params) {
     // initialize other stuff
     emojisets.initialize();
-    people.initialize();
+    people.initialize(params);
     scroll_bar.initialize();
     message_viewport.initialize();
     exports.initialize_kitchen_sink_stuff();
@@ -365,6 +365,6 @@ exports.initialize_everything = function () {
 
 $(function () {
     const finish = blueslip.start_timing('initialize_everything');
-    exports.initialize_everything();
+    exports.initialize_everything(page_params);
     finish();
 });
