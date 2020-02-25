@@ -2,6 +2,7 @@ import { basename, resolve } from 'path';
 import { cacheLoader, getExposeLoaders } from './webpack-helpers';
 import BundleTracker from 'webpack4-bundle-tracker';
 import CleanCss from 'clean-css';
+import DebugRequirePlugin from './debug-require-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
@@ -187,6 +188,7 @@ export default (env?: string): webpack.Configuration[] => {
             },
         },
         plugins: [
+            new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
                     ? 'webpack-stats-production.json'
