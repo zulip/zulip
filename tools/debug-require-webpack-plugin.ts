@@ -9,6 +9,7 @@ export default class DebugRequirePlugin {
     apply(compiler: webpack.Compiler): void {
         const resolved = new Map();
         const nameSymbol = Symbol("DebugRequirePluginName");
+        let debugRequirePath: string | undefined;
 
         (compiler as any).resolverFactory.hooks.resolver
             .for("normal")
@@ -36,18 +37,34 @@ export default class DebugRequirePlugin {
                 });
             });
 
+        compiler.hooks.beforeCompile.tapPromise(
+            "DebugRequirePlugin",
+            async ({ normalModuleFactory }: any) => {
+                const resolver = normalModuleFactory.getResolver("normal");
+                debugRequirePath = await new Promise((resolve, reject) =>
+                    resolver.resolve(
+                        {},
+                        __dirname,
+                        "./debug-require.js",
+                        {},
+                        (err?: Error, result?: string) => err ? reject(err) : resolve(result)
+                    )
+                );
+            }
+        );
+
         compiler.hooks.compilation.tap("DebugRequirePlugin", (compilation: any) => {
             compilation.mainTemplate.hooks.beforeStartup.tap(
                 "DebugRequirePlugin",
                 (source: string, chunk: webpack.compilation.Chunk) => {
                     const ids: [string, string | number][] = [];
+                    let debugRequireId;
                     chunk.hasModuleInGraph(
-                        (mod: any) => {
-                            const { resource, rawRequest, id } = mod;
+                        ({ resource, rawRequest, id }: any) => {
+                            if (resource === debugRequirePath) {
+                                debugRequireId = id;
+                            }
                             for (const name of resolved.get(resource) || []) {
-                                if (name === "./static/js/debug.js") {
-                                    console.log(name, id, mod);
-                                }
                                 ids.push([
                                     rawRequest.slice(0, rawRequest.lastIndexOf("!") + 1) + name,
                                     id,
@@ -57,28 +74,18 @@ export default class DebugRequirePlugin {
                         },
                         () => true
                     );
+
+                    if (debugRequireId === undefined) {
+                        return source;
+                    }
+
                     ids.sort();
-
-                    const {
-                        outputOptions: { globalObject },
-                        requireFn,
-                    } = compilation.mainTemplate;
-
+                    const { requireFn } = compilation.mainTemplate;
                     return Template.asString([
                         source,
-                        `function debugRequire(request) {`,
-                        Template.indent(`return ${requireFn}(debugRequire.ids[request]);`),
-                        "};",
-                        `debugRequire.ids = ${JSON.stringify(
-                            Object.fromEntries(ids),
-                            null,
-                            "\t"
-                        )};`,
-                        `if (typeof ${globalObject} !== "undefined") {`,
-                        Template.indent(
-                            `${globalObject}.require = ${globalObject}.require || debugRequire;`
-                        ),
-                        "}",
+                        `${requireFn}(${JSON.stringify(
+                            debugRequireId
+                        )}).initialize(${JSON.stringify(Object.fromEntries(ids), null, "\t")});`,
                     ]);
                 }
             );
