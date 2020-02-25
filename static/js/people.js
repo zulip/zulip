@@ -2,6 +2,7 @@ const util = require("./util");
 require("unorm");  // String.prototype.normalize polyfill for IE11
 const FoldDict = require('./fold_dict').FoldDict;
 const typeahead = require("../shared/js/typeahead");
+const settings_data = require("./settings_data");
 
 let people_dict;
 let people_by_name_dict;
@@ -213,16 +214,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
 exports.get_user_time_preferences = function (user_id) {
     const user_timezone = exports.get_by_user_id(user_id).timezone;
     if (user_timezone) {
-        if (page_params.twenty_four_hour_time) {
-            return {
-                timezone: user_timezone,
-                format: "H:mm",
-            };
-        }
-        return {
-            timezone: user_timezone,
-            format: "h:mm A",
-        };
+        return settings_data.get_time_preferences(user_timezone);
     }
 };
 
@@ -1059,7 +1051,7 @@ function safe_lower(s) {
 }
 
 exports.matches_user_settings_search = function (person, value) {
-    const email = exports.email_for_user_settings(person);
+    const email = settings_data.email_for_user_settings(person);
 
     return safe_lower(person.full_name).includes(value) ||
     safe_lower(email).includes(value);
@@ -1078,18 +1070,6 @@ exports.filter_for_user_settings_search = function (persons, query) {
               See #13554 for more context.
     */
     return persons.filter(person => exports.matches_user_settings_search(person, query));
-};
-
-exports.email_for_user_settings = function (person) {
-    if (!settings_org.show_email()) {
-        return;
-    }
-
-    if (page_params.is_admin && person.delivery_email) {
-        return person.delivery_email;
-    }
-
-    return person.email;
 };
 
 exports.maybe_incr_recipient_count = function (message) {
