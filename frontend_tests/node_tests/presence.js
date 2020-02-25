@@ -5,7 +5,6 @@ const return_false = function () { return false; };
 
 set_global('server_events', {});
 set_global('blueslip', {});
-set_global('page_params', {});
 set_global('reload_state', {
     is_in_progress: return_false,
 });
@@ -161,11 +160,10 @@ run_test('set_presence_info', () => {
         },
     };
 
-    page_params.presences = presences;
-    page_params.initial_servertime = base_time;
-    presence.initialize();
-
-    assert.equal(page_params.presences, undefined);
+    const params = {};
+    params.presences = presences;
+    params.initial_servertime = base_time;
+    presence.initialize(params);
 
     assert.deepEqual(presence.presence_info.get(alice.user_id),
                      { status: 'active', last_active: 500}

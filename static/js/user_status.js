@@ -56,8 +56,8 @@ exports.set_status_text = function (opts) {
     user_info.set(opts.user_id, opts.status_text);
 };
 
-exports.initialize = function () {
-    for (const [str_user_id, dct] of Object.entries(page_params.user_status)) {
+exports.initialize = function (params) {
+    for (const [str_user_id, dct] of Object.entries(params.user_status)) {
         // JSON does not allow integer keys, so we
         // convert them here.
         const user_id = parseInt(str_user_id, 10);
@@ -70,8 +70,6 @@ exports.initialize = function () {
             user_info.set(user_id, dct.status_text);
         }
     }
-
-    delete page_params.user_status;
 };
 
 window.user_status = exports;

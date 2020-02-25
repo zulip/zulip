@@ -1,15 +1,16 @@
 set_global('blueslip', global.make_zblueslip());
 set_global('channel', {});
-set_global('page_params', {});
 zrequire('user_status');
 
 function initialize() {
-    page_params.user_status = {
-        1: {away: true, status_text: 'in a meeting'},
-        2: {away: true},
-        3: {away: true},
+    const params = {
+        user_status: {
+            1: {away: true, status_text: 'in a meeting'},
+            2: {away: true},
+            3: {away: true},
+        },
     };
-    user_status.initialize();
+    user_status.initialize(params);
 }
 
 run_test('basics', () => {
@@ -23,7 +24,6 @@ run_test('basics', () => {
     user_status.revoke_away(4);
     assert(!user_status.is_away(4));
 
-    // use value from page_params
     assert.equal(user_status.get_status_text(1), 'in a meeting');
 
     user_status.set_status_text({

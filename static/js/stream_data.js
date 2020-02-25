@@ -788,8 +788,31 @@ exports.get_streams_for_admin = function () {
     return subs;
 };
 
-exports.initialize = function () {
-    color_data.claim_colors(page_params.subscriptions);
+exports.initialize = function (params) {
+    /*
+        We get `params` data, which is data that we "own"
+        and which has already been removed from `page_params`.
+        We only use it in this function to populate other
+        data structures.
+    */
+
+    const subscriptions = params.subscriptions;
+    const unsubscribed = params.unsubscribed;
+    const never_subscribed = params.never_subscribed;
+
+    /*
+        We also consume some data directly from `page_params`.
+        This data can be accessed by any other module,
+        and we consider the authoritative source to be
+        `page_params`.  Some of this data should eventually
+        be fully handled by stream_data.  In particular,
+        the way we handle `page_params.realm_default_streams`
+        is kinda janky, because we maintain our own data
+        structure, but then some legacy modules still
+        refer directly to `page_params`.  We should fix that.
+    */
+
+    color_data.claim_colors(subscriptions);
 
     function populate_subscriptions(subs, subscribed, previously_subscribed) {
         subs.forEach(function (sub) {
@@ -803,9 +826,9 @@ exports.initialize = function () {
 
     exports.set_realm_default_streams(page_params.realm_default_streams);
 
-    populate_subscriptions(page_params.subscriptions, true, true);
-    populate_subscriptions(page_params.unsubscribed, false, true);
-    populate_subscriptions(page_params.never_subscribed, false, false);
+    populate_subscriptions(subscriptions, true, true);
+    populate_subscriptions(unsubscribed, false, true);
+    populate_subscriptions(never_subscribed, false, false);
 
     // Migrate the notifications stream from the new API structure to
     // what the frontend expects.
@@ -824,11 +847,6 @@ exports.initialize = function () {
     }
 
     exports.set_filter_out_inactives();
-
-    // Garbage collect data structures that were only used for initialization.
-    delete page_params.subscriptions;
-    delete page_params.unsubscribed;
-    delete page_params.never_subscribed;
 };
 
 exports.remove_default_stream = function (stream_id) {

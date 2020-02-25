@@ -770,27 +770,35 @@ run_test('create_sub', () => {
 });
 
 run_test('initialize', () => {
-    function initialize() {
-        page_params.subscriptions = [{
+    function get_params() {
+        const params = {};
+
+        params.subscriptions = [{
             name: 'subscriptions',
             stream_id: 2001,
         }];
 
-        page_params.unsubscribed = [{
+        params.unsubscribed = [{
             name: 'unsubscribed',
             stream_id: 2002,
         }];
 
-        page_params.never_subscribed = [{
+        params.never_subscribed = [{
             name: 'never_subscribed',
             stream_id: 2003,
         }];
+
+        return params;
     }
 
-    initialize();
+    function initialize() {
+        stream_data.initialize(get_params());
+    }
+
     page_params.demote_inactive_streams = 1;
     page_params.realm_notifications_stream_id = -1;
-    stream_data.initialize();
+
+    initialize();
     assert(!stream_data.is_filtering_inactives());
 
     const stream_names = stream_data.get_streams_for_admin().map(elem => elem.name);
@@ -803,9 +811,8 @@ run_test('initialize', () => {
     assert.equal(page_params.notifications_stream, "");
 
     // Simulate a private stream the user isn't subscribed to
-    initialize();
     page_params.realm_notifications_stream_id = 89;
-    stream_data.initialize();
+    initialize();
     assert.equal(page_params.notifications_stream, "");
 
     // Now actually subscribe the user to the stream
@@ -816,16 +823,17 @@ run_test('initialize', () => {
     };
 
     stream_data.add_sub(foo);
-    stream_data.initialize();
+    initialize();
     assert.equal(page_params.notifications_stream, "foo");
 });
 
 run_test('filter inactives', () => {
-    page_params.unsubscribed = [];
-    page_params.never_subscribed = [];
-    page_params.subscriptions = [];
+    const params = {};
+    params.unsubscribed = [];
+    params.never_subscribed = [];
+    params.subscriptions = [];
 
-    stream_data.initialize();
+    stream_data.initialize(params);
     assert(!stream_data.is_filtering_inactives());
 
     page_params.unsubscribed = [];
@@ -844,7 +852,7 @@ run_test('filter inactives', () => {
         };
         stream_data.add_sub(sub);
     });
-    stream_data.initialize();
+    stream_data.initialize(params);
     assert(stream_data.is_filtering_inactives());
 });
 

@@ -5,13 +5,16 @@ set_global("page_params", {
         {name: "giphy", config: {key: "12345678"}},
         {name: "foobot", config: {bar: "baz", qux: "quux"}},
     ],
+});
+
+const bot_data_params = {
     realm_bots: [{api_key: 'QadL788EkiottHmukyhHgePUFHREiu8b',
                   email: 'error-bot@zulip.org',
                   full_name: 'Error bot',
                   user_id: 1,
                   services: []},
     ],
-});
+};
 
 set_global("avatar", {});
 
@@ -26,7 +29,7 @@ set_global('ClipboardJS', function (sel) {
     assert.equal(sel, '#copy_zuliprc');
 });
 
-bot_data.initialize();
+bot_data.initialize(bot_data_params);
 
 run_test('generate_zuliprc_uri', () => {
     const uri = settings_bots.generate_zuliprc_uri(1);
