@@ -32,6 +32,15 @@ function call(args, idempotent) {
     args.error = function wrapped_error(xhr, error_type, xhn) {
         remove_pending_request(xhr);
 
+        if (reload_state.is_in_progress()) {
+            // If we're in the process of reloading the browser,
+            // there's no point in running the success handler,
+            // because all of our state is about to be discarded
+            // anyway.
+            blueslip.log(`Ignoring ${args.type} ${args.url} error response while reloading`);
+            return;
+        }
+
         if (xhr.status === 403) {
             try {
                 if (JSON.parse(xhr.responseText).code === 'CSRF_FAILED') {
