@@ -37,7 +37,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def client_get(self, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         if 'HTTP_HOST' in kwargs:
             kwargs['headers']['Host'] = kwargs['HTTP_HOST']
             del kwargs['HTTP_HOST']
@@ -45,7 +45,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def fetch_async(self, method: str, path: str, **kwargs: Any) -> None:
         self.add_session_cookie(kwargs)
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         if 'HTTP_HOST' in kwargs:
             kwargs['headers']['Host'] = kwargs['HTTP_HOST']
             del kwargs['HTTP_HOST']
@@ -57,7 +57,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         )
 
     def client_get_async(self, path: str, **kwargs: Any) -> None:
-        self.set_http_host(kwargs)
+        self.set_http_headers(kwargs)
         self.fetch_async('GET', path, **kwargs)
 
     def login(self, *args: Any, **kwargs: Any) -> None:
