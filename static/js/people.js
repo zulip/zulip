@@ -215,16 +215,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
 exports.get_user_time_preferences = function (user_id) {
     const user_timezone = exports.get_by_user_id(user_id).timezone;
     if (user_timezone) {
-        if (page_params.twenty_four_hour_time) {
-            return {
-                timezone: user_timezone,
-                format: "H:mm",
-            };
-        }
-        return {
-            timezone: user_timezone,
-            format: "h:mm A",
-        };
+        return settings_data.get_time_preferences(user_timezone);
     }
 };
 

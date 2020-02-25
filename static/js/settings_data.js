@@ -19,3 +19,16 @@ exports.email_for_user_settings = function (person) {
 
     return person.email;
 };
+
+exports.get_time_preferences = function (user_timezone) {
+    if (page_params.twenty_four_hour_time) {
+        return {
+            timezone: user_timezone,
+            format: "H:mm",
+        };
+    }
+    return {
+        timezone: user_timezone,
+        format: "h:mm A",
+    };
+};
