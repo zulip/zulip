@@ -8,7 +8,6 @@ zrequire('people');
 zrequire('presence');
 zrequire('buddy_data');
 zrequire('user_status');
-zrequire('settings_org');
 zrequire('feature_flags');
 zrequire('message_edit');
 

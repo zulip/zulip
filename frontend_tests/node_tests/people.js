@@ -1,13 +1,23 @@
+set_global('i18n', global.stub_i18n);
 zrequire('people');
-
 set_global('blueslip', global.make_zblueslip());
 set_global('message_store', {});
 set_global('page_params', {});
-set_global('settings_org', {});
+set_global('settings_data', {});
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
-set_global('i18n', global.stub_i18n);
+
+const settings_config = zrequire('settings_config');
+const visibility = settings_config.get_email_address_visibility_values();
+const admins_only = visibility.admins_only.code;
+const everyone = visibility.everyone.code;
+
+function set_email_visibility(code) {
+    page_params.realm_email_address_visibility = code;
+}
+
+set_email_visibility(admins_only);
 
 const me = {
     email: 'me@example.com',
@@ -928,9 +938,7 @@ run_test('filter_for_user_settings_search', () => {
         so that is where we do more thorough testing.
         This test is just a sanity check for now.
     */
-    settings_org.show_email = () => {
-        return false;
-    };
+    page_params.is_admin = false;
 
     const fred_smith = {full_name: 'Fred Smith'};
     const alice_lee = {full_name: 'Alice Lee'};
@@ -950,23 +958,19 @@ run_test('filter_for_user_settings_search', () => {
 run_test('matches_user_settings_search', () => {
     const match = people.matches_user_settings_search;
 
-    settings_org.show_email = () => {
-        return false;
-    };
+    page_params.is_admin = false;
 
     assert.equal(match({email: 'fred@example.com'}, 'fred'), false);
     assert.equal(match({full_name: 'Fred Smith'}, 'fr'), true);
 
-    settings_org.show_email = () => {
-        return true;
-    };
-
     page_params.is_admin = true;
+
     assert.equal(match({delivery_email: 'fred@example.com'}, 'fr'), true);
     assert.equal(
         match({delivery_email: 'bogus', email: 'fred@example.com'}, 'fr'),
         false);
 
+    set_email_visibility(everyone);
     page_params.is_admin = false;
     assert.equal(match({delivery_email: 'fred@example.com'}, 'fr'), false);
     assert.equal(match({email: 'fred@example.com'}, 'fr'), true);
@@ -986,31 +990,6 @@ run_test('matches_user_settings_search', () => {
     assert.equal(match({email: 'fred@example.com'}, 're'), true);
     assert.equal(match({full_name: 'Fred Smith'}, 're'), true);
     assert.equal(match({full_name: 'Joe Frederick'}, 're'), true);
-});
-
-run_test('email_for_user_settings', () => {
-    const email = people.email_for_user_settings;
-
-    settings_org.show_email = () => {
-        return false;
-    };
-
-    assert.equal(email(isaac), undefined);
-
-    settings_org.show_email = () => {
-        return true;
-    };
-
-    page_params.is_admin = true;
-    assert.equal(email(isaac), isaac.delivery_email);
-
-    // Fall back to email if delivery_email is not there.
-    assert.equal(
-        email({email: 'foo@example.com'}),
-        'foo@example.com');
-
-    page_params.is_admin = false;
-    assert.equal(email(isaac), isaac.email);
 });
 
 initialize();
