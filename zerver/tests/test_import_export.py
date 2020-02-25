@@ -51,7 +51,8 @@ from zerver.lib.bot_config import (
 from zerver.lib.actions import (
     do_create_user,
     do_add_reaction,
-    create_stream_if_needed
+    create_stream_if_needed,
+    do_change_plan_type,
 )
 
 from zerver.lib.test_runner import slow
@@ -1048,8 +1049,7 @@ class ImportExportTest(ZulipTestCase):
 
     def test_plan_type(self) -> None:
         realm = get_realm('zulip')
-        realm.plan_type = Realm.STANDARD
-        realm.save(update_fields=['plan_type'])
+        do_change_plan_type(realm, Realm.LIMITED)
 
         self._setup_export_files()
         self._export_realm(realm)
@@ -1058,12 +1058,18 @@ class ImportExportTest(ZulipTestCase):
             with self.settings(BILLING_ENABLED=True):
                 realm = do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'),
                                         'test-zulip-1')
-                self.assertTrue(realm.plan_type, Realm.LIMITED)
+                self.assertEqual(realm.plan_type, Realm.LIMITED)
+                self.assertEqual(realm.max_invites, 100)
+                self.assertEqual(realm.upload_quota_gb, 5)
+                self.assertEqual(realm.message_visibility_limit, 10000)
                 self.assertTrue(RealmAuditLog.objects.filter(
                     realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED).exists())
             with self.settings(BILLING_ENABLED=False):
                 realm = do_import_realm(os.path.join(settings.TEST_WORKER_DIR, 'test-export'),
                                         'test-zulip-2')
-                self.assertTrue(realm.plan_type, Realm.SELF_HOSTED)
+                self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
+                self.assertEqual(realm.max_invites, 100)
+                self.assertEqual(realm.upload_quota_gb, None)
+                self.assertEqual(realm.message_visibility_limit, None)
                 self.assertTrue(RealmAuditLog.objects.filter(
                     realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED).exists())

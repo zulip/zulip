@@ -3467,6 +3467,10 @@ def do_change_plan_type(realm: Realm, plan_type: int) -> None:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
+    elif plan_type == Realm.SELF_HOSTED:
+        realm.max_invites = None  # type: ignore # Apparent mypy bug with Optional[int] setter.
+        realm.message_visibility_limit = None
+        realm.upload_quota_gb = None
     elif plan_type == Realm.STANDARD_FREE:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
@@ -3475,6 +3479,8 @@ def do_change_plan_type(realm: Realm, plan_type: int) -> None:
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_LIMITED
+    else:
+        raise AssertionError("Invalid plan type")
 
     update_first_visible_message_id(realm)
 
