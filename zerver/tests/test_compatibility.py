@@ -78,7 +78,7 @@ class CompatibilityTest(ZulipTestCase):
     '''.strip().split('\n') if case]
 
     def test_compatibility_without_user_agent(self) -> None:
-        result = self.client_get("/compatibility")
+        result = self.client_get("/compatibility", skip_user_agent=True)
         self.assert_json_error(result, 'User-Agent header missing from request')
 
     def test_compatibility(self) -> None:

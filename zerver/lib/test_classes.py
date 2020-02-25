@@ -135,6 +135,22 @@ class ZulipTestCase(TestCase):
         elif 'HTTP_HOST' not in kwargs:
             kwargs['HTTP_HOST'] = Realm.host_for_subdomain(self.DEFAULT_SUBDOMAIN)
 
+        # set User-Agent
+        if 'HTTP_AUTHORIZATION' in kwargs:
+            # An API request; use mobile as the default user agent
+            default_user_agent = "ZulipMobile/26.22.145 (iOS 10.3.1)"
+        else:
+            # A webapp request; use a browser User-Agent string.
+            default_user_agent = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                                  "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                                  "Chrome/79.0.3945.130 Safari/537.36")
+        if kwargs.get('skip_user_agent'):
+            # Provide a way to disable setting User-Agent if desired.
+            assert 'HTTP_USER_AGENT' not in kwargs
+            del kwargs['skip_user_agent']
+        elif 'HTTP_USER_AGENT' not in kwargs:
+            kwargs['HTTP_USER_AGENT'] = default_user_agent
+
     @instrument_url
     def client_patch(self, url: str, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         """
