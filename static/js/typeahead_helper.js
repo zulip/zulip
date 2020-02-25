@@ -3,6 +3,7 @@ const pygments_data = require("../generated/pygments_data.json");
 const typeahead = require("../shared/js/typeahead");
 const render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');
 const IntDict = require('./int_dict').IntDict;
+const settings_data = require("./settings_data");
 
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
@@ -83,7 +84,7 @@ exports.render_person = function (person) {
             img_src: avatar_url,
             is_person: true,
         };
-        if (settings_org.show_email()) {
+        if (settings_data.show_email()) {
             typeahead_arguments.secondary = person.email;
         }
         html = exports.render_typeahead_item(typeahead_arguments);

@@ -1,3 +1,5 @@
+const settings_config = require("./settings_config");
+
 /*
     This is a close cousin of settings_config,
     but this has a bit more logic, and we
@@ -8,8 +10,19 @@
     about page_params.
 */
 
+exports.show_email = function () {
+    if (page_params.realm_email_address_visibility ===
+        settings_config.get_email_address_visibility_values().everyone.code) {
+        return true;
+    }
+    if (page_params.realm_email_address_visibility ===
+        settings_config.get_email_address_visibility_values().admins_only.code) {
+        return page_params.is_admin;
+    }
+};
+
 exports.email_for_user_settings = function (person) {
-    if (!settings_org.show_email()) {
+    if (!exports.show_email()) {
         return;
     }
 

@@ -1,6 +1,5 @@
 const settings_data = zrequire('settings_data');
 
-set_global('settings_org', {});
 set_global('page_params', {});
 
 /*
@@ -18,13 +17,13 @@ const isaac = {
 run_test('email_for_user_settings', () => {
     const email = settings_data.email_for_user_settings;
 
-    settings_org.show_email = () => {
+    settings_data.show_email = () => {
         return false;
     };
 
     assert.equal(email(isaac), undefined);
 
-    settings_org.show_email = () => {
+    settings_data.show_email = () => {
         return true;
     };
 

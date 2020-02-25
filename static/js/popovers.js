@@ -1,4 +1,5 @@
 const util = require("./util");
+const settings_data = require("./settings_data");
 const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
 const render_actions_popover_content = require('../templates/actions_popover_content.hbs');
 const render_mobile_message_buttons_popover = require('../templates/mobile_message_buttons_popover.hbs');
@@ -181,7 +182,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_uri(user.email),
-        show_email: settings_org.show_email(),
+        show_email: settings_data.show_email(),
         show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
         user_email: get_visible_email(user),
         user_full_name: user.full_name,
@@ -312,7 +313,7 @@ exports.show_user_profile = function (user) {
         is_me: people.is_current_user(user.email),
         date_joined: moment(user.date_joined).format(dateFormat),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
-        show_email: settings_org.show_email(),
+        show_email: settings_data.show_email(),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,

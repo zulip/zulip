@@ -1,4 +1,5 @@
 const settings_config = require("./settings_config");
+const settings_data = require("./settings_data");
 const render_admin_tab = require('../templates/admin_tab.hbs');
 
 const admin_settings_label = {
@@ -72,7 +73,7 @@ exports.build_page = function () {
         settings_send_digest_emails: page_params.settings_send_digest_emails,
         realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
         realm_digest_weekday: page_params.realm_digest_weekday,
-        show_email: settings_org.show_email(),
+        show_email: settings_data.show_email(),
         development: page_params.development_environment,
         plan_includes_wide_organization_logo: page_params.plan_includes_wide_organization_logo,
         upgrade_text_for_wide_organization_logo:
