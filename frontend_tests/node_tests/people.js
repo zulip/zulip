@@ -4,7 +4,6 @@ set_global('blueslip', global.make_zblueslip());
 set_global('message_store', {});
 set_global('page_params', {});
 set_global('settings_org', {});
-set_global('typeahead_helper', {});
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
@@ -693,7 +692,6 @@ run_test('slugs', () => {
 initialize();
 
 run_test('get_people_for_search_bar', () => {
-    typeahead_helper.compare_by_pms = () => 0;
     message_store.user_ids = () => [];
 
     for (const i of _.range(20)) {
