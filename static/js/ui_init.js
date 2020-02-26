@@ -394,6 +394,10 @@ exports.initialize_everything = function () {
         'cross_realm_bots'
     );
 
+    const pm_conversations_params = pop_fields(
+        'recent_private_conversations'
+    );
+
     const presence_params = pop_fields(
         'presences',
         'initial_servertime'
@@ -422,7 +426,7 @@ exports.initialize_everything = function () {
     stream_color.initialize();
     stream_edit.initialize();
     stream_data.initialize(stream_data_params);
-    pm_conversations.recent.initialize();
+    pm_conversations.recent.initialize(pm_conversations_params);
     muting.initialize();
     subs.initialize();
     stream_list.initialize();
