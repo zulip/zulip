@@ -222,13 +222,11 @@ export function populate_user_groups() {
                 return true;
             }
 
-            const blur_exceptions = _.without(
-                [".pill-container", ".name", ".description", ".input", ".delete"],
-                except_class,
-            );
             if ($(event.relatedTarget).closest(`#user-groups #${CSS.escape(data.id)}`).length) {
-                return blur_exceptions.some(
-                    (class_name) => $(event.relatedTarget).closest(class_name).length,
+                return [".pill-container", ".name", ".description", ".input", ".delete"].some(
+                    (class_name) =>
+                        class_name !== except_class &&
+                        $(event.relatedTarget).closest(class_name).length,
                 );
             }
             return false;

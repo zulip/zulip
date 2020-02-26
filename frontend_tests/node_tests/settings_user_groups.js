@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const _ = require("lodash");
-
 const {$t} = require("../zjsunit/i18n");
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -635,12 +633,17 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
         // Any of the blur_exceptions trigger blur event.
         for (const class_name of blur_event_classes) {
             const handler = $(user_group_selector).get_on_handler("blur", class_name);
-            const blur_exceptions = _.without(
-                [".pill-container", ".name", ".description", ".input", ".delete"],
-                class_name,
-            );
 
-            for (const blur_exception of blur_exceptions) {
+            for (const blur_exception of [
+                ".pill-container",
+                ".name",
+                ".description",
+                ".input",
+                ".delete",
+            ]) {
+                if (blur_exception === class_name) {
+                    continue;
+                }
                 api_endpoint_called = false;
                 fake_this.closest = (class_name) => {
                     if (class_name === blur_exception || class_name === user_group_selector) {
