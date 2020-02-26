@@ -12,11 +12,6 @@ set_global('home_msg_list', {
     select_id: noop,
     selected_id: function () {return 1;},
 });
-set_global('echo', {
-    process_from_server: function (messages) {
-        return messages;
-    },
-});
 
 set_global('markdown', {
     update_realm_filter_rules: noop,
