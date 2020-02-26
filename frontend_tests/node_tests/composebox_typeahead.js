@@ -559,7 +559,7 @@ run_test('initialize', () => {
     };
 
     let subject_typeahead_called = false;
-    $('#stream_message_recipient_topic').typeahead = function (options) {
+    const topic_typeahead_stub = function (options) {
         const topics = ['<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice'];
         stream_topic_history.get_recent_topic_names = (stream_id) => {
             assert.equal(stream_id, sweden_stream.stream_id);
@@ -625,6 +625,7 @@ run_test('initialize', () => {
         // Unset the stream name.
         $('#stream_message_recipient_stream').val('');
     };
+    $('#stream_message_recipient_topic').typeahead = topic_typeahead_stub;
 
     let pm_recipient_typeahead_called = false;
     $('#private_message_recipient').typeahead = function (options) {
@@ -1114,6 +1115,14 @@ run_test('initialize', () => {
     assert(compose_textarea_typeahead_called);
     assert(focus_handler_called);
     assert(stream_one_called);
+
+    // Finally, we check that the topic edit typeahead is functionally similar
+    // to the composebox topic typeahead.
+    subject_typeahead_called = false;
+    const form_field = $.create('message_edit_topic');
+    form_field.typeahead = topic_typeahead_stub;
+    ct.initialize_topic_edit_typeahead(form_field, 'Sweden');
+    assert(subject_typeahead_called);
 });
 
 run_test('begins_typeahead', () => {

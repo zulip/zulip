@@ -2,6 +2,7 @@ set_global('page_params', {realm_is_zephyr_mirror_realm: false});
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
+set_global('$', global.make_zjquery());
 
 const settings_config = zrequire('settings_config');
 page_params.realm_email_address_visibility =
