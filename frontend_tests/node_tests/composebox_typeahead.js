@@ -558,7 +558,7 @@ run_test('initialize', () => {
         stream_typeahead_called = true;
     };
 
-    let subject_typeahead_called = false;
+    let topic_typeahead_called = false;
     const topic_typeahead_stub = function (options) {
         const topics = ['<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice'];
         stream_topic_history.get_recent_topic_names = (stream_id) => {
@@ -620,7 +620,7 @@ run_test('initialize', () => {
         expected_value = [];
         assert.deepEqual(actual_value, expected_value);
 
-        subject_typeahead_called = true;
+        topic_typeahead_called = true;
 
         // Unset the stream name.
         $('#stream_message_recipient_stream').val('');
@@ -1108,7 +1108,7 @@ run_test('initialize', () => {
     // Now let's make sure that all the stub functions have been called
     // during the initialization.
     assert(stream_typeahead_called);
-    assert(subject_typeahead_called);
+    assert(topic_typeahead_called);
     assert(pm_recipient_typeahead_called);
     assert(pm_recipient_blur_called);
     assert(channel_post_called);
@@ -1118,11 +1118,11 @@ run_test('initialize', () => {
 
     // Finally, we check that the topic edit typeahead is functionally similar
     // to the composebox topic typeahead.
-    subject_typeahead_called = false;
+    topic_typeahead_called = false;
     const form_field = $.create('message_edit_topic');
     form_field.typeahead = topic_typeahead_stub;
     ct.initialize_topic_edit_typeahead(form_field, 'Sweden');
-    assert(subject_typeahead_called);
+    assert(topic_typeahead_called);
 });
 
 run_test('begins_typeahead', () => {
