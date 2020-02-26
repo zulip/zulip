@@ -55,8 +55,6 @@ set_global('document', doc);
 
 set_global('$', global.make_zjquery());
 
-set_global('feature_flags', {local_echo: true});
-
 const people = global.people;
 
 const cordelia = {

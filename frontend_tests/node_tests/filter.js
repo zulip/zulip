@@ -8,7 +8,6 @@ zrequire('Filter', 'js/filter');
 
 set_global('message_store', {});
 set_global('page_params', {});
-set_global('feature_flags', {});
 
 const me = {
     email: 'me@example.com',
