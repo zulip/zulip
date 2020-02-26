@@ -386,10 +386,9 @@ class Filter {
     }
 
     operands(operator) {
-        return _.chain(this._operators)
+        return this._operators
             .filter((elem) => !elem.negated && elem.operator === operator)
-            .map((elem) => elem.operand)
-            .value();
+            .map((elem) => elem.operand);
     }
 
     has_negated_operand(operator, operand) {
