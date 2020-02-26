@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const _ = require("lodash");
-
 const {$t} = require("../zjsunit/i18n");
 const {mock_jquery, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -27,7 +25,7 @@ function make_tab(i) {
 
     self.removeClass = (c) => {
         const tokens = self.class.trim().split(/ +/);
-        self.class = _.without(tokens, c).join(" ");
+        self.class = tokens.filter((token) => token !== c).join(" ");
     };
 
     self.hasClass = (c) => {
