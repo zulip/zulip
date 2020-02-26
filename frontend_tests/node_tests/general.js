@@ -493,7 +493,6 @@ run_test('insert_message', () => {
 */
 
 set_global('channel', {});
-set_global('feature_flags', {});
 set_global('home_msg_list', {});
 set_global('message_list', {});
 set_global('message_viewport', {});
