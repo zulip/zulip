@@ -907,6 +907,30 @@ exports.initialize_compose_typeahead = function (selector) {
     });
 };
 
+const topic_typeahead_options = {
+    fixed: true,
+    highlighter: function (item) {
+        return typeahead_helper.render_typeahead_item({ primary: item });
+    },
+    sorter: function (items) {
+        const sorted = typeahead_helper.sorter(this.query, items, function (x) {return x;});
+        if (sorted.length > 0 && !sorted.includes(this.query)) {
+            sorted.unshift(this.query);
+        }
+        return sorted;
+    },
+};
+
+exports.initialize_topic_edit_typeahead = function (form_field, stream_name) {
+    const options = {...topic_typeahead_options,
+                     source: function () {
+                         return exports.topics_seen_for(stream_name);
+                     },
+                     items: 5,
+    };
+    form_field.typeahead(options);
+};
+
 exports.initialize = function () {
     exports.update_emoji_data();
     select_on_focus("stream_message_recipient_stream");
@@ -959,24 +983,14 @@ exports.initialize = function () {
         },
     });
 
-    $("#stream_message_recipient_topic").typeahead({
-        source: function () {
-            const stream_name = compose_state.stream_name();
-            return exports.topics_seen_for(stream_name);
-        },
-        items: 3,
-        fixed: true,
-        highlighter: function (item) {
-            return typeahead_helper.render_typeahead_item({ primary: item });
-        },
-        sorter: function (items) {
-            const sorted = typeahead_helper.sorter(this.query, items, function (x) {return x;});
-            if (sorted.length > 0 && !sorted.includes(this.query)) {
-                sorted.unshift(this.query);
-            }
-            return sorted;
-        },
-    });
+    const options = {...topic_typeahead_options,
+                     source: function () {
+                         const stream_name = compose_state.stream_name();
+                         return exports.topics_seen_for(stream_name);
+                     },
+                     items: 3,
+    };
+    $("#stream_message_recipient_topic").typeahead(options);
 
     $("#private_message_recipient").typeahead({
         source: exports.get_pm_people,

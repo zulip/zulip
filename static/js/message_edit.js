@@ -358,6 +358,7 @@ function edit_message(row, raw_content) {
             message_edit_topic_propagate.toggle(new_topic !== original_topic && new_topic !== "");
         });
     }
+    composebox_typeahead.initialize_topic_edit_typeahead(message_edit_topic, message.stream);
 }
 
 function start_edit_maintaining_scroll(row, content) {
@@ -416,7 +417,9 @@ exports.start_topic_edit = function (recipient_row) {
     if (topic === compose.empty_topic_placeholder()) {
         topic = '';
     }
-    form.find(".inline_topic_edit").val(topic).select().focus();
+    const inline_topic_edit = form.find(".inline_topic_edit");
+    inline_topic_edit.val(topic).select().focus();
+    composebox_typeahead.initialize_topic_edit_typeahead(inline_topic_edit, message.stream);
 };
 
 exports.is_editing = function (id) {
@@ -451,6 +454,8 @@ exports.end = function (row) {
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
     row.find(".message_edit").blur();
+    // Hide the topic editing typeahead, if shown.
+    row.find('input.message_edit_topic').blur();
 };
 
 exports.save = function (row, from_topic_edited_only) {
