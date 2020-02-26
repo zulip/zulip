@@ -1,12 +1,14 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
-set_global('alert_words', {
-    words: ['foo', 'bar'],
-});
 set_global('channel', {});
 
+zrequire('alert_words');
 zrequire('alert_words_ui');
+
+alert_words.initialize({
+    alert_words: ['foo', 'bar'],
+});
 
 run_test('render_alert_words_ui', () => {
     const word_list = $('#alert_words_list');
