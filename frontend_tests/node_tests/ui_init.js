@@ -32,7 +32,6 @@ set_global('csrf_token', 'whatever');
 
 set_global('$', () => {});
 set_global('resize', {});
-set_global('feature_flags', {});
 set_global('page_params', {});
 
 const ignore_modules = [
@@ -48,7 +47,6 @@ const ignore_modules = [
     'hotspots',
     'message_scroll',
     'message_viewport',
-    'night_mode',
     'panels',
     'popovers',
     'reload',
