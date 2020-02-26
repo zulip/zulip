@@ -16,7 +16,6 @@ zrequire('MessageListView', 'js/message_list_view');
 const MessageList = zrequire('message_list').MessageList;
 
 set_global('i18n', global.stub_i18n);
-set_global('feature_flags', {});
 
 const with_overrides = global.with_overrides; // make lint happy
 
