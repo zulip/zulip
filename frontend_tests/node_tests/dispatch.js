@@ -61,10 +61,6 @@ set_global('settings_exports', {
 set_global('page_params', {test_suite: false});
 const page_params = global.page_params;
 
-// alert_words is coupled to dispatching in the sense
-// that we write directly to alert_words.words
-zrequire('alert_words');
-
 // We access various msg_list object to rerender them
 set_global('current_msg_list', {rerender: noop});
 
@@ -81,7 +77,8 @@ set_global('blueslip', {
     },
 });
 
-// notify_server_message_read requires message_store and these dependencies.
+// For data-oriented modules, just use them, don't stub them.
+zrequire('alert_words');
 zrequire('unread');
 zrequire('topic_data');
 zrequire('stream_list');
@@ -90,6 +87,7 @@ zrequire('message_store');
 zrequire('people');
 zrequire('starred_messages');
 zrequire('user_status');
+
 zrequire('server_events_dispatch');
 
 function dispatch(ev) {
@@ -734,11 +732,19 @@ const with_overrides = global.with_overrides; // make lint happy
 
 with_overrides(function (override) {
     // alert_words
+    assert(!alert_words.has_alert_word('fire'));
+    assert(!alert_words.has_alert_word('lunch'));
+
     override('alert_words_ui.render_alert_words_ui', noop);
     const event = event_fixtures.alert_words;
     dispatch(event);
-    assert_same(global.alert_words.words, ['fire', 'lunch']);
 
+    assert.deepEqual(
+        alert_words.get_word_list(),
+        ['fire', 'lunch']
+    );
+    assert(alert_words.has_alert_word('fire'));
+    assert(alert_words.has_alert_word('lunch'));
 });
 
 with_overrides(function (override) {

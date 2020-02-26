@@ -1,10 +1,23 @@
-exports.words = page_params.alert_words;
-exports.set_words = function (value) {
-    exports.words = value;
+// For simplicity, we use a list for our internal
+// data, since that matches what the server sends us.
+let my_alert_words = [];
+
+exports.set_words = function (words) {
+    my_alert_words = words;
 };
 
-// Delete the `page_params.alert_words` since we are its sole user.
-delete page_params.alert_words;
+exports.get_word_list = function () {
+    // People usually only have a couple alert
+    // words, so it's cheap to be defensive
+    // here and give a copy of the list to
+    // our caller (in case they want to sort it
+    // or something).
+    return [...my_alert_words];
+};
+
+exports.has_alert_word = function (word) {
+    return my_alert_words.includes(word);
+};
 
 // escape_user_regex taken from jquery-ui/autocomplete.js,
 // licensed under MIT license.
@@ -19,7 +32,7 @@ exports.process_message = function (message) {
         return;
     }
 
-    for (const word of exports.words) {
+    for (const word of my_alert_words) {
         const clean = escape_user_regex(word);
         const before_punctuation = '\\s|^|>|[\\(\\".,\';\\[]';
         const after_punctuation = '\\s|$|<|[\\)\\"\\?!:.,\';\\]!]';
@@ -53,6 +66,10 @@ exports.notifies = function (message) {
     // certain types of workflows where everybody on your team, including
     // yourself, sets up an alert word to effectively mention the team.
     return !people.is_current_user(message.sender_email) && message.alerted;
+};
+
+exports.initialize = (params) => {
+    my_alert_words = params.alert_words;
 };
 
 window.alert_words = exports;

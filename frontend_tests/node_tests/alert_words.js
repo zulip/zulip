@@ -1,11 +1,11 @@
-const _page_params = {
+const params = {
     alert_words: ['alertone', 'alerttwo', 'alertthree', 'al*rt.*s', '.+', 'emoji'],
 };
 
-set_global('page_params', _page_params);
-
 zrequire('people');
 zrequire('alert_words');
+
+alert_words.initialize(params);
 
 global.people.add({
     email: 'tester@zulip.com',
@@ -116,4 +116,13 @@ run_test('munging', () => {
 
     alert_words.process_message(message_with_emoji);
     assert.equal(message_with_emoji.content, `<p>I <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title="heart"> <span class='alert-word'>emoji</span>!</p>`);
+});
+
+run_test('basic get/set operations', () => {
+    assert(!alert_words.has_alert_word('breakfast'));
+    assert(!alert_words.has_alert_word('lunch'));
+    alert_words.set_words(['breakfast', 'lunch']);
+    assert(alert_words.has_alert_word('breakfast'));
+    assert(alert_words.has_alert_word('lunch'));
+    assert(!alert_words.has_alert_word('dinner'));
 });

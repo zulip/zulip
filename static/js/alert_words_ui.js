@@ -1,7 +1,7 @@
 const render_alert_word_settings_item = require('../templates/alert_word_settings_item.hbs');
 
 exports.render_alert_words_ui = function () {
-    const words = alert_words.words;
+    const words = alert_words.get_word_list();
     const word_list = $('#alert_words_list');
 
     word_list.find('.alert-word-item').remove();
@@ -40,7 +40,7 @@ function add_alert_word(alert_word) {
     if (alert_word === '') {
         update_alert_word_status(i18n.t("Alert word can't be empty!"), true);
         return;
-    } else if (alert_words.words.includes(alert_word)) {
+    } else if (alert_words.has_alert_word(alert_word)) {
         update_alert_word_status(i18n.t("Alert word already exists!"), true);
         return;
     }

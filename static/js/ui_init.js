@@ -384,6 +384,10 @@ exports.initialize_everything = function () {
         return result;
     }
 
+    const alert_words_params = pop_fields(
+        'alert_words'
+    );
+
     const bot_params = pop_fields(
         'realm_bots'
     );
@@ -417,6 +421,7 @@ exports.initialize_everything = function () {
         'user_status'
     );
 
+    alert_words.initialize(alert_words_params);
     emojisets.initialize();
     people.initialize(page_params.user_id, people_params);
     scroll_bar.initialize();
