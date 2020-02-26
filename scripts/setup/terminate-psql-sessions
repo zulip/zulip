@@ -32,5 +32,6 @@ SELECT pg_terminate_backend(s.pid)
     WHERE
         s.datname IN ($tables)
         AND r.rolname = CURRENT_USER
-        AND (s.usename = r.rolname OR r.rolsuper = 't');
+        AND (s.usename = r.rolname OR r.rolsuper = 't')
+        AND s.pid <> pg_backend_pid();
 EOF
