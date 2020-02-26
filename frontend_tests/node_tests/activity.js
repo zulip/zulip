@@ -8,8 +8,6 @@ const _page_params = {
     user_id: 999,
 };
 
-const _feature_flags = {};
-
 const _document = {
     hasFocus: function () {
         return true;
@@ -52,10 +50,6 @@ const _stream_popover = {
     },
 };
 
-const _reload_state = {
-    is_in_progress: () => false,
-};
-
 const _resize = {
     resize_page_components: () => {},
 };
@@ -67,12 +61,10 @@ set_global('padded_widget', {
 set_global('channel', _channel);
 set_global('compose_state', _compose_state);
 set_global('document', _document);
-set_global('feature_flags', _feature_flags);
 set_global('keydown_util', _keydown_util);
 set_global('page_params', _page_params);
 set_global('pm_list', _pm_list);
 set_global('popovers', _popovers);
-set_global('reload_state', _reload_state);
 set_global('resize', _resize);
 set_global('scroll_util', _scroll_util);
 set_global('stream_popover', _stream_popover);
@@ -80,7 +72,6 @@ set_global('ui', _ui);
 
 zrequire('compose_fade');
 set_global('Handlebars', global.make_handlebars());
-zrequire('templates');
 zrequire('unread');
 zrequire('hash_util');
 zrequire('narrow');
@@ -864,14 +855,6 @@ run_test('initialize', () => {
     assert(!activity.new_user_input);
     assert(!activity.client_is_active);
 
-    clear();
-
-    // Now execute the reload-in-progress code path
-    _reload_state.is_in_progress = function () {
-        return true;
-    };
-
-    activity.initialize();
     clear();
 });
 
