@@ -628,10 +628,6 @@ def do_set_realm_property(realm: Realm, name: str, value: Any) -> None:
         )
         send_event(realm, event, active_user_ids(realm.id))
 
-
-
-
-
     if name == "email_address_visibility":
         for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False):
             # TODO: This does linear queries in the number of users
@@ -3473,7 +3469,6 @@ def do_change_icon_source(realm: Realm, icon_source: str, log: bool=True) -> Non
             op='hide_warn'
         )
         send_event(realm, event, active_user_ids(realm.id))
-
 
 def do_change_logo_source(realm: Realm, logo_source: str, night: bool) -> None:
     if not night:

@@ -172,10 +172,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
     # something reasonable will happen in logged-in portico pages.
     request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
 
-
-
-
-
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
 
     # Pass parameters to the client-side JavaScript code.
@@ -217,7 +213,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         bot_types             = get_bot_types(user_profile),
         two_fa_enabled        = two_fa_enabled,
         organization_profile_incompleted=user_profile.realm.is_organization_profile_incompleted,
-
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
         two_fa_enabled_user   = two_fa_enabled and bool(default_device(user_profile)),
@@ -283,9 +278,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
 
     navbar_logo_url = compute_navbar_logo_url(page_params)
-
-
-
 
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,

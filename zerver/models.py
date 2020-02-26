@@ -53,7 +53,6 @@ MAX_LANGUAGE_ID_LENGTH = 50  # type: int
 
 STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[str], AbstractSet[str])
 
-
 def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
     '''
     This function optimizes searches of the form
@@ -64,14 +63,13 @@ def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
     Use this very carefully!  Also, the caller should
     guard against empty lists of user_ids.
     '''
-    assert (user_ids)
+    assert(user_ids)
     value_list = ', '.join(str(int(user_id)) for user_id in user_ids)
     clause = '%s in (%s)' % (field, value_list)
     query = query.extra(
         where=[clause]
     )
     return query
-
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
 # so add a local cache as well as the remote cache cache.
@@ -82,8 +80,6 @@ def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
 # queries for the same recipient; this is just a convenient way to
 # write that code.
 per_request_display_recipient_cache = {}  # type: Dict[int, DisplayRecipientT]
-
-
 def get_display_recipient_by_id(recipient_id: int, recipient_type: int,
                                 recipient_type_id: Optional[int]) -> DisplayRecipientT:
     """
@@ -99,7 +95,6 @@ def get_display_recipient_by_id(recipient_id: int, recipient_type: int,
         per_request_display_recipient_cache[recipient_id] = result
     return per_request_display_recipient_cache[recipient_id]
 
-
 def get_display_recipient(recipient: 'Recipient') -> DisplayRecipientT:
     return get_display_recipient_by_id(
         recipient.id,
@@ -107,21 +102,17 @@ def get_display_recipient(recipient: 'Recipient') -> DisplayRecipientT:
         recipient.type_id
     )
 
-
 def flush_per_request_caches() -> None:
     global per_request_display_recipient_cache
     per_request_display_recipient_cache = {}
     global per_request_realm_filters_cache
     per_request_realm_filters_cache = {}
 
-
 def get_realm_emoji_cache_key(realm: 'Realm') -> str:
     return u'realm_emoji:%s' % (realm.id,)
 
-
 def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
     return u'active_realm_emoji:%s' % (realm.id,)
-
 
 # This simple call-once caching saves ~500us in auth_enabled_helper,
 # which is a significant optimization for common_context.  Note that
@@ -129,8 +120,6 @@ def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
 # regularly change within unit tests; we address the latter by calling
 # clear_supported_auth_backends_cache in our standard tearDown code.
 supported_backends = None  # type: Optional[Set[type]]
-
-
 def supported_auth_backends() -> Set[type]:
     global supported_backends
     # Caching temporarily disabled for debugging
@@ -138,11 +127,9 @@ def supported_auth_backends() -> Set[type]:
     assert supported_backends is not None
     return supported_backends
 
-
 def clear_supported_auth_backends_cache() -> None:
     global supported_backends
     supported_backends = None
-
 
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
@@ -157,9 +144,11 @@ class Realm(models.Model):
     # User-visible display name and description used on e.g. the organization homepage
     name = models.CharField(max_length=MAX_REALM_NAME_LENGTH, null=True)  # type: Optional[str]
     description = models.TextField(default=settings.DEFAULT_ORGANIZATION_DESCRIPTION)  # type: str
+
     # A short, identifier-like name for the organization.  Used in subdomains;
     # e.g. on a server at example.com, an org with string_id `foo` is reached
     # at `foo.example.com`.
+
     string_id = models.CharField(max_length=MAX_REALM_SUBDOMAIN_LENGTH, unique=True)  # type: str
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     deactivated = models.BooleanField(default=False)  # type: bool
@@ -172,7 +161,7 @@ class Realm(models.Model):
     _max_invites = models.IntegerField(null=True, db_column='max_invites')  # type: Optional[int]
     disallow_disposable_email_addresses = models.BooleanField(default=True)  # type: bool
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
-                                      default=2 ** 31 - 1)  # type: BitHandler
+                                      default=2**31 - 1)  # type: BitHandler
 
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview = models.BooleanField(default=True)  # type: bool
@@ -407,7 +396,6 @@ class Realm(models.Model):
         # This mapping needs to be imported from here due to the cyclic
         # dependency.
         from zproject.backends import AUTH_BACKEND_NAME_MAP
-
         ret = {}  # type: Dict[str, bool]
         supported_backends = [backend.__class__ for backend in supported_auth_backends()]
         for k, v in self.authentication_methods.iteritems():
@@ -419,11 +407,11 @@ class Realm(models.Model):
     def __str__(self) -> str:
         return "<Realm: %s %s>" % (self.string_id, self.id)
 
-    @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
+    @cache_with_key(get_realm_emoji_cache_key, timeout=3600 *24* 7)
     def get_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
         return get_realm_emoji_uncached(self)
 
-    @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
+    @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 *24* 7)
     def get_active_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
         return get_active_realm_emoji_uncached(self)
 
@@ -548,23 +536,18 @@ class Realm(models.Model):
             ('api_super_user', "Can send messages as other users for mirroring"),
         )
 
-
 post_save.connect(flush_realm, sender=Realm)
-
 
 def get_realm(string_id: str) -> Realm:
     return Realm.objects.get(string_id=string_id)
-
 
 def name_changes_disabled(realm: Optional[Realm]) -> bool:
     if realm is None:
         return settings.NAME_CHANGES_DISABLED
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
-
 def avatar_changes_disabled(realm: Realm) -> bool:
     return settings.AVATAR_CHANGES_DISABLED or realm.avatar_changes_disabled
-
 
 class RealmDomain(models.Model):
     """For an organization with emails_restricted_to_domains enabled, the list of
@@ -577,7 +560,6 @@ class RealmDomain(models.Model):
     class Meta:
         unique_together = ("realm", "domain")
 
-
 # These functions should only be used on email addresses that have
 # been validated via django.core.validators.validate_email
 #
@@ -587,23 +569,18 @@ class RealmDomain(models.Model):
 def email_to_username(email: str) -> str:
     return "@".join(email.split("@")[:-1]).lower()
 
-
 # Returns the raw domain portion of the desired email address
 def email_to_domain(email: str) -> str:
     return email.split("@")[-1].lower()
 
-
 class DomainNotAllowedForRealmError(Exception):
     pass
-
 
 class DisposableEmailError(Exception):
     pass
 
-
 class EmailContainsPlusError(Exception):
     pass
-
 
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
@@ -612,7 +589,7 @@ class EmailContainsPlusError(Exception):
 def email_allowed_for_realm(email: str, realm: Realm) -> None:
     if not realm.emails_restricted_to_domains:
         if realm.disallow_disposable_email_addresses and \
-            is_disposable_domain(email_to_domain(email)):
+              is_disposable_domain(email_to_domain(email)):
             raise DisposableEmailError
         return
     elif '+' in email_to_username(email):
@@ -630,14 +607,11 @@ def email_allowed_for_realm(email: str, realm: Realm) -> None:
                 return
     raise DomainNotAllowedForRealmError
 
-
 def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
 
-
 class RealmEmoji(models.Model):
-    author = models.ForeignKey('UserProfile', blank=True, null=True,
-                               on_delete=CASCADE)  # type: Optional[UserProfile]
+    author = models.ForeignKey('UserProfile', blank=True, null=True,on_delete=CASCADE)  # type: Optional[UserProfile]
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     name = models.TextField(validators=[
         MinLengthValidator(1),
@@ -659,7 +633,6 @@ class RealmEmoji(models.Model):
                                                   self.name,
                                                   self.deactivated,
                                                   self.file_name)
-
 
 def get_realm_emoji_dicts(realm: Realm,
                           only_active_emojis: bool = False) -> Dict[str, Dict[str, Any]]:
@@ -684,10 +657,8 @@ def get_realm_emoji_dicts(realm: Realm,
                                       author=author)
     return d
 
-
 def get_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
     return get_realm_emoji_dicts(realm)
-
 
 def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
     realm_emojis = get_realm_emoji_dicts(realm, only_active_emojis=True)
@@ -696,20 +667,17 @@ def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
         d[emoji_dict['name']] = emoji_dict
     return d
 
-
 def flush_realm_emoji(sender: Any, **kwargs: Any) -> None:
     realm = kwargs['instance'].realm
     cache_set(get_realm_emoji_cache_key(realm),
               get_realm_emoji_uncached(realm),
-              timeout=3600 * 24 * 7)
+              timeout=3600*24*7)
     cache_set(get_active_realm_emoji_cache_key(realm),
               get_active_realm_emoji_uncached(realm),
-              timeout=3600 * 24 * 7)
-
+              timeout=3600*24*7)
 
 post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
-
 
 def filter_pattern_validator(value: str) -> None:
     regex = re.compile(r'^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$')
@@ -725,13 +693,11 @@ def filter_pattern_validator(value: str) -> None:
         # Regex is invalid
         raise ValidationError(error_msg)
 
-
 def filter_format_validator(value: str) -> None:
     regex = re.compile(r'^([\.\/:a-zA-Z0-9#_?=&;-]+%\(([a-zA-Z0-9_-]+)\)s)+[/a-zA-Z0-9#_?=&;-]*$')
 
     if not regex.match(value):
         raise ValidationError(_('Invalid URL format string.'))
-
 
 class RealmFilter(models.Model):
     """Realm-specific regular expressions to automatically linkify certain
@@ -751,20 +717,16 @@ class RealmFilter(models.Model):
 def get_realm_filters_cache_key(realm_id: int) -> str:
     return u'%s:all_realm_filters:%s' % (cache.KEY_PREFIX, realm_id,)
 
-
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
 per_request_realm_filters_cache = {}  # type: Dict[int, List[Tuple[str, str, int]]]
 
-
 def realm_in_local_realm_filters_cache(realm_id: int) -> bool:
     return realm_id in per_request_realm_filters_cache
-
 
 def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
     if not realm_in_local_realm_filters_cache(realm_id):
         per_request_realm_filters_cache[realm_id] = realm_filters_for_realm_remote_cache(realm_id)
     return per_request_realm_filters_cache[realm_id]
-
 
 @cache_with_key(get_realm_filters_cache_key, timeout=3600 * 24 * 7)
 def realm_filters_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, int]]:
@@ -773,7 +735,6 @@ def realm_filters_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, 
         filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
     return filters
-
 
 def all_realm_filters() -> Dict[int, List[Tuple[str, str, int]]]:
     filters = defaultdict(list)  # type: DefaultDict[int, List[Tuple[str, str, int]]]
@@ -784,7 +745,6 @@ def all_realm_filters() -> Dict[int, List[Tuple[str, str, int]]]:
 
     return filters
 
-
 def flush_realm_filter(sender: Any, **kwargs: Any) -> None:
     realm_id = kwargs['instance'].realm_id
     cache_delete(get_realm_filters_cache_key(realm_id))
@@ -793,10 +753,8 @@ def flush_realm_filter(sender: Any, **kwargs: Any) -> None:
     except KeyError:
         pass
 
-
 post_save.connect(flush_realm_filter, sender=RealmFilter)
 post_delete.connect(flush_realm_filter, sender=RealmFilter)
-
 
 # The Recipient table is used to map Messages to the set of users who
 # received the message.  It is implemented as a set of triples (id,
@@ -1268,10 +1226,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         super().set_password(password)
 
-
 class PasswordTooWeakError(Exception):
     pass
-
 
 class UserGroup(models.Model):
     name = models.CharField(max_length=100)
@@ -1282,7 +1238,6 @@ class UserGroup(models.Model):
     class Meta:
         unique_together = (('realm', 'name'),)
 
-
 class UserGroupMembership(models.Model):
     user_group = models.ForeignKey(UserGroup, on_delete=CASCADE)
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
@@ -1290,37 +1245,30 @@ class UserGroupMembership(models.Model):
     class Meta:
         unique_together = (('user_group', 'user_profile'),)
 
-
 def receives_offline_push_notifications(user_profile: UserProfile) -> bool:
     return (user_profile.enable_offline_push_notifications and
             not user_profile.is_bot)
-
 
 def receives_offline_email_notifications(user_profile: UserProfile) -> bool:
     return (user_profile.enable_offline_email_notifications and
             not user_profile.is_bot)
 
-
 def receives_online_notifications(user_profile: UserProfile) -> bool:
     return (user_profile.enable_online_push_notifications and
             not user_profile.is_bot)
 
-
 def receives_stream_notifications(user_profile: UserProfile) -> bool:
     return (user_profile.enable_stream_push_notifications and
             not user_profile.is_bot)
-
 
 def remote_user_to_email(remote_user: str) -> str:
     if settings.SSO_APPEND_DOMAIN is not None:
         remote_user += "@" + settings.SSO_APPEND_DOMAIN
     return remote_user
 
-
 # Make sure we flush the UserProfile object from our remote cache
 # whenever we save it.
 post_save.connect(flush_user_profile, sender=UserProfile)
-
 
 class PreregistrationUser(models.Model):
     # Data on a partially created user, before the completion of
@@ -1365,14 +1313,12 @@ class PreregistrationUser(models.Model):
     )
     invited_as = models.PositiveSmallIntegerField(default=INVITE_AS['MEMBER'])  # type: int
 
-
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
     streams = models.ManyToManyField('Stream')  # type: Manager
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     invited_as = models.PositiveSmallIntegerField(
         default=PreregistrationUser.INVITE_AS['MEMBER'])  # type: int
-
 
 class EmailChangeStatus(models.Model):
     new_email = models.EmailField()  # type: str
@@ -1385,7 +1331,6 @@ class EmailChangeStatus(models.Model):
     status = models.IntegerField(default=0)  # type: int
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
-
 
 class AbstractPushDeviceToken(models.Model):
     APNS = 1
@@ -1414,7 +1359,6 @@ class AbstractPushDeviceToken(models.Model):
     class Meta:
         abstract = True
 
-
 class PushDeviceToken(AbstractPushDeviceToken):
     # The user who's device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)  # type: UserProfile
@@ -1422,10 +1366,8 @@ class PushDeviceToken(AbstractPushDeviceToken):
     class Meta:
         unique_together = ("user", "kind", "token")
 
-
 def generate_email_token_for_stream() -> str:
     return generate_random_token(32)
-
 
 class Stream(models.Model):
     MAX_NAME_LENGTH = 60
@@ -1508,7 +1450,6 @@ class Stream(models.Model):
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 
-
 class MutedTopic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
@@ -1521,7 +1462,6 @@ class MutedTopic(models.Model):
     def __str__(self) -> str:
         return "<MutedTopic: (%s, %s, %s)>" % (self.user_profile.email, self.stream.name, self.topic_name)
 
-
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)  # type: str
 
@@ -1530,7 +1470,6 @@ class Client(models.Model):
 
 
 get_client_cache = {}  # type: Dict[str, Client]
-
 
 def get_client(name: str) -> Client:
     # Accessing KEY_PREFIX through the module is necessary
@@ -1541,29 +1480,24 @@ def get_client(name: str) -> Client:
         get_client_cache[cache_name] = result
     return get_client_cache[cache_name]
 
-
 def get_client_cache_key(name: str) -> str:
     return u'get_client:%s' % (make_safe_digest(name),)
-
 
 @cache_with_key(get_client_cache_key, timeout=3600 * 24 * 7)
 def get_client_remote_cache(name: str) -> Client:
     (client, _) = Client.objects.get_or_create(name=name)
     return client
 
-
 @cache_with_key(get_stream_cache_key, timeout=3600 * 24 * 7)
 def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
     return Stream.objects.select_related().get(
         name__iexact=stream_name.strip(), realm_id=realm_id)
-
 
 def stream_name_in_use(stream_name: str, realm_id: int) -> bool:
     return Stream.objects.filter(
         name__iexact=stream_name.strip(),
         realm_id=realm_id
     ).exists()
-
 
 def get_active_streams(realm: Optional[Realm]) -> QuerySet:
     # TODO: Change return type to QuerySet[Stream]
@@ -1573,7 +1507,6 @@ def get_active_streams(realm: Optional[Realm]) -> QuerySet:
     """
     return Stream.objects.filter(realm=realm, deactivated=False)
 
-
 def get_stream(stream_name: str, realm: Realm) -> Stream:
     '''
     Callers that don't have a Realm object already available should use
@@ -1582,10 +1515,8 @@ def get_stream(stream_name: str, realm: Realm) -> Stream:
     '''
     return get_realm_stream(stream_name, realm.id)
 
-
 def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
     return Stream.objects.select_related().get(id=stream_id, realm=realm)
-
 
 def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]:
     def fetch_streams_by_name(stream_names: List[str]) -> Sequence[Stream]:
@@ -1614,23 +1545,18 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
                                      [stream_name.lower() for stream_name in stream_names],
                                      id_fetcher=stream_to_lower_name)
 
-
 def get_recipient_cache_key(type: int, type_id: int) -> str:
     return u"%s:get_recipient:%s:%s" % (cache.KEY_PREFIX, type, type_id,)
-
 
 @cache_with_key(get_recipient_cache_key, timeout=3600 * 24 * 7)
 def get_recipient(type: int, type_id: int) -> Recipient:
     return Recipient.objects.get(type_id=type_id, type=type)
 
-
 def get_stream_recipient(stream_id: int) -> Recipient:
     return get_recipient(Recipient.STREAM, stream_id)
 
-
 def get_personal_recipient(user_profile_id: int) -> Recipient:
     return get_recipient(Recipient.PERSONAL, user_profile_id)
-
 
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
     # The caller should ensure that user_profile_ids includes
@@ -1640,14 +1566,12 @@ def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
     huddle = get_huddle(list(user_profile_ids))
     return get_recipient(Recipient.HUDDLE, huddle.id)
 
-
 def get_huddle_user_ids(recipient: Recipient) -> List[int]:
     assert (recipient.type == Recipient.HUDDLE)
 
     return Subscription.objects.filter(
         recipient=recipient
     ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
-
 
 def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]]:
     """
@@ -1669,7 +1593,6 @@ def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]
                                      if subscription.recipient_id == recipient.id]
 
     return result_dict
-
 
 class AbstractMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
@@ -1709,7 +1632,6 @@ class AbstractMessage(models.Model):
         return "<%s: %s / %s / %s>" % (self.__class__.__name__, display_recipient,
                                        self.subject, self.sender)
 
-
 class ArchiveTransaction(models.Model):
     timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
     # Marks if the data archived in this transaction has been restored:
@@ -1732,14 +1654,12 @@ class ArchiveTransaction(models.Model):
             timestamp=self.timestamp
         )
 
-
 class ArchivedMessage(AbstractMessage):
     """Used as a temporary holding place for deleted messages before they
     are permanently deleted.  This is an important part of a robust
     'message retention' feature.
     """
     archive_transaction = models.ForeignKey(ArchiveTransaction, on_delete=CASCADE)  # type: ArchiveTransaction
-
 
 class Message(AbstractMessage):
 
@@ -1818,7 +1738,6 @@ class Message(AbstractMessage):
             return True
         return False
 
-
 def get_context_for_message(message: Message) -> Sequence[Message]:
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
@@ -1830,7 +1749,6 @@ def get_context_for_message(message: Message) -> Sequence[Message]:
 
 
 post_save.connect(flush_message, sender=Message)
-
 
 class AbstractSubMessage(models.Model):
     # We can send little text messages that are associated with a regular
@@ -1845,7 +1763,6 @@ class AbstractSubMessage(models.Model):
     class Meta:
         abstract = True
 
-
 class SubMessage(AbstractSubMessage):
     message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
 
@@ -1856,13 +1773,11 @@ class SubMessage(AbstractSubMessage):
         query = query.order_by('message_id', 'id')
         return list(query)
 
-
 class ArchivedSubMessage(AbstractSubMessage):
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: ArchivedMessage
 
 
 post_save.connect(flush_submessage, sender=SubMessage)
-
 
 class AbstractReaction(models.Model):
     """For emoji reactions to messages (and potentially future reaction types).
@@ -1906,7 +1821,6 @@ class AbstractReaction(models.Model):
         abstract = True
         unique_together = ("user_profile", "message", "emoji_name")
 
-
 class Reaction(AbstractReaction):
     message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
 
@@ -1919,10 +1833,8 @@ class Reaction(AbstractReaction):
     def __str__(self) -> str:
         return "%s / %s / %s" % (self.user_profile.email, self.message.id, self.emoji_name)
 
-
 class ArchivedReaction(AbstractReaction):
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: ArchivedMessage
-
 
 # Whenever a message is sent, for each user subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
@@ -1938,7 +1850,6 @@ class ArchivedReaction(AbstractReaction):
 # though each row is only 4 integers.
 class AbstractUserMessage(models.Model):
     id = models.BigAutoField(primary_key=True)  # type: int
-
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     # The order here is important!  It's the order of fields in the bitfield.
     ALL_FLAGS = [
@@ -2036,10 +1947,8 @@ class AbstractUserMessage(models.Model):
         return "<%s: %s / %s (%s)>" % (self.__class__.__name__, display_recipient,
                                        self.user_profile.email, self.flags_list())
 
-
 class UserMessage(AbstractUserMessage):
     message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
-
 
 def get_usermessage_by_message_id(user_profile: UserProfile, message_id: int) -> Optional[UserMessage]:
     try:
@@ -2048,14 +1957,12 @@ def get_usermessage_by_message_id(user_profile: UserProfile, message_id: int) ->
     except UserMessage.DoesNotExist:
         return None
 
-
 class ArchivedUserMessage(AbstractUserMessage):
     """Used as a temporary holding place for deleted UserMessages objects
     before they are permanently deleted.  This is an important part of
     a robust 'message retention' feature.
     """
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)  # type: Message
-
 
 class AbstractAttachment(models.Model):
     file_name = models.TextField(db_index=True)  # type: str
@@ -2084,14 +1991,12 @@ class AbstractAttachment(models.Model):
     def __str__(self) -> str:
         return "<%s: %s>" % (self.__class__.__name__, self.file_name,)
 
-
 class ArchivedAttachment(AbstractAttachment):
     """Used as a temporary holding place for deleted Attachment objects
     before they are permanently deleted.  This is an important part of
     a robust 'message retention' feature.
     """
     messages = models.ManyToManyField(ArchivedMessage)  # type: Manager
-
 
 class Attachment(AbstractAttachment):
     messages = models.ManyToManyField(Message)  # type: Manager
@@ -2114,10 +2019,8 @@ class Attachment(AbstractAttachment):
             } for m in self.messages.all()]
         }
 
-
 post_save.connect(flush_used_upload_space_cache, sender=Attachment)
 post_delete.connect(flush_used_upload_space_cache, sender=Attachment)
-
 
 def validate_attachment_request(user_profile: UserProfile, path_id: str) -> Optional[bool]:
     try:
@@ -2156,13 +2059,11 @@ def validate_attachment_request(user_profile: UserProfile, path_id: str) -> Opti
     return Stream.objects.filter(id__in=relevant_stream_ids,
                                  history_public_to_subscribers=True).exists()
 
-
 def get_old_unclaimed_attachments(weeks_ago: int) -> Sequence[Attachment]:
     # TODO: Change return type to QuerySet[Attachment]
     delta_weeks_ago = timezone_now() - datetime.timedelta(weeks=weeks_ago)
     old_attachments = Attachment.objects.filter(messages=None, create_time__lt=delta_weeks_ago)
     return old_attachments
-
 
 class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
@@ -2197,11 +2098,9 @@ class Subscription(models.Model):
     def __str__(self) -> str:
         return "<Subscription: %s -> %s>" % (self.user_profile, self.recipient)
 
-
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_id(uid: int) -> UserProfile:
     return UserProfile.objects.select_related().get(id=uid)
-
 
 @cache_with_key(user_profile_by_email_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_email(email: str) -> UserProfile:
@@ -2213,11 +2112,9 @@ def get_user_profile_by_email(email: str) -> UserProfile:
     """
     return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
 
-
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
     return UserProfile.objects.select_related().get(api_key=api_key)
-
 
 def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     # Fetches users by delivery_email for use in
@@ -2228,7 +2125,6 @@ def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     # with the same email address in different realms.
     return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip(), realm=realm)
 
-
 @cache_with_key(user_profile_cache_key, timeout=3600 * 24 * 7)
 def get_user(email: str, realm: Realm) -> UserProfile:
     # Fetches the user by its visible-to-other users username (in the
@@ -2237,13 +2133,11 @@ def get_user(email: str, realm: Realm) -> UserProfile:
     # get_user_by_delivery_email.
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
-
 def get_active_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     user_profile = get_user_by_delivery_email(email, realm)
     if not user_profile.is_active:
         raise UserProfile.DoesNotExist()
     return user_profile
-
 
 def get_active_user(email: str, realm: Realm) -> UserProfile:
     user_profile = get_user(email, realm)
@@ -2251,10 +2145,8 @@ def get_active_user(email: str, realm: Realm) -> UserProfile:
         raise UserProfile.DoesNotExist()
     return user_profile
 
-
 def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(id=uid, realm=realm)
-
 
 def get_user_including_cross_realm(email: str, realm: Optional[Realm] = None) -> UserProfile:
     if is_cross_realm_bot_email(email):
@@ -2262,11 +2154,9 @@ def get_user_including_cross_realm(email: str, realm: Optional[Realm] = None) ->
     assert realm is not None
     return get_user(email, realm)
 
-
 @cache_with_key(bot_profile_cache_key, timeout=3600 * 24 * 7)
 def get_system_bot(email: str) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip())
-
 
 def get_user_by_id_in_realm_including_cross_realm(
     uid: int,
@@ -2283,13 +2173,11 @@ def get_user_by_id_in_realm_including_cross_realm(
 
     raise UserProfile.DoesNotExist()
 
-
 @cache_with_key(realm_user_dicts_cache_key, timeout=3600 * 24 * 7)
 def get_realm_user_dicts(realm_id: int) -> List[Dict[str, Any]]:
     return UserProfile.objects.filter(
         realm_id=realm_id,
     ).values(*realm_user_dict_fields)
-
 
 @cache_with_key(active_user_ids_cache_key, timeout=3600 * 24 * 7)
 def active_user_ids(realm_id: int) -> List[int]:
@@ -2298,7 +2186,6 @@ def active_user_ids(realm_id: int) -> List[int]:
         is_active=True
     ).values_list('id', flat=True)
     return list(query)
-
 
 @cache_with_key(active_non_guest_user_ids_cache_key, timeout=3600 * 24 * 7)
 def active_non_guest_user_ids(realm_id: int) -> List[int]:
@@ -2310,22 +2197,18 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
     ).values_list('id', flat=True)
     return list(query)
 
-
 def get_source_profile(email: str, string_id: str) -> Optional[UserProfile]:
     try:
         return get_user_by_delivery_email(email, get_realm(string_id))
     except (Realm.DoesNotExist, UserProfile.DoesNotExist):
         return None
 
-
 @cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600 * 24 * 7)
 def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
     return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
 
-
 def is_cross_realm_bot_email(email: str) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
-
 
 # The Huddle class represents a group of individuals who have had a
 # Group Private Message conversation together.  The actual membership
@@ -2338,21 +2221,17 @@ class Huddle(models.Model):
     # CommaSeparatedIntegerField would be better.
     huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)  # type: str
 
-
 def get_huddle_hash(id_list: List[int]) -> str:
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
     return make_safe_digest(hash_key)
 
-
 def huddle_hash_cache_key(huddle_hash: str) -> str:
     return u"huddle_by_hash:%s" % (huddle_hash,)
-
 
 def get_huddle(id_list: List[int]) -> Huddle:
     huddle_hash = get_huddle_hash(id_list)
     return get_huddle_backend(huddle_hash, id_list)
-
 
 @cache_with_key(lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash), timeout=3600 * 24 * 7)
 def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
@@ -2367,7 +2246,6 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
             Subscription.objects.bulk_create(subs_to_create)
         return huddle
 
-
 def clear_database() -> None:  # nocoverage # Only used in populate_db
     pylibmc.Client(['127.0.0.1']).flush_all()
     model = None  # type: Any
@@ -2376,7 +2254,6 @@ def clear_database() -> None:  # nocoverage # Only used in populate_db
                   DefaultStream]:
         model.objects.all().delete()
     Session.objects.all().delete()
-
 
 class UserActivity(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
@@ -2389,7 +2266,6 @@ class UserActivity(models.Model):
     class Meta:
         unique_together = ("user_profile", "client", "query")
 
-
 class UserActivityInterval(models.Model):
     MIN_INTERVAL_LENGTH = datetime.timedelta(minutes=15)
 
@@ -2397,14 +2273,12 @@ class UserActivityInterval(models.Model):
     start = models.DateTimeField('start time', db_index=True)  # type: datetime.datetime
     end = models.DateTimeField('end time', db_index=True)  # type: datetime.datetime
 
-
 class UserPresence(models.Model):
     """A record from the last time we heard from a given user on a given client.
 
     This is a tricky subsystem, because it is highly optimized.  See the docs:
       https://zulip.readthedocs.io/en/latest/subsystems/presence.html
     """
-
     class Meta:
         unique_together = ("user_profile", "client")
 
@@ -2595,7 +2469,6 @@ class UserPresence(models.Model):
 
         return status_val
 
-
 class UserStatus(models.Model):
     user_profile = models.OneToOneField(UserProfile, on_delete=CASCADE)  # type: UserProfile
 
@@ -2608,14 +2481,12 @@ class UserStatus(models.Model):
     status = models.PositiveSmallIntegerField(default=NORMAL)  # type: int
     status_text = models.CharField(max_length=255, default='')  # type: str
 
-
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     stream = models.ForeignKey(Stream, on_delete=CASCADE)  # type: Stream
 
     class Meta:
         unique_together = ("realm", "stream")
-
 
 class DefaultStreamGroup(models.Model):
     MAX_NAME_LENGTH = 60
@@ -2633,10 +2504,8 @@ class DefaultStreamGroup(models.Model):
                     description=self.description,
                     streams=[stream.to_dict() for stream in self.streams.all()])
 
-
 def get_default_stream_groups(realm: Realm) -> List[DefaultStreamGroup]:
     return DefaultStreamGroup.objects.filter(realm=realm)
-
 
 class AbstractScheduledJob(models.Model):
     scheduled_timestamp = models.DateTimeField(db_index=True)  # type: datetime.datetime
@@ -2646,7 +2515,6 @@ class AbstractScheduledJob(models.Model):
 
     class Meta:
         abstract = True
-
 
 class ScheduledEmail(AbstractScheduledJob):
     # Exactly one of users or address should be set. These are
@@ -2668,7 +2536,6 @@ class ScheduledEmail(AbstractScheduledJob):
         return "<ScheduledEmail: %s %s %s>" % (self.type,
                                                self.address or list(self.users.all()),
                                                self.scheduled_timestamp)
-
 
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
@@ -2711,7 +2578,6 @@ EMAIL_TYPES = {
     'digest': ScheduledEmail.DIGEST,
     'invitation_reminder': ScheduledEmail.INVITATION_REMINDER,
 }
-
 
 class AbstractRealmAuditLog(models.Model):
     """Defines fields common to RealmAuditLog and RemoteRealmAuditLog."""
@@ -2778,7 +2644,6 @@ class AbstractRealmAuditLog(models.Model):
     class Meta:
         abstract = True
 
-
 class RealmAuditLog(AbstractRealmAuditLog):
     """
     RealmAuditLog tracks important changes to users, streams, and
@@ -2817,7 +2682,6 @@ class RealmAuditLog(AbstractRealmAuditLog):
         return "<RealmAuditLog: %s %s %s %s>" % (
             self.realm, self.event_type, self.event_time, self.id)
 
-
 class UserHotspot(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     hotspot = models.CharField(max_length=30)  # type: str
@@ -2825,7 +2689,6 @@ class UserHotspot(models.Model):
 
     class Meta:
         unique_together = ("user", "hotspot")
-
 
 def check_valid_user_ids(realm_id: int, user_ids: List[int],
                          allow_deactivated: bool = False) -> Optional[str]:
@@ -2851,7 +2714,6 @@ def check_valid_user_ids(realm_id: int, user_ids: List[int],
             return _('User with ID %d is a bot') % (user_id)
 
     return None
-
 
 class CustomProfileField(models.Model):
     """Defines a form field for the per-realm custom profile fields feature.
@@ -2945,10 +2807,8 @@ class CustomProfileField(models.Model):
     def __str__(self) -> str:
         return "<CustomProfileField: %s %s %s %d>" % (self.realm, self.name, self.field_type, self.order)
 
-
 def custom_profile_fields_for_realm(realm_id: int) -> List[CustomProfileField]:
     return CustomProfileField.objects.filter(realm=realm_id).order_by('order')
-
 
 class CustomProfileFieldValue(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
@@ -2962,13 +2822,11 @@ class CustomProfileFieldValue(models.Model):
     def __str__(self) -> str:
         return "<CustomProfileFieldValue: %s %s %s>" % (self.user_profile, self.field, self.value)
 
-
 # Interfaces for services
 # They provide additional functionality like parsing message to obtain query url, data to be sent to url,
 # and parsing the response.
 GENERIC_INTERFACE = u'GenericService'
 SLACK_INTERFACE = u'SlackOutgoingWebhookService'
-
 
 # A Service corresponds to either an outgoing webhook bot or an embedded bot.
 # The type of Service is determined by the bot_type field of the referenced
@@ -3013,14 +2871,11 @@ class Service(models.Model):
         # Raises KeyError if invalid
         return self._interfaces[self.interface]
 
-
 def get_bot_services(user_profile_id: str) -> List[Service]:
     return list(Service.objects.filter(user_profile__id=user_profile_id))
 
-
 def get_service_profile(user_profile_id: str, service_name: str) -> Service:
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
-
 
 class BotStorageData(models.Model):
     bot_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
@@ -3030,7 +2885,6 @@ class BotStorageData(models.Model):
     class Meta:
         unique_together = ("bot_profile", "key")
 
-
 class BotConfigData(models.Model):
     bot_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     key = models.TextField(db_index=True)  # type: str
@@ -3039,10 +2893,8 @@ class BotConfigData(models.Model):
     class Meta(object):
         unique_together = ("bot_profile", "key")
 
-
 class InvalidFakeEmailDomain(Exception):
     pass
-
 
 def get_fake_email_domain() -> str:
     try:
