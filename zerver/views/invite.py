@@ -59,7 +59,7 @@ def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
         invitee_emails.add(email.strip())
     return invitee_emails
 
-@require_realm_admin
+@require_member_or_admin
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     all_users = do_get_user_invites(user_profile)
     return json_success({'invites': all_users})

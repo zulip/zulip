@@ -5192,13 +5192,21 @@ def do_invite_users(user_profile: UserProfile,
     notify_invites_changed(user_profile)
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
+    print("user: ", user_profile.is_realm_admin)
     days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
     active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', 1)
 
     lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
-    prereg_users = PreregistrationUser.objects.exclude(status=active_value).filter(
-        invited_at__gte=lowest_datetime,
-        referred_by__realm=user_profile.realm)
+    prereg_users = None
+    if user_profile.is_realm_admin:
+        prereg_users = PreregistrationUser.objects.exclude(status=active_value).filter(
+            invited_at__gte=lowest_datetime,
+            referred_by__realm=user_profile.realm)
+    else:
+        prereg_users = PreregistrationUser.objects.exclude(status=active_value).filter(
+            invited_at__gte=lowest_datetime,
+            referred_by__realm=user_profile.realm,
+            referred_by=user_profile)
 
     invites = []
 

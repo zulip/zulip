@@ -140,11 +140,13 @@
                     <div class="text">{{ _('Custom profile fields') }}</div>
                 </li>
                 {% endif %}
-                {% if is_admin %}
+                {% if not is_guest %}
                 <li tabindex="0" data-section="invites-list-admin">
                     <i class="icon fa fa-user" aria-hidden="true"></i>
                     <div class="text">{{ _('Invitations') }}</div>
                 </li>
+                {% endif %}
+                {% if is_admin %}
                 <li tabindex="0" data-section="data-exports-admin">
                     <i class="icon fa fa-database" aria-hidden="true"></i>
                     <div class="text">{{ _('Data exports') }}</div>
