@@ -32,6 +32,9 @@ parser = argparse.ArgumentParser(usage)
 parser.add_argument('--skip-flaky-tests', dest='skip_flaky',
                     action="store_true",
                     default=False, help='Skip flaky tests')
+parser.add_argument('--interactive', dest='interactive',
+                    action="store_true",
+                    default=False, help='Run tests interactively')
 parser.add_argument('--force', dest='force',
                     action="store_true",
                     default=False, help='Run tests despite possible problems.')
@@ -103,11 +106,7 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
     if options.xunit_export:
         xunit_export = ["--xunit=var/xunit-test-results/casper/result.xml"]
 
-    with test_server_running(options.force, external_host):
-        # Important: do this next call inside the `with` block, when Django
-        #            will be pointing at the test database.
-        subprocess.check_call('tools/setup/generate-test-credentials')
-
+    def run_tests() -> int:
         ret = 1
         for test_file in test_files:
             test_name = os.path.basename(test_file)
@@ -115,7 +114,23 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
             print("\n\n===================== %s\nRunning %s\n\n" % (test_name, " ".join(map(shlex.quote, cmd))), flush=True)
             ret = subprocess.call(cmd)
             if ret != 0:
-                break
+                return ret
+        return 0
+
+    with test_server_running(options.force, external_host):
+        # Important: do this next call inside the `with` block, when Django
+        #            will be pointing at the test database.
+        subprocess.check_call('tools/setup/generate-test-credentials')
+        if options.interactive:
+            response = input('Press Enter to run tests, "q" to quit: ')
+            ret = 1
+            while response != 'q':
+                ret = run_tests()
+                if ret != 0:
+                    response = input('Tests failed. Press Enter to re-run tests, "q" to quit: ')
+        else:
+            ret = 1
+            ret = run_tests()
     if ret != 0:
         print("""
 The Casper frontend tests failed!  For help debugging, read:
