@@ -70,12 +70,10 @@ exports.recent = (function () {
         return _.pluck(recent_private_messages, 'user_ids_string');
     };
 
-    self.initialize = function () {
-        for (const conversation of page_params.recent_private_conversations) {
+    self.initialize = function (params) {
+        for (const conversation of params.recent_private_conversations) {
             self.insert(conversation.user_ids, conversation.max_message_id);
         }
-
-        delete page_params.recent_private_messages;
     };
 
     return self;
