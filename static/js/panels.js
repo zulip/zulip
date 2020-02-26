@@ -21,9 +21,20 @@ exports.initialize = function () {
     // to tell them to set up an email server.
     if (page_params.warn_no_email === true && page_params.is_admin) {
         exports.open($("[data-process='email-server']"));
+
+    } else if (page_params.organization_profile_incompleted === true && page_params.is_admin) {
+        exports.open($("[data-process='profile-incomplete']"));
     } else {
         exports.open($("[data-process='notifications']"));
     }
+};
+
+exports.show_profile_incompete_warn = function () {
+    exports.open($("[data-process='profile-incomplete']"));
+};
+
+exports.hide_profile_incompete_warn = function () {
+    $("[data-process]").hide();
 };
 
 exports.open = function ($process) {

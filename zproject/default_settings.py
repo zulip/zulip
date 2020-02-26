@@ -230,6 +230,11 @@ EMAIL_BACKEND = None  # type: Optional[str]
 # Set in settings.py when email isn't configured.
 WARN_NO_EMAIL = False
 
+
+DEFAULT_ORGANIZATION_DESCRIPTION="The coolest place in the universe"
+
+
+
 # Whether to keep extra frontend stack trace data.
 # TODO: Investigate whether this should be removed and set one way or other.
 SAVE_FRONTEND_STACKTRACES = False

@@ -19,6 +19,7 @@ from typing import Any, Dict, List, Union
 from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
 
+
 ########################################################################
 # INITIAL SETTINGS
 ########################################################################
@@ -1018,9 +1019,9 @@ SOCIAL_AUTH_PIPELINE = [
 ########################################################################
 # EMAIL SETTINGS
 ########################################################################
-
 # Django setting. Not used in the Zulip codebase.
 DEFAULT_FROM_EMAIL = ZULIP_ADMINISTRATOR
+
 
 if EMAIL_BACKEND is not None:
     # If the server admin specified a custom email backend, use that.
@@ -1028,12 +1029,14 @@ if EMAIL_BACKEND is not None:
 elif DEVELOPMENT:
     # In the dev environment, emails are printed to the run-dev.py console.
     EMAIL_BACKEND = 'zproject.email_backends.EmailLogBackEnd'
-elif not EMAIL_HOST:
+elif  not EMAIL_HOST :
     # If an email host is not specified, fail gracefully
     WARN_NO_EMAIL = True
+
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 
 EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')

@@ -78,6 +78,7 @@ def update_realm(
         zoom_api_secret: Optional[str]=REQ(validator=check_string, default=None),
         digest_weekday: Optional[int]=REQ(validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None),
 ) -> HttpResponse:
+
     realm = user_profile.realm
 
     # Additional validation/error checking beyond types go here, so
@@ -130,7 +131,6 @@ def update_realm(
     # `REQ/has_request_variables` extraction.
     req_vars = {k: v for k, v in list(locals().items()) if k in realm.property_types}
     data = {}  # type: Dict[str, Any]
-
     for k, v in list(req_vars.items()):
         if v is not None and getattr(realm, k) != v:
             do_set_realm_property(realm, k, v)
@@ -138,6 +138,7 @@ def update_realm(
                 data[k] = 'updated'
             else:
                 data[k] = v
+
 
     # The following realm properties do not fit the pattern above
     # authentication_methods is not supported by the do_set_realm_property
