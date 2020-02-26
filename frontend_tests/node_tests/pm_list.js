@@ -13,9 +13,6 @@ set_global('stream_popover', {
 set_global('unread', {});
 set_global('unread_ui', {});
 set_global('blueslip', global.make_zblueslip());
-set_global('popovers', {
-    hide_all: function () {},
-});
 set_global('vdom', {
     render: () => {
         return 'fake-dom-for-pm-list';
