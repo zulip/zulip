@@ -7,7 +7,6 @@ set_global('upload_widget', {});
 set_global('blueslip', global.make_zblueslip());
 
 zrequire('emoji');
-zrequire('markdown');
 
 run_test('build_emoji_upload_widget', () => {
     let build_widget_stub = false;
