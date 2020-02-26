@@ -4,13 +4,6 @@ set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
 set_global('i18n', global.stub_i18n);
 
-set_global('colorspace', {
-    sRGB_to_linear: noop,
-    luminance_to_lightness: function () {
-        return 1;
-    },
-});
-
 zrequire('people');
 zrequire('stream_data');
 zrequire('stream_events');
