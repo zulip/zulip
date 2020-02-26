@@ -125,9 +125,27 @@ def get_issue_author(payload: Dict[str, Any]) -> str:
     return get_in(payload, ['user', 'displayName'])
 
 def get_issue_id(payload: Dict[str, Any]) -> str:
+    if 'issue' not in payload:
+        # Some ancient version of Jira or one of its extensions posts
+        # comment_created events without an "issue" element.  For
+        # these, the best we can do is extract the Jira-intenral
+        # issue number and use that in the topic.
+        #
+        # Users who want better formatting can upgrade Jira.
+        return payload['comment']['self'].split('/')[-3]
+
     return get_in(payload, ['issue', 'key'])
 
 def get_issue_title(payload: Dict[str, Any]) -> str:
+    if 'issue' not in payload:
+        # Some ancient version of Jira or one of its extensions posts
+        # comment_created events without an "issue" element.  For
+        # these, the best we can do is extract the Jira-intenral
+        # issue number and use that in the topic.
+        #
+        # Users who want better formatting can upgrade Jira.
+        return 'Upgrade Jira to get the issue title here.'
+
     return get_in(payload, ['issue', 'fields', 'summary'])
 
 def get_issue_subject(payload: Dict[str, Any]) -> str:
@@ -253,10 +271,11 @@ def normalize_comment(comment: str) -> str:
     return normalized_comment
 
 def handle_comment_created_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+    title = get_issue_title(payload)
     return "{author} commented on issue: *\"{title}\"\
 *\n``` quote\n{comment}\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
-        title = payload["issue"]["fields"]["summary"],
+        title = title,
         comment = normalize_comment(payload["comment"]["body"])
     )
 
