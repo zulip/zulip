@@ -351,7 +351,7 @@ function edit_message(row, raw_content) {
     edit_obj.scrolled_by = scroll_by;
     message_viewport.scrollTop(message_viewport.scrollTop() + scroll_by);
 
-    if (feature_flags.propagate_topic_edits && !message.locally_echoed) {
+    if (!message.locally_echoed) {
         const original_topic = message.topic;
         message_edit_topic.keyup(function () {
             const new_topic = message_edit_topic.val();
@@ -496,10 +496,8 @@ exports.save = function (row, from_topic_edited_only) {
     const request = {message_id: message.id};
     if (topic_changed) {
         request.topic = new_topic;
-        if (feature_flags.propagate_topic_edits) {
-            const selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
-            request.propagate_mode = selected_topic_propagation;
-        }
+        const selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
+        request.propagate_mode = selected_topic_propagation;
         changed = true;
     }
 
