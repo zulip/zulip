@@ -113,6 +113,7 @@ try {
         _.throttle = immediate;
         _.debounce = immediate;
 
+        namespace.clear_zulip_refs();
         run_one_module(file);
         namespace.restore();
     });
