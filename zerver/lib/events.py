@@ -782,6 +782,8 @@ def apply_event(state: Dict[str, Any],
         state[event['notification_name']] = event['setting']
     elif event['type'] == "invites_changed":
         pass
+    elif event['type'] == 'panels':
+        pass
     elif event['type'] == "user_group":
         if event['op'] == 'add':
             state['realm_user_groups'].append(event['group'])
