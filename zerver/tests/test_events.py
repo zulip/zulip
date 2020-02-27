@@ -2138,7 +2138,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_change_realm_icon_source(self) -> None:
         action = lambda: do_change_icon_source(self.user_profile.realm, Realm.ICON_UPLOADED)
-        events = self.do_test(action, state_change_expected=True,num_events=2)
+        events = self.do_test(action, state_change_expected=True, num_events=2)
         schema_checker = self.check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update_dict')),
