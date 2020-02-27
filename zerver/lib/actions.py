@@ -4513,7 +4513,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     stream_being_edited = None
     if message.is_stream_message():
         stream_id = message.recipient.type_id
-        stream_being_edited = Stream.objects.get(id=stream_id)
+        stream_being_edited = get_stream_by_id_in_realm(stream_id, user_profile.realm)
         event['stream_name'] = stream_being_edited.name
 
     ums = UserMessage.objects.filter(message=message.id)
