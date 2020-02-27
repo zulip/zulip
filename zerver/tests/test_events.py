@@ -1648,7 +1648,7 @@ class EventsRegisterTest(ZulipTestCase):
                 state_change_expected = False
             events = self.do_test(
                 lambda: do_set_realm_property(self.user_profile.realm, name, val),
-                state_change_expected=state_change_expected)
+                state_change_expected=state_change_expected, num_events=2)
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
