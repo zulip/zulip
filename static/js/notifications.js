@@ -408,9 +408,7 @@ function process_notification(notification) {
         });
         notification_object.onclick = function () {
             notification_object.cancel();
-            if (feature_flags.clicking_notification_causes_narrow) {
-                narrow.by_topic(message.id, {trigger: 'notification'});
-            }
+            narrow.by_topic(message.id, {trigger: 'notification'});
             window.focus();
         };
         notification_object.onclose = function () {
@@ -429,9 +427,7 @@ function process_notification(notification) {
                     // We don't need to bring the browser window into focus explicitly
                     // by calling `window.focus()` as well as don't need to clear the
                     // notification since it is the default behavior in Firefox.
-                    if (feature_flags.clicking_notification_causes_narrow) {
-                        narrow.by_topic(message.id, {trigger: 'notification'});
-                    }
+                    narrow.by_topic(message.id, {trigger: 'notification'});
                 };
             } else {
                 in_browser_notify(message, title, content, raw_operators, opts);
