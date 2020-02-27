@@ -67,7 +67,7 @@ We also recommend reviewing
 
 Finally, keep your eye on
 [the GSoC timeline](https://developers.google.com/open-source/gsoc/timeline). The
-student application deadline is March 31, 2020 .
+student application deadline is March 31, 2020.
 
 ## Getting started
 
