@@ -110,6 +110,7 @@ class HomeTest(ZulipTestCase):
             "never_subscribed",
             "night_mode",
             "notification_sound",
+            'organization_profile_incomplete',
             "password_min_guesses",
             "password_min_length",
             "plan_includes_wide_organization_logo",
