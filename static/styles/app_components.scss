@@ -274,8 +274,9 @@
 
     pointer-events: none;
     opacity: 0;
+    visibility: hidden;
 
-    transition: opacity 0.2s ease-in;
+    transition: all 0.2s ease-in;
     overflow: hidden;
 
     .overlay-content {
@@ -287,6 +288,7 @@
     &.show {
         opacity: 1;
         pointer-events: all;
+        visibility: visible;
         transition-timing-function: ease-out;
 
         .overlay-content {
