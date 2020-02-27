@@ -528,7 +528,7 @@ class Realm(models.Model):
     @property
     def is_organization_profile_incompleted(self) -> bool:
         if not self.description or self.description == settings.DEFAULT_ORGANIZATION_DESCRIPTION \
-            or self.description.startswith('Organization imported from') or self.icon_source == "G":
+           or self.description.startswith('Organization imported from') or self.icon_source == "G":
             return True
         else:
             return False
@@ -611,7 +611,7 @@ class EmailContainsPlusError(Exception):
 def email_allowed_for_realm(email: str, realm: Realm) -> None:
     if not realm.emails_restricted_to_domains:
         if realm.disallow_disposable_email_addresses and \
-            is_disposable_domain(email_to_domain(email)):
+           is_disposable_domain(email_to_domain(email)):
             raise DisposableEmailError
         return
     elif '+' in email_to_username(email):
@@ -1185,7 +1185,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def allowed_bot_types(self) -> List[int]:
         allowed_bot_types = []
         if self.is_realm_admin or \
-            not self.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS:
+           not self.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS:
             allowed_bot_types.append(UserProfile.DEFAULT_BOT)
         allowed_bot_types += [
             UserProfile.INCOMING_WEBHOOK_BOT,
