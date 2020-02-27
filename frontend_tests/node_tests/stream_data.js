@@ -639,6 +639,8 @@ run_test('notifications', () => {
         stream_id: 102,
         name: 'India',
         subscribed: true,
+        invite_only: false,
+        is_web_public: false,
         desktop_notifications: null,
         audible_notifications: null,
         email_notifications: null,
@@ -702,6 +704,84 @@ run_test('notifications', () => {
     page_params.enable_stream_email_notifications = true;
     india.email_notifications = false;
     assert(!stream_data.receives_notifications('India', "email_notifications"));
+
+    const canada = {
+        stream_id: 103,
+        name: 'Canada',
+        subscribed: true,
+        invite_only: true,
+        is_web_public: false,
+        desktop_notifications: null,
+        audible_notifications: null,
+        email_notifications: null,
+        push_notifications: null,
+        wildcard_mentions_notify: null,
+    };
+    stream_data.add_sub(canada);
+
+    const antarctica = {
+        stream_id: 104,
+        name: 'Antarctica',
+        subscribed: true,
+        desktop_notifications: null,
+        audible_notifications: null,
+        email_notifications: null,
+        push_notifications: null,
+        wildcard_mentions_notify: null,
+    };
+    stream_data.add_sub(antarctica);
+
+    page_params.enable_stream_desktop_notifications = true;
+    page_params.enable_stream_audible_notifications = true;
+    page_params.enable_stream_email_notifications = false;
+    page_params.enable_stream_push_notifications = false;
+    page_params.wildcard_mentions_notify = true;
+
+    india.desktop_notifications = null;
+    india.audible_notifications = true;
+    india.email_notifications = true;
+    india.push_notifications = true;
+    india.wildcard_mentions_notify = false;
+
+    canada.desktop_notifications = true;
+    canada.audible_notifications = false;
+    canada.email_notifications = true;
+    canada.push_notifications = null;
+    canada.wildcard_mentions_notify = false;
+
+    antarctica.desktop_notifications = true;
+    antarctica.audible_notifications = null;
+    antarctica.email_notifications = false;
+    antarctica.push_notifications = null;
+    antarctica.wildcard_mentions_notify = null;
+
+    const unmatched_streams = stream_data.get_unmatched_streams_for_notification_settings();
+    const expected_streams = [
+        {
+            desktop_notifications: true,
+            audible_notifications: false,
+            email_notifications: true,
+            push_notifications: false,
+            wildcard_mentions_notify: false,
+            invite_only: true,
+            is_web_public: false,
+            stream_name: 'Canada',
+            stream_id: 103,
+        },
+        {
+            desktop_notifications: true,
+            audible_notifications: true,
+            email_notifications: true,
+            push_notifications: true,
+            wildcard_mentions_notify: false,
+            invite_only: false,
+            is_web_public: false,
+            stream_name: 'India',
+            stream_id: 102,
+        },
+    ];
+
+    assert.deepEqual(unmatched_streams, expected_streams);
 });
 
 run_test('is_muted', () => {
