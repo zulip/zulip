@@ -1,7 +1,6 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 set_global('blueslip', global.make_zblueslip());
-set_global('i18n', global.stub_i18n);
 
 zrequire('unread_ui');
 zrequire('Filter', 'js/filter');
@@ -17,7 +16,6 @@ zrequire('list_cursor');
 zrequire('stream_list');
 zrequire('topic_zoom');
 zrequire('ui');
-set_global('i18n', global.stub_i18n);
 set_global('page_params', {
     is_admin: false,
     realm_users: [],
