@@ -1,6 +1,8 @@
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 
+// All of our other tests stub out i18n activity;
+// here we do a quick sanity check on the engine itself.
 const i18next = zrequire('i18next', 'i18next');
 
 global.i18n = i18next;

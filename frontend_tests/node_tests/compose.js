@@ -5,7 +5,6 @@ set_global('blueslip', global.make_zblueslip());
 const noop = function () {};
 
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 
 const LazySet = zrequire('lazy_set.js').LazySet;
 

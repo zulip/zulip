@@ -2,7 +2,6 @@ const noop = function () {};
 const return_true = function () { return true; };
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
-set_global('i18n', global.stub_i18n);
 
 zrequire('people');
 zrequire('stream_data');

@@ -20,7 +20,6 @@ const _navigator = {
 };
 set_global('navigator', _navigator);
 
-set_global('i18n', global.stub_i18n);
 
 zrequire('alert_words');
 zrequire('muting');

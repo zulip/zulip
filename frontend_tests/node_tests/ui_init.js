@@ -21,7 +21,6 @@ const rewiremock = require("rewiremock/node");
 
 */
 const util = zrequire('util');
-set_global('i18n', global.stub_i18n);
 set_global('document', {
     location: {
         protocol: 'http',

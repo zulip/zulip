@@ -7,7 +7,6 @@ set_global('document', {
 set_global('navigator', {
     userAgent: 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
 });
-set_global('i18n', global.stub_i18n);
 set_global('page_params', {
     max_file_upload_size: 25,
 });

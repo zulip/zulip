@@ -2,7 +2,6 @@ zrequire('user_pill');
 zrequire('settings_user_groups');
 
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 set_global('confirm_dialog', {});
 
 const noop = function () {};
