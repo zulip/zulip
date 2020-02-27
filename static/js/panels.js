@@ -22,7 +22,7 @@ exports.initialize = function () {
     if (page_params.warn_no_email === true && page_params.is_admin) {
         exports.open($("[data-process='email-server']"));
 
-    } else if (page_params.organization_profile_incompleted === true && page_params.is_admin) {
+    } else if (page_params.organization_profile_incomplete === true && page_params.is_admin) {
         exports.open($("[data-process='profile-incomplete']"));
     } else {
         exports.open($("[data-process='notifications']"));
