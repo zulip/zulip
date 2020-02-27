@@ -1027,7 +1027,7 @@ if EMAIL_BACKEND is not None:
 elif DEVELOPMENT:
     # In the dev environment, emails are printed to the run-dev.py console.
     EMAIL_BACKEND = 'zproject.email_backends.EmailLogBackEnd'
-elif not EMAIL_HOST :
+elif not EMAIL_HOST:
     # If an email host is not specified, fail gracefully
     WARN_NO_EMAIL = True
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'

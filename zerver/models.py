@@ -528,7 +528,7 @@ class Realm(models.Model):
     @property
     def is_organization_profile_incompleted(self) -> bool:
         if not self.description or self.description == settings.DEFAULT_ORGANIZATION_DESCRIPTION \
-           or self.description.startswith('Organization imported from') or self.icon_source == "G":
+            or self.description.startswith('Organization imported from') or self.icon_source == "G":
             return True
         else:
             return False
@@ -611,7 +611,7 @@ class EmailContainsPlusError(Exception):
 def email_allowed_for_realm(email: str, realm: Realm) -> None:
     if not realm.emails_restricted_to_domains:
         if realm.disallow_disposable_email_addresses and \
-           is_disposable_domain(email_to_domain(email)):
+            is_disposable_domain(email_to_domain(email)):
             raise DisposableEmailError
         return
     elif '+' in email_to_username(email):
@@ -1804,8 +1804,7 @@ class Message(AbstractMessage):
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
                                    'zulipmobile', 'zulipelectron', 'zulipterminal', 'snipe',
-                                   'website', 'ios', 'android')) or (
-                   'desktop app' in sending_client)
+                                   'website', 'ios', 'android')) or ('desktop app' in sending_client)
 
     @staticmethod
     def is_status_message(content: str, rendered_content: str) -> bool:
@@ -2127,8 +2126,8 @@ def validate_attachment_request(user_profile: UserProfile, path_id: str) -> Opti
     if user_profile == attachment.owner:
         # If you own the file, you can access it.
         return True
-    if (attachment.is_realm_public and attachment.realm == user_profile.realm and
-        user_profile.can_access_public_streams()):
+    if (attachment.is_realm_public and attachment.realm == user_profile.realm
+       and user_profile.can_access_public_streams()):
         # Any user in the realm can access realm-public files
         return True
 
