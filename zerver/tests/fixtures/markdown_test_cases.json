@@ -680,19 +680,6 @@
       "text_content": "gonna take a break for a bit--all yours if you want to play around too. what I did:\n\ninstall cmake\ngit clone zulip desktop\nrun cmake-gui .. in c:\\zulip\\zulip-desktop\\msvcbuild\nhit configure\/generate until it generated the msvc project (had to make a fix to some cmake files)\nopened vs2013 \ntried to build\n"
     },
     {
-      "name": "modal_link",
-      "input": "!modal_link(#settings, Settings page)",
-      "expected_output": "<p><a href=\"#settings\" title=\"#settings\">Settings page</a></p>",
-      "marked_expected_output": "<p>!modal_link(#settings, Settings page)</p>",
-      "text_content": "Settings page"
-    },
-    {
-      "name": "modal_link_escaped",
-      "input": "`!modal_link(#settings, Settings page)`",
-      "expected_output": "<p><code>!modal_link(#settings, Settings page)</code></p>",
-      "text_content": "!modal_link(#settings, Settings page)"
-    },
-    {
       "name": "avatar",
       "input": "!avatar(username@example.com)",
       "expected_output": "<p><img alt=\"username@example.com\" class=\"message_body_gravatar\" src=\"/avatar/username@example.com?s=30\" title=\"username@example.com\"></p>",

@@ -1328,22 +1328,6 @@ class Emoji(markdown.inlinepatterns.Pattern):
 def content_has_emoji_syntax(content: str) -> bool:
     return re.search(EMOJI_REGEX, content) is not None
 
-class ModalLink(markdown.inlinepatterns.Pattern):
-    """
-    A pattern that allows including in-app modal links in messages.
-    """
-
-    def handleMatch(self, match: Match[str]) -> Element:
-        relative_url = match.group('relative_url')
-        text = match.group('text')
-
-        a_tag = markdown.util.etree.Element("a")
-        a_tag.set("href", relative_url)
-        a_tag.set("title", relative_url)
-        a_tag.text = text
-
-        return a_tag
-
 class Tex(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Element:
         rendered = render_tex(match.group('body'), is_inline=True)
@@ -1915,7 +1899,6 @@ class Bugdown(markdown.Markdown):
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), 'topic', 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 85)
         reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 80)
-        reg.register(ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'), 'modal_link', 75)
         # Note that !gravatar syntax should be deprecated long term.
         reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 70)
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
