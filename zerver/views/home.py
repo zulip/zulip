@@ -212,7 +212,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
         bot_types             = get_bot_types(user_profile),
         two_fa_enabled        = two_fa_enabled,
-        organization_profile_incomplete=user_profile.realm.is_organization_profile_incomplete,
+        organization_profile_incomplete=user_profile.realm.is_organization_profile_incomplete(),
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
         two_fa_enabled_user   = two_fa_enabled and bool(default_device(user_profile)),
