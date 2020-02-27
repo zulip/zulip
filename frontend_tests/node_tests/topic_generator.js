@@ -2,7 +2,6 @@ set_global('blueslip', global.make_zblueslip());
 set_global('pm_conversations', {
     recent: {},
 });
-set_global('i18n', global.stub_i18n);
 
 zrequire('muting');
 zrequire('unread');

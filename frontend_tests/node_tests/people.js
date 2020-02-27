@@ -7,7 +7,6 @@ set_global('settings_org', {});
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
-set_global('i18n', global.stub_i18n);
 
 const me = {
     email: 'me@example.com',

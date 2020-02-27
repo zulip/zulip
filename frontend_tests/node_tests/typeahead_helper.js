@@ -1,4 +1,3 @@
-set_global('i18n', global.stub_i18n);
 set_global('page_params', {realm_is_zephyr_mirror_realm: false});
 set_global('md5', function (s) {
     return 'md5-' + s;

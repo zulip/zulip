@@ -1,5 +1,4 @@
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 zrequire('input_pill');
 
 set_global('Handlebars', global.make_handlebars());
