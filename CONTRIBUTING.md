@@ -213,8 +213,9 @@ and how to reproduce it if known, your browser/OS if relevant, and a
 if appropriate.
 
 **Reporting security issues**. Please do not report security issues
-  publicly, including on public streams on chat.zulip.org. You can email
-  zulip-security@googlegroups.com. We create a CVE for every security issue.
+  publicly, including on public streams on chat.zulip.org. You can
+  email security@zulipchat.com.  We create a CVE for every security
+  issue in our released software.
 
 ## User feedback
 
