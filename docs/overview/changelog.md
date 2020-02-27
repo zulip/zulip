@@ -57,7 +57,7 @@ in bursts.
 - Migrated settings for notifications streams to our standard UX model.
 - Extracted the typeahead and markdown libraries for reuse in the
   mobile apps.
-- Removed the legacy websockets-based for sending messages.  This
+- Removed the legacy websockets-based system for sending messages.  This
   system was always a hack, was only ever used for one endpoint, and
   did not provide a measureable latency benefit over HTTP/2.
 
