@@ -53,6 +53,7 @@ MAX_LANGUAGE_ID_LENGTH = 50  # type: int
 
 STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[str], AbstractSet[str])
 
+
 def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
     '''
     This function optimizes searches of the form
@@ -63,13 +64,14 @@ def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
     Use this very carefully!  Also, the caller should
     guard against empty lists of user_ids.
     '''
-    assert(user_ids)
+    assert (user_ids)
     value_list = ', '.join(str(int(user_id)) for user_id in user_ids)
     clause = '%s in (%s)' % (field, value_list)
     query = query.extra(
         where=[clause]
     )
     return query
+
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
 # so add a local cache as well as the remote cache cache.
@@ -80,6 +82,8 @@ def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
 # queries for the same recipient; this is just a convenient way to
 # write that code.
 per_request_display_recipient_cache = {}  # type: Dict[int, DisplayRecipientT]
+
+
 def get_display_recipient_by_id(recipient_id: int, recipient_type: int,
                                 recipient_type_id: Optional[int]) -> DisplayRecipientT:
     """
@@ -95,6 +99,7 @@ def get_display_recipient_by_id(recipient_id: int, recipient_type: int,
         per_request_display_recipient_cache[recipient_id] = result
     return per_request_display_recipient_cache[recipient_id]
 
+
 def get_display_recipient(recipient: 'Recipient') -> DisplayRecipientT:
     return get_display_recipient_by_id(
         recipient.id,
@@ -102,17 +107,21 @@ def get_display_recipient(recipient: 'Recipient') -> DisplayRecipientT:
         recipient.type_id
     )
 
+
 def flush_per_request_caches() -> None:
     global per_request_display_recipient_cache
     per_request_display_recipient_cache = {}
     global per_request_realm_filters_cache
     per_request_realm_filters_cache = {}
 
+
 def get_realm_emoji_cache_key(realm: 'Realm') -> str:
     return u'realm_emoji:%s' % (realm.id,)
 
+
 def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
     return u'active_realm_emoji:%s' % (realm.id,)
+
 
 # This simple call-once caching saves ~500us in auth_enabled_helper,
 # which is a significant optimization for common_context.  Note that
@@ -120,6 +129,8 @@ def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
 # regularly change within unit tests; we address the latter by calling
 # clear_supported_auth_backends_cache in our standard tearDown code.
 supported_backends = None  # type: Optional[Set[type]]
+
+
 def supported_auth_backends() -> Set[type]:
     global supported_backends
     # Caching temporarily disabled for debugging
@@ -127,9 +138,11 @@ def supported_auth_backends() -> Set[type]:
     assert supported_backends is not None
     return supported_backends
 
+
 def clear_supported_auth_backends_cache() -> None:
     global supported_backends
     supported_backends = None
+
 
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
@@ -161,7 +174,7 @@ class Realm(models.Model):
     _max_invites = models.IntegerField(null=True, db_column='max_invites')  # type: Optional[int]
     disallow_disposable_email_addresses = models.BooleanField(default=True)  # type: bool
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
-                                      default=2**31 - 1)  # type: BitHandler
+                                      default=2 ** 31 - 1)  # type: BitHandler
 
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview = models.BooleanField(default=True)  # type: bool
@@ -407,11 +420,11 @@ class Realm(models.Model):
     def __str__(self) -> str:
         return "<Realm: %s %s>" % (self.string_id, self.id)
 
-    @cache_with_key(get_realm_emoji_cache_key, timeout=3600 *24* 7)
+    @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
     def get_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
         return get_realm_emoji_uncached(self)
 
-    @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 *24* 7)
+    @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
     def get_active_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
         return get_active_realm_emoji_uncached(self)
 
@@ -506,18 +519,16 @@ class Realm(models.Model):
     def is_zephyr_mirror_realm(self) -> bool:
         return self.string_id == "zephyr"
 
-    #this function checks wether organization profile is incomplete or not  by the following conditions
-    #1.check for the avalibity of orgnization description
-    #2.is the Description is Default description given by zulip server
-    #3.is the Description starts with Organization imported from
-    #4.is organization icon is default icon
-    #if any of these condition is satisfied then it is considered as organization profile is incomplete
-
+    # this function checks whether organization profile is incomplete or not  by the following conditions
+    # 1.check for the availability of organization description
+    # 2.is the Description is Default description given by zulip server
+    # 3.is the Description starts with Organization imported from
+    # 4.is organization icon is default icon
+    # if any of these condition is satisfied then it is considered as organization profile is incomplete
     @property
     def is_organization_profile_incompleted(self) -> bool:
         if not self.description or self.description == settings.DEFAULT_ORGANIZATION_DESCRIPTION \
-            or self.description.startswith('Organization imported from') \
-            or self.icon_source == "G":
+           or self.description.startswith('Organization imported from') or self.icon_source == "G":
             return True
         else:
             return False
@@ -536,18 +547,23 @@ class Realm(models.Model):
             ('api_super_user', "Can send messages as other users for mirroring"),
         )
 
+
 post_save.connect(flush_realm, sender=Realm)
+
 
 def get_realm(string_id: str) -> Realm:
     return Realm.objects.get(string_id=string_id)
+
 
 def name_changes_disabled(realm: Optional[Realm]) -> bool:
     if realm is None:
         return settings.NAME_CHANGES_DISABLED
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
+
 def avatar_changes_disabled(realm: Realm) -> bool:
     return settings.AVATAR_CHANGES_DISABLED or realm.avatar_changes_disabled
+
 
 class RealmDomain(models.Model):
     """For an organization with emails_restricted_to_domains enabled, the list of
@@ -560,6 +576,7 @@ class RealmDomain(models.Model):
     class Meta:
         unique_together = ("realm", "domain")
 
+
 # These functions should only be used on email addresses that have
 # been validated via django.core.validators.validate_email
 #
@@ -569,18 +586,23 @@ class RealmDomain(models.Model):
 def email_to_username(email: str) -> str:
     return "@".join(email.split("@")[:-1]).lower()
 
+
 # Returns the raw domain portion of the desired email address
 def email_to_domain(email: str) -> str:
     return email.split("@")[-1].lower()
 
+
 class DomainNotAllowedForRealmError(Exception):
     pass
+
 
 class DisposableEmailError(Exception):
     pass
 
+
 class EmailContainsPlusError(Exception):
     pass
+
 
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
@@ -589,7 +611,7 @@ class EmailContainsPlusError(Exception):
 def email_allowed_for_realm(email: str, realm: Realm) -> None:
     if not realm.emails_restricted_to_domains:
         if realm.disallow_disposable_email_addresses and \
-              is_disposable_domain(email_to_domain(email)):
+           is_disposable_domain(email_to_domain(email)):
             raise DisposableEmailError
         return
     elif '+' in email_to_username(email):
@@ -607,11 +629,14 @@ def email_allowed_for_realm(email: str, realm: Realm) -> None:
                 return
     raise DomainNotAllowedForRealmError
 
+
 def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
 
+
 class RealmEmoji(models.Model):
-    author = models.ForeignKey('UserProfile', blank=True, null=True,on_delete=CASCADE)  # type: Optional[UserProfile]
+    author = models.ForeignKey('UserProfile', blank=True, null=True,
+                               on_delete=CASCADE)  # type: Optional[UserProfile]
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     name = models.TextField(validators=[
         MinLengthValidator(1),
@@ -633,6 +658,7 @@ class RealmEmoji(models.Model):
                                                   self.name,
                                                   self.deactivated,
                                                   self.file_name)
+
 
 def get_realm_emoji_dicts(realm: Realm,
                           only_active_emojis: bool = False) -> Dict[str, Dict[str, Any]]:
@@ -657,8 +683,10 @@ def get_realm_emoji_dicts(realm: Realm,
                                       author=author)
     return d
 
+
 def get_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
     return get_realm_emoji_dicts(realm)
+
 
 def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
     realm_emojis = get_realm_emoji_dicts(realm, only_active_emojis=True)
@@ -667,17 +695,20 @@ def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
         d[emoji_dict['name']] = emoji_dict
     return d
 
+
 def flush_realm_emoji(sender: Any, **kwargs: Any) -> None:
     realm = kwargs['instance'].realm
     cache_set(get_realm_emoji_cache_key(realm),
               get_realm_emoji_uncached(realm),
-              timeout=3600*24*7)
+              timeout=3600 * 24 * 7)
     cache_set(get_active_realm_emoji_cache_key(realm),
               get_active_realm_emoji_uncached(realm),
-              timeout=3600*24*7)
+              timeout=3600 * 24 * 7)
+
 
 post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
+
 
 def filter_pattern_validator(value: str) -> None:
     regex = re.compile(r'^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$')
@@ -693,11 +724,13 @@ def filter_pattern_validator(value: str) -> None:
         # Regex is invalid
         raise ValidationError(error_msg)
 
+
 def filter_format_validator(value: str) -> None:
     regex = re.compile(r'^([\.\/:a-zA-Z0-9#_?=&;-]+%\(([a-zA-Z0-9_-]+)\)s)+[/a-zA-Z0-9#_?=&;-]*$')
 
     if not regex.match(value):
         raise ValidationError(_('Invalid URL format string.'))
+
 
 class RealmFilter(models.Model):
     """Realm-specific regular expressions to automatically linkify certain
@@ -717,16 +750,20 @@ class RealmFilter(models.Model):
 def get_realm_filters_cache_key(realm_id: int) -> str:
     return u'%s:all_realm_filters:%s' % (cache.KEY_PREFIX, realm_id,)
 
+
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
 per_request_realm_filters_cache = {}  # type: Dict[int, List[Tuple[str, str, int]]]
 
+
 def realm_in_local_realm_filters_cache(realm_id: int) -> bool:
     return realm_id in per_request_realm_filters_cache
+
 
 def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
     if not realm_in_local_realm_filters_cache(realm_id):
         per_request_realm_filters_cache[realm_id] = realm_filters_for_realm_remote_cache(realm_id)
     return per_request_realm_filters_cache[realm_id]
+
 
 @cache_with_key(get_realm_filters_cache_key, timeout=3600 * 24 * 7)
 def realm_filters_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, int]]:
@@ -735,6 +772,7 @@ def realm_filters_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, 
         filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
     return filters
+
 
 def all_realm_filters() -> Dict[int, List[Tuple[str, str, int]]]:
     filters = defaultdict(list)  # type: DefaultDict[int, List[Tuple[str, str, int]]]
@@ -745,6 +783,7 @@ def all_realm_filters() -> Dict[int, List[Tuple[str, str, int]]]:
 
     return filters
 
+
 def flush_realm_filter(sender: Any, **kwargs: Any) -> None:
     realm_id = kwargs['instance'].realm_id
     cache_delete(get_realm_filters_cache_key(realm_id))
@@ -753,8 +792,10 @@ def flush_realm_filter(sender: Any, **kwargs: Any) -> None:
     except KeyError:
         pass
 
+
 post_save.connect(flush_realm_filter, sender=RealmFilter)
 post_delete.connect(flush_realm_filter, sender=RealmFilter)
+
 
 # The Recipient table is used to map Messages to the set of users who
 # received the message.  It is implemented as a set of triples (id,
@@ -1226,8 +1267,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         super().set_password(password)
 
+
 class PasswordTooWeakError(Exception):
     pass
+
 
 class UserGroup(models.Model):
     name = models.CharField(max_length=100)
@@ -1238,6 +1281,7 @@ class UserGroup(models.Model):
     class Meta:
         unique_together = (('realm', 'name'),)
 
+
 class UserGroupMembership(models.Model):
     user_group = models.ForeignKey(UserGroup, on_delete=CASCADE)
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
@@ -1245,30 +1289,37 @@ class UserGroupMembership(models.Model):
     class Meta:
         unique_together = (('user_group', 'user_profile'),)
 
+
 def receives_offline_push_notifications(user_profile: UserProfile) -> bool:
     return (user_profile.enable_offline_push_notifications and
             not user_profile.is_bot)
+
 
 def receives_offline_email_notifications(user_profile: UserProfile) -> bool:
     return (user_profile.enable_offline_email_notifications and
             not user_profile.is_bot)
 
+
 def receives_online_notifications(user_profile: UserProfile) -> bool:
     return (user_profile.enable_online_push_notifications and
             not user_profile.is_bot)
 
+
 def receives_stream_notifications(user_profile: UserProfile) -> bool:
     return (user_profile.enable_stream_push_notifications and
             not user_profile.is_bot)
+
 
 def remote_user_to_email(remote_user: str) -> str:
     if settings.SSO_APPEND_DOMAIN is not None:
         remote_user += "@" + settings.SSO_APPEND_DOMAIN
     return remote_user
 
+
 # Make sure we flush the UserProfile object from our remote cache
 # whenever we save it.
 post_save.connect(flush_user_profile, sender=UserProfile)
+
 
 class PreregistrationUser(models.Model):
     # Data on a partially created user, before the completion of
@@ -1313,12 +1364,14 @@ class PreregistrationUser(models.Model):
     )
     invited_as = models.PositiveSmallIntegerField(default=INVITE_AS['MEMBER'])  # type: int
 
+
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
     streams = models.ManyToManyField('Stream')  # type: Manager
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     invited_as = models.PositiveSmallIntegerField(
         default=PreregistrationUser.INVITE_AS['MEMBER'])  # type: int
+
 
 class EmailChangeStatus(models.Model):
     new_email = models.EmailField()  # type: str
@@ -1331,6 +1384,7 @@ class EmailChangeStatus(models.Model):
     status = models.IntegerField(default=0)  # type: int
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
+
 
 class AbstractPushDeviceToken(models.Model):
     APNS = 1
@@ -1358,6 +1412,7 @@ class AbstractPushDeviceToken(models.Model):
 
     class Meta:
         abstract = True
+
 
 class PushDeviceToken(AbstractPushDeviceToken):
     # The user who's device this is
