@@ -725,7 +725,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('prev_rendered_content_version', check_int),
             ('propagate_mode', check_string),
             ('rendered_content', check_string),
-            ('sender', check_string),
             ('stream_id', check_int),
             ('stream_name', check_string),
             (TOPIC_NAME, check_string),
