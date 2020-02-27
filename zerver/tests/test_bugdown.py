@@ -1845,16 +1845,6 @@ class BugdownTest(ZulipTestCase):
                          '<p>There #<strong>Nonexistentstream</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
 
-    def test_in_app_modal_link(self) -> None:
-        msg = '!modal_link(#settings, Settings page)'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<a href="#settings" title="#settings">Settings page</a>'
-            '</p>'
-        )
-
     def test_image_preview_title(self) -> None:
         msg = '[My favorite image](https://example.com/testimage.png)'
         converted = bugdown_convert(msg)
