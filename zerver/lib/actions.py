@@ -4496,9 +4496,6 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     message.last_edit_time = timestamp
 
     event = {'type': 'update_message',
-             # TODO: We probably want to remove the 'sender' field
-             # after confirming it isn't used by any consumers.
-             'sender': user_profile.email,
              'user_id': user_profile.id,
              'edit_timestamp': datetime_to_timestamp(timestamp),
              'message_id': message.id}  # type: Dict[str, Any]
