@@ -525,8 +525,8 @@ class Realm(models.Model):
     # 3.is the Description starts with Organization imported from
     # 4.is organization icon is default icon
     # if any of these condition is satisfied then it is considered as organization profile is incomplete
-    @property
-    def is_organization_profile_incompleted(self) -> bool:
+
+    def is_organization_profile_incomplete(self) -> bool:
         if not self.description or self.description == settings.DEFAULT_ORGANIZATION_DESCRIPTION \
            or self.description.startswith('Organization imported from') or self.icon_source == "G":
             return True
@@ -1436,6 +1436,7 @@ class Stream(models.Model):
     deactivated = models.BooleanField(default=False)  # type: bool
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default=u'')  # type: str
     rendered_description = models.TextField(default=u'')  # type: str
+
 
     # Foreign key to the Recipient object for STREAM type messages to this stream.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
