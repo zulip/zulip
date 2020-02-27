@@ -746,6 +746,38 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
     return sub;
 };
 
+exports.get_unmatched_streams_for_notification_settings = function () {
+    const subscribed_rows = exports.subscribed_subs();
+    subscribed_rows.sort((a, b) => util.strcmp(a.name, b.name));
+
+    const notification_settings = [];
+    for (const row of subscribed_rows) {
+        const settings_values = {};
+        let make_table_row = false;
+        for (const notification_name of stream_notification_settings) {
+            const prepend = notification_name === 'wildcard_mentions_notify' ? "" : "enable_stream_";
+            const default_setting = page_params[prepend + notification_name];
+            const stream_setting = exports.receives_notifications(row.name, notification_name);
+
+            settings_values[notification_name] = stream_setting;
+            if (stream_setting !== default_setting) {
+                make_table_row = true;
+            }
+        }
+        // We do not need to display the streams whose settings
+        // match with the global settings defined by the user.
+        if (make_table_row) {
+            settings_values.stream_name = row.name;
+            settings_values.stream_id = row.stream_id;
+            settings_values.invite_only = row.invite_only;
+            settings_values.is_web_public = row.is_web_public;
+
+            notification_settings.push(settings_values);
+        }
+    }
+    return notification_settings;
+};
+
 exports.get_streams_for_settings_page = function () {
     // TODO: This function is only used for copy-from-stream, so
     //       the current name is slightly misleading now, plus
