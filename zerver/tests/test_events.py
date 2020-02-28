@@ -1275,10 +1275,6 @@ class EventsRegisterTest(ZulipTestCase):
 
         do_set_realm_property(self.user_profile.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
-
-
-
-
         events = self.do_test(lambda: self.register("test1@zulip.com", "test1"))
         self.assert_length(events, 1)
         error = realm_user_add_checker('events[0]', events[0])
