@@ -9,6 +9,7 @@ zrequire('stream_edit');
 const { JSDOM } = require("jsdom");
 const { window } = new JSDOM();
 global.$ = require('jquery')(window);
+set_global('DOMParser', window.DOMParser);
 
 // When writing these tests, the following command might be helpful:
 // ./tools/get-handlebar-vars static/templates/*.hbs

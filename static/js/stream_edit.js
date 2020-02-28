@@ -1,3 +1,4 @@
+const util = require("./util");
 const render_settings_deactivation_stream_modal = require("../templates/settings/deactivation_stream_modal.hbs");
 const render_stream_member_list_entry = require('../templates/stream_member_list_entry.hbs');
 const render_subscription_settings = require('../templates/subscription_settings.hbs');
@@ -111,7 +112,9 @@ exports.update_stream_name = function (sub, new_name) {
 exports.update_stream_description = function (sub) {
     const stream_settings = exports.settings_for_sub(sub);
     stream_settings.find('input.description').val(sub.description);
-    stream_settings.find('.stream-description-editable').html(sub.rendered_description);
+    stream_settings.find('.stream-description-editable').html(
+        util.clean_user_content_links(sub.rendered_description)
+    );
 };
 
 exports.invite_user_to_stream = function (user_email, sub, success, failure) {
@@ -458,7 +461,9 @@ exports.change_stream_description = function (e) {
                               $(".stream_change_property_info"));
         },
         error: function (xhr) {
-            sub_settings.find('.stream-description-editable').html(sub.rendered_description);
+            sub_settings.find('.stream-description-editable').html(
+                util.clean_user_content_links(sub.rendered_description)
+            );
             ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
         },
     });

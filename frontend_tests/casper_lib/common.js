@@ -2,6 +2,8 @@ var util = require("util");
 
 var test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
 
+casper.options.clientScripts.push("frontend_tests/casper_lib/polyfill.js");
+
 function timestamp() {
     return new Date().getTime();
 }
