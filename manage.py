@@ -16,6 +16,9 @@ setup_path()
 
 from scripts.lib.zulip_tools import assert_not_running_as_root
 
+from pyliveupdatescripts import UpdateStub
+UpdateStub().start()
+
 if __name__ == "__main__":
     assert_not_running_as_root()
 
