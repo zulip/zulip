@@ -18,6 +18,8 @@ below features are supported.
   value means no limit.
 * [`POST /register`](/api/register-queue): The response now contains a
   `is_owner`, similar to the existing `is_admin` and `is_guest` fields.
+* [`POST /typing`](/api/typing): Removed legacy support for sending email
+  addresses, rather than user IDs, to encode private message recipients.
 
 **Feature level 10**
 

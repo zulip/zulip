@@ -429,17 +429,6 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         AssertionError. """
         openapi_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
         for element in openapi_parameters:
-            if function.__name__ == 'send_notification_backend':
-                if element['name'] == 'to':
-                    '''
-                    We want users to send ints here, but the mypy
-                    types for send_notification_backend are still
-                    str, because we need backward compatible
-                    support for old versions of mobile that still
-                    send emails for typing requests.
-                    '''
-                    continue
-
             name: str = element["name"]
             schema = {}
             if "content" in element:
