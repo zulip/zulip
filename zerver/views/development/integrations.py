@@ -1,6 +1,6 @@
 import os
 import ujson
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -21,6 +21,11 @@ ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../
 def get_webhook_integrations() -> List[str]:
     return [integration.name for integration in WEBHOOK_INTEGRATIONS]
 
+def get_valid_integration_name(name: str) -> Optional[str]:
+    for integration_name in get_webhook_integrations():
+        if name == integration_name:
+            return integration_name
+    return None
 
 def dev_panel(request: HttpRequest) -> HttpResponse:
     integrations = get_webhook_integrations()
@@ -46,17 +51,17 @@ def send_webhook_fixture_message(url: str,
 @has_request_variables
 def get_fixtures(request: HttpResponse,
                  integration_name: str=REQ()) -> HttpResponse:
-    integrations = get_webhook_integrations()
-    if integration_name not in integrations:
+    valid_integration_name = get_valid_integration_name(integration_name)
+    if not valid_integration_name:
         return json_error("\"{integration_name}\" is not a valid webhook integration.".format(
             integration_name=integration_name), status=404)
 
     fixtures = {}
-    fixtures_dir = os.path.join(ZULIP_PATH, "zerver/webhooks/{integration_name}/fixtures".format(
-        integration_name=integration_name))
+    fixtures_dir = os.path.join(ZULIP_PATH, "zerver/webhooks/{valid_integration_name}/fixtures".format(
+        valid_integration_name=valid_integration_name))
     if not os.path.exists(fixtures_dir):
-        msg = ("The integration \"{integration_name}\" does not have fixtures.").format(
-            integration_name=integration_name)
+        msg = ("The integration \"{valid_integration_name}\" does not have fixtures.").format(
+            valid_integration_name=valid_integration_name)
         return json_error(msg, status=404)
 
     for fixture in os.listdir(fixtures_dir):
@@ -68,7 +73,7 @@ def get_fixtures(request: HttpResponse,
         except ValueError:
             pass  # The file extension will be used to determine the type.
 
-        headers_raw = get_fixture_http_headers(integration_name,
+        headers_raw = get_fixture_http_headers(valid_integration_name,
                                                "".join(fixture.split(".")[:-1]))
 
         def fix_name(header: str) -> str:
@@ -107,11 +112,16 @@ def check_send_webhook_fixture_message(request: HttpRequest,
 def send_all_webhook_fixture_messages(request: HttpRequest,
                                       url: str=REQ(),
                                       integration_name: str=REQ()) -> HttpResponse:
-    fixtures_dir = os.path.join(ZULIP_PATH, "zerver/webhooks/{integration_name}/fixtures".format(
-        integration_name=integration_name))
+    valid_integration_name = get_valid_integration_name(integration_name)
+    if not valid_integration_name:
+        return json_error("\"{integration_name}\" is not a valid webhook integration.".format(
+            integration_name=integration_name), status=404)
+
+    fixtures_dir = os.path.join(ZULIP_PATH, "zerver/webhooks/{valid_integration_name}/fixtures".format(
+        valid_integration_name=valid_integration_name))
     if not os.path.exists(fixtures_dir):
-        msg = ("The integration \"{integration_name}\" does not have fixtures.").format(
-            integration_name=integration_name)
+        msg = ("The integration \"{valid_integration_name}\" does not have fixtures.").format(
+            valid_integration_name=valid_integration_name)
         return json_error(msg, status=404)
 
     responses = []
@@ -121,7 +131,7 @@ def send_all_webhook_fixture_messages(request: HttpRequest,
             content = f.read()
         x = fixture.split(".")
         fixture_name, fixture_format = "".join(_ for _ in x[:-1]), x[-1]
-        headers = get_fixture_http_headers(integration_name, fixture_name)
+        headers = get_fixture_http_headers(valid_integration_name, fixture_name)
         if fixture_format == "json":
             is_json = True
         else:
