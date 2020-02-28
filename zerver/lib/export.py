@@ -1235,6 +1235,9 @@ def _save_s3_object_to_file(key: Key, output_dir: str, processing_avatars: bool,
             raise AssertionError("Suspicious key with invalid format %s" % (key.name,))
         filename = os.path.join(output_dir, key.name)
 
+    if "../" in filename:
+        raise AssertionError("Suspicious file with invalid format %s" % (filename,))
+
     dirname = os.path.dirname(filename)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
