@@ -3931,8 +3931,8 @@ paths:
           recipient.).
 
           **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
-          list of email addresses.  The email address-based format is deprecated
-          and will be removed in Zulip 2.2.
+          list of email addresses.  Support for the email address-based format was
+          removed in Zulip 2.2 (feature level 11).
         schema:
           type: array
           items:
