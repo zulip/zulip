@@ -1,3 +1,4 @@
+const util = require('./util');
 const render_subscription = require('../templates/subscription.hbs');
 const render_subscription_settings = require('../templates/subscription_settings.hbs');
 const render_subscription_table_body = require('../templates/subscription_table_body.hbs');
@@ -147,7 +148,7 @@ exports.update_stream_description = function (sub, description, rendered_descrip
 
     // Update stream row
     const sub_row = exports.row_for_stream_id(sub.stream_id);
-    sub_row.find(".description").html(sub.rendered_description);
+    sub_row.find(".description").html(util.clean_user_content_links(sub.rendered_description));
 
     // Update stream settings
     stream_edit.update_stream_description(sub);
