@@ -54,7 +54,7 @@ class TypingValidateUsersTest(ZulipTestCase):
         """
         sender = self.example_email("hamlet")
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start'})
-        self.assert_json_error(result, "Missing parameter: 'to' (recipient)")
+        self.assert_json_error(result, "Missing 'to' argument")
 
     def test_argument_to_is_not_valid_json(self) -> None:
         """
@@ -63,7 +63,7 @@ class TypingValidateUsersTest(ZulipTestCase):
         sender = self.example_email("hamlet")
         invalid = 'bad email'
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start', 'to': invalid})
-        self.assert_json_error(result, "Invalid email 'bad email'")
+        self.assert_json_error(result, 'Argument "to" is not valid JSON.')
 
     def test_bogus_user_id(self) -> None:
         """
@@ -284,38 +284,3 @@ class TypingHappyPathTest(ZulipTestCase):
         self.assertEqual(event['sender']['email'], sender.email)
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'stop')
-
-class TypingLegacyMobileSupportTest(ZulipTestCase):
-    def test_legacy_email_interface(self) -> None:
-        '''
-        We are keeping the email interface on life support
-        for a couple months until we get some of our
-        mobile users upgraded.
-        '''
-        sender = self.example_user('hamlet')
-        othello = self.example_user('othello')
-        cordelia = self.example_user('cordelia')
-
-        emails = [othello.email, cordelia.email]
-
-        params = dict(
-            to=ujson.dumps(emails),
-            op='start',
-        )
-
-        events = []  # type: List[Mapping[str, Any]]
-        with tornado_redirected_to_list(events):
-            result = self.api_post(sender.email, '/api/v1/typing', params)
-
-        self.assert_json_success(result)
-        event = events[0]['event']
-
-        event_recipient_user_ids = {
-            user['user_id']
-            for user in event['recipients']
-        }
-
-        self.assertEqual(
-            event_recipient_user_ids,
-            {sender.id, othello.id, cordelia.id}
-        )

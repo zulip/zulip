@@ -111,7 +111,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserGroup, UserGroupMembership, get_default_stream_groups, \
     get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
     DisposableEmailError, EmailContainsPlusError, \
-    get_user_including_cross_realm, get_user_by_id_in_realm_including_cross_realm, \
+    get_user_by_id_in_realm_including_cross_realm, \
     get_stream_by_id_in_realm
 
 from zerver.lib.alert_words import get_alert_word_automaton
@@ -1750,11 +1750,12 @@ def do_send_typing_notification(
 
 # check_send_typing_notification:
 # Checks the typing notification and sends it
-def check_send_typing_notification(sender: UserProfile, notification_to: Union[Sequence[str], Sequence[int]],
+def check_send_typing_notification(sender: UserProfile,
+                                   user_ids: List[int],
                                    operator: str) -> None:
 
     realm = sender.realm
-    if len(notification_to) == 0:
+    if len(user_ids) == 0:
         raise JsonableError(_('Missing parameter: \'to\' (recipient)'))
     elif operator not in ('start', 'stop'):
         raise JsonableError(_('Invalid \'op\' value (should be start or stop)'))
@@ -1766,16 +1767,6 @@ def check_send_typing_notification(sender: UserProfile, notification_to: Union[S
     of other unnecessary duplicated code and will make it convenient
     to mostly delete code when we desupport old versions of the
     app.'''
-
-    if isinstance(notification_to[0], int):
-        user_ids = cast(List[int], notification_to)
-    else:
-        try:
-            emails = cast(Sequence[str], notification_to)
-            user_ids = user_ids_for_emails(realm, emails)
-        except ValidationError as e:
-            assert isinstance(e.messages[0], str)
-            raise JsonableError(e.messages[0])
 
     if sender.id not in user_ids:
         user_ids.append(sender.id)
@@ -1966,25 +1957,6 @@ def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
         raise ValidationError(_("You can't send private messages outside of your organization."))
 
     return list(recipient_profiles_map.values())
-
-def user_ids_for_emails(
-    realm: Realm,
-    emails: Iterable[str],
-) -> List[int]:
-    '''
-    This function should only stay around while
-    we still have to support mobile sending emails
-    in typing notifications.
-    '''
-    user_ids = []  # type: List[int]
-    for email in emails:
-        try:
-            user_profile = get_user_including_cross_realm(email, realm)
-        except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid email '%s'") % (email,))
-        user_ids.append(user_profile.id)
-
-    return user_ids
 
 def recipient_for_user_profiles(user_profiles: Sequence[UserProfile], forwarded_mirror_message: bool,
                                 forwarder_user_profile: Optional[UserProfile],
