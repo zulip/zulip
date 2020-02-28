@@ -20,7 +20,9 @@ const get_step = function ($process) {
 exports.initialize = function () {
     // if email has not been set up and the user is the admin, display a warning
     // to tell them to set up an email server.
-    if (page_params.warn_no_email === true && page_params.is_admin) {
+    if (page_params.insecure_desktop_app) {
+        exports.open($("[data-process='insecure-desktop-app']"));
+    } else if (page_params.warn_no_email === true && page_params.is_admin) {
         exports.open($("[data-process='email-server']"));
     } else {
         exports.open($("[data-process='notifications']"));
