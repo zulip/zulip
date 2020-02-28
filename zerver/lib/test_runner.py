@@ -38,10 +38,16 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path, TEMPLATE_DATABASE_DIR
 # ensure the database IDs we select are unique for each `test-backend`
 # run.  This probably should use a locking mechanism rather than the
 # below hack, which fails 1/10000000 of the time.
-random_id_range_start = random.randint(1, 10000000) * 100
+random_id_range_start = str(random.randint(1, 10000000))
+
+def get_database_id(worker_id: Optional[int]=None) -> str:
+    if worker_id:
+        return "{}_{}".format(random_id_range_start, worker_id)
+    return random_id_range_start
+
 # The root directory for this run of the test suite.
 TEST_RUN_DIR = get_or_create_dev_uuid_var_path(
-    os.path.join('test-backend', 'run_{}'.format(random_id_range_start)))
+    os.path.join('test-backend', 'run_{}'.format(get_database_id())))
 
 _worker_id = 0  # Used to identify the worker process.
 
@@ -252,8 +258,8 @@ def destroy_test_databases(worker_id: Optional[int]=None) -> None:
             # argument to destroy_test_db.
             if worker_id is not None:
                 """Modified from the Django original to """
-                database_id = random_id_range_start + worker_id
-                connection.creation.destroy_test_db(suffix=str(database_id))
+                database_id = get_database_id(worker_id)
+                connection.creation.destroy_test_db(suffix=database_id)
             else:
                 connection.creation.destroy_test_db()
         except ProgrammingError:
@@ -261,11 +267,11 @@ def destroy_test_databases(worker_id: Optional[int]=None) -> None:
             pass
 
 def create_test_databases(worker_id: int) -> None:
-    database_id = random_id_range_start + worker_id
+    database_id = get_database_id(worker_id)
     for alias in connections:
         connection = connections[alias]
         connection.creation.clone_test_db(
-            suffix=str(database_id),
+            suffix=database_id,
             keepdb=True,
         )
 
@@ -439,14 +445,14 @@ class Runner(DiscoverRunner):
         # reference for cleaning them up if they leak.
         filepath = os.path.join(get_dev_uuid_var_path(),
                                 TEMPLATE_DATABASE_DIR,
-                                str(random_id_range_start))
+                                get_database_id())
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         with open(filepath, "w") as f:
             if self.parallel > 1:
                 for index in range(self.parallel):
-                    f.write(str(random_id_range_start + (index + 1)) + "\n")
+                    f.write(get_database_id(index + 1) + "\n")
             else:
-                f.write(str(random_id_range_start) + "\n")
+                f.write(get_database_id() + "\n")
 
         # Check if we are in serial mode to avoid unnecessarily making a directory.
         # We add "worker_0" in the path for consistency with parallel mode.
@@ -458,8 +464,9 @@ class Runner(DiscoverRunner):
     def teardown_test_environment(self, *args: Any, **kwargs: Any) -> Any:
         # The test environment setup clones the zulip_test_template
         # database, creating databases with names:
-        #     'zulip_test_template_<N, N + self.parallel - 1>',
-        # where N is random_id_range_start.
+        #     'zulip_test_template_N_<worker_id>',
+        # where N is `random_id_range_start`, and `worker_id` is a
+        # value between <1, self.parallel>.
         #
         # We need to delete those databases to avoid leaking disk
         # (Django is smart and calls this on SIGINT too).
@@ -472,7 +479,7 @@ class Runner(DiscoverRunner):
         # Clean up our record of which databases this process created.
         filepath = os.path.join(get_dev_uuid_var_path(),
                                 TEMPLATE_DATABASE_DIR,
-                                str(random_id_range_start))
+                                get_database_id())
         os.remove(filepath)
 
         # Clean up our test runs root directory.
