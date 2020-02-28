@@ -77,6 +77,10 @@ set_global('blueslip', {
     },
 });
 
+set_global('overlays', {
+    streams_open: () => true,
+});
+
 // For data-oriented modules, just use them, don't stub them.
 zrequire('alert_words');
 zrequire('unread');
@@ -87,7 +91,6 @@ zrequire('message_store');
 zrequire('people');
 zrequire('starred_messages');
 zrequire('user_status');
-zrequire('overlays');
 
 zrequire('server_events_dispatch');
 
