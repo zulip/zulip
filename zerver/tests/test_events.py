@@ -1664,7 +1664,7 @@ class EventsRegisterTest(ZulipTestCase):
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_property_test(prop)
 
-    def test_profile_incomplete_check(self):
+    def test_profile_incomplete_check(self) -> None:
         self.test_change_realm_icon_source()
         show_warn_test_value = dict(
             description=[u'', u'The coolest place in the universe', u'Organization imported from']
