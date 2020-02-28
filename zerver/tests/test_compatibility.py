@@ -101,3 +101,5 @@ class CompatibilityTest(ZulipTestCase):
         self.assertFalse(is_outdated_desktop_app('ZulipElectron/4.0.3 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36'))
 
         self.assertFalse(is_outdated_desktop_app('Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'))
+
+        self.assertFalse(is_outdated_desktop_app(''))
