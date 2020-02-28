@@ -773,7 +773,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
             rendered_preview_html = rendered_content;
         }
 
-        preview_content_box.html(rendered_preview_html);
+        preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
         if (page_params.emojiset === "text") {
             preview_content_box.find(".emoji").replaceWith(function () {
                 const text = $(this).attr("title");

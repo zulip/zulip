@@ -7,8 +7,9 @@ set_global('compose_ui', {});
 
 const { JSDOM } = require("jsdom");
 const { window } = new JSDOM('<!DOCTYPE html><p>Hello world</p>');
-const { document } = window;
+const { DOMParser, document } = window;
 set_global('$', require('jquery')(window));
+set_global('DOMParser', DOMParser);
 set_global('document', document);
 
 const copy_and_paste = zrequire('copy_and_paste');

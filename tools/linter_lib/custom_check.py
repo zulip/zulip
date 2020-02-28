@@ -133,7 +133,7 @@ js_rules = RuleList(
         {'pattern': r'\+.*i18n\.t\(.+\)',
          'description': 'Do not concatenate i18n strings'},
         {'pattern': '[.]html[(]',
-         'exclude_pattern': r'''[.]html[(]("|'|render_|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|widget_elem|[$]error|[$][(]"<p>"[)])''',
+         'exclude_pattern': r'''\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|i18n\.t|rendered_|$|\)|error_text|widget_elem|\$error|\$\("<p>"\))''',
          'exclude': {'static/js/portico', 'static/js/lightbox.js', 'static/js/ui_report.js',
                      'static/js/confirm_dialog.js',
                      'frontend_tests/'},
