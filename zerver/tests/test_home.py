@@ -91,6 +91,7 @@ class HomeTest(ZulipTestCase):
             "high_contrast_mode",
             "hotspots",
             "initial_servertime",
+            "insecure_desktop_app",
             "is_admin",
             "is_guest",
             "jitsi_server_url",
