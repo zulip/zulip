@@ -176,7 +176,6 @@ class LogEventsTest(ZulipTestCase):
 
 class EventsEndpointTest(ZulipTestCase):
     def test_events_register_endpoint(self) -> None:
-
         # This test is intended to get minimal coverage on the
         # events_register code paths
         email = self.example_email("hamlet")
@@ -254,7 +253,6 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict['queue_id'], '15:13')
 
     def test_tornado_endpoint(self) -> None:
-
         # This test is mostly intended to get minimal coverage on
         # the /notify_tornado endpoint, so we can have 100% URL coverage,
         # but it does exercise a little bit of the codepath.
@@ -278,6 +276,7 @@ class EventsEndpointTest(ZulipTestCase):
         req.META['REMOTE_ADDR'] = '127.0.0.1'
         result = self.client_post_request('/notify_tornado', req)
         self.assert_json_success(result)
+
 
 class GetEventsTest(ZulipTestCase):
     def tornado_call(self, view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
@@ -462,6 +461,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertEqual(message["avatar_url"], None)
 
+
 class EventsRegisterTest(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -481,10 +481,10 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-    def do_test(self, action: Callable[[], object], event_types: Optional[List[str]]=None,
-                include_subscribers: bool=True, state_change_expected: bool=True,
-                notification_settings_null: bool=False,
-                client_gravatar: bool=True, num_events: int=1) -> List[Dict[str, Any]]:
+    def do_test(self, action: Callable[[], object], event_types: Optional[List[str]] = None,
+                include_subscribers: bool = True, state_change_expected: bool = True,
+                notification_settings_null: bool = False,
+                client_gravatar: bool = True, num_events: int = 1) -> List[Dict[str, Any]]:
         '''
         Make sure we have a clean slate of client descriptors for these tests.
         If we don't do this, then certain failures will only manifest when you
@@ -496,16 +496,16 @@ class EventsRegisterTest(ZulipTestCase):
         clear_client_event_queues_for_testing()
 
         client = allocate_client_descriptor(
-            dict(user_profile_id = self.user_profile.id,
-                 realm_id = self.user_profile.realm_id,
-                 event_types = event_types,
-                 client_type_name = "website",
-                 apply_markdown = True,
-                 client_gravatar = client_gravatar,
-                 all_public_streams = False,
-                 queue_timeout = 600,
-                 last_connection_time = time.time(),
-                 narrow = [])
+            dict(user_profile_id=self.user_profile.id,
+                 realm_id=self.user_profile.realm_id,
+                 event_types=event_types,
+                 client_type_name="website",
+                 apply_markdown=True,
+                 client_gravatar=client_gravatar,
+                 all_public_streams=False,
+                 queue_timeout=600,
+                 last_connection_time=time.time(),
+                 narrow=[])
         )
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
@@ -563,6 +563,7 @@ class EventsRegisterTest(ZulipTestCase):
             state['unsubscribed'] = {u['name']: u for u in state['unsubscribed']}
             if 'realm_bots' in state:
                 state['realm_bots'] = {u['email']: u for u in state['realm_bots']}
+
         normalize(state1)
         normalize(state2)
 
@@ -798,7 +799,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('operation', equals("remove")),
         ])
         events = self.do_test(
-            lambda: do_update_message_flags(user_profile, get_client("website"), 'remove', 'starred', [message]),
+            lambda: do_update_message_flags(user_profile, get_client("website"), 'remove', 'starred',
+                                            [message]),
             state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])
@@ -817,7 +819,8 @@ class EventsRegisterTest(ZulipTestCase):
             )
 
             self.do_test(
-                lambda: do_update_message_flags(user_profile, get_client("website"), 'add', 'read', [message]),
+                lambda: do_update_message_flags(user_profile, get_client("website"), 'add', 'read',
+                                                [message]),
                 state_change_expected=True,
             )
 
@@ -990,7 +993,8 @@ class EventsRegisterTest(ZulipTestCase):
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
         events = self.do_test(
-            lambda: do_create_multiuse_invite_link(self.user_profile, PreregistrationUser.INVITE_AS['MEMBER'], streams),
+            lambda: do_create_multiuse_invite_link(self.user_profile, PreregistrationUser.INVITE_AS['MEMBER'],
+                                                   streams),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
@@ -1164,7 +1168,8 @@ class EventsRegisterTest(ZulipTestCase):
             "id": field_id,
             "value": "New value",
         }
-        events = self.do_test(lambda: do_update_user_custom_profile_data_if_changed(self.user_profile, [field]))
+        events = self.do_test(
+            lambda: do_update_user_custom_profile_data_if_changed(self.user_profile, [field]))
         error = schema_checker_with_rendered_value('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1175,7 +1180,8 @@ class EventsRegisterTest(ZulipTestCase):
             "id": field_id,
             "value": [self.example_user("ZOE").id],
         }
-        events = self.do_test(lambda: do_update_user_custom_profile_data_if_changed(self.user_profile, [field]))
+        events = self.do_test(
+            lambda: do_update_user_custom_profile_data_if_changed(self.user_profile, [field]))
         error = schema_checker_basic('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1467,7 +1473,7 @@ class EventsRegisterTest(ZulipTestCase):
         venice_stream = get_stream("Venice", self.user_profile.realm)
         self.do_test(lambda: do_add_streams_to_default_stream_group(self.user_profile.realm,
                                                                     group, [venice_stream]),
-                     state_change_expected = False, num_events=0)
+                     state_change_expected=False, num_events=0)
 
     def test_default_streams_events(self) -> None:
         default_streams_checker = self.check_events_dict([
@@ -1491,9 +1497,9 @@ class EventsRegisterTest(ZulipTestCase):
         do_change_is_guest(self.user_profile, True)
         stream = get_stream("Scotland", self.user_profile.realm)
         self.do_test(lambda: do_add_default_stream(stream),
-                     state_change_expected = False, num_events=0)
+                     state_change_expected=False, num_events=0)
         self.do_test(lambda: do_remove_default_stream(stream),
-                     state_change_expected = False, num_events=0)
+                     state_change_expected=False, num_events=0)
 
     def test_muted_topics_events(self) -> None:
         muted_topics_checker = self.check_events_dict([
@@ -1631,6 +1637,7 @@ class EventsRegisterTest(ZulipTestCase):
             validator = check_int
         else:
             raise AssertionError("Unexpected property type %s" % (property_type,))
+
         schema_checker = self.check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update')),
@@ -1657,6 +1664,37 @@ class EventsRegisterTest(ZulipTestCase):
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_property_test(prop)
 
+    def test_profile_incomplete_check(self):
+        self.test_change_realm_icon_source()
+        show_warn_test_value = dict(
+            description=[u'', u'The coolest place in the universe', u'Organization imported from']
+        )
+        value = show_warn_test_value['description']
+        for val in value:
+            show_schema_checker = self.check_events_dict([
+                ('type', equals('panels')),
+                ('op', equals('show_warn')),
+            ])
+            events = self.do_test(
+                lambda: do_set_realm_property(self.user_profile.realm, 'description', val),
+                state_change_expected=True, num_events=2)
+            error = show_schema_checker('events[1]', events[1])
+            self.assert_on_error(error)
+        hide_warn_test_value = dict(
+            description=[u'New realm', u'New Description', u'This is test Description']
+        )
+        values = hide_warn_test_value['description']
+        for val in values:
+            hide_schema_checker = self.check_events_dict([
+                ('type', equals('panels')),
+                ('op', equals('hide_warn')),
+            ])
+            events = self.do_test(
+                lambda: do_set_realm_property(self.user_profile.realm, 'description', val),
+                state_change_expected=True, num_events=2)
+            error = hide_schema_checker('events[1]', events[1])
+            self.assert_on_error(error)
+
     @slow("Runs a large matrix of tests")
     def test_change_realm_authentication_methods(self) -> None:
         schema_checker = self.check_events_dict([
@@ -1680,13 +1718,13 @@ class EventsRegisterTest(ZulipTestCase):
 
         # Test transitions; any new backends should be tested with T/T/T/F/T
         for (auth_method_dict) in \
-                ({'Google': True, 'Email': True, 'GitHub': True, 'LDAP': False, 'Dev': False},
-                 {'Google': True, 'Email': True, 'GitHub': False, 'LDAP': False, 'Dev': False},
-                 {'Google': True, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': False},
-                 {'Google': True, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': False},
-                 {'Google': False, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': True},
-                 {'Google': False, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': True},
-                 {'Google': False, 'Email': True, 'GitHub': True, 'LDAP': True, 'Dev': False}):
+            ({'Google': True, 'Email': True, 'GitHub': True, 'LDAP': False, 'Dev': False},
+             {'Google': True, 'Email': True, 'GitHub': False, 'LDAP': False, 'Dev': False},
+             {'Google': True, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': False},
+             {'Google': True, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': False},
+             {'Google': False, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': True},
+             {'Google': False, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': True},
+             {'Google': False, 'Email': True, 'GitHub': True, 'LDAP': True, 'Dev': False}):
             with fake_backends():
                 events = self.do_test(
                     lambda: do_set_realm_authentication_methods(
@@ -1710,7 +1748,8 @@ class EventsRegisterTest(ZulipTestCase):
         sub = get_subscription(stream.name, self.user_profile)
         do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", False)
         for pinned in (True, False):
-            events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", pinned))
+            events = self.do_test(
+                lambda: do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", pinned))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -1822,10 +1861,10 @@ class EventsRegisterTest(ZulipTestCase):
         """Test updating each setting in UserProfile.property_types dict."""
 
         test_changes = dict(
-            emojiset = [u'twitter'],
-            default_language = [u'es', u'de', u'en'],
-            timezone = [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u''],
-            demote_inactive_streams = [2, 3, 1],
+            emojiset=[u'twitter'],
+            default_language=[u'es', u'de', u'en'],
+            timezone=[u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u''],
+            demote_inactive_streams=[2, 3, 1],
         )  # type: Dict[str, Any]
 
         property_type = UserProfile.property_types[setting_name]
@@ -2088,6 +2127,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('services', check_services),
                 ])),
             ])
+
         action = lambda: self.create_bot('test')
         events = self.do_test(action, num_events=3)
         error = get_bot_created_checker(bot_type="GENERIC_BOT")('events[1]', events[1])
@@ -2567,7 +2607,8 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
-        action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")  # type: Callable[[], object]
+        action = lambda: self.subscribe(self.example_user("hamlet"),
+                                        "test_stream")  # type: Callable[[], object]
         events = self.do_test(action, event_types=["subscription", "realm_user"],
                               include_subscribers=include_subscribers)
         error = add_schema_checker('events[0]', events[0])
@@ -2832,6 +2873,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = deletion_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+
 class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots
     def test_realm_bots_non_admin(self) -> None:
@@ -3064,8 +3106,8 @@ class GetUnreadMsgsTest(ZulipTestCase):
         othello = self.example_user('othello')
 
         # our tests rely on order
-        assert(sender_email < user_profile.email)
-        assert(user_profile.email < othello.email)
+        assert (sender_email < user_profile.email)
+        assert (user_profile.email < othello.email)
 
         pm1_message_id = self.send_personal_message(sender_email, user_profile.email, "hello1")
         pm2_message_id = self.send_personal_message(sender_email, user_profile.email, "hello2")
@@ -3208,6 +3250,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         result = get_unread_data()
         self.assertEqual(result['mentions'], [])
 
+
 class ClientDescriptorsTest(ZulipTestCase):
     def test_get_client_info_for_all_public_streams(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -3333,7 +3376,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 return True
 
             def accepts_event(self, event: Dict[str, Any]) -> bool:
-                assert(event['type'] == 'message')
+                assert (event['type'] == 'message')
                 return True
 
             def add_event(self, event: Dict[str, Any]) -> None:
@@ -3490,6 +3533,7 @@ class ClientDescriptorsTest(ZulipTestCase):
             ),
         ])
 
+
 class FetchQueriesTest(ZulipTestCase):
     def test_queries(self) -> None:
         user = self.example_user("hamlet")
@@ -3606,6 +3650,7 @@ class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
         result = _default_all_public_streams(self.user_profile, None)
         self.assertFalse(result)
 
+
 class TestEventsRegisterNarrowDefaults(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -3636,6 +3681,7 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
         self.user_profile.save()
         result = _default_narrow(self.user_profile, [])
         self.assertEqual(result, [])
+
 
 class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
     def test_get_raw_user_data_on_system_bot_realm(self) -> None:
