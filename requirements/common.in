@@ -179,3 +179,6 @@ django-cookies-samesite
 
 # For server-side enforcement of password strength
 zxcvbn
+
+# Support for dynamic profiling
+pyliveupdate
