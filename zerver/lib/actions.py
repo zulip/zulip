@@ -1785,10 +1785,10 @@ def check_send_typing_notification(sender: UserProfile, notification_to: Union[S
     try:
         if isinstance(notification_to[0], str):
             emails = cast(Sequence[str], notification_to)
-            recipient = recipient_for_emails(emails, False, sender, sender)
+            user_ids = user_ids_for_emails(realm, emails)
         elif isinstance(notification_to[0], int):
-            user_ids = cast(Sequence[int], notification_to)
-            recipient = recipient_for_user_ids(user_ids, sender)
+            user_ids = cast(List[int], notification_to)
+        recipient = recipient_for_user_ids(user_ids, sender)
     except ValidationError as e:
         assert isinstance(e.messages[0], str)
         raise JsonableError(e.messages[0])
@@ -1964,26 +1964,24 @@ def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
 
     return list(recipient_profiles_map.values())
 
-def recipient_for_emails(emails: Iterable[str], forwarded_mirror_message: bool,
-                         forwarder_user_profile: Optional[UserProfile],
-                         sender: UserProfile) -> Recipient:
-
-    # This helper should only be used for searches.
-    # Other features are moving toward supporting ids.
-    user_profiles = []  # type: List[UserProfile]
+def user_ids_for_emails(
+    realm: Realm,
+    emails: Iterable[str],
+) -> List[int]:
+    '''
+    This function should only stay around while
+    we still have to support mobile sending emails
+    in typing notifications.
+    '''
+    user_ids = []  # type: List[int]
     for email in emails:
         try:
-            user_profile = get_user_including_cross_realm(email, sender.realm)
+            user_profile = get_user_including_cross_realm(email, realm)
         except UserProfile.DoesNotExist:
             raise ValidationError(_("Invalid email '%s'") % (email,))
-        user_profiles.append(user_profile)
+        user_ids.append(user_profile.id)
 
-    return recipient_for_user_profiles(
-        user_profiles=user_profiles,
-        forwarded_mirror_message=forwarded_mirror_message,
-        forwarder_user_profile=forwarder_user_profile,
-        sender=sender
-    )
+    return user_ids
 
 def recipient_for_user_ids(user_ids: Iterable[int], sender: UserProfile) -> Recipient:
     user_profiles = []  # type: List[UserProfile]
