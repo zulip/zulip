@@ -444,7 +444,12 @@ def push_notifications_enabled() -> bool:
         # works -- e.g., that we have ever successfully sent to the bouncer --
         # but this is a good start.
         return True
-    if apns_enabled() and gcm_enabled():  # nocoverage
+    if settings.DEVELOPMENT and (apns_enabled() or gcm_enabled()):  # nocoverage
+        # Since much of the notifications logic is platform-specific, the mobile
+        # developers often work on just one platform at a time, so we should
+        # only require one to be configured.
+        return True
+    elif apns_enabled() and gcm_enabled():  # nocoverage
         # We have the needed configuration to send through APNs and GCM directly
         # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
         return True
