@@ -291,7 +291,7 @@ class PreviewTestCase(ZulipTestCase):
             with mock.patch('requests.get', mocked_response):
                 FetchLinksEmbedData().consume(event)
 
-        embedded_link = '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url)
+        embedded_link = '<a href="{0}" title="The Rock">The Rock</a>'.format(url)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertIn(embedded_link, msg.rendered_content)
 
@@ -319,7 +319,7 @@ class PreviewTestCase(ZulipTestCase):
         # Verify the initial message doesn't have the embedded links rendered
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertNotIn(
-            '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url),
+            '<a href="{0}" title="The Rock">The Rock</a>'.format(url),
             msg.rendered_content)
 
         # Mock the network request result so the test can be fast without Internet
@@ -359,7 +359,7 @@ class PreviewTestCase(ZulipTestCase):
             msg = Message.objects.select_related("sender").get(id=msg_id)
             # The content of the message has changed since the event for original_url has been created,
             # it should not be rendered. Another, up-to-date event will have been sent (edited_url).
-            self.assertNotIn('<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(original_url),
+            self.assertNotIn('<a href="{0}" title="The Rock">The Rock</a>'.format(original_url),
                              msg.rendered_content)
             mocked_response_edited.assert_not_called()
 
@@ -369,7 +369,7 @@ class PreviewTestCase(ZulipTestCase):
                     # up-to-date event for edited_url.
                     queue_json_publish(*args, **kwargs)
                     msg = Message.objects.select_related("sender").get(id=msg_id)
-                    self.assertIn('<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(edited_url),
+                    self.assertIn('<a href="{0}" title="The Rock">The Rock</a>'.format(edited_url),
                                   msg.rendered_content)
 
         with mock.patch('zerver.views.messages.queue_json_publish', wraps=wrapped_queue_json_publish) as patched:
@@ -380,7 +380,7 @@ class PreviewTestCase(ZulipTestCase):
 
     def test_get_link_embed_data(self) -> None:
         url = 'http://test.org/'
-        embedded_link = '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url)
+        embedded_link = '<a href="{0}" title="The Rock">The Rock</a>'.format(url)
 
         # When humans send, we should get embedded content.
         msg = self._send_message_with_test_org_url(sender=self.example_user('hamlet'))
@@ -397,8 +397,8 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIn(embedded_link, msg.rendered_content)
 
     def test_inline_url_embed_preview(self) -> None:
-        with_preview = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://ia.media-imdb.com/images/rock.jpg)" target="_blank"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" target="_blank" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
-        without_preview = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>'
+        with_preview = '<p><a href="http://test.org/" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://ia.media-imdb.com/images/rock.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        without_preview = '<p><a href="http://test.org/" title="http://test.org/">http://test.org/</a></p>'
         msg = self._send_message_with_test_org_url(sender=self.example_user('hamlet'))
         self.assertEqual(msg.rendered_content, with_preview)
 
@@ -421,7 +421,7 @@ class PreviewTestCase(ZulipTestCase):
             patched.assert_not_called()
 
     def test_inline_url_embed_preview_with_relative_image_url(self) -> None:
-        with_preview_relative = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://test.org/images/rock.jpg)" target="_blank"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" target="_blank" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        with_preview_relative = '<p><a href="http://test.org/" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://test.org/images/rock.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         # Try case where the opengraph image is a relative url.
         msg = self._send_message_with_test_org_url(sender=self.example_user('prospero'), relative_url=True)
         self.assertEqual(msg.rendered_content, with_preview_relative)
@@ -444,7 +444,7 @@ class PreviewTestCase(ZulipTestCase):
                 FetchLinksEmbedData().consume(event)
         msg = Message.objects.get(id=msg_id)
         self.assertEqual(
-            '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>',
+            '<p><a href="http://test.org/" title="http://test.org/">http://test.org/</a></p>',
             msg.rendered_content)
 
     def test_invalid_link(self) -> None:
@@ -488,7 +488,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNone(cached_data)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            ('<p><a href="http://test.org/audio.mp3" target="_blank" title="http://test.org/audio.mp3">'
+            ('<p><a href="http://test.org/audio.mp3" title="http://test.org/audio.mp3">'
              'http://test.org/audio.mp3</a></p>'),
             msg.rendered_content)
 
@@ -516,7 +516,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertNotIn('image', cached_data)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            ('<p><a href="http://test.org/foo.html" target="_blank" title="http://test.org/foo.html">'
+            ('<p><a href="http://test.org/foo.html" title="http://test.org/foo.html">'
              'http://test.org/foo.html</a></p>'),
             msg.rendered_content)
 
@@ -545,7 +545,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertNotIn('image', cached_data)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
-            ('<p><a href="http://test.org/foo.html" target="_blank" title="http://test.org/foo.html">'
+            ('<p><a href="http://test.org/foo.html" title="http://test.org/foo.html">'
              'http://test.org/foo.html</a></p>'),
             msg.rendered_content)
 
@@ -602,7 +602,7 @@ class PreviewTestCase(ZulipTestCase):
 
         msg.refresh_from_db()
         self.assertEqual(
-            '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>',
+            '<p><a href="http://test.org/" title="http://test.org/">http://test.org/</a></p>',
             msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -632,7 +632,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIsNone(cached_data)
         msg.refresh_from_db()
         self.assertEqual(
-            '<p><a href="http://test.org/x" target="_blank" title="http://test.org/x">http://test.org/x</a></p>',
+            '<p><a href="http://test.org/x" title="http://test.org/x">http://test.org/x</a></p>',
             msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -690,5 +690,5 @@ class PreviewTestCase(ZulipTestCase):
                     FetchLinksEmbedData().consume(event)
 
         msg.refresh_from_db()
-        expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" target="_blank" title="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" target="_blank" title="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
+        expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" title="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" title="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
         self.assertEqual(expected_content, msg.rendered_content)

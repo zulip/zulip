@@ -2903,13 +2903,13 @@ class EditMessageTest(ZulipTestCase):
         # Check content of message after edit.
         self.assertEqual(message_history_1[0]['rendered_content'],
                          '<p>Here is a link to '
-                         '<a href="http://www.zulip.org" target="_blank" title="http://www.zulip.org">zulip</a>.</p>')
+                         '<a href="http://www.zulip.org" title="http://www.zulip.org">zulip</a>.</p>')
         self.assertEqual(message_history_1[1]['rendered_content'],
                          '<p>Here is a link to '
-                         '<a href="http://www.zulipchat.com" target="_blank" title="http://www.zulipchat.com">zulip</a>.</p>')
+                         '<a href="http://www.zulipchat.com" title="http://www.zulipchat.com">zulip</a>.</p>')
         self.assertEqual(message_history_1[1]['content_html_diff'],
                          ('<p>Here is a link to <a href="http://www.zulipchat.com" '
-                          'target="_blank" title="http://www.zulipchat.com">zulip '
+                          'title="http://www.zulipchat.com">zulip '
                           '<span class="highlight_text_inserted"> Link: http://www.zulipchat.com .'
                           '</span> <span class="highlight_text_deleted"> Link: http://www.zulip.org .'
                           '</span> </a></p>'))
