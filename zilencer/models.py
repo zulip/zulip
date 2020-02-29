@@ -1,6 +1,7 @@
 import datetime
 
 from django.db import models
+from django.db.models import Q, UniqueConstraint
 
 from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog
 from analytics.models import BaseCount
@@ -54,7 +55,18 @@ class RemoteInstallationCount(BaseCount):
     remote_id = models.IntegerField(db_index=True)  # type: int
 
     class Meta:
-        unique_together = ("server", "property", "subgroup", "end_time")
+        # Handles invalid duplicate RemoteInstallationCount data
+        constraints = [
+            UniqueConstraint(
+                fields=["server", "property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name='unique_remote_installation_count'),
+            UniqueConstraint(
+                fields=["server", "property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name='unique_remote_installation_count_null_subgroup')
+        ]
+
         index_together = [
             ["server", "remote_id"],
         ]
@@ -70,7 +82,18 @@ class RemoteRealmCount(BaseCount):
     remote_id = models.IntegerField(db_index=True)  # type: int
 
     class Meta:
-        unique_together = ("server", "realm_id", "property", "subgroup", "end_time")
+        # Handles invalid duplicate RemoteRealmCount data
+        constraints = [
+            UniqueConstraint(
+                fields=["server", "realm_id", "property", "subgroup", "end_time"],
+                condition=Q(subgroup__isnull=False),
+                name='unique_remote_realm_installation_count'),
+            UniqueConstraint(
+                fields=["server", "realm_id", "property", "end_time"],
+                condition=Q(subgroup__isnull=True),
+                name='unique_remote_realm_installation_count_null_subgroup')
+        ]
+
         index_together = [
             ["property", "end_time"],
             ["server", "remote_id"],
