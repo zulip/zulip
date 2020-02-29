@@ -69,13 +69,22 @@ fork](#making-changes).  The process is simple:
 ```
 # Upgrade to an official release
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git 1.8.1
-# Upgrade to a branch or other Git ref
+# Upgrade to a branch (or other Git ref)
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 2.1.x
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
 ```
 
 Zulip will automatically fetch the relevant Git commit and upgrade to
-that version of Zulip.  Note that downgrading to an older commit
-is not generally supported ([details](#upgrading-to-master)).
+that version of Zulip.
+
+Branches with names like `2.1.x` are stable release branches,
+containing the changes planned for the next minor release
+(E.g. 2.1.5); we support these stable release branches as though they
+were a published release.
+
+The `master` branch contains changes planned for the next major
+release (E.g. 2.2.0); see our documentation on [running
+master](#upgrading-to-master) before upgrading to it.
 
 By default, this uses the main upstream Zulip server repository, but
 you can configure any other Git repository by adding a section like
@@ -422,6 +431,12 @@ a change to their production system to help verify the fix resolves
 the issue for them.  You can expect the Zulip community to be
 responsive in debugging any problems caused by a patch we asked
 you to apply.
+
+Also, consider asking whether a small fix that is important to you can
+be added to the current stable release branch (E.g. `2.1.x`).  In
+addition to scheduling that change for Zulip's next bug fix release,
+we support changes in stable release branches as though they were
+released.
 
 ### Upgrading to master
 
