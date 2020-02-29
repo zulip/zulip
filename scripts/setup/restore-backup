@@ -9,9 +9,9 @@ from typing import IO
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
-from scripts.lib.zulip_tools import run, su_to_zulip
+from scripts.lib.zulip_tools import get_postgres_pwent, run, su_to_zulip
 
-POSTGRES_USER = "postgres"
+POSTGRES_PWENT = get_postgres_pwent()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tarball", help="Filename of input tarball")
@@ -79,24 +79,34 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
 
         # Now, extract the the database backup, destroy the old
         # database, and create a new, empty database.
-        db_name = settings.DATABASES["default"]["NAME"]
-        assert isinstance(db_name, str)
+        db = settings.DATABASES["default"]
+        assert isinstance(db["NAME"], str)
         db_dir = os.path.join(tmp, "zulip-backup", "database")
         os.setresuid(0, 0, 0)
-        run(["chown", "-R", POSTGRES_USER, "--", tmp])
-        as_postgres = ["su", "-s", "/usr/bin/env", "-", "--", POSTGRES_USER]
+        run(["chown", "-R", POSTGRES_PWENT.pw_name, "--", tmp])
+        os.setresuid(POSTGRES_PWENT.pw_uid, POSTGRES_PWENT.pw_uid, 0)
+
+        postgres_env = dict(os.environ)
+        if db["HOST"] not in ["", "localhost"]:
+            postgres_env["PGHOST"] = db["HOST"]
+            if "PORT" in db:
+                postgres_env["PGPORT"] = db["PORT"]
+            postgres_env["PGUSER"] = db["USER"]
+            if "PASSWORD" in db:
+                postgres_env["PGPASSWORD"] = db["PASSWORD"]
+
         run(
             [
-                *as_postgres,
                 os.path.join(
                     settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions",
                 ),
-                "zulip",
-                "zulip_base",
+                db["NAME"],
             ],
+            env=postgres_env,
         )
-        run(as_postgres + ["dropdb", "--if-exists", "--", db_name])
-        run(as_postgres + ["createdb", "-O", "zulip", "-T", "template0", "--", db_name])
+        run(["dropdb", "--if-exists", "--", db["NAME"]], cwd="/", env=postgres_env)
+        run(["createdb", "-O", "zulip", "-T", "template0", "--", db["NAME"]], cwd="/", env=postgres_env)
+        os.setresuid(0, 0, 0)
 
         if settings.PRODUCTION:
             # In case we are restoring a backup from an older Zulip
@@ -134,7 +144,9 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         # Now, restore the the database backup using pg_restore.  This
         # needs to run after zulip-puppet-apply to ensure full-text
         # search extensions are available and installed.
-        run(as_postgres + ["pg_restore", "-d", db_name, "--", db_dir])
+        os.setresuid(POSTGRES_PWENT.pw_uid, POSTGRES_PWENT.pw_uid, 0)
+        run(["pg_restore", "-d", db["NAME"], "--", db_dir], cwd="/", env=postgres_env)
+        os.setresuid(0, 0, 0)
         run(["chown", "-R", str(uid), "--", tmp])
         os.setresuid(uid, uid, 0)
 
