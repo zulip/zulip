@@ -9,9 +9,14 @@ in bursts.
 
 ### 2.1.3 -- 2020-02-??
 
+- Added red warning at top of page for users of ancient desktop app
+  version 2.3.82 with broken auto-update.
 - Restructured server initialization to simplify initialization of
   Docker containers (eliminating common classes of user error).
 - Removed buggy feedback bot (`ENABLE_FEEDBACK`).
+- Fixed support for restoring a backup on a different minor release
+  (in the common case they have the same database schema).
+- Fixed restoring backups with memcached authentication enabled.
 - Fixed preview content (preheaders) for many emails.
 - Fixed buggy text in missed-message emails with PM content disabled.
 - Fixed buggy loading spinner in "emoji format" widget.
@@ -24,6 +29,11 @@ in bursts.
 - Fixed error handling for Slack data import.
 - Fixed incoming webhook support for AWX 9.x.y.
 - Fixed a couple missing translation tags.
+- Fixed "User groups" settings UI bug for administrators.
+- Fixed data import tool to reset resource limits after importing
+  data from a free plan organization on zulipchat.com.
+- Changed the SAML default signature algorithm to SHA-256, overriding
+  the SHA-1 default used by python3-saml.
 
 ### 2.1.2 -- 2020-01-16
 
