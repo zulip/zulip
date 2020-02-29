@@ -13,10 +13,10 @@ set_global('page_params', {
 
 // All of our other tests stub out i18n activity;
 // here we do a quick sanity check on the engine itself.
-// We use `translations.js` to initialize `i18next` and
+// We use `i18n.js` to initialize `i18next` and
 // to set `i18n` to `i18next` on the global namespace
 // for `templates.js`.
-zrequire('translations');
+zrequire('i18n');
 
 run_test('t_tag', () => {
     const args = {
