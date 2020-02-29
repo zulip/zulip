@@ -844,7 +844,7 @@ paths:
                      you want, and note that emoji's text name.
         schema:
           type: string
-        example: '**:slight smile:**'
+        example: 'octopus'
         required: true
       - name: emoji_code
         in: query
@@ -854,7 +854,7 @@ paths:
                      to the same emoji name.
         schema:
           type: string
-        example: '**foo**'
+        example: '1f419'
         required: false
       - name: reaction_type
         in: query
@@ -863,7 +863,7 @@ paths:
                      set `reaction_type` to `realm_emoji`.
         schema:
           type: string
-        example: '**realm_emoji**'
+        example: 'unicode_emoji'
         required: false
       responses:
         '200':
@@ -873,16 +873,26 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
-                - properties:
-                    rendered:
-                      type: string
-                      description: The rendered HTML.
+                - example:
+                      {
+                          "result": "success",
+                          "msg": ""
+                      }
+
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
                 - example:
                     {
-                        "msg": "",
-                        "rendered": "<p><strong>foo</strong></p>",
-                        "result": "success"
+                        "result": "error",
+                        "msg": "Invalid emoji code",
+                        "code": "BAD_REQUEST"
                     }
+
     delete:
       description: Delete an emoji reaction from a message.
       parameters:

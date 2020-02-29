@@ -693,25 +693,27 @@ def send_message(client):
 
     return message_id
 
+@openapi_test_function("/messages/{message_id}/reactions:post")
 def add_reaction(client, message_id):
     # type: (Client, int) -> None
+    # {code_example|start}
+    # Add an emoji reaction
     request = {
         'message_id': str(message_id),
-        'emoji_name': 'joy',
-        'emoji_code': '1f602',
+        'emoji_name': 'octopus',
         'emoji_type': 'unicode_emoji'
     }
-    result = client.add_reaction(request)
 
-    assert result['result'] == 'success'
+    result = client.add_reaction(request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/messages/{message_id}/reactions', 'post', '200')
 
 @openapi_test_function("/messages/{message_id}/reactions:delete")
 def remove_reaction(client, message_id):
     # type: (Client, int) -> None
     request = {
         'message_id': str(message_id),
-        'emoji_name': 'joy',
-        'emoji_code': '1f602',
+        'emoji_name': 'octopus',
         'reaction_type': 'unicode_emoji'
     }
 
