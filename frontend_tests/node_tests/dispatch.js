@@ -51,6 +51,8 @@ set_global('message_edit', {
     update_message_topic_editing_pencil: noop,
 });
 
+
+
 set_global('settings_bots', {
     update_bot_permissions_ui: noop,
 });
@@ -97,6 +99,7 @@ zrequire('starred_messages');
 zrequire('util');
 zrequire('user_status');
 zrequire('server_events_dispatch');
+zrequire('panels');
 
 function dispatch(ev) {
     server_events_dispatch.dispatch_normal_event(ev);
@@ -164,6 +167,16 @@ const event_fixtures = {
     muted_topics: {
         type: 'muted_topics',
         muted_topics: [['devel', 'js'], ['lunch', 'burritos']],
+    },
+
+    panels_warning__show: {
+        type: 'panels',
+        op: 'show_warn',
+    },
+
+    panels_warning__hide: {
+        type: 'panels',
+        op: 'hide_warn',
     },
 
     presence: {
@@ -850,9 +863,26 @@ with_overrides(function (override) {
 });
 
 with_overrides(function (override) {
+    // panel show profile incomplete warning
+    const event = event_fixtures.panels_warning__show;
+    global.with_stub(function (stub) {
+        override('panels.show_profile_incomplete_warn', stub.f);
+        dispatch(event);
+    });
+});
+
+with_overrides(function (override) {
+    // panel hide profile incomplete warning
+    const event = event_fixtures.panels_warning__hide;
+    global.with_stub(function (stub) {
+        override('panels.hide_profile_incomplete_warn', stub.f);
+        dispatch(event);
+    });
+});
+
+with_overrides(function (override) {
     // presence
     const event = event_fixtures.presence;
-
     global.with_stub(function (stub) {
         override('activity.update_presence_info', stub.f);
         dispatch(event);
