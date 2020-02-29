@@ -116,6 +116,12 @@ def get_zulip_pwent() -> pwd.struct_passwd:
     # `zulip` user as that's the correct value in production.
     return pwd.getpwnam("zulip")
 
+def get_postgres_pwent() -> pwd.struct_passwd:
+    try:
+        return pwd.getpwnam("postgres")
+    except KeyError:
+        return get_zulip_pwent()
+
 def su_to_zulip(save_suid: bool = False) -> None:
     """Warning: su_to_zulip assumes that the zulip checkout is owned by
     the zulip user (or whatever normal user is running the Zulip
