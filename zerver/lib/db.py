@@ -21,6 +21,7 @@ def wrapper_execute(self: CursorObj,
         duration = stop - start
         self.connection.queries.append({
             'time': "%.3f" % (duration,),
+            'sql': sql,
         })
 
 class TimeTrackingCursor(cursor):

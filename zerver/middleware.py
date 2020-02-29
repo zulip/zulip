@@ -1,5 +1,6 @@
 import cProfile
 import logging
+import re
 import time
 import traceback
 from typing import Any, AnyStr, Dict, \
@@ -78,6 +79,32 @@ def format_timedelta(timedelta: float) -> str:
     if (timedelta >= 1):
         return "%.1fs" % (timedelta,)
     return "%.0fms" % (timedelta_ms(timedelta),)
+
+def format_sql(sql: str) -> str:
+    sql = re.sub(r'\s+', ' ', sql)
+    sql = re.sub(r'SELECT (.*?) FROM', 'select * from', sql)
+    return sql
+
+def log_sql_queries(path: str,
+                    email: str,
+                    queries: List[Dict[str, Any]]) -> None:
+    n = 3
+    queries = sorted(
+        queries,
+        reverse=True,
+        key=lambda q: q['time']
+    )
+
+    for query in queries[:n]:
+        sql = format_sql(query['sql'])
+        time = query['time']
+        logger.info('top {} slow SQL report for {} ({}): {} {}'.format(
+            n,
+            path,
+            email,
+            time,
+            sql,
+        ))
 
 def is_slow_query(time_delta: float, path: str) -> bool:
     if time_delta < 1.2:
@@ -212,6 +239,25 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
     if (is_slow_query(time_delta, path)):
         queue_json_publish("slow_queries", dict(
             query="%s (%s)" % (logger_line, requestor_for_logs)))
+
+    if email and re.search(r'@zulip.*\.com', email):
+        '''
+        We want to avoid writing SQL queries to the log,
+        since they can have private info, but we can
+        make exceptions for core users on certain endpoints,
+        because it's helpful to identify slow queries in
+        the context of a request.
+        '''
+        if path == '/':
+            '''
+            The / endpoint is one of our most expensive
+            endpoints, and it's not likely to leak
+            much important info, since the queries are
+            mostly just asking for things like settings
+            using user_id in the query (which is already
+            public).
+            '''
+            log_sql_queries(path, email, queries)
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
