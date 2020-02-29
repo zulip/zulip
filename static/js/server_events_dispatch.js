@@ -521,10 +521,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
     case 'panels':
         if (event.op === 'show_warn') {
-            panels.show_profile_incompete_warn();
+            panels.show_profile_incomplete_warn();
         }
         if (event.op === 'hide_warn') {
-            panels.hide_profile_incompete_warn();
+            panels.hide_profile_incomplete_warn();
         }
         break;
     }

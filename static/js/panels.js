@@ -29,11 +29,11 @@ exports.initialize = function () {
     }
 };
 
-exports.show_profile_incompete_warn = function () {
+exports.show_profile_incomplete_warn = function () {
     exports.open($("[data-process='profile-incomplete']"));
 };
 
-exports.hide_profile_incompete_warn = function () {
+exports.hide_profile_incomplete_warn = function () {
     $("[data-process]").hide();
 };
 
