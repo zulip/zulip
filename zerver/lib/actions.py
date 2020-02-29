@@ -61,6 +61,7 @@ from zerver.lib.stream_subscription import (
     get_bulk_stream_subscriber_info,
     get_stream_subscriptions_for_user,
     get_stream_subscriptions_for_users,
+    get_subscribed_stream_ids_for_user,
     num_subscribers_for_stream_id,
 )
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -5436,10 +5437,6 @@ def do_get_streams(
     query = get_occupied_streams(user_profile.realm)
 
     if not include_all_active:
-        user_subs = get_stream_subscriptions_for_user(user_profile).filter(
-            active=True,
-        ).select_related('recipient')
-
         # We construct a query as the or (|) of the various sources
         # this user requested streams from.
         query_filter = None  # type: Optional[Q]
@@ -5452,17 +5449,17 @@ def do_get_streams(
                 query_filter |= option
 
         if include_subscribed:
-            recipient_check = Q(id__in=[sub.recipient.type_id for sub in user_subs])
+            subscribed_stream_ids = get_subscribed_stream_ids_for_user(user_profile)
+            recipient_check = Q(id__in=set(subscribed_stream_ids))
             add_filter_option(recipient_check)
         if include_public:
             invite_only_check = Q(invite_only=False)
             add_filter_option(invite_only_check)
         if include_owner_subscribed and user_profile.is_bot:
-            assert user_profile.bot_owner is not None
-            owner_subs = get_stream_subscriptions_for_user(user_profile.bot_owner).filter(
-                active=True,
-            ).select_related('recipient')
-            owner_subscribed_check = Q(id__in=[sub.recipient.type_id for sub in owner_subs])
+            bot_owner = user_profile.bot_owner
+            assert bot_owner is not None
+            owner_stream_ids = get_subscribed_stream_ids_for_user(bot_owner)
+            owner_subscribed_check = Q(id__in=set(owner_stream_ids))
             add_filter_option(owner_subscribed_check)
 
         if query_filter is not None:
