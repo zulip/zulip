@@ -845,17 +845,26 @@ paths:
                      you want, and note that emoji's text name.
         schema:
           type: string
-        example: '**:slight smile:**'
+        example: 'octopus'
         required: true
       - name: emoji_code
         in: query
         description: |
-                     An encoded version of the unicode codepoint. Used only
-                     in rare corner cases to consolidate identical reactions
-                     to the same emoji name.
+                     An encoded version of the unicode codepoint.  For
+                     most clients, you won't need this; it's used to
+                     handle a rare corner case when upvoting a unicode
+                     emoji reaction added previously by another user.
+
+                     If the existing reaction was added when the Zulip
+                     server was using a previous version of the emoji
+                     data mapping from codepoints to human-readable
+                     names, sending the `emoji_code` in the data for
+                     the original reaction allows the Zulip server to
+                     correctly consider your upvote as an upvote
+                     rather than a reaction with a "diffenent" emoji.
         schema:
           type: string
-        example: '**foo**'
+        example: '1f419'
         required: false
       - name: reaction_type
         in: query
@@ -864,7 +873,7 @@ paths:
                      set `reaction_type` to `realm_emoji`.
         schema:
           type: string
-        example: '**realm_emoji**'
+        example: 'unicode_emoji'
         required: false
       responses:
         '200':
@@ -874,16 +883,26 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
-                - properties:
-                    rendered:
-                      type: string
-                      description: The rendered HTML.
+                - example:
+                      {
+                          "result": "success",
+                          "msg": ""
+                      }
+
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
                 - example:
                     {
-                        "msg": "",
-                        "rendered": "<p><strong>foo</strong></p>",
-                        "result": "success"
+                        "result": "error",
+                        "msg": "Invalid emoji code",
+                        "code": "BAD_REQUEST"
                     }
+
     delete:
       description: Delete an emoji reaction from a message.
       parameters:
