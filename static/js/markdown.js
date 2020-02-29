@@ -444,13 +444,13 @@ exports.initialize = function (realm_filters, helper_config) {
           + '\n</pre></div>\n\n\n';
     };
 
-    // Our links have title= and target=_blank
+    // Our links have title=
     r.link = function (href, title, text) {
         title = title || href;
         if (!text.trim()) {
             text = href;
         }
-        const out = '<a href="' + href + '"' + ' target="_blank" title="' +
+        const out = '<a href="' + href + '"' + ' title="' +
                   title + '"' + '>' + text + '</a>';
         return out;
     };

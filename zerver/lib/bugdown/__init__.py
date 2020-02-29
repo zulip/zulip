@@ -549,7 +549,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         div.set("class", class_attr)
         a = markdown.util.etree.SubElement(div, "a")
         a.set("href", link)
-        a.set("target", "_blank")
         a.set("title", title)
         if data_id is not None:
             a.set("data-id", data_id)
@@ -621,7 +620,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         img = markdown.util.etree.SubElement(container, "a")
         img.set("style", "background-image: url(" + img_link + ")")
         img.set("href", link)
-        img.set("target", "_blank")
         img.set("class", "message_embed_image")
 
         data_container = markdown.util.etree.SubElement(container, "div")
@@ -633,7 +631,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             title_elm.set("class", "message_embed_title")
             a = markdown.util.etree.SubElement(title_elm, "a")
             a.set("href", link)
-            a.set("target", "_blank")
             a.set("title", title)
             a.text = title
         description = extracted_data.get('description')
@@ -910,7 +907,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             tweet.set("class", "twitter-tweet")
             img_a = markdown.util.etree.SubElement(tweet, 'a')
             img_a.set("href", url)
-            img_a.set("target", "_blank")
             profile_img = markdown.util.etree.SubElement(img_a, 'img')
             profile_img.set('class', 'twitter-avatar')
             # For some reason, for, e.g. tweet 285072525413724161,
@@ -951,7 +947,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 img_div.set('class', 'twitter-image')
                 img_a = markdown.util.etree.SubElement(img_div, 'a')
                 img_a.set('href', media_item['url'])
-                img_a.set('target', '_blank')
                 img_a.set('title', media_item['url'])
                 img = markdown.util.etree.SubElement(img_a, 'img')
                 img.set('src', media_url)
@@ -1350,10 +1345,8 @@ def url_filename(url: str) -> str:
     else:
         return url
 
-def fixup_link(link: markdown.util.etree.Element, target_blank: bool=True) -> None:
-    """Set certain attributes we want on every link."""
-    if target_blank:
-        link.set('target', '_blank')
+def fixup_link(link: markdown.util.etree.Element) -> None:
+    """Set title attributes we want on every link."""
     link.set('title', url_filename(link.get('href')))
 
 
@@ -1415,7 +1408,6 @@ def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> U
     a = markdown.util.etree.Element('a')
 
     href = sanitize_url(url)
-    target_blank = True
     if href is None:
         # Rejected by sanitize_url; render it as plain text.
         return url
@@ -1423,11 +1415,10 @@ def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> U
         text = markdown.util.AtomicString(url)
 
     href = rewrite_local_links_to_relative(db_data, href)
-    target_blank = not href.startswith("#narrow") and not href.startswith('mailto:')
 
     a.set('href', href)
     a.text = text
-    fixup_link(a, target_blank)
+    fixup_link(a)
     return a
 
 class CompiledPattern(markdown.inlinepatterns.Pattern):
@@ -1767,7 +1758,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
 
         # Make changes to <a> tag attributes
         el.set("href", href)
-        fixup_link(el, target_blank=(href[:1] != '#'))
+        fixup_link(el)
 
         # Show link href if title is empty
         if not el.text.strip():

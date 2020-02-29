@@ -239,8 +239,7 @@ be non-standard.
   `http://google.com`, and not `https://zulip.com/google.com` which
   is the default behavior.
 
-* Set `target="_blank"` and `title=`(the url) on every link tag so
-  clicking always opens a new window.
+* Set `title=`(the url) on every link tag.
 
 * Disable link-by-reference syntax,
   `[foo][bar]` ... `[bar]: https://google.com`.
