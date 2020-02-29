@@ -1432,7 +1432,7 @@ class Stream(models.Model):
     # * "email_token" is not realm-public and thus is not included here.
     # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
-    # * "realm" and "recipient" and not exposed to clients via the API.
+    # * "realm" and "recipient" are not exposed to clients via the API.
     # * "date_created" should probably be added here, as it's useful information
     #   to subscribers and is needed to compute is_old_stream.
     # * message_retention_days should be added here once the feature is
@@ -1449,7 +1449,11 @@ class Stream(models.Model):
         "first_message_id",
     ]
 
-    # This is stream information that is sent to clients
+    @staticmethod
+    def get_client_data(query: QuerySet) -> List[Dict[str, Any]]:
+        query = query.only(*Stream.API_FIELDS)
+        return [row.to_dict() for row in query]
+
     def to_dict(self) -> Dict[str, Any]:
         result = {}
         for field_name in self.API_FIELDS:

@@ -5421,7 +5421,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet:
 
 def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:
     query = Stream.objects.filter(realm=realm, deactivated=False, is_web_public=True)
-    streams = [(row.to_dict()) for row in query]
+    streams = Stream.get_client_data(query)
     return streams
 
 def do_get_streams(
@@ -5436,7 +5436,9 @@ def do_get_streams(
     # Start out with all streams in the realm with subscribers
     query = get_occupied_streams(user_profile.realm)
 
-    if not include_all_active:
+    if include_all_active:
+        streams = Stream.get_client_data(query)
+    else:
         # We construct a query as the or (|) of the various sources
         # this user requested streams from.
         query_filter = None  # type: Optional[Q]
@@ -5464,12 +5466,13 @@ def do_get_streams(
 
         if query_filter is not None:
             query = query.filter(query_filter)
+            streams = Stream.get_client_data(query)
         else:
-            # Don't bother doing to the database with no valid sources
-            query = []
+            # Don't bother going to the database with no valid sources
+            streams = []
 
-    streams = [(row.to_dict()) for row in query]
     streams.sort(key=lambda elt: elt["name"])
+
     if include_default:
         is_default = {}
         default_streams = get_default_streams_for_realm(user_profile.realm_id)
