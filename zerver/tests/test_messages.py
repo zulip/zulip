@@ -328,10 +328,25 @@ class TopicDeleteTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, last_msg_id)
 
+        # Try to delete all messages in the topic again. There are no messages accessible
+        # to the administrator, so this should do nothing.
+        result = self.client_post(endpoint, {
+            "topic_name": topic_name
+        })
+        self.assert_json_success(result)
+        self.assertEqual(self.get_last_message().id, last_msg_id)
+
         # Make the stream's history public to subscribers
         do_change_stream_invite_only(stream, invite_only=True,
                                      history_public_to_subscribers=True)
         # Delete the topic should now remove all messages
+        result = self.client_post(endpoint, {
+            "topic_name": topic_name
+        })
+        self.assert_json_success(result)
+        self.assertEqual(self.get_last_message().id, initial_last_msg_id)
+
+        # Delete again, to test the edge case of deleting an empty topic.
         result = self.client_post(endpoint, {
             "topic_name": topic_name
         })
