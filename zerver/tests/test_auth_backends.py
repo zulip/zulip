@@ -1665,7 +1665,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_social_auth_github_team_not_member_failed(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        with mock.patch('social_core.backends.github.GithubTeamOAuth2.user_data',
+        with mock.patch('zproject.backends.GithubTeamBackend.user_data',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info') as mock_info:
             result = self.social_auth_test(account_data_dict,
@@ -1677,7 +1677,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_social_auth_github_team_member_success(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        with mock.patch('social_core.backends.github.GithubTeamOAuth2.user_data',
+        with mock.patch('zproject.backends.GithubTeamBackend.user_data',
                         return_value=account_data_dict):
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
@@ -1690,7 +1690,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip')
     def test_social_auth_github_organization_not_member_failed(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.user_data',
+        with mock.patch('zproject.backends.GithubOrganizationBackend.user_data',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info') as mock_info:
             result = self.social_auth_test(account_data_dict,
@@ -1702,7 +1702,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip')
     def test_social_auth_github_organization_member_success(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.user_data',
+        with mock.patch('zproject.backends.GithubOrganizationBackend.user_data',
                         return_value=account_data_dict):
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
