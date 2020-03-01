@@ -20,6 +20,7 @@ from zerver.lib.retention import (
     restore_all_data_from_archive,
     clean_archived_data,
 )
+from zerver.tornado.event_queue import send_event
 
 # Class with helper functions useful for testing archiving of reactions:
 from zerver.tests.test_reactions import EmojiReactionBase
@@ -760,3 +761,28 @@ class TestDoDeleteMessages(ZulipTestCase):
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))
         self.assertEqual(len({message.archive_transaction_id for message in archived_messages}), 1)
+
+    def test_old_event_format_processed_correctly(self) -> None:
+        """
+        do_delete_messages used to send events with users in dict format {"id": <int>}.
+        We have a block in process_notification to deal with that old format, that should be
+        deleted in a later release. This test is meant to ensure correctness of that block.
+        """
+        realm = get_realm("zulip")
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        message_id = self.send_personal_message(cordelia.delivery_email, hamlet.delivery_email)
+        message = Message.objects.get(id=message_id)
+
+        event = {
+            'type': 'delete_message',
+            'sender': message.sender.email,
+            'sender_id': message.sender_id,
+            'message_id': message.id,
+            'message_type': "private",
+            'recipient_id': message.recipient_id
+        }
+        move_messages_to_archive([message_id])
+        # We only send the event to see no exception is thrown - as it would be if the block
+        # in process_notification to handle this old format of "users to notify" wasn't correct.
+        send_event(realm, event, [{"id": cordelia.id}, {"id": hamlet.id}])
