@@ -4649,6 +4649,9 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
 
 def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     message_ids = [message.id for message in messages]
+    if not message_ids:
+        return
+
     usermessages = UserMessage.objects.filter(message_id__in=message_ids)
     message_id_to_notifiable_users = {}  # type: Dict[int, List[Dict[str, int]]]
     for um in usermessages:
