@@ -136,6 +136,7 @@ exports.make_new_elem = function (selector, opts) {
     const parents_result = new Map();
     const properties = new Map();
     const attrs = new Map();
+    const data_store = new Map();
     const classes = new Map();
     const event_store = exports.make_event_store(selector);
 
@@ -161,13 +162,13 @@ exports.make_new_elem = function (selector, opts) {
         },
         data: function (name, val) {
             if (val === undefined) {
-                const data_val = attrs.get('data-' + name);
+                const data_val = data_store.get(name);
                 if (data_val === undefined) {
                     return;
                 }
-                return JSON.parse(data_val);
+                return data_val;
             }
-            attrs.set('data-' + name, val);
+            data_store.set(name, val);
             return self;
         },
         delay: function () {
