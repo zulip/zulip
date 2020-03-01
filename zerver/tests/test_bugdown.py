@@ -1680,6 +1680,29 @@ class BugdownTest(ZulipTestCase):
                 d=denmark
             ))
 
+    def test_topic_atomic_string(self) -> None:
+        realm = get_realm('zulip')
+        # Create a linkifier.
+        sender_user_profile = self.example_user('othello')
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+        # Create a topic link that potentially interferes with the pattern.
+        denmark = get_stream('Denmark', realm)
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**Denmark>#1234**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/.231234">#{d.name} &gt; #1234</a></p>'.format(
+                d=denmark
+            ))
+
     def test_topic_multiple(self) -> None:
         denmark = get_stream('Denmark', get_realm('zulip'))
         scotland = get_stream('Scotland', get_realm('zulip'))
