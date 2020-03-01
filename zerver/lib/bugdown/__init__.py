@@ -1718,7 +1718,8 @@ class StreamTopicPattern(CompiledPattern):
             link = '/#narrow/stream/{stream_url}/topic/{topic_url}'.format(stream_url=stream_url,
                                                                            topic_url=topic_url)
             el.set('href', link)
-            el.text = '#{stream_name} > {topic_name}'.format(stream_name=stream_name, topic_name=topic_name)
+            text = '#{stream_name} > {topic_name}'.format(stream_name=stream_name, topic_name=topic_name)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
