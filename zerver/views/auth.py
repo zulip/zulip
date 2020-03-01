@@ -455,9 +455,9 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
                          .format(extra_arg))
             return redirect_to_config_error("saml")
         extra_url_params = {'idp': extra_arg}
-    backends = ["github", "google", "gitlab"]
+
     # TODO: Add AzureAD also.
-    for backend in backends:
+    if backend in ["github", "google", "gitlab"]:
         key_setting = "SOCIAL_AUTH_" + backend.upper() + "_KEY"
         secret_setting = "SOCIAL_AUTH_" + backend.upper() + "_SECRET"
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):
