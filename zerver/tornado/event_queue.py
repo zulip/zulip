@@ -1068,6 +1068,13 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
     elif event['type'] == "update_message":
         process_message_update_event(event, cast(Iterable[Mapping[str, Any]], users))
+    elif event['type'] == "delete_message" and isinstance(users[0], dict):
+        # do_delete_messages used to send events with users in dict format {"id": <int>}
+        # This block is here for compatibility with events in that format still in the queue
+        # at the time of upgrade.
+        # TODO: Remove this block in release >= 2.3.
+        user_ids = [user['id'] for user in cast(Iterable[Mapping[str, int]], users)]
+        process_event(event, user_ids)
     elif event['type'] == "presence":
         process_presence_event(event, cast(Iterable[int], users))
     else:
