@@ -3259,7 +3259,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
         self.assert_length(queries, 52)
 
-class GetBotOwnerStreamsTest(ZulipTestCase):
+class GetStreamsTest(ZulipTestCase):
     def test_streams_api_for_bot_owners(self) -> None:
         hamlet = self.example_user('hamlet')
         test_bot = self.create_test_bot('foo', hamlet, bot_owner=hamlet)
@@ -3344,7 +3344,47 @@ class GetBotOwnerStreamsTest(ZulipTestCase):
 
         self.assertEqual(actual, expected)
 
-class GetPublicStreamsTest(ZulipTestCase):
+    def test_all_active_streams_api(self) -> None:
+        url = '/api/v1/streams?include_all_active=true'
+
+        # Check non-superuser can't use include_all_active
+        normal_user = self.example_user('cordelia')
+        result = self.api_get(normal_user.email, url)
+        self.assertEqual(result.status_code, 400)
+
+        # Even realm admin users can't see all
+        # active streams (without additional privileges).
+        admin_user = self.example_user('iago')
+        self.assertTrue(admin_user.is_realm_admin)
+        result = self.api_get(admin_user.email, url)
+        self.assertEqual(result.status_code, 400)
+
+        '''
+        HAPPY PATH:
+
+            We can get all active streams ONLY if we are
+            an API "super user".  We typically create
+            api-super-user accounts for things like
+            Zephyr/Jabber mirror API users, but here
+            we just "knight" Hamlet for testing expediency.
+        '''
+        super_user = self.example_user('hamlet')
+        super_user.is_api_super_user = True
+        super_user.save()
+
+        result = self.api_get(super_user.email, url)
+        self.assert_json_success(result)
+        json = result.json()
+
+        self.assertIn('streams', json)
+        self.assertIsInstance(json['streams'], list)
+
+        stream_names = {s['name'] for s in json['streams']}
+
+        self.assertEqual(
+            stream_names,
+            {'Venice', 'Denmark', 'Scotland', 'Verona', 'Rome'}
+        )
 
     def test_public_streams_api(self) -> None:
         """
@@ -3381,10 +3421,6 @@ class GetPublicStreamsTest(ZulipTestCase):
                        Stream.objects.filter(realm=realm)]
         self.assertEqual(sorted(s["name"] for s in json["streams"]),
                          sorted(all_streams))
-
-        # Check non-superuser can't use include_all_active
-        result = self.api_get(email, "/api/v1/streams?include_all_active=true")
-        self.assertEqual(result.status_code, 400)
 
 class StreamIdTest(ZulipTestCase):
     def setUp(self) -> None:
