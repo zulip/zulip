@@ -25,7 +25,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd, generate_random_token
-from zerver.views.compatibility import is_outdated_desktop_app
+from zerver.views.compatibility import is_outdated_desktop_app, DesktopAppVersion
 from two_factor.utils import default_device
 
 import calendar
@@ -177,14 +177,15 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
+    desktop_app_version = is_outdated_desktop_app(request.META.get("HTTP_USER_AGENT", ""))
     page_params = dict(
         # Server settings.
         development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
-        desktop_app_cannot_update = is_outdated_desktop_app(
-            request.META.get("HTTP_USER_AGENT", "")),
+        desktop_app_cannot_update = (desktop_app_version == DesktopAppVersion.DESKTOP_APP_CANNOT_UPDATE),
+        desktop_app_outdated = (desktop_app_version == DesktopAppVersion.DESKTOP_APP_OUTDATED),
         login_page            = settings.HOME_NOT_LOGGED_IN,
         root_domain_uri       = settings.ROOT_DOMAIN_URI,
         max_file_upload_size  = settings.MAX_FILE_UPLOAD_SIZE,

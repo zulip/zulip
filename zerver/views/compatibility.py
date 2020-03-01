@@ -1,3 +1,4 @@
+from enum import Enum
 from django.http import HttpResponse, HttpRequest
 import re
 from typing import List, Optional, Tuple
@@ -88,16 +89,27 @@ def check_global_compatibility(request: HttpRequest) -> HttpResponse:
             return json_error(legacy_compatibility_error_message)
     return json_success()
 
-def is_outdated_desktop_app(user_agent_str: str) -> bool:
+class DesktopAppVersion(Enum):
+    NOT_DESKTOP_APP = -1
+    DESKTOP_APP_UP_TO_DATE = 0
+    DESKTOP_APP_OUTDATED = 1
+    DESKTOP_APP_CANNOT_UPDATE = 2
+
+def is_outdated_desktop_app(user_agent_str: str) -> DesktopAppVersion:
     user_agent = parse_user_agent(user_agent_str)
     if user_agent['name'] == 'ZulipDesktop':
         # The deprecated QT/webkit based desktop app, last updated in ~2016.
-        return True
+        return DesktopAppVersion.DESKTOP_APP_CANNOT_UPDATE
+    if user_agent['name'] == 'ZulipElectron':
+        if version_lt(user_agent['version'], '4.0.0'):
+            # Versions of the modern Electron-based Zulip desktop app with
+            # known security issues.  Versions before 2.3.82 won't
+            # auto-update; we may want a special notice to distinguish
+            # those from modern releases.
+            return DesktopAppVersion.DESKTOP_APP_CANNOT_UPDATE
+        elif version_lt(user_agent['version'], '4.0.3'):
+            return DesktopAppVersion.DESKTOP_APP_OUTDATED
+        else:
+            return DesktopAppVersion.DESKTOP_APP_UP_TO_DATE
 
-    if user_agent['name'] == 'ZulipElectron' and version_lt(user_agent['version'], '4.0.0'):
-        # Versions of the modern Electron-based Zulip desktop app with
-        # known security issues.  Versions before 2.3.82 won't
-        # auto-update; we may want a special notice to distinguish
-        # those from modern releases.
-        return True
-    return False
+    return DesktopAppVersion.NOT_DESKTOP_APP

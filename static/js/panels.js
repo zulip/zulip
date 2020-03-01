@@ -20,6 +20,8 @@ exports.initialize = function () {
     // Display prioritized warnings at the top of the screen.
     if (page_params.desktop_app_cannot_update) {
         exports.open($("[data-process='desktop-app-cannot-update']"));
+    } else if (page_params.desktop_app_outdated) {
+        exports.open($("[data-process='desktop-app-outdated']"));
     } else if (page_params.warn_no_email === true && page_params.is_admin) {
         exports.open($("[data-process='email-server']"));
     } else {

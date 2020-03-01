@@ -64,6 +64,7 @@ class HomeTest(ZulipTestCase):
             "demote_inactive_streams",
             "dense_mode",
             "desktop_app_cannot_update",
+            "desktop_app_outdated",
             "desktop_icon_count_display",
             "development_environment",
             "email",
