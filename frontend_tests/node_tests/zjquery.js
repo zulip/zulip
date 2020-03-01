@@ -50,10 +50,10 @@ run_test('basics', () => {
 
     widget.attr('data-employee-id', 42);
     assert.equal(widget.attr('data-employee-id'), 42);
-    assert.equal(widget.data('employee-id'), 42);
+    assert.equal(widget.data('employee-id'), undefined);
 
     widget.data('department-id', 77);
-    assert.equal(widget.attr('data-department-id'), 77);
+    assert.equal(widget.attr('data-department-id'), undefined);
     assert.equal(widget.data('department-id'), 77);
 
     widget.html('<b>hello</b>');
