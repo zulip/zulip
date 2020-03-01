@@ -1748,6 +1748,31 @@ class BugdownTest(ZulipTestCase):
                 href=href,
             ))
 
+    def test_stream_atomic_string(self) -> None:
+        realm = get_realm('zulip')
+        # Create a linkifier.
+        sender_user_profile = self.example_user('othello')
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+        # Create a stream that potentially interferes with the pattern.
+        stream = Stream.objects.create(name=u'Stream #1234', realm=realm)
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = u"#**Stream #1234**"
+        href = '/#narrow/stream/{stream_id}-Stream-.231234'.format(stream_id=stream.id)
+        self.assertEqual(
+            render_markdown(msg, content),
+            u'<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(
+                s=stream,
+                href=href,
+            ))
+
     def test_stream_invalid(self) -> None:
         sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))

@@ -1690,7 +1690,8 @@ class StreamPattern(CompiledPattern):
             # Also do the same for StreamTopicPattern.
             stream_url = encode_stream(stream['id'], name)
             el.set('href', '/#narrow/stream/{stream_url}'.format(stream_url=stream_url))
-            el.text = '#{stream_name}'.format(stream_name=name)
+            text = '#{stream_name}'.format(stream_name=name)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
