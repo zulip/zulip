@@ -10,7 +10,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
 from django.conf import settings
-from django.core import validators
 from django.core.files import File
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
     RealmCount
@@ -110,14 +109,14 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
     query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
-    get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
-    DisposableEmailError, EmailContainsPlusError, \
+    get_bot_services, get_bot_dicts_in_realm, \
     get_user_including_cross_realm, get_user_by_id_in_realm_including_cross_realm, \
     get_stream_by_id_in_realm
 
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
-from zerver.lib.email_validation import get_realm_email_validator
+from zerver.lib.email_validation import get_realm_email_validator, \
+    validate_email_is_valid
 from zerver.lib.stream_recipient import StreamRecipientMap
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
@@ -5070,19 +5069,13 @@ def validate_email(
     if validate_email_allowed_in_realm is None:
         validate_email_allowed_in_realm = \
             get_realm_email_validator(user_profile.realm)
-    try:
-        validators.validate_email(email)
-    except ValidationError:
-        return _("Invalid address."), None, False
 
-    try:
-        validate_email_allowed_in_realm(email)
-    except DomainNotAllowedForRealmError:
-        return _("Outside your domain."), None, False
-    except DisposableEmailError:
-        return _("Please use your real email address."), None, False
-    except EmailContainsPlusError:
-        return _("Email addresses containing + are not allowed."), None, False
+    msg = validate_email_is_valid(
+        email,
+        validate_email_allowed_in_realm,
+    )
+    if msg is not None:
+        return msg, None, False
 
     try:
         validate_email_not_already_in_realm(user_profile.realm, email)

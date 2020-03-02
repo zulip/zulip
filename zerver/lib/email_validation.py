@@ -1,5 +1,8 @@
-from typing import Callable
+from typing import Callable, Optional
 
+from django.core import validators
+from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext as _
 from zerver.lib.name_restrictions import is_disposable_domain
 
 # TODO: Move DisposableEmailError, etc. into here.
@@ -84,3 +87,24 @@ def email_allowed_for_realm(email: str, realm: Realm) -> None:
     outside of the loop.
     '''
     get_realm_email_validator(realm)(email)
+
+def validate_email_is_valid(
+    email: str,
+    validate_email_allowed_in_realm: Callable[[str], None],
+) -> Optional[str]:
+
+    try:
+        validators.validate_email(email)
+    except ValidationError:
+        return _("Invalid address.")
+
+    try:
+        validate_email_allowed_in_realm(email)
+    except DomainNotAllowedForRealmError:
+        return _("Outside your domain.")
+    except DisposableEmailError:
+        return _("Please use your real email address.")
+    except EmailContainsPlusError:
+        return _("Email addresses containing + are not allowed.")
+
+    return None
