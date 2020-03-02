@@ -362,7 +362,7 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
     });
     if (data.size !== 0) {
         labels[labels.length - 1] = "Other";
-        for (const sum of data) {
+        for (const sum of data.values()) {
             values[labels.length - 1] += sum;
         }
     }
