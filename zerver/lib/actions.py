@@ -5035,7 +5035,7 @@ def email_not_system_bot(email: str) -> None:
             params=dict(deactivated=False),
         )
 
-def validate_email_for_realm(target_realm: Realm, email: str) -> None:
+def validate_email_not_already_in_realm(target_realm: Realm, email: str) -> None:
     email_not_system_bot(email)
 
     try:
@@ -5070,7 +5070,7 @@ def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str]
         return _("Email addresses containing + are not allowed."), None, False
 
     try:
-        validate_email_for_realm(user_profile.realm, email)
+        validate_email_not_already_in_realm(user_profile.realm, email)
     except ValidationError as error:
         return None, (error.code), (error.params['deactivated'])
 
