@@ -323,11 +323,16 @@ li.top_left_starred_messages {
     pretty similar.
 */
 .all-messages-arrow,
-.starred-messages-sidebar-arrow,
-.stream-sidebar-arrow {
+.starred-messages-sidebar-arrow {
     top: 3px;
     right: 10px;
     font-size: 0.8em;
+}
+
+.stream-sidebar-arrow {
+    top: 3px;
+    right: 5px;
+    font-size: 1.1em;
 }
 
 /*
@@ -336,9 +341,9 @@ li.top_left_starred_messages {
     which also affects it positioning.
 */
 .topic-sidebar-arrow {
-    top: 1px;
-    right: 10px;
-    font-size: 0.7em;
+    top: 2px;
+    right: 5px;
+    font-size: 1em;
 }
 
 /*
