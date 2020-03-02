@@ -25,6 +25,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict, check_list
+from zerver.lib.url_encoding import add_query_arg_to_redirect_url
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
     access_bot_by_id, add_service, access_user_by_id, check_bot_name_available, \
@@ -149,8 +150,7 @@ def avatar(request: HttpRequest, user_profile: UserProfile,
     # add query parameters to our url, get_avatar_url does '?x=x'
     # hacks to prevent us from having to jump through decode/encode hoops.
     assert url is not None
-    assert '?' in url
-    url += '&' + request.META['QUERY_STRING']
+    url = add_query_arg_to_redirect_url(url, request.META['QUERY_STRING'])
     return redirect(url)
 
 def get_stream_name(stream: Optional[Stream]) -> Optional[str]:

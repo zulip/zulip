@@ -30,6 +30,7 @@ from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_inter
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
+from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.views.auth import create_preregistration_user, redirect_and_log_into_subdomain, \
@@ -113,8 +114,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         try:
             validate_email_not_already_in_realm(realm, email)
         except ValidationError:
-            return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
-                                        urllib.parse.quote_plus(email))
+            view_url = reverse('django.contrib.auth.views.login')
+            redirect_url = add_query_to_redirect_url(view_url, 'email=' + urllib.parse.quote_plus(email))
+            return HttpResponseRedirect(redirect_url)
 
     name_validated = False
     full_name = None
@@ -302,8 +304,10 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                     # user-friendly error message, but it doesn't
                     # particularly matter, because the registration form
                     # is hidden for most users.
-                    return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
-                                                urllib.parse.quote_plus(email))
+                    view_url = reverse('django.contrib.auth.views.login')
+                    query = 'email=' + urllib.parse.quote_plus(email)
+                    redirect_url = add_query_to_redirect_url(view_url, query)
+                    return HttpResponseRedirect(redirect_url)
             elif not realm_creation:
                 # Since we'll have created a user, we now just log them in.
                 return login_and_go_to_home(request, user_profile)
@@ -558,7 +562,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
             # feature can be used to ascertain which email addresses
             # are associated with Zulip.
             data = urllib.parse.urlencode({'emails': ','.join(emails)})
-            return redirect(url + "?" + data)
+            return redirect(add_query_to_redirect_url(url, data))
     else:
         form = FindMyTeamForm()
         result = request.GET.get('emails')
