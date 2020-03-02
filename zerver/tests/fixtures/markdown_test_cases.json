@@ -199,6 +199,13 @@
       "text_content": "Some text with a hanging list:\n\nOne item\nTwo items\nThree items\n"
     },
     {
+      "name": "ulist_codeblock_interference",
+      "input": "* One \n  * Two\n\n    Two continued\n    This shouldn't be a code block\n",
+      "expected_output": "<ul>\n<li>One <ul>\n<li>\n<p>Two</p>\n<p>Two continued<br>\nThis shouldn't be a code block</p>\n</li>\n</ul>\n</li>\n</ul>",
+      "marked_expected_output":"<ul>\n<li><p>One </p>\n<ul>\n<li><p>Two</p>\n<p>Two continued<br>\nThis shouldn't be a code block</p>\n</li>\n</ul>\n</li>\n</ul>",
+      "text_content": "\nOne \n\nTwo\nTwo continued\nThis shouldn't be a code block\n\n\n\n"
+    },
+    {
       "name": "ulist_hanging_mixed",
       "input": "Plain list\n\n* Alpha\n\n* Beta\n\nThen hang it off:\n* Ypsilon\n* Zeta",
       "expected_output": "<p>Plain list</p>\n<ul>\n<li>\n<p>Alpha</p>\n</li>\n<li>\n<p>Beta</p>\n</li>\n</ul>\n<p>Then hang it off:</p>\n<ul>\n<li>Ypsilon</li>\n<li>Zeta</li>\n</ul>",
