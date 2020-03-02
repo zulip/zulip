@@ -15,7 +15,7 @@ from django.http import HttpRequest
 from jinja2 import Markup as mark_safe
 
 from zerver.lib.actions import do_change_password, email_not_system_bot, \
-    validate_email_for_realm
+    validate_email_not_already_in_realm
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.rate_limiter import RateLimited, get_rate_limit_result_from_request, \
     RateLimitedObject, rate_limit_entity
@@ -177,7 +177,7 @@ class HomepageForm(forms.Form):
         except EmailContainsPlusError:
             raise ValidationError(_("Email addresses containing + are not allowed in this organization."))
 
-        validate_email_for_realm(realm, email)
+        validate_email_not_already_in_realm(realm, email)
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)
