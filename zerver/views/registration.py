@@ -43,6 +43,8 @@ from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyE
     validate_key, create_confirmation_link, get_object_from_key, \
     render_confirmation_key_error
 
+from confirmation import settings as confirmation_settings
+
 import logging
 import smtplib
 
