@@ -575,25 +575,31 @@ class EmailContainsPlusError(Exception):
 # So for invite-only realms, this is the test for whether a user can be invited,
 # not whether the user can sign up currently.)
 def email_allowed_for_realm(email: str, realm: Realm) -> None:
-    if not realm.emails_restricted_to_domains:
-        if realm.disallow_disposable_email_addresses and \
-                is_disposable_domain(email_to_domain(email)):
-            raise DisposableEmailError
-        return
-    elif '+' in email_to_username(email):
-        raise EmailContainsPlusError
+    get_realm_email_validator(realm)(email)
 
-    domain = email_to_domain(email)
-    query = RealmDomain.objects.filter(realm=realm)
-    if query.filter(domain=domain).exists():
-        return
-    else:
-        query = query.filter(allow_subdomains=True)
-        while len(domain) > 0:
-            subdomain, sep, domain = domain.partition('.')
-            if query.filter(domain=domain).exists():
-                return
-    raise DomainNotAllowedForRealmError
+def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
+    def validate(email: str) -> None:
+        if not realm.emails_restricted_to_domains:
+            if realm.disallow_disposable_email_addresses and \
+                    is_disposable_domain(email_to_domain(email)):
+                raise DisposableEmailError
+            return
+        elif '+' in email_to_username(email):
+            raise EmailContainsPlusError
+
+        domain = email_to_domain(email)
+        query = RealmDomain.objects.filter(realm=realm)
+        if query.filter(domain=domain).exists():
+            return
+        else:
+            query = query.filter(allow_subdomains=True)
+            while len(domain) > 0:
+                subdomain, sep, domain = domain.partition('.')
+                if query.filter(domain=domain).exists():
+                    return
+        raise DomainNotAllowedForRealmError
+
+    return validate
 
 def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
