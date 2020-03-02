@@ -35,6 +35,8 @@ from zerver.lib.actions import (
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
+from zerver.lib.email_validation import get_realm_email_validator, \
+    validate_email_is_valid
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
@@ -3818,8 +3820,10 @@ class EmailValidatorTestCase(ZulipTestCase):
         inviter = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
 
-        error, _, is_deactivated = validate_email(inviter, 'fred+5555@zulip.com')
-        self.assertEqual(False, is_deactivated)
+        error = validate_email_is_valid(
+            'fred+5555@zulip.com',
+            get_realm_email_validator(inviter.realm),
+        )
         self.assertIn('containing + are not allowed', error)
 
         _, error, is_deactivated = validate_email(inviter, cordelia.email)
