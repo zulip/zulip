@@ -5054,33 +5054,6 @@ def validate_email_not_already_in_realm(target_realm: Realm, email: str) -> None
         msg, code, deactivated = error_info
         raise ValidationError(msg, code=code, params=dict(deactivated=deactivated))
 
-def validate_email(
-    user_profile: UserProfile,
-    email: str,
-    validate_email_allowed_in_realm: Callable[[str], None],
-) -> Tuple[Optional[str], Optional[str], bool]:
-    '''
-    This function should be used to validate NEW emails,
-    such as emails in invites, signup, etc.
-
-    Example checks:
-        - Is the email valid for the realm?
-        - Is the email actually new to the realm?
-    '''
-    msg = validate_email_is_valid(
-        email,
-        validate_email_allowed_in_realm,
-    )
-    if msg is not None:
-        return msg, None, False
-
-    try:
-        validate_email_not_already_in_realm(user_profile.realm, email)
-    except ValidationError as error:
-        return None, (error.code), (error.params['deactivated'])
-
-    return None, None, False
-
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
     data_fields = ['errors', 'sent_invitations']
@@ -5155,25 +5128,37 @@ def do_invite_users(user_profile: UserProfile,
                   "Ask an organization admin, or a more experienced user."),
                 [], sent_invitations=False)
 
-    validated_emails = []  # type: List[str]
+    good_emails = set()  # type: Set[str]
     errors = []  # type: List[Tuple[str, str, bool]]
-    skipped = []  # type: List[Tuple[str, str, bool]]
     validate_email_allowed_in_realm = get_realm_email_validator(user_profile.realm)
     for email in invitee_emails:
         if email == '':
             continue
-        email_error, email_skipped, deactivated = validate_email(
-            user_profile,
+        email_error = validate_email_is_valid(
             email,
             validate_email_allowed_in_realm,
         )
 
-        if not (email_error or email_skipped):
-            validated_emails.append(email)
-        elif email_error:
-            errors.append((email, email_error, deactivated))
-        elif email_skipped:
-            skipped.append((email, email_skipped, deactivated))
+        if email_error:
+            errors.append((email, email_error, False))
+        else:
+            good_emails.add(email)
+
+    '''
+    good_emails are emails that look ok so far,
+    but we still need to make sure they're not
+    gonna conflict with existing users
+    '''
+    error_dict = get_existing_user_errors(user_profile.realm, good_emails)
+
+    skipped = []  # type: List[Tuple[str, str, bool]]
+    for email in error_dict:
+        msg, code, deactivated = error_dict[email]
+        if code is not None:
+            skipped.append((email, code, deactivated))
+            good_emails.remove(email)
+
+    validated_emails = list(good_emails)
 
     if errors:
         raise InvitationError(
