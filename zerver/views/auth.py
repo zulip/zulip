@@ -33,6 +33,7 @@ from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
+from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.utils import has_api_key_format
@@ -322,7 +323,7 @@ def create_response_for_otp_flow(key: str, otp: str, user_profile: UserProfile,
     }
     # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
     response = HttpResponse(status=302)
-    response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
+    response['Location'] = add_query_to_redirect_url('zulip://login', urllib.parse.urlencode(params))
 
     return response
 
@@ -437,7 +438,7 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
 
     params = {**params, **extra_url_params}
 
-    return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
+    return redirect(add_query_to_redirect_url(main_site_uri, urllib.parse.urlencode(params)))
 
 def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
                        ) -> HttpResponse:
@@ -716,7 +717,7 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse('zerver.views.registration.realm_redirect')
         if request.GET:
-            redirect_url = "{}?{}".format(redirect_url, request.GET.urlencode())
+            redirect_url = add_query_to_redirect_url(redirect_url, request.GET.urlencode())
         return HttpResponseRedirect(redirect_url)
 
     realm = get_realm_from_request(request)
