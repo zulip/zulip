@@ -1860,8 +1860,7 @@ class Bugdown(markdown.Markdown):
         # We disable the following blockparsers from upstream:
         #
         # indent - replaced by ours
-        # hashheader - disabled, since headers look bad and don't make sense in a chat context.
-        # setextheader - disabled, since headers look bad and don't make sense in a chat context.
+        # setextheader - disabled; we only support hashheaders for headings
         # olist - replaced by ours
         # ulist - replaced by ours
         # quote - replaced by ours
