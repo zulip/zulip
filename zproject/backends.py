@@ -50,7 +50,7 @@ from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
 from zerver.decorator import client_is_exempt_from_rate_limiting
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
-    do_update_user_custom_profile_data_if_changed, validate_email_for_realm
+    do_update_user_custom_profile_data_if_changed, validate_email_not_already_in_realm
 from zerver.lib.avatar import is_avatar_new, avatar_url
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
@@ -674,11 +674,11 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         # Makes sure that email domain hasn't be restricted for this
         # realm.  The main thing here is email_allowed_for_realm; but
-        # we also call validate_email_for_realm just for consistency,
+        # we also call validate_email_not_already_in_realm just for consistency,
         # even though its checks were already done above.
         try:
             email_allowed_for_realm(username, self._realm)
-            validate_email_for_realm(self._realm, username)
+            validate_email_not_already_in_realm(self._realm, username)
         except DomainNotAllowedForRealmError:
             raise ZulipLDAPException("This email domain isn't allowed in this organization.")
         except (DisposableEmailError, EmailContainsPlusError):

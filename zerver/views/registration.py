@@ -18,7 +18,7 @@ from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.actions import do_change_password, do_change_full_name, \
     do_activate_user, do_create_user, do_create_realm, \
-    validate_email_for_realm, \
+    validate_email_not_already_in_realm, \
     do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     FindMyTeamForm, RealmRedirectForm
@@ -110,7 +110,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             return redirect_to_deactivation_notice()
 
         try:
-            validate_email_for_realm(realm, email)
+            validate_email_not_already_in_realm(realm, email)
         except ValidationError:
             return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
                                         urllib.parse.quote_plus(email))
@@ -508,7 +508,7 @@ def accounts_home(request: HttpRequest, multiuse_object_key: Optional[str]="",
 
         email = request.POST['email']
         try:
-            validate_email_for_realm(realm, email)
+            validate_email_not_already_in_realm(realm, email)
         except ValidationError:
             return redirect_to_email_login_url(email)
     else:
