@@ -834,7 +834,27 @@ class InviteUserTest(InviteUserBase):
         realm.date_created = timezone_now() - datetime.timedelta(days=8)
         realm.save()
 
-        result = try_invite()
+        with queries_captured() as queries:
+            result = try_invite()
+
+        # TODO: Fix large query count here.
+        #
+        # TODO: There is some test OTHER than this one
+        #       that is leaking some kind of state change
+        #       that throws off the query count here.  It
+        #       is hard to investigate currently (due to
+        #       the large number of queries), so I just
+        #       use an approximate equality check.
+        actual_count = len(queries)
+        expected_count = 371
+        if abs(actual_count - expected_count) > 1:
+            raise AssertionError('''
+                Unexpected number of queries:
+
+                expected query count: {}
+                actual: {}
+                '''.format(expected_count, actual_count))
+
         self.assert_json_success(result)
 
         # Next get line coverage on bumping a realm's max_invites.
