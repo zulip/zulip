@@ -8,6 +8,7 @@ from zerver.lib.actions import do_change_icon_source
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_icon_image
+from zerver.lib.url_encoding import add_query_arg_to_redirect_url
 from zerver.models import UserProfile
 
 
@@ -51,6 +52,5 @@ def get_icon_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     # our templates depend on being able to use the ampersand to
     # add query parameters to our url, get_icon_url does '?version=version_number'
     # hacks to prevent us from having to jump through decode/encode hoops.
-    assert '?' in url
-    url += '&' + request.META['QUERY_STRING']
+    url = add_query_arg_to_redirect_url(url, request.META['QUERY_STRING'])
     return redirect(url)
