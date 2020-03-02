@@ -9,14 +9,13 @@ from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.models import (
     email_to_username,
     email_to_domain,
-    get_user_by_delivery_email,
+    get_users_by_delivery_email,
     is_cross_realm_bot_email,
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     Realm,
     RealmDomain,
-    UserProfile,
 )
 
 def validate_disposable(email: str) -> None:
@@ -126,7 +125,24 @@ def get_existing_user_errors(
     already exist.  There's a bit of fiddly logic related
     to cross-realm bots and mirror dummies too.
     '''
+
     errors = {}  # type: Dict[str, Tuple[str, Optional[str], bool]]
+
+    users = get_users_by_delivery_email(emails, target_realm).only(
+        'email',
+        'is_active',
+        'is_mirror_dummy',
+    )
+
+    '''
+    A note on casing: We will preserve the casing used by
+    the user for email in most of this code.  The only
+    exception is when we do existence checks against
+    the `user_dict` dictionary.  (We don't allow two
+    users in the same realm to have the same effective
+    delivery email.)
+    '''
+    user_dict = {user.email.lower(): user for user in users}
 
     def process_email(email: str) -> None:
         if is_cross_realm_bot_email(email):
@@ -136,9 +152,9 @@ def get_existing_user_errors(
             errors[email] = (msg, code, deactivated)
             return
 
-        try:
-            existing_user_profile = get_user_by_delivery_email(email, target_realm)
-        except UserProfile.DoesNotExist:
+        existing_user_profile = user_dict.get(email.lower())
+
+        if existing_user_profile is None:
             # HAPPY PATH!  Most people invite users that don't exist yet.
             return
 
