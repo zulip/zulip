@@ -3,7 +3,7 @@ from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, \
 
 from django.db import models
 from django.db.models.query import QuerySet
-from django.db.models import Manager, Sum, CASCADE
+from django.db.models import Manager, Q, Sum, CASCADE
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
@@ -2143,6 +2143,28 @@ def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     """
     return UserProfile.objects.select_related().get(
         delivery_email__iexact=email.strip(), realm=realm)
+
+def get_users_by_delivery_email(emails: Set[str], realm: Realm) -> QuerySet:
+    """This is similar to get_users_by_delivery_email, and
+    it has the same security caveats.  It gets multiple
+    users and returns a QuerySet, since most callers
+    will only need two or three fields.
+
+    If you are using this to get large UserProfile objects, you are
+    probably making a mistake, but if you must,
+    then use `select_related`.
+    """
+
+    '''
+    Django doesn't support delivery_email__iexact__in, so
+    we simply OR all the filters that we'd do for the
+    one-email case.
+    '''
+    email_filter = Q()
+    for email in emails:
+        email_filter |= Q(delivery_email__iexact=email.strip())
+
+    return UserProfile.objects.filter(realm=realm).filter(email_filter)
 
 @cache_with_key(user_profile_cache_key, timeout=3600*24*7)
 def get_user(email: str, realm: Realm) -> UserProfile:
