@@ -116,7 +116,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.email_validation import get_realm_email_validator, \
-    validate_email_is_valid
+    validate_email_is_valid, get_existing_user_errors, \
+    email_reserved_for_system_bots_error
 from zerver.lib.stream_recipient import StreamRecipientMap
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
@@ -5027,7 +5028,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
 
 def email_not_system_bot(email: str) -> None:
     if is_cross_realm_bot_email(email):
-        msg = '%s is reserved for system bots' % (email,)
+        msg = email_reserved_for_system_bots_error(email)
         code = msg
         raise ValidationError(
             msg,
@@ -5036,22 +5037,22 @@ def email_not_system_bot(email: str) -> None:
         )
 
 def validate_email_not_already_in_realm(target_realm: Realm, email: str) -> None:
-    email_not_system_bot(email)
+    '''
+    NOTE:
+        Only use this to validate that a single email
+        is not already used in the realm.
 
-    try:
-        existing_user_profile = get_user_by_delivery_email(email, target_realm)
-    except UserProfile.DoesNotExist:
-        return
+        We should start using bulk_check_new_emails()
+        for any endpoint that takes multiple emails,
+        such as the "invite" interface.
+    '''
+    error_dict = get_existing_user_errors(target_realm, {email})
 
-    if existing_user_profile.is_active:
-        if existing_user_profile.is_mirror_dummy:
-            raise AssertionError("Mirror dummy user is already active!")
-        # Other users should not already exist at all.
-        raise ValidationError(_('%s already has an account') %
-                              (email,), code = _("Already has an account."), params={'deactivated': False})
-    elif not existing_user_profile.is_mirror_dummy:
-        raise ValidationError('The account for %s has been deactivated' % (email,),
-                              code = _("Account has been deactivated."), params={'deactivated': True})
+    # Loop through errors, the only key should be our email.
+    for key, error_info in error_dict.items():
+        assert key == email
+        msg, code, deactivated = error_info
+        raise ValidationError(msg, code=code, params=dict(deactivated=deactivated))
 
 def validate_email(
     user_profile: UserProfile,
