@@ -1866,15 +1866,15 @@ class Bugdown(markdown.Markdown):
         # ulist - replaced by ours
         # quote - replaced by ours
         parser = markdown.blockprocessors.BlockParser(self)
-        parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 85)
+        parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 95)
+        parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 90)
         if not self.getConfig('code_block_processor_disabled'):
-            parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 80)
-        parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 78)
+            parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 85)
+        parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 80)
         # We get priority 75 from 'table' extension
         parser.blockprocessors.register(markdown.blockprocessors.HRProcessor(parser), 'hr', 70)
-        parser.blockprocessors.register(OListProcessor(parser), 'olist', 68)
-        parser.blockprocessors.register(UListProcessor(parser), 'ulist', 65)
-        parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 60)
+        parser.blockprocessors.register(OListProcessor(parser), 'olist', 65)
+        parser.blockprocessors.register(UListProcessor(parser), 'ulist', 60)
         parser.blockprocessors.register(BlockQuoteProcessor(parser), 'quote', 55)
         parser.blockprocessors.register(markdown.blockprocessors.ParagraphProcessor(parser), 'paragraph', 50)
         return parser
