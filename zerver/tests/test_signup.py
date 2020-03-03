@@ -872,6 +872,21 @@ class InviteUserTest(InviteUserBase):
 
         self.assert_json_success(result)
 
+    def test_cross_realm_bot(self) -> None:
+        inviter = self.example_user('hamlet')
+        self.login(inviter.email)
+
+        cross_realm_bot_email = 'emailgateway@zulip.com'
+        legit_new_email = 'fred@zulip.com'
+        invitee_emails = ','.join([cross_realm_bot_email, legit_new_email])
+
+        result = self.invite(invitee_emails, ['Denmark'])
+        self.assert_json_error(
+            result,
+            "Some of those addresses are already using Zulip," +
+            " so we didn't send them an invitation." +
+            " We did send invitations to everyone else!")
+
     def test_invite_mirror_dummy_user(self) -> None:
         '''
         A mirror dummy account is a temporary account
