@@ -16,7 +16,7 @@ from django.db import connection
 from zerver.models import \
     get_client, get_system_bot, PreregistrationUser, \
     get_user_profile_by_id, Message, Realm, UserMessage, UserProfile, \
-    Client
+    Client, flush_per_request_caches
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.queue import SimpleQueueClient, retry_event
@@ -131,6 +131,7 @@ class QueueProcessingWorker(ABC):
         except Exception:
             self._handle_consume_exception([data])
         finally:
+            flush_per_request_caches()
             reset_queries()
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]]) -> None:
@@ -171,6 +172,7 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
             except Exception:
                 self._handle_consume_exception(events)
             finally:
+                flush_per_request_caches()
                 reset_queries()
 
             # To avoid spinning the CPU, we go to sleep if there's
