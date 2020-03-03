@@ -381,8 +381,9 @@ class TestCountStats(AnalyticsTestCase):
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO, self.default_realm)
         self.assertTableState(RealmCount, ['value', 'subgroup'],
                               [[1, 'true'], [1, 'false']])
-        # No aggregation to InstallationCount with realm constraint
-        self.assertTableState(InstallationCount, ['value', 'subgroup'], [])
+        self.assertTableState(InstallationCount,
+                              ['value', 'subgroup'],
+                              [[1, 'true'], [1, 'false']])
         self.assertTableState(UserCount, [], [])
         self.assertTableState(StreamCount, [], [])
 
@@ -451,8 +452,8 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
                               [[2, 'false', self.default_realm],
                                [3, 'true', self.default_realm]])
-        # No aggregation to InstallationCount with realm constraint
-        self.assertTableState(InstallationCount, ['value', 'subgroup'], [])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'],
+                                                 [[2, 'false'], [3, 'true']])
         self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_by_message_type(self) -> None:
@@ -550,8 +551,9 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(RealmCount, ['value', 'subgroup'],
                               [[1, 'private_message'], [1, 'private_stream'],
                                [1, 'public_stream'], [1, 'huddle_message']])
-        # No aggregation to InstallationCount with realm constraint
-        self.assertTableState(InstallationCount, ['value', 'subgroup'], [])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'],
+                              [[1, 'private_message'], [1, 'private_stream'],
+                               [1, 'public_stream'], [1, 'huddle_message']])
         self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_to_recipients_with_same_id(self) -> None:
@@ -640,8 +642,8 @@ class TestCountStats(AnalyticsTestCase):
                                [1, website_client_id, user2]])
         self.assertTableState(RealmCount, ['value', 'subgroup'],
                               [[1, website_client_id], [2, client2_id]])
-        # No aggregation to InstallationCount with realm constraint
-        self.assertTableState(InstallationCount, ['value', 'subgroup'], [])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'],
+                              [[1, website_client_id], [2, client2_id]])
         self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_to_stream_by_is_bot(self) -> None:
@@ -710,8 +712,7 @@ class TestCountStats(AnalyticsTestCase):
                                [1, 'true', stream1]])
         self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
                               [[1, 'false'], [1, 'true']])
-        # No aggregation to InstallationCount with realm constraint
-        self.assertTableState(InstallationCount, ['value', 'subgroup'], [])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'], [[1, 'false'], [1, 'true']])
         self.assertTableState(UserCount, [], [])
 
     def create_interval(self, user: UserProfile, start_offset: timedelta,
@@ -787,8 +788,7 @@ class TestCountStats(AnalyticsTestCase):
                               [[1, user2], [1, user2]])
         self.assertTableState(RealmCount, ['value', 'realm'],
                               [[2, self.default_realm]])
-        # No aggregation to InstallationCount with realm constraint
-        self.assertTableState(InstallationCount, ['value'], [])
+        self.assertTableState(InstallationCount, ['value'], [[2]])
         self.assertTableState(StreamCount, [], [])
 
     def test_15day_actives(self) -> None:
@@ -860,8 +860,7 @@ class TestCountStats(AnalyticsTestCase):
                               [[1, user1], [1, user2]])
         self.assertTableState(RealmCount, ['value', 'realm'],
                               [[2, self.default_realm]])
-        # No aggregation to InstallationCount with realm constraint
-        self.assertTableState(InstallationCount, ['value'], [])
+        self.assertTableState(InstallationCount, ['value'], [[2]])
         self.assertTableState(StreamCount, [], [])
 
     def test_minutes_active(self) -> None:
@@ -931,8 +930,7 @@ class TestCountStats(AnalyticsTestCase):
                               [[60, user1], [1, user2]])
         self.assertTableState(RealmCount, ['value', 'realm'],
                               [[60 + 1, self.default_realm]])
-        # No aggregation to InstallationCount with realm constraint
-        self.assertTableState(InstallationCount, ['value'], [])
+        self.assertTableState(InstallationCount, ['value'], [[60 + 1]])
         self.assertTableState(StreamCount, [], [])
 
 class TestDoAggregateToSummaryTable(AnalyticsTestCase):
