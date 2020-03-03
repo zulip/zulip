@@ -5027,7 +5027,13 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
 
 def email_not_system_bot(email: str) -> None:
     if is_cross_realm_bot_email(email):
-        raise ValidationError('%s is reserved for system bots' % (email,))
+        msg = '%s is reserved for system bots' % (email,)
+        code = msg
+        raise ValidationError(
+            msg,
+            code=code,
+            params=dict(deactivated=False),
+        )
 
 def validate_email_for_realm(target_realm: Realm, email: str) -> None:
     email_not_system_bot(email)
