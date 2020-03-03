@@ -54,7 +54,7 @@ shared history](/help/stream-permissions), including messages sent
 before you joined the stream (or organization) or those sent to public
 streams you are not subscribed to.
 
-By default, Zulip searches messages in your personal history, i.e. the
+By default, Zulip searches messages in your history, i.e. the
 messages you actually received.  This avoids cluttering search results
 with irrelevant messages from public streams you're not interested in.
 
