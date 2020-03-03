@@ -872,6 +872,41 @@ class InviteUserTest(InviteUserBase):
 
         self.assert_json_success(result)
 
+    def test_invite_mirror_dummy_user(self) -> None:
+        '''
+        A mirror dummy account is a temporary account
+        that we keep in our system if we are mirroring
+        data from something like Zephyr or IRC.
+
+        We want users to eventually just sign up or
+        register for Zulip, in which case we will just
+        fully "activate" the account.
+
+        Here we test that you can invite a person who
+        has a mirror dummy account.
+        '''
+        inviter = self.example_user('hamlet')
+        self.login(inviter.email)
+
+        mirror_user = self.example_user('cordelia')
+        mirror_user.is_mirror_dummy = True
+        mirror_user.is_active = False
+        mirror_user.save()
+
+        self.assertEqual(
+            PreregistrationUser.objects.filter(email=mirror_user.email).count(),
+            0,
+        )
+
+        result = self.invite(mirror_user.email, ['Denmark'])
+        self.assert_json_success(result)
+
+        prereg_user = PreregistrationUser.objects.get(email=mirror_user.email)
+        self.assertEqual(
+            prereg_user.referred_by.email,
+            inviter.email,
+        )
+
     def test_successful_invite_user_as_admin_from_admin_account(self) -> None:
         """
         Test that a new user invited to a stream receives some initial
