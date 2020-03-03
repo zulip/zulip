@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta, datetime
 import logging
 import os
 import ujson
@@ -14,12 +14,12 @@ from django.utils.timezone import utc as timezone_utc, now as timezone_now
 from typing import Any, Dict, List, Optional, Set, Tuple, \
     Iterable, cast
 
-from analytics.models import RealmCount, StreamCount, UserCount
+from analytics.models import FillState, RealmCount, StreamCount, UserCount
 from zerver.lib.actions import UserMessageLite, bulk_insert_ums, \
     do_change_plan_type, do_change_avatar_fields
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
-from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.timestamp import datetime_to_timestamp, floor_to_day, floor_to_hour
 from zerver.lib.export import DATE_FIELDS, \
     Record, TableData, TableName, Field, Path
 from zerver.lib.message import do_render_markdown
@@ -29,6 +29,7 @@ from zerver.lib.upload import random_name, sanitize_name, \
     guess_type, BadImageError
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.lib.parallel import run_parallel
+from zerver.lib.server_initialization import zulip_server_isempty
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
@@ -37,6 +38,8 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     Attachment, get_system_bot, email_to_username, get_huddle_hash, \
     UserHotspot, MutedTopic, Service, UserGroup, UserGroupMembership, \
     BotStorageData, BotConfigData, DefaultStream, RealmFilter
+from analytics.lib.counts import CountStat, process_count_stat, get_count_stats,\
+    LoggingCountStat, do_update_fill_state, do_delete_counts_at_hour
 
 realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
                 ("zerver_realmemoji", RealmEmoji, "realmemoji"),
@@ -83,6 +86,7 @@ ID_MAP = {
     'usergroupmembership': {},
     'botstoragedata': {},
     'botconfigdata': {},
+    'analytics_fillstate': {},
     'analytics_realmcount': {},
     'analytics_streamcount': {},
     'analytics_usercount': {},
@@ -109,7 +113,7 @@ def fix_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
         for field_name in DATE_FIELDS[table]:
             if item[field_name] is not None:
-                item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone_utc)
+                item[field_name] = datetime.fromtimestamp(item[field_name], tz=timezone_utc)
 
 def fix_upload_links(data: TableData, message_table: TableName) -> None:
     """
@@ -1315,3 +1319,104 @@ def import_analytics_data(realm: Realm, import_dir: Path) -> None:
     re_map_foreign_keys(data, 'analytics_streamcount', 'stream', related_table="stream")
     update_model_ids(StreamCount, data, 'analytics_streamcount')
     bulk_import_model(data, StreamCount)
+
+    fix_datetime_fields(data, 'analytics_fillstate')
+    grab_analytics_lock()
+    try:
+        handle_fill_state(data, 'analytics_fillstate', realm)
+        logging.info('Successfully handled FillState')
+    finally:
+        os.rmdir(settings.ANALYTICS_LOCK_DIR)
+
+# Will wait until it grabs lock (settings.ANALYTICS_LOCK_DIR) from update_analytics_count.py
+# so that function below it will not create an issue with running update_analytics_counts
+def grab_analytics_lock() -> None:
+    lock_available = False
+    warning_displayed = False
+    while lock_available is False:
+        try:
+            os.mkdir(settings.ANALYTICS_LOCK_DIR)
+            lock_available = True
+        except OSError:
+            if warning_displayed is False:
+                print("Analytics lock is unavailable")
+                print("Either wait for update_analytics_count to complete or stop it")
+                warning_displayed = True
+
+# To Handle FillState we have to compare the state of new (current) server to the old
+# (imported realm) server.
+def handle_fill_state(data: TableData, table: TableName, realm: Realm) -> None:
+    fill_state = FillState.objects.all()
+    if zulip_server_isempty():
+        # Straight away import FillState Table when server is empty.
+        update_model_ids(FillState, data, 'analytics_fillstate')
+        bulk_import_model(data, FillState)
+        return
+
+    for items in data[table]:
+        COUNT_STATS = get_count_stats(realm)
+        stat = COUNT_STATS[items['property']]
+        current_fill_state = fill_state.filter(property = stat.property).first()
+
+        if stat.frequency == CountStat.HOUR:
+            time_increment = timedelta(hours=1)
+        elif stat.frequency == CountStat.DAY:
+            time_increment = timedelta(days=1)
+
+        check_imported_fill_state(items, stat, time_increment, realm)
+
+        # Old server is ahead, we delete any entries from the imported realm's analytics tables
+        if current_fill_state is None:
+            filters = {'property': stat.property, 'realm': realm}
+            delete_counts_by_filters(filters)
+            return
+        elif current_fill_state.end_time <= items['end_time']:
+            extra_filled = items['end_time']
+            while current_fill_state.end_time < extra_filled:
+                filters = {'property': stat.property, 'end_time': extra_filled, 'realm': realm}
+                delete_counts_by_filters(filters)
+                extra_filled = extra_filled - time_increment
+            return
+        else:
+            # New server is ahead, we have to count stats just for the target Realm.
+            check_current_fill_state(current_fill_state, stat, time_increment)
+            fill_to_time = current_fill_state.end_time
+            current_fill_state.end_time = items['end_time']
+            current_fill_state.save()
+            process_count_stat(stat, fill_to_time, realm)
+
+def delete_counts_by_filters(filters: Dict[str, Any]) -> None:
+    COUNT_STATS = get_count_stats(filters['realm'])
+    stat = COUNT_STATS[filters['property']]
+
+    # UserCount and StreamCount objects will not be present when stat is an instance
+    # of LoggingCountStat only RealmCount objects can be present when its output_table
+    # is either UserCount or StreamCount.
+    # We are here ignoring InstallationCount objects as they are not imported.
+
+    if isinstance(stat, LoggingCountStat) and stat.data_collector.output_table in [UserCount, StreamCount]:
+        RealmCount.objects.filter(**filters).delete()
+
+    if not isinstance(stat, LoggingCountStat):
+        UserCount.objects.filter(**filters).delete()
+        StreamCount.objects.filter(**filters).delete()
+        RealmCount.objects.filter(**filters).delete()
+
+# To ensure that the analytics data we're working is in a consistent state,
+# and we move back 1 time increment if it's FillState.STARTED
+def check_imported_fill_state(fill_state: Dict[str, Any], stat: CountStat,
+                              time_increment: timedelta, realm: Realm) -> None:
+    if fill_state['state'] == FillState.STARTED:
+        filters = {'property': stat.property, 'end_time': fill_state['end_time'], 'realm': realm}
+        delete_counts_by_filters(filters)
+        currently_filled = fill_state['end_time'] - time_increment
+        fill_state['end_time'] = currently_filled
+        fill_state['state'] = FillState.DONE
+
+# To ensure that the FillState we're working is in a consistent state,
+# and we move back 1 time increment if it's FillState.STARTED.
+def check_current_fill_state(fill_state: FillState, stat: CountStat, time_increment: timedelta) -> None:
+    if fill_state.state == FillState.STARTED:
+        do_delete_counts_at_hour(stat, fill_state.end_time)
+        currently_filled = fill_state.end_time - time_increment
+        do_update_fill_state(fill_state, currently_filled, FillState.DONE)
