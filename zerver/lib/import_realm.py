@@ -1296,6 +1296,13 @@ def import_attachments(data: TableData) -> None:
 def import_analytics_data(realm: Realm, import_dir: Path) -> None:
     analytics_filename = os.path.join(import_dir, "analytics.json")
     if not os.path.exists(analytics_filename):
+        grab_analytics_lock()
+        try:
+            logging.info('Updating Analytics Count')
+            process_imported_realm_stats(realm)
+            logging.info('Successfully updated Analytics Counts')
+        finally:
+            os.rmdir(settings.ANALYTICS_LOCK_DIR)
         return
 
     logging.info("Importing analytics data from %s" % (analytics_filename,))
@@ -1342,6 +1349,28 @@ def grab_analytics_lock() -> None:
                 print("Analytics lock is unavailable")
                 print("Either wait for update_analytics_count to complete or stop it")
                 warning_displayed = True
+
+# Count stats for imported realm where analytics data is not available like in the case
+# of slack import.
+def process_imported_realm_stats(realm: Realm) -> None:
+    COUNT_STATS = get_count_stats(realm)
+    stats = list(COUNT_STATS.values())
+
+    for stat in stats:
+        fill_state = FillState.objects.filter(property = stat.property).first()
+        time_to_fill = floor_to_hour(timezone_now())
+        if fill_state is not None:
+            if stat.frequency == CountStat.HOUR:
+                time_increment = timedelta(hours=1)
+            elif stat.frequency == CountStat.DAY:
+                time_increment = timedelta(days=1)
+
+            check_current_fill_state(fill_state, stat, time_increment)
+            time_to_fill = fill_state.end_time
+            fill_state.end_time = floor_to_day(realm.date_created)
+            fill_state.save()
+
+        process_count_stat(stat, time_to_fill, realm)
 
 # To Handle FillState we have to compare the state of new (current) server to the old
 # (imported realm) server.
