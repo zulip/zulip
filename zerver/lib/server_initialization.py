@@ -44,3 +44,6 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
     bulk_create_users(realm, user_set, bot_type=bot_type, bot_owner=bot_owner, tos_version=tos_version)
+
+def zulip_server_isempty() -> bool:
+    return not Realm.objects.exclude(string_id=settings.SYSTEM_BOT_REALM).exists()
