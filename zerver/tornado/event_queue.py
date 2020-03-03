@@ -916,6 +916,12 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         client.add_event(user_event)
 
 def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    if 'user_id' not in event:
+        # We only recently added `user_id` to presence data.
+        # Any old events in our queue can just be dropped,
+        # since presence events are pretty ephemeral in nature.
+        logging.warning('Dropping some obsolete presence events after upgrade.')
+
     slim_event = dict(
         type='presence',
         user_id=event['user_id'],
