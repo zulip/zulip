@@ -23,7 +23,7 @@ import tempfile
 import shutil
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from analytics.models import RealmCount, UserCount, StreamCount
+from analytics.models import FillState, RealmCount, UserCount, StreamCount
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, Reaction, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
@@ -195,9 +195,6 @@ NON_EXPORTED_TABLES = {
     # recompute it after a fillstate import.
     'analytics_installationcount',
 
-    # Fillstate will require some cleverness to do the right partial export.
-    'analytics_fillstate',
-
     # These are for unfinished features; we'll want to add them ot the
     # export before they reach full production status.
     'zerver_defaultstreamgroup',
@@ -233,6 +230,7 @@ MESSAGE_TABLES = {
 # These get their own file as analytics data can be quite large and
 # would otherwise make realm.json unpleasant to manually inspect
 ANALYTICS_TABLES = {
+    'analytics_fillstate',
     'analytics_realmcount',
     'analytics_streamcount',
     'analytics_usercount',
@@ -256,6 +254,7 @@ DATE_FIELDS = {
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
     'zerver_realmauditlog': ['event_time'],
     'zerver_userhotspot': ['timestamp'],
+    'analytics_fillstate': ['end_time'],
     'analytics_installationcount': ['end_time'],
     'analytics_realmcount': ['end_time'],
     'analytics_usercount': ['end_time'],
@@ -1697,6 +1696,13 @@ def get_analytics_config() -> Config:
     analytics_config = Config(
         table='zerver_analytics',
         is_seeded=True,
+    )
+
+    Config(
+        table='analytics_fillstate',
+        model=FillState,
+        normal_parent=analytics_config,
+        use_all=True,
     )
 
     Config(
