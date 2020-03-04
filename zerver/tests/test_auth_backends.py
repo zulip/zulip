@@ -40,7 +40,7 @@ from zerver.lib.exceptions import RateLimited
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
     check_bool, check_dict_only, check_list, check_string, Validator
-from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule, clear_history
+from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.upload import resize_avatar, MEDIUM_AVATAR_SIZE
@@ -524,7 +524,7 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                         attempt_authentication(username, wrong_password)
             finally:
                 # Clean up to avoid affecting other tests.
-                clear_history(RateLimitedAuthenticationByUsername(username))
+                RateLimitedAuthenticationByUsername(username).clear_history()
                 remove_ratelimit_rule(10, 2, domain='authenticate_by_username')
 
     def test_email_auth_backend_user_based_rate_limiting(self) -> None:

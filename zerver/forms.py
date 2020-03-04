@@ -19,7 +19,7 @@ from zerver.lib.email_validation import email_allowed_for_realm, \
     validate_email_not_already_in_realm
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.rate_limiter import RateLimited, get_rate_limit_result_from_request, \
-    RateLimitedObject, rate_limit_entity
+    RateLimitedObject
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
@@ -314,7 +314,7 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
         return settings.RATE_LIMITING_RULES['password_reset_form_by_email']
 
 def rate_limit_password_reset_form_by_email(email: str) -> None:
-    ratelimited, _ = rate_limit_entity(RateLimitedPasswordResetByEmail(email))
+    ratelimited, _ = RateLimitedPasswordResetByEmail(email).rate_limit()
     if ratelimited:
         raise RateLimited
 

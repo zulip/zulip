@@ -57,7 +57,7 @@ from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.email_validation import email_allowed_for_realm, \
     validate_email_not_already_in_realm
 from zerver.lib.mobile_auth_otp import is_valid_otp
-from zerver.lib.rate_limiter import clear_history, rate_limit_request_by_entity, RateLimitedObject
+from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
@@ -193,8 +193,7 @@ class RateLimitedAuthenticationByUsername(RateLimitedObject):
         return rate_limiting_rules
 
 def rate_limit_authentication_by_username(request: HttpRequest, username: str) -> None:
-    entity = RateLimitedAuthenticationByUsername(username)
-    rate_limit_request_by_entity(request, entity)
+    RateLimitedAuthenticationByUsername(username).rate_limit_request(request)
 
 def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
     return hasattr(request, '_ratelimit') and 'RateLimitedAuthenticationByUsername' in request._ratelimit
@@ -226,7 +225,7 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
     result = auth_func(*args, **kwargs)
     if result is not None:
         # Authentication succeeded, clear the rate-limiting record.
-        clear_history(RateLimitedAuthenticationByUsername(username))
+        RateLimitedAuthenticationByUsername(username).clear_history()
 
     return result
 
