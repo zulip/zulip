@@ -1,16 +1,20 @@
-.app-main {
-    padding: 0;
-    width: auto;
-    max-width: none;
-}
-
 body {
     font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
     background-color: hsl(0, 0%, 98%);
 }
 
+hr {
+    border-width: 2px;
+}
+
 p {
     margin-bottom: 0px;
+}
+
+.app-main {
+    padding: 0;
+    width: auto;
+    max-width: none;
 }
 
 .svg-container {
@@ -70,10 +74,6 @@ p {
     margin-left: 10px;
 }
 
-hr {
-    border-width: 2px;
-}
-
 .rangeslider-container {
     user-select: none;
 }
@@ -110,45 +110,6 @@ hr {
 
 .alert {
     display: none;
-}
-
-#id_messages_sent_by_client {
-    min-height: 100px;
-    width: 750px;
-    position: relative;
-}
-
-#id_messages_sent_by_message_type {
-    height: 300px;
-    width: 750px;
-    position: relative;
-}
-
-#id_messages_sent_over_time {
-    height: 400px;
-    width: 750px;
-    position: relative;
-}
-
-#id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
-    opacity: 0.5;
-}
-
-#id_number_of_users {
-    height: 370px;
-    width: 750px;
-    position: relative;
-}
-
-#users_hover_info,
-#hoverinfo {
-    display: none;
-    font-size: 0.8em;
-    font-weight: 400;
-    position: relative;
-    height: 0px;
-    top: -35px;
-    left: 40px;
 }
 
 .button {
@@ -191,10 +152,48 @@ hr {
     color: hsl(0, 0%, 67%);
 }
 
-@keyframes spinner {
-    to {
-        transform: rotate(360deg);
-    }
+#users_hover_humans,
+#hover_human {
+    margin-left: 10px;
+}
+
+#id_messages_sent_by_client {
+    min-height: 100px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_by_message_type {
+    height: 300px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_over_time {
+    height: 400px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
+    opacity: 0.5;
+}
+
+#id_number_of_users {
+    height: 370px;
+    width: 750px;
+    position: relative;
+}
+
+#users_hover_info,
+#hoverinfo {
+    display: none;
+    font-size: 0.8em;
+    font-weight: 400;
+    position: relative;
+    height: 0px;
+    top: -35px;
+    left: 40px;
 }
 
 .spinner::before {
@@ -213,9 +212,10 @@ hr {
     animation: spinner 1s linear infinite;
 }
 
-#users_hover_humans,
-#hover_human {
-    margin-left: 10px;
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (min-width: 1680px) {
