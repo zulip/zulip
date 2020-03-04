@@ -221,14 +221,13 @@ p {
 @media (min-width: 1680px) {
     .center-charts {
         width: calc(816px * 2); /* 790px + 4px for borders + 2px for il-block + 20px margins */
-    }
 
-    .center-charts .left,
-    .center-charts .right {
-        display: inline-block;
-        vertical-align: top;
-        margin: 0px 10px;
-
-        width: 790px;
+        .left,
+        .right {
+            display: inline-block;
+            vertical-align: top;
+            margin: 0px 10px;
+            width: 790px;
+        }
     }
 }
