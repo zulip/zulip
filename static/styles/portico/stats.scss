@@ -143,6 +143,12 @@ hr {
 #users_hover_info,
 #hoverinfo {
     display: none;
+    font-size: 0.8em;
+    font-weight: 400;
+    position: relative;
+    height: 0px;
+    top: -35px;
+    left: 40px;
 }
 
 .button {
@@ -207,28 +213,9 @@ hr {
     animation: spinner 1s linear infinite;
 }
 
-#users_hover_info,
-#hoverinfo {
-    font-size: 0.8em;
-    font-weight: 400;
-}
-
 #users_hover_humans,
 #hover_human {
     margin-left: 10px;
-}
-
-#hoverinfo,
-#users_hover_info {
-    position: relative;
-    height: 0px;
-    top: -35px;
-    left: 40px;
-}
-
-#users_hover_info {
-    left: 25px;
-    top: -40px;
 }
 
 @media (min-width: 1680px) {
