@@ -173,10 +173,10 @@ p {
     height: 400px;
     width: 750px;
     position: relative;
-}
 
-#id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
-    opacity: 0.5;
+    &[last_value_is_partial='true'] .points path:last-of-type {
+        opacity: 0.5;
+    }
 }
 
 #id_number_of_users {
