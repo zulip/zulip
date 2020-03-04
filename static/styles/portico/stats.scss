@@ -33,6 +33,39 @@ p {
     background-color: hsl(0, 0%, 100%);
 }
 
+.chart-container button {
+    position: relative;
+    z-index: 1;
+}
+
+.chart-container h1 {
+    margin-top: 0px;
+    font-size: 1.5em;
+}
+
+.chart-container:not(.pie-chart) .number-stat {
+    position: relative;
+    top: -30px;
+}
+
+.chart-container.pie-chart hr {
+    margin-bottom: 8px;
+}
+
+.chart-container .button-container {
+    position: relative;
+    z-index: 1;
+}
+
+.chart-container .button-container label {
+    margin: 3px;
+}
+
+.chart-container .button-container > * {
+    display: inline-block;
+    vertical-align: top;
+}
+
 .analytics-page-header {
     margin-left: 10px;
 }
@@ -55,11 +88,6 @@ hr {
     font-weight: 400;
 }
 
-.chart-container:not(.pie-chart) .number-stat {
-    position: relative;
-    top: -30px;
-}
-
 .buttons button {
     background-color: hsl(0, 0%, 94%);
 }
@@ -76,36 +104,8 @@ hr {
     padding: 2px 6px;
 }
 
-.chart-container.pie-chart hr {
-    margin-bottom: 8px;
-}
-
-.chart-container button {
-    position: relative;
-    z-index: 1;
-}
-
-.chart-container h1 {
-    margin-top: 0px;
-    font-size: 1.5em;
-}
-
-.chart-container .button-container {
-    position: relative;
-    z-index: 1;
-}
-
-.chart-container .button-container label {
-    margin: 3px;
-}
-
 .button-active-users {
     float: right;
-}
-
-.chart-container .button-container > * {
-    display: inline-block;
-    vertical-align: top;
 }
 
 .alert {
