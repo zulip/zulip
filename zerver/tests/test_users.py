@@ -1340,12 +1340,13 @@ class GetProfileTest(ZulipTestCase):
         # Tests the GET ../users/{id} api endpoint.
         user = self.example_user('hamlet')
         result = ujson.loads(self.client_get('/json/users/{}'.format(user.id)).content)
-        self.assertEqual(result['members'][0]['email'], user.email)
-        self.assertEqual(result['members'][0]['full_name'], user.full_name)
-        self.assertIn("user_id", result['members'][0])
-        self.assertFalse(result['members'][0]['is_bot'])
-        self.assertFalse(result['members'][0]['is_admin'])
-        self.assertIn('profile_data', result['members'][0])
+        self.assertEqual(result['user']['email'], user.email)
+        self.assertEqual(result['user']['full_name'], user.full_name)
+        self.assertIn("user_id", result['user'])
+        self.assertFalse(result['user']['is_bot'])
+        self.assertFalse(result['user']['is_admin'])
+        self.assertIn('profile_data', result['user'])
+
         result = self.client_get('/json/users/{}?'.format(30))
         self.assert_json_error(result, "No such user")
 
