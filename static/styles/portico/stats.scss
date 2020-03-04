@@ -88,20 +88,20 @@ hr {
     font-weight: 400;
 }
 
-.buttons button {
-    background-color: hsl(0, 0%, 94%);
-}
-
-.buttons button.selected {
-    background-color: hsl(0, 0%, 85%);
-}
-
 .pie-chart .buttons {
     float: right;
 }
 
 .pie-chart .buttons button {
     padding: 2px 6px;
+}
+
+.buttons button {
+    background-color: hsl(0, 0%, 94%);
+}
+
+.buttons button.selected {
+    background-color: hsl(0, 0%, 85%);
 }
 
 .button-active-users {
