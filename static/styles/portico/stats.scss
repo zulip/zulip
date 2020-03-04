@@ -117,14 +117,14 @@ p {
     border: none;
     border-radius: 4px;
     outline: none;
-}
 
-.button:hover {
-    background-color: hsl(0, 0%, 84%) !important;
-}
+    &:hover {
+        background-color: hsl(0, 0%, 84%) !important;
+    }
 
-.button[data-user="everyone"] {
-    margin-right: 10px;
+    &[data-user="everyone"] {
+        margin-right: 10px;
+    }
 }
 
 .docs_link a {
