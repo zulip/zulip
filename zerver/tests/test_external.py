@@ -7,7 +7,6 @@ from zerver.forms import email_is_not_mit_mailing_list
 
 from zerver.lib.rate_limiter import (
     add_ratelimit_rule,
-    clear_history,
     remove_ratelimit_rule,
     RateLimitedUser,
     RateLimiterLockingException,
@@ -71,7 +70,7 @@ class RateLimitTests(ZulipTestCase):
 
     def test_headers(self) -> None:
         user = self.example_user('hamlet')
-        clear_history(RateLimitedUser(user))
+        RateLimitedUser(user).clear_history()
 
         result = self.send_api_message(user, "some stuff")
         self.assertTrue('X-RateLimit-Remaining' in result)
@@ -80,7 +79,7 @@ class RateLimitTests(ZulipTestCase):
 
     def test_ratelimit_decrease(self) -> None:
         user = self.example_user('hamlet')
-        clear_history(RateLimitedUser(user))
+        RateLimitedUser(user).clear_history()
         result = self.send_api_message(user, "some stuff")
         limit = int(result['X-RateLimit-Remaining'])
 
@@ -90,7 +89,7 @@ class RateLimitTests(ZulipTestCase):
 
     def test_hit_ratelimits(self) -> None:
         user = self.example_user('cordelia')
-        clear_history(RateLimitedUser(user))
+        RateLimitedUser(user).clear_history()
 
         start_time = time.time()
         for i in range(6):
@@ -116,7 +115,7 @@ class RateLimitTests(ZulipTestCase):
     @mock.patch('zerver.lib.rate_limiter.logger.warning')
     def test_hit_ratelimiterlockingexception(self, mock_warn: mock.MagicMock) -> None:
         user = self.example_user('cordelia')
-        clear_history(RateLimitedUser(user))
+        RateLimitedUser(user).clear_history()
 
         with mock.patch('zerver.lib.rate_limiter.incr_ratelimit',
                         side_effect=RateLimiterLockingException):
