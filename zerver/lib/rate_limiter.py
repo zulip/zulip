@@ -34,6 +34,80 @@ class RateLimitedObject(ABC):
         return ["{}ratelimit:{}:{}".format(KEY_PREFIX, key_fragment, keytype)
                 for keytype in ['list', 'zset', 'block']]
 
+    def rate_limit(self) -> Tuple[bool, float]:
+        # Returns (ratelimited, secs_to_freedom)
+        ratelimited, time = is_ratelimited(self)
+
+        if ratelimited:
+            statsd.incr("ratelimiter.limited.%s.%s" % (type(self), str(self)))
+
+        else:
+            try:
+                incr_ratelimit(self)
+            except RateLimiterLockingException:
+                logger.warning("Deadlock trying to incr_ratelimit for %s:%s" % (
+                               type(self).__name__, str(self)))
+                # rate-limit users who are hitting the API so hard we can't update our stats.
+                ratelimited = True
+
+        return ratelimited, time
+
+    def rate_limit_request(self, request: HttpRequest) -> None:
+        ratelimited, time = self.rate_limit()
+
+        entity_type = type(self).__name__
+        if not hasattr(request, '_ratelimit'):
+            request._ratelimit = {}
+        request._ratelimit[entity_type] = RateLimitResult(
+            entity=self,
+            secs_to_freedom=time,
+            over_limit=ratelimited
+        )
+        # Abort this request if the user is over their rate limits
+        if ratelimited:
+            # Pass information about what kind of entity got limited in the exception:
+            raise RateLimited(entity_type)
+
+        calls_remaining, time_reset = self.api_calls_left()
+
+        request._ratelimit[entity_type].remaining = calls_remaining
+        request._ratelimit[entity_type].secs_to_freedom = time_reset
+
+    def block_access(self, seconds: int) -> None:
+        "Manually blocks an entity for the desired number of seconds"
+        _, _, blocking_key = self.get_keys()
+        with client.pipeline() as pipe:
+            pipe.set(blocking_key, 1)
+            pipe.expire(blocking_key, seconds)
+            pipe.execute()
+
+    def unblock_access(self) -> None:
+        _, _, blocking_key = self.get_keys()
+        client.delete(blocking_key)
+
+    def clear_history(self) -> None:
+        '''
+        This is only used by test code now, where it's very helpful in
+        allowing us to run tests quickly, by giving a user a clean slate.
+        '''
+        for key in self.get_keys():
+            client.delete(key)
+
+    def max_api_calls(self) -> int:
+        "Returns the API rate limit for the highest limit"
+        return self.rules()[-1][1]
+
+    def max_api_window(self) -> int:
+        "Returns the API time window for the highest limit"
+        return self.rules()[-1][0]
+
+    def api_calls_left(self) -> Tuple[int, float]:
+        """Returns how many API calls in this range this client has, as well as when
+        the rate-limit will be reset to 0"""
+        max_window = self.max_api_window()
+        max_calls = self.max_api_calls()
+        return _get_api_calls_left(self, max_window, max_calls)
+
     @abstractmethod
     def key_fragment(self) -> str:
         pass
@@ -71,14 +145,6 @@ def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
     global KEY_PREFIX
     KEY_PREFIX = test_name + ':' + str(os.getpid()) + ':'
 
-def max_api_calls(entity: RateLimitedObject) -> int:
-    "Returns the API rate limit for the highest limit"
-    return entity.rules()[-1][1]
-
-def max_api_window(entity: RateLimitedObject) -> int:
-    "Returns the API time window for the highest limit"
-    return entity.rules()[-1][0]
-
 def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str='api_by_user') -> None:
     "Add a rate-limiting rule to the ratelimiter"
     global rules
@@ -94,26 +160,6 @@ def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str='api_b
 def remove_ratelimit_rule(range_seconds: int, num_requests: int, domain: str='api_by_user') -> None:
     global rules
     rules[domain] = [x for x in rules[domain] if x[0] != range_seconds and x[1] != num_requests]
-
-def block_access(entity: RateLimitedObject, seconds: int) -> None:
-    "Manually blocks an entity for the desired number of seconds"
-    _, _, blocking_key = entity.get_keys()
-    with client.pipeline() as pipe:
-        pipe.set(blocking_key, 1)
-        pipe.expire(blocking_key, seconds)
-        pipe.execute()
-
-def unblock_access(entity: RateLimitedObject) -> None:
-    _, _, blocking_key = entity.get_keys()
-    client.delete(blocking_key)
-
-def clear_history(entity: RateLimitedObject) -> None:
-    '''
-    This is only used by test code now, where it's very helpful in
-    allowing us to run tests quickly, by giving a user a clean slate.
-    '''
-    for key in entity.get_keys():
-        client.delete(key)
 
 def _get_api_calls_left(entity: RateLimitedObject, range_seconds: int, max_calls: int) -> Tuple[int, float]:
     list_key, set_key, _ = entity.get_keys()
@@ -141,13 +187,6 @@ def _get_api_calls_left(entity: RateLimitedObject, range_seconds: int, max_calls
         time_reset = now
 
     return calls_left, time_reset
-
-def api_calls_left(entity: RateLimitedObject) -> Tuple[int, float]:
-    """Returns how many API calls in this range this client has, as well as when
-       the rate-limit will be reset to 0"""
-    max_window = max_api_window(entity)
-    max_calls = max_api_calls(entity)
-    return _get_api_calls_left(entity, max_window, max_calls)
 
 def is_ratelimited(entity: RateLimitedObject) -> Tuple[bool, float]:
     "Returns a tuple of (rate_limited, time_till_free)"
@@ -219,7 +258,7 @@ def incr_ratelimit(entity: RateLimitedObject) -> None:
                 pipe.watch(list_key)
 
                 # Get the last elem that we'll trim (so we can remove it from our sorted set)
-                last_val = pipe.lindex(list_key, max_api_calls(entity) - 1)
+                last_val = pipe.lindex(list_key, entity.max_api_calls() - 1)
 
                 # Restart buffered execution
                 pipe.multi()
@@ -228,7 +267,7 @@ def incr_ratelimit(entity: RateLimitedObject) -> None:
                 pipe.lpush(list_key, now)
 
                 # Trim our list to the oldest rule we have
-                pipe.ltrim(list_key, 0, max_api_calls(entity) - 1)
+                pipe.ltrim(list_key, 0, entity.max_api_calls() - 1)
 
                 # Add our new value to the sorted set that we keep
                 # We need to put the score and val both as timestamp,
@@ -240,7 +279,7 @@ def incr_ratelimit(entity: RateLimitedObject) -> None:
                     pipe.zrem(set_key, last_val)
 
                 # Set the TTL for our keys as well
-                api_window = max_api_window(entity)
+                api_window = entity.max_api_window()
                 pipe.expire(list_key, api_window)
                 pipe.expire(set_key, api_window)
 
@@ -254,45 +293,6 @@ def incr_ratelimit(entity: RateLimitedObject) -> None:
                 count += 1
 
                 continue
-
-def rate_limit_entity(entity: RateLimitedObject) -> Tuple[bool, float]:
-    # Returns (ratelimited, secs_to_freedom)
-    ratelimited, time = is_ratelimited(entity)
-
-    if ratelimited:
-        statsd.incr("ratelimiter.limited.%s.%s" % (type(entity), str(entity)))
-
-    else:
-        try:
-            incr_ratelimit(entity)
-        except RateLimiterLockingException:
-            logger.warning("Deadlock trying to incr_ratelimit for %s:%s" % (
-                           type(entity).__name__, str(entity)))
-            # rate-limit users who are hitting the API so hard we can't update our stats.
-            ratelimited = True
-
-    return ratelimited, time
-
-def rate_limit_request_by_entity(request: HttpRequest, entity: RateLimitedObject) -> None:
-    ratelimited, time = rate_limit_entity(entity)
-
-    entity_type = type(entity).__name__
-    if not hasattr(request, '_ratelimit'):
-        request._ratelimit = {}
-    request._ratelimit[entity_type] = RateLimitResult(
-        entity=entity,
-        secs_to_freedom=time,
-        over_limit=ratelimited
-    )
-    # Abort this request if the user is over their rate limits
-    if ratelimited:
-        # Pass information about what kind of entity got limited in the exception:
-        raise RateLimited(entity_type)
-
-    calls_remaining, time_reset = api_calls_left(entity)
-
-    request._ratelimit[entity_type].remaining = calls_remaining
-    request._ratelimit[entity_type].secs_to_freedom = time_reset
 
 class RateLimitResult:
     def __init__(self, entity: RateLimitedObject, secs_to_freedom: float, over_limit: bool,
