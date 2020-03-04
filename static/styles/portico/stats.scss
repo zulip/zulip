@@ -98,10 +98,10 @@ p {
 
 .buttons button {
     background-color: hsl(0, 0%, 94%);
-}
 
-.buttons button.selected {
-    background-color: hsl(0, 0%, 85%);
+    &.selected {
+        background-color: hsl(0, 0%, 85%);
+    }
 }
 
 .button-active-users {
