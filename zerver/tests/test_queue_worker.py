@@ -13,7 +13,7 @@ from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.queue import MAX_REQUEST_RETRIES
-from zerver.lib.rate_limiter import RateLimiterLockingException, clear_history
+from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
@@ -359,7 +359,7 @@ class WorkerTest(ZulipTestCase):
                                          mock_warn: MagicMock) -> None:
         fake_client = self.FakeClient()
         realm = get_realm('zulip')
-        clear_history(RateLimitedRealmMirror(realm))
+        RateLimitedRealmMirror(realm).clear_history()
         stream = get_stream('Denmark', realm)
         stream_to_address = encode_email_address(stream)
         data = [

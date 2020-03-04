@@ -20,7 +20,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import generate_random_token
 from zerver.lib.upload import upload_message_file
 from zerver.lib.send_email import FromAddress
-from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_entity
+from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.exceptions import RateLimited
 from zerver.models import Stream, Recipient, MissedMessageEmailAddress, \
     get_display_recipient, \
@@ -453,8 +453,7 @@ class RateLimitedRealmMirror(RateLimitedObject):
         return self.realm.string_id
 
 def rate_limit_mirror_by_realm(recipient_realm: Realm) -> None:
-    entity = RateLimitedRealmMirror(recipient_realm)
-    ratelimited = rate_limit_entity(entity)[0]
+    ratelimited = RateLimitedRealmMirror(recipient_realm).rate_limit()[0]
 
     if ratelimited:
         raise RateLimited()

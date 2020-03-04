@@ -26,7 +26,7 @@ from zerver.lib.db import reset_queries
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.rate_limiter import RateLimitResult, max_api_calls
+from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd
@@ -352,7 +352,7 @@ class RateLimitMiddleware(MiddlewareMixin):
     def set_response_headers(self, response: HttpResponse,
                              rate_limit_results: List[RateLimitResult]) -> None:
         # The limit on the action that was requested is the minimum of the limits that get applied:
-        limit = min([max_api_calls(result.entity) for result in rate_limit_results])
+        limit = min([result.entity.max_api_calls() for result in rate_limit_results])
         response['X-RateLimit-Limit'] = str(limit)
         # Same principle applies to remaining api calls:
         if all(result.remaining for result in rate_limit_results):

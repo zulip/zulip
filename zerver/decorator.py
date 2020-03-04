@@ -28,7 +28,7 @@ from zerver.lib.exceptions import JsonableError, ErrorCode, \
 from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import to_non_negative_int
 
-from zerver.lib.rate_limiter import rate_limit_request_by_entity, RateLimitedUser
+from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
 
 from functools import wraps
@@ -744,8 +744,7 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
 
-    entity = RateLimitedUser(user, domain=domain)
-    rate_limit_request_by_entity(request, entity)
+    RateLimitedUser(user, domain=domain).rate_limit_request(request)
 
 def rate_limit(domain: str='api_by_user') -> Callable[[ViewFuncT], ViewFuncT]:
     """Rate-limits a view. Takes an optional 'domain' param if you wish to
