@@ -325,9 +325,10 @@ li.top_left_starred_messages {
 .all-messages-arrow,
 .starred-messages-sidebar-arrow,
 .stream-sidebar-arrow {
-    top: 3px;
+    top: 3.5px;
     right: 10px;
     font-size: 0.8em;
+    padding-left: 10px;
 }
 
 /*

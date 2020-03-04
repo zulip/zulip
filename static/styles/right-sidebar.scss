@@ -35,15 +35,15 @@
 
         .user-list-arrow {
             position: absolute;
-            top: 0px;
+            top: 1px;
             right: 10px;
             font-size: 14px;
             display: none;
+            padding-left: 10px;
 
             i {
                 padding-right: 0.25em;
                 display: inline-block;
-                width: 13px;
             }
 
             &:hover {
