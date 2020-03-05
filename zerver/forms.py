@@ -303,6 +303,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
 class RateLimitedPasswordResetByEmail(RateLimitedObject):
     def __init__(self, email: str) -> None:
         self.email = email
+        super().__init__()
 
     def __str__(self) -> str:
         return "Email: {}".format(self.email)
