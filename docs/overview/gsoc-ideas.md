@@ -228,7 +228,7 @@ and explain why they are correct.
 
 ### Focus areas
 
-For 2019, we are particularly interested in GSoC students who have
+For 2020, we are particularly interested in GSoC students who have
 strong skills at visual design, HTML/CSS, mobile development,
 performance optimization, or Electron.  So if you're a student with
 those skills and are looking for an organization to join, we'd love to
@@ -263,18 +263,27 @@ CSS](https://github.com/zulip/zulip/).
   usability sense and/or technical writing skills are all pluses.
   Expert: Eeshan Garg.
 
-- Fill in the gaps in Zulip's
-  [REST API documentation](https://zulipchat.com/api).  Zulip has a
-  [nice framework](../documentation/api.md) for
-  writing API documentation built by a student last summer based on
-  the OpenAPI standard with built-in automated tests, but there are a
-  few dozen endpoints that are missing, several of which are quite
-  important.  See the [API docs area label][api-docs-area] for good
-  starter projects and
-  [this issue](https://github.com/zulip/zulip/issues/10044) for a
-  relevant TODO list.
+- Fill in the gaps in Zulip's [REST API
+  documentation](https://zulipchat.com/api), which is an important
+  resource for any organization integrating with Zulip.  Zulip has a
+  [nice framework](../documentation/api.md) for writing API
+  documentation built by past GSoC students based on the OpenAPI
+  standard with built-in automated tests of both the Python and curl
+  examples, but there are a few dozen endpoints that are missing,
+  several of which are quite important, and lots to do to improve the
+  quality of our documentation.  See the [API docs area
+  label][api-docs-area] for good starter projects and [this
+  issue](https://github.com/zulip/zulip/issues/14100) for the current
+  master TODO list.
 
 [api-docs-area]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+documentation+%28api+and+integrations%29%22
+
+- Add important full-stack features for open source projects using Zulip,
+  including [default stream
+  groups](https://github.com/zulip/zulip/issues/13670), [Mute
+  User](https://github.com/zulip/zulip/issues/168), and [public
+  access](https://github.com/zulip/zulip/issues/13172).  Expert: Tim
+  Abbott.
 
 - Make Zulip integrations easier for nontechnical users to setup.
   This includes adding a backend permissions system for managing bot
@@ -305,18 +314,15 @@ CSS](https://github.com/zulip/zulip/).
   the Slack API (if you just put in a Zulip server URL as your "Slack
   server").  **Skills required**: Strong Python experience; experience
   with the Slack API a plus.  Work should include documenting the
-  system and advertising it.  Expert: Steve Howell.
+  system and advertising it.  Expert: Tim Abbott.
 
-- Visual design work on Zulip's logged-out pages, including /help,
-  /apps, /integrations, /api, /login, /register, the zulip.org
-  website, etc.  We'd love to make these look nicer both through
-  polish and potentially through adding fun illustrations to make the product
-  more friendly.  A project could include work on Zulip's logged-in UI
-  as well.  **Skills required**: Design, HTML and CSS skills;
-  JavaScript and illustration experience are helpful.  A great
-  application would come with mockups for specific changes, and/or a
-  set of PRs making small improvements to the logged-out UI.  Expert:
-  Tim Abbott.
+- Visual and user experience design work on the core Zulip web UI.
+  We're particularly excited about students who are interested in
+  making our CSS clean and readable as part of working on the UI.
+  **Skills required**: Design, HTML and CSS skills; JavaScript and
+  illustration experience are helpful.  A great application would
+  include PRs making small, clean improvements to the Zulip UI
+  (whether logged-in or logged-out pages).  Expert: Tim Abbott.
 
 - Build support for outgoing webhooks and slash commands into Zulip to
   improve its chat-ops capabilities.  There's an existing
@@ -373,21 +379,25 @@ CSS](https://github.com/zulip/zulip/).
 - Build out the administration pages for Zulip to let admins set a
   retention policy for when old messages should be deleted, audit
   data, etc. ...  the sorts of things needed for Zulip to be used at
-  larger organizations.  We get constant requests for these kinds
-  of features from Zulip users.  The Zulip bug tracker has almost 50 open issues(
-  [settings (admin/org)](https://github.com/zulip/zulip/labels/area%3A%20settings%20%28admin%2Forg%29),
-  [settings UI](https://github.com/zulip/zulip/labels/area%3A%20settings%20UI),
-  [settings (user)](https://github.com/zulip/zulip/labels/area%3A%20settings%20%28user%29),
-  [stream settings](https://github.com/zulip/zulip/labels/area%3A%20stream%20settings)
+  larger organizations.  We get constant requests for these kinds of
+  features from Zulip users.  The Zulip bug tracker has plentiful open
+  issues( [settings
+  (admin/org)](https://github.com/zulip/zulip/labels/area%3A%20settings%20%28admin%2Forg%29),
+  [settings
+  UI](https://github.com/zulip/zulip/labels/area%3A%20settings%20UI),
+  [settings
+  (user)](https://github.com/zulip/zulip/labels/area%3A%20settings%20%28user%29),
+  [stream
+  settings](https://github.com/zulip/zulip/labels/area%3A%20stream%20settings)
   ) in the space of improving the Zulip administrative UI.  Many are
   little bite-size fixes in those pages, which are great for getting a
   feel for things, but a solid project here would be implementing 5-10
-  of the major missing features.  The first part of this project will
-  be refactoring the admin UI interfaces to require writing less
-  semi-duplicate code for each feature. **Skills recommended**: A
-  good mix of Python/Django and HTML/CSS/JavaScript skill is ideal.
-  The system for adding new features is
-  [well documented](../tutorials/new-feature-tutorial.md).
+  of the major missing features as full-stack development projects.
+  The first part of this project will be refactoring the admin UI
+  interfaces to require writing less semi-duplicate code for each
+  feature. **Skills recommended**: A good mix of Python/Django and
+  HTML/CSS/JavaScript skill is ideal.  The system for adding new
+  features is [well documented](../tutorials/new-feature-tutorial.md).
   Expert: Shubham Dhama.
 
 - Rebuild the Zulip web UI using a modern reactive layer like vue.js.
@@ -480,7 +490,7 @@ experience. Expert: Cynthia Lin, Joshua Pan.
 
 Code:
 [React Native mobile app](https://github.com/zulip/zulip-mobile).
-Experts: Greg Price, Boris Yankov.
+Experts: Greg Price, Chris Bobbe, Ray Kraesig.
 
 The highest priority for the Zulip project overall is improving the
 Zulip React Native mobile app.
@@ -514,13 +524,12 @@ Code:
 [Our cross-platform desktop app written in JavaScript on Electron](https://github.com/zulip/zulip-desktop).
 Experts: Akash Nimare, Abhighyan Khaund
 
-- Contribute to our
-  [Electron-based desktop client application](https://github.com/zulip/zulip-desktop).
-  There's plenty of feature/UI work to do, but focus areas for us
-  include things to (1) improve the release process for the app, using
-  automated testing, typescript, etc. and (2) making it easy to
-  install the desktop app on a large number of machines for enterprise
-  deployment.  Browse the open issues and get involved!
+- Contribute to our [Electron-based desktop client
+  application](https://github.com/zulip/zulip-desktop).  There's
+  plenty of feature/UI work to do, but focus areas for us include
+  things to (1) improve the release process for the app, using
+  automated testing, typescript, etc. and (2) polish the UI.  Browse
+  the open issues and get involved!
 
 **Skills required**: JavaScript experience, Electron experience.  You
   can learn electron as part of your application!
