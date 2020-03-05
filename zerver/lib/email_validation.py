@@ -117,7 +117,8 @@ def email_reserved_for_system_bots_error(email: str) -> str:
 def get_existing_user_errors(
     target_realm: Realm,
     emails: Set[str],
-) -> Dict[str, Tuple[str, Optional[str], bool]]:
+    verbose: bool=False,
+) -> Dict[str, Tuple[str, bool]]:
     '''
     We use this function even for a list of one emails.
 
@@ -126,7 +127,7 @@ def get_existing_user_errors(
     to cross-realm bots and mirror dummies too.
     '''
 
-    errors = {}  # type: Dict[str, Tuple[str, Optional[str], bool]]
+    errors = {}  # type: Dict[str, Tuple[str, bool]]
 
     users = get_users_by_delivery_email(emails, target_realm).only(
         'email',
@@ -146,10 +147,12 @@ def get_existing_user_errors(
 
     def process_email(email: str) -> None:
         if is_cross_realm_bot_email(email):
-            msg = email_reserved_for_system_bots_error(email)
-            code = msg
+            if verbose:
+                msg = email_reserved_for_system_bots_error(email)
+            else:
+                msg = _('Reserved for system bots.')
             deactivated = False
-            errors[email] = (msg, code, deactivated)
+            errors[email] = (msg, deactivated)
             return
 
         existing_user_profile = user_dict.get(email.lower())
@@ -169,20 +172,23 @@ def get_existing_user_errors(
         deactivated = not existing_user_profile.is_active
 
         if existing_user_profile.is_active:
-            msg = _('%s already has an account') % (email,)
-            code = _("Already has an account.")
+            if verbose:
+                msg = _('%s already has an account') % (email,)
+            else:
+                msg = _("Already has an account.")
         else:
-            msg = 'The account for %s has been deactivated' % (email,)
-            code = _("Account has been deactivated.")
+            msg = _("Account has been deactivated.")
 
-        errors[email] = (msg, code, deactivated)
+        errors[email] = (msg, deactivated)
 
     for email in emails:
         process_email(email)
 
     return errors
 
-def validate_email_not_already_in_realm(target_realm: Realm, email: str) -> None:
+def validate_email_not_already_in_realm(target_realm: Realm,
+                                        email: str,
+                                        verbose: bool=True) -> None:
     '''
     NOTE:
         Only use this to validate that a single email
@@ -192,10 +198,10 @@ def validate_email_not_already_in_realm(target_realm: Realm, email: str) -> None
         for any endpoint that takes multiple emails,
         such as the "invite" interface.
     '''
-    error_dict = get_existing_user_errors(target_realm, {email})
+    error_dict = get_existing_user_errors(target_realm, {email}, verbose)
 
     # Loop through errors, the only key should be our email.
     for key, error_info in error_dict.items():
         assert key == email
-        msg, code, deactivated = error_info
-        raise ValidationError(msg, code=code, params=dict(deactivated=deactivated))
+        msg, deactivated = error_info
+        raise ValidationError(msg)

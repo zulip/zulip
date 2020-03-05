@@ -5135,10 +5135,9 @@ def do_invite_users(user_profile: UserProfile,
 
     skipped = []  # type: List[Tuple[str, str, bool]]
     for email in error_dict:
-        msg, code, deactivated = error_dict[email]
-        if code is not None:
-            skipped.append((email, code, deactivated))
-            good_emails.remove(email)
+        msg, deactivated = error_dict[email]
+        skipped.append((email, msg, deactivated))
+        good_emails.remove(email)
 
     validated_emails = list(good_emails)
 

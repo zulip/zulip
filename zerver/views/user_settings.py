@@ -122,9 +122,10 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
             validate_email_not_already_in_realm(
                 user_profile.realm,
                 new_email,
+                verbose=False,
             )
         except ValidationError as e:
-            return json_error(e.code)
+            return json_error(e.message)
 
         do_start_email_change_process(user_profile, new_email)
         result['account_email'] = _("Check your email for a confirmation link. ")
