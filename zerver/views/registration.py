@@ -15,11 +15,11 @@ from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     get_realm, get_user_by_delivery_email, get_default_stream_groups, DisposableEmailError, \
     DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError, \
     PreregistrationUser
-from zerver.lib.email_validation import email_allowed_for_realm
+from zerver.lib.email_validation import email_allowed_for_realm, \
+    validate_email_not_already_in_realm
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.actions import do_change_password, do_change_full_name, \
     do_activate_user, do_create_user, do_create_realm, \
-    validate_email_not_already_in_realm, \
     do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     FindMyTeamForm, RealmRedirectForm
