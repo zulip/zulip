@@ -404,7 +404,7 @@ exports.on_load_success = function (realm_people_data) {
     });
 
     $('.admin_bot_table').on('click', '.user_row .view_user_profile', function (e) {
-        const owner_id = $(e.target).attr('data-owner-id');
+        const owner_id = parseInt($(e.target).attr('data-owner-id'), 10);
         const owner = people.get_by_user_id(owner_id);
         popovers.show_user_profile(owner);
         e.stopPropagation();
