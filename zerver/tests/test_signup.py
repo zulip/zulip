@@ -846,7 +846,7 @@ class InviteUserTest(InviteUserBase):
         #       the large number of queries), so I just
         #       use an approximate equality check.
         actual_count = len(queries)
-        expected_count = 371
+        expected_count = 343
         if abs(actual_count - expected_count) > 1:
             raise AssertionError('''
                 Unexpected number of queries:
