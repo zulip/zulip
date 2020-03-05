@@ -14,9 +14,9 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.http import HttpRequest
 from jinja2 import Markup as mark_safe
 
-from zerver.lib.actions import do_change_password, email_not_system_bot, \
+from zerver.lib.actions import do_change_password, email_not_system_bot
+from zerver.lib.email_validation import email_allowed_for_realm, \
     validate_email_not_already_in_realm
-from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.rate_limiter import RateLimited, get_rate_limit_result_from_request, \
     RateLimitedObject, rate_limit_entity

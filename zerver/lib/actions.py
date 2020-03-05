@@ -5036,24 +5036,6 @@ def email_not_system_bot(email: str) -> None:
             params=dict(deactivated=False),
         )
 
-def validate_email_not_already_in_realm(target_realm: Realm, email: str) -> None:
-    '''
-    NOTE:
-        Only use this to validate that a single email
-        is not already used in the realm.
-
-        We should start using bulk_check_new_emails()
-        for any endpoint that takes multiple emails,
-        such as the "invite" interface.
-    '''
-    error_dict = get_existing_user_errors(target_realm, {email})
-
-    # Loop through errors, the only key should be our email.
-    for key, error_info in error_dict.items():
-        assert key == email
-        msg, code, deactivated = error_info
-        raise ValidationError(msg, code=code, params=dict(deactivated=deactivated))
-
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
     data_fields = ['errors', 'sent_invitations']

@@ -13,10 +13,10 @@ from zerver.lib.actions import do_change_password, do_change_notification_settin
     do_change_enter_sends, do_regenerate_api_key, do_change_avatar_fields, \
     do_set_user_display_setting, do_change_user_delivery_email, \
     do_start_email_change_process, check_change_full_name, \
-    get_available_notification_sounds, validate_email_is_valid, \
-    validate_email_not_already_in_realm
+    get_available_notification_sounds, validate_email_is_valid
 from zerver.lib.avatar import avatar_url
-from zerver.lib.email_validation import get_realm_email_validator
+from zerver.lib.email_validation import get_realm_email_validator, \
+    validate_email_not_already_in_realm
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
