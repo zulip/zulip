@@ -82,6 +82,14 @@ exports.initialize = function () {
         exports.submit_new_status();
     });
 
+    $('body').on('keypress', '.user_status_overlay .user_status', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+
+            exports.submit_new_status();
+        }
+    });
+
     $('body').on('keyup', '.user_status_overlay input.user_status', function () {
         exports.update_button();
         exports.toggle_clear_message_button();
