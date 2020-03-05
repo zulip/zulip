@@ -3828,7 +3828,7 @@ class EmailValidatorTestCase(ZulipTestCase):
         self.assertIn('containing + are not allowed', error)
 
         errors = get_existing_user_errors(realm, {cordelia.email})
-        _, error, is_deactivated = errors[cordelia.email]
+        error, is_deactivated = errors[cordelia.email]
         self.assertEqual(False, is_deactivated)
         self.assertEqual(error, 'Already has an account.')
 
@@ -3836,7 +3836,7 @@ class EmailValidatorTestCase(ZulipTestCase):
         cordelia.save()
 
         errors = get_existing_user_errors(realm, {cordelia.email})
-        _, error, is_deactivated = errors[cordelia.email]
+        error, is_deactivated = errors[cordelia.email]
         self.assertEqual(True, is_deactivated)
         self.assertEqual(error, 'Account has been deactivated.')
 
