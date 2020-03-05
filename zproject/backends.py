@@ -182,6 +182,7 @@ rate_limiting_rules = settings.RATE_LIMITING_RULES['authenticate_by_username']
 class RateLimitedAuthenticationByUsername(RateLimitedObject):
     def __init__(self, username: str) -> None:
         self.username = username
+        super().__init__()
 
     def __str__(self) -> str:
         return "Username: {}".format(self.username)

@@ -406,7 +406,7 @@ class WorkerTest(ZulipTestCase):
                 self.assertEqual(mock_mirror_email.call_count, 4)
 
                 # If RateLimiterLockingException is thrown, we rate-limit the new message:
-                with patch('zerver.lib.rate_limiter.incr_ratelimit',
+                with patch('zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit',
                            side_effect=RateLimiterLockingException):
                     fake_client.queue.append(('email_mirror', data[0]))
                     worker.start()

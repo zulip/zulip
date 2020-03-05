@@ -117,7 +117,7 @@ class RateLimitTests(ZulipTestCase):
         user = self.example_user('cordelia')
         RateLimitedUser(user).clear_history()
 
-        with mock.patch('zerver.lib.rate_limiter.incr_ratelimit',
+        with mock.patch('zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit',
                         side_effect=RateLimiterLockingException):
             result = self.send_api_message(user, "some stuff")
             self.assertEqual(result.status_code, 429)
