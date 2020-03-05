@@ -100,7 +100,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, \
     get_user_profile_by_id, PreregistrationUser, \
-    email_allowed_for_realm, email_to_username, \
+    get_realm_email_validator, email_to_username, \
     get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
     realm_filters_for_realm, RealmFilter, stream_name_in_use, \
@@ -5053,15 +5053,29 @@ def validate_email_not_already_in_realm(target_realm: Realm, email: str) -> None
         raise ValidationError('The account for %s has been deactivated' % (email,),
                               code = _("Account has been deactivated."), params={'deactivated': True})
 
-def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str], Optional[str],
-                                                                   bool]:
+def validate_email(
+    user_profile: UserProfile,
+    email: str,
+    validate_email_allowed_in_realm: Optional[Callable[[str], None]]=None,
+) -> Tuple[Optional[str], Optional[str], bool]:
+    '''
+    This function should be used to validate NEW emails,
+    such as emails in invites, signup, etc.
+
+    Example checks:
+        - Is the email valid for the realm?
+        - Is the email actually new to the realm?
+    '''
+    if validate_email_allowed_in_realm is None:
+        validate_email_allowed_in_realm = \
+            get_realm_email_validator(user_profile.realm)
     try:
         validators.validate_email(email)
     except ValidationError:
         return _("Invalid address."), None, False
 
     try:
-        email_allowed_for_realm(email, user_profile.realm)
+        validate_email_allowed_in_realm(email)
     except DomainNotAllowedForRealmError:
         return _("Outside your domain."), None, False
     except DisposableEmailError:
@@ -5153,10 +5167,16 @@ def do_invite_users(user_profile: UserProfile,
     validated_emails = []  # type: List[str]
     errors = []  # type: List[Tuple[str, str, bool]]
     skipped = []  # type: List[Tuple[str, str, bool]]
+    validate_email_allowed_in_realm = get_realm_email_validator(user_profile.realm)
     for email in invitee_emails:
         if email == '':
             continue
-        email_error, email_skipped, deactivated = validate_email(user_profile, email)
+        email_error, email_skipped, deactivated = validate_email(
+            user_profile,
+            email,
+            validate_email_allowed_in_realm,
+        )
+
         if not (email_error or email_skipped):
             validated_emails.append(email)
         elif email_error:
