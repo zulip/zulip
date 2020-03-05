@@ -6,9 +6,10 @@ from django.db.utils import IntegrityError
 from zerver.lib.actions import do_change_is_admin, \
     do_change_realm_domain, do_create_realm, \
     do_remove_realm_domain
+from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.domains import validate_domain
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import email_allowed_for_realm, get_realm, \
+from zerver.models import get_realm, \
     RealmDomain, DomainNotAllowedForRealmError
 
 import ujson

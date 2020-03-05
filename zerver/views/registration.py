@@ -11,10 +11,11 @@ from django.core.exceptions import ValidationError
 from django.core import validators
 from zerver.context_processors import get_realm_from_request, login_context
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
-    name_changes_disabled, email_to_username, email_allowed_for_realm, \
+    name_changes_disabled, email_to_username, \
     get_realm, get_user_by_delivery_email, get_default_stream_groups, DisposableEmailError, \
     DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError, \
     PreregistrationUser
+from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.actions import do_change_password, do_change_full_name, \
     do_activate_user, do_create_user, do_create_realm, \
