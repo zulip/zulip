@@ -442,6 +442,7 @@ def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
 class RateLimitedRealmMirror(RateLimitedObject):
     def __init__(self, realm: Realm) -> None:
         self.realm = realm
+        super().__init__()
 
     def key_fragment(self) -> str:
         return "emailmirror:{}:{}".format(type(self.realm), self.realm.id)
