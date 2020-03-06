@@ -613,14 +613,7 @@ class EventsRegisterTest(ZulipTestCase):
             sys.stdout.flush()
             raise AssertionError('Mismatching states')
 
-    def check_events_dict(self, required_keys: List[Tuple[str, Validator]]) -> Validator:
-        required_keys.append(('id', check_int))
-        # Raise AssertionError if `required_keys` contains duplicate items.
-        keys = [key[0] for key in required_keys]
-        self.assertEqual(len(keys), len(set(keys)), 'Duplicate items found in required_keys.')
-        checker = check_dict_only(required_keys)
-        if not settings.LOG_API_EVENT_TYPES:
-            return checker
+    def checker_decorator(self, checker: Validator) -> Callable[[str, object], Optional[str]]:  # nocoverage # Only run during a special testing mode
         checker.instrumented_schema_id = self.instrumented_schema_count  # type: ignore # monkey-patching
         self.instrumented_schema_count += 1
 
@@ -665,6 +658,17 @@ class EventsRegisterTest(ZulipTestCase):
         if settings.LOG_API_EVENT_TYPES:
             wrapper.type_structure = checker.type_structure  # type: ignore # monkey-patching
         return wrapper
+
+    def check_events_dict(self, required_keys: List[Tuple[str, Validator]]) -> Validator:
+        required_keys.append(('id', check_int))
+        # Raise AssertionError if `required_keys` contains duplicate items.
+        keys = [key[0] for key in required_keys]
+        self.assertEqual(len(keys), len(set(keys)), 'Duplicate items found in required_keys.')
+        checker = check_dict_only(required_keys)
+
+        if settings.LOG_API_EVENT_TYPES:
+            return self.checker_decorator(checker)
+        return checker
 
     def test_mentioned_send_message_events(self) -> None:
         user = self.example_user('hamlet')
