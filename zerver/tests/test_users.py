@@ -617,6 +617,7 @@ class AdminCreateUserTest(ZulipTestCase):
         ))
         self.assert_json_error(result, "Bad name or username")
 
+        do_set_realm_property(realm, 'emails_restricted_to_domains', True)
         result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
             password='xxxx',

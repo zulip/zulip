@@ -588,7 +588,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 79)
+        self.assertEqual(len(queries), 77)
         user_profile = self.nonreg_user('test')
         self.assert_logged_in_user_id(user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -846,7 +846,7 @@ class InviteUserTest(InviteUserBase):
         #       the large number of queries), so I just
         #       use an approximate equality check.
         actual_count = len(queries)
-        expected_count = 314
+        expected_count = 312
         if abs(actual_count - expected_count) > 1:
             raise AssertionError('''
                 Unexpected number of queries:
@@ -1122,6 +1122,9 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         Tests inviting with various missing or invalid parameters.
         """
+        realm = get_realm('zulip')
+        do_set_realm_property(realm, 'emails_restricted_to_domains', True)
+
         self.login(self.example_email("hamlet"))
         invitee_emails = "foo@zulip.com"
         self.assert_json_error(self.invite(invitee_emails, []),
@@ -2677,8 +2680,8 @@ class UserSignUpTest(InviteUserBase):
 
     def test_failed_signup_due_to_restricted_domain(self) -> None:
         realm = get_realm('zulip')
-        realm.invite_required = False
-        realm.save()
+        do_set_realm_property(realm, 'invite_required', False)
+        do_set_realm_property(realm, 'emails_restricted_to_domains', True)
 
         request = HostRequestMock(host = realm.host)
         request.session = {}  # type: ignore

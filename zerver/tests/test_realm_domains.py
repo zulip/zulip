@@ -5,7 +5,7 @@ from django.db.utils import IntegrityError
 
 from zerver.lib.actions import do_change_is_admin, \
     do_change_realm_domain, do_create_realm, \
-    do_remove_realm_domain
+    do_remove_realm_domain, do_set_realm_property
 from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.domains import validate_domain
 from zerver.lib.test_classes import ZulipTestCase
@@ -16,6 +16,10 @@ import ujson
 
 
 class RealmDomainTest(ZulipTestCase):
+    def setUp(self) -> None:
+        realm = get_realm('zulip')
+        do_set_realm_property(realm, 'emails_restricted_to_domains', True)
+
     def test_list_realm_domains(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')

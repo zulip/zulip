@@ -200,7 +200,7 @@ class Command(BaseCommand):
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             create_internal_realm()
             zulip_realm = Realm.objects.create(
-                string_id="zulip", name="Zulip Dev", emails_restricted_to_domains=True,
+                string_id="zulip", name="Zulip Dev", emails_restricted_to_domains=False,
                 description="The Zulip development environment default organization."
                             "  It's great for testing!",
                 invite_required=False, org_type=Realm.CORPORATE)
