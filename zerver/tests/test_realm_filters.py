@@ -9,8 +9,7 @@ from zerver.models import RealmFilter, get_realm
 class RealmFilterTest(ZulipTestCase):
 
     def test_list(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         realm = get_realm('zulip')
         do_add_realm_filter(
             realm,
@@ -22,8 +21,7 @@ class RealmFilterTest(ZulipTestCase):
         self.assertEqual(len(result.json()["filters"]), 1)
 
     def test_create(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         data = {"pattern": "", "url_format_string": "https://realm.com/my_realm_filter/%(id)s"}
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(result, 'This field cannot be blank.')
@@ -97,16 +95,14 @@ class RealmFilterTest(ZulipTestCase):
         self.assertIsNotNone(re.match(data['pattern'], 'zulip/zulip#123'))
 
     def test_not_realm_admin(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_post("/json/realm/filters")
         self.assert_json_error(result, 'Must be an organization administrator')
         result = self.client_delete("/json/realm/filters/15")
         self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_delete(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         realm = get_realm('zulip')
         filter_id = do_add_realm_filter(
             realm,

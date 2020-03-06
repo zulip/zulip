@@ -74,8 +74,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         handler.emit(record)
 
     def simulate_error(self) -> logging.LogRecord:
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         with patch("zerver.decorator.rate_limit") as rate_limit_patch:
             rate_limit_patch.side_effect = capture_and_throw
             result = self.client_get("/json/users")

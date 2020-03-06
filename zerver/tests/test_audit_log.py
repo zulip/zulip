@@ -100,7 +100,7 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_full_name(self) -> None:
         start = timezone_now()
         new_name = 'George Hamletovich'
-        self.login(self.example_email("iago"))
+        self.login('iago')
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/{}'.format(self.example_user("hamlet").id), req)
         self.assertTrue(result.status_code == 200)

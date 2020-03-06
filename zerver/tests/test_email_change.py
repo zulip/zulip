@@ -18,14 +18,14 @@ from zerver.models import get_user_by_delivery_email, EmailChangeStatus, get_rea
 
 class EmailChangeTestCase(ZulipTestCase):
     def test_confirm_email_change_with_non_existent_key(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         key = generate_key()
         url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
         self.assert_in_success_response(["Whoops. We couldn't find your confirmation link in the system."], response)
 
     def test_confirm_email_change_with_invalid_key(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         key = 'invalid_key'
         url = confirmation_url(key, 'testserver', Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
@@ -35,7 +35,7 @@ class EmailChangeTestCase(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         old_email = user_profile.email
         new_email = 'hamlet-new@zulip.com'
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         obj = EmailChangeStatus.objects.create(new_email=new_email,
                                                old_email=old_email,
                                                user_profile=user_profile,
@@ -55,7 +55,7 @@ class EmailChangeTestCase(ZulipTestCase):
         old_email = user_profile.email
         new_email = 'hamlet-new@zulip.com'
         new_realm = get_realm('zulip')
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         obj = EmailChangeStatus.objects.create(new_email=new_email,
                                                old_email=old_email,
                                                user_profile=user_profile,
@@ -83,8 +83,7 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_end_to_end_flow(self) -> None:
         data = {'email': 'hamlet-new@zulip.com'}
-        email = self.example_email("hamlet")
-        self.login(email)
+        self.login('hamlet')
         url = '/json/settings'
         self.assertEqual(len(mail.outbox), 0)
         result = self.client_patch(url, data)
@@ -115,8 +114,7 @@ class EmailChangeTestCase(ZulipTestCase):
     def test_unauthorized_email_change(self) -> None:
         data = {'email': 'hamlet-new@zulip.com'}
         user_profile = self.example_user('hamlet')
-        email = user_profile.email
-        self.login(email)
+        self.login_user(user_profile)
         do_set_realm_property(user_profile.realm, 'email_changes_disabled', True)
         url = '/json/settings'
         result = self.client_patch(url, data)
@@ -126,7 +124,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                 result)
         # Realm admins can change their email address even setting is disabled.
         data = {'email': 'iago-new@zulip.com'}
-        self.login(self.example_email("iago"))
+        self.login('iago')
         url = '/json/settings'
         result = self.client_patch(url, data)
         self.assert_in_success_response(['Check your email for a confirmation link.'], result)
@@ -134,8 +132,7 @@ class EmailChangeTestCase(ZulipTestCase):
     def test_email_change_already_taken(self) -> None:
         data = {'email': 'cordelia@zulip.com'}
         user_profile = self.example_user('hamlet')
-        email = user_profile.email
-        self.login(email)
+        self.login_user(user_profile)
 
         url = '/json/settings'
         result = self.client_patch(url, data)
@@ -147,8 +144,7 @@ class EmailChangeTestCase(ZulipTestCase):
     def test_unauthorized_email_change_from_email_confirmation_link(self) -> None:
         data = {'email': 'hamlet-new@zulip.com'}
         user_profile = self.example_user('hamlet')
-        email = user_profile.email
-        self.login(email)
+        self.login_user(user_profile)
         url = '/json/settings'
         self.assertEqual(len(mail.outbox), 0)
         result = self.client_patch(url, data)
@@ -173,16 +169,14 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_post_invalid_email(self) -> None:
         data = {'email': 'hamlet-new'}
-        email = self.example_email("hamlet")
-        self.login(email)
+        self.login('hamlet')
         url = '/json/settings'
         result = self.client_patch(url, data)
         self.assert_in_response('Invalid address', result)
 
     def test_post_same_email(self) -> None:
         data = {'email': self.example_email("hamlet")}
-        email = self.example_email("hamlet")
-        self.login(email)
+        self.login('hamlet')
         url = '/json/settings'
         result = self.client_patch(url, data)
         self.assertEqual('success', result.json()['result'])
@@ -193,9 +187,9 @@ class EmailChangeTestCase(ZulipTestCase):
         do_set_realm_property(user_profile.realm, 'email_address_visibility',
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
 
+        self.login_user(user_profile)
         old_email = user_profile.email
         new_email = 'hamlet-new@zulip.com'
-        self.login(self.example_email('hamlet'))
         obj = EmailChangeStatus.objects.create(new_email=new_email,
                                                old_email=old_email,
                                                user_profile=user_profile,

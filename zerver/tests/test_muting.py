@@ -58,7 +58,7 @@ class MutedTopicsTests(ZulipTestCase):
 
     def test_add_muted_topic(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
 
         stream = get_stream('Verona', user.realm)
 
@@ -86,9 +86,8 @@ class MutedTopicsTests(ZulipTestCase):
 
     def test_remove_muted_topic(self) -> None:
         user = self.example_user('hamlet')
-        email = user.email
         realm = user.realm
-        self.login(email)
+        self.login_user(user)
 
         stream = get_stream(u'Verona', realm)
         recipient = stream.recipient
@@ -117,9 +116,8 @@ class MutedTopicsTests(ZulipTestCase):
 
     def test_muted_topic_add_invalid(self) -> None:
         user = self.example_user('hamlet')
-        email = user.email
         realm = user.realm
-        self.login(email)
+        self.login_user(user)
 
         stream = get_stream('Verona', realm)
         recipient = stream.recipient
@@ -151,9 +149,8 @@ class MutedTopicsTests(ZulipTestCase):
 
     def test_muted_topic_remove_invalid(self) -> None:
         user = self.example_user('hamlet')
-        email = user.email
         realm = user.realm
-        self.login(email)
+        self.login_user(user)
         stream = get_stream('Verona', realm)
 
         url = '/api/v1/users/me/subscriptions/muted_topics'

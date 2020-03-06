@@ -37,7 +37,7 @@ class PointerTest(ZulipTestCase):
         Posting a pointer to /update (in the form {"pointer": pointer}) changes
         the pointer we store for your UserProfile.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         msg_id = self.send_stream_message(self.example_user("othello"), "Verona")
         result = self.client_post("/json/users/me/pointer", {"pointer": msg_id})
@@ -61,7 +61,7 @@ class PointerTest(ZulipTestCase):
         Posting json to /json/users/me/pointer which does not contain a pointer key/value pair
         returns a 400 and error message.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"foo": 1})
         self.assert_json_error(result, "Missing 'pointer' argument")
@@ -72,7 +72,7 @@ class PointerTest(ZulipTestCase):
         Posting json to /json/users/me/pointer with an invalid pointer returns a 400 and error
         message.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Bad value for 'pointer': foo")
@@ -83,7 +83,7 @@ class PointerTest(ZulipTestCase):
         Posting json to /json/users/me/pointer with an out of range (< 0) pointer returns a 400
         and error message.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"pointer": -2})
         self.assert_json_error(result, "Bad value for 'pointer': -2")
@@ -95,7 +95,7 @@ class PointerTest(ZulipTestCase):
         return an unread message older than the current pointer, when there's
         no narrow set.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         # Ensure the pointer is not set (-1)
         self.assertEqual(self.example_user('hamlet').pointer, -1)
 
@@ -177,7 +177,7 @@ class PointerTest(ZulipTestCase):
         self.assertEqual(messages_response['anchor'], new_message_id)
 
     def test_visible_messages_use_first_unread_anchor(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
 
         result = self.client_post("/json/mark_all_as_read")
@@ -222,7 +222,7 @@ class UnreadCountTests(ZulipTestCase):
 
     # Sending a new message results in unread UserMessages being created
     def test_new_message(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         content = "Test message for unset read bit"
         last_msg = self.send_stream_message(self.example_user("hamlet"), "Verona", content)
         user_messages = list(UserMessage.objects.filter(message=last_msg))
@@ -233,7 +233,7 @@ class UnreadCountTests(ZulipTestCase):
                 self.assertFalse(um.flags.read)
 
     def test_update_flags(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
 
         result = self.client_post("/json/messages/flags",
                                   {"messages": ujson.dumps(self.unread_msg_ids),
@@ -262,7 +262,7 @@ class UnreadCountTests(ZulipTestCase):
                 self.assertEqual(msg['flags'], [])
 
     def test_mark_all_in_stream_read(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         user_profile = self.example_user('hamlet')
         stream = self.subscribe(user_profile, "test_stream")
         self.subscribe(self.example_user("cordelia"), "test_stream")
@@ -302,7 +302,7 @@ class UnreadCountTests(ZulipTestCase):
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_stream_read(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         invalid_stream_id = "12345678"
         result = self.client_post("/json/mark_stream_as_read", {
             "stream_id": invalid_stream_id
@@ -310,7 +310,7 @@ class UnreadCountTests(ZulipTestCase):
         self.assert_json_error(result, 'Invalid stream id')
 
     def test_mark_all_topics_unread_with_invalid_stream_name(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         invalid_stream_id = "12345678"
         result = self.client_post("/json/mark_topic_as_read", {
             "stream_id": invalid_stream_id,
@@ -319,7 +319,7 @@ class UnreadCountTests(ZulipTestCase):
         self.assert_json_error(result, "Invalid stream id")
 
     def test_mark_all_in_stream_topic_read(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         user_profile = self.example_user('hamlet')
         self.subscribe(user_profile, "test_stream")
 
@@ -356,7 +356,7 @@ class UnreadCountTests(ZulipTestCase):
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_topic_read(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         invalid_topic_name = "abc"
         result = self.client_post("/json/mark_topic_as_read", {
             "stream_id": get_stream("Denmark", get_realm("zulip")).id,
@@ -490,7 +490,7 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
     @mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value=True)
     def test_track_active_mobile_push_notifications(self, mock_push_notifications: mock.MagicMock) -> None:
         mock_push_notifications.return_value = True
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         user_profile = self.example_user('hamlet')
         stream = self.subscribe(user_profile, "test_stream")
         second_stream = self.subscribe(user_profile, "second_stream")

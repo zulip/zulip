@@ -403,8 +403,7 @@ class TestMissedMessages(ZulipTestCase):
             '@**King Hamlet** to be deleted')
 
         hamlet = self.example_user('hamlet')
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
@@ -417,8 +416,7 @@ class TestMissedMessages(ZulipTestCase):
                                             'Extremely personal message! to be deleted!')
 
         hamlet = self.example_user('hamlet')
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
@@ -437,8 +435,7 @@ class TestMissedMessages(ZulipTestCase):
 
         hamlet = self.example_user('hamlet')
         iago = self.example_user('iago')
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)

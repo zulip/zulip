@@ -20,8 +20,8 @@ class TutorialTests(ZulipTestCase):
         internal_send_private_message(welcome_bot.realm, welcome_bot, user, content)
 
     def test_tutorial_status(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
 
         cases = [
             ('started', UserProfile.TUTORIAL_STARTED),
@@ -35,11 +35,10 @@ class TutorialTests(ZulipTestCase):
             self.assertEqual(user.tutorial_status, expected_db_status)
 
     def test_single_response_to_pm(self) -> None:
-        user_email = 'hamlet@zulip.com'
         user = self.example_user('hamlet')
         bot = get_system_bot(settings.WELCOME_BOT)
         content = 'whatever'
-        self.login(user_email)
+        self.login_user(user)
         self.send_personal_message(user, bot, content)
         user_messages = message_stream_count(user)
         expected_response = ("Congratulations on your first reply! :tada:\n\n"
@@ -55,7 +54,7 @@ class TutorialTests(ZulipTestCase):
         user2 = self.example_user('cordelia')
         bot = get_system_bot(settings.WELCOME_BOT)
         content = "whatever"
-        self.login(user1.email)
+        self.login_user(user1)
         self.send_huddle_message(user1, [bot, user2], content)
         user1_messages = message_stream_count(user1)
         self.assertEqual(most_recent_message(user1).content, content)
