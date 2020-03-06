@@ -486,11 +486,12 @@ paths:
         required: true
       - name: to
         in: query
-        description: The destination stream, or a CSV/JSON-encoded list
-          containing the usernames (emails) of the recipients.
+        description: For stream messages, either the name or integer ID of the stream.
+          For private messages, either a list containing integer user
+          IDs or a list containing string email addresses.
         schema:
           type: string
-        example: aaron@zulip.com, iago@zulip.com
+        example: [9, 10]
         required: true
       - name: topic
         in: query

@@ -646,6 +646,8 @@ def get_raw_message(client, message_id):
 def send_message(client):
     # type: (Client) -> int
 
+    request = {}  # type: Dict[str, Any]
+
     # {code_example|start}
     # Send a stream message
     request = {
@@ -669,11 +671,14 @@ def send_message(client):
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
 
+    ensure_users([9], ['hamlet'])
+
     # {code_example|start}
     # Send a private message
+    user_id = 9
     request = {
         "type": "private",
-        "to": "iago@zulip.com",
+        "to": [user_id],
         "content": "With mirth and laughter let old wrinkles come."
     }
     result = client.send_message(request)
