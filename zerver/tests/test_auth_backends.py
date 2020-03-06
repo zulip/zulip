@@ -30,13 +30,12 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_set_realm_property,
     ensure_stream,
-    validate_email,
 )
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
 from zerver.lib.email_validation import get_realm_email_validator, \
-    validate_email_is_valid
+    validate_email_is_valid, get_existing_user_errors
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
@@ -3820,26 +3819,29 @@ class EmailValidatorTestCase(ZulipTestCase):
         inviter = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
 
+        realm = inviter.realm
+
         error = validate_email_is_valid(
             'fred+5555@zulip.com',
-            get_realm_email_validator(inviter.realm),
+            get_realm_email_validator(realm),
         )
         self.assertIn('containing + are not allowed', error)
 
-        _, error, is_deactivated = validate_email(inviter, cordelia.email)
+        errors = get_existing_user_errors(realm, {cordelia.email})
+        _, error, is_deactivated = errors[cordelia.email]
         self.assertEqual(False, is_deactivated)
         self.assertEqual(error, 'Already has an account.')
 
         cordelia.is_active = False
         cordelia.save()
 
-        _, error, is_deactivated = validate_email(inviter, cordelia.email)
+        errors = get_existing_user_errors(realm, {cordelia.email})
+        _, error, is_deactivated = errors[cordelia.email]
         self.assertEqual(True, is_deactivated)
         self.assertEqual(error, 'Account has been deactivated.')
 
-        _, error, is_deactivated = validate_email(inviter, 'fred-is-fine@zulip.com')
-        self.assertEqual(False, is_deactivated)
-        self.assertEqual(error, None)
+        errors = get_existing_user_errors(realm, {'fred-is-fine@zulip.com'})
+        self.assertEqual(errors, {})
 
 class LDAPBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
