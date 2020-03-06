@@ -301,9 +301,10 @@ li.top_left_starred_messages {
 .stream-sidebar-arrow i,
 .starred-messages-sidebar-arrow i,
 .topic-sidebar-arrow i {
-    padding-right: 0.25em;
+    padding-right: 10px;
     display: inline-block;
     font-size: 14px;
+    padding-left: 10px;
 }
 
 /*
@@ -325,10 +326,9 @@ li.top_left_starred_messages {
 .all-messages-arrow,
 .starred-messages-sidebar-arrow,
 .stream-sidebar-arrow {
-    top: 3.5px;
+    top: 4px;
     right: 10px;
     font-size: 0.8em;
-    padding-left: 10px;
 }
 
 /*
@@ -337,7 +337,7 @@ li.top_left_starred_messages {
     which also affects it positioning.
 */
 .topic-sidebar-arrow {
-    top: 1px;
+    top: 25px;
     right: 10px;
     font-size: 0.7em;
 }
