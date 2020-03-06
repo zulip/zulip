@@ -1544,6 +1544,39 @@ class BugdownTest(ZulipTestCase):
                          '<p>Hey @<strong>Nonexistent User</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
 
+    def test_user_mention_atomic_string(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        realm = get_realm('zulip')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        # Create a linkifier.
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+        # Create a user that potentially interferes with the pattern.
+        test_user = create_user(email='atomic@example.com',
+                                password='whatever',
+                                realm=realm,
+                                full_name='Atomic #123',
+                                short_name='whatever')
+        content = "@**Atomic #123**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention" '
+                         'data-user-id="%s">'
+                         '@Atomic #123</span></p>' % (test_user.id,))
+        self.assertEqual(msg.mentions_user_ids, set([test_user.id]))
+        content = "@_**Atomic #123**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention silent" '
+                         'data-user-id="%s">'
+                         'Atomic #123</span></p>' % (test_user.id,))
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def create_user_group_for_test(self, user_group_name: str) -> UserGroup:
         othello = self.example_user('othello')
         return create_user_group(user_group_name, [othello], get_realm('zulip'))
