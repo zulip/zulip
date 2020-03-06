@@ -30,6 +30,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.send_email import send_future_email, clear_scheduled_emails, \
     deliver_email
 from zerver.lib.actions import (
+    create_users,
     get_emails_from_user_ids,
     get_recipient_info,
     do_deactivate_user,
@@ -582,6 +583,46 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch('/json/users/{}'.format(self.example_user("cordelia").id),
                                    {'profile_data': ujson.dumps(new_profile_data)})
         self.assert_json_error(result, 'Insufficient permission')
+
+class BulkCreateUserTest(ZulipTestCase):
+    def test_create_users(self) -> None:
+        realm = get_realm('zulip')
+        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        realm.save()
+
+        name_list = [
+            ('Fred Flinstone', 'fred@zulip.com'),
+            ('Lisa Simpson', 'lisa@zulip.com'),
+        ]
+
+        create_users(realm, name_list)
+
+        fred = get_user_by_delivery_email('fred@zulip.com', realm)
+        self.assertEqual(
+            fred.email,
+            'user{}@zulip.testserver'.format(fred.id)
+        )
+
+        lisa = get_user_by_delivery_email('lisa@zulip.com', realm)
+        self.assertEqual(lisa.full_name, 'Lisa Simpson')
+        self.assertEqual(lisa.is_bot, False)
+        self.assertEqual(lisa.bot_type, None)
+
+        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        realm.save()
+
+        name_list = [
+            ('Bono', 'bono@zulip.com'),
+            ('Cher', 'cher@zulip.com'),
+        ]
+
+        create_users(realm, name_list)
+        bono = get_user_by_delivery_email('bono@zulip.com', realm)
+        self.assertEqual(bono.email, 'bono@zulip.com')
+        self.assertEqual(bono.delivery_email, 'bono@zulip.com')
+
+        cher = get_user_by_delivery_email('cher@zulip.com', realm)
+        self.assertEqual(cher.full_name, 'Cher')
 
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self) -> None:
