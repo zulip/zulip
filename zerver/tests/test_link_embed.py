@@ -270,7 +270,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_edit_message_history(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
         msg_id = self.send_stream_message(user, "Scotland",
                                           topic_name="editing", content="original")
 
@@ -335,7 +335,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_message_update_race_condition(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
         original_url = 'http://test.org/'
         edited_url = 'http://edited.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
@@ -467,7 +467,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_non_html_data(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
         url = 'http://test.org/audio.mp3'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
             msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
@@ -495,7 +495,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_no_open_graph_image(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
         url = 'http://test.org/foo.html'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
             msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
@@ -523,7 +523,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_open_graph_image_missing_content(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
         url = 'http://test.org/foo.html'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
             msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
@@ -552,7 +552,7 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_no_content_type_header(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
             msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
