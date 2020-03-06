@@ -1661,7 +1661,8 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
             el = markdown.util.etree.Element("span")
             el.set('class', 'user-group-mention')
             el.set('data-user-group-id', user_group_id)
-            el.text = "@%s" % (name,)
+            text = "@%s" % (name,)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
