@@ -98,13 +98,13 @@ class SendLoginEmailTest(ZulipTestCase):
         do_change_notification_settings(user, "enable_login_emails", False)
         self.assertFalse(user.enable_login_emails)
         with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
-            self.login(user.email)
+            self.login_user(user)
         self.assertEqual(len(mail.outbox), 0)
 
         do_change_notification_settings(user, "enable_login_emails", True)
         self.assertTrue(user.enable_login_emails)
         with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
-            self.login(user.email)
+            self.login_user(user)
         self.assertEqual(len(mail.outbox), 1)
 
 

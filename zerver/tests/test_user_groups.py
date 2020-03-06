@@ -118,7 +118,7 @@ class UserGroupAPITestCase(ZulipTestCase):
     def test_user_group_get(self) -> None:
         # Test success
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         result = self.client_get('/json/user_groups')
         self.assert_json_success(result)
         self.assert_length(result.json()['user_groups'], UserGroup.objects.filter(realm=user_profile.realm).count())
@@ -127,7 +127,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         guest_user = self.example_user('polonius')
 
         # Guest users can't create user group
-        self.login(guest_user.email)
+        self.login_user(guest_user)
         params = {
             'name': 'support',
             'members': ujson.dumps([guest_user.id]),
@@ -166,7 +166,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.logout()
         # Test when user not a member of user group tries to modify it
         cordelia = self.example_user('cordelia')
-        self.login(cordelia.email)
+        self.login_user(cordelia)
         params = {
             'name': 'help',
             'description': 'Troubleshooting',
@@ -177,7 +177,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.logout()
         # Test when organization admin tries to modify group
         iago = self.example_user('iago')
-        self.login(iago.email)
+        self.login_user(iago)
         params = {
             'name': 'help',
             'description': 'Troubleshooting',
@@ -188,7 +188,7 @@ class UserGroupAPITestCase(ZulipTestCase):
     def test_user_group_update_by_guest_user(self) -> None:
         hamlet = self.example_user('hamlet')
         guest_user = self.example_user('polonius')
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         params = {
             'name': 'support',
             'members': ujson.dumps([hamlet.id, guest_user.id]),
@@ -199,7 +199,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         user_group = UserGroup.objects.get(name='support')
 
         # Guest user can't edit any detail of an user group
-        self.login(guest_user.email)
+        self.login_user(guest_user)
         params = {
             'name': 'help',
             'description': 'Troubleshooting team',
@@ -209,7 +209,7 @@ class UserGroupAPITestCase(ZulipTestCase):
 
     def test_user_group_update_to_already_existing_name(self) -> None:
         hamlet = self.example_user('hamlet')
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         realm = get_realm('zulip')
         support_user_group = create_user_group('support', [hamlet], realm)
         marketing_user_group = create_user_group('marketing', [hamlet], realm)
@@ -254,7 +254,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assertEqual(UserGroup.objects.count(), 2)
         self.logout()
         cordelia = self.example_user('cordelia')
-        self.login(cordelia.email)
+        self.login_user(cordelia)
 
         result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
         self.assert_json_error(result, "Only group members and organization administrators can administer this group.")
@@ -263,7 +263,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.logout()
         # Test when organization admin tries to delete group
         iago = self.example_user('iago')
-        self.login(iago.email)
+        self.login_user(iago)
 
         result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
         self.assert_json_success(result)
@@ -273,7 +273,7 @@ class UserGroupAPITestCase(ZulipTestCase):
     def test_user_group_delete_by_guest_user(self) -> None:
         hamlet = self.example_user('hamlet')
         guest_user = self.example_user('polonius')
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         params = {
             'name': 'support',
             'members': ujson.dumps([hamlet.id, guest_user.id]),
@@ -284,7 +284,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         user_group = UserGroup.objects.get(name='support')
 
         # Guest users can't delete any user group(not even those of which they are a member)
-        self.login(guest_user.email)
+        self.login_user(guest_user)
         result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
         self.assert_json_error(result, "Not allowed for guest users")
 
@@ -322,7 +322,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.logout()
         # Test when user not a member of user group tries to add members to it
         cordelia = self.example_user('cordelia')
-        self.login(cordelia.email)
+        self.login_user(cordelia)
         add = [cordelia.id]
         params = {'add': ujson.dumps(add)}
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
@@ -333,7 +333,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.logout()
         # Test when organization admin tries to add members to group
         iago = self.example_user('iago')
-        self.login(iago.email)
+        self.login_user(iago)
         aaron = self.example_user('aaron')
         add = [aaron.id]
         params = {'add': ujson.dumps(add)}
@@ -346,7 +346,7 @@ class UserGroupAPITestCase(ZulipTestCase):
 
         # For normal testing we again login with hamlet
         self.logout()
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         # Test remove members
         params = {'delete': ujson.dumps([othello.id])}
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
@@ -373,7 +373,7 @@ class UserGroupAPITestCase(ZulipTestCase):
 
         # Test when user not a member of user group tries to remove members
         self.logout()
-        self.login(cordelia.email)
+        self.login_user(cordelia)
         params = {'delete': ujson.dumps([hamlet.id])}
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info=params)
@@ -383,7 +383,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.logout()
         # Test when organization admin tries to remove members from group
         iago = self.example_user('iago')
-        self.login(iago.email)
+        self.login_user(iago)
         result = self.client_post('/json/user_groups/{}/members'.format(user_group.id),
                                   info=params)
         self.assert_json_success(result)
@@ -445,7 +445,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         iago = self.example_user('iago')
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
-        self.login(iago.email)
+        self.login_user(iago)
         do_set_realm_property(iago.realm, 'user_group_edit_policy',
                               Realm.USER_GROUP_EDIT_POLICY_ADMINS)
 

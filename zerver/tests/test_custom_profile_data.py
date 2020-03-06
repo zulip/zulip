@@ -300,7 +300,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
 
     def test_delete_field_value(self) -> None:
         iago = self.example_user("iago")
-        self.login(iago.email)
+        self.login_user(iago)
         realm = get_realm("zulip")
 
         invalid_field_id = 1234
@@ -601,7 +601,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
     def test_do_update_value_not_changed(self) -> None:
         iago = self.example_user("iago")
-        self.login(iago.email)
+        self.login_user(iago)
         realm = get_realm("zulip")
 
         # Set field value:

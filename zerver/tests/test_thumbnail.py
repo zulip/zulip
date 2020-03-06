@@ -34,7 +34,7 @@ class ThumbnailTest(ZulipTestCase):
             settings.S3_AVATAR_BUCKET)
 
         hamlet = self.example_user('hamlet')
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         fp = StringIO("zulip!")
         fp.name = "zulip.jpeg"
 

@@ -28,14 +28,14 @@ class RealmExportTest(ZulipTestCase):
 
     def test_export_as_not_admin(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
         with self.assertRaises(JsonableError):
             export_realm(self.client_post, user)
 
     @use_s3_backend
     def test_endpoint_s3(self) -> None:
         admin = self.example_user('iago')
-        self.login(admin.email)
+        self.login_user(admin)
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
         tarball_path = create_dummy_file('test-export.tar.gz')
 
@@ -94,7 +94,7 @@ class RealmExportTest(ZulipTestCase):
 
     def test_endpoint_local_uploads(self) -> None:
         admin = self.example_user('iago')
-        self.login(admin.email)
+        self.login_user(admin)
         tarball_path = create_dummy_file('test-export.tar.gz')
 
         # Test the export logic.
@@ -153,7 +153,7 @@ class RealmExportTest(ZulipTestCase):
 
     def test_realm_export_rate_limited(self) -> None:
         admin = self.example_user('iago')
-        self.login(admin.email)
+        self.login_user(admin)
 
         current_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED)
@@ -171,7 +171,7 @@ class RealmExportTest(ZulipTestCase):
 
     def test_upload_and_message_limit(self) -> None:
         admin = self.example_user('iago')
-        self.login(admin.email)
+        self.login_user(admin)
         realm_count = RealmCount.objects.create(realm_id=admin.realm.id,
                                                 end_time=timezone_now(),
                                                 subgroup=1,

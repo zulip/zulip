@@ -124,7 +124,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_json_users_with_bots(self) -> None:
         hamlet = self.example_user('hamlet')
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         self.assert_num_bots_equal(0)
 
         num_bots = 3
@@ -330,7 +330,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         is sent when add_subscriptions_backend is called in the above api call.
         """
         hamlet = self.example_user('hamlet')
-        self.login(hamlet.email)
+        self.login_user(hamlet)
 
         # Normal user i.e. not a bot.
         request_data = {
@@ -1138,7 +1138,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_patch_bot_events_register_stream(self) -> None:
         hamlet = self.example_user('hamlet')
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         bot_info = {
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',

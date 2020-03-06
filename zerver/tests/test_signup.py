@@ -775,7 +775,7 @@ class InviteUserTest(InviteUserBase):
         invitee = "alice-test@zulip.com"
         stream_name = 'Denmark'
 
-        self.login(user_profile.email)
+        self.login_user(user_profile)
 
         result = self.invite(invitee, [stream_name])
         self.assert_json_success(result)
@@ -812,7 +812,7 @@ class InviteUserTest(InviteUserBase):
         ]
         invitees = ','.join(invite_emails)
 
-        self.login(user_profile.email)
+        self.login_user(user_profile)
 
         realm.max_invites = realm_max
         realm.date_created = timezone_now()
@@ -874,7 +874,7 @@ class InviteUserTest(InviteUserBase):
 
     def test_cross_realm_bot(self) -> None:
         inviter = self.example_user('hamlet')
-        self.login(inviter.email)
+        self.login_user(inviter)
 
         cross_realm_bot_email = 'emailgateway@zulip.com'
         legit_new_email = 'fred@zulip.com'
@@ -901,7 +901,7 @@ class InviteUserTest(InviteUserBase):
         has a mirror dummy account.
         '''
         inviter = self.example_user('hamlet')
-        self.login(inviter.email)
+        self.login_user(inviter)
 
         mirror_user = self.example_user('cordelia')
         mirror_user.is_mirror_dummy = True

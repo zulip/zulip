@@ -396,7 +396,7 @@ class GetEventsTest(ZulipTestCase):
 
     def test_get_events_narrow(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
 
         def get_message(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
             result = self.tornado_call(
@@ -2808,7 +2808,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         do_change_is_admin(self.user_profile, True)
-        self.login(self.user_profile.email)
+        self.login_user(self.user_profile)
 
         with mock.patch('zerver.lib.export.do_export_realm',
                         return_value=create_dummy_file('test-export.tar.gz')):
@@ -3503,7 +3503,7 @@ class FetchQueriesTest(ZulipTestCase):
     def test_queries(self) -> None:
         user = self.example_user("hamlet")
 
-        self.login(user.email)
+        self.login_user(user)
 
         flush_per_request_caches()
         with queries_captured() as queries:

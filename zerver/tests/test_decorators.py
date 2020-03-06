@@ -1575,7 +1575,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
         request.META['PATH_INFO'] = ''
         request.user = hamlet = self.example_user('hamlet')
         request.user.is_verified = lambda: False
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         request.session = self.client.session
         request.get_host = lambda: 'zulip.testserver'
 
@@ -1590,7 +1590,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             request.META['PATH_INFO'] = ''
             request.user = hamlet = self.example_user('hamlet')
             request.user.is_verified = lambda: False
-            self.login(hamlet.email)
+            self.login_user(hamlet)
             request.session = self.client.session
             request.get_host = lambda: 'zulip.testserver'
             self.create_default_device(request.user)
@@ -1616,7 +1616,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             request.META['PATH_INFO'] = ''
             request.user = hamlet = self.example_user('hamlet')
             request.user.is_verified = lambda: True
-            self.login(hamlet.email)
+            self.login_user(hamlet)
             request.session = self.client.session
             request.get_host = lambda: 'zulip.testserver'
             self.create_default_device(request.user)
@@ -1643,7 +1643,7 @@ class TestRequireDecorators(ZulipTestCase):
 
     def test_require_non_guest_user_decorator(self) -> None:
         guest_user = self.example_user('polonius')
-        self.login(guest_user.email)
+        self.login_user(guest_user)
         result = self.common_subscribe_to_streams(guest_user, ["Denmark"])
         self.assert_json_error(result, "Not allowed for guest users")
 
@@ -1653,7 +1653,7 @@ class TestRequireDecorators(ZulipTestCase):
         self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
         guest_user = self.example_user('polonius')
-        self.login(guest_user.email)
+        self.login_user(guest_user)
         result = self.client_get('/json/bots')
         self.assert_json_error(result, "Not allowed for guest users")
 

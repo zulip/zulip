@@ -475,7 +475,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
 
     def test_aggregated_presense_mixed(self) -> None:
         user = self.example_user("othello")
-        self.login(user.email)
+        self.login_user(user)
         validate_time = timezone_now()
         with mock.patch('zerver.views.presence.timezone_now',
                         return_value=validate_time - datetime.timedelta(seconds=3)):
@@ -492,7 +492,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
 
     def test_aggregated_presense_offline(self) -> None:
         user = self.example_user("othello")
-        self.login(user.email)
+        self.login_user(user)
         validate_time = timezone_now()
         with self.settings(OFFLINE_THRESHOLD_SECS=1):
             result_dict = self._send_presence_for_aggregated_tests(user, 'idle', validate_time)

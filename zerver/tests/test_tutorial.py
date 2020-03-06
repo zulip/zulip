@@ -55,7 +55,7 @@ class TutorialTests(ZulipTestCase):
         user2 = self.example_user('cordelia')
         bot = get_system_bot(settings.WELCOME_BOT)
         content = "whatever"
-        self.login(user1.email)
+        self.login_user(user1)
         self.send_huddle_message(user1, [bot, user2], content)
         user1_messages = message_stream_count(user1)
         self.assertEqual(most_recent_message(user1).content, content)

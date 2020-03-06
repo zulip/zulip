@@ -39,7 +39,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         realm.default_language = "de"
         realm.save()
         stream = get_realm_stream("Denmark", realm.id)
-        self.login(hamlet.email)
+        self.login_user(hamlet)
 
         # TODO: Uncomment and replace with translation once we have German translations for the strings
         # in confirm_new_email.txt.

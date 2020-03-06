@@ -190,7 +190,7 @@ class PermissionTest(ZulipTestCase):
     def test_admin_api_hide_emails(self) -> None:
         user = self.example_user('hamlet')
         admin = self.example_user('iago')
-        self.login(user.email)
+        self.login_user(user)
 
         # First, verify client_gravatar works normally
         result = self.client_get('/json/users?client_gravatar=true')
@@ -329,7 +329,7 @@ class PermissionTest(ZulipTestCase):
 
     def test_change_regular_member_to_guest(self) -> None:
         iago = self.example_user("iago")
-        self.login(iago.email)
+        self.login_user(iago)
 
         hamlet = self.example_user("hamlet")
         self.assertFalse(hamlet.is_guest)
@@ -357,7 +357,7 @@ class PermissionTest(ZulipTestCase):
 
     def test_change_guest_to_regular_member(self) -> None:
         iago = self.example_user("iago")
-        self.login(iago.email)
+        self.login_user(iago)
 
         polonius = self.example_user("polonius")
         self.assertTrue(polonius.is_guest)
@@ -375,7 +375,7 @@ class PermissionTest(ZulipTestCase):
 
     def test_change_admin_to_guest(self) -> None:
         iago = self.example_user("iago")
-        self.login(iago.email)
+        self.login_user(iago)
         hamlet = self.example_user("hamlet")
         do_change_is_admin(hamlet, True)
         self.assertFalse(hamlet.is_guest)
@@ -409,7 +409,7 @@ class PermissionTest(ZulipTestCase):
 
     def test_change_guest_to_admin(self) -> None:
         iago = self.example_user("iago")
-        self.login(iago.email)
+        self.login_user(iago)
         polonius = self.example_user("polonius")
         self.assertTrue(polonius.is_guest)
         self.assertFalse(polonius.is_realm_admin)

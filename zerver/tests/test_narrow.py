@@ -1162,7 +1162,7 @@ class GetOldMessagesTest(ZulipTestCase):
         The client_gravatar flag determines whether we send avatar_url.
         """
         hamlet = self.example_user('hamlet')
-        self.login(hamlet.email)
+        self.login_user(hamlet)
 
         self.send_personal_message(hamlet, self.example_user("iago"))
 
@@ -1219,7 +1219,7 @@ class GetOldMessagesTest(ZulipTestCase):
                      if not m.is_stream_message()]
         for personal in personals:
             emails = dr_emails(get_display_recipient(personal.recipient))
-            self.login(me.email)
+            self.login_user(me)
             narrow = [dict(operator='pm-with', operand=emails)]  # type: List[Dict[str, Any]]
             result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
@@ -1236,7 +1236,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_get_visible_messages_with_narrow_pm_with(self) -> None:
         me = self.example_user('hamlet')
-        self.login(me.email)
+        self.login_user(me)
         self.subscribe(self.example_user("hamlet"), 'Scotland')
 
         message_ids = []
@@ -1302,7 +1302,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ),
         )
 
-        self.login(me.email)
+        self.login_user(me)
         test_operands = [self.example_email("cordelia"), self.example_user("cordelia").id]
         for operand in test_operands:
             narrow = [dict(operator='group-pm-with', operand=operand)]
@@ -1313,7 +1313,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_get_visible_messages_with_narrow_group_pm_with(self) -> None:
         me = self.example_user('hamlet')
-        self.login(me.email)
+        self.login_user(me)
 
         message_ids = []
         message_ids.append(
@@ -1362,7 +1362,7 @@ class GetOldMessagesTest(ZulipTestCase):
         content = 'hello @**King Hamlet**'
         new_message_id = self.send_stream_message(cordelia, stream_name, content=content)
 
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         narrow = [
             dict(operator='stream', operand=stream_name)
         ]
@@ -1562,7 +1562,7 @@ class GetOldMessagesTest(ZulipTestCase):
     @override_settings(USING_PGROONGA=False)
     def test_messages_in_narrow(self) -> None:
         user = self.example_user("cordelia")
-        self.login(user.email)
+        self.login_user(user)
 
         def send(content: str) -> int:
             msg_id = self.send_stream_message(
@@ -1910,7 +1910,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_messages_in_narrow_for_non_search(self) -> None:
         user = self.example_user("cordelia")
-        self.login(user.email)
+        self.login_user(user)
 
         def send(content: str) -> int:
             msg_id = self.send_stream_message(

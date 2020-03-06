@@ -233,7 +233,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         Trying to download a file that was never uploaded will return a json_error
         '''
         hamlet = self.example_user("hamlet")
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         response = self.client_get("http://localhost:9991/user_uploads/%s/ff/gg/abc.py" % (
             hamlet.realm_id,))
         self.assertEqual(response.status_code, 404)
@@ -273,7 +273,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_attachment_url_without_upload(self) -> None:
         hamlet = self.example_user("hamlet")
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         body = "Test message ...[zulip.txt](http://localhost:9991/user_uploads/%s/64/fake_path_id.txt)" % (
             hamlet.realm_id,)
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
@@ -346,7 +346,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         hamlet = self.example_user('hamlet')
         host = hamlet.realm.host
 
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         result = self.client_post("/json/user_uploads", {'file': f1})
         f1_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
 
@@ -504,7 +504,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         for email in subscribed_emails:
             self.subscribe(get_user(email, user.realm), stream_name)
 
-        self.login(user.email)
+        self.login_user(user)
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
@@ -515,7 +515,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.logout()
 
         # Owner user should be able to view file
-        self.login(user.email)
+        self.login_user(user)
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
@@ -557,7 +557,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         for email in subscribed_emails:
             self.subscribe(get_user(email, user.realm), stream_name)
 
-        self.login(user.email)
+        self.login_user(user)
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
@@ -573,7 +573,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         subscribed_emails.append(late_subscribed_user.email)
 
         # Owner user should be able to view file
-        self.login(user.email)
+        self.login_user(user)
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
@@ -593,7 +593,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(len(queries), 6)
 
         # Subscribed user who did not receive the message should also be able to view file
-        self.login(late_subscribed_user.email)
+        self.login_user(late_subscribed_user)
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
@@ -624,7 +624,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.make_stream(stream_name, realm=hamlet.realm, invite_only=True, history_public_to_subscribers=True)
             self.subscribe(hamlet, stream_name)
 
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
@@ -636,7 +636,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.logout()
 
         user = self.example_user("aaron")
-        self.login(user.email)
+        self.login_user(user)
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 403)
@@ -859,7 +859,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_get_user_avatar(self) -> None:
         hamlet = self.example_user("hamlet")
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         cordelia = self.example_user('cordelia')
         cross_realm_bot = get_system_bot(settings.WELCOME_BOT)
 
@@ -903,7 +903,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_get_user_avatar_medium(self) -> None:
         hamlet = self.example_user("hamlet")
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         cordelia = self.example_user('cordelia')
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
@@ -1296,7 +1296,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_upload_limited_plan_type(self) -> None:
         user_profile = self.example_user("iago")
         do_change_plan_type(user_profile.realm, Realm.LIMITED)
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         with get_test_image_file(self.correct_files[0][0]) as fp:
             result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(self.night)})
         self.assert_json_error(result, 'Feature unavailable on your current plan.')

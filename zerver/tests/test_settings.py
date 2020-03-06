@@ -165,7 +165,7 @@ class ChangeSettingsTest(ZulipTestCase):
         pattern = "/json/settings/notifications"
         param = "notification_sound"
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
 
         json_result = self.client_patch(pattern,
                                         {param: ujson.dumps("invalid")})

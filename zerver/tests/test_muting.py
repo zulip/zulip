@@ -58,7 +58,7 @@ class MutedTopicsTests(ZulipTestCase):
 
     def test_add_muted_topic(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
 
         stream = get_stream('Verona', user.realm)
 

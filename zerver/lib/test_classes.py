@@ -349,6 +349,13 @@ class ZulipTestCase(TestCase):
             self.assertFalse(self.client.login(username=email, password=password,
                                                realm=realm))
 
+    def login_user(self, user_profile: UserProfile) -> None:
+        email = user_profile.email
+        realm = user_profile.realm
+        password = initial_password(email)
+        self.assertTrue(self.client.login(username=email, password=password,
+                                          realm=realm))
+
     def login_2fa(self, user_profile: UserProfile) -> None:
         """
         We need this function to call request.session.save().

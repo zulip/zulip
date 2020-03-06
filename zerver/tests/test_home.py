@@ -294,7 +294,7 @@ class HomeTest(ZulipTestCase):
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
             user_profile = self.example_user('iago')
             self.create_default_device(user_profile)
-            self.login(user_profile.email)
+            self.login_user(user_profile)
             result = self._get_home_page()
             # User should not log in because otp device is configured but
             # 2fa login function was not called.
@@ -323,7 +323,7 @@ class HomeTest(ZulipTestCase):
 
         realm_id = main_user.realm_id
 
-        self.login(main_user.email)
+        self.login_user(main_user)
 
         # Try to make page-load do extra work for various subscribed
         # streams.
@@ -504,7 +504,7 @@ class HomeTest(ZulipTestCase):
     def test_people(self) -> None:
         hamlet = self.example_user('hamlet')
         realm = get_realm('zulip')
-        self.login(hamlet.email)
+        self.login_user(hamlet)
 
         for i in range(3):
             self.create_bot(
@@ -626,7 +626,7 @@ class HomeTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         stream_name = 'New stream'
         self.subscribe(user_profile, stream_name)
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         result = self._get_home_page(stream=stream_name)
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['narrow_stream'], stream_name)
@@ -675,7 +675,7 @@ class HomeTest(ZulipTestCase):
 
         # realm admin, but no CustomerPlan -> no billing link
         user = self.example_user('iago')
-        self.login(user.email)
+        self.login_user(user)
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertNotIn('Billing', result_html)
 
@@ -824,7 +824,7 @@ class HomeTest(ZulipTestCase):
         # In this test we make sure if a soft deactivated user had unread
         # messages before deactivation they remain same way after activation.
         long_term_idle_user = self.example_user('hamlet')
-        self.login(long_term_idle_user.email)
+        self.login_user(long_term_idle_user)
         message = 'Test Message 1'
         self.send_test_message(message)
         with queries_captured() as queries:
@@ -836,7 +836,7 @@ class HomeTest(ZulipTestCase):
 
         do_soft_deactivate_users([long_term_idle_user])
 
-        self.login(long_term_idle_user.email)
+        self.login_user(long_term_idle_user)
         message = 'Test Message 2'
         self.send_test_message(message)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
@@ -859,7 +859,7 @@ class HomeTest(ZulipTestCase):
 
         message = 'Test Message 1'
         self.send_test_message(message)
-        self.login(long_term_idle_user.email)
+        self.login_user(long_term_idle_user)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
         query_count = len(queries)
@@ -883,7 +883,7 @@ class HomeTest(ZulipTestCase):
 
         message = 'Test Message 3'
         self.send_test_message(message)
-        self.login(long_term_idle_user.email)
+        self.login_user(long_term_idle_user)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
         query_count = len(queries)
@@ -905,7 +905,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("hamlet")
         user.default_language = 'es'
         user.save()
-        self.login(user.email)
+        self.login_user(user)
         result = self._get_home_page()
         self.assertEqual(result.status_code, 200)
         with \
@@ -921,7 +921,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("hamlet")
         user.default_language = 'es'
         user.save()
-        self.login(user.email)
+        self.login_user(user)
         result = self._get_home_page()
         self.assertEqual(result.status_code, 200)
 

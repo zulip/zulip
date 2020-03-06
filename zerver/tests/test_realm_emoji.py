@@ -26,7 +26,7 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_list(self) -> None:
         emoji_author = self.example_user('iago')
-        self.login(emoji_author.email)
+        self.login_user(emoji_author)
         self.create_test_emoji('my_emoji', emoji_author)
 
         result = self.client_get("/json/realm/emoji")
@@ -139,7 +139,7 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_delete(self) -> None:
         emoji_author = self.example_user('iago')
-        self.login(emoji_author.email)
+        self.login_user(emoji_author)
         realm_emoji = self.create_test_emoji('my_emoji', emoji_author)
         result = self.client_delete('/json/realm/emoji/my_emoji')
         self.assert_json_success(result)
@@ -163,7 +163,7 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_delete_admins_only(self) -> None:
         emoji_author = self.example_user('othello')
-        self.login(emoji_author.email)
+        self.login_user(emoji_author)
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
@@ -180,7 +180,7 @@ class RealmEmojiTest(ZulipTestCase):
         realm.save()
 
         self.create_test_emoji('my_emoji_1', emoji_author)
-        self.login(emoji_author.email)
+        self.login_user(emoji_author)
         result = self.client_delete("/json/realm/emoji/my_emoji_1")
         self.assert_json_success(result)
         self.logout()
@@ -262,13 +262,13 @@ class RealmEmojiTest(ZulipTestCase):
         # other user B.
         emoji_author_1 = self.example_user('cordelia')
         self.create_test_emoji('test_emoji', emoji_author_1)
-        self.login(emoji_author_1.email)
+        self.login_user(emoji_author_1)
         result = self.client_delete('/json/realm/emoji/test_emoji')
         self.assert_json_success(result)
 
         emoji_author_2 = self.example_user('othello')
         self.create_test_emoji('test_emoji', emoji_author_2)
-        self.login(emoji_author_2.email)
+        self.login_user(emoji_author_2)
         result = self.client_delete('/json/realm/emoji/test_emoji')
         self.assert_json_success(result)
 
@@ -285,6 +285,6 @@ class RealmEmojiTest(ZulipTestCase):
 
         emoji_author_2 = self.example_user('othello')
         self.create_test_emoji('test_emoji', emoji_author_2)
-        self.login(emoji_author_2.email)
+        self.login_user(emoji_author_2)
         result = self.client_delete('/json/realm/emoji/test_emoji')
         self.assert_json_success(result)

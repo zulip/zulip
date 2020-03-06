@@ -401,7 +401,7 @@ class RealmTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 
-        self.login(user_profile.delivery_email)
+        self.login_user(user_profile)
         invalid_value = 12
         req = dict(email_address_visibility = ujson.dumps(invalid_value))
         result = self.client_patch('/json/realm', req)

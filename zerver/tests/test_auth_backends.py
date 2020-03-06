@@ -2100,29 +2100,27 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_json_error(result, "Invalid subdomain")
 
 class JSONFetchAPIKeyTest(ZulipTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.user_profile = self.example_user('hamlet')
-        self.email = self.user_profile.email
-
     def test_success(self) -> None:
-        self.login(self.email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=self.user_profile,
-                                       password=initial_password(self.email)))
+                                  dict(user_profile=user,
+                                       password=initial_password(user.email)))
         self.assert_json_success(result)
 
     def test_not_loggedin(self) -> None:
+        user = self.example_user('hamlet')
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=self.user_profile,
-                                       password=initial_password(self.email)))
+                                  dict(user_profile=user,
+                                       password=initial_password(user.email)))
         self.assert_json_error(result,
                                "Not logged in: API authentication or user session required", 401)
 
     def test_wrong_password(self) -> None:
-        self.login(self.email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=self.user_profile,
+                                  dict(user_profile=user,
                                        password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 400)
 
