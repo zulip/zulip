@@ -308,7 +308,7 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
     def __str__(self) -> str:
         return "Email: {}".format(self.email)
 
-    def key_fragment(self) -> str:
+    def key(self) -> str:
         return "{}:{}".format(type(self), self.email)
 
     def rules(self) -> List[Tuple[int, int]]:
