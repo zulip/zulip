@@ -223,7 +223,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -247,7 +247,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
     def test_receive_stream_email_messages_blank_subject_success(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -271,7 +271,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
     def test_receive_private_stream_email_messages_success(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.make_stream("private_stream", invite_only=True)
         self.subscribe(user_profile, "private_stream")
         stream = get_stream("private_stream", user_profile.realm)
@@ -296,7 +296,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
     def test_receive_stream_email_multiple_recipient_success(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -322,7 +322,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
     def test_receive_stream_email_show_sender_success(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -347,7 +347,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
     def test_receive_stream_email_show_sender_utf8_encoded_sender(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -372,7 +372,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
     def test_receive_stream_email_include_footer_success(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -400,7 +400,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
     def test_receive_stream_email_include_quotes_success(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -431,7 +431,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
     def test_message_with_valid_attachment(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
@@ -464,7 +464,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
     def test_message_with_attachment_utf8_filename(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
@@ -499,7 +499,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
     def test_message_with_valid_nested_attachment(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
@@ -537,7 +537,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
     def test_message_with_invalid_attachment(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
@@ -562,7 +562,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
     def test_receive_plaintext_and_html_prefer_text_html_options(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_address = "Denmark.{}@testserver".format(stream.email_token)
@@ -597,7 +597,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
     def test_receive_only_plaintext_with_prefer_html_option(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_address_prefer_html = "Denmark.{}.prefer-html@testserver".format(stream.email_token)
@@ -628,7 +628,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         # build dummy messages for stream
         # test message with empty body is not sent
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
@@ -647,7 +647,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 
     def test_receive_stream_email_messages_no_textual_body(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
@@ -667,7 +667,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 
     def test_receive_stream_email_messages_empty_body_after_stripping(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -694,8 +694,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         # build dummy messages for missed messages email reply
         # have Hamlet send Othello a PM. Othello will reply via email
         # Hamlet will receive the message.
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
@@ -718,7 +717,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         process_message(incoming_valid_message)
 
-        # self.login(self.example_email("hamlet"))
         # confirm that Hamlet got the message
         user_profile = self.example_user('hamlet')
         message = most_recent_message(user_profile)
@@ -733,8 +731,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         # build dummy messages for missed messages email reply
         # have Othello send Iago and Cordelia a PM. Cordelia will reply via email
         # Iago and Othello will receive the message.
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
@@ -782,8 +779,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         # Hamlet will see the message in the stream.
         self.subscribe(self.example_user("hamlet"), "Denmark")
         self.subscribe(self.example_user("othello"), "Denmark")
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_post("/json/messages", {"type": "stream",
                                                      "topic": "test topic",
                                                      "content": "test_receive_missed_stream_message_email_messages",
@@ -817,8 +813,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
     def test_missed_stream_message_email_response_tracks_topic_change(self) -> None:
         self.subscribe(self.example_user("hamlet"), "Denmark")
         self.subscribe(self.example_user("othello"), "Denmark")
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_post("/json/messages", {"type": "stream",
                                                      "topic": "test topic",
                                                      "content": "test_receive_missed_stream_message_email_messages",
@@ -858,8 +853,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
     def test_missed_message_email_response_from_deactivated_user(self) -> None:
         self.subscribe(self.example_user("hamlet"), "Denmark")
         self.subscribe(self.example_user("othello"), "Denmark")
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_post("/json/messages", {"type": "stream",
                                                      "topic": "test topic",
                                                      "content": "test_receive_missed_stream_message_email_messages",
@@ -890,8 +884,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
     def test_missed_message_email_response_from_deactivated_realm(self) -> None:
         self.subscribe(self.example_user("hamlet"), "Denmark")
         self.subscribe(self.example_user("othello"), "Denmark")
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_post("/json/messages", {"type": "stream",
                                                      "topic": "test topic",
                                                      "content": "test_receive_missed_stream_message_email_messages",
@@ -922,8 +915,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
     def test_missed_message_email_multiple_responses(self) -> None:
         self.subscribe(self.example_user("hamlet"), "Denmark")
         self.subscribe(self.example_user("othello"), "Denmark")
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
 
         result = self.client_post("/json/messages", {"type": "stream",
                                                      "topic": "test topic",
@@ -951,8 +943,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
 class TestEmptyGatewaySetting(ZulipTestCase):
     def test_missed_message(self) -> None:
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
@@ -989,8 +980,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         user_profile = self.example_user('hamlet')
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
@@ -1027,8 +1017,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         user_profile = self.example_user('hamlet')
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
@@ -1122,8 +1111,7 @@ class TestScriptMTA(ZulipTestCase):
 class TestEmailMirrorTornadoView(ZulipTestCase):
 
     def send_private_message(self) -> str:
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         result = self.client_post(
             "/json/messages",
             {
@@ -1220,7 +1208,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
 class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
     def test_process_message_strips_subject(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
@@ -1257,7 +1245,7 @@ class TestContentTypeUnspecifiedCharset(ZulipTestCase):
         incoming_message = message_from_string(message_as_string)
 
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
@@ -1285,7 +1273,7 @@ class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
 class TestEmailMirrorLogAndReport(ZulipTestCase):
     def test_log_and_report(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "errors")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
@@ -1331,7 +1319,7 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
 
     def test_redact_email_address(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "errors")
         stream = get_stream("Denmark", user_profile.realm)
 

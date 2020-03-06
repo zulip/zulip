@@ -7,7 +7,7 @@ from zerver.lib.test_classes import (
 class ZcommandTest(ZulipTestCase):
 
     def test_invalid_zcommand(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
 
         payload = dict(command="/boil-ocean")
         result = self.client_post("/json/zcommand", payload)
@@ -18,14 +18,14 @@ class ZcommandTest(ZulipTestCase):
         self.assert_json_error(result, "There should be a leading slash in the zcommand.")
 
     def test_ping_zcommand(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
 
         payload = dict(command="/ping")
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
 
     def test_night_zcommand(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         user = self.example_user('hamlet')
         user.night_mode = False
         user.save()
@@ -40,7 +40,7 @@ class ZcommandTest(ZulipTestCase):
         self.assertIn('still in night mode', result.json()['msg'])
 
     def test_day_zcommand(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         user = self.example_user('hamlet')
         user.night_mode = True
         user.save()

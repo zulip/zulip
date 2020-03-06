@@ -282,8 +282,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         """
         mock_request.side_effect = self.bounce_request
         user = self.example_user('cordelia')
-        email = user.email
-        self.login(email)
+        self.login_user(user)
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
 
         endpoints = [
@@ -1552,8 +1551,7 @@ class TestNumPushDevicesForUser(PushNotificationTest):
 class TestPushApi(ZulipTestCase):
     def test_push_api(self) -> None:
         user = self.example_user('cordelia')
-        email = user.email
-        self.login(email)
+        self.login_user(user)
 
         endpoints = [
             ('/json/users/me/apns_device_token', 'apple-tokenaz'),

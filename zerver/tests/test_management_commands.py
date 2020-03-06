@@ -340,7 +340,7 @@ class TestSendToEmailMirror(ZulipTestCase):
     def test_sending_a_fixture(self) -> None:
         fixture_path = "zerver/tests/fixtures/email/1.txt"
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
         call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path))
@@ -352,7 +352,7 @@ class TestSendToEmailMirror(ZulipTestCase):
     def test_sending_a_json_fixture(self) -> None:
         fixture_path = "zerver/tests/fixtures/email/1.json"
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark")
 
         call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path))
@@ -364,7 +364,7 @@ class TestSendToEmailMirror(ZulipTestCase):
     def test_stream_option(self) -> None:
         fixture_path = "zerver/tests/fixtures/email/1.txt"
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         self.subscribe(user_profile, "Denmark2")
 
         call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path), "--stream=Denmark2")

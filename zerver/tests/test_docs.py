@@ -377,7 +377,7 @@ class PlansPageTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/accounts/login/?next=plans")
         # Test valid domain, with login
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan"], result)
         # Test root domain, with login on different domain
@@ -405,7 +405,7 @@ class PlansPageTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "https://zulipchat.com/plans")
 
-            self.login(self.example_email("iago"))
+            self.login('iago')
 
             # SELF_HOSTED should hide the local plans page, even if logged in
             result = self.client_get("/plans/", subdomain="zulip")
