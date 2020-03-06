@@ -5,7 +5,8 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 from zerver.lib.initial_password import initial_password
 from zerver.models import Realm, Stream, UserProfile, \
     Subscription, Recipient, RealmAuditLog
-from zerver.lib.create_user import create_user_profile
+from zerver.lib.create_user import create_user_profile, \
+    get_display_email_address
 
 def bulk_create_users(realm: Realm,
                       users_raw: Set[Tuple[str, str, str, bool]],
@@ -21,10 +22,6 @@ def bulk_create_users(realm: Realm,
         realm=realm).values_list('email', flat=True))
     users = sorted([user_raw for user_raw in users_raw if user_raw[0] not in existing_users])
 
-    # If we have a different email_address_visibility mode, the code
-    # below doesn't have the logic to set user_profile.email properly.
-    assert realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-
     # Now create user_profiles
     profiles_to_create = []  # type: List[UserProfile]
     for (email, full_name, short_name, active) in users:
@@ -34,7 +31,19 @@ def bulk_create_users(realm: Realm,
                                       timezone, tutorial_status=UserProfile.TUTORIAL_FINISHED,
                                       enter_sends=True)
         profiles_to_create.append(profile)
-    UserProfile.objects.bulk_create(profiles_to_create)
+
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        UserProfile.objects.bulk_create(profiles_to_create)
+    else:
+        for user_profile in profiles_to_create:
+            user_profile.email = user_profile.delivery_email
+
+        UserProfile.objects.bulk_create(profiles_to_create)
+
+        for user_profile in profiles_to_create:
+            user_profile.email = get_display_email_address(user_profile, realm)
+        UserProfile.objects.bulk_update(profiles_to_create, ['email'])
+
     user_ids = {user.id for user in profiles_to_create}
 
     RealmAuditLog.objects.bulk_create(
