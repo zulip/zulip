@@ -113,7 +113,7 @@ class RateLimitedUser(RateLimitedObject):
         return "Id: {}".format(self.user.id)
 
     def key(self) -> str:
-        return "{}:{}:{}".format(type(self.user), self.user.id, self.domain)
+        return "{}:{}:{}".format(type(self).__name__, self.user.id, self.domain)
 
     def rules(self) -> List[Tuple[int, int]]:
         # user.rate_limits are general limits, applicable to the domain 'api_by_user'
@@ -342,14 +342,13 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         ratelimited, time = cls.is_ratelimited(entity)
 
         if ratelimited:
-            statsd.incr("ratelimiter.limited.%s.%s" % (type(entity), str(entity)))
+            statsd.incr("ratelimiter.limited.%s" % (entity.key(),))
 
         else:
             try:
                 cls.incr_ratelimit(entity)
             except RateLimiterLockingException:
-                logger.warning("Deadlock trying to incr_ratelimit for %s:%s" % (
-                               type(entity).__name__, str(entity)))
+                logger.warning("Deadlock trying to incr_ratelimit for %s" % (entity.key(),))
                 # rate-limit users who are hitting the API so hard we can't update our stats.
                 ratelimited = True
 

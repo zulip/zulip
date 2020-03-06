@@ -411,7 +411,8 @@ class WorkerTest(ZulipTestCase):
                     fake_client.queue.append(('email_mirror', data[0]))
                     worker.start()
                     self.assertEqual(mock_mirror_email.call_count, 4)
-                    expected_warn = "Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:zulip"
+                    expected_warn = "Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:%s" % (
+                        realm.string_id,)
                     mock_warn.assert_called_with(expected_warn)
 
     def test_email_sending_worker_retries(self) -> None:

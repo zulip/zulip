@@ -309,7 +309,7 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
         return "Email: {}".format(self.email)
 
     def key(self) -> str:
-        return "{}:{}".format(type(self), self.email)
+        return "{}:{}".format(type(self).__name__, self.email)
 
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_RULES['password_reset_form_by_email']

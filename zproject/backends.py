@@ -186,7 +186,7 @@ class RateLimitedAuthenticationByUsername(RateLimitedObject):
         return "Username: {}".format(self.username)
 
     def key(self) -> str:
-        return "{}:{}".format(type(self), self.username)
+        return "{}:{}".format(type(self).__name__, self.username)
 
     def rules(self) -> List[Tuple[int, int]]:
         return rate_limiting_rules
