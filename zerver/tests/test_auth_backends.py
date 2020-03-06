@@ -484,20 +484,20 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                                                                          Optional[UserProfile]],
                                    username: str, correct_password: str, wrong_password: str,
                                    expected_user_profile: UserProfile) -> None:
-        # We have to mock RateLimitedAuthenticationByUsername.key_fragment to avoid key collisions
+        # We have to mock RateLimitedAuthenticationByUsername.key to avoid key collisions
         # if tests run in parallel.
-        original_key_fragment_method = RateLimitedAuthenticationByUsername.key_fragment
+        original_key_method = RateLimitedAuthenticationByUsername.key
         salt = generate_random_token(32)
 
-        def _mock_key_fragment(self: RateLimitedAuthenticationByUsername) -> str:
-            return "{}:{}".format(salt, original_key_fragment_method(self))
+        def _mock_key(self: RateLimitedAuthenticationByUsername) -> str:
+            return "{}:{}".format(salt, original_key_method(self))
 
         def attempt_authentication(username: str, password: str) -> Optional[UserProfile]:
             request = HttpRequest()
             return attempt_authentication_func(request, username, password)
 
         add_ratelimit_rule(10, 2, domain='authenticate_by_username')
-        with mock.patch.object(RateLimitedAuthenticationByUsername, 'key_fragment', new=_mock_key_fragment):
+        with mock.patch.object(RateLimitedAuthenticationByUsername, 'key', new=_mock_key):
             try:
                 start_time = time.time()
                 with mock.patch('time.time', return_value=start_time):

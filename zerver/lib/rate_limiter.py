@@ -33,8 +33,8 @@ class RateLimitedObject(ABC):
         self.backend = RedisRateLimiterBackend
 
     def get_keys(self) -> List[str]:
-        key_fragment = self.key_fragment()
-        return ["{}ratelimit:{}:{}".format(KEY_PREFIX, key_fragment, keytype)
+        key = self.key()
+        return ["{}ratelimit:{}:{}".format(KEY_PREFIX, key, keytype)
                 for keytype in ['list', 'zset', 'block']]
 
     def rate_limit(self) -> Tuple[bool, float]:
@@ -92,7 +92,7 @@ class RateLimitedObject(ABC):
         return self.backend.get_api_calls_left(self, max_window, max_calls)
 
     @abstractmethod
-    def key_fragment(self) -> str:
+    def key(self) -> str:
         pass
 
     @abstractmethod
@@ -112,7 +112,7 @@ class RateLimitedUser(RateLimitedObject):
     def __str__(self) -> str:
         return "Id: {}".format(self.user.id)
 
-    def key_fragment(self) -> str:
+    def key(self) -> str:
         return "{}:{}:{}".format(type(self.user), self.user.id, self.domain)
 
     def rules(self) -> List[Tuple[int, int]]:
