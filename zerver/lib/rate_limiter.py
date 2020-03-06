@@ -99,18 +99,11 @@ class RateLimitedObject(ABC):
     def rules(self) -> List[Tuple[int, int]]:
         pass
 
-    @abstractmethod
-    def __str__(self) -> str:
-        pass
-
 class RateLimitedUser(RateLimitedObject):
     def __init__(self, user: UserProfile, domain: str='api_by_user') -> None:
         self.user = user
         self.domain = domain
         super().__init__()
-
-    def __str__(self) -> str:
-        return "Id: {}".format(self.user.id)
 
     def key(self) -> str:
         return "{}:{}:{}".format(type(self).__name__, self.user.id, self.domain)
