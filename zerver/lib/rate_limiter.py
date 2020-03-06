@@ -67,10 +67,6 @@ class RateLimitedObject(ABC):
         self.backend.unblock_access(self.key())
 
     def clear_history(self) -> None:
-        '''
-        This is only used by test code now, where it's very helpful in
-        allowing us to run tests quickly, by giving a user a clean slate.
-        '''
         self.backend.clear_history(self.key())
 
     def max_api_calls(self) -> int:
@@ -149,10 +145,7 @@ class RateLimiterBackend(ABC):
     @classmethod
     @abstractmethod
     def clear_history(cls, entity_key: str) -> None:
-        '''
-        This is only used by test code now, where it's very helpful in
-        allowing us to run tests quickly, by giving a user a clean slate.
-        '''
+        pass
 
     @classmethod
     @abstractmethod
@@ -189,10 +182,6 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def clear_history(cls, entity_key: str) -> None:
-        '''
-        This is only used by test code now, where it's very helpful in
-        allowing us to run tests quickly, by giving a user a clean slate.
-        '''
         for key in cls.get_keys(entity_key):
             client.delete(key)
 
