@@ -5057,7 +5057,7 @@ def validate_email_not_already_in_realm(target_realm: Realm, email: str) -> None
 def validate_email(
     user_profile: UserProfile,
     email: str,
-    validate_email_allowed_in_realm: Optional[Callable[[str], None]]=None,
+    validate_email_allowed_in_realm: Callable[[str], None],
 ) -> Tuple[Optional[str], Optional[str], bool]:
     '''
     This function should be used to validate NEW emails,
@@ -5067,10 +5067,6 @@ def validate_email(
         - Is the email valid for the realm?
         - Is the email actually new to the realm?
     '''
-    if validate_email_allowed_in_realm is None:
-        validate_email_allowed_in_realm = \
-            get_realm_email_validator(user_profile.realm)
-
     msg = validate_email_is_valid(
         email,
         validate_email_allowed_in_realm,
