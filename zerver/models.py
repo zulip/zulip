@@ -2131,8 +2131,22 @@ def get_user_profile_by_email(email: str) -> UserProfile:
     return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600*24*7)
+def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
+    try:
+        return UserProfile.objects.select_related().get(api_key=api_key)
+    except UserProfile.DoesNotExist:
+        # We will cache failed lookups with None.  The
+        # use case here is that broken API clients may
+        # continually ask for the same wrong API key, and
+        # we want to handle that as quickly as possible.
+        return None
+
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
-    return UserProfile.objects.select_related().get(api_key=api_key)
+    user_profile = maybe_get_user_profile_by_api_key(api_key)
+    if user_profile is None:
+        raise UserProfile.DoesNotExist()
+
+    return user_profile
 
 def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     """Fetches a user given their delivery email.  For use in
