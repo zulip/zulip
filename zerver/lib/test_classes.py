@@ -308,9 +308,12 @@ class ZulipTestCase(TestCase):
     def notification_bot(self) -> UserProfile:
         return get_system_bot(settings.NOTIFICATION_BOT)
 
-    def create_test_bot(self, short_name: str, user_profile: UserProfile, full_name: str='Foo Bot',
-                        assert_json_error_msg: str=None, **extras: Any) -> Optional[UserProfile]:
-        self.login(user_profile.delivery_email)
+    def create_test_bot(self, short_name: str,
+                        user_profile: UserProfile,
+                        full_name: str='Foo Bot',
+                        assert_json_error_msg: str=None,
+                        **extras: Any) -> Optional[UserProfile]:
+        self.login_user(user_profile)
         bot_info = {
             'short_name': short_name,
             'full_name': full_name,
@@ -336,18 +339,51 @@ class ZulipTestCase(TestCase):
         self.assertNotEqual(result.status_code, 500)
         return result
 
-    def login(self, email: str, password: Optional[str]=None, fails: bool=False,
-              realm: Optional[Realm]=None) -> HttpResponse:
-        if realm is None:
-            realm = get_realm("zulip")
-        if password is None:
-            password = initial_password(email)
-        if not fails:
-            self.assertTrue(self.client.login(username=email, password=password,
-                                              realm=realm))
-        else:
-            self.assertFalse(self.client.login(username=email, password=password,
-                                               realm=realm))
+    def login(self, name: str) -> None:
+        '''
+        Use this for really simple tests where you just need
+        to be logged in as some user, but don't need the actual
+        user object for anything else.  Try to use 'hamlet' for
+        non-admins and 'iago' for admins:
+
+            self.login('hamlet')
+
+        Try to use 'cordelia' or 'othello' as "other" users.
+        '''
+        assert '@' not in name, 'use login_by_email for email logins'
+        user = self.example_user(name)
+        self.login_user(user)
+
+    def login_by_email(self,
+                       email: str,
+                       password: str) -> None:
+        realm = get_realm("zulip")
+        self.assertTrue(
+            self.client.login(
+                username=email,
+                password=password,
+                realm=realm,
+            )
+        )
+
+    def assert_login_failure(self,
+                             email: str,
+                             password: str) -> None:
+        realm = get_realm("zulip")
+        self.assertFalse(
+            self.client.login(
+                username=email,
+                password=password,
+                realm=realm,
+            )
+        )
+
+    def login_user(self, user_profile: UserProfile) -> None:
+        email = user_profile.delivery_email
+        realm = user_profile.realm
+        password = initial_password(email)
+        self.assertTrue(self.client.login(username=email, password=password,
+                                          realm=realm))
 
     def login_2fa(self, user_profile: UserProfile) -> None:
         """

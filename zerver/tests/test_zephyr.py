@@ -11,8 +11,8 @@ from zerver.models import get_user, get_realm
 
 class ZephyrTest(ZulipTestCase):
     def test_webathena_kerberos_login(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
 
         def post(subdomain: Any, **kwargs: Any) -> HttpResponse:
             params = {k: ujson.dumps(v) for k, v in kwargs.items()}
@@ -29,7 +29,7 @@ class ZephyrTest(ZulipTestCase):
         realm = get_realm('zephyr')
         user = get_user(email, realm)
         api_key = get_api_key(user)
-        self.login(email, realm=realm)
+        self.login_user(user)
 
         def ccache_mock(**kwargs: Any) -> Any:
             return patch('zerver.views.zephyr.make_ccache', **kwargs)

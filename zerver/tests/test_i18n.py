@@ -39,7 +39,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         realm.default_language = "de"
         realm.save()
         stream = get_realm_stream("Denmark", realm.id)
-        self.login(hamlet.email)
+        self.login_user(hamlet)
 
         # TODO: Uncomment and replace with translation once we have German translations for the strings
         # in confirm_new_email.txt.
@@ -121,8 +121,7 @@ class JsonTranslationTestCase(ZulipTestCase):
         dummy_value = "this arg is bad: '{var_name}' (translated to German)"
         mock_gettext.return_value = dummy_value
 
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_post("/json/invites",
                                   HTTP_ACCEPT_LANGUAGE='de')
 
@@ -136,8 +135,7 @@ class JsonTranslationTestCase(ZulipTestCase):
         dummy_value = "Some other language"
         mock_gettext.return_value = dummy_value
 
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
         result = self.client_get("/de/accounts/login/jwt/")
 
         self.assert_json_error_contains(result,

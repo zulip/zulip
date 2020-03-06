@@ -268,7 +268,7 @@ class AuthBackendTest(ZulipTestCase):
     def test_login_preview(self) -> None:
         # Test preview=true displays organization login page
         # instead of redirecting to app
-        self.login(self.example_email("iago"))
+        self.login('iago')
         realm = get_realm("zulip")
         result = self.client_get('/login/?preview=true')
         self.assertEqual(result.status_code, 200)
@@ -2100,29 +2100,27 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_json_error(result, "Invalid subdomain")
 
 class JSONFetchAPIKeyTest(ZulipTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.user_profile = self.example_user('hamlet')
-        self.email = self.user_profile.email
-
     def test_success(self) -> None:
-        self.login(self.email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=self.user_profile,
-                                       password=initial_password(self.email)))
+                                  dict(user_profile=user,
+                                       password=initial_password(user.email)))
         self.assert_json_success(result)
 
     def test_not_loggedin(self) -> None:
+        user = self.example_user('hamlet')
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=self.user_profile,
-                                       password=initial_password(self.email)))
+                                  dict(user_profile=user,
+                                       password=initial_password(user.email)))
         self.assert_json_error(result,
                                "Not logged in: API authentication or user session required", 401)
 
     def test_wrong_password(self) -> None:
-        self.login(self.email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=self.user_profile,
+                                  dict(user_profile=user,
                                        password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 400)
 
@@ -3780,7 +3778,7 @@ class TestAdminSetBackends(ZulipTestCase):
 
     def test_change_enabled_backends(self) -> None:
         # Log in as admin
-        self.login(self.example_email("iago"))
+        self.login('iago')
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True})})
         self.assert_json_success(result)
@@ -3790,7 +3788,7 @@ class TestAdminSetBackends(ZulipTestCase):
 
     def test_disable_all_backends(self) -> None:
         # Log in as admin
-        self.login(self.example_email("iago"))
+        self.login('iago')
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': False})})
         self.assert_json_error(result, 'At least one authentication method must be enabled.')
@@ -3800,7 +3798,7 @@ class TestAdminSetBackends(ZulipTestCase):
 
     def test_supported_backends_only_updated(self) -> None:
         # Log in as admin
-        self.login(self.example_email("iago"))
+        self.login('iago')
         # Set some supported and unsupported backends
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True, u'GitHub': False})})
