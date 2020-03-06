@@ -305,9 +305,6 @@ class RateLimitedPasswordResetByEmail(RateLimitedObject):
         self.email = email
         super().__init__()
 
-    def __str__(self) -> str:
-        return "Email: {}".format(self.email)
-
     def key(self) -> str:
         return "{}:{}".format(type(self).__name__, self.email)
 
