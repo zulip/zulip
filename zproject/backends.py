@@ -182,9 +182,6 @@ class RateLimitedAuthenticationByUsername(RateLimitedObject):
         self.username = username
         super().__init__()
 
-    def __str__(self) -> str:
-        return "Username: {}".format(self.username)
-
     def key(self) -> str:
         return "{}:{}".format(type(self).__name__, self.username)
 
