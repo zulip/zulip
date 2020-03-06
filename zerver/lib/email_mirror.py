@@ -444,7 +444,7 @@ class RateLimitedRealmMirror(RateLimitedObject):
         self.realm = realm
         super().__init__()
 
-    def key_fragment(self) -> str:
+    def key(self) -> str:
         return "emailmirror:{}:{}".format(type(self.realm), self.realm.id)
 
     def rules(self) -> List[Tuple[int, int]]:
