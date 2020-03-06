@@ -1567,6 +1567,37 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
         self.assertEqual(msg.mentions_user_group_ids, set([user_group.id]))
 
+    def test_user_group_mention_atomic_string(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        realm = get_realm('zulip')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_profile = self.example_user('hamlet')
+        # Create a linkifier.
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+        # Create a user-group that potentially interferes with the pattern.
+        user_id = user_profile.id
+        user_group = self.create_user_group_for_test('support #123')
+
+        content = "@**King Hamlet** @*support #123*"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention" '
+                         'data-user-id="%s">'
+                         '@King Hamlet</span> '
+                         '<span class="user-group-mention" '
+                         'data-user-group-id="%s">'
+                         '@support #123</span></p>' % (user_id,
+                                                       user_group.id))
+        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
+        self.assertEqual(msg.mentions_user_group_ids, set([user_group.id]))
+
     def test_possible_user_group_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str]) -> None:
             self.assertEqual(possible_user_group_mentions(content), names)
