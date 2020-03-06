@@ -1091,12 +1091,15 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         If you invite an address already using Zulip, no invitation is sent.
         """
-        self.login(self.example_email("hamlet"))
-        self.assert_json_error(self.invite(self.example_email("hamlet"), ["Denmark"]),
-                               "We weren't able to invite anyone.")
-        self.assertRaises(PreregistrationUser.DoesNotExist,
-                          lambda: PreregistrationUser.objects.get(
-                              email=self.example_email("hamlet")))
+        self.login(self.example_email("cordelia"))
+
+        hamlet_email = 'hAmLeT@zUlIp.com'
+        result = self.invite(hamlet_email, ["Denmark"])
+        self.assert_json_error(result, "We weren't able to invite anyone.")
+
+        self.assertFalse(
+            PreregistrationUser.objects.filter(email__iexact=hamlet_email).exists()
+        )
         self.check_sent_emails([])
 
     def test_invite_some_existing_some_new(self) -> None:
