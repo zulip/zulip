@@ -445,7 +445,7 @@ class RateLimitedRealmMirror(RateLimitedObject):
         super().__init__()
 
     def key(self) -> str:
-        return "emailmirror:{}:{}".format(type(self.realm), self.realm.id)
+        return "{}:{}".format(type(self).__name__, self.realm.string_id)
 
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_MIRROR_REALM_RULES
