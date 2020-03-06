@@ -1632,12 +1632,13 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             el = markdown.util.etree.Element("span")
             el.set('data-user-id', user_id)
+            text = "%s" % (name,)
             if silent:
                 el.set('class', 'user-mention silent')
-                el.text = "%s" % (name,)
             else:
                 el.set('class', 'user-mention')
-                el.text = "@%s" % (name,)
+                text = "@{}".format(text)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
