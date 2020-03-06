@@ -148,12 +148,20 @@ function message_matches_search_term(message, operator, operand) {
     return true; // unknown operators return true (effectively ignored)
 }
 
-
 function Filter(operators) {
     if (operators === undefined) {
         this._operators = [];
     } else {
         this._operators = this.fix_operators(operators);
+        // if has_op stream
+        if (this.has_operator('stream')) {
+            const stream_name_from_search = this.operands('stream')[0];
+            const sub = stream_data.get_sub_by_name(stream_name_from_search);
+            if (sub) {
+                this._stream_name = sub.name;
+                this._is_stream_private = sub.invite_only;
+            }
+        }
     }
 }
 
@@ -401,6 +409,7 @@ Filter.prototype = {
         // TODO: Some users really hate it when Zulip marks messages as read
         // in interleaved views, so we will eventually have a setting
         // that early-exits before the subsequent checks.
+        // (in which case, is_common_narrow would also need to be modified)
 
         if (_.isEqual(term_types, ['stream'])) {
             return true;
@@ -431,6 +440,143 @@ Filter.prototype = {
             this._can_mark_messages_read = this.calc_can_mark_messages_read();
         }
         return this._can_mark_messages_read;
+    },
+
+    // This is used to control the behaviour for "exiting search",
+    // given the ability to flip between displaying the search bar and the narrow description in UI
+    // here we define a narrow as a "common narrow" on the basis of
+    // https://paper.dropbox.com/doc/Navbar-behavior-table--AvnMKN4ogj3k2YF5jTbOiVv_AQ-cNOGtu7kSdtnKBizKXJge
+    // common narrows show a narrow description and allow the user to
+    // close search bar UI and show the narrow description UI.
+    //
+    // TODO: We likely will want to rewrite this to not piggy-back on
+    // can_mark_messages_read, since that might gain some more complex behavior
+    // with near: narrows.
+    is_common_narrow: function () {
+        // can_mark_messages_read tests the following filters:
+        // stream, stream + topic,
+        // is: private, pm-with:,
+        // is: mentioned
+        if (this.can_mark_messages_read()) {
+            return true;
+        }
+        // that leaves us with checking:
+        // is: starred
+        // (which can_mark_messages_read_does not check as starred messages are always read)
+        const term_types = this.sorted_term_types();
+
+        if (_.isEqual(term_types, ['is-starred'])) {
+            return true;
+        }
+        if (_.isEqual(term_types, ['streams-public'])) {
+            return true;
+        }
+        return false;
+    },
+
+    // This is used to control the behaviour for "exiting search"
+    // within a narrow (E.g. a stream/topic + search) to bring you to
+    // the containing common narrow (stream/topic, in the example)
+    // rather than "All messages".
+    //
+    // Note from tabbott: The slug-based approach may not be ideal; we
+    // may be able to do better another way.
+    generate_redirect_url: function () {
+        const term_types = this.sorted_term_types();
+
+        // this comes first because it has 3 term_types but is not a "complex filter"
+        if (_.isEqual(term_types, ['stream', 'topic', 'search'])) {
+            return  '/#narrow/stream/' + stream_data.name_to_slug(this.operands('stream')[0]) + '/topic/' + this.operands('topic')[0];
+        }
+
+        // eliminate "complex filters"
+        if (term_types.length >= 3) {
+            return "#"; // redirect to All
+        }
+
+        if (term_types[1] === 'search') {
+            switch (term_types[0]) {
+            case 'stream':
+                return  '/#narrow/stream/' + stream_data.name_to_slug(this.operands('stream')[0]);
+            case 'is-private':
+                return  '/#narrow/is/private';
+            case 'is-starred':
+                return  '/#narrow/is/starred';
+            case 'is-mentioned':
+                return  '/#narrow/is/mentioned';
+            case 'streams-public':
+                return  '/#narrow/streams/public';
+            case 'pm-with':
+                // join is used to transform the array to a comma separated string
+                return  '/#narrow/pm-with/' + people.emails_to_slug(this.operands('pm-with').join());
+                // TODO: It is ambiguous how we want to handle the 'sender' case,
+                // we may remove it in the future based on design decisions
+            case 'sender':
+                return  '/#narrow/sender/' + people.emails_to_slug(this.operands('sender')[0]);
+            }
+        }
+
+        return "#"; // redirect to All
+    },
+
+    get_icon: function () {
+        // We have special icons for the simple narrows available for the via sidebars.
+        const term_types = this.sorted_term_types();
+        switch (term_types[0]) {
+        case 'in-home':
+        case 'in-all':
+            return 'home';
+        case 'stream':
+            if (this._is_stream_private) {
+                return 'lock';
+            }
+            return 'hashtag';
+        case 'is-private':
+            return 'envelope';
+        case 'is-starred':
+            return 'star';
+        case 'is-mentioned':
+            return 'at';
+        case 'pm-with':
+            return 'envelope';
+        }
+    },
+
+    get_title: function () {
+        // Nice explanatory titles for common views.
+        const term_types = this.sorted_term_types();
+        if (term_types.length === 3 && _.isEqual(term_types, ['stream', 'topic', 'search']) ||
+            term_types.length === 2 && _.isEqual(term_types, ['stream', 'topic'])) {
+            return this._stream_name;
+        }
+        if (term_types.length === 1 || term_types.length === 2 && term_types[1] === 'search') {
+            switch (term_types[0]) {
+            case 'in-home':
+                return i18n.t('All messages');
+            case 'in-all':
+                return i18n.t('All messages including muted streams');
+            case 'streams-public':
+                return i18n.t('Public stream messages in organization');
+            case 'stream':
+                return this._stream_name;
+            case 'is-starred':
+                return i18n.t('Starred messages');
+            case 'is-mentioned':
+                return i18n.t('Mentions');
+            case 'is-private':
+                return i18n.t('Private messages');
+            case 'pm-with': {
+                const emails = this.operands('pm-with')[0].split(',');
+                const names = emails.map(email => {
+                    if (!people.get_by_email(email)) {
+                        return email;
+                    }
+                    return people.get_by_email(email).full_name;
+                });
+                return names;
+            }
+            }
+        }
     },
 
     allow_use_first_unread_when_narrowing: function () {

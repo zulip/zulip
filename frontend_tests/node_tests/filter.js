@@ -1309,6 +1309,224 @@ run_test('update_email', () => {
     assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
 });
 
+function make_private_sub(name, stream_id) {
+    const sub = {
+        name: name,
+        stream_id: stream_id,
+        invite_only: true,
+    };
+    global.stream_data.add_sub(sub);
+}
+
+run_test('navbar_helpers', () => {
+    function test_redirect_url_with_search(test_case) {
+        test_case.operator.push({ operator: 'search', operand: 'fizzbuzz'});
+        const filter = new Filter(test_case.operator);
+        assert.equal(
+            filter.generate_redirect_url(),
+            test_case.redirect_url_with_search
+        );
+    }
+
+    function test_common_narrow(test_case) {
+        const filter = new Filter(test_case.operator);
+        assert.equal(filter.is_common_narrow(), test_case.is_common_narrow);
+    }
+
+    function test_get_icon(test_case) {
+        const filter = new Filter(test_case.operator);
+        assert.equal(filter.get_icon(), test_case.icon);
+    }
+
+    function test_get_title(test_case) {
+        const filter = new Filter(test_case.operator);
+        assert.deepEqual(filter.get_title(), test_case.title);
+    }
+
+    function test_helpers(test_case) {
+        // debugging tip: add a `console.log(test_case)` here
+        test_common_narrow(test_case);
+        test_get_icon(test_case);
+        test_get_title(test_case);
+        test_redirect_url_with_search(test_case);
+    }
+
+    const in_home = [{ operator: 'in', operand: 'home'}];
+    const in_all = [{ operator: 'in', operand: 'all'}];
+    const is_starred = [{ operator: 'is', operand: 'starred'}];
+    const is_private = [{ operator: 'is', operand: 'private'}];
+    const is_mentioned = [{ operator: 'is', operand: 'mentioned'}];
+    const streams_public = [{ operator: 'streams', operand: 'public'}];
+    const stream_topic_operators = [
+        { operator: 'stream', operand: 'foo' },
+        { operator: 'topic', operand: 'bar' },
+    ];
+    const stream_operator = [{ operator: 'stream', operand: 'foo'}];
+    make_private_sub('psub', '22');
+    const private_stream_operator = [{ operator: 'stream', operand: 'psub'}];
+    const pm_with = [{ operator: 'pm-with', operand: 'joe@example.com'}];
+    const group_pm = [{ operator: 'pm-with', operand: 'joe@example.com,STEVE@foo.com'}];
+    const group_pm_including_missing_person = [{ operator: 'pm-with', operand: 'joe@example.com,STEVE@foo.com,sally@doesnotexist.com'}];
+
+    const test_cases = [
+        {
+            operator: is_starred,
+            is_common_narrow: true,
+            icon: 'star',
+            title: 'translated: Starred messages',
+            redirect_url_with_search: '/#narrow/is/starred',
+        },
+        {
+            operator: in_home,
+            is_common_narrow: true,
+            icon: 'home',
+            title: 'translated: All messages',
+            redirect_url_with_search: '#',
+        },
+        {
+            operator: in_all,
+            is_common_narrow: true,
+            icon: 'home',
+            title: 'translated: All messages including muted streams',
+            redirect_url_with_search: '#',
+        },
+        {
+            operator: is_private,
+            is_common_narrow: true,
+            icon: 'envelope',
+            title: 'translated: Private messages',
+            redirect_url_with_search: '/#narrow/is/private',
+        },
+        {
+            operator: is_mentioned,
+            is_common_narrow: true,
+            icon: 'at',
+            title: 'translated: Mentions',
+            redirect_url_with_search: '/#narrow/is/mentioned',
+        },
+        {
+            operator: stream_topic_operators,
+            is_common_narrow: true,
+            icon: 'hashtag',
+            title: 'Foo',
+            redirect_url_with_search: '/#narrow/stream/42-Foo/topic/bar',
+        },
+        {
+            operator: streams_public,
+            is_common_narrow: true,
+            icon: undefined,
+            title: 'translated: Public stream messages in organization',
+            redirect_url_with_search: '/#narrow/streams/public',
+        },
+        {
+            operator: stream_operator,
+            is_common_narrow: true,
+            icon: 'hashtag',
+            title: 'Foo',
+            redirect_url_with_search: '/#narrow/stream/42-Foo',
+        },
+        {
+            operator: private_stream_operator,
+            is_common_narrow: true,
+            icon: 'lock',
+            title: 'psub',
+            redirect_url_with_search: '/#narrow/stream/22-psub',
+        },
+        {
+            operator: pm_with,
+            is_common_narrow: true,
+            icon: 'envelope',
+            title: [joe.full_name],
+            redirect_url_with_search: '/#narrow/pm-with/' + joe.user_id + '-' + joe.email.split('@')[0],
+        },
+        {
+            operator: group_pm,
+            is_common_narrow: true,
+            icon: 'envelope',
+            title: [joe.full_name, steve.full_name],
+            redirect_url_with_search: '/#narrow/pm-with/' + joe.user_id + ',' + steve.user_id + '-group',
+        },
+        {
+            operator: group_pm_including_missing_person,
+            is_common_narrow: true,
+            icon: 'envelope',
+            title: [joe.full_name, steve.full_name, 'sally@doesnotexist.com'],
+            redirect_url_with_search: '/#narrow/pm-with/undefined',
+        },
+    ];
+
+    test_cases.forEach(test_case => {
+        test_helpers(test_case);
+    });
+
+    // TODO: these may be removed, based on design decisions
+    const sender_me = [{operator: 'sender', operand: 'me'}];
+    const sender_joe = [{operator: 'sender', operand: joe.email}];
+
+    const redirect_edge_cases = [
+        {
+            operator: sender_me,
+            redirect_url_with_search: '/#narrow/sender/' + me.user_id + '-' + me.email.split('@')[0],
+            is_common_narrow: false,
+        },
+        {
+            operator: sender_joe,
+            redirect_url_with_search: '/#narrow/sender/' + joe.user_id + '-' + joe.email.split('@')[0],
+            is_common_narrow: false,
+        },
+    ];
+
+    redirect_edge_cases.forEach(test_case => {
+        test_redirect_url_with_search(test_case);
+    });
+
+    // TODO: test every single one of the "ALL" redirects from the navbar behaviour table
+
+    // incomplete and weak test cases just to restore coverage of filter.js
+    const complex_operator = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'bar'},
+        {operator: 'sender', operand: 'me'},
+    ];
+
+    const complex_operators_test_case = {
+        operator: complex_operator,
+        redirect_url: "#",
+    };
+
+    let filter = new Filter(complex_operators_test_case.operator);
+    assert.equal(
+        filter.generate_redirect_url(),
+        complex_operators_test_case.redirect_url
+    );
+
+    const stream_topic_search_operator = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'bar'},
+        {operator: 'search', operand: 'potato'},
+    ];
+
+    const stream_topic_search_operator_test_case = {
+        operator: stream_topic_search_operator,
+        title: 'Foo',
+    };
+
+    test_get_title(stream_topic_search_operator_test_case);
+
+    // this is actually wrong, but the code is currently not robust enough to throw an error here
+    // also, used as an example of triggering last return statement.
+    const default_redirect = {
+        operator: [{operator: 'stream', operand: 'foo'}],
+        redirect_url: "#",
+    };
+
+    filter = new Filter(default_redirect.operator);
+    assert.equal(
+        filter.generate_redirect_url(),
+        default_redirect.redirect_url
+    );
+});
+
 run_test('error_cases', () => {
     // This test just gives us 100% line coverage on defensive code that
     // should not be reached unless we break other code.
