@@ -901,7 +901,7 @@ paths:
         description: The ID of the message from which you want to delete the emoji reaction.
         schema:
           type: integer
-        example: 42
+        example: 41
         required: true
       - name: emoji_name
         in: query
@@ -914,7 +914,7 @@ paths:
                      you want, and note that emoji's text name.
         schema:
           type: string
-        example: '**:slight smile:**'
+        example: 'octopus'
         required: true
       - name: emoji_code
         in: query
@@ -925,7 +925,7 @@ paths:
                      codepoint mapping has changed since the first reaction was added.
         schema:
           type: string
-        example: '**foo**'
+        example: '1f419'
         required: false
       - name: reaction_type
         in: query
@@ -934,7 +934,7 @@ paths:
                      set `reaction_type` to `realm_emoji`.
         schema:
           type: string
-        example: '**realm_emoji**'
+        example: 'unicode_emoji'
         required: false
       responses:
         '200':
@@ -944,15 +944,23 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
-                - properties:
-                    rendered:
-                      type: string
-                      description: The rendered HTML.
+                - example:
+                      {
+                          "result": "success",
+                          "msg": ""
+                      }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
                 - example:
                     {
-                        "msg": "",
-                        "rendered": "<p><strong>foo</strong></p>",
-                        "result": "success"
+                        "result": "error",
+                        "msg": "Invalid message(s)",
+                        "code": "BAD_REQUEST"
                     }
   /user_uploads:
     post:
