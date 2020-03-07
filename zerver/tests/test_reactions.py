@@ -90,7 +90,7 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         stream_name = "Saxony"
         self.subscribe(self.example_user("cordelia"), stream_name)
-        message_id = self.send_stream_message(self.example_email("cordelia"), stream_name)
+        message_id = self.send_stream_message(self.example_user("cordelia"), stream_name)
 
         user_profile = self.example_user('hamlet')
         sender = user_profile.email
@@ -650,7 +650,7 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
         """
         stream_name = "Saxony"
         self.subscribe(self.example_user("cordelia"), stream_name)
-        message_id = self.send_stream_message(self.example_email("cordelia"), stream_name)
+        message_id = self.send_stream_message(self.example_user("cordelia"), stream_name)
 
         user_profile = self.example_user('hamlet')
 
@@ -814,7 +814,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         pm_sender = self.example_user('hamlet')
         pm_recipient = self.example_user('othello')
         reaction_sender = pm_recipient
-        pm_id = self.send_personal_message(pm_sender.email, pm_recipient.email)
+        pm_id = self.send_personal_message(pm_sender, pm_recipient)
         expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
         reaction_info = {
             'emoji_name': 'hamburger',
@@ -851,7 +851,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         pm_sender = self.example_user('hamlet')
         pm_recipient = self.example_user('othello')
         reaction_sender = pm_recipient
-        pm_id = self.send_personal_message(pm_sender.email, pm_recipient.email)
+        pm_id = self.send_personal_message(pm_sender, pm_recipient)
         expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
         reaction_info = {
             'emoji_name': 'hamburger',

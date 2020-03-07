@@ -4,7 +4,7 @@ from django.conf import settings
 from zerver.lib.actions import internal_send_private_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import message_stream_count, most_recent_message
-from zerver.models import get_realm, get_user, get_system_bot, UserProfile
+from zerver.models import get_system_bot, UserProfile
 
 import ujson
 
@@ -35,33 +35,30 @@ class TutorialTests(ZulipTestCase):
             self.assertEqual(user.tutorial_status, expected_db_status)
 
     def test_single_response_to_pm(self) -> None:
-        realm = get_realm('zulip')
         user_email = 'hamlet@zulip.com'
-        bot_email = 'welcome-bot@zulip.com'
+        user = self.example_user('hamlet')
+        bot = get_system_bot(settings.WELCOME_BOT)
         content = 'whatever'
         self.login(user_email)
-        self.send_personal_message(user_email, bot_email, content)
-        user = get_user(user_email, realm)
+        self.send_personal_message(user, bot, content)
         user_messages = message_stream_count(user)
         expected_response = ("Congratulations on your first reply! :tada:\n\n"
                              "Feel free to continue using this space to practice your new messaging "
                              "skills. Or, try clicking on some of the stream names to your left!")
         self.assertEqual(most_recent_message(user).content, expected_response)
         # Welcome bot shouldn't respond to further PMs.
-        self.send_personal_message(user_email, bot_email, content)
+        self.send_personal_message(user, bot, content)
         self.assertEqual(message_stream_count(user), user_messages+1)
 
     def test_no_response_to_group_pm(self) -> None:
-        realm = get_realm('zulip')  # Assume realm is always 'zulip'
-        user1_email = self.example_email('hamlet')
-        user2_email = self.example_email('cordelia')
-        bot_email = self.example_email('welcome_bot')
+        user1 = self.example_user('hamlet')
+        user2 = self.example_user('cordelia')
+        bot = get_system_bot(settings.WELCOME_BOT)
         content = "whatever"
-        self.login(user1_email)
-        self.send_huddle_message(user1_email, [bot_email, user2_email], content)
-        user1 = get_user(user1_email, realm)
+        self.login(user1.email)
+        self.send_huddle_message(user1, [bot, user2], content)
         user1_messages = message_stream_count(user1)
         self.assertEqual(most_recent_message(user1).content, content)
         # Welcome bot should still respond to initial PM after group PM.
-        self.send_personal_message(user1_email, bot_email, content)
+        self.send_personal_message(user1, bot, content)
         self.assertEqual(message_stream_count(user1), user1_messages+2)

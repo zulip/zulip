@@ -811,7 +811,7 @@ class HomeTest(ZulipTestCase):
 
     def send_test_message(self, content: str, sender_name: str='iago',
                           stream_name: str='Denmark', topic_name: str='foo') -> None:
-        sender = self.example_email(sender_name)
+        sender = self.example_user(sender_name)
         self.send_stream_message(sender, stream_name,
                                  content=content, topic_name=topic_name)
 

@@ -848,10 +848,10 @@ class ScrubRealmTest(ZulipTestCase):
         UserMessage.objects.all().delete()
 
         for i in range(5):
-            self.send_stream_message(iago.email, "Scotland")
-            self.send_stream_message(othello.email, "Scotland")
-            self.send_stream_message(cordelia.email, "Shakespeare", sender_realm="lear")
-            self.send_stream_message(king.email, "Shakespeare", sender_realm="lear")
+            self.send_stream_message(iago, "Scotland")
+            self.send_stream_message(othello, "Scotland")
+            self.send_stream_message(cordelia, "Shakespeare")
+            self.send_stream_message(king, "Shakespeare")
 
         Attachment.objects.filter(realm=zulip).delete()
         Attachment.objects.create(realm=zulip, owner=iago, path_id="a/b/temp1.txt")

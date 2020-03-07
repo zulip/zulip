@@ -173,26 +173,26 @@ class WorkerTest(ZulipTestCase):
         othello = self.example_user('othello')
 
         hamlet1_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=hamlet.email,
+            from_user=cordelia,
+            to_user=hamlet,
             content='hi hamlet',
         )
 
         hamlet2_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=hamlet.email,
+            from_user=cordelia,
+            to_user=hamlet,
             content='goodbye hamlet',
         )
 
         hamlet3_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=hamlet.email,
+            from_user=cordelia,
+            to_user=hamlet,
             content='hello again hamlet',
         )
 
         othello_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=othello.email,
+            from_user=cordelia,
+            to_user=othello,
             content='where art thou, othello?',
         )
 

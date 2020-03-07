@@ -199,7 +199,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
-        self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
         self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
 
     def test_file_download_unauthed(self) -> None:
@@ -264,7 +264,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Send message referring only dummy_1
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "Some files here ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
-        self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
         # dummy_2 should not exist in database or the uploads folder
         do_delete_old_unclaimed_attachments(2)
@@ -276,7 +276,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login(hamlet.email)
         body = "Test message ...[zulip.txt](http://localhost:9991/user_uploads/%s/64/fake_path_id.txt)" % (
             hamlet.realm_id,)
-        self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
         self.assertFalse(Attachment.objects.filter(path_id = "1/64/fake_path_id.txt").exists())
 
     def test_multiple_claim_attachments(self) -> None:
@@ -293,9 +293,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), "Denmark")
         host = self.example_user('hamlet').realm.host
         body = "First message ...[zulip.txt](http://{}/user_uploads/".format(host) + d1_path_id + ")"
-        self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
         body = "Second message ...[zulip.txt](http://{}/user_uploads/".format(host) + d1_path_id + ")"
-        self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
 
@@ -314,25 +314,25 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # First, send the message to the new private stream.
         body = "First message ...[zulip.txt](http://{}/user_uploads/".format(host) + d1_path_id + ")"
-        self.send_stream_message(self.example_email("hamlet"), "private_stream", body, "test")
+        self.send_stream_message(self.example_user("hamlet"), "private_stream", body, "test")
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 1)
 
         # Then, try having a user who didn't receive the message try to publish it, and fail
         body = "Illegal message ...[zulip.txt](http://{}/user_uploads/".format(host) + d1_path_id + ")"
-        self.send_stream_message(self.example_email("cordelia"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("cordelia"), "Denmark", body, "test")
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 1)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
 
         # Then, have the owner PM it to another user, giving that other user access.
         body = "Second message ...[zulip.txt](http://{}/user_uploads/".format(host) + d1_path_id + ")"
-        self.send_personal_message(self.example_email("hamlet"), self.example_email("othello"), body)
+        self.send_personal_message(self.example_user("hamlet"), self.example_user("othello"), body)
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
 
         # Then, have that new recipient user publish it.
         body = "Third message ...[zulip.txt](http://{}/user_uploads/".format(host) + d1_path_id + ")"
-        self.send_stream_message(self.example_email("othello"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("othello"), "Denmark", body, "test")
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 3)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
 
@@ -356,7 +356,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.subscribe(hamlet, "test")
         body = ("[f1.txt](http://{}/user_uploads/".format(host) + f1_path_id + ") "
                 "[f2.txt](http://{}/user_uploads/".format(host) + f2_path_id + ")")
-        msg_id = self.send_stream_message(hamlet.email, "test", body, "test")
+        msg_id = self.send_stream_message(hamlet, "test", body, "test")
 
         result = self.client_post("/json/user_uploads", {'file': f3})
         f3_path_id = re.sub('/user_uploads/', '', result.json()['uri'])
@@ -511,7 +511,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://{}/user_uploads/".format(user.realm.host) + fp_path_id + ")"
-        self.send_stream_message(user.email, stream_name, body, "test")
+        self.send_stream_message(user, stream_name, body, "test")
         self.logout()
 
         # Owner user should be able to view file
@@ -564,7 +564,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://{}/user_uploads/".format(user.realm.host) + fp_path_id + ")"
-        self.send_stream_message(user.email, stream_name, body, "test")
+        self.send_stream_message(user, stream_name, body, "test")
         self.logout()
 
         # Add aaron as a subscribed after the message was sent
@@ -632,7 +632,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp_path_id = re.sub('/user_uploads/', '', uri)
         for i in range(20):
             body = "First message ...[zulip.txt](http://{}/user_uploads/".format(hamlet.realm.host) + fp_path_id + ")"
-            self.send_stream_message(self.example_email("hamlet"), "test-subscribe %s" % (i % 5,), body, "test")
+            self.send_stream_message(self.example_user("hamlet"), "test-subscribe %s" % (i % 5,), body, "test")
         self.logout()
 
         user = self.example_user("aaron")
@@ -674,7 +674,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://{}/user_uploads/".format(realm.host) + fp_path_id + ")"
-        self.send_stream_message(self.example_email("hamlet"), "test-subscribe", body, "test")
+        self.send_stream_message(self.example_user("hamlet"), "test-subscribe", body, "test")
         self.logout()
 
         # Now all users should be able to access the files
@@ -1513,7 +1513,7 @@ class S3Test(ZulipTestCase):
 
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
-        self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
         self.assertIn('title="dummy.txt"', self.get_last_message().rendered_content)
 
     @use_s3_backend
@@ -1567,7 +1567,7 @@ class S3Test(ZulipTestCase):
 
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
-        self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
         self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
 
     @use_s3_backend

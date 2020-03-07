@@ -396,8 +396,7 @@ class GetEventsTest(ZulipTestCase):
 
     def test_get_events_narrow(self) -> None:
         user_profile = self.example_user('hamlet')
-        email = user_profile.email
-        self.login(email)
+        self.login(user_profile.email)
 
         def get_message(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
             result = self.tornado_call(
@@ -426,8 +425,8 @@ class GetEventsTest(ZulipTestCase):
             self.assert_json_success(result)
             self.assert_length(events, 0)
 
-            self.send_personal_message(email, self.example_email("othello"), "hello")
-            self.send_stream_message(email, "Denmark", "**hello**")
+            self.send_personal_message(user_profile, self.example_user("othello"), "hello")
+            self.send_stream_message(user_profile, "Denmark", "**hello**")
 
             result = self.tornado_call(get_events, user_profile,
                                        {"queue_id": queue_id,
@@ -621,7 +620,7 @@ class EventsRegisterTest(ZulipTestCase):
         for i in range(3):
             content = 'mentioning... @**' + user.full_name + '** hello ' + str(i)
             self.do_test(
-                lambda: self.send_stream_message(self.example_email('cordelia'),
+                lambda: self.send_stream_message(self.example_user('cordelia'),
                                                  "Verona",
                                                  content)
 
@@ -631,7 +630,7 @@ class EventsRegisterTest(ZulipTestCase):
         for i in range(3):
             content = 'mentioning... @**all** hello ' + str(i)
             self.do_test(
-                lambda: self.send_stream_message(self.example_email('cordelia'),
+                lambda: self.send_stream_message(self.example_user('cordelia'),
                                                  "Verona",
                                                  content)
 
@@ -639,19 +638,19 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_pm_send_message_events(self) -> None:
         self.do_test(
-            lambda: self.send_personal_message(self.example_email('cordelia'),
-                                               self.example_email('hamlet'),
+            lambda: self.send_personal_message(self.example_user('cordelia'),
+                                               self.example_user('hamlet'),
                                                'hola')
 
         )
 
     def test_huddle_send_message_events(self) -> None:
         huddle = [
-            self.example_email('hamlet'),
-            self.example_email('othello'),
+            self.example_user('hamlet'),
+            self.example_user('othello'),
         ]
         self.do_test(
-            lambda: self.send_huddle_message(self.example_email('cordelia'),
+            lambda: self.send_huddle_message(self.example_user('cordelia'),
                                              huddle,
                                              'hola')
 
@@ -688,7 +687,7 @@ class EventsRegisterTest(ZulipTestCase):
             return schema_checker
 
         events = self.do_test(
-            lambda: self.send_stream_message(self.example_email("hamlet"), "Verona", "hello"),
+            lambda: self.send_stream_message(self.example_user("hamlet"), "Verona", "hello"),
             client_gravatar=False,
         )
         schema_checker = get_checker(check_gravatar=check_string)
@@ -696,7 +695,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
         events = self.do_test(
-            lambda: self.send_stream_message(self.example_email("hamlet"), "Verona", "hello"),
+            lambda: self.send_stream_message(self.example_user("hamlet"), "Verona", "hello"),
             client_gravatar=True,
         )
         schema_checker = get_checker(check_gravatar=equals(None))
@@ -784,8 +783,8 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         message = self.send_personal_message(
-            self.example_email("cordelia"),
-            self.example_email("hamlet"),
+            self.example_user("cordelia"),
+            self.example_user("hamlet"),
             "hello",
         )
         user_profile = self.example_user('hamlet')
@@ -816,7 +815,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         for content in ['hello', mention]:
             message = self.send_stream_message(
-                self.example_email('cordelia'),
+                self.example_user('cordelia'),
                 "Verona",
                 content
             )
@@ -827,13 +826,14 @@ class EventsRegisterTest(ZulipTestCase):
             )
 
     def test_send_message_to_existing_recipient(self) -> None:
+        sender = self.example_user('cordelia')
         self.send_stream_message(
-            self.example_email('cordelia'),
+            sender,
             "Verona",
             "hello 1"
         )
         self.do_test(
-            lambda: self.send_stream_message("cordelia@zulip.com", "Verona", "hello 2"),
+            lambda: self.send_stream_message(sender, "Verona", "hello 2"),
             state_change_expected=True,
         )
 
@@ -852,7 +852,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
+        message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         events = self.do_test(
             lambda: do_add_reaction_legacy(
@@ -877,7 +877,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
+        message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         do_add_reaction_legacy(self.user_profile, message, "tada")
         events = self.do_test(
@@ -903,7 +903,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
+        message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         events = self.do_test(
             lambda: do_add_reaction(
@@ -926,7 +926,7 @@ class EventsRegisterTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         stream_name = 'Verona'
         message_id = self.send_stream_message(
-            sender_email=cordelia.email,
+            sender=cordelia,
             stream_name=stream_name,
         )
         events = self.do_test(
@@ -957,7 +957,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-        message_id = self.send_stream_message(self.example_email("hamlet"), "Verona", "hello")
+        message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
         message = Message.objects.get(id=message_id)
         do_add_reaction(self.user_profile, message, "tada", "1f389", "unicode_emoji")
         events = self.do_test(
@@ -2663,7 +2663,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('stream_id', check_int),
             ('topic', check_string),
         ])
-        msg_id = self.send_stream_message("hamlet@zulip.com", "Verona")
+        hamlet = self.example_user('hamlet')
+        msg_id = self.send_stream_message(hamlet, "Verona")
         message = Message.objects.get(id=msg_id)
         events = self.do_test(
             lambda: do_delete_messages(self.user_profile.realm, [message]),
@@ -2682,8 +2683,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('recipient_id', check_int),
         ])
         msg_id = self.send_personal_message(
-            self.example_email("cordelia"),
-            self.user_profile.email,
+            self.example_user("cordelia"),
+            self.user_profile,
             "hello",
         )
         message = Message.objects.get(id=msg_id)
@@ -2699,7 +2700,7 @@ class EventsRegisterTest(ZulipTestCase):
         # Delete all historical messages for this user
         user_profile = self.example_user('hamlet')
         UserMessage.objects.filter(user_profile=user_profile).delete()
-        msg_id = self.send_stream_message("hamlet@zulip.com", "Verona")
+        msg_id = self.send_stream_message(user_profile, "Verona")
         message = Message.objects.get(id=msg_id)
         self.do_test(
             lambda: do_delete_messages(self.user_profile.realm, [message]),
@@ -2773,7 +2774,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.subscribe(hamlet, "Denmark")
         body = "First message ...[zulip.txt](http://{}".format(hamlet.realm.host) + data['uri'] + ")"
         events = self.do_test(
-            lambda: self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test"),
+            lambda: self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test"),
             num_events=2)
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -2945,7 +2946,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         for stream_name, topic_name in tups:
             message_ids[topic_name] = [
                 self.send_stream_message(
-                    sender_email=cordelia.email,
+                    sender=cordelia,
                     stream_name=stream_name,
                     topic_name=topic_name,
                 ) for i in range(3)
@@ -2998,16 +2999,16 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         huddle1_message_ids = [
             self.send_huddle_message(
-                cordelia.email,
-                [hamlet.email, othello.email]
+                cordelia,
+                [hamlet, othello]
             )
             for i in range(3)
         ]
 
         huddle2_message_ids = [
             self.send_huddle_message(
-                cordelia.email,
-                [hamlet.email, prospero.email]
+                cordelia,
+                [hamlet, prospero]
             )
             for i in range(3)
         ]
@@ -3039,12 +3040,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
 
         cordelia_pm_message_ids = [
-            self.send_personal_message(cordelia.email, hamlet.email)
+            self.send_personal_message(cordelia, hamlet)
             for i in range(3)
         ]
 
         othello_pm_message_ids = [
-            self.send_personal_message(othello.email, hamlet.email)
+            self.send_personal_message(othello, hamlet)
             for i in range(3)
         ]
 
@@ -3065,9 +3066,9 @@ class GetUnreadMsgsTest(ZulipTestCase):
         )
 
     def test_unread_msgs(self) -> None:
-        cordelia = self.example_user('cordelia')
-        sender_id = cordelia.id
-        sender_email = cordelia.email
+        sender = self.example_user('cordelia')
+        sender_id = sender.id
+        sender_email = sender.email
         user_profile = self.example_user('hamlet')
         othello = self.example_user('othello')
 
@@ -3075,25 +3076,25 @@ class GetUnreadMsgsTest(ZulipTestCase):
         assert(sender_email < user_profile.email)
         assert(user_profile.email < othello.email)
 
-        pm1_message_id = self.send_personal_message(sender_email, user_profile.email, "hello1")
-        pm2_message_id = self.send_personal_message(sender_email, user_profile.email, "hello2")
+        pm1_message_id = self.send_personal_message(sender, user_profile, "hello1")
+        pm2_message_id = self.send_personal_message(sender, user_profile, "hello2")
 
         muted_stream = self.subscribe(user_profile, 'Muted Stream')
         self.mute_stream(user_profile, muted_stream)
         self.mute_topic(user_profile, 'Denmark', 'muted-topic')
 
-        stream_message_id = self.send_stream_message(sender_email, "Denmark", "hello")
-        muted_stream_message_id = self.send_stream_message(sender_email, "Muted Stream", "hello")
+        stream_message_id = self.send_stream_message(sender, "Denmark", "hello")
+        muted_stream_message_id = self.send_stream_message(sender, "Muted Stream", "hello")
         muted_topic_message_id = self.send_stream_message(
-            sender_email,
+            sender,
             "Denmark",
             topic_name="muted-topic",
             content="hello",
         )
 
         huddle_message_id = self.send_huddle_message(
-            sender_email,
-            [user_profile.email, othello.email],
+            sender,
+            [user_profile, othello],
             'hello3',
         )
 

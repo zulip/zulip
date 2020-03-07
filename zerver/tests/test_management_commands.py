@@ -406,7 +406,7 @@ class TestExport(ZulipTestCase):
 
     def test_command_with_consented_message_id(self) -> None:
         realm = get_realm("zulip")
-        self.send_stream_message(self.example_email("othello"), "Verona",
+        self.send_stream_message(self.example_user("othello"), "Verona",
                                  topic_name="Export",
                                  content="Thumbs up for export")
         message = Message.objects.last()

@@ -271,9 +271,9 @@ class TestDigestEmailMessages(ZulipTestCase):
         sending_client = get_client(client)
         message_ids = []  # List[int]
         for sender_name in senders:
-            email = self.example_email(sender_name)
-            content = 'some content for {} from {}'.format(stream, email)
-            message_id = self.send_stream_message(email, stream, content)
+            sender = self.example_user(sender_name)
+            content = 'some content for {} from {}'.format(stream, sender_name)
+            message_id = self.send_stream_message(sender, stream, content)
             message_ids.append(message_id)
         Message.objects.filter(id__in=message_ids).update(sending_client=sending_client)
         return message_ids

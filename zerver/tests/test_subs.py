@@ -3122,9 +3122,9 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(random_user, "stream2")
         self.subscribe(random_user, "private_stream")
 
-        self.send_stream_message(random_user.email, "stream1", "test", "test")
-        self.send_stream_message(random_user.email, "stream2", "test", "test")
-        self.send_stream_message(random_user.email, "private_stream", "test", "test")
+        self.send_stream_message(random_user, "stream1", "test", "test")
+        self.send_stream_message(random_user, "stream2", "test", "test")
+        self.send_stream_message(random_user, "private_stream", "test", "test")
 
         def get_unread_stream_data() -> List[Dict[str, Any]]:
             raw_unread_data = get_raw_unread_data(user)
@@ -3445,15 +3445,16 @@ class InviteOnlyStreamTest(ZulipTestCase):
         If you try to send a message to an invite-only stream to which
         you aren't subscribed, you'll get a 400.
         """
-        self.login(self.example_email("hamlet"))
+        user = self.example_user('hamlet')
+        self.login(user.email)
         # Create Saxony as an invite-only stream.
         self.assert_json_success(
-            self.common_subscribe_to_streams(self.example_email("hamlet"), ["Saxony"],
+            self.common_subscribe_to_streams(user.email, ["Saxony"],
                                              invite_only=True))
 
-        email = self.example_email("cordelia")
+        cordelia = self.example_user("cordelia")
         with self.assertRaises(JsonableError):
-            self.send_stream_message(email, "Saxony")
+            self.send_stream_message(cordelia, "Saxony")
 
     def test_list_respects_invite_only_bit(self) -> None:
         """

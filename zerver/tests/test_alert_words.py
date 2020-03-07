@@ -133,7 +133,7 @@ class AlertWordTests(ZulipTestCase):
 
     def message_does_alert(self, user_profile: UserProfile, message: str) -> bool:
         """Send a bunch of messages as othello, so Hamlet is notified"""
-        self.send_stream_message(self.example_email("othello"), "Denmark", message)
+        self.send_stream_message(self.example_user("othello"), "Denmark", message)
         user_message = most_recent_usermessage(user_profile)
         return 'has_alert_word' in user_message.flags_list()
 
@@ -172,7 +172,7 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['ALERT'])})
 
         content = 'this is an ALERT for you'
-        self.send_stream_message(me_email, "Denmark", content)
+        self.send_stream_message(user_profile, "Denmark", content)
         self.assert_json_success(result)
 
         original_message = most_recent_message(user_profile)
