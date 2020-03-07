@@ -2915,10 +2915,15 @@ paths:
         required: true
       - name: to
         in: query
-        description: The user_ids of the recipients of the message being typed.
+        description: |
+          The user_ids of the recipients of the message being typed.
           Typing notifications are only supported for private messages.
           Send a JSON-encoded list of user_ids. (Use a list even if there is
-          only one recipient.)
+          only one recipient.).
+
+          **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
+          list of email addresses.  The email address-based format is deprecated
+          and will be removed in Zulip 2.2.
         schema:
           type: array
           items:
