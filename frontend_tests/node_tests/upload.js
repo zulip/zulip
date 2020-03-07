@@ -434,7 +434,7 @@ run_test('uppy_events', () => {
     uppy_stub.Plugin = plugin_stub;
     rewiremock.proxy(() => require("../../static/js/upload"), {'@uppy/core': uppy_stub});
     upload.setup_upload({mode: "compose"});
-    assert.equal(Object.keys(callbacks).length, 4);
+    assert.equal(Object.keys(callbacks).length, 5);
 
     const on_upload_success_callback = callbacks["upload-success"];
     const file = {
@@ -538,6 +538,8 @@ run_test('uppy_events', () => {
     const on_info_visible_callback = callbacks["info-visible"];
     let show_error_message_called = false;
     uppy_cancel_all_called = false;
+    compose_ui_replace_syntax_called = false;
+    const on_restriction_failed_callback = callbacks["restriction-failed"];
     upload.show_error_message = (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
@@ -546,6 +548,19 @@ run_test('uppy_events', () => {
     on_info_visible_callback();
     assert(uppy_cancel_all_called);
     assert(show_error_message_called);
+    compose_ui.replace_syntax = (old_syntax, new_syntax, textarea) => {
+        compose_ui_replace_syntax_called = true;
+        assert.equal(old_syntax, "[Uploading copenhagen.png…]()");
+        assert.equal(new_syntax, "");
+        assert.equal(textarea, $('#compose-textarea'));
+    };
+    on_restriction_failed_callback(file, null, null);
+    assert(compose_ui_replace_syntax_called);
+    compose_ui_replace_syntax_called = false;
+    $('#comepose-textarea').val('user modified text');
+    on_restriction_failed_callback(file, null, null);
+    assert(compose_ui_replace_syntax_called);
+    assert.equal($('#comepose-textarea').val(), 'user modified text');
 
     state = {
         type: "error",
@@ -553,7 +568,6 @@ run_test('uppy_events', () => {
     };
     uppy_cancel_all_called = false;
     on_info_visible_callback();
-    assert(!uppy_cancel_all_called);
 
     state = {
         type: "error",
@@ -561,7 +575,6 @@ run_test('uppy_events', () => {
     };
     uppy_cancel_all_called = false;
     on_info_visible_callback();
-    assert(!uppy_cancel_all_called);
 
     const on_upload_error_callback = callbacks["upload-error"];
     show_error_message_called = false;

@@ -261,6 +261,11 @@ exports.setup_upload = function (config) {
         exports.show_error_message(config, message);
     });
 
+    uppy.on('restriction-failed', (file) => {
+        compose_ui.replace_syntax("[Uploading " + file.name + "…]()", "", exports.get_item("textarea", config));
+        compose_ui.autosize_textarea();
+    });
+
     return uppy;
 };
 
