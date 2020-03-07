@@ -281,30 +281,37 @@ class ZulipTestCase(TestCase):
         aaron='letham',
     )
 
-    def nonreg_user(self, name: str) -> UserProfile:
-        email = self.nonreg_user_map[name]
+    @classmethod
+    def nonreg_user(cls, name: str) -> UserProfile:
+        email = cls.nonreg_user_map[name]
         return get_user(email, get_realm("zulip"))
 
-    def example_user(self, name: str) -> UserProfile:
-        email = self.example_user_map[name]
+    @classmethod
+    def example_user(cls, name: str) -> UserProfile:
+        email = cls.example_user_map[name]
         return get_user(email, get_realm('zulip'))
 
-    def mit_user(self, name: str) -> UserProfile:
-        email = self.mit_user_map[name]
+    @classmethod
+    def mit_user(cls, name: str) -> UserProfile:
+        email = cls.mit_user_map[name]
         return get_user(email, get_realm('zephyr'))
 
-    def lear_user(self, name: str) -> UserProfile:
-        email = self.lear_user_map[name]
+    @classmethod
+    def lear_user(cls, name: str) -> UserProfile:
+        email = cls.lear_user_map[name]
         return get_user(email, get_realm('lear'))
 
-    def nonreg_email(self, name: str) -> str:
-        return self.nonreg_user_map[name]
+    @classmethod
+    def nonreg_email(cls, name: str) -> str:
+        return cls.nonreg_user_map[name]
 
-    def example_email(self, name: str) -> str:
-        return self.example_user_map[name]
+    @classmethod
+    def example_email(cls, name: str) -> str:
+        return cls.example_user_map[name]
 
-    def mit_email(self, name: str) -> str:
-        return self.mit_user_map[name]
+    @classmethod
+    def mit_email(cls, name: str) -> str:
+        return cls.mit_user_map[name]
 
     def notification_bot(self) -> UserProfile:
         return get_system_bot(settings.NOTIFICATION_BOT)
@@ -646,13 +653,14 @@ class ZulipTestCase(TestCase):
 
     INVALID_STREAM_ID = 999999
 
-    def get_stream_id(self, name: str, realm: Optional[Realm]=None) -> int:
+    @classmethod
+    def get_stream_id(cls, name: str, realm: Optional[Realm]=None) -> int:
         if not realm:
             realm = get_realm('zulip')
         try:
             stream = get_realm_stream(name, realm.id)
         except Stream.DoesNotExist:
-            return self.INVALID_STREAM_ID
+            return cls.INVALID_STREAM_ID
         return stream.id
 
     # Subscribe to a stream directly
