@@ -313,7 +313,8 @@ class ZulipTestCase(TestCase):
     def mit_email(cls, name: str) -> str:
         return cls.mit_user_map[name]
 
-    def notification_bot(self) -> UserProfile:
+    @staticmethod
+    def notification_bot() -> UserProfile:
         return get_system_bot(settings.NOTIFICATION_BOT)
 
     def create_test_bot(self, short_name: str, user_profile: UserProfile, full_name: str='Foo Bot',
@@ -414,7 +415,8 @@ class ZulipTestCase(TestCase):
             payload['realm_in_root_domain'] = realm_in_root_domain
         return self.client_post('/accounts/register/', payload, **kwargs)
 
-    def get_confirmation_url_from_outbox(self, email_address: str, *,
+    @staticmethod
+    def get_confirmation_url_from_outbox(email_address: str, *,
                                          url_pattern: str=None) -> str:
         from django.core.mail import outbox
         if url_pattern is None:
@@ -459,7 +461,8 @@ class ZulipTestCase(TestCase):
         kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_delete(*args, **kwargs)
 
-    def get_streams(self, email: str, realm: Realm) -> List[str]:
+    @staticmethod
+    def get_streams(email: str, realm: Realm) -> List[str]:
         """
         Helper function to get the stream names for a user
         """
@@ -494,7 +497,8 @@ class ZulipTestCase(TestCase):
             content
         )
 
-    def send_stream_message(self, sender: UserProfile, stream_name: str, content: str="test content",
+    @staticmethod
+    def send_stream_message(sender: UserProfile, stream_name: str, content: str="test content",
                             topic_name: str="test",
                             recipient_realm: Optional[Realm]=None,
                             sending_client_name: str="test suite") -> int:
@@ -524,7 +528,8 @@ class ZulipTestCase(TestCase):
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data['messages']
 
-    def users_subscribed_to_stream(self, stream_name: str, realm: Realm) -> List[UserProfile]:
+    @staticmethod
+    def users_subscribed_to_stream(stream_name: str, realm: Realm) -> List[UserProfile]:
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient, active=True)
@@ -569,7 +574,8 @@ class ZulipTestCase(TestCase):
         """
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
-    def assert_length(self, items: List[Any], count: int) -> None:
+    @staticmethod
+    def assert_length(items: List[Any], count: int) -> None:
         actual_count = len(items)
         if actual_count != count:  # nocoverage
             print('ITEMS:\n')
@@ -606,14 +612,16 @@ class ZulipTestCase(TestCase):
         """
         self.assertEqual(get_session_dict_user(self.client.session), user_id)
 
-    def webhook_fixture_data(self, type: str, action: str, file_type: str='json') -> str:
+    @staticmethod
+    def webhook_fixture_data(type: str, action: str, file_type: str='json') -> str:
         fn = os.path.join(
             os.path.dirname(__file__),
             "../webhooks/%s/fixtures/%s.%s" % (type, action, file_type)
         )
         return open(fn).read()
 
-    def fixture_file_name(self, file_name: str, type: str='') -> str:
+    @staticmethod
+    def fixture_file_name(file_name: str, type: str='') -> str:
         return os.path.join(
             os.path.dirname(__file__),
             "../tests/fixtures/%s/%s" % (type, file_name)
@@ -623,7 +631,8 @@ class ZulipTestCase(TestCase):
         fn = self.fixture_file_name(file_name, type)
         return open(fn).read()
 
-    def make_stream(self, stream_name: str, realm: Optional[Realm]=None,
+    @staticmethod
+    def make_stream(stream_name: str, realm: Optional[Realm]=None,
                     invite_only: Optional[bool]=False,
                     history_public_to_subscribers: Optional[bool]=None) -> Stream:
         if realm is None:
@@ -664,7 +673,8 @@ class ZulipTestCase(TestCase):
         return stream.id
 
     # Subscribe to a stream directly
-    def subscribe(self, user_profile: UserProfile, stream_name: str) -> Stream:
+    @staticmethod
+    def subscribe(user_profile: UserProfile, stream_name: str) -> Stream:
         try:
             stream = get_stream(stream_name, user_profile.realm)
             from_stream_creation = False
@@ -673,7 +683,8 @@ class ZulipTestCase(TestCase):
         bulk_add_subscriptions([stream], [user_profile], from_stream_creation=from_stream_creation)
         return stream
 
-    def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:
+    @staticmethod
+    def unsubscribe(user_profile: UserProfile, stream_name: str) -> None:
         client = get_client("website")
         stream = get_stream(stream_name, user_profile.realm)
         bulk_remove_subscriptions([user_profile], [stream], client)
@@ -727,10 +738,12 @@ class ZulipTestCase(TestCase):
 
         return msg
 
-    def get_last_message(self) -> Message:
+    @staticmethod
+    def get_last_message() -> Message:
         return Message.objects.latest('id')
 
-    def get_second_to_last_message(self) -> Message:
+    @staticmethod
+    def get_second_to_last_message() -> Message:
         return Message.objects.all().order_by('-id')[1]
 
     @contextmanager
@@ -745,28 +758,33 @@ class ZulipTestCase(TestCase):
                 mock.patch('zerver.lib.bugdown.bugdown_logger'):
             yield
 
-    def create_default_device(self, user_profile: UserProfile,
+    @staticmethod
+    def create_default_device(user_profile: UserProfile,
                               number: str="+12125550100") -> None:
         phone_device = PhoneDevice(user=user_profile, name='default',
                                    confirmed=True, number=number,
                                    key='abcd', method='sms')
         phone_device.save()
 
-    def rm_tree(self, path: str) -> None:
+    @staticmethod
+    def rm_tree(path: str) -> None:
         if os.path.exists(path):
             shutil.rmtree(path)
 
-    def make_import_output_dir(self, exported_from: str) -> str:
+    @staticmethod
+    def make_import_output_dir(exported_from: str) -> str:
         output_dir = tempfile.mkdtemp(dir=settings.TEST_WORKER_DIR,
                                       prefix="test-" + exported_from + "-import-")
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
-    def get_set(self, data: List[Dict[str, Any]], field: str) -> Set[str]:
+    @staticmethod
+    def get_set(data: List[Dict[str, Any]], field: str) -> Set[str]:
         values = set(r[field] for r in data)
         return values
 
-    def find_by_id(self, data: List[Dict[str, Any]], db_id: int) -> Dict[str, Any]:
+    @staticmethod
+    def find_by_id(data: List[Dict[str, Any]], db_id: int) -> Dict[str, Any]:
         return [
             r for r in data
             if r['id'] == db_id][0]
@@ -830,7 +848,8 @@ class ZulipTestCase(TestCase):
         """
         return self.example_user_ldap_username_map[username]
 
-    def ldap_password(self, uid: str) -> str:
+    @staticmethod
+    def ldap_password(uid: str) -> str:
         return "{}_ldap_password".format(uid)
 
 class WebhookTestCase(ZulipTestCase):
