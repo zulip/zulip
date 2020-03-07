@@ -34,7 +34,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
 
         def send_msg_and_get_result(msg: str) -> HttpResponse:
             self.send_stream_message(
-                self.example_email("iago"),
+                self.example_user("iago"),
                 "Test Public Archives",
                 msg,
                 'TopicGlobal'
@@ -92,7 +92,7 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
         test_stream = self.make_stream('Test Public Archives')
 
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message',
             'TopicGlobal'
@@ -110,31 +110,31 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
         do_change_stream_web_public(test_stream, True)
 
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message 3',
             topic_name='first_topic'
         )
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message',
             topic_name='TopicGlobal'
         )
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message 2',
             topic_name='topicglobal'
         )
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message 3',
             topic_name='second_topic'
         )
         self.send_stream_message(
-            self.example_email("iago"),
+            self.example_user("iago"),
             "Test Public Archives",
             'Test Message 4',
             topic_name='TopicGlobal'

@@ -156,9 +156,9 @@ class AddNewUserHistoryTest(ZulipTestCase):
         stream = Stream.objects.get(realm=realm, name='Denmark')
         DefaultStream.objects.create(stream=stream, realm=realm)
         # Make sure at least 3 messages are sent to Denmark and it's a default stream.
-        message_id = self.send_stream_message(self.example_email('hamlet'), stream.name, "test 1")
-        self.send_stream_message(self.example_email('hamlet'), stream.name, "test 2")
-        self.send_stream_message(self.example_email('hamlet'), stream.name, "test 3")
+        message_id = self.send_stream_message(self.example_user('hamlet'), stream.name, "test 1")
+        self.send_stream_message(self.example_user('hamlet'), stream.name, "test 2")
+        self.send_stream_message(self.example_user('hamlet'), stream.name, "test 3")
 
         with patch("zerver.lib.actions.add_new_user_history"):
             self.register(self.nonreg_email('test'), "test")
@@ -169,7 +169,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
 
         # Sent a message afterwards to trigger a race between message
         # sending and `add_new_user_history`.
-        race_message_id = self.send_stream_message(self.example_email('hamlet'),
+        race_message_id = self.send_stream_message(self.example_user('hamlet'),
                                                    streams[0].name, "test")
 
         # Overwrite ONBOARDING_UNREAD_MESSAGES to 2
@@ -1043,13 +1043,13 @@ class InviteUserTest(InviteUserBase):
         self.make_stream(private_stream_name, invite_only=True)
         self.subscribe(user_profile, private_stream_name)
         public_msg_id = self.send_stream_message(
-            self.example_email("hamlet"),
+            self.example_user("hamlet"),
             "Denmark",
             topic_name="Public topic",
             content="Public message",
         )
         secret_msg_id = self.send_stream_message(
-            self.example_email("hamlet"),
+            self.example_user("hamlet"),
             private_stream_name,
             topic_name="Secret topic",
             content="Secret message",

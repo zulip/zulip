@@ -2005,7 +2005,7 @@ class BugdownErrorTests(ZulipTestCase):
             # We don't use assertRaisesRegex because it seems to not
             # handle i18n properly here on some systems.
             with self.assertRaises(JsonableError):
-                self.send_stream_message(self.example_email("othello"), "Denmark", message)
+                self.send_stream_message(self.example_user("othello"), "Denmark", message)
 
     def test_ultra_long_rendering(self) -> None:
         """A rendered message with an ultra-long lenght (> 10 * MAX_MESSAGE_LENGTH)
