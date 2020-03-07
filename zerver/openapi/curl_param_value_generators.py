@@ -5,15 +5,13 @@ from functools import wraps
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import Client, Message, UserPresence, UserGroup, get_realm
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase as helpers
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import update_user_presence, do_add_realm_filter, do_add_reaction
 
 GENERATOR_FUNCTIONS = dict()  # type: Dict[str, Callable[..., Dict[Any, Any]]]
 REGISTERED_GENERATOR_FUNCTIONS = set()  # type: Set[str]
 CALLED_GENERATOR_FUNCTIONS = set()  # type: Set[str]
-
-helpers = ZulipTestCase()
 
 def openapi_param_value_generator(endpoints: List[str]) -> Callable[[Callable[..., Any]],
                                                                     Callable[..., Any]]:
