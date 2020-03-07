@@ -49,6 +49,7 @@ from zerver.models import (
     get_client,
     get_display_recipient,
     get_user,
+    get_user_by_delivery_email,
     get_realm,
     get_system_bot,
     Client,
@@ -428,7 +429,7 @@ class ZulipTestCase(TestCase):
             if is_remote_server(identifier):
                 api_key = get_remote_server_by_uuid(identifier).api_key
             else:
-                user = get_user(identifier, get_realm(realm))
+                user = get_user_by_delivery_email(identifier, get_realm(realm))
                 api_key = get_api_key(user)
             self.API_KEYS[identifier] = api_key
 
