@@ -259,6 +259,8 @@ exports.setup_upload = function (config) {
         const message = response ? response.body.msg : null;
         uppy.cancelAll();
         exports.show_error_message(config, message);
+        compose_ui.replace_syntax("[Uploading " + file.name + "…]()", "", exports.get_item("textarea", config));
+        compose_ui.autosize_textarea();
     });
 
     uppy.on('restriction-failed', (file) => {

@@ -578,6 +578,7 @@ run_test('uppy_events', () => {
 
     const on_upload_error_callback = callbacks["upload-error"];
     show_error_message_called = false;
+    compose_ui_replace_syntax_called = false;
     upload.show_error_message = (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
@@ -589,17 +590,30 @@ run_test('uppy_events', () => {
         },
     };
     uppy_cancel_all_called = false;
-    on_upload_error_callback(null, null, response);
+    on_upload_error_callback(file, null, response);
     assert(uppy_cancel_all_called);
     assert(show_error_message_called);
+    assert(compose_ui_replace_syntax_called);
 
+    compose_ui_replace_syntax_called = false;
     upload.show_error_message = (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
         assert.equal(message, null);
     };
     uppy_cancel_all_called = false;
-    on_upload_error_callback(null, null);
+    on_upload_error_callback(file, null, null);
     assert(uppy_cancel_all_called);
     assert(show_error_message_called);
+    assert(compose_ui_replace_syntax_called);
+    show_error_message_called = false;
+    $('#comepose-textarea').val('user modified text');
+    uppy_cancel_all_called = false;
+    on_upload_error_callback(file, null);
+    assert(uppy_cancel_all_called);
+    assert(show_error_message_called);
+    assert(compose_ui_replace_syntax_called);
+    assert.equal($('#comepose-textarea').val(), 'user modified text');
+
+
 });
