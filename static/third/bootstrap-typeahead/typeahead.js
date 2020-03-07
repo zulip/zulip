@@ -49,6 +49,16 @@
  *   Our custom changes include all mentions of this.header, some CSS changes
  *   in compose.scss and splitting $container out of $menu so we can insert
  *   additional HTML before $menu.
+ * 
+ * 4. Event swallowing for Enter and Tab:
+ * 
+ *   This allows users to select items from the typeahead, without triggering
+ *   other events such as form submissions (eg when using the inline topic
+ *   edit form). This custom change does not effect selecting of items from
+ *   the typeahead in the search bar (doing so would still trigger search).
+ * 
+ *   Our custom changes are in the 'move' method, (also indicated by a short
+ *   comment there as well).
  * ============================================================ */
 
 !function($){
@@ -303,6 +313,9 @@
       switch(e.keyCode) {
         case 9: // tab
         case 13: // enter
+          // custom change by Zulip to allow user to select item
+          // from typeahead, without eg triggering form submission
+          e.stopPropagation()
         case 27: // escape
           e.preventDefault()
           break
