@@ -7,7 +7,7 @@ from requests.exceptions import ConnectionError
 from django.test import override_settings
 from django.utils.html import escape
 
-from zerver.models import Message, Realm
+from zerver.models import Message, Realm, UserProfile
 from zerver.lib.actions import queue_json_publish
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockPythonResponse
@@ -269,9 +269,9 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_edit_message_history(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
-        msg_id = self.send_stream_message(email, "Scotland",
+        user = self.example_user('hamlet')
+        self.login(user.email)
+        msg_id = self.send_stream_message(user, "Scotland",
                                           topic_name="editing", content="original")
 
         url = 'http://test.org/'
@@ -296,13 +296,13 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIn(embedded_link, msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
-    def _send_message_with_test_org_url(self, sender_email: str, queue_should_run: bool=True,
+    def _send_message_with_test_org_url(self, sender: UserProfile, queue_should_run: bool=True,
                                         relative_url: bool=False) -> Message:
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
             msg_id = self.send_personal_message(
-                sender_email,
-                self.example_email('cordelia'),
+                sender,
+                self.example_user('cordelia'),
                 content=url,
             )
             if queue_should_run:
@@ -334,12 +334,12 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_message_update_race_condition(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login(user.email)
         original_url = 'http://test.org/'
         edited_url = 'http://edited.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_stream_message(email, "Scotland",
+            msg_id = self.send_stream_message(user, "Scotland",
                                               topic_name="foo", content=original_url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -383,30 +383,30 @@ class PreviewTestCase(ZulipTestCase):
         embedded_link = '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url)
 
         # When humans send, we should get embedded content.
-        msg = self._send_message_with_test_org_url(sender_email=self.example_email('hamlet'))
+        msg = self._send_message_with_test_org_url(sender=self.example_user('hamlet'))
         self.assertIn(embedded_link, msg.rendered_content)
 
         # We don't want embedded content for bots.
-        msg = self._send_message_with_test_org_url(sender_email='webhook-bot@zulip.com',
+        msg = self._send_message_with_test_org_url(sender=self.example_user('webhook_bot'),
                                                    queue_should_run=False)
         self.assertNotIn(embedded_link, msg.rendered_content)
 
         # Try another human to make sure bot failure was due to the
         # bot sending the message and not some other reason.
-        msg = self._send_message_with_test_org_url(sender_email=self.example_email('prospero'))
+        msg = self._send_message_with_test_org_url(sender=self.example_user('prospero'))
         self.assertIn(embedded_link, msg.rendered_content)
 
     def test_inline_url_embed_preview(self) -> None:
         with_preview = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://ia.media-imdb.com/images/rock.jpg)" target="_blank"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" target="_blank" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         without_preview = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>'
-        msg = self._send_message_with_test_org_url(sender_email=self.example_email('hamlet'))
+        msg = self._send_message_with_test_org_url(sender=self.example_user('hamlet'))
         self.assertEqual(msg.rendered_content, with_preview)
 
         realm = msg.get_realm()
         setattr(realm, 'inline_url_embed_preview', False)
         realm.save()
 
-        msg = self._send_message_with_test_org_url(sender_email=self.example_email('prospero'), queue_should_run=False)
+        msg = self._send_message_with_test_org_url(sender=self.example_user('prospero'), queue_should_run=False)
         self.assertEqual(msg.rendered_content, without_preview)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -414,8 +414,8 @@ class PreviewTestCase(ZulipTestCase):
         # Relative urls should not be sent for url preview.
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
             self.send_personal_message(
-                self.example_email('prospero'),
-                self.example_email('cordelia'),
+                self.example_user('prospero'),
+                self.example_user('cordelia'),
                 content="http://zulip.testserver/api/",
             )
             patched.assert_not_called()
@@ -423,14 +423,14 @@ class PreviewTestCase(ZulipTestCase):
     def test_inline_url_embed_preview_with_relative_image_url(self) -> None:
         with_preview_relative = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://test.org/images/rock.jpg)" target="_blank"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" target="_blank" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         # Try case where the opengraph image is a relative url.
-        msg = self._send_message_with_test_org_url(sender_email=self.example_email('prospero'), relative_url=True)
+        msg = self._send_message_with_test_org_url(sender=self.example_user('prospero'), relative_url=True)
         self.assertEqual(msg.rendered_content, with_preview_relative)
 
     def test_http_error_get_data(self) -> None:
         url = 'http://test.org/'
         msg_id = self.send_personal_message(
-            self.example_email('hamlet'),
-            self.example_email('cordelia'),
+            self.example_user('hamlet'),
+            self.example_user('cordelia'),
             content=url,
         )
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -466,11 +466,11 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_non_html_data(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login(user.email)
         url = 'http://test.org/audio.mp3'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -494,11 +494,11 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_no_open_graph_image(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login(user.email)
         url = 'http://test.org/foo.html'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -522,11 +522,11 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_open_graph_image_missing_content(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login(user.email)
         url = 'http://test.org/foo.html'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -551,11 +551,11 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_no_content_type_header(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login(user.email)
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
-            msg_id = self.send_stream_message(email, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -580,8 +580,8 @@ class PreviewTestCase(ZulipTestCase):
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish'):
             msg_id = self.send_personal_message(
-                self.example_email('hamlet'),
-                self.example_email('cordelia'),
+                self.example_user('hamlet'),
+                self.example_user('cordelia'),
                 content=url,
             )
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -611,8 +611,8 @@ class PreviewTestCase(ZulipTestCase):
         error_url = 'http://test.org/x'
         with mock.patch('zerver.lib.actions.queue_json_publish'):
             msg_id = self.send_personal_message(
-                self.example_email('hamlet'),
-                self.example_email('cordelia'),
+                self.example_user('hamlet'),
+                self.example_user('cordelia'),
                 content=error_url,
             )
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -640,8 +640,8 @@ class PreviewTestCase(ZulipTestCase):
         url = 'http://test.org/'
         with mock.patch('zerver.lib.actions.queue_json_publish'):
             msg_id = self.send_personal_message(
-                self.example_email('hamlet'),
-                self.example_email('cordelia'),
+                self.example_user('hamlet'),
+                self.example_user('cordelia'),
                 content=url,
             )
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -670,8 +670,8 @@ class PreviewTestCase(ZulipTestCase):
         url = 'https://www.youtube.com/watch?v=eSJTXC7Ixgg'
         with mock.patch('zerver.lib.actions.queue_json_publish'):
             msg_id = self.send_personal_message(
-                self.example_email('hamlet'),
-                self.example_email('cordelia'),
+                self.example_user('hamlet'),
+                self.example_user('cordelia'),
                 content=url,
             )
         msg = Message.objects.select_related("sender").get(id=msg_id)

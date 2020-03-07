@@ -957,7 +957,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         not long-term idle; we fake it, though, in the sense that the user should
         not have received the message in the first place"""
         self.make_stream('public_stream')
-        message_id = self.send_stream_message("iago@zulip.com", "public_stream", "test")
+        sender = self.example_user('iago')
+        message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {'message_id': message_id}
         with mock.patch('zerver.lib.push_notifications.logger.error') as mock_logger, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
@@ -977,7 +978,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.subscribe(self.user_profile, 'public_stream')
         do_soft_deactivate_users([self.user_profile])
 
-        message_id = self.send_stream_message("iago@zulip.com", "public_stream", "test")
+        sender = self.example_user('iago')
+        message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {
             'message_id': message_id,
             'trigger': 'stream_push_notify',
@@ -1136,8 +1138,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_personal_message(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_personal_message(
-            self.sender.email,
-            user_profile.email,
+            self.sender,
+            user_profile,
             'Content of personal message',
         )
         message = Message.objects.get(id=message_id)
@@ -1170,8 +1172,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_huddle_message(self, mock_push_notifications: mock.MagicMock) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_huddle_message(
-            self.sender.email,
-            [self.example_email('othello'), self.example_email('cordelia')])
+            self.sender,
+            [self.example_user('othello'), self.example_user('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
         payload = get_message_payload_apns(user_profile, message)
@@ -1306,8 +1308,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_redacted_content(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_huddle_message(
-            self.sender.email,
-            [self.example_email('othello'), self.example_email('cordelia')])
+            self.sender,
+            [self.example_user('othello'), self.example_user('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
         payload = get_message_payload_apns(user_profile, message)
@@ -1756,7 +1758,7 @@ class TestClearOnRead(ZulipTestCase):
         hamlet.save()
         stream = self.subscribe(hamlet, "Denmark")
 
-        message_ids = [self.send_stream_message(self.example_email("iago"),
+        message_ids = [self.send_stream_message(self.example_user("iago"),
                                                 stream.name,
                                                 "yo {}".format(i))
                        for i in range(n_msgs)]

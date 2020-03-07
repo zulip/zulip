@@ -462,39 +462,35 @@ class ZulipTestCase(TestCase):
         )
         return [cast(str, get_display_recipient(sub.recipient)) for sub in subs]
 
-    def send_personal_message(self, from_email: str, to_email: str, content: str="test content",
-                              sender_realm: str="zulip",
+    def send_personal_message(self, from_user: UserProfile, to_user: UserProfile, content: str="test content",
                               sending_client_name: str="test suite") -> int:
-        sender = get_user(from_email, get_realm(sender_realm))
-
-        recipient_list = [to_email]
+        recipient_list = [to_user.email]
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
         return check_send_message(
-            sender, sending_client, 'private', recipient_list, None,
+            from_user, sending_client, 'private', recipient_list, None,
             content
         )
 
-    def send_huddle_message(self, from_email: str, to_emails: List[str], content: str="test content",
-                            sender_realm: str="zulip",
+    def send_huddle_message(self,
+                            from_user: UserProfile,
+                            to_users: List[UserProfile],
+                            content: str="test content",
                             sending_client_name: str="test suite") -> int:
-        sender = get_user(from_email, get_realm(sender_realm))
-
+        to_emails = [u.email for u in to_users]
         assert(len(to_emails) >= 2)
 
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
         return check_send_message(
-            sender, sending_client, 'private', to_emails, None,
+            from_user, sending_client, 'private', to_emails, None,
             content
         )
 
-    def send_stream_message(self, sender_email: str, stream_name: str, content: str="test content",
-                            topic_name: str="test", sender_realm: str="zulip",
+    def send_stream_message(self, sender: UserProfile, stream_name: str, content: str="test content",
+                            topic_name: str="test",
                             recipient_realm: Optional[Realm]=None,
                             sending_client_name: str="test suite") -> int:
-        sender = get_user(sender_email, get_realm(sender_realm))
-
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
         return check_send_stream_message(
