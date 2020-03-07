@@ -26,7 +26,9 @@ exports.email_for_user_settings = function (person) {
         return;
     }
 
-    if (page_params.is_admin && person.delivery_email) {
+    if (page_params.is_admin && person.delivery_email &&
+            page_params.realm_email_address_visibility ===
+            settings_config.email_address_visibility_values.admins_only.code) {
         return person.delivery_email;
     }
 

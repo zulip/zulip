@@ -867,8 +867,9 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     else:
         user_profile.save(update_fields=["delivery_email"])
 
-    # We notify just the target user (and eventually org admins) about
-    # their new delivery email, since that field is private.
+    # We notify just the target user (and eventually org admins, only
+    # when email_address_visibility=EMAIL_ADDRESS_VISIBILITY_ADMINS)
+    # about their new delivery email, since that field is private.
     payload = dict(user_id=user_profile.id,
                    delivery_email=new_email)
     event = dict(type='realm_user', op='update', person=payload)

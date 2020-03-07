@@ -408,7 +408,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id
     the server to compute this for us.
     '''
     realm = user_profile.realm
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False

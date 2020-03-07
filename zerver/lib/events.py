@@ -785,8 +785,8 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
     # handling perspective to do it before contacting Tornado
     check_supported_events_narrow_filter(narrow)
 
-    if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
-        # If email addresses are only available to administrators,
+    if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        # If real email addresses are not available to the user, their
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
 
