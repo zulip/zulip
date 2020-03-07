@@ -715,15 +715,16 @@ def add_reaction(client, message_id):
 @openapi_test_function("/messages/{message_id}/reactions:delete")
 def remove_reaction(client, message_id):
     # type: (Client, int) -> None
+    # {code_example|start}
+    # Remove an emoji reaction
     request = {
         'message_id': str(message_id),
         'emoji_name': 'octopus',
-        'reaction_type': 'unicode_emoji'
     }
 
     result = client.remove_reaction(request)
-
-    assert result['result'] == 'success'
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/messages/{message_id}/reactions', 'delete', '200')
 
 def test_nonexistent_stream_error(client):
     # type: (Client) -> None
