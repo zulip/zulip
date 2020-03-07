@@ -323,8 +323,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
                       context={'user_profile': user_profile,
                                'page_params': page_params,
                                'csp_nonce': csp_nonce,
-                               'show_debug':
-                               settings.DEBUG and ('show_debug' in request.GET),
                                'search_pills_enabled': settings.SEARCH_PILLS_ENABLED,
                                'show_invites': show_invites,
                                'show_add_streams': show_add_streams,
