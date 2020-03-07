@@ -911,7 +911,7 @@ paths:
         description: The ID of the message from which you want to delete the emoji reaction.
         schema:
           type: integer
-        example: 42
+        example: 41
         required: true
       - name: emoji_name
         in: query
@@ -922,29 +922,35 @@ paths:
                      reveal three icons on the right, then click the smiley face icon.
                      Images of available reaction emojis appear. Hover over the emoji
                      you want, and note that emoji's text name.
+
+                     Ignored if emoji_code is also passed.
         schema:
           type: string
-        example: '**:slight smile:**'
-        required: true
+        example: 'octopus'
+        required: false
       - name: emoji_code
         in: query
         description: |
-                     An encoded version of the unicode codepoint for the emoji.
-                     Should be passed when adding a vote to an existing emoji reaction,
-                     or order to handle unlikely corner cases where the emoji name to
-                     codepoint mapping has changed since the first reaction was added.
+                     Alternative to emoji_name for expressing which emoji to remove.
+                     An encoded version of the unicode codepoint for the emoji
+                     you'd like to remove from the message.
+
+                     Recommended over using `emoji_name` for Zulip apps
+                     because this more robustly handles changes in the mapping
+                     between user-facing names and aliases for emoji (which change from
+                     time to time) and their unicode codepoints.
         schema:
           type: string
-        example: '**foo**'
+        example: '1f419'
         required: false
       - name: reaction_type
         in: query
         description: |
-                     If you are reacting with a [custom emoji](/help/add-custom-emoji),
+                     When removing a reaction with a [custom emoji](/help/add-custom-emoji),
                      set `reaction_type` to `realm_emoji`.
         schema:
           type: string
-        example: '**realm_emoji**'
+        example: 'unicode_emoji'
         required: false
       responses:
         '200':
@@ -954,15 +960,23 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
-                - properties:
-                    rendered:
-                      type: string
-                      description: The rendered HTML.
+                - example:
+                      {
+                          "result": "success",
+                          "msg": ""
+                      }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
                 - example:
                     {
-                        "msg": "",
-                        "rendered": "<p><strong>foo</strong></p>",
-                        "result": "success"
+                        "result": "error",
+                        "msg": "Invalid message(s)",
+                        "code": "BAD_REQUEST"
                     }
   /user_uploads:
     post:

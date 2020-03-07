@@ -4,10 +4,10 @@ from functools import wraps
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.models import Client, UserPresence, UserGroup, get_realm
+from zerver.models import Client, Message, UserPresence, UserGroup, get_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.events import do_events_register
-from zerver.lib.actions import update_user_presence, do_add_realm_filter
+from zerver.lib.actions import update_user_presence, do_add_realm_filter, do_add_reaction
 
 GENERATOR_FUNCTIONS = dict()  # type: Dict[str, Callable[..., Dict[Any, Any]]]
 REGISTERED_GENERATOR_FUNCTIONS = set()  # type: Set[str]
@@ -62,6 +62,21 @@ def iago_message_id() -> Dict[str, int]:
     return {
         "message_id": helpers.send_stream_message(helpers.example_user("iago"), "Denmark")
     }
+
+@openapi_param_value_generator(["/messages/{message_id}/reactions:delete"])
+def add_emoji_to_message() -> Dict[str, List[Dict[None, None]]]:
+    user_profile = helpers.example_user('iago')
+
+    # from OpenAPI format data in zulip.yaml
+    message_id = 41
+    emoji_name = 'octopus'
+    emoji_code = '1f419'
+    reaction_type = 'unicode_emoji'
+
+    message = Message.objects.select_related().get(id=message_id)
+    do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
+
+    return {}
 
 @openapi_param_value_generator(["/messages/flags:post"])
 def update_flags_message_ids() -> Dict[str, List[int]]:
