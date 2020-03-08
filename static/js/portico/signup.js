@@ -40,9 +40,9 @@ $(function () {
             // is created.
             element.next('.help-inline.alert.alert-error').remove();
             if (element.next().is('label[for="' + element.attr('id') + '"]')) {
-                error.insertAfter(element.next()).addClass('help-inline alert alert-error');
+                error.insertAfter(element.next()).addClass('help-inline text-error');
             } else {
-                error.insertAfter(element).addClass('help-inline alert alert-error');
+                error.insertAfter(element).addClass('help-inline text-error');
             }
         },
         highlight: highlight('error'),
