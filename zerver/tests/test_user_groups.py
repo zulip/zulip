@@ -423,7 +423,6 @@ class UserGroupAPITestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            sender=sender.email,
             client='test suite',
             topic='whatever',
             content=content_with_group_mention,
