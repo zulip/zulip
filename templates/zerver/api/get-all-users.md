@@ -54,9 +54,9 @@ You may pass the `client_gravatar` query parameter as follows:
 
 #### Return values
 
-* `members`: A list of dictionaries where each dictionary contains information
-  about a particular user or bot.
-    * `email`: The email address of the user or bot..
+* `members`: A list of dictionaries, each containing the details for
+  one of the users in the organization.
+    * `email`: The email address of the user or bot.
     * `is_bot`: A boolean specifying whether the user is a bot or not.
     * `avatar_url`: URL to the user's gravatar. `None` if the `client_gravatar`
       query paramater was set to `True`.
