@@ -55,56 +55,32 @@ import ujson
 
 class DecoratorTestCase(TestCase):
     def test_get_client_name(self) -> None:
-        class Request:
-            def __init__(self, GET: Dict[str, str], POST: Dict[str, str], META: Dict[str, str]) -> None:
-                self.GET = GET
-                self.POST = POST
-                self.META = META
+        req = HostRequestMock()
+        self.assertEqual(get_client_name(req), 'Unspecified')
 
-        req = Request(
-            GET=dict(),
-            POST=dict(),
-            META=dict(),
-        )
+        req.META['HTTP_USER_AGENT'] = 'ZulipElectron/4.0.3 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36'
+        self.assertEqual(get_client_name(req), 'ZulipElectron')
 
-        self.assertEqual(get_client_name(req, is_browser_view=True), 'website')
-        self.assertEqual(get_client_name(req, is_browser_view=False), 'Unspecified')
+        req.META['HTTP_USER_AGENT'] = 'ZulipDesktop/0.4.4 (Mac)'
+        self.assertEqual(get_client_name(req), 'ZulipDesktop')
 
-        req = Request(
-            GET=dict(),
-            POST=dict(),
-            META=dict(HTTP_USER_AGENT='Mozilla/bla bla bla'),
-        )
+        req.META['HTTP_USER_AGENT'] = 'ZulipMobile/26.22.145 (Android 10)'
+        self.assertEqual(get_client_name(req), 'ZulipMobile')
 
-        self.assertEqual(get_client_name(req, is_browser_view=True), 'website')
-        self.assertEqual(get_client_name(req, is_browser_view=False), 'Mozilla')
+        req.META['HTTP_USER_AGENT'] = 'ZulipMobile/26.22.145 (iOS 13.3.1)'
+        self.assertEqual(get_client_name(req), 'ZulipMobile')
 
-        req = Request(
-            GET=dict(),
-            POST=dict(),
-            META=dict(HTTP_USER_AGENT='ZulipDesktop/bla bla bla'),
-        )
+        # TODO: This should ideally be Firefox.
+        req.META['HTTP_USER_AGENT'] = 'Mozilla/5.0 (X11; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/73.0'
+        self.assertEqual(get_client_name(req), 'Mozilla')
 
-        self.assertEqual(get_client_name(req, is_browser_view=True), 'ZulipDesktop')
-        self.assertEqual(get_client_name(req, is_browser_view=False), 'ZulipDesktop')
+        # TODO: This should ideally be Chrome.
+        req.META['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.43 Safari/537.36'
+        self.assertEqual(get_client_name(req), 'Mozilla')
 
-        req = Request(
-            GET=dict(),
-            POST=dict(),
-            META=dict(HTTP_USER_AGENT='ZulipMobile/bla bla bla'),
-        )
-
-        self.assertEqual(get_client_name(req, is_browser_view=True), 'ZulipMobile')
-        self.assertEqual(get_client_name(req, is_browser_view=False), 'ZulipMobile')
-
-        req = Request(
-            GET=dict(client='fancy phone'),
-            POST=dict(),
-            META=dict(),
-        )
-
-        self.assertEqual(get_client_name(req, is_browser_view=True), 'fancy phone')
-        self.assertEqual(get_client_name(req, is_browser_view=False), 'fancy phone')
+        # TODO: This should ideally be Mobile Safari if we had better user-agent parsing.
+        req.META['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Mobile Safari/537.36'
+        self.assertEqual(get_client_name(req), 'Mozilla')
 
     def test_REQ_aliases(self) -> None:
 
