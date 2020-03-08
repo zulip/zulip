@@ -227,7 +227,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
                 {% endif %}
                 <div class="register-button-box">
-                    <button class="register-button" type="submit">{{ _('Sign up') }}</button>
+                    <button class="register-button" id="user-register-button" type="submit" disabled>{{ _('Sign up') }}</button>
                     <input type="hidden" name="next" value="{{ next }}" />
                 </div>
             </div>

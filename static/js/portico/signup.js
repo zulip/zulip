@@ -196,4 +196,12 @@ $(function () {
     $("body").on("click", "#choose_email .choose-email-box", function () {
         this.parentNode.submit();
     });
+
+    document.getElementById('id_terms').checked = false;
+
+    $('#id_terms').on('change', function () {
+        const isChecked = this.checked;
+        document.getElementById('user-register-button').disabled = !isChecked;
+        document.getElementById('user-register-button').style.opacity = !isChecked ? 0.6 : 1;
+    });
 });
