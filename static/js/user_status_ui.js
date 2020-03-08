@@ -18,8 +18,14 @@ exports.open_overlay = function () {
     const old_status_text = user_status.get_status_text(user_id);
     const field = exports.input_field();
     field.val(old_status_text);
-    field.select();
-    field.focus();
+
+    // The timeout of 200ms here corresponds to the 0.2s transition in
+    // app_components.scss:279, which also animates visibility. The timeout
+    // exists because visibility:hidden elements can't be focused by JS.
+    setTimeout(() => {
+        field.select();
+        field.focus();
+    }, 200);
     exports.toggle_clear_message_button();
 
     const button = exports.submit_button();
