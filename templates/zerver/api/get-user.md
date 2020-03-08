@@ -33,8 +33,8 @@ You may pass the `client_gravatar` or `include_custom_profile_fields` query para
 
 #### Return values
 
-* `members`: A list with a single dictionary that contains information
-  about a particular user or bot.
+* `user`: A dictionary that contains information about a particular user
+          or bot.
     * `email`: The email address of the user or bot.
     * `is_bot`: A boolean specifying whether the user is a bot or not.
     * `avatar_url`: URL to the user's gravatar. `None` if the `client_gravatar`

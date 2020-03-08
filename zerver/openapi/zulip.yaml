@@ -1171,17 +1171,15 @@ paths:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
                 - properties:
-                    members:
-                      type: array
-                      description: A list `member` containing a single object with
-                        details of a user in the realm (like their email, name,
-                        avatar, user type...).
+                    user:
+                      type: object
+                      description: A dictionary with the details of a user in the realm
+                       (like their email, name, avatar, user type...).
                 - example:
                     {
                        "msg": "",
                        "result": "success",
-                       "members": [
-                          {
+                       "user": {
                              "date_joined": "2019-10-20T07:50:53.729659+00:00",
                              "full_name": "King Hamlet",
                              "is_guest": false,
@@ -1223,7 +1221,8 @@ paths:
                              "is_active": true,
                              "email": "hamlet@zulip.com"
                           }
-                       ]
+
+
                     }
 
     patch:

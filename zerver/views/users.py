@@ -416,11 +416,21 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id
     if user_id is not None:
         target_user = access_user_by_id(user_profile, user_id, allow_deactivated=True,
                                         read_only=True)
+        key = "user"
+    else:
+        key = "members"
 
     members = get_raw_user_data(realm, user_profile, client_gravatar=client_gravatar,
                                 target_user=target_user,
                                 include_custom_profile_fields=include_custom_profile_fields)
-    return json_success({'members': members.values()})
+
+    data = None  # type: Union[List[Dict[str, str]], Dict[str, str], None]
+    if user_id is not None:
+        data = members[int(user_id)]
+    else:
+        data = [members[k] for k in members]
+
+    return json_success({key: data})
 
 @require_realm_admin
 @has_request_variables

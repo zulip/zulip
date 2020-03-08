@@ -421,16 +421,16 @@ class RealmTest(ZulipTestCase):
         # Check normal user cannot access email
         result = self.api_get(cordelia.delivery_email, "/api/v1/users/%s" % (hamlet.id,))
         self.assert_json_success(result)
-        self.assertEqual(result.json()['members'][0]['email'],
+        self.assertEqual(result.json()['user']['email'],
                          'user%s@zulip.testserver' % (hamlet.id,))
-        self.assertEqual(result.json()['members'][0].get('delivery_email'), None)
+        self.assertEqual(result.json()['user'].get('delivery_email'), None)
 
         # Check administrator gets delivery_email with EMAIL_ADDRESS_VISIBILITY_ADMINS
         result = self.api_get(user_profile.delivery_email, "/api/v1/users/%s" % (hamlet.id,))
         self.assert_json_success(result)
-        self.assertEqual(result.json()['members'][0]['email'],
+        self.assertEqual(result.json()['user']['email'],
                          'user%s@zulip.testserver' % (hamlet.id,))
-        self.assertEqual(result.json()['members'][0].get('delivery_email'),
+        self.assertEqual(result.json()['user'].get('delivery_email'),
                          hamlet.delivery_email)
 
         req = dict(email_address_visibility = ujson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY))
@@ -446,9 +446,9 @@ class RealmTest(ZulipTestCase):
         # EMAIL_ADDRESS_VISIBILITY_NOBODY
         result = self.api_get(user_profile.delivery_email, "/api/v1/users/%s" % (hamlet.id,))
         self.assert_json_success(result)
-        self.assertEqual(result.json()['members'][0]['email'],
+        self.assertEqual(result.json()['user']['email'],
                          'user%s@zulip.testserver' % (hamlet.id,))
-        self.assertEqual(result.json()['members'][0].get('delivery_email'), None)
+        self.assertEqual(result.json()['user'].get('delivery_email'), None)
 
     def test_change_stream_creation_policy(self) -> None:
         # We need an admin user.
