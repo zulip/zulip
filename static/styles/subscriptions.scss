@@ -1018,17 +1018,34 @@ ul.grey-box {
 
 @media (max-width: 1033px) {
     #search_stream_name {
-        display: none;
+        // display: none;
+        width: 35vw;
+        position: absolute;
+        left: 1vw;
+        top: 3vh;
     }
 
     .search-container {
         text-align: center;
+        height: 5vh;
     }
 
     .subscriber_list_settings input {
         float: left;
         margin: 0px 5px 0px 0px;
         width: calc(50% - 45px);
+    }
+}
+
+@media (max-width: 800px) {
+    #search_stream_name {
+        width: 34vw;
+        top: 4vh;
+    }
+
+    .search-container {
+        text-align: center;
+        height: 7vh;
     }
 }
 
@@ -1094,6 +1111,18 @@ ul.grey-box {
     }
 }
 
+@media (max-width: 450px) {
+    .search-container {
+        text-align: center;
+        height: 9vh;
+    }
+
+    #search_stream_name {
+        width: 90vw;
+        top: 6vh;
+    }
+}
+
 @media (max-width: 367px) {
     #subscription_overlay .subscription_settings .button-group {
         margin-top: 10px;
@@ -1110,5 +1139,15 @@ ul.grey-box {
 @media (max-width: 350px) {
     .stream_row .description {
         display: none;
+    }
+
+    .search-container {
+        text-align: center;
+        height: 10vh;
+    }
+
+    #search_stream_name {
+        width: 88vw;
+        top: 7vh;
     }
 }
