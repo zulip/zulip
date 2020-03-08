@@ -287,11 +287,12 @@ html {
     .terms-of-service .text-error {
         position: relative;
         display: block;
-        top: -5px;
+        top: 20px;
         padding: 0;
         height: 0;
+        left: 1px;
 
-        font-size: 0.7em;
+        font-size: 0.75em;
         font-weight: 600;
     }
 }
