@@ -1165,6 +1165,7 @@ class StreamMessagesTest(ZulipTestCase):
                                                            "content": "Everyone knows Iago rules",
                                                            "forged": "true"})
         self.assert_json_success(result)
+
         do_change_is_admin(user_profile, False, 'api_super_user')
         result = self.api_post(email, "/api/v1/messages", {"type": "stream",
                                                            "to": "Verona",
@@ -1907,40 +1908,54 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a mirrored huddle message works
         """
-        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
-        result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": self.mit_email("sipbtest"),
-                                                     "content": "Test message",
-                                                     "client": "zephyr_mirror",
-                                                     "to": ujson.dumps([self.mit_email("starnine"),
-                                                                        self.mit_email("espuser")])},
-                                  subdomain="zephyr")
+        result = self.api_post(self.mit_email("starnine"),
+                               "/json/messages", {"type": "private",
+                                                  "sender": self.mit_email("sipbtest"),
+                                                  "content": "Test message",
+                                                  "client": "zephyr_mirror",
+                                                  "to": ujson.dumps([self.mit_email("starnine"),
+                                                                     self.mit_email("espuser")])},
+                               subdomain="zephyr")
         self.assert_json_success(result)
 
     def test_mirrored_personal(self) -> None:
         """
         Sending a mirrored personal message works
         """
+        result = self.api_post(self.mit_email("starnine"),
+                               "/json/messages", {"type": "private",
+                                                  "sender": self.mit_email("sipbtest"),
+                                                  "content": "Test message",
+                                                  "client": "zephyr_mirror",
+                                                  "to": self.mit_email("starnine")},
+                               subdomain="zephyr")
+        self.assert_json_success(result)
+
+    def test_mirrored_personal_browser(self) -> None:
+        """
+        Sending a mirrored personal message via the browser should not work.
+        """
         self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
-        result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": self.mit_email("sipbtest"),
-                                                     "content": "Test message",
-                                                     "client": "zephyr_mirror",
-                                                     "to": self.mit_email("starnine")},
-                                  subdomain="zephyr")
+        result = self.client_post("/json/messages",
+                                  {"type": "private",
+                                   "sender": self.mit_email("sipbtest"),
+                                   "content": "Test message",
+                                   "client": "zephyr_mirror",
+                                   "to": self.mit_email("starnine")},
+                               subdomain="zephyr")
         self.assert_json_success(result)
 
     def test_mirrored_personal_to_someone_else(self) -> None:
         """
         Sending a mirrored personal message to someone else is not allowed.
         """
-        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
-        result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": self.mit_email("sipbtest"),
-                                                     "content": "Test message",
-                                                     "client": "zephyr_mirror",
-                                                     "to": self.mit_email("espuser")},
-                                  subdomain="zephyr")
+        result = self.api_post(self.mit_email("starnine"), "/api/v1/messages",
+                               {"type": "private",
+                                "sender": self.mit_email("sipbtest"),
+                                "content": "Test message",
+                                "client": "zephyr_mirror",
+                                "to": self.mit_email("espuser")},
+                               subdomain="zephyr")
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_duplicated_mirrored_huddle(self) -> None:
@@ -1955,13 +1970,15 @@ class MessagePOSTTest(ZulipTestCase):
                                   self.mit_email("starnine")])}
 
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
-            self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
-            result1 = self.client_post("/json/messages", msg,
-                                       subdomain="zephyr")
+            result1 = self.api_post(self.mit_email("starnine"), "/api/v1/messages", msg,
+                                    subdomain="zephyr")
+            self.assert_json_success(result1)
+
         with mock.patch('DNS.dnslookup', return_value=[['espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash']]):
-            self.login(self.mit_email("espuser"), realm=get_realm("zephyr"))
-            result2 = self.client_post("/json/messages", msg,
-                                       subdomain="zephyr")
+            result2 = self.api_post(self.mit_email("espuser"), "/api/v1/messages", msg,
+                                    subdomain="zephyr")
+            self.assert_json_success(result2)
+
         self.assertEqual(ujson.loads(result1.content)['id'],
                          ujson.loads(result2.content)['id'])
 
@@ -2057,35 +2074,35 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "Unknown organization 'non-existing'")
 
     def test_send_message_when_sender_is_not_set(self) -> None:
-        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
-        result = self.client_post("/json/messages", {"type": "private",
-                                                     "content": "Test message",
-                                                     "client": "zephyr_mirror",
-                                                     "to": self.mit_email("starnine")},
-                                  subdomain="zephyr")
+        result = self.api_post(self.mit_email("starnine"), "/api/v1/messages",
+                               {"type": "private",
+                                "content": "Test message",
+                                "client": "zephyr_mirror",
+                                "to": self.mit_email("starnine")},
+                               subdomain="zephyr")
         self.assert_json_error(result, "Missing sender")
 
     def test_send_message_as_not_superuser_when_type_is_not_private(self) -> None:
-        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
-        result = self.client_post("/json/messages", {"type": "not-private",
-                                                     "sender": self.mit_email("sipbtest"),
-                                                     "content": "Test message",
-                                                     "client": "zephyr_mirror",
-                                                     "to": self.mit_email("starnine")},
-                                  subdomain="zephyr")
+        result = self.api_post(self.mit_email("starnine"), "/api/v1/messages",
+                               {"type": "not-private",
+                                "sender": self.mit_email("sipbtest"),
+                                "content": "Test message",
+                                "client": "zephyr_mirror",
+                                "to": self.mit_email("starnine")},
+                               subdomain="zephyr")
         self.assert_json_error(result, "User not authorized for this query")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
     def test_send_message_create_mirrored_message_user_returns_invalid_input(
             self, create_mirrored_message_users_mock: Any) -> None:
         create_mirrored_message_users_mock.side_effect = InvalidMirrorInput()
-        self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
-        result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": self.mit_email("sipbtest"),
-                                                     "content": "Test message",
-                                                     "client": "zephyr_mirror",
-                                                     "to": self.mit_email("starnine")},
-                                  subdomain="zephyr")
+        result = self.api_post(self.mit_email("starnine"), "/api/v1/messages",
+                               {"type": "private",
+                                "sender": self.mit_email("sipbtest"),
+                                "content": "Test message",
+                                "client": "zephyr_mirror",
+                                "to": self.mit_email("starnine")},
+                               subdomain="zephyr")
         self.assert_json_error(result, "Invalid mirrored message")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
@@ -2093,16 +2110,15 @@ class MessagePOSTTest(ZulipTestCase):
             self, create_mirrored_message_users_mock: Any) -> None:
         create_mirrored_message_users_mock.return_value = mock.Mock()
         user = self.mit_user("starnine")
-        email = user.email
         user.realm.string_id = 'notzephyr'
         user.realm.save()
-        self.login(email, realm=get_realm("notzephyr"))
-        result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": self.mit_email("sipbtest"),
-                                                     "content": "Test message",
-                                                     "client": "zephyr_mirror",
-                                                     "to": email},
-                                  subdomain="notzephyr")
+        result = self.api_post(user.email, "/api/v1/messages",
+                               {"type": "private",
+                                "sender": self.mit_email("sipbtest"),
+                                "content": "Test message",
+                                "client": "zephyr_mirror",
+                                "to": user.email},
+                               subdomain="notzephyr")
         self.assert_json_error(result, "Zephyr mirroring is not allowed in this organization")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
@@ -2111,14 +2127,13 @@ class MessagePOSTTest(ZulipTestCase):
         create_mirrored_message_users_mock.return_value = mock.Mock()
         user = self.mit_user("starnine")
         user_id = user.id
-        user_email = user.email
-        self.login(user_email, realm=get_realm("zephyr"))
-        result = self.client_post("/json/messages", {"type": "private",
-                                                     "sender": self.mit_email("sipbtest"),
-                                                     "content": "Test message",
-                                                     "client": "zephyr_mirror",
-                                                     "to": ujson.dumps([user_id])},
-                                  subdomain="zephyr")
+        result = self.api_post(user.email, "/api/v1/messages",
+                               {"type": "private",
+                                "sender": self.mit_email("sipbtest"),
+                                "content": "Test message",
+                                "client": "zephyr_mirror",
+                                "to": ujson.dumps([user_id])},
+                               subdomain="zephyr")
         self.assert_json_error(result, "Mirroring not allowed with recipient user IDs")
 
     def test_send_message_irc_mirror(self) -> None:
