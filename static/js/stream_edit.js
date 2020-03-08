@@ -89,7 +89,9 @@ exports.open_edit_panel_empty = function () {
 function format_member_list_elem(email) {
     const person = people.get_by_email(email);
     return render_stream_member_list_entry({
-        name: person.full_name, email: email,
+        name: person.full_name,
+        user_id: person.user_id,
+        email: email,
         displaying_for_admin: page_params.is_admin,
     });
 }
@@ -563,7 +565,8 @@ exports.initialize = function () {
         e.preventDefault();
 
         const list_entry = $(e.target).closest("tr");
-        const principal = list_entry.children(".subscriber-email").text();
+        const target_user_id = parseInt(list_entry.attr("data-subscriber-id"), 10);
+        const principal = people.get_by_user_id(target_user_id).email;
         const settings_row = $(e.target).closest('.subscription_settings');
 
         const sub = get_sub_for_target(settings_row);
