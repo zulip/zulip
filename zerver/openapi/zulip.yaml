@@ -25,6 +25,49 @@ security:
 # Endpoint definitions
 #######################
 paths:
+  /fetch_api_key:
+    post:
+      description: Gather a token bound to a user account, to identify and
+        authenticate them when making operations in the API. This token must
+        be used as the password in the rest of the endpoints that require
+        Basic authentication.
+      operationId: zerver.views.auth.api_fetch_api_key
+      parameters:
+      - name: username
+        in: query
+        description: The email address for the user that owns the API key.
+        schema:
+          type: string
+        required: true
+      - name: password
+        in: query
+        schema:
+          type: string
+        description: The password for the account of the API key's owner.
+        required: true
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - required:
+                  - api_key
+                  - email
+                - properties:
+                    api_key:
+                      type: string
+                      example: c2hvdWxuJ3QgdSBiZSB3b3JraW5nPzsp
+                    email:
+                      description: The email address for the user that owns the API
+                        key.
+                      type: string
+                      example: iago@zulip.com
+                    msg:
+                      enum:
+                        - ''
   /dev_fetch_api_key:
     post:
       description: Gather a token bound to a user account, to identify and
@@ -1646,6 +1689,12 @@ paths:
   /users/me/subscriptions:
     get:
       description: Get information on every stream the user is subscribed to.
+
+      # operationId does not change operations in any way, but just helps developers
+      # in knowing which method will be called for the respective call was present.
+      # TODO: Add operationId attribute to all api endpoint descriptions.
+
+      operationId: zerver.views.streams.list_subscriptions_backend
       parameters:
       - name: include_subscribers
         in: query
@@ -1667,6 +1716,10 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
+                # Following command implies that 'subscriptions' key will definitely be
+                # available on '200' response of get api call /users/me/subscriptions
+                - required:
+                  - subscriptions
                 - properties:
                     subscriptions:
                       type: array
@@ -1869,6 +1922,7 @@ paths:
                     }
     patch:
       description: Update which streams you are are subscribed to.
+      operationId: zerver.views.streams.update_subscriptions_backend
       parameters:
         - name: delete
           in: query
@@ -1915,6 +1969,13 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
+                # Following command implies that following keys will definitely be
+                # available on '200' response of 'patch' api call /users/me/subscriptions
+                - required:
+                  - subscribed
+                  - not_subscribed
+                  - already_subscribed
+                  - removed
                 - properties:
                     subscribed:
                       type: object
@@ -2854,6 +2915,7 @@ paths:
   /streams/{stream_id}:
     delete:
       description: Delete the stream with the given ID.
+      operationId: zerver.views.streams.deactivate_stream_backend
       parameters:
       - name: stream_id
         in: path
@@ -2882,6 +2944,12 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonError'
+                - properties:
+                    msg:
+                    # Data type of msg value pair will always be string.
+                    # More clear for api users.
+                    #TODO: Add data types to all returned and given parameters.
+                      type: string
                 - example:
                     {
                         "code": "BAD_REQUEST",
@@ -2890,6 +2958,7 @@ paths:
                     }
     patch:
       description: Update the stream with the given ID.
+      operationId: zerver.views.streams.update_stream_backend
       parameters:
       - name: stream_id
         in: path
@@ -2916,7 +2985,7 @@ paths:
         required: false
       - name: is_private
         in: query
-        description: The new state of the stream.
+        description: The new privacy setting of the stream.
         schema:
           type: boolean
         example: true
@@ -2955,6 +3024,7 @@ paths:
           type: boolean
         example: true
         required: false
+
 
       responses:
         '200':
@@ -3254,6 +3324,11 @@ components:
     ApiKeyResponse:
       allOf:
       - $ref: '#/components/schemas/JsonSuccess'
+      # Following command implies that on successful /dev_fetch_api_key api_key
+      # and email keys will surely be present in the returned JSON.
+      - required:
+        - api_key
+        - email
       - properties:
           api_key:
             type: string
