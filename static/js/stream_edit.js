@@ -2,10 +2,22 @@ const render_settings_deactivation_stream_modal = require("../templates/settings
 const render_stream_member_list_entry = require('../templates/stream_member_list_entry.hbs');
 const render_subscription_settings = require('../templates/subscription_settings.hbs');
 const render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
+const settings_data = require("./settings_data");
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_uri(sub);
     hashchange.update_browser_history(hash);
+}
+
+function compare_by_email(a, b) {
+    if (a.delivery_email && b.delivery_email) {
+        return a.delivery_email.localeCompare(b.delivery_email);
+    }
+    return a.email.localeCompare(b.email);
+}
+
+function compare_by_name(a, b) {
+    return a.full_name.localeCompare(b.full_name);
 }
 
 exports.setup_subscriptions_tab_hash = function (tab_key_value) {
@@ -37,6 +49,12 @@ exports.is_sub_settings_active = function (sub) {
 exports.get_email_of_subscribers = function (subscribers) {
     return subscribers.map(function (user_id) {
         return people.get_by_user_id(user_id).email;
+    });
+};
+
+exports.get_person_from_subscribers = function (subscribers) {
+    return subscribers.map(function (user_id) {
+        return people.get_by_user_id(user_id);
     });
 };
 
@@ -86,11 +104,10 @@ exports.open_edit_panel_empty = function () {
     exports.setup_subscriptions_tab_hash(tab_key);
 };
 
-function format_member_list_elem(email) {
-    const person = people.get_by_email(email);
+function format_member_list_elem(person) {
     return render_stream_member_list_entry({
-        name: person.full_name, email: email,
-        displaying_for_admin: page_params.is_admin,
+        name: person.full_name, email: settings_data.email_for_user_settings(person),
+        displaying_for_admin: page_params.is_admin, show_email: settings_data.show_email(),
     });
 }
 
@@ -135,18 +152,25 @@ exports.remove_user_from_stream = function (user_email, sub, success, failure) {
     });
 };
 
-exports.sort_but_pin_current_user_on_top = function (emails) {
-    if (emails === undefined) {
-        blueslip.error("Undefined emails are passed to function sort_but_pin_current_user_on_top");
+exports.sort_but_pin_current_user_on_top = function (users) {
+    if (users === undefined) {
+        blueslip.error("Undefined users are passed to function sort_but_pin_current_user_on_top");
         return;
     }
-    // Set current user top of subscription list, if subscribed.
-    if (emails.includes(people.my_current_email())) {
-        emails.splice(emails.indexOf(people.my_current_email()), 1);
-        emails.sort();
-        emails.unshift(people.my_current_email());
+
+    const my_user = people.get_by_email(people.my_current_email());
+    let compare_function;
+    if (settings_data.show_email()) {
+        compare_function = compare_by_email;
     } else {
-        emails.sort();
+        compare_function = compare_by_name;
+    }
+    if (users.includes(my_user)) {
+        users.splice(users.indexOf(my_user), 1);
+        users.sort(compare_function);
+        users.unshift(my_user);
+    } else {
+        users.sort(compare_function);
     }
 };
 
@@ -170,10 +194,10 @@ function show_subscription_settings(sub_row) {
     const list = get_subscriber_list(sub_settings);
     list.empty();
 
-    const emails = exports.get_email_of_subscribers(sub.subscribers);
-    exports.sort_but_pin_current_user_on_top(emails);
+    const users = exports.get_person_from_subscribers(sub.subscribers);
+    exports.sort_but_pin_current_user_on_top(users);
 
-    list_render.create(list, emails, {
+    list_render.create(list, users, {
         name: "stream_subscribers/" + stream_id,
         modifier: function (item) {
             return format_member_list_elem(item);
@@ -181,13 +205,14 @@ function show_subscription_settings(sub_row) {
         filter: {
             element: $("[data-stream-id='" + stream_id + "'] .search"),
             predicate: function (item, value) {
-                const person = people.get_by_email(item);
+                const person = item;
 
                 if (person) {
-                    const email = person.email.toLocaleLowerCase();
-                    const full_name = person.full_name.toLowerCase();
-
-                    return email.includes(value) || full_name.includes(value);
+                    if (person.email.toLocaleLowerCase().includes(value) &&
+                        settings_data.show_email()) {
+                        return true;
+                    }
+                    return person.full_name.toLowerCase().includes(value);
                 }
             },
         },

@@ -91,6 +91,8 @@ zrequire('message_store');
 zrequire('people');
 zrequire('starred_messages');
 zrequire('user_status');
+zrequire('subs');
+zrequire('stream_ui_updates');
 
 zrequire('server_events_dispatch');
 
@@ -236,6 +238,13 @@ const event_fixtures = {
         op: 'update',
         property: 'bot_creation_policy',
         value: 1,
+    },
+
+    realm__update__email_addresses_visibility: {
+        type: 'realm',
+        op: 'update',
+        property: 'email_address_visibility',
+        value: 3,
     },
 
     realm__update__disallow_disposable_email_addresses: {
@@ -933,6 +942,11 @@ with_overrides(function (override) {
 
     event = event_fixtures.realm__update__disallow_disposable_email_addresses;
     test_realm_boolean(event, 'realm_disallow_disposable_email_addresses');
+
+    event = event_fixtures.realm__update__email_addresses_visibility;
+    override('stream_ui_updates.update_subscribers_list', noop);
+    dispatch(event);
+    assert_same(page_params.realm_email_address_visibility, 3);
 
     event = event_fixtures.realm__update_notifications_stream_id;
     override('settings_org.render_notifications_stream_ui', noop);
