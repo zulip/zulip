@@ -51,6 +51,13 @@ import urllib
 def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     # If the key isn't valid, show the error message on the original URL
     confirmation = Confirmation.objects.filter(confirmation_key=confirmation_key).first()
+    # if the prereg user has status revoked the confirmation link should throw an error page
+    confirmation_status_obj = Confirmation.objects.get(confirmation_key=confirmation_key,
+                                                       type=confirmation.type)
+    prereg_user = confirmation_status_obj.content_object
+    revoked_value = confirmation_settings.STATUS_REVOKED
+    if prereg_user.status == revoked_value:
+        return render(request, "zerver/realm_reactivation_link_error.html", context={})
     if confirmation is None or confirmation.type not in [
             Confirmation.USER_REGISTRATION, Confirmation.INVITATION, Confirmation.REALM_CREATION]:
         return render_confirmation_key_error(
@@ -73,6 +80,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     key = request.POST['key']
     confirmation = Confirmation.objects.get(confirmation_key=key)
     prereg_user = confirmation.content_object
+    revoked_value = confirmation_settings.STATUS_REVOKED
+    if prereg_user.status == revoked_value:
+        return render(request, "zerver/realm_reactivation_link_error.html", context={})
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required

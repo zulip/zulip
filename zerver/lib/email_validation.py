@@ -199,7 +199,6 @@ def validate_email_not_already_in_realm(target_realm: Realm,
         such as the "invite" interface.
     '''
     error_dict = get_existing_user_errors(target_realm, {email}, verbose)
-
     # Loop through errors, the only key should be our email.
     for key, error_info in error_dict.items():
         assert key == email

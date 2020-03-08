@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 
 from mock import patch, MagicMock
 from zerver.lib.test_helpers import get_test_image_file, avatar_disk_path
@@ -1422,8 +1423,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
     # make sure users can't take a valid confirmation key from another
     # pathway and use it with the invitation url route
     def test_confirmation_key_of_wrong_type(self) -> None:
-        user = self.example_user('hamlet')
-        url = create_confirmation_link(user, 'host', Confirmation.USER_REGISTRATION)
+        email = self.nonreg_email("alice")
+        realm = get_realm('zulip')
+        inviter = UserProfile.objects.first()
+        prereg_user = PreregistrationUser.objects.create(
+            email=email, referred_by=inviter, realm=realm)
+        url = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
         registration_key = url.split('/')[-1]
 
         # Mainly a test of get_object_from_key, rather than of the invitation pathway
@@ -1432,7 +1437,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(cm.exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
 
         # Verify that using the wrong type doesn't work in the main confirm code path
-        email_change_url = create_confirmation_link(user, 'host', Confirmation.EMAIL_CHANGE)
+        email_change_url = create_confirmation_link(prereg_user, 'host', Confirmation.EMAIL_CHANGE)
         email_change_key = email_change_url.split('/')[-1]
         url = '/accounts/do_confirm/' + email_change_key
         result = self.client_get(url)
@@ -1440,8 +1445,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
                                          "confirmation link in the system."], result)
 
     def test_confirmation_expired(self) -> None:
-        user = self.example_user('hamlet')
-        url = create_confirmation_link(user, 'host', Confirmation.USER_REGISTRATION)
+        email = self.nonreg_email("alice")
+        realm = get_realm('zulip')
+        inviter = UserProfile.objects.first()
+        prereg_user = PreregistrationUser.objects.create(
+            email=email, referred_by=inviter, realm=realm)
+        url = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
         registration_key = url.split('/')[-1]
 
         conf = Confirmation.objects.filter(confirmation_key=registration_key).first()
@@ -1452,6 +1461,27 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         result = self.client_get(target_url)
         self.assert_in_success_response(["Whoops. The confirmation link has expired "
                                          "or been deactivated."], result)
+
+    def test_validate_email_not_already_in_realm(self) -> None:
+        email = self.nonreg_email("alice")
+        password = "password"
+        realm = get_realm('zulip')
+        inviter = UserProfile.objects.first()
+        prereg_user = PreregistrationUser.objects.create(
+            email=email, referred_by=inviter, realm=realm)
+
+        confirmation_link = create_confirmation_link(prereg_user, 'host', Confirmation.USER_REGISTRATION)
+        registration_key = confirmation_link.split('/')[-1]
+
+        url = "/accounts/register/"
+        self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
+        self.submit_reg_form_for_user(email, password, key=registration_key)
+
+        url = "/accounts/register/"
+        response = self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('django.contrib.auth.views.login') + '?email=' +
+                         urllib.parse.quote_plus(email))
 
 class InvitationsTestCase(InviteUserBase):
     def test_successful_get_open_invitations(self) -> None:
@@ -2497,11 +2527,8 @@ class UserSignUpTest(InviteUserBase):
              'terms': True,
              'full_name': "New Guy",
              'from_confirmation': '1'})
-        # We should get redirected back to the login page.
-        expected_url = ('/accounts/login/' + '?email=' +
-                        urllib.parse.quote_plus(email))
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], expected_url)
+        # Error page should be displayed
+        self.assertEqual(result.status_code, 200)
 
     def test_signup_with_multiple_default_stream_groups(self) -> None:
         # Check if user is subscribed to the streams of default

@@ -395,8 +395,11 @@ def process_new_human_user(user_profile: UserProfile,
     # inactive so we can keep track of the PreregistrationUser we
     # actually used for analytics
     if prereg_user is not None:
-        PreregistrationUser.objects.filter(email__iexact=user_profile.delivery_email).exclude(
-            id=prereg_user.id).update(status=0)
+        revoked_value = confirmation_settings.STATUS_REVOKED
+        PreregistrationUser.objects.filter(
+            email__iexact=user_profile.delivery_email).exclude(id=prereg_user.id)\
+            .update(status=revoked_value)
+
         if prereg_user.referred_by is not None:
             notify_invites_changed(user_profile)
     else:
@@ -5183,11 +5186,10 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
     active_value = confirmation_settings.STATUS_ACTIVE
     revoked_value = confirmation_settings.STATUS_REVOKED
-    
+
     lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
-    prereg_users = PreregistrationUser.objects.exclude(status=active_value).filter(
-        invited_at__gte=lowest_datetime,
-        referred_by__realm=user_profile.realm)
+    prereg_users = PreregistrationUser.objects.exclude(status=active_value).exclude(status=revoked_value)\
+        .filter(invited_at__gte=lowest_datetime, referred_by__realm=user_profile.realm)
 
     invites = []
 
