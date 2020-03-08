@@ -18,6 +18,7 @@ from zerver.lib.actions import (
     check_send_stream_message,
     create_mirror_user_if_needed,
     do_add_alert_words,
+    do_change_is_admin,
     do_change_stream_invite_only,
     do_change_stream_post_policy,
     do_claim_attachments,
@@ -1152,28 +1153,30 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertTrue(user_message.flags.mentioned)
 
     def test_stream_message_mirroring(self) -> None:
-        from zerver.lib.actions import do_change_is_admin
-        user_profile = self.example_user('iago')
+        user_profile = self.mit_user('starnine')
         email = user_profile.email
+        self.subscribe(user_profile, 'Verona')
 
         do_change_is_admin(user_profile, True, 'api_super_user')
         result = self.api_post(email, "/api/v1/messages", {"type": "stream",
                                                            "to": "Verona",
-                                                           "sender": self.example_email("cordelia"),
-                                                           "client": "test suite",
+                                                           "sender": self.mit_email("sipbtest"),
+                                                           "client": "zephyr_mirror",
                                                            "topic": "announcement",
                                                            "content": "Everyone knows Iago rules",
-                                                           "forged": "true"})
+                                                           "forged": "true"},
+                               subdomain="zephyr")
         self.assert_json_success(result)
 
         do_change_is_admin(user_profile, False, 'api_super_user')
         result = self.api_post(email, "/api/v1/messages", {"type": "stream",
                                                            "to": "Verona",
-                                                           "sender": self.example_email("cordelia"),
-                                                           "client": "test suite",
+                                                           "sender": self.mit_email("sipbtest"),
+                                                           "client": "zephyr_mirror",
                                                            "topic": "announcement",
                                                            "content": "Everyone knows Iago rules",
-                                                           "forged": "true"})
+                                                           "forged": "true"},
+                               subdomain="zephyr")
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_message_to_stream(self) -> None:
@@ -1942,7 +1945,7 @@ class MessagePOSTTest(ZulipTestCase):
                                    "content": "Test message",
                                    "client": "zephyr_mirror",
                                    "to": self.mit_email("starnine")},
-                               subdomain="zephyr")
+                                  subdomain="zephyr")
         self.assert_json_success(result)
 
     def test_mirrored_personal_to_someone_else(self) -> None:
@@ -2201,12 +2204,15 @@ class MessagePOSTTest(ZulipTestCase):
             payload = dict(
                 type="stream",
                 to=stream_name,
-                sender=sender_email,
                 client=client,
                 topic='whatever',
                 content='whatever',
                 forged=ujson.dumps(forged),
             )
+
+            # Only pass the 'sender' property when doing mirroring behavior.
+            if forged:
+                payload['sender'] = sender_email
 
             cordelia.is_api_super_user = False
             cordelia.save()
@@ -2245,7 +2251,6 @@ class MessagePOSTTest(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            sender=bot.email,
             client='test suite',
             topic='whatever',
             content='whatever',
@@ -2321,7 +2326,6 @@ class MessagePOSTTest(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            sender=sender.email,
             client='test suite',
             topic='whatever',
             content='whatever',

@@ -1411,6 +1411,8 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("Zephyr mirroring is not allowed in this organization"))
         sender = mirror_sender
     else:
+        if "sender" in request.POST:
+            return json_error(_("Invalid mirrored message"))
         sender = user_profile
 
     if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is None:

@@ -68,7 +68,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            sender=sender_email,
             client='test suite',
             topic='whatever',
             content='whatever',
@@ -126,7 +125,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            sender=sender_email,
             client='test suite',
             topic='whatever',
             content=content,
@@ -159,7 +157,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            sender=sender_email,
             client='test suite',
             topic='whatever',
             content=content,
@@ -189,7 +186,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            sender=sender_email,
             client='test suite',
             topic='whatever',
             content=content,
