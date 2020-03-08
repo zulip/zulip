@@ -140,8 +140,8 @@ run_test('basics', () => {
     const result = reactions.get_message_reactions(message);
     assert.equal(blueslip.get_test_logs('warn').length, 2);
     blueslip.clear_test_data();
-    assert(reactions.current_user_has_reacted_to_emoji(message, '263a', 'unicode_emoji'));
-    assert(!reactions.current_user_has_reacted_to_emoji(message, '1f641', 'unicode_emoji'));
+    assert(reactions.current_user_has_reacted_to_emoji(message, 'unicode_emoji,smile,263a'));
+    assert(!reactions.current_user_has_reacted_to_emoji(message, 'bogus'));
 
     result.sort(function (a, b) { return a.count - b.count; });
 
@@ -451,12 +451,8 @@ run_test('add_and_remove_reaction', () => {
     reaction_element.prop = function () {};
     reactions.add_reaction(alice_event);
 
-    assert(reaction_element.hasClass('reacted'));
-    blueslip.set_test_data('warn', 'Unknown user_id 8888 in reaction for message 1001');
-    blueslip.set_test_data('warn', 'Unknown user_id 9999 in reaction for message 1001');
     const result = reactions.get_message_reactions(message);
-    assert.equal(blueslip.get_test_logs('warn').length, 2);
-    blueslip.clear_test_data();
+    assert(reaction_element.hasClass('reacted'));
     const realm_emoji_data = result.filter(v => v.emoji_name === 'realm_emoji')[0];
 
     assert.equal(realm_emoji_data.count, 2);
@@ -465,7 +461,6 @@ run_test('add_and_remove_reaction', () => {
     // And then remove Alice's reaction.
     reactions.remove_reaction(alice_event);
     assert(!reaction_element.hasClass('reacted'));
-
 });
 
 run_test('with_view_stubs', () => {
@@ -660,6 +655,59 @@ run_test('error_handling', () => {
     assert.equal(blueslip.get_test_logs('error').length, 0);
 });
 
+run_test('get_name_for_alias', () => {
+    const name = reactions.get_name_for_alias(
+        message,
+        7,
+        ['grumble', 'frown', 'scowl']
+    );
+
+    assert.equal(name, 'frown');
+});
+
+message_store.get = () => message;
+
+run_test('remove spurious user', () => {
+    // get coverage for removing non-user (it should just
+    // silently fail)
+
+    const event = {
+        reaction_type: 'unicode_emoji',
+        emoji_name: 'frown',
+        emoji_code: '1f641',
+        message_id: message.id,
+        user: {
+            user_id: alice.user_id,
+        },
+    };
+
+    reactions.remove_reaction(event);
+});
+
+run_test('remove last user', () => {
+    function assert_names(names) {
+        assert.deepEqual(
+            reactions.get_message_reactions(message).map((r) => r.emoji_name),
+            names
+        );
+    }
+
+    assert_names(['smile', 'frown', 'inactive_realm_emoji', 'realm_emoji']);
+
+    const event = {
+        reaction_type: 'unicode_emoji',
+        emoji_name: 'frown',
+        emoji_code: '1f641',
+        message_id: message.id,
+        user: {
+            user_id: cali.user_id,
+        },
+    };
+    reactions.remove_reaction(event);
+
+    assert_names(['smile', 'inactive_realm_emoji', 'realm_emoji']);
+});
+
 run_test('local_reaction_id', () => {
     const reaction_info = {
         reaction_type: 'unicode_emoji',
@@ -705,4 +753,51 @@ run_test('process_reaction_click', () => {
         assert.equal(args.url, '/json/messages/1001/reactions');
         assert.deepEqual(args.data, expected_reaction_info);
     });
+});
+
+run_test('warnings', () => {
+    // Clean the slate
+    delete message.clean_reactions;
+    blueslip.set_test_data('warn', 'Unknown user_id 8888 in reaction for message 1001');
+    blueslip.set_test_data('warn', 'Unknown user_id 9999 in reaction for message 1001');
+    reactions.get_message_reactions(message);
+});
+
+run_test('code coverage', () => {
+    /*
+        We just silently fail in a few places in the reaction
+        code, since events may come for messages that we don't
+        have yet, or reactions may be for deactivated users, etc.
+
+        Here we just cheaply ensure 100% line coverage to make
+        it easy to enforce 100% coverage for more significant
+        code additions.
+    */
+    message_store.get = (id) => {
+        assert.equal(id, 42);
+        return {
+            reactions: [],
+        };
+    };
+
+    reactions.remove_reaction({
+        message_id: 42,
+        user: {},
+    });
+});
+
+run_test('duplicates', () => {
+    const dup_reaction_message = {
+        id: 1001,
+        reactions: [
+            {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '263a'},
+            {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '263a'},
+        ],
+    };
+
+    blueslip.clear_test_data();
+    blueslip.set_test_data(
+        'error',
+        'server sent duplicate reactions for user 5 (key=unicode_emoji,smile,263a)');
+    reactions.set_clean_reactions(dup_reaction_message);
 });

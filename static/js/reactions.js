@@ -30,11 +30,11 @@ exports.open_reactions_popover = function () {
     return true;
 };
 
-exports.current_user_has_reacted_to_emoji = function (message, emoji_code, type) {
-    const user_id = page_params.user_id;
-    return message.reactions.some(r => r.user.id === user_id &&
-           r.reaction_type === type &&
-           r.emoji_code === emoji_code);
+exports.current_user_has_reacted_to_emoji = function (message, local_id) {
+    exports.set_clean_reactions(message);
+
+    const r = message.clean_reactions.get(local_id);
+    return r && r.user_ids.includes(page_params.user_id);
 };
 
 function get_message(message_id) {
@@ -44,6 +44,7 @@ function get_message(message_id) {
         return;
     }
 
+    exports.set_clean_reactions(message);
     return message;
 }
 
@@ -63,10 +64,10 @@ function create_reaction(message_id, reaction_info) {
 
 function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
     const message = get_message(message_id);
+    const local_id = exports.get_local_reaction_id(reaction_info);
     const has_reacted = exports.current_user_has_reacted_to_emoji(
         message,
-        reaction_info.emoji_code,
-        reaction_info.reaction_type
+        local_id
     );
     const operation = has_reacted ? 'remove' : 'add';
     const reaction = create_reaction(message_id, reaction_info);
@@ -99,12 +100,10 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
 }
 
 function get_user_list_for_message_reaction(message, local_id) {
-    const matching_reactions = message.reactions.filter(function (reaction) {
-        return reaction.local_id === local_id;
-    });
-    return matching_reactions.map(function (reaction) {
-        return reaction.user.id;
-    });
+    exports.set_clean_reactions(message);
+
+    const r = message.clean_reactions.get(local_id);
+    return r.user_ids || [];
 }
 
 exports.toggle_emoji_reaction = function (message_id, emoji_name) {
@@ -170,6 +169,7 @@ function generate_title(emoji_name, user_ids) {
 // Add a tooltip showing who reacted to a message.
 exports.get_reaction_title_data = function (message_id, local_id) {
     const message = get_message(message_id);
+
     const user_list = get_user_list_for_message_reaction(message, local_id);
     const emoji_name = exports.get_reaction_info(local_id).emoji_name;
     const title = generate_title(emoji_name, user_list);
@@ -211,29 +211,41 @@ exports.add_reaction = function (event) {
         return;
     }
 
-    const reacted = exports.current_user_has_reacted_to_emoji(message,
-                                                              event.emoji_code,
-                                                              event.reaction_type);
-    if (reacted && event.user.user_id === page_params.user_id) {
+    exports.set_clean_reactions(message);
+
+    const local_id = exports.get_local_reaction_id(event);
+    const user_id = event.user.user_id;
+
+    const r = message.clean_reactions.get(local_id);
+
+    if (r && r.user_ids.includes(user_id)) {
         return;
     }
 
-    event.user.id = event.user.user_id;
-    event.local_id = exports.get_local_reaction_id(event);
+    if (r) {
+        r.user_ids.push(user_id);
+        exports.update_user_fields(r);
+    } else {
+        exports.add_clean_reaction({
+            message: message,
+            local_id: local_id,
+            user_ids: [user_id],
+            reaction_type: event.reaction_type,
+            emoji_name: event.emoji_name,
+            emoji_code: event.emoji_code,
+        });
+    }
 
-    message.reactions.push(event);
-
-    const user_list = get_user_list_for_message_reaction(message, event.local_id);
     const opts = {
-        message_id: event.message_id,
+        message_id: message_id,
         reaction_type: event.reaction_type,
         emoji_name: event.emoji_name,
         emoji_code: event.emoji_code,
-        user_id: event.user.id,
+        user_id: user_id,
     };
 
-    if (user_list.length > 1) {
-        opts.user_list = user_list;
+    if (r) {
+        opts.user_list = r.user_ids;
         exports.view.update_existing_reaction(opts);
     } else {
         exports.view.insert_new_reaction(opts);
@@ -311,7 +323,6 @@ exports.remove_reaction = function (event) {
     const emoji_code = event.emoji_code;
     const message_id = event.message_id;
     const user_id = event.user.user_id;
-    let i = -1;
     const message = message_store.get(message_id);
     const local_id = exports.get_local_reaction_id(event);
 
@@ -322,34 +333,31 @@ exports.remove_reaction = function (event) {
         return;
     }
 
-    const not_reacted = !exports.current_user_has_reacted_to_emoji(message,
-                                                                   emoji_code,
-                                                                   reaction_type);
-    if (not_reacted && event.user.user_id === page_params.user_id) {
+    exports.set_clean_reactions(message);
+
+    const r = message.clean_reactions.get(local_id);
+
+    if (!r) {
         return;
     }
 
-    // Do the data part first:
-    // Remove reactions from our message object.
-    for (const [index, reaction] of message.reactions.entries()) {
-        if (reaction.local_id === local_id && reaction.user.id === user_id) {
-            i = index;
-        }
+    if (!r.user_ids.includes(user_id)) {
+        return;
     }
 
-    if (i !== -1) {
-        message.reactions.splice(i, 1);
+    r.user_ids = r.user_ids.filter(id => id !== user_id);
+    if (r.user_ids.length > 0) {
+        exports.update_user_fields(r);
+    } else {
+        message.clean_reactions.delete(local_id);
     }
-
-    // Compute the new user list for this reaction.
-    const user_list = get_user_list_for_message_reaction(message, local_id);
 
     exports.view.remove_reaction({
         message_id: message_id,
         reaction_type: reaction_type,
         emoji_name: emoji_name,
         emoji_code: emoji_code,
-        user_list: user_list,
+        user_list: r.user_ids,
         user_id: user_id,
     });
 };
@@ -389,56 +397,136 @@ exports.view.remove_reaction = function (opts) {
 exports.get_emojis_used_by_user_for_message_id = function (message_id) {
     const user_id = page_params.user_id;
     const message = message_store.get(message_id);
-    const reactions_by_user = message.reactions.filter(function (reaction) {
-        return reaction.user.id === user_id;
-    });
-    return reactions_by_user.map(function (reaction) {
-        return reaction.emoji_name;
-    });
+    exports.set_clean_reactions(message);
+
+    const names = [];
+    for (const r of message.clean_reactions.values()) {
+        if (r.user_ids.includes(user_id)) {
+            names.push(r.emoji_name);
+        }
+    }
+
+    return names;
+};
+
+exports.get_name_for_alias = function (message, user_id, aliases) {
+    exports.set_clean_reactions(message);
+
+    for (const r of message.clean_reactions.values()) {
+        if (aliases.includes(r.emoji_name)) {
+            if (r.user_ids.includes(user_id)) {
+                return r.emoji_name;
+            }
+        }
+    }
 };
 
 exports.get_message_reactions = function (message) {
-    const message_reactions = new Map();
+    exports.set_clean_reactions(message);
+    return Array.from(message.clean_reactions.values());
+};
+
+exports.set_clean_reactions = function (message) {
+    /*
+        The server sends us a single structure for
+        each reaction, even if two users are reacting
+        with the same emoji.  Our first loop creates
+        a map of distinct reactions and a map of
+        local_id -> user_ids.  The `local_id` is
+        basically a key for the emoji name.
+
+        Then in our second loop we build a more compact
+        data structure that's easier for our message
+        list view templates to work with.
+    */
+
+    if (message.clean_reactions) {
+        return;
+    }
+
+    const distinct_reactions = new Map();
+    const user_map = new Map();
 
     for (const reaction of message.reactions) {
+        const local_id = exports.get_local_reaction_id(reaction);
         const user_id = reaction.user.id;
-        reaction.local_id = exports.get_local_reaction_id(reaction);
+
         if (!people.is_known_user_id(user_id)) {
             blueslip.warn('Unknown user_id ' + user_id +
                           ' in reaction for message ' + message.id);
             continue;
         }
-        reaction.user_ids = [];
-        let collapsed_reaction = message_reactions.get(reaction.local_id);
-        if (collapsed_reaction === undefined) {
-            collapsed_reaction = { ...reaction };
-            delete collapsed_reaction.user;
-            message_reactions.set(reaction.local_id, collapsed_reaction);
+
+        if (!distinct_reactions.has(local_id)) {
+            distinct_reactions.set(local_id, reaction);
+            user_map.set(local_id, []);
         }
-        collapsed_reaction.user_ids.push(user_id);
+
+        const user_ids = user_map.get(local_id);
+
+        if (user_ids.includes(user_id)) {
+            blueslip.error('server sent duplicate reactions for user ' +
+                user_id + ' (key=' + local_id + ')');
+            continue;
+        }
+
+        user_ids.push(user_id);
     }
 
-    const reactions = Array.from(message_reactions.values(), reaction => {
-        reaction.local_id = reaction.local_id;
-        reaction.reaction_type = reaction.reaction_type;
-        reaction.emoji_name = reaction.emoji_name;
-        reaction.emoji_code = reaction.emoji_code;
-        reaction.count = reaction.user_ids.length;
-        reaction.label = generate_title(reaction.emoji_name, reaction.user_ids);
-        reaction.emoji_alt_code = page_params.emojiset === 'text';
+    /*
+        It might feel a little janky to attach clean_reactions
+        directly to the message object, but this allows the
+        server to send us a new copy of the message, and then
+        the next time we try to get reactions from it, we
+        won't have `clean_reactions`, and we will re-process
+        the server's latest copy of the reactions.
+    */
+    message.clean_reactions = new Map();
 
-        if (reaction.reaction_type !== 'unicode_emoji') {
-            reaction.is_realm_emoji = true;
-            reaction.url = emoji.all_realm_emojis.get(reaction.emoji_code).emoji_url;
-        }
-        if (reaction.user_ids.includes(page_params.user_id)) {
-            reaction.class = "message_reaction reacted";
-        } else {
-            reaction.class = "message_reaction";
-        }
-        return reaction;
-    });
-    return reactions;
+    for (const local_id of distinct_reactions.keys()) {
+        const reaction = distinct_reactions.get(local_id);
+        const user_ids = user_map.get(local_id);
+
+        exports.add_clean_reaction({
+            message: message,
+            local_id: local_id,
+            user_ids: user_ids,
+            reaction_type: reaction.reaction_type,
+            emoji_name: reaction.emoji_name,
+            emoji_code: reaction.emoji_code,
+        });
+    }
+};
+
+exports.add_clean_reaction = function (opts) {
+    const r = {};
+
+    r.reaction_type = opts.reaction_type;
+    r.emoji_name = opts.emoji_name;
+    r.emoji_code = opts.emoji_code;
+    r.local_id = opts.local_id;
+
+    r.user_ids = opts.user_ids;
+    exports.update_user_fields(r);
+
+    r.emoji_alt_code = page_params.emojiset === 'text';
+
+    if (r.reaction_type !== 'unicode_emoji') {
+        r.is_realm_emoji = true;
+        r.url = emoji.all_realm_emojis.get(r.emoji_code).emoji_url;
+    }
+
+    opts.message.clean_reactions.set(opts.local_id, r);
+};
+
+exports.update_user_fields = function (r) {
+    r.count = r.user_ids.length;
+    r.label = generate_title(r.emoji_name, r.user_ids);
+    if (r.user_ids.includes(page_params.user_id)) {
+        r.class = "message_reaction reacted";
+    } else {
+        r.class = "message_reaction";
+    }
 };
 
 window.reactions = exports;
