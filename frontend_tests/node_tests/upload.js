@@ -164,6 +164,7 @@ run_test('upload_files', () => {
             assert.equal(params.type, "image/png");
             assert.equal(params.data, files[0]);
         },
+        getFiles: () => [...files],
     };
     let hide_upload_status_called = false;
     upload.hide_upload_status = (config) => {
@@ -236,9 +237,32 @@ run_test('upload_files', () => {
     });
     hide_upload_status_called = false;
     uppy_cancel_all_called = false;
+    let compose_ui_replace_syntax_called = false;
+    files = [
+        {
+            name: "budapest.png",
+            type: "image/png",
+        },
+    ];
+    compose_ui.replace_syntax = (old_syntax, new_syntax, textarea) => {
+        compose_ui_replace_syntax_called = true;
+        assert.equal(old_syntax, "[Uploading budapest.png…]()");
+        assert.equal(new_syntax, "");
+        assert.equal(textarea, $('#compose-textarea'));
+    };
     on_click_close_button_callback();
     assert(uppy_cancel_all_called);
     assert(hide_upload_status_called);
+    assert(compose_ui_autosize_textarea_called);
+    assert(compose_ui_replace_syntax_called);
+    hide_upload_status_called = false;
+    compose_ui_replace_syntax_called = false;
+    $('#compose-textarea').val("user modified text");
+    on_click_close_button_callback();
+    assert(hide_upload_status_called);
+    assert(compose_ui_autosize_textarea_called);
+    assert(compose_ui_replace_syntax_called);
+    assert($('#compose-textarea').val(), "user modified text");
 });
 
 run_test('uppy_config', () => {

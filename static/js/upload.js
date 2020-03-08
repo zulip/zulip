@@ -101,7 +101,12 @@ exports.upload_files = function (uppy, config, files) {
     exports.get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
     exports.get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
     exports.get_item("send_status_close_button", config).one('click', function () {
+        uppy.getFiles().forEach((file) => {
+            compose_ui.replace_syntax("[Uploading " + file.name + "…]()", "", exports.get_item("textarea", config));
+        });
+        compose_ui.autosize_textarea();
         uppy.cancelAll();
+        exports.get_item("textarea", config).focus();
         setTimeout(function () {
             exports.hide_upload_status(config);
         }, 500);
