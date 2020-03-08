@@ -227,7 +227,8 @@ class DocPageTest(ZulipTestCase):
 
     def test_electron_detection(self) -> None:
         result = self.client_get("/accounts/password/reset/")
-        self.assertTrue('data-platform="website"' in result.content.decode("utf-8"))
+        # TODO: Ideally, this Mozilla would be the specific browser.
+        self.assertTrue('data-platform="Mozilla"' in result.content.decode("utf-8"))
 
         result = self.client_get("/accounts/password/reset/",
                                  HTTP_USER_AGENT="ZulipElectron/1.0.0")

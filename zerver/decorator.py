@@ -122,11 +122,11 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
 
 from zerver.lib.user_agent import parse_user_agent
 
-def get_client_name(request: HttpRequest, is_browser_view: bool) -> str:
+def get_client_name(request: HttpRequest) -> str:
     # If the API request specified a client in the request content,
     # that has priority.  Otherwise, extract the client from the
     # User-Agent.
-    if 'client' in request.GET:
+    if 'client' in request.GET:  # nocoverage
         return request.GET['client']
     if 'client' in request.POST:
         return request.POST['client']
@@ -135,23 +135,12 @@ def get_client_name(request: HttpRequest, is_browser_view: bool) -> str:
     else:
         user_agent = None
     if user_agent is not None:
-        # We could check for a browser's name being "Mozilla", but
-        # e.g. Opera and MobileSafari don't set that, and it seems
-        # more robust to just key off whether it was a browser view
-        if is_browser_view and not user_agent["name"].startswith("Zulip"):
-            # Avoid changing the client string for browsers, but let
-            # the Zulip desktop and mobile apps be themselves.
-            return "website"
-        else:
-            return user_agent["name"]
-    else:
-        # In the future, we will require setting USER_AGENT, but for
-        # now we just want to tag these requests so we can review them
-        # in logs and figure out the extent of the problem
-        if is_browser_view:
-            return "website"
-        else:
-            return "Unspecified"
+        return user_agent["name"]
+
+    # In the future, we will require setting USER_AGENT, but for
+    # now we just want to tag these requests so we can review them
+    # in logs and figure out the extent of the problem
+    return "Unspecified"
 
 def process_client(request: HttpRequest, user_profile: UserProfile,
                    *, is_browser_view: bool=False,
@@ -159,7 +148,15 @@ def process_client(request: HttpRequest, user_profile: UserProfile,
                    skip_update_user_activity: bool=False,
                    query: Optional[str]=None) -> None:
     if client_name is None:
-        client_name = get_client_name(request, is_browser_view)
+        client_name = get_client_name(request)
+
+    # We could check for a browser's name being "Mozilla", but
+    # e.g. Opera and MobileSafari don't set that, and it seems
+    # more robust to just key off whether it was a browser view
+    if is_browser_view and not client_name.startswith("Zulip"):
+        # Avoid changing the client string for browsers, but let
+        # the Zulip desktop apps be themselves.
+        client_name = "website"
 
     request.client = get_client(client_name)
     if not skip_update_user_activity:

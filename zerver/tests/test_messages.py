@@ -1946,7 +1946,7 @@ class MessagePOSTTest(ZulipTestCase):
                                    "client": "zephyr_mirror",
                                    "to": self.mit_email("starnine")},
                                   subdomain="zephyr")
-        self.assert_json_success(result)
+        self.assert_json_error(result, "Invalid mirrored message")
 
     def test_mirrored_personal_to_someone_else(self) -> None:
         """
