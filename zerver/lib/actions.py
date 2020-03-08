@@ -5181,8 +5181,9 @@ def do_invite_users(user_profile: UserProfile,
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
-    active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', 1)
-
+    active_value = confirmation_settings.STATUS_ACTIVE
+    revoked_value = confirmation_settings.STATUS_REVOKED
+    
     lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
     prereg_users = PreregistrationUser.objects.exclude(status=active_value).filter(
         invited_at__gte=lowest_datetime,
