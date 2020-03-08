@@ -523,6 +523,14 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         settings_exports.populate_exports_table(event.exports);
         settings_exports.clear_success_banner();
         break;
+    case 'panels':
+        if (event.op === 'show_warn') {
+            panels.show_profile_incomplete_warn();
+        }
+        if (event.op === 'hide_warn') {
+            panels.hide_profile_incomplete_warn();
+        }
+        break;
     }
 
 };

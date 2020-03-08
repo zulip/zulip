@@ -1608,7 +1608,7 @@ class EventsRegisterTest(ZulipTestCase):
         bool_tests = [True, False, True]  # type: List[bool]
         test_values = dict(
             default_language=[u'es', u'de', u'en'],
-            description=[u'Realm description', u'New description'],
+            description=[u'Realm description', u'New description', u''],
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
@@ -1658,7 +1658,7 @@ class EventsRegisterTest(ZulipTestCase):
                 state_change_expected = False
             events = self.do_test(
                 lambda: do_set_realm_property(self.user_profile.realm, name, val),
-                state_change_expected=state_change_expected)
+                state_change_expected=state_change_expected, num_events=2)
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -1667,6 +1667,37 @@ class EventsRegisterTest(ZulipTestCase):
         for prop in Realm.property_types:
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_property_test(prop)
+
+    def test_profile_incomplete_check(self) -> None:
+        self.test_change_realm_icon_source()
+        show_warn_test_value = dict(
+            description=[u'', u'The coolest place in the universe', u'Organization imported from']
+        )
+        value = show_warn_test_value['description']
+        for val in value:
+            show_schema_checker = self.check_events_dict([
+                ('type', equals('panels')),
+                ('op', equals('show_warn')),
+            ])
+            events = self.do_test(
+                lambda: do_set_realm_property(self.user_profile.realm, 'description', val),
+                state_change_expected=True, num_events=2)
+            error = show_schema_checker('events[1]', events[1])
+            self.assert_on_error(error)
+        hide_warn_test_value = dict(
+            description=[u'New realm', u'New Description', u'This is test Description']
+        )
+        values = hide_warn_test_value['description']
+        for val in values:
+            hide_schema_checker = self.check_events_dict([
+                ('type', equals('panels')),
+                ('op', equals('hide_warn')),
+            ])
+            events = self.do_test(
+                lambda: do_set_realm_property(self.user_profile.realm, 'description', val),
+                state_change_expected=True, num_events=2)
+            error = hide_schema_checker('events[1]', events[1])
+            self.assert_on_error(error)
 
     @slow("Runs a large matrix of tests")
     def test_change_realm_authentication_methods(self) -> None:
@@ -2156,7 +2187,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_change_realm_icon_source(self) -> None:
         action = lambda: do_change_icon_source(self.user_profile.realm, Realm.ICON_UPLOADED)
-        events = self.do_test(action, state_change_expected=True)
+        events = self.do_test(action, state_change_expected=True, num_events=2)
         schema_checker = self.check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update_dict')),

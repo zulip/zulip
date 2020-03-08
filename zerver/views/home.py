@@ -261,6 +261,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
         two_fa_enabled_user   = two_fa_enabled and bool(default_device(user_profile)),
+        organization_profile_incomplete=user_profile.realm.is_organization_profile_incomplete(),
     )
 
     undesired_register_ret_fields = [

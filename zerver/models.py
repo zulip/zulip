@@ -140,7 +140,7 @@ class Realm(models.Model):
 
     # User-visible display name and description used on e.g. the organization homepage
     name = models.CharField(max_length=MAX_REALM_NAME_LENGTH, null=True)  # type: Optional[str]
-    description = models.TextField(default=u"")  # type: str
+    description = models.TextField(default=settings.DEFAULT_ORGANIZATION_DESCRIPTION)  # type: str
 
     # A short, identifier-like name for the organization.  Used in subdomains;
     # e.g. on a server at example.com, an org with string_id `foo` is reached
@@ -455,6 +455,13 @@ class Realm(models.Model):
         if self.signup_notifications_stream is not None and not self.signup_notifications_stream.deactivated:
             return self.signup_notifications_stream
         return None
+
+    def is_organization_profile_incomplete(self) -> bool:
+        if not self.description or self.description == settings.DEFAULT_ORGANIZATION_DESCRIPTION \
+                or self.description.startswith('Organization imported from') or self.icon_source == "G":
+            return True
+        else:
+            return False
 
     @property
     def max_invites(self) -> int:

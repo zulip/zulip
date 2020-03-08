@@ -22,11 +22,21 @@ exports.initialize = function () {
     // to tell them to set up an email server.
     if (page_params.insecure_desktop_app) {
         exports.open($("[data-process='insecure-desktop-app']"));
+    } else if (page_params.organization_profile_incomplete === true && page_params.is_admin) {
+        exports.open($("[data-process='profile-incomplete']"));
     } else if (page_params.warn_no_email === true && page_params.is_admin) {
         exports.open($("[data-process='email-server']"));
     } else {
         exports.open($("[data-process='notifications']"));
     }
+};
+
+exports.show_profile_incomplete_warn = function () {
+    exports.open($("[data-process='profile-incomplete']"));
+};
+
+exports.hide_profile_incomplete_warn = function () {
+    $("[data-process]").hide();
 };
 
 exports.open = function ($process) {

@@ -4,6 +4,7 @@ if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
 
 from .config import PRODUCTION, DEVELOPMENT, get_secret
+
 if PRODUCTION:
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 else:
@@ -153,7 +154,6 @@ SEARCH_PILLS_ENABLED = False
 # We log emails in development environment for accessing
 # them easily through /emails page
 DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
-
 
 # These settings are not documented in prod_settings_template.py.
 # They should either be documented here, or documented there.
@@ -366,3 +366,6 @@ BILLING_ENABLED = False
 # users, and you would like to save some disk space. Soft-deactivated
 # returning users would still be caught-up normally.
 AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS = True
+
+# Default Organization Description
+DEFAULT_ORGANIZATION_DESCRIPTION = "The coolest place in the universe"
