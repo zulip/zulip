@@ -25,6 +25,37 @@ security:
 # Endpoint definitions
 #######################
 paths:
+  /fetch_api_key:
+    post:
+      description: |
+        Given a username and password, fetch the user's API key.
+
+        Used to authenticate the mobile and terminal apps when the server
+        has EmailAuthBackend or LDAPAuthBackend enabled.
+      operationId: zerver.views.auth.api_fetch_api_key
+      parameters:
+      - name: username
+        in: query
+        description: |
+          The username to be used for authentication (typically, the
+          email address, but it could be an LDAP username).
+        schema:
+          type: string
+        required: true
+      - name: password
+        in: query
+        schema:
+          type: string
+        description: |
+          The user's Zulip password (or LDAP password, if LDAP authentication is in use).
+        required: true
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyResponse'
   /dev_fetch_api_key:
     post:
       description: Gather a token bound to a user account, to identify and
@@ -1646,6 +1677,10 @@ paths:
   /users/me/subscriptions:
     get:
       description: Get information on every stream the user is subscribed to.
+      # operationId can be used to record which view function
+      # corresponds to an endpoint.  TODO: Add these for more
+      # endpoints, and perhaps use this to provide links to implementations.
+      operationId: zerver.views.streams.list_subscriptions_backend
       parameters:
       - name: include_subscribers
         in: query
@@ -1667,6 +1702,9 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
+                # TODO: Is this the best way to declare required elements in 200 responses?
+                - required:
+                  - subscriptions
                 - properties:
                     subscriptions:
                       type: array
@@ -1869,6 +1907,7 @@ paths:
                     }
     patch:
       description: Update which streams you are are subscribed to.
+      operationId: zerver.views.streams.update_subscriptions_backend
       parameters:
         - name: delete
           in: query
@@ -1915,6 +1954,11 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
+                - required:
+                  - subscribed
+                  - not_subscribed
+                  - already_subscribed
+                  - removed
                 - properties:
                     subscribed:
                       type: object
@@ -2854,6 +2898,7 @@ paths:
   /streams/{stream_id}:
     delete:
       description: Delete the stream with the given ID.
+      operationId: zerver.views.streams.deactivate_stream_backend
       parameters:
       - name: stream_id
         in: path
@@ -2882,6 +2927,9 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonError'
+                - properties:
+                    msg:
+                      type: string
                 - example:
                     {
                         "code": "BAD_REQUEST",
@@ -2890,6 +2938,7 @@ paths:
                     }
     patch:
       description: Update the stream with the given ID.
+      operationId: zerver.views.streams.update_stream_backend
       parameters:
       - name: stream_id
         in: path
@@ -2916,7 +2965,7 @@ paths:
         required: false
       - name: is_private
         in: query
-        description: The new state of the stream.
+        description: Change whether the stream is a private stream.
         schema:
           type: boolean
         example: true
@@ -2955,6 +3004,7 @@ paths:
           type: boolean
         example: true
         required: false
+
 
       responses:
         '200':
@@ -3254,6 +3304,9 @@ components:
     ApiKeyResponse:
       allOf:
       - $ref: '#/components/schemas/JsonSuccess'
+      - required:
+        - api_key
+        - email
       - properties:
           api_key:
             type: string
