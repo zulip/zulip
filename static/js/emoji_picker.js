@@ -249,12 +249,13 @@ function get_alias_to_be_used(message_id, emoji_name) {
             return;
         }
     }
+
     const user_id = page_params.user_id;
-    const reaction = message.reactions.find(
-        reaction => reaction.user.id === user_id && aliases.includes(reaction.emoji_name)
-    );
-    if (reaction) {
-        return reaction.emoji_name;
+
+    const reaction_name = reactions.get_name_for_alias(message, user_id, aliases);
+
+    if (reaction_name) {
+        return reaction_name;
     }
     return emoji_name;
 }
