@@ -386,12 +386,15 @@ exports.set_up = function () {
     let image_version = 0;
 
     $("#active_bots_list").on("click", "button.open_edit_bot_form", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        overlays.open_modal('edit_bot_modal');
         const li = $(e.currentTarget).closest('li');
         const bot_id = li.find('.bot_info').attr('data-user-id').valueOf();
         const bot = bot_data.get(bot_id);
         const users_list = people.get_active_human_persons();
-        $("#edit_bot").empty();
-        $("#edit_bot").append(render_edit_bot({
+        $("#edit_bot_modal").empty();
+        $("#edit_bot_modal").append(render_edit_bot({
             bot: bot,
             users_list: users_list,
         }));
@@ -399,8 +402,7 @@ exports.set_up = function () {
         const form = $('#settings_page .edit_bot_form');
         const image = li.find(".image");
         const errors = form.find('.bot_edit_errors');
-
-        $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
+        $("#settings_page .edit_bot_form .edit-bot-owner select").val(bot.owner);
         const service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#service_data").append(render_settings_edit_outgoing_webhook_service({
@@ -415,7 +417,6 @@ exports.set_up = function () {
         }
 
         avatar_widget.clear();
-
         form.validate({
             errorClass: 'text-error',
             success: function () {
@@ -424,18 +425,15 @@ exports.set_up = function () {
             submitHandler: function () {
                 const bot_id = form.attr('data-user-id');
                 const type = form.attr('data-type');
-
                 const full_name = form.find('.edit_bot_name').val();
                 const bot_owner = form.find('.edit-bot-owner select').val();
-                const file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
+                const file_input = $(".edit_bot_form").find('.edit_bot_avatar_file_input');
                 const spinner = form.find('.edit_bot_spinner');
                 const edit_button = form.find('.edit_bot_button');
-
                 const formData = new FormData();
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
                 formData.append('bot_owner_id', people.get_by_email(bot_owner).user_id);
-
                 if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
                     const service_payload_url = $("#edit_service_base_url").val();
                     const service_interface = $("#edit_service_interface :selected").val();
@@ -448,9 +446,11 @@ exports.set_up = function () {
                     });
                     formData.append('config_data', JSON.stringify(config_data));
                 }
-                jQuery.each(file_input[0].files, function (i, file) {
-                    formData.append('file-' + i, file);
-                });
+                if (file_input[0].files) {
+                    jQuery.each(file_input[0].files, function (i, file) {
+                        formData.append('file-' + i, file);
+                    });
+                }
                 loading.make_indicator(spinner, {text: 'Editing bot'});
                 edit_button.hide();
                 channel.patch({

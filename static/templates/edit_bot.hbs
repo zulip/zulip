@@ -1,4 +1,10 @@
-<form class="edit_bot_form form-horizontal" data-target="edit-bot" data-title="{{t 'Edit bot' }}" data-user-id="{{bot.user_id}}"
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+    <h3 class="inline-block" id="change_full_name_modal_label">{{t "Edit Bot" }}</h3>
+    <div class="alert-notification change_full_name_info"></div>
+</div>
+
+<form class="edit_bot_form " data-target="edit-bot" data-title="{{t 'Edit bot' }}" data-user-id="{{bot.user_id}}"
   data-email="{{bot.email}}" data-type="{{bot.bot_type}}">
     <div class="bot_edit_errors alert alert-error hide"></div>
     <div class="">
@@ -19,7 +25,7 @@
         </div>
         <div id="service_data">
         </div>
-        <div class="avatar-section">
+       <div class="avatar-section">
             <label for="bot_avatar_file_input">Avatar</label>
             <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
             <div class="edit_bot_avatar_file"></div>
@@ -27,9 +33,9 @@
             <button type="button" class="btn btn-default edit_bot_avatar_clear_button" style="display: none;">{{t "Clear profile picture" }}</button>
             <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
         </div>
-        <div class="buttons">
-            <input type="submit" class="btn btn-primary edit_bot_button" value="{{t 'Save' }}" />
-            <button type="button" class="btn btn-default reset_edit_bot" data-sidebar-form-close>{{t 'Cancel' }}</button>
+        <div class="modal-footer">
+            <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
+            <input type="submit" class="button rounded sea-green edit_bot_button" value="{{t 'Save' }}" />
             <div class="edit_bot_spinner"></div>
         </div>
     </div>
