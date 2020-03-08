@@ -464,7 +464,7 @@ class ZulipTestCase(TestCase):
 
     def send_personal_message(self, from_user: UserProfile, to_user: UserProfile, content: str="test content",
                               sending_client_name: str="test suite") -> int:
-        recipient_list = [to_user.email]
+        recipient_list = [to_user.id]
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
         return check_send_message(
@@ -477,13 +477,13 @@ class ZulipTestCase(TestCase):
                             to_users: List[UserProfile],
                             content: str="test content",
                             sending_client_name: str="test suite") -> int:
-        to_emails = [u.email for u in to_users]
-        assert(len(to_emails) >= 2)
+        to_user_ids = [u.id for u in to_users]
+        assert(len(to_user_ids) >= 2)
 
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
         return check_send_message(
-            from_user, sending_client, 'private', to_emails, None,
+            from_user, sending_client, 'private', to_user_ids, None,
             content
         )
 
