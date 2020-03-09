@@ -2077,7 +2077,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
              'key': confirmation_key,
              'terms': True})
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(sorted(self.get_streams('new@zulip.com', realm)), stream_names)
+        new_user = get_user('new@zulip.com', realm)
+        new_streams = self.get_streams(new_user)
+        self.assertEqual(sorted(new_streams), stream_names)
 
     def test_log_into_subdomain_when_email_is_none(self) -> None:
         data = {'name': None,
