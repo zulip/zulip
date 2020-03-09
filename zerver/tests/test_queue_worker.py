@@ -96,7 +96,7 @@ class WorkerTest(ZulipTestCase):
                     worker.setup()
                     # `write_log_line` is where we publish slow queries to the queue.
                     with patch('zerver.middleware.is_slow_query', return_value=True):
-                        write_log_line(log_data=dict(test='data'), email='test@zulip.com',
+                        write_log_line(log_data=dict(test='data'), requestor_for_logs='test@zulip.com',
                                        remote_ip='127.0.0.1', client_name='website', path='/test/',
                                        method='GET')
                     worker.start()
