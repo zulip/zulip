@@ -94,7 +94,7 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
                  more_info: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
                  ) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
-    actual error reports are later handled by do_report_error (below)"""
+    actual error reports are later handled by do_report_error"""
     if not settings.BROWSER_ERROR_REPORTING:
         return json_success()
     if more_info is None:
