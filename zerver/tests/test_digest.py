@@ -140,7 +140,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         RealmAuditLog.objects.all().delete()
 
         realm = othello.realm
-        stream_names = self.get_streams(othello.email, realm)
+        stream_names = self.get_streams(othello)
         stream_ids = {name: get_stream(name, realm).id for name in stream_names}
 
         # Unsubscribe and subscribe from a stream

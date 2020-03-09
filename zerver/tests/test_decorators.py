@@ -1510,7 +1510,8 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 
     def _do_test(self, user_email: str) -> HttpResponse:
         stream_name = "stream name"
-        self.common_subscribe_to_streams(user_email, [stream_name])
+        user = get_user(user_email, get_realm('zulip'))
+        self.common_subscribe_to_streams(user, [stream_name])
         data = {"password": initial_password(user_email), "stream": stream_name}
         return self.client_post(r'/json/subscriptions/exists', data)
 
@@ -1645,7 +1646,7 @@ class TestRequireDecorators(ZulipTestCase):
     def test_require_non_guest_user_decorator(self) -> None:
         guest_user = self.example_user('polonius')
         self.login(guest_user.email)
-        result = self.common_subscribe_to_streams(guest_user.email, ["Denmark"])
+        result = self.common_subscribe_to_streams(guest_user, ["Denmark"])
         self.assert_json_error(result, "Not allowed for guest users")
 
     def test_require_member_or_admin_decorator(self) -> None:

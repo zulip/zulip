@@ -452,11 +452,10 @@ class ZulipTestCase(TestCase):
         kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_delete(*args, **kwargs)
 
-    def get_streams(self, email: str, realm: Realm) -> List[str]:
+    def get_streams(self, user_profile: UserProfile) -> List[str]:
         """
         Helper function to get the stream names for a user
         """
-        user_profile = get_user(email, realm)
         subs = get_stream_subscriptions_for_user(user_profile).filter(
             active=True,
         )
@@ -671,13 +670,13 @@ class ZulipTestCase(TestCase):
         bulk_remove_subscriptions([user_profile], [stream], client)
 
     # Subscribe to a stream by making an API request
-    def common_subscribe_to_streams(self, email: str, streams: Iterable[str],
+    def common_subscribe_to_streams(self, user: UserProfile, streams: Iterable[str],
                                     extra_post_data: Dict[str, Any]={}, invite_only: bool=False,
                                     **kwargs: Any) -> HttpResponse:
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
-        result = self.api_post(email, "/api/v1/users/me/subscriptions", post_data, **kwargs)
+        result = self.api_post(user.email, "/api/v1/users/me/subscriptions", post_data, **kwargs)
         return result
 
     def check_user_subscribed_only_to_streams(self, user_name: str,
