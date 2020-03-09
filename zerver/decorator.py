@@ -197,7 +197,6 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
         request.user = remote_server
-        request._requestor_for_logs = "zulip-server:" + role
         remote_server.rate_limits = ""
         # Skip updating UserActivity, since remote_server isn't actually a UserProfile object.
         process_client(request, remote_server, skip_update_user_activity=True)
@@ -208,7 +207,6 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         raise JsonableError(_("This API is not available to incoming webhook bots."))
 
     request.user = user_profile
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
     process_client(request, user_profile, client_name=client_name)
 
     return user_profile
@@ -425,7 +423,6 @@ def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
 def add_logging_data(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        request._requestor_for_logs = request.user.format_requestor_for_logs()
         process_client(request, request.user, is_browser_view=True,
                        query=view_func.__name__)
         return rate_limit()(view_func)(request, *args, **kwargs)
@@ -649,7 +646,6 @@ def authenticate_log_and_execute_json(request: HttpRequest,
 
     process_client(request, user_profile, is_browser_view=True,
                    query=view_func.__name__)
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
     return limited_view_func(request, user_profile, *args, **kwargs)
 
 # Checks if the request is a POST request and that the user is logged
