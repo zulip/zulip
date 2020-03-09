@@ -329,7 +329,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         When 'principals' has a bot, no notification message event or invitation email
         is sent when add_subscriptions_backend is called in the above api call.
         """
-        self.login(self.example_email('hamlet'))
+        hamlet = self.example_user('hamlet')
+        self.login(hamlet.email)
 
         # Normal user i.e. not a bot.
         request_data = {
@@ -337,7 +338,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.common_subscribe_to_streams(self.example_email('hamlet'), ['Rome'], request_data)
+            result = self.common_subscribe_to_streams(hamlet, ['Rome'], request_data)
             self.assert_json_success(result)
 
         msg_event = [e for e in events if e['event']['type'] == 'message']
@@ -354,7 +355,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         events_bot = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events_bot):
-            result = self.common_subscribe_to_streams(self.example_email('hamlet'), ['Rome'], bot_request_data)
+            result = self.common_subscribe_to_streams(hamlet, ['Rome'], bot_request_data)
             self.assert_json_success(result)
 
         # No notification message event or invitation email is sent because of bot.
