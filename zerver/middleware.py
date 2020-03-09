@@ -289,7 +289,10 @@ class LogRequests(MiddlewareMixin):
         try:
             requestor_for_logs = request._requestor_for_logs
         except Exception:
-            requestor_for_logs = "unauth"
+            if hasattr(request, 'user') and hasattr(request.user, 'format_requestor_for_logs'):
+                requestor_for_logs = request.user.format_requestor_for_logs()
+            else:
+                requestor_for_logs = "unauth"
         try:
             client = request.client.name
         except Exception:

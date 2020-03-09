@@ -218,7 +218,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         request._log_data = old_request._log_data
         if hasattr(request, "_rate_limit"):
             request._rate_limit = old_request._rate_limit
-        request._requestor_for_logs = old_request._requestor_for_logs
+        if hasattr(request, "_requestor_for_logs"):
+            request._requestor_for_logs = old_request._requestor_for_logs
         request.user = old_request.user
         request.client = old_request.client
 
