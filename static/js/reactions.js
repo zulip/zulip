@@ -6,18 +6,8 @@ exports.view = {}; // function namespace
 exports.get_local_reaction_id = function (reaction_info) {
     return [
         reaction_info.reaction_type,
-        reaction_info.emoji_name,
         reaction_info.emoji_code,
     ].join(',');
-};
-
-exports.get_reaction_info = function (reaction_id) {
-    const reaction_info = reaction_id.split(',');
-    return {
-        reaction_type: reaction_info[0],
-        emoji_name: reaction_info[1],
-        emoji_code: reaction_info[2],
-    };
 };
 
 exports.open_reactions_popover = function () {
@@ -99,13 +89,6 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
     }
 }
 
-function get_user_list_for_message_reaction(message, local_id) {
-    exports.set_clean_reactions(message);
-
-    const r = message.clean_reactions.get(local_id);
-    return r.user_ids || [];
-}
-
 exports.toggle_emoji_reaction = function (message_id, emoji_name) {
     // This codepath doesn't support toggling a deactivated realm emoji.
     // Since an user can interact with a deactivated realm emoji only by
@@ -139,7 +122,27 @@ exports.toggle_emoji_reaction = function (message_id, emoji_name) {
 };
 
 exports.process_reaction_click = function (message_id, local_id) {
-    const reaction_info = exports.get_reaction_info(local_id);
+    const message = get_message(message_id);
+
+    if (!message) {
+        blueslip.error('message_id for reaction click is unknown: ' + message_id);
+        return;
+    }
+
+    const r = message.clean_reactions.get(local_id);
+
+    if (!r) {
+        blueslip.error(
+            'Data integrity problem for reaction ' + local_id +
+            ' (message ' + message_id + ')');
+        return;
+    }
+
+    const reaction_info = {
+        reaction_type: r.reaction_type,
+        emoji_name: r.emoji_name,
+        emoji_code: r.emoji_code,
+    };
 
     update_ui_and_send_reaction_ajax(message_id, reaction_info);
 };
@@ -170,8 +173,9 @@ function generate_title(emoji_name, user_ids) {
 exports.get_reaction_title_data = function (message_id, local_id) {
     const message = get_message(message_id);
 
-    const user_list = get_user_list_for_message_reaction(message, local_id);
-    const emoji_name = exports.get_reaction_info(local_id).emoji_name;
+    const r = message.clean_reactions.get(local_id);
+    const user_list = r.user_ids;
+    const emoji_name = r.emoji_name;
     const title = generate_title(emoji_name, user_list);
 
     return title;
@@ -407,18 +411,6 @@ exports.get_emojis_used_by_user_for_message_id = function (message_id) {
     }
 
     return names;
-};
-
-exports.get_name_for_alias = function (message, user_id, aliases) {
-    exports.set_clean_reactions(message);
-
-    for (const r of message.clean_reactions.values()) {
-        if (aliases.includes(r.emoji_name)) {
-            if (r.user_ids.includes(user_id)) {
-                return r.emoji_name;
-            }
-        }
-    }
 };
 
 exports.get_message_reactions = function (message) {
