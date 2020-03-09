@@ -40,7 +40,7 @@ class SlowQueryTest(ZulipTestCase):
 
         self.log_data['time_started'] = time.time() - self.SLOW_QUERY_TIME
         write_log_line(self.log_data, path='/socket/open', method='SOCKET',
-                       remote_ip='123.456.789.012', email='unknown', client_name='?')
+                       remote_ip='123.456.789.012', requestor_for_logs='unknown', client_name='?')
         last_message = self.get_last_message()
         self.assertEqual(last_message.sender.email, "error-bot@zulip.com")
         self.assertIn("logs", str(last_message.recipient))
@@ -56,7 +56,7 @@ class SlowQueryTest(ZulipTestCase):
                                               mock_logging_info: Mock) -> None:
         self.log_data['time_started'] = time.time() - self.SLOW_QUERY_TIME
         write_log_line(self.log_data, path='/socket/open', method='SOCKET',
-                       remote_ip='123.456.789.012', email='unknown', client_name='?')
+                       remote_ip='123.456.789.012', requestor_for_logs='unknown', client_name='?')
         mock_internal_send_stream_message.assert_not_called()
 
 class OpenGraphTest(ZulipTestCase):

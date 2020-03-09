@@ -379,7 +379,7 @@ body:
         self.assertTrue(rate_limit_mock.called)
 
         # Verify decorator set the magic _email field used by some of our back end logging.
-        self.assertEqual(request._email, webhook_bot_email)
+        self.assertEqual(request._requestor_for_logs, webhook_bot.format_requestor_for_logs())
 
         # Verify the main purpose of the decorator, which is that it passed in the
         # user_profile to my_webhook, allowing it return the correct
@@ -1365,7 +1365,7 @@ class TestInternalNotifyView(TestCase):
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(req))
             self.assertEqual(self.internal_notify(False, req), self.BORING_RESULT)
-            self.assertEqual(req._email, 'internal')
+            self.assertEqual(req._requestor_for_logs, 'internal')
 
             with self.assertRaises(RuntimeError):
                 self.internal_notify(True, req)
@@ -1374,7 +1374,7 @@ class TestInternalNotifyView(TestCase):
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(req))
             self.assertEqual(self.internal_notify(True, req), self.BORING_RESULT)
-            self.assertEqual(req._email, 'internal')
+            self.assertEqual(req._requestor_for_logs, 'internal')
 
             with self.assertRaises(RuntimeError):
                 self.internal_notify(False, req)
