@@ -21,7 +21,7 @@ from zerver.lib.exceptions import UnexpectedWebhookEventType
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, is_remote_server, has_api_key_format
+from zerver.lib.utils import statsd, has_api_key_format
 from zerver.lib.exceptions import JsonableError, ErrorCode, \
     InvalidJSONError, InvalidAPIKeyError, InvalidAPIKeyFormatError, \
     OrganizationAdministratorRequired
@@ -186,7 +186,8 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
     if role is not None:
         role = role.strip()
 
-    if settings.ZILENCER_ENABLED and role is not None and is_remote_server(role):
+    # If `role` doesn't look like an email, it might be a uuid.
+    if settings.ZILENCER_ENABLED and role is not None and '@' not in role:
         try:
             remote_server = get_remote_server_by_uuid(role)
         except RemoteZulipServer.DoesNotExist:
