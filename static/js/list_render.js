@@ -21,6 +21,27 @@ exports.filter = (value, list, opts) => {
     });
 };
 
+exports.validate_filter = (opts) => {
+    if (!opts.filter) {
+        return;
+    }
+    if (opts.filter.predicate) {
+        if (typeof opts.filter.predicate !== 'function') {
+            blueslip.error('Filter predicate function is missing.');
+            return;
+        }
+        if (opts.filter.filterer) {
+            blueslip.error('Filterer and predicate are mutually exclusive.');
+            return;
+        }
+    } else {
+        if (typeof opts.filter.filterer !== 'function') {
+            blueslip.error('Filter filterer function is missing.');
+            return;
+        }
+    }
+};
+
 // @params
 // container: jQuery object to append to.
 // list: The list of items to progressively append.
@@ -60,22 +81,7 @@ exports.create = function ($container, list, opts) {
     if (!opts) {
         return;
     }
-
-    if (opts.filter.predicate) {
-        if (typeof opts.filter.predicate !== 'function') {
-            blueslip.error('Filter predicate function is missing.');
-            return;
-        }
-        if (opts.filter.filterer) {
-            blueslip.error('Filterer and predicate are mutually exclusive.');
-            return;
-        }
-    } else {
-        if (typeof opts.filter.filterer !== 'function') {
-            blueslip.error('Filter filterer function is missing.');
-            return;
-        }
-    }
+    exports.validate_filter(opts);
 
     const prototype = {
         // Reads the provided list (in the scope directly above)
@@ -239,7 +245,7 @@ exports.create = function ($container, list, opts) {
                 // of items.
                 prototype.init();
 
-                if (opts.filter.onupdate) {
+                if (opts.filter && opts.filter.onupdate) {
                     opts.filter.onupdate();
                 }
             }
@@ -288,7 +294,7 @@ exports.create = function ($container, list, opts) {
                 opts.parent_container.on("click", "[data-sort]", exports.handle_sort);
             }
 
-            if (opts.filter.element) {
+            if (opts.filter && opts.filter.element) {
                 opts.filter.element.on(opts.filter.event || "input", function () {
                     const self = this;
                     const value = self.value.toLocaleLowerCase();
