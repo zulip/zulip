@@ -206,20 +206,22 @@ html {
     position: fixed;
     width: 100%;
     top: 0;
-}
 
-.header .top-links a,
-.header .header-main .logo span {
-    color: hsl(0, 0%, 27%);
-}
+    .top-links a,
+    .header-main .logo span {
+        color: hsl(0, 0%, 27%);
+    }
 
-.header .header-main .logo .brand-logo circle {
-    fill: hsl(0, 0%, 27%) !important;
-}
+    .header-main .logo .brand-logo {
+        circle {
+            fill: hsl(0, 0%, 27%) !important;
+        }
 
-.header .header-main .logo .brand-logo path {
-    fill: hsl(0, 0%, 100%) !important;
-    stroke: hsl(0, 0%, 100%) !important;
+        path {
+            fill: hsl(0, 0%, 100%) !important;
+            stroke: hsl(0, 0%, 100%) !important;
+        }
+    }
 }
 
 .register-form.new-style {
