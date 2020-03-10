@@ -51,7 +51,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         self.url = self.build_webhook_url()
         payload = self.get_body('status_changed_fixture_with_missing_key')
         kwargs = {
-            'HTTP_AUTHORIZATION': self.encode_credentials(self.TEST_USER_EMAIL),
+            'HTTP_AUTHORIZATION': self.encode_email(self.TEST_USER_EMAIL),
             'content_type': 'application/x-www-form-urlencoded',
         }
         result = self.client_post(self.url, payload, **kwargs)
@@ -80,7 +80,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         self.url = self.build_webhook_url()
         payload = self.get_body('unknown_payload')
         kwargs = {
-            'HTTP_AUTHORIZATION': self.encode_credentials(self.TEST_USER_EMAIL),
+            'HTTP_AUTHORIZATION': self.encode_email(self.TEST_USER_EMAIL),
             'content_type': 'application/x-www-form-urlencoded',
         }
         result = self.client_post(self.url, payload, **kwargs)
