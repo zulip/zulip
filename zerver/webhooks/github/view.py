@@ -313,8 +313,12 @@ def get_pull_request_review_comment_body(payload: Dict[str, Any],
 
 def get_pull_request_review_requested_body(payload: Dict[str, Any],
                                            include_title: Optional[bool]=False) -> str:
-    requested_reviewers = (payload['pull_request']['requested_reviewers'] or
-                           [payload['requested_reviewer']])
+    requested_reviewer = [payload['requested_reviewer']] if 'requested_reviewer' in payload else []
+    requested_reviewers = (payload['pull_request']['requested_reviewers'] or requested_reviewer)
+
+    requested_team = [payload['requested_team']] if 'requested_team' in payload else []
+    requested_team_reviewers = (payload['pull_request']['requested_teams'] or requested_team)
+
     sender = get_sender_name(payload)
     pr_number = payload['pull_request']['number']
     pr_url = payload['pull_request']['html_url']
@@ -323,13 +327,19 @@ def get_pull_request_review_requested_body(payload: Dict[str, Any],
                           "[PR #{pr_number} {title}]({pr_url}).")
     body = message_with_title if include_title else message
 
+    all_reviewers = []
+
+    for reviewer in requested_reviewers:
+        all_reviewers.append("[{login}]({html_url})".format(**reviewer))
+
+    for team_reviewer in requested_team_reviewers:
+        all_reviewers.append("[{name}]({html_url})".format(**team_reviewer))
+
     reviewers = ""
-    if len(requested_reviewers) == 1:
-        reviewers = "[{login}]({html_url})".format(**requested_reviewers[0])
+    if len(all_reviewers) == 1:
+        reviewers = all_reviewers[0]
     else:
-        for reviewer in requested_reviewers[:-1]:
-            reviewers += "[{login}]({html_url}), ".format(**reviewer)
-        reviewers += "and [{login}]({html_url})".format(**requested_reviewers[-1])
+        reviewers = "{} and {}".format(', '.join(all_reviewers[:-1]), all_reviewers[-1])
 
     return body.format(
         sender=sender,
