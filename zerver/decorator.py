@@ -196,7 +196,7 @@ def process_client(
     query: Optional[str] = None,
 ) -> None:
     if client_name is None:
-        client_name = get_client_name(request)
+        client_name = request.client_name
 
     # We could check for a browser's name being "Mozilla", but
     # e.g. Opera and MobileSafari don't set that, and it seems

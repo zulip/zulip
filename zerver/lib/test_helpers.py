@@ -352,6 +352,7 @@ class HostRequestMock:
         self.user = user_profile
         self.body = ""
         self.content_type = ""
+        self.client_name = ""
 
     def get_host(self) -> str:
         return self.host

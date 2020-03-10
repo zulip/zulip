@@ -20,6 +20,7 @@ from django.views.csrf import csrf_failure as html_csrf_failure
 from sentry_sdk import capture_exception
 from sentry_sdk.integrations.logging import ignore_logger
 
+from zerver.decorator import get_client_name
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
@@ -288,6 +289,9 @@ class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
     # for some views, process_view isn't run, so we call the start
     # method here too
+    def process_user_agent(self, request: HttpRequest) -> None:
+        request.client_name = get_client_name(request)
+
     def process_request(self, request: HttpRequest) -> None:
         maybe_tracemalloc_listen()
 
@@ -298,6 +302,7 @@ class LogRequests(MiddlewareMixin):
 
             # Avoid re-initializing request._log_data if it's already there.
             return
+        self.process_user_agent(request)
 
         request._log_data = {}
         record_request_start_data(request._log_data)
@@ -343,7 +348,7 @@ class LogRequests(MiddlewareMixin):
         try:
             client = request.client.name
         except Exception:
-            client = "?"
+            client = request.client_name
 
         if response.streaming:
             content_iter = response.streaming_content
