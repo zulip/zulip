@@ -1913,6 +1913,136 @@ paths:
                         "result": "success",
                         "msg": ""
                     }
+  /users/me/presence:
+    post:
+      operationId: update_presence
+      tags: ["users"]
+      description: |
+        Update your presence status.
+
+        `POST {{ api_url }}/v1/users/me/presence`
+
+        See [Zulip's developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/presence.html)
+        for details on the data model for presence in Zulip.
+      parameters:
+      - name: status
+        in: query
+        description: |
+          The status of the requesting user.
+        schema:
+          type: string
+        example: idle
+        required: true
+      - name: ping_only
+        in: query
+        description: |
+          Whether the purpose of the request is to ping only.
+        schema:
+          type: boolean
+        example: false
+        required: false
+      - name: new_user_input
+        in: query
+        description: |
+          Whether the user has interacted with the client recently.
+        schema:
+          type: boolean
+        example: false
+        required: false
+      - name: slim_presence
+        in: query
+        description: |
+          Whether the requesting user wants user_id as key instead of email in the returned data.
+        schema:
+          type: boolean
+        example: false
+        required: false
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    presences:
+                      type: object
+                      description: |
+                        An object containing the presence details of all the users
+                        for every type of client the user has ever logged into.
+                      additionalProperties:
+                        type: object
+                        properties:
+                          additionalProperties:
+                            type: object
+                            properties:
+                              client:
+                                type: string
+                                description: |
+                                  `{client_name}`
+                              timestamp:
+                                type: integer
+                                description: |
+                                  when this update was received; if the timestamp
+                                  is more than a few minutes in the past, the user is offline.
+                              status:
+                                type: string
+                                description: |
+                                  either `active` or `idle`: whether the user had
+                                  recently interacted with Zulip at the time in the timestamp
+                                  (this distinguishes orange vs. green dots in the Zulip web
+                                  UI; orange/idle means we don't know whether the user is
+                                  actually at their computer or just left the Zulip app open
+                                  on their desktop).
+                            description: |
+                              `{client_name}` or `aggregated`: the keys for these objects are
+                              the names of the different clients where this user is logged in,
+                              like `website`, `ZulipDesktop`, `ZulipTerminal`, or
+                              `ZulipMobile`. There is also an `aggregated` key, which matches
+                              the contents of the object that has been updated most
+                              recently. For most applications, you'll just want to look at the
+                              `aggregated` key.
+                        description: |
+                          User email or ID.
+                    server_timestamp:
+                      type: number
+                      description: |
+                        Current time.
+                - example:
+                    {
+                      "result": "success",
+                      "msg": "",
+                      "presences": {
+                        "hamlet@zulip.com": {
+                          "aggregated": {
+                            "client": "website",
+                            "status": "idle",
+                            "timestamp": 1583836556
+                          },
+                          "website": {
+                            "client": "website",
+                            "status": "idle",
+                            "timestamp": 1583836556,
+                            "pushable": false
+                          }
+                        },
+                        "othello@zulip.com": {
+                          "aggregated": {
+                            "client": "ZulipAndroid",
+                            "status": "active",
+                            "timestamp": 1583836556
+                          },
+                          "ZulipAndroid": {
+                            "client": "ZulipAndroid",
+                            "status": "active",
+                            "timestamp": 1583836556,
+                            "pushable": false
+                          }
+                        }
+                      },
+                      "server_timestamp": 1583836556.5727468
+                    }
   /users/me:
     get:
       operationId: get_own_user

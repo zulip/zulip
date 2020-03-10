@@ -132,6 +132,8 @@ def get_user_presence(client: Client) -> None:
 
 @openapi_test_function("/users/me/presence:post")
 def update_presence(client: Client) -> None:
+    # {code_example|start}
+    # Update your presence status.
     request = {
         'status': 'active',
         'ping_only': False,
@@ -139,8 +141,8 @@ def update_presence(client: Client) -> None:
     }
 
     result = client.update_presence(request)
-
-    assert result['result'] == 'success'
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/me/presence', 'post', '200')
 
 @openapi_test_function("/users:post")
 def create_user(client: Client) -> None:
