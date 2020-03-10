@@ -62,7 +62,7 @@ class WidgetContentTestCase(ZulipTestCase):
         self.assertEqual(check_widget_content(obj), None)
 
     def test_message_error_handling(self) -> None:
-        sender_email = self.example_email('cordelia')
+        sender = self.example_user('cordelia')
         stream_name = 'Verona'
 
         payload = dict(
@@ -74,12 +74,12 @@ class WidgetContentTestCase(ZulipTestCase):
         )
 
         payload['widget_content'] = '{{{{{{'  # unparsable
-        result = self.api_post(sender_email, "/api/v1/messages", payload)
+        result = self.api_post(sender, "/api/v1/messages", payload)
         self.assert_json_error_contains(result, 'Widgets: API programmer sent invalid JSON')
 
         bogus_data = dict(color='red', foo='bar', x=2)
         payload['widget_content'] = ujson.dumps(bogus_data)
-        result = self.api_post(sender_email, "/api/v1/messages", payload)
+        result = self.api_post(sender, "/api/v1/messages", payload)
         self.assert_json_error_contains(result, 'Widgets: widget_type is not in widget_content')
 
     def test_get_widget_data_for_non_widget_messages(self) -> None:
@@ -106,7 +106,7 @@ class WidgetContentTestCase(ZulipTestCase):
         # Users can send widget_content directly on messages
         # using the `widget_content` field.
 
-        sender_email = self.example_email('cordelia')
+        sender = self.example_user('cordelia')
         stream_name = 'Verona'
         content = 'does-not-matter'
         zform_data = dict(
@@ -130,7 +130,7 @@ class WidgetContentTestCase(ZulipTestCase):
             content=content,
             widget_content=widget_content,
         )
-        result = self.api_post(sender_email, "/api/v1/messages", payload)
+        result = self.api_post(sender, "/api/v1/messages", payload)
         self.assert_json_success(result)
 
         message = self.get_last_message()
@@ -150,7 +150,7 @@ class WidgetContentTestCase(ZulipTestCase):
         # and it also helps us get test coverage that could apply
         # to future widgets.
 
-        sender_email = self.example_email('cordelia')
+        sender = self.example_user('cordelia')
         stream_name = 'Verona'
         content = '/tictactoe'
 
@@ -161,7 +161,7 @@ class WidgetContentTestCase(ZulipTestCase):
             topic='whatever',
             content=content,
         )
-        result = self.api_post(sender_email, "/api/v1/messages", payload)
+        result = self.api_post(sender, "/api/v1/messages", payload)
         self.assert_json_success(result)
 
         message = self.get_last_message()
@@ -177,7 +177,7 @@ class WidgetContentTestCase(ZulipTestCase):
         self.assertEqual(ujson.loads(submessage.content), expected_submessage_content)
 
     def test_poll_command_extra_data(self) -> None:
-        sender_email = self.example_email('cordelia')
+        sender = self.example_user('cordelia')
         stream_name = 'Verona'
         # We test for both trailing and leading spaces, along with blank lines
         # for the poll options.
@@ -190,7 +190,7 @@ class WidgetContentTestCase(ZulipTestCase):
             topic='whatever',
             content=content,
         )
-        result = self.api_post(sender_email, "/api/v1/messages", payload)
+        result = self.api_post(sender, "/api/v1/messages", payload)
         self.assert_json_success(result)
 
         message = self.get_last_message()
@@ -212,7 +212,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         content = '/poll'
         payload['content'] = content
-        result = self.api_post(sender_email, "/api/v1/messages", payload)
+        result = self.api_post(sender, "/api/v1/messages", payload)
         self.assert_json_success(result)
 
         expected_submessage_content = dict(

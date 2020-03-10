@@ -70,7 +70,7 @@ class MutedTopicsTests(ZulipTestCase):
         ]
 
         for data in payloads:
-            result = self.api_patch(user.email, url, data)
+            result = self.api_patch(user, url, data)
             self.assert_json_success(result)
 
             self.assertIn([stream.name, 'Verona3'], get_topic_mutes(user))
@@ -109,7 +109,7 @@ class MutedTopicsTests(ZulipTestCase):
             )
             self.assertIn([stream.name, 'Verona3'], get_topic_mutes(user))
 
-            result = self.api_patch(email, url, data)
+            result = self.api_patch(user, url, data)
 
             self.assert_json_success(result)
             self.assertNotIn([stream.name, 'Verona3'], get_topic_mutes(user))
@@ -134,19 +134,19 @@ class MutedTopicsTests(ZulipTestCase):
         url = '/api/v1/users/me/subscriptions/muted_topics'
 
         data = {'stream': stream.name, 'topic': 'Verona3', 'op': 'add'}  # type: Dict[str, Any]
-        result = self.api_patch(email, url, data)
+        result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Topic already muted")
 
         data = {'stream_id': 999999999, 'topic': 'Verona3', 'op': 'add'}
-        result = self.api_patch(email, url, data)
+        result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Invalid stream id")
 
         data = {'topic': 'Verona3', 'op': 'add'}
-        result = self.api_patch(email, url, data)
+        result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Please supply 'stream'.")
 
         data = {'stream': stream.name, 'stream_id': stream.id, 'topic': 'Verona3', 'op': 'add'}
-        result = self.api_patch(email, url, data)
+        result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Please choose one: 'stream' or 'stream_id'.")
 
     def test_muted_topic_remove_invalid(self) -> None:
@@ -158,21 +158,21 @@ class MutedTopicsTests(ZulipTestCase):
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
         data = {'stream': 'BOGUS', 'topic': 'Verona3', 'op': 'remove'}  # type: Dict[str, Any]
-        result = self.api_patch(email, url, data)
+        result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Topic is not muted")
 
         data = {'stream': stream.name, 'topic': 'BOGUS', 'op': 'remove'}
-        result = self.api_patch(email, url, data)
+        result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Topic is not muted")
 
         data = {'stream_id': 999999999, 'topic': 'BOGUS', 'op': 'remove'}
-        result = self.api_patch(email, url, data)
+        result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Topic is not muted")
 
         data = {'topic': 'Verona3', 'op': 'remove'}
-        result = self.api_patch(email, url, data)
+        result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Please supply 'stream'.")
 
         data = {'stream': stream.name, 'stream_id': stream.id, 'topic': 'Verona3', 'op': 'remove'}
-        result = self.api_patch(email, url, data)
+        result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Please choose one: 'stream' or 'stream_id'.")

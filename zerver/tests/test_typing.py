@@ -24,7 +24,7 @@ class TypingValidateOperatorTest(ZulipTestCase):
         params = dict(
             to=ujson.dumps([sender.id]),
         )
-        result = self.api_post(sender.email, '/api/v1/typing', params)
+        result = self.api_post(sender, '/api/v1/typing', params)
         self.assert_json_error(result, 'Missing \'op\' argument')
 
     def test_invalid_parameter(self) -> None:
@@ -36,7 +36,7 @@ class TypingValidateOperatorTest(ZulipTestCase):
             to=ujson.dumps([sender.id]),
             op='foo'
         )
-        result = self.api_post(sender.email, '/api/v1/typing', params)
+        result = self.api_post(sender, '/api/v1/typing', params)
         self.assert_json_error(result, 'Invalid \'op\' value (should be start or stop)')
 
 class TypingValidateUsersTest(ZulipTestCase):
@@ -44,7 +44,7 @@ class TypingValidateUsersTest(ZulipTestCase):
         """
         Sending typing notification without recipient fails
         """
-        sender = self.example_email("hamlet")
+        sender = self.example_user("hamlet")
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start', 'to': '[]'})
         self.assert_json_error(result, 'Missing parameter: \'to\' (recipient)')
 
@@ -52,7 +52,7 @@ class TypingValidateUsersTest(ZulipTestCase):
         """
         Sending typing notification without recipient fails
         """
-        sender = self.example_email("hamlet")
+        sender = self.example_user("hamlet")
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start'})
         self.assert_json_error(result, "Missing parameter: 'to' (recipient)")
 
@@ -60,7 +60,7 @@ class TypingValidateUsersTest(ZulipTestCase):
         """
         Sending typing notification to invalid recipient fails
         """
-        sender = self.example_email("hamlet")
+        sender = self.example_user("hamlet")
         invalid = 'bad email'
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start', 'to': invalid})
         self.assert_json_error(result, "Invalid email 'bad email'")
@@ -69,7 +69,7 @@ class TypingValidateUsersTest(ZulipTestCase):
         """
         Sending typing notification to invalid recipient fails
         """
-        sender = self.example_email("hamlet")
+        sender = self.example_user("hamlet")
         invalid = '[9999999]'
         result = self.api_post(sender, '/api/v1/typing', {'op': 'start', 'to': invalid})
         self.assert_json_error(result, 'Invalid user ID 9999999')
@@ -90,11 +90,11 @@ class TypingHappyPathTest(ZulipTestCase):
         events = []  # type: List[Mapping[str, Any]]
         with queries_captured() as queries:
             with tornado_redirected_to_list(events):
-                result = self.api_post(sender.email, '/api/v1/typing', params)
+                result = self.api_post(sender, '/api/v1/typing', params)
 
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 6)
+        self.assertEqual(len(queries), 4)
 
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
@@ -127,10 +127,10 @@ class TypingHappyPathTest(ZulipTestCase):
 
         with queries_captured() as queries:
             with tornado_redirected_to_list(events):
-                result = self.api_post(sender.email, '/api/v1/typing', params)
+                result = self.api_post(sender, '/api/v1/typing', params)
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 7)
+        self.assertEqual(len(queries), 5)
 
         # We should not be adding new Huddles just because
         # a user started typing in the compose box.  Let's
@@ -161,7 +161,7 @@ class TypingHappyPathTest(ZulipTestCase):
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.api_post(
-                email,
+                user,
                 '/api/v1/typing',
                 {
                     'to': ujson.dumps([user.id]),
@@ -201,7 +201,7 @@ class TypingHappyPathTest(ZulipTestCase):
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.api_post(sender.email, '/api/v1/typing', params)
+            result = self.api_post(sender, '/api/v1/typing', params)
 
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
@@ -234,7 +234,7 @@ class TypingHappyPathTest(ZulipTestCase):
                 to=ujson.dumps([user.id]),
                 op='stop'
             )
-            result = self.api_post(email, '/api/v1/typing', params)
+            result = self.api_post(user, '/api/v1/typing', params)
 
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
@@ -268,7 +268,7 @@ class TypingHappyPathTest(ZulipTestCase):
                 to=ujson.dumps([recipient.id]),
                 op='stop'
             )
-            result = self.api_post(sender.email, '/api/v1/typing', params)
+            result = self.api_post(sender, '/api/v1/typing', params)
 
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
@@ -305,7 +305,7 @@ class TypingLegacyMobileSupportTest(ZulipTestCase):
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.api_post(sender.email, '/api/v1/typing', params)
+            result = self.api_post(sender, '/api/v1/typing', params)
 
         self.assert_json_success(result)
         event = events[0]['event']

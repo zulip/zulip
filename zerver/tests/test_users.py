@@ -1286,7 +1286,7 @@ class GetProfileTest(ZulipTestCase):
         user_profile = self.example_user(user_id)
         self.send_stream_message(user_profile, "Verona", "hello")
 
-        result = self.api_get(user_profile.email, "/api/v1/users/me")
+        result = self.api_get(user_profile, "/api/v1/users/me")
 
         max_id = most_recent_message(user_profile).id
 
@@ -1384,7 +1384,7 @@ class GetProfileTest(ZulipTestCase):
 
     def test_get_all_profiles_avatar_urls(self) -> None:
         user_profile = self.example_user('hamlet')
-        result = self.api_get(self.example_email("hamlet"), "/api/v1/users")
+        result = self.api_get(self.example_user("hamlet"), "/api/v1/users")
         self.assert_json_success(result)
 
         for user in result.json()['members']:

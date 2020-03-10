@@ -73,7 +73,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp.name = "zulip.txt"
 
         # Upload file via API
-        result = self.api_post(self.example_email("hamlet"), '/api/v1/user_uploads', {'file': fp})
+        result = self.api_post(self.example_user("hamlet"), '/api/v1/user_uploads', {'file': fp})
         self.assertIn("uri", result.json())
         uri = result.json()['uri']
         base = '/user_uploads/'
@@ -81,7 +81,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Download file via API
         self.logout()
-        response = self.api_get(self.example_email("hamlet"), uri)
+        response = self.api_get(self.example_user("hamlet"), uri)
         self.assertEqual(response.status_code, 200)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
@@ -100,7 +100,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp.name = "zulip.txt"
 
         # Upload file via API
-        result = self.api_post(self.example_email("hamlet"), '/api/v1/user_uploads', {'file': fp})
+        result = self.api_post(self.example_user("hamlet"), '/api/v1/user_uploads', {'file': fp})
         self.assertIn("uri", result.json())
         uri = result.json()['uri']
         base = '/user_uploads/'
@@ -127,7 +127,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         """
         fp = StringIO("zulip!")
         fp.name = "pasted_file"
-        result = self.api_post(self.example_email("hamlet"),
+        result = self.api_post(self.example_user("hamlet"),
                                "/api/v1/user_uploads?mimetype=image/png",
                                {"file": fp})
         self.assertEqual(result.status_code, 200)
@@ -497,7 +497,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_file_download_authorization_invite_only(self) -> None:
         user = self.example_user("hamlet")
         subscribed_emails = [user.email, self.example_email("cordelia")]
-        unsubscribed_emails = [self.example_email("othello"), self.example_email("prospero")]
+        unsubscribed_users = [self.example_user("othello"), self.example_user("prospero")]
         stream_name = "test-subscribe"
         self.make_stream(stream_name, realm=user.realm, invite_only=True, history_public_to_subscribers=False)
 
@@ -534,17 +534,17 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.logout()
         self.assertEqual(len(queries), 6)
 
-        def assert_cannot_access_file(user_email: str) -> None:
-            response = self.api_get(user_email, uri)
+        def assert_cannot_access_file(user: UserProfile) -> None:
+            response = self.api_get(user, uri)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
 
         late_subscribed_user = self.example_user("aaron")
         self.subscribe(late_subscribed_user, stream_name)
-        assert_cannot_access_file(late_subscribed_user.email)
+        assert_cannot_access_file(late_subscribed_user)
 
         # Unsubscribed user should not be able to view file
-        for unsubscribed_user in unsubscribed_emails:
+        for unsubscribed_user in unsubscribed_users:
             assert_cannot_access_file(unsubscribed_user)
 
     def test_file_download_authorization_invite_only_with_shared_history(self) -> None:
@@ -858,8 +858,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
     def test_get_user_avatar(self) -> None:
-        hamlet = self.example_email("hamlet")
-        self.login(hamlet)
+        hamlet = self.example_user("hamlet")
+        self.login(hamlet.email)
         cordelia = self.example_user('cordelia')
         cross_realm_bot = get_system_bot(settings.WELCOME_BOT)
 
@@ -902,8 +902,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                                status_code=401)
 
     def test_get_user_avatar_medium(self) -> None:
-        hamlet = self.example_email("hamlet")
-        self.login(hamlet)
+        hamlet = self.example_user("hamlet")
+        self.login(hamlet.email)
         cordelia = self.example_user('cordelia')
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
