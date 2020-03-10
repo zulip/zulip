@@ -35,10 +35,16 @@
 
         .user-list-arrow {
             position: absolute;
-            top: 1.5px;
+            top: 1.3px;
             right: 10px;
             font-size: 14px;
             display: none;
+
+            /*
+                For topic chevrons we use a slightly smaller
+                font to show they're "lower" in the hierarchy,
+                which also affects it positioning.
+            */
 
             i {
                 padding-right: 10px;
@@ -46,7 +52,7 @@
                 padding-left: 12px;
             }
 
-            &:hover {
+            i:hover {
                 display: inline;
                 cursor: pointer;
                 color: hsl(0, 0%, 0%);

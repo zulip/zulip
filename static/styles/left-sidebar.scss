@@ -297,6 +297,11 @@ li.top_left_starred_messages {
     line-height: 1.1;
 }
 
+/*
+  We use padding-left and padding-right so
+  the ellipsis-v button so we can have a
+  large click area
+*/
 .all-messages-arrow i,
 .stream-sidebar-arrow i,
 .starred-messages-sidebar-arrow i,
