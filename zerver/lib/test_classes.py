@@ -22,7 +22,6 @@ from django.utils import translation
 
 from two_factor.models import PhoneDevice
 from zerver.lib.initial_password import initial_password
-from zerver.lib.utils import is_remote_server
 from zerver.lib.users import get_api_key
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
@@ -419,37 +418,58 @@ class ZulipTestCase(TestCase):
         else:
             raise AssertionError("Couldn't find a confirmation email.")
 
-    def encode_credentials(self, identifier: str, realm: str="zulip") -> str:
+    def encode_uuid(self, uuid: str) -> str:
         """
         identifier: Can be an email or a remote server uuid.
         """
-        if identifier in self.API_KEYS:
-            api_key = self.API_KEYS[identifier]
+        if uuid in self.API_KEYS:
+            api_key = self.API_KEYS[uuid]
         else:
-            if is_remote_server(identifier):
-                api_key = get_remote_server_by_uuid(identifier).api_key
-            else:
-                user = get_user_by_delivery_email(identifier, get_realm(realm))
-                api_key = get_api_key(user)
-            self.API_KEYS[identifier] = api_key
+            api_key = get_remote_server_by_uuid(uuid).api_key
+            self.API_KEYS[uuid] = api_key
 
+        return self.encode_credentials(uuid, api_key)
+
+    def encode_email(self, email: str, realm: str="zulip") -> str:
+        assert '@' in email
+        if email in self.API_KEYS:
+            api_key = self.API_KEYS[email]
+        else:
+            user = get_user_by_delivery_email(email, get_realm(realm))
+            api_key = get_api_key(user)
+            self.API_KEYS[email] = api_key
+
+        return self.encode_credentials(email, api_key)
+
+    def encode_credentials(self, identifier: str, api_key: str) -> str:
+        """
+        identifier: Can be an email or a remote server uuid.
+        """
         credentials = "%s:%s" % (identifier, api_key)
         return 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
 
+    def uuid_get(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_uuid(identifier)
+        return self.client_get(*args, **kwargs)
+
+    def uuid_post(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_uuid(identifier)
+        return self.client_post(*args, **kwargs)
+
     def api_get(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_email(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_get(*args, **kwargs)
 
     def api_post(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_email(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_post(*args, **kwargs)
 
     def api_patch(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_email(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_patch(*args, **kwargs)
 
     def api_delete(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(identifier, kwargs.get('subdomain', 'zulip'))
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_email(identifier, kwargs.get('subdomain', 'zulip'))
         return self.client_delete(*args, **kwargs)
 
     def get_streams(self, user_profile: UserProfile) -> List[str]:
@@ -846,7 +866,7 @@ class WebhookTestCase(ZulipTestCase):
         self.url = self.build_webhook_url()
 
     def api_stream_message(self, email: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_email(email)
         return self.send_and_test_stream_message(*args, **kwargs)
 
     def send_and_test_stream_message(self, fixture_name: str, expected_topic: Optional[str]=None,

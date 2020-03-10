@@ -408,7 +408,7 @@ class SkipRateLimitingTest(ZulipTestCase):
             return json_success()
 
         request = HostRequestMock(host="zulip.testserver")
-        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials(self.example_email("hamlet"))
+        request.META['HTTP_AUTHORIZATION'] = self.encode_email(self.example_email("hamlet"))
         request.method = 'POST'
 
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
@@ -476,7 +476,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         webhook_bot_realm = get_realm('zulip')
 
         request = HostRequestMock()
-        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials(webhook_bot_email)
+        request.META['HTTP_AUTHORIZATION'] = self.encode_email(webhook_bot_email)
         request.method = 'POST'
         request.host = "zulip.testserver"
 
@@ -519,7 +519,7 @@ body:
         webhook_bot_realm = get_realm('zulip')
 
         request = HostRequestMock()
-        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials(webhook_bot_email)
+        request.META['HTTP_AUTHORIZATION'] = self.encode_email(webhook_bot_email)
         request.method = 'POST'
         request.host = "zulip.testserver"
 
@@ -560,7 +560,7 @@ body:
             raise Exception("raised by a non-webhook view")
 
         request = HostRequestMock()
-        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials("aaron@zulip.com")
+        request.META['HTTP_AUTHORIZATION'] = self.encode_email("aaron@zulip.com")
         request.method = 'POST'
         request.host = "zulip.testserver"
 
