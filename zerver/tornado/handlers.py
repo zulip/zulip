@@ -222,6 +222,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             request._requestor_for_logs = old_request._requestor_for_logs
         request.user = old_request.user
         request.client = old_request.client
+        request.client_name = old_request.client_name
 
         # The saved_response attribute, if present, causes
         # rest_dispatch to return the response immediately before
