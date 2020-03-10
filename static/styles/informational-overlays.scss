@@ -61,6 +61,7 @@
     width: 100%;
     vertical-align: middle;
     display: table;
+    overflow: hidden;
 
     td.definition {
         // keeps dividing line at same width for all tables in model.
@@ -109,7 +110,6 @@
 
     td:not(.definition) {
         text-align: left;
-        white-space: nowrap;
         font-weight: bold;
 
         :not(kbd) {
