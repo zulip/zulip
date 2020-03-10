@@ -1179,7 +1179,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # Make sure the bot cannot create their own default stream.
         url = "/api/v1/bots/{}".format(bot_user.id)
-        result = self.api_patch(bot_user.email, url, bot_info)
+        result = self.api_patch(bot_user, url, bot_info)
         self.assert_json_error_contains(result, 'endpoint does not accept')
 
     def test_patch_bot_events_register_stream_allowed(self) -> None:

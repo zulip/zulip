@@ -18,6 +18,10 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
+from zerver.models import (
+    UserProfile,
+)
+
 import DNS
 import mock
 import time
@@ -58,43 +62,40 @@ class RateLimitTests(ZulipTestCase):
 
         super().tearDown()
 
-    def send_api_message(self, email: str, content: str) -> HttpResponse:
-        return self.api_post(email, "/api/v1/messages", {"type": "stream",
-                                                         "to": "Verona",
-                                                         "client": "test suite",
-                                                         "content": content,
-                                                         "topic": "whatever"})
+    def send_api_message(self, user: UserProfile, content: str) -> HttpResponse:
+        return self.api_post(user, "/api/v1/messages", {"type": "stream",
+                                                        "to": "Verona",
+                                                        "client": "test suite",
+                                                        "content": content,
+                                                        "topic": "whatever"})
 
     def test_headers(self) -> None:
         user = self.example_user('hamlet')
-        email = user.email
         clear_history(RateLimitedUser(user))
 
-        result = self.send_api_message(email, "some stuff")
+        result = self.send_api_message(user, "some stuff")
         self.assertTrue('X-RateLimit-Remaining' in result)
         self.assertTrue('X-RateLimit-Limit' in result)
         self.assertTrue('X-RateLimit-Reset' in result)
 
     def test_ratelimit_decrease(self) -> None:
         user = self.example_user('hamlet')
-        email = user.email
         clear_history(RateLimitedUser(user))
-        result = self.send_api_message(email, "some stuff")
+        result = self.send_api_message(user, "some stuff")
         limit = int(result['X-RateLimit-Remaining'])
 
-        result = self.send_api_message(email, "some stuff 2")
+        result = self.send_api_message(user, "some stuff 2")
         newlimit = int(result['X-RateLimit-Remaining'])
         self.assertEqual(limit, newlimit + 1)
 
     def test_hit_ratelimits(self) -> None:
         user = self.example_user('cordelia')
-        email = user.email
         clear_history(RateLimitedUser(user))
 
         start_time = time.time()
         for i in range(6):
             with mock.patch('time.time', return_value=(start_time + i * 0.1)):
-                result = self.send_api_message(email, "some stuff %s" % (i,))
+                result = self.send_api_message(user, "some stuff %s" % (i,))
 
         self.assertEqual(result.status_code, 429)
         json = result.json()
@@ -108,19 +109,18 @@ class RateLimitTests(ZulipTestCase):
         # to make sure the rate-limiting code automatically forgives a user
         # after some time has passed.
         with mock.patch('time.time', return_value=(start_time + 1.0)):
-            result = self.send_api_message(email, "Good message")
+            result = self.send_api_message(user, "Good message")
 
             self.assert_json_success(result)
 
     @mock.patch('zerver.lib.rate_limiter.logger.warning')
     def test_hit_ratelimiterlockingexception(self, mock_warn: mock.MagicMock) -> None:
         user = self.example_user('cordelia')
-        email = user.email
         clear_history(RateLimitedUser(user))
 
         with mock.patch('zerver.lib.rate_limiter.incr_ratelimit',
                         side_effect=RateLimiterLockingException):
-            result = self.send_api_message(email, "some stuff")
+            result = self.send_api_message(user, "some stuff")
             self.assertEqual(result.status_code, 429)
             mock_warn.assert_called_with("Deadlock trying to incr_ratelimit for RateLimitedUser:Id: %s"
                                          % (user.id,))

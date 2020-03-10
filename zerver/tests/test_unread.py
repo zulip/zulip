@@ -52,7 +52,7 @@ class PointerTest(ZulipTestCase):
         email = user.email
         self.assertEqual(user.pointer, -1)
         msg_id = self.send_stream_message(self.example_user("othello"), "Verona")
-        result = self.api_post(email, "/api/v1/users/me/pointer", {"pointer": msg_id})
+        result = self.api_post(user, "/api/v1/users/me/pointer", {"pointer": msg_id})
         self.assert_json_success(result)
         self.assertEqual(get_user(email, user.realm).pointer, msg_id)
 
@@ -496,11 +496,11 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
         second_stream = self.subscribe(user_profile, "second_stream")
 
         property_name = "push_notifications"
-        result = self.api_post(user_profile.email, "/api/v1/users/me/subscriptions/properties",
+        result = self.api_post(user_profile, "/api/v1/users/me/subscriptions/properties",
                                {"subscription_data": ujson.dumps([{"property": property_name,
                                                                    "value": True,
                                                                    "stream_id": stream.id}])})
-        result = self.api_post(user_profile.email, "/api/v1/users/me/subscriptions/properties",
+        result = self.api_post(user_profile, "/api/v1/users/me/subscriptions/properties",
                                {"subscription_data": ujson.dumps([{"property": property_name,
                                                                    "value": True,
                                                                    "stream_id": second_stream.id}])})

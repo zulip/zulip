@@ -1014,7 +1014,7 @@ class DeactivatedRealmTest(ZulipTestCase):
                                                      "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
-        result = self.api_post(self.example_email("hamlet"),
+        result = self.api_post(self.example_user("hamlet"),
                                "/api/v1/messages", {"type": "private",
                                                     "content": "Test message",
                                                     "client": "test suite",
@@ -1142,7 +1142,7 @@ class InactiveUserTest(ZulipTestCase):
                                                      "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "Account is deactivated", status_code=400)
 
-        result = self.api_post(self.example_email("hamlet"),
+        result = self.api_post(self.example_user("hamlet"),
                                "/api/v1/messages", {"type": "private",
                                                     "content": "Test message",
                                                     "client": "test suite",
@@ -1238,20 +1238,16 @@ class InactiveUserTest(ZulipTestCase):
 
 
 class TestIncomingWebhookBot(ZulipTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        zulip_realm = get_realm('zulip')
-        self.webhook_bot = get_user('webhook-bot@zulip.com', zulip_realm)
-
     def test_webhook_bot_permissions(self) -> None:
-        result = self.api_post("webhook-bot@zulip.com",
+        webhook_bot = self.example_user('webhook_bot')
+        result = self.api_post(webhook_bot,
                                "/api/v1/messages", {"type": "private",
                                                     "content": "Test message",
                                                     "client": "test suite",
                                                     "to": self.example_email("othello")})
         self.assert_json_success(result)
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
-        result = self.api_get("webhook-bot@zulip.com", "/api/v1/messages", dict(post_params))
+        result = self.api_get(webhook_bot, "/api/v1/messages", dict(post_params))
         self.assert_json_error(result, 'This API is not available to incoming webhook bots.',
                                status_code=401)
 
@@ -1405,6 +1401,8 @@ class TestInternalNotifyView(TestCase):
 
 class TestHumanUsersOnlyDecorator(ZulipTestCase):
     def test_human_only_endpoints(self) -> None:
+        default_bot = self.example_user('default_bot')
+
         post_endpoints = [
             "/api/v1/users/me/apns_device_token",
             "/api/v1/users/me/android_gcm_reg_id",
@@ -1417,7 +1415,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/report/unnarrow_times",
         ]
         for endpoint in post_endpoints:
-            result = self.api_post('default-bot@zulip.com', endpoint)
+            result = self.api_post(default_bot, endpoint)
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
         patch_endpoints = [
@@ -1427,7 +1425,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/profile_data"
         ]
         for endpoint in patch_endpoints:
-            result = self.api_patch('default-bot@zulip.com', endpoint)
+            result = self.api_patch(default_bot, endpoint)
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
         delete_endpoints = [
@@ -1435,7 +1433,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/android_gcm_reg_id",
         ]
         for endpoint in delete_endpoints:
-            result = self.api_delete('default-bot@zulip.com', endpoint)
+            result = self.api_delete(default_bot, endpoint)
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
 class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
@@ -1650,7 +1648,8 @@ class TestRequireDecorators(ZulipTestCase):
         self.assert_json_error(result, "Not allowed for guest users")
 
     def test_require_member_or_admin_decorator(self) -> None:
-        result = self.api_get("outgoing-webhook@zulip.com", '/api/v1/bots')
+        outgoing_webhook_bot = self.example_user('outgoing_webhook_bot')
+        result = self.api_get(outgoing_webhook_bot, '/api/v1/bots')
         self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
         guest_user = self.example_user('polonius')

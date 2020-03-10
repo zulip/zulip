@@ -430,14 +430,16 @@ class ZulipTestCase(TestCase):
 
         return self.encode_credentials(uuid, api_key)
 
+    def encode_user(self, user: UserProfile) -> str:
+        email = user.delivery_email
+        api_key = user.api_key
+        return self.encode_credentials(email, api_key)
+
     def encode_email(self, email: str, realm: str="zulip") -> str:
+        # TODO: use encode_user where possible
         assert '@' in email
-        if email in self.API_KEYS:
-            api_key = self.API_KEYS[email]
-        else:
-            user = get_user_by_delivery_email(email, get_realm(realm))
-            api_key = get_api_key(user)
-            self.API_KEYS[email] = api_key
+        user = get_user_by_delivery_email(email, get_realm(realm))
+        api_key = get_api_key(user)
 
         return self.encode_credentials(email, api_key)
 
@@ -456,20 +458,20 @@ class ZulipTestCase(TestCase):
         kwargs['HTTP_AUTHORIZATION'] = self.encode_uuid(identifier)
         return self.client_post(*args, **kwargs)
 
-    def api_get(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_email(identifier, kwargs.get('subdomain', 'zulip'))
+    def api_get(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
         return self.client_get(*args, **kwargs)
 
-    def api_post(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_email(identifier, kwargs.get('subdomain', 'zulip'))
+    def api_post(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
         return self.client_post(*args, **kwargs)
 
-    def api_patch(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_email(identifier, kwargs.get('subdomain', 'zulip'))
+    def api_patch(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
         return self.client_patch(*args, **kwargs)
 
-    def api_delete(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_email(identifier, kwargs.get('subdomain', 'zulip'))
+    def api_delete(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
         return self.client_delete(*args, **kwargs)
 
     def get_streams(self, user_profile: UserProfile) -> List[str]:
@@ -696,7 +698,7 @@ class ZulipTestCase(TestCase):
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
-        result = self.api_post(user.email, "/api/v1/users/me/subscriptions", post_data, **kwargs)
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, **kwargs)
         return result
 
     def check_user_subscribed_only_to_streams(self, user_name: str,
@@ -865,8 +867,8 @@ class WebhookTestCase(ZulipTestCase):
         super().setUp()
         self.url = self.build_webhook_url()
 
-    def api_stream_message(self, email: str, *args: Any, **kwargs: Any) -> HttpResponse:
-        kwargs['HTTP_AUTHORIZATION'] = self.encode_email(email)
+    def api_stream_message(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs['HTTP_AUTHORIZATION'] = self.encode_user(user)
         return self.send_and_test_stream_message(*args, **kwargs)
 
     def send_and_test_stream_message(self, fixture_name: str, expected_topic: Optional[str]=None,

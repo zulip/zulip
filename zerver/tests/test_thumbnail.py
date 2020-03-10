@@ -33,7 +33,8 @@ class ThumbnailTest(ZulipTestCase):
             settings.S3_AUTH_UPLOADS_BUCKET,
             settings.S3_AVATAR_BUCKET)
 
-        self.login(self.example_email("hamlet"))
+        hamlet = self.example_user('hamlet')
+        self.login(hamlet.email)
         fp = StringIO("zulip!")
         fp.name = "zulip.jpeg"
 
@@ -79,7 +80,7 @@ class ThumbnailTest(ZulipTestCase):
         # Tests the /api/v1/thumbnail api endpoint with standard API auth
         self.logout()
         result = self.api_get(
-            self.example_email("hamlet"),
+            hamlet,
             '/thumbnail?url=%s&size=full' %
             (quoted_uri,))
         self.assertEqual(result.status_code, 302, result)
@@ -112,7 +113,7 @@ class ThumbnailTest(ZulipTestCase):
             # Test api endpoint with standard API authentication.
             self.logout()
             user_profile = self.example_user("hamlet")
-            result = self.api_get(user_profile.email,
+            result = self.api_get(user_profile,
                                   "/thumbnail?url=%s&size=thumbnail" % (quoted_url,))
             self.assertEqual(result.status_code, 302, result)
             expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
@@ -227,7 +228,7 @@ class ThumbnailTest(ZulipTestCase):
         self.logout()
         user_profile = self.example_user("hamlet")
         result = self.api_get(
-            self.example_email("hamlet"),
+            user_profile,
             '/thumbnail?url=%s&size=full' %
             (quoted_uri,))
         self.assertEqual(result.status_code, 302, result)
