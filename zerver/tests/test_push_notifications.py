@@ -138,14 +138,17 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         # We need the root ('') subdomain to be in use for this next
         # test, since the push bouncer API is only available there:
+        hamlet = self.example_user('hamlet')
         realm = get_realm("zulip")
         realm.string_id = ""
         realm.save()
 
-        result = self.api_post(self.example_email("hamlet"), endpoint, {'token': token,
-                                                                        'user_id': 15,
-                                                                        'token_kind': token_kind},
-                               subdomain="")
+        result = self.api_post(
+            hamlet,
+            endpoint,
+            dict(user_id=15, token=token, token_kind=token_kind),
+            subdomain='',
+        )
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_register_remote_push_user_paramas(self) -> None:
@@ -164,11 +167,15 @@ class PushBouncerNotificationTest(BouncerTestCase):
         result = self.uuid_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token, 'token_kind': 17})
         self.assert_json_error(result, "Invalid token type")
 
-        result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
-                                                                        'token_kind': token_kind,
-                                                                        'token': token})
+        result = self.api_post(
+            self.example_user("hamlet"),
+            endpoint,
+            dict(user_id=user_id, token_kin=token_kind, token=token),
+        )
         self.assert_json_error(result, "Account is not associated with this subdomain",
                                status_code=401)
+
+        hamlet = self.example_user('hamlet')
 
         # We need the root ('') subdomain to be in use for this next
         # test, since the push bouncer API is only available there:
@@ -176,9 +183,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
         realm.string_id = ""
         realm.save()
 
-        result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
-                                                                        'token_kind': token_kind,
-                                                                        'token': token})
+        result = self.api_post(
+            hamlet,
+            endpoint,
+            dict(user_id=user_id, token_kind=token_kind, token=token),
+        )
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
         result = self.uuid_post(

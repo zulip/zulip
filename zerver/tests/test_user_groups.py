@@ -429,7 +429,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         )
 
         with mock.patch('logging.info'):
-            result = self.api_post(sender.email, "/json/messages", payload)
+            result = self.api_post(sender, "/json/messages", payload)
 
         self.assert_json_success(result)
 
