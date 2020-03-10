@@ -24,6 +24,7 @@ from zerver.lib.html_to_text import get_content_description
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.types import ViewFuncT
 from zerver.lib.utils import statsd
 from zerver.models import Realm, flush_per_request_caches, get_realm
@@ -229,6 +230,9 @@ class LogRequests(MiddlewareMixin):
     # method here too
     def process_user_agent(self, request: HttpRequest) -> None:
         request.client_name = get_client_name(request)
+        request.client_version = None
+        if request.client_name.startswith("Zulip"):
+            request.client_version = parse_user_agent(request.META["HTTP_USER_AGENT"])["version"]
 
     def process_request(self, request: HttpRequest) -> None:
         maybe_tracemalloc_listen()
