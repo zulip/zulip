@@ -977,6 +977,10 @@ input[type=checkbox].inline-block {
     margin-top: 5px;
 }
 
+.edit_bot_form_container {
+    padding: 15px;
+}
+
 .edit_bot_form {
     font-size: 100%;
     margin: 0px;
@@ -1923,8 +1927,7 @@ input[type=text]#settings_search {
 @-moz-document url-prefix() {
     #settings_page select {
         -moz-appearance: none;
-        background: url('../images/dropdown.png') right / 20px;
-        background-repeat: no-repeat;
+        background: hsl(0, 0%, 100%) url('../images/dropdown.png') right / 20px no-repeat;
         padding-right: 20px;
     }
 }

@@ -386,12 +386,15 @@ exports.set_up = function () {
     let image_version = 0;
 
     $("#active_bots_list").on("click", "button.open_edit_bot_form", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        overlays.open_modal('edit_bot_modal');
         const li = $(e.currentTarget).closest('li');
         const bot_id = parseInt(li.find('.bot_info').attr('data-user-id'), 10);
         const bot = bot_data.get(bot_id);
         const users_list = people.get_active_humans();
-        $("#edit_bot").empty();
-        $("#edit_bot").append(render_edit_bot({
+        $("#edit_bot_modal").empty();
+        $("#edit_bot_modal").append(render_edit_bot({
             bot: bot,
             users_list: users_list,
         }));
@@ -400,7 +403,7 @@ exports.set_up = function () {
         const image = li.find(".image");
         const errors = form.find('.bot_edit_errors');
 
-        $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
+        $("#settings_page .edit_bot_form .edit-bot-owner select").val(bot.owner);
         const service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#service_data").append(render_settings_edit_outgoing_webhook_service({
@@ -427,7 +430,7 @@ exports.set_up = function () {
 
                 const full_name = form.find('.edit_bot_name').val();
                 const bot_owner = form.find('.edit-bot-owner select').val();
-                const file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
+                const file_input = $(".edit_bot_form").find('.edit_bot_avatar_file_input');
                 const spinner = form.find('.edit_bot_spinner');
                 const edit_button = form.find('.edit_bot_button');
 
@@ -472,11 +475,13 @@ exports.set_up = function () {
                             image_version += 1;
                             image.find('img').attr('src', data.avatar_url + '&v=' + image_version.toString());
                         }
+                        overlays.close_modal('edit_bot_modal');
                     },
                     error: function (xhr) {
                         loading.destroy_indicator(spinner);
                         edit_button.show();
                         errors.text(JSON.parse(xhr.responseText).msg).show();
+                        overlays.close_modal('edit_bot_modal');
                     },
                 });
             },
