@@ -107,7 +107,7 @@ const apps_events = function () {
 
         $(".info .platform").text(version_info.alt);
         $(".info .description").text(version_info.description);
-        $(".info .link").attr("href", version_info.link);
+        $(".info .desktop-download-link").attr("href", version_info.link);
         $(".download-from-google-play-store").attr("href", version_info.link);
         $(".download-from-apple-app-store").attr("href", version_info.link);
         $(".image img").attr("src", version_info.image);
