@@ -1061,37 +1061,6 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[4]', events[4])
         self.assert_on_error(error)
 
-    def test_send_more_than_one_invite_to_same_user(self) -> None:
-        self.user_profile = self.example_user('iago')
-        streams = []
-        for stream_name in ["Denmark", "Scotland"]:
-            streams.append(get_stream(stream_name, self.user_profile.realm))
-
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
-        prereg_users = PreregistrationUser.objects.get(email="foo@zulip.com")
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
-
-        invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
-        self.assertEqual(len(invites), 3)
-
-        do_create_user(
-            'foo@zulip.com',
-            'password',
-            self.user_profile.realm,
-            'full name', 'short name',
-            prereg_user=prereg_users,
-        )
-
-        accepted_invite = PreregistrationUser.objects.filter(
-            email__iexact="foo@zulip.com", status=0)
-        other_invites = PreregistrationUser.objects.filter(
-            email__iexact="foo@zulip.com", status=2)
-        # If a user was invited more than once, when it accepts one invite and register
-        # the others must be canceled.
-        self.assertEqual(len(accepted_invite), 1)
-        self.assertEqual(len(other_invites), 2)
-
     def test_typing_events(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('typing')),

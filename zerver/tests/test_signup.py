@@ -40,7 +40,7 @@ from zerver.lib.actions import (
     do_add_default_stream,
     do_create_realm,
     get_default_streams_for_realm,
-)
+    do_invite_users, do_create_user)
 from zerver.lib.send_email import send_future_email, FromAddress, \
     deliver_email
 from zerver.lib.initial_password import initial_password
@@ -1461,6 +1461,37 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         result = self.client_get(target_url)
         self.assert_in_success_response(["Whoops. The confirmation link has expired "
                                          "or been deactivated."], result)
+
+    def test_send_more_than_one_invite_to_same_user(self) -> None:
+        self.user_profile = self.example_user('iago')
+        streams = []
+        for stream_name in ["Denmark", "Scotland"]:
+            streams.append(get_stream(stream_name, self.user_profile.realm))
+
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+        prereg_users = PreregistrationUser.objects.get(email="foo@zulip.com")
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+
+        invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
+        self.assertEqual(len(invites), 3)
+
+        do_create_user(
+            'foo@zulip.com',
+            'password',
+            self.user_profile.realm,
+            'full name', 'short name',
+            prereg_user=prereg_users,
+        )
+
+        accepted_invite = PreregistrationUser.objects.filter(
+            email__iexact="foo@zulip.com", status=0)
+        other_invites = PreregistrationUser.objects.filter(
+            email__iexact="foo@zulip.com", status=confirmation_settings.STATUS_REVOKED)
+        # If a user was invited more than once, when it accepts one invite and register
+        # the others must be canceled.
+        self.assertEqual(len(accepted_invite), 1)
+        self.assertEqual(len(other_invites), 2)
 
     def test_validate_email_not_already_in_realm(self) -> None:
         email = self.nonreg_email("alice")
