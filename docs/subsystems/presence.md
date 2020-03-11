@@ -22,12 +22,15 @@ A client should report to the server every minute a `POST` request to
 requests contains a few parameters.  The most important is "status",
 which had 2 valid values:
 
-* <span style="color: green">active</span> -- this means the user is actively using and has nteracted with the client recently.  We use this for the "green" state in the webapp.
+* <span style="color: green">active</span> -- this means the user is actively
+ using and has nteracted with the client recently.  We use this for the "green"
+ state in the webapp.
 * <span style="color: orange">idle</span> -- the user has not interacted with the client recently.
-  `idle` doesn't mean the user has gone away or a goodbye. It simply indicates the user has not interacted with the system for a while.
+  `idle` doesn't mean the user has gone away or a goodbye. It simply indicates
+  the user has not interacted with the system for a while.
   This is important for the case where a user left a Zulip tab open on
   their desktop at work and went home for the weekend.  We use this
-  for the "orange" state in the webapp. So, 
+  for the "orange" state in the webapp. So,
 * The "inactive" state is reached when either the active or idle state has aged.
 
 The client receives in the response to that request a data set that,
@@ -46,7 +49,7 @@ about that data structure:
   accurately compute whether that user is offline (even if the last
   data from the server was 45 seconds ago, and the user was last
   online 4:30 before the client received that server data).
-* The `status_from_timestamp` function in `static/js/presence.js` is 
+* The `status_from_timestamp` function in `static/js/presence.js` is
   useful sample code; the `OFFLINE_THRESHOLD_SECS` check is critical
   to correct output.
 * We provide the data for e.g. whether the user was online on their
