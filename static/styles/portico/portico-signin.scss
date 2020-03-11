@@ -320,20 +320,22 @@ html {
     }
 }
 
-.new-style .alert:not(.alert-info) {
-    padding: 0;
-    margin-bottom: 0;
-    font-weight: 600;
-    font-size: 0.7em;
-    line-height: 1.2;
-    background-color: transparent;
+.new-style .alert {
+    &:not(.alert-info) {
+        padding: 0;
+        margin-bottom: 0;
+        font-weight: 600;
+        font-size: 0.7em;
+        line-height: 1.2;
+        background-color: transparent;
 
-    border: none;
-    color: hsl(0, 44%, 54%);
-}
+        border: none;
+        color: hsl(0, 44%, 54%);
+    }
 
-.new-style .alert.alert-error {
-    text-align: left;
+    &.alert-error {
+        text-align: left;
+    }
 }
 
 .new-style .form-inline {
@@ -377,6 +379,19 @@ html {
     transition: border 0.3s ease;
 }
 
+.new-style .input-box input[type=text]:focus:invalid,
+.new-style .input-box input[type=email]:focus:invalid,
+.new-style .input-box input[type=password]:focus:invalid {
+    box-shadow: none;
+    color: hsl(0, 0%, 27%);
+}
+
+.new-style .input-box input[type=text]:focus,
+.new-style .input-box input[type=email]:focus,
+.new-style .input-box input[type=password]:focus {
+    border: 1px solid hsl(0, 0%, 53%);
+}
+
 .new-style .input-box input[type=email] {
     margin-bottom: 10px;
 }
@@ -400,19 +415,6 @@ html {
     color: hsl(0, 0%, 67%);
 
     pointer-events: none;
-}
-
-.new-style .input-box input[type=text]:focus:invalid,
-.new-style .input-box input[type=email]:focus:invalid,
-.new-style .input-box input[type=password]:focus:invalid {
-    box-shadow: none;
-    color: hsl(0, 0%, 27%);
-}
-
-.new-style .input-box input[type=text]:focus,
-.new-style .input-box input[type=email]:focus,
-.new-style .input-box input[type=password]:focus {
-    border: 1px solid hsl(0, 0%, 53%);
 }
 
 .new-style .input-box label,
