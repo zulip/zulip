@@ -296,17 +296,12 @@ html {
     outline: none;
     color: hsl(0, 0%, 100%);
     background-color: hsl(213, 23%, 25%);
+    margin-top: 25px;
 
     border: none;
     border-radius: 4px;
 
     transition: all 0.3s ease;
-}
-
-.new-style button {
-    display: inline-block;
-    vertical-align: top;
-    margin-top: 25px;
 }
 
 .new-style button:hover {
