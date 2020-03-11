@@ -161,11 +161,18 @@ def find_log_origin(record: logging.LogRecord) -> str:
         module_name = find_log_caller_module(record)
         if module_name == logger_name or module_name == record.name:
             # Abbreviate a bit.
-            return logger_name
+            pass
         else:
-            return '{}/{}'.format(logger_name, module_name or '?')
-    else:
-        return logger_name
+            logger_name = '{}/{}'.format(logger_name, module_name or '?')
+
+    if settings.RUNNING_INSIDE_TORNADO:
+        # In multi-sharded Tornado, it's often valuable to have which shard is
+        # responsible for the request in the logs.
+        from zerver.tornado.ioloop_logging import logging_data
+        shard = logging_data.get('port', 'unknown')
+        logger_name = "{}:{}".format(logger_name, shard)
+
+    return logger_name
 
 log_level_abbrevs = {
     'DEBUG':    'DEBG',
