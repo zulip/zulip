@@ -62,47 +62,6 @@ html {
     height: 0px;
 }
 
-.login-page-container.dev-login {
-    margin-top: 20px;
-    border: none;
-}
-
-.login-page-container.dev-login .login-form {
-    width: auto;
-}
-
-.new-style .login-page-container .alert,
-.register-page-container .new-style .alert {
-    margin: 0;
-    text-align: left;
-    font-size: 0.7em;
-    font-weight: 600;
-}
-
-.register-page-container.closed-realm .right-side {
-    display: none;
-}
-
-.register-page-container.closed-realm .left-side {
-    border-right: none;
-}
-
-.register-page-container .invite-required {
-    display: none;
-    line-height: 1;
-}
-
-.register-page-container .invite-required i {
-    margin-right: 5px;
-}
-
-.register-page-container.closed-realm .invite-required {
-    display: block;
-
-    color: hsl(0, 0%, 67%);
-    font-weight: normal;
-}
-
 .app-main .login-page-header {
     font-size: 1.5em;
     font-weight: 300;
@@ -170,6 +129,47 @@ html {
 
 .app-main.confirm-continue-page-container p {
     font-size: 19px;
+}
+
+.login-page-container.dev-login {
+    margin-top: 20px;
+    border: none;
+}
+
+.login-page-container.dev-login .login-form {
+    width: auto;
+}
+
+.new-style .login-page-container .alert,
+.register-page-container .new-style .alert {
+    margin: 0;
+    text-align: left;
+    font-size: 0.7em;
+    font-weight: 600;
+}
+
+.register-page-container.closed-realm .right-side {
+    display: none;
+}
+
+.register-page-container.closed-realm .left-side {
+    border-right: none;
+}
+
+.register-page-container .invite-required {
+    display: none;
+    line-height: 1;
+}
+
+.register-page-container .invite-required i {
+    margin-right: 5px;
+}
+
+.register-page-container.closed-realm .invite-required {
+    display: block;
+
+    color: hsl(0, 0%, 67%);
+    font-weight: normal;
 }
 
 .find-account-page-container h3,
