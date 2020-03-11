@@ -276,22 +276,24 @@ html {
     margin: 0 auto 10px;
 }
 
-.register-account .terms-of-service .input-group,
-.register-account .default-stream-groups .input-group,
-.register-account .default-stream-groups p {
-    width: 330px;
-    margin: 0 auto 10px;
-}
+.register-account {
+    .terms-of-service .input-group,
+    .default-stream-groups .input-group,
+    .default-stream-groups p {
+        width: 330px;
+        margin: 0 auto 10px;
+    }
 
-.register-account .terms-of-service .text-error {
-    position: relative;
-    display: block;
-    top: -5px;
-    padding: 0;
-    height: 0;
+    .terms-of-service .text-error {
+        position: relative;
+        display: block;
+        top: -5px;
+        padding: 0;
+        height: 0;
 
-    font-size: 0.7em;
-    font-weight: 600;
+        font-size: 0.7em;
+        font-weight: 600;
+    }
 }
 
 .account-creation {
