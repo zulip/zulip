@@ -24,8 +24,8 @@ from zerver.lib.html_to_text import get_content_description
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.types import ViewFuncT
+from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import statsd
 from zerver.models import Realm, flush_per_request_caches, get_realm
 
@@ -103,8 +103,8 @@ statsd_blacklisted_requests = [
 ]
 
 def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str,
-                   requestor_for_logs: str, client_name: str, status_code: int=200,
-                   error_content: Optional[AnyStr]=None,
+                   requestor_for_logs: str, client_name: str, client_version: Optional[str]=None,
+                   status_code: int=200, error_content: Optional[AnyStr]=None,
                    error_content_iter: Optional[Iterable[AnyStr]]=None) -> None:
     assert error_content is None or error_content_iter is None
     if error_content is not None:
@@ -194,7 +194,10 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         extra_request_data = " {}".format(log_data['extra'])
     else:
         extra_request_data = ""
-    logger_client = f"({requestor_for_logs} via {client_name})"
+    if client_version is None:
+        logger_client = f"({requestor_for_logs} via {client_name})"
+    else:
+        logger_client = f"({requestor_for_logs} via {client_name}/{client_version})"
     logger_timing = f'{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{bugdown_output}{db_time_output}{startup_output} {path}'
     logger_line = f'{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}'
     if (status_code in [200, 304] and method == "GET" and path.startswith("/static")):
@@ -290,6 +293,7 @@ class LogRequests(MiddlewareMixin):
             client = request.client.name
         except Exception:
             client = request.client_name
+        client_version = request.client_version
 
         if response.streaming:
             content_iter = response.streaming_content
@@ -299,8 +303,10 @@ class LogRequests(MiddlewareMixin):
             content_iter = None
 
         write_log_line(request._log_data, request.path, request.method,
-                       remote_ip, requestor_for_logs, client, status_code=response.status_code,
-                       error_content=content, error_content_iter=content_iter)
+                       remote_ip, requestor_for_logs, client,
+                       client_version,
+                       status_code=response.status_code, error_content=content,
+                       error_content_iter=content_iter)
         return response
 
 class JsonErrorHandler(MiddlewareMixin):
