@@ -55,74 +55,78 @@ html {
     display: inline-block;
 }
 
-.app-main .login-page-header {
-    font-size: 1.5em;
-    font-weight: 300;
-    margin: 0px;
-    height: 0px;
-    transform: translateX(-15px) translateY(-60px);
-    text-align: left;
-}
+.app-main {
+    .login-page-header {
+        font-size: 1.5em;
+        font-weight: 300;
+        margin: 0px;
+        height: 0px;
+        transform: translateX(-15px) translateY(-60px);
+        text-align: left;
+    }
 
-.app-main .login-page-container.dev-login .login-page-header {
-    height: auto;
-    margin-top: 20px;
-    transform: none;
-    text-align: center;
-}
+    .login-page-container.dev-login {
+        .login-page-header {
+            height: auto;
+            margin-top: 20px;
+            transform: none;
+            text-align: center;
+        }
 
-.app-main .login-page-container.dev-login h2 {
-    font-size: 1em;
-    font-weight: 400;
-}
+        h2 {
+            font-size: 1em;
+            font-weight: 400;
+        }
 
-.app-main .login-page-container .group {
-    display: inline-block;
-    vertical-align: top;
+        .group {
+            display: inline-block;
+            vertical-align: top;
 
-    margin: 0px 20px;
-}
+            margin: 0px 20px;
+        }
+    }
 
-.app-main.forgot-password-container {
-    font-weight: 400;
-}
+    &.forgot-password-container {
+        font-weight: 400;
+    }
 
-.app-main.find-account-page-container {
-    width: 500px;
-    font-weight: 400;
-}
+    &.find-account-page-container {
+        width: 500px;
+        font-weight: 400;
+    }
 
-.app-main.goto-account-page-container {
-    width: 500px;
-    font-weight: 400;
-}
+    &.goto-account-page-container {
+        width: 500px;
+        font-weight: 400;
+    }
 
-.app-main.confirm-continue-page-container {
-    width: 400px;
-    font-weight: 400;
-}
+    &.confirm-continue-page-container {
+        width: 400px;
+        font-weight: 400;
 
-.app-main.confirm-continue-page-container .white-box {
-    min-width: 365px;
-}
+        .white-box {
+            min-width: 365px;
+        }
 
-.app-main.confirm-continue-page-container .form-inline {
-    display: inline-block;
-}
+        .form-inline {
+            display: inline-block;
+        }
 
-.app-main.confirm-continue-page-container .form-inline .outline {
-    border: 2px inset hsl(213, 23%, 25%);
-    background-color: hsl(0, 0%, 100%);
-    color: hsl(213, 23%, 25%);
-    padding: 13px 20px 11px 20px;
-}
+        .form-inline .outline {
+            border: 2px inset hsl(213, 23%, 25%);
+            background-color: hsl(0, 0%, 100%);
+            color: hsl(213, 23%, 25%);
+            padding: 13px 20px 11px 20px;
 
-.app-main.confirm-continue-page-container .form-inline .outline:hover {
-    background-color: hsl(213, 65%, 97%);
-}
+            &:hover {
+                background-color: hsl(213, 65%, 97%);
+            }
+        }
 
-.app-main.confirm-continue-page-container p {
-    font-size: 19px;
+        p {
+            font-size: 19px;
+        }
+    }
 }
 
 .login-page-container.dev-login {
