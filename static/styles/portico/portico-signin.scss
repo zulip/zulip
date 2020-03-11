@@ -103,10 +103,6 @@ html {
     font-weight: normal;
 }
 
-.new-style .inline-block {
-    text-align: left;
-}
-
 .app-main .login-page-header {
     font-size: 1.5em;
     font-weight: 300;
@@ -287,18 +283,24 @@ html {
     position: relative;
 }
 
-.new-style .input-box {
-    position: relative;
+.new-style button {
     display: inline-block;
     vertical-align: top;
-}
+    padding: 13px 22px 13px 22px;
 
-#login_form .input-box {
-    display: block;
-}
+    font-family: "Source Sans Pro";
 
-.new-style .form-inline {
-    margin: 0px;
+    font-size: 1.2rem;
+    font-weight: 400;
+    box-sizing: border-box;
+    outline: none;
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(213, 23%, 25%);
+
+    border: none;
+    border-radius: 4px;
+
+    transition: all 0.3s ease;
 }
 
 .new-style button {
@@ -307,20 +309,20 @@ html {
     margin-top: 25px;
 }
 
+.new-style button:hover {
+    background-color: hsl(213, 33%, 31%);
+}
+
+.new-style button:active {
+    background-color: hsl(214, 28%, 16%);
+}
+
 .new-style button:focus {
     outline: 3px solid hsl(213, 81%, 79%);
 }
 
 .new-style button.full-width {
     width: 100%;
-}
-
-.register-form button {
-    margin-top: 22px;
-}
-
-.register-page .register-form .new-organization-button {
-    margin-top: 25px;
 }
 
 .new-style .alert:not(.alert-info) {
@@ -335,12 +337,29 @@ html {
     color: hsl(0, 44%, 54%);
 }
 
+.new-style .alert.alert-error {
+    text-align: left;
+}
+
+.new-style .form-inline {
+    margin: 0px;
+}
+
+.new-style .get-started {
+    font-size: 2.5rem;
+    text-align: center;
+    color: hsl(0, 0%, 40%);
+    margin-bottom: 20px;
+}
+
 .new-style .right-side .alert {
     max-width: 328px;
 }
 
-.new-style .alert.alert-error {
-    text-align: left;
+.new-style .input-box {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
 }
 
 .new-style .input-box input[type=text],
@@ -442,39 +461,24 @@ html {
     padding-left: 0px;
 }
 
-.new-style .get-started {
-    font-size: 2.5rem;
-    text-align: center;
-    color: hsl(0, 0%, 40%);
-    margin-bottom: 20px;
+.new-style .lead {
+    margin: 0px;
 }
 
-.new-style button {
-    display: inline-block;
-    vertical-align: top;
-    padding: 13px 22px 13px 22px;
-
-    font-family: "Source Sans Pro";
-
-    font-size: 1.2rem;
-    font-weight: 400;
-    box-sizing: border-box;
-    outline: none;
-    color: hsl(0, 0%, 100%);
-    background-color: hsl(213, 23%, 25%);
-
-    border: none;
-    border-radius: 4px;
-
-    transition: all 0.3s ease;
+.new-style .inline-block {
+    text-align: left;
 }
 
-.new-style button:hover {
-    background-color: hsl(213, 33%, 31%);
+#login_form .input-box {
+    display: block;
 }
 
-.new-style button:active {
-    background-color: hsl(214, 28%, 16%);
+.register-form button {
+    margin-top: 22px;
+}
+
+.register-page .register-form .new-organization-button {
+    margin-top: 25px;
 }
 
 /* -- /accounts/register/ page -- */
@@ -562,10 +566,6 @@ html {
     font-weight: 400;
     color: hsl(0, 0%, 47%);
     margin-top: 5px;
-}
-
-.new-style .lead {
-    margin: 0px;
 }
 
 .confirm-email-change-page .white-box {
