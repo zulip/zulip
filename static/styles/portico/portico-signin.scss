@@ -217,28 +217,30 @@ html {
     }
 }
 
-.register-form.new-style {
-    text-align: left;
-    color: hsl(0, 0%, 45%);
-}
+.register-form {
+    &.new-style {
+        text-align: left;
+        color: hsl(0, 0%, 45%);
+    }
 
-.register-form #errors {
-    font-size: 0.8em;
-    font-weight: 400;
-    margin-bottom: 20px;
-    margin-top: 10px;
-}
+    #errors {
+        font-size: 0.8em;
+        font-weight: 400;
+        margin-bottom: 20px;
+        margin-top: 10px;
 
-.register-form #errors:empty {
-    margin-top: 0px;
-}
+        &:empty {
+            margin-top: 0px;
+        }
+    }
 
-.register-form button {
-    margin-top: 22px;
-}
+    button {
+        margin-top: 22px;
+    }
 
-.register-form .new-organization-button {
-    margin-top: 25px;
+    .new-organization-button {
+        margin-top: 25px;
+    }
 }
 
 .account-accept-terms-page .terms-of-service .input-group {
