@@ -58,7 +58,7 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
                                                        type=confirmation.type)
     prereg_user = confirmation_status_obj.content_object
     if not prereg_user.status == confirmation_settings.STATUS_ACTIVE:
-        return render(request, "zerver/realm_reactivation_link_error.html", context={})
+        return render(request, "zerver/confirmation_link_expired_error.html", context={})
     if confirmation is None or confirmation.type not in [
             Confirmation.USER_REGISTRATION, Confirmation.INVITATION, Confirmation.REALM_CREATION]:
         return render_confirmation_key_error(
@@ -82,7 +82,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     confirmation = Confirmation.objects.get(confirmation_key=key)
     prereg_user = confirmation.content_object
     if not prereg_user.status == confirmation_settings.STATUS_ACTIVE:
-        return render(request, "zerver/realm_reactivation_link_error.html", context={})
+        return render(request, "zerver/confirmation_link_expired_error.html", context={})
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
