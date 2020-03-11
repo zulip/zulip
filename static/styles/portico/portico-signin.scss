@@ -172,28 +172,32 @@ html {
     font-weight: 600;
 }
 
-.register-page-container.closed-realm .right-side {
-    display: none;
-}
+.register-page-container {
+    &.closed-realm {
+        .right-side {
+            display: none;
+        }
 
-.register-page-container.closed-realm .left-side {
-    border-right: none;
-}
+        .left-side {
+            border-right: none;
+        }
 
-.register-page-container.closed-realm .invite-required {
-    display: block;
+        .invite-required {
+            display: block;
 
-    color: hsl(0, 0%, 67%);
-    font-weight: normal;
-}
+            color: hsl(0, 0%, 67%);
+            font-weight: normal;
+        }
+    }
 
-.register-page-container .invite-required {
-    display: none;
-    line-height: 1;
-}
+    .invite-required {
+        display: none;
+        line-height: 1;
 
-.register-page-container .invite-required i {
-    margin-right: 5px;
+        i {
+            margin-right: 5px;
+        }
+    }
 }
 
 .find-account-page-container h3,
