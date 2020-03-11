@@ -140,6 +140,7 @@ def write_log_line(
     remote_ip: str,
     requestor_for_logs: str,
     client_name: str,
+    client_version: Optional[str] = None,
     status_code: int = 200,
     error_content: Optional[AnyStr] = None,
     error_content_iter: Optional[Iterable[AnyStr]] = None,
@@ -246,7 +247,10 @@ def write_log_line(
         extra_request_data = " {}".format(log_data["extra"])
     else:
         extra_request_data = ""
-    logger_client = f"({requestor_for_logs} via {client_name})"
+    if client_version is None:
+        logger_client = f"({requestor_for_logs} via {client_name})"
+    else:
+        logger_client = f"({requestor_for_logs} via {client_name}/{client_version})"
     logger_timing = f"{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{markdown_output}{db_time_output}{startup_output} {path}"
     logger_line = f"{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}"
     if status_code in [200, 304] and method == "GET" and path.startswith("/static"):
@@ -368,6 +372,7 @@ class LogRequests(MiddlewareMixin):
             remote_ip,
             requestor_for_logs,
             client,
+            client_version=request.client_version,
             status_code=response.status_code,
             error_content=content,
             error_content_iter=content_iter,
