@@ -261,22 +261,22 @@ html {
 
 .account-creation {
     font-weight: 400;
-}
 
-.account-creation .pitch {
-    margin-bottom: 0px;
-}
+    .pitch {
+        margin-bottom: 0px;
+    }
 
-.account-creation .alert.alert-info {
-    padding: 8px 14px;
-    text-align: left;
+    .alert.alert-info {
+        padding: 8px 14px;
+        text-align: left;
 
-    font-size: 1em;
-    line-height: 1.3;
-}
+        font-size: 1em;
+        line-height: 1.3;
+    }
 
-.account-creation .white-box p:last-of-type {
-    margin-bottom: 0px;
+    .white-box p:last-of-type {
+        margin-bottom: 0px;
+    }
 }
 
 .relative {
