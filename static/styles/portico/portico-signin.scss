@@ -302,22 +302,22 @@ html {
     border-radius: 4px;
 
     transition: all 0.3s ease;
-}
 
-.new-style button:hover {
-    background-color: hsl(213, 33%, 31%);
-}
+    &:hover {
+        background-color: hsl(213, 33%, 31%);
+    }
 
-.new-style button:active {
-    background-color: hsl(214, 28%, 16%);
-}
+    &:active {
+        background-color: hsl(214, 28%, 16%);
+    }
 
-.new-style button:focus {
-    outline: 3px solid hsl(213, 81%, 79%);
-}
+    &:focus {
+        outline: 3px solid hsl(213, 81%, 79%);
+    }
 
-.new-style button.full-width {
-    width: 100%;
+    &.full-width {
+        width: 100%;
+    }
 }
 
 .new-style .alert:not(.alert-info) {
