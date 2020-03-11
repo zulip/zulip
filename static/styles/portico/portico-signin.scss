@@ -233,6 +233,14 @@ html {
     margin-top: 0px;
 }
 
+.register-form button {
+    margin-top: 22px;
+}
+
+.register-form .new-organization-button {
+    margin-top: 25px;
+}
+
 .account-accept-terms-page .terms-of-service .input-group {
     width: 450px;
     margin: 0 auto 10px;
@@ -465,14 +473,6 @@ html {
 
 #login_form .input-box {
     display: block;
-}
-
-.register-form button {
-    margin-top: 22px;
-}
-
-.register-page .register-form .new-organization-button {
-    margin-top: 25px;
 }
 
 /* -- /accounts/register/ page -- */
