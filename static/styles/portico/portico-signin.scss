@@ -124,42 +124,44 @@ html {
     }
 }
 
-.login-page-container.dev-login {
-    margin-top: 20px;
-    border: none;
-}
+.login-page-container {
+    &.dev-login {
+        margin-top: 20px;
+        border: none;
 
-.login-page-container.dev-login .login-form {
-    width: auto;
-}
+        .login-form {
+            width: auto;
+        }
+    }
 
-.login-page-container .group {
-    margin: 0px 20px;
-    display: inline-block;
-}
+    .group {
+        margin: 0px 20px;
+        display: inline-block;
+    }
 
-.login-page-container input[type=submit] {
-    color: hsl(0, 0%, 67%);
-    border: 1px solid hsl(0, 0%, 87%);
-    border-radius: 4px;
-    background-color: transparent;
+    input[type=submit] {
+        color: hsl(0, 0%, 67%);
+        border: 1px solid hsl(0, 0%, 87%);
+        border-radius: 4px;
+        background-color: transparent;
 
-    transition: color 0.3s ease, border 0.3s ease;
-}
+        transition: color 0.3s ease, border 0.3s ease;
 
-.login-page-container input[type=submit]:hover {
-    border-color: hsl(0, 0%, 53%);
-    color: hsl(0, 0%, 27%);
-}
+        &:hover {
+            border-color: hsl(0, 0%, 53%);
+            color: hsl(0, 0%, 27%);
+        }
 
-.login-page-container input[type=submit].btn-admin {
-    border-color: hsl(170, 41%, 52%);
-    color: hsl(170, 41%, 52%);
-}
+        &.btn-admin {
+            border-color: hsl(170, 41%, 52%);
+            color: hsl(170, 41%, 52%);
 
-.login-page-container input[type=submit].btn-admin:hover {
-    color: hsl(156, 62%, 61%);
-    border-color: hsl(156, 62%, 61%);
+            &:hover {
+                color: hsl(156, 62%, 61%);
+                border-color: hsl(156, 62%, 61%);
+            }
+        }
+    }
 }
 
 .new-style .login-page-container .alert,
