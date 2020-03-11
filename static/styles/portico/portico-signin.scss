@@ -180,6 +180,13 @@ html {
     border-right: none;
 }
 
+.register-page-container.closed-realm .invite-required {
+    display: block;
+
+    color: hsl(0, 0%, 67%);
+    font-weight: normal;
+}
+
 .register-page-container .invite-required {
     display: none;
     line-height: 1;
@@ -187,13 +194,6 @@ html {
 
 .register-page-container .invite-required i {
     margin-right: 5px;
-}
-
-.register-page-container.closed-realm .invite-required {
-    display: block;
-
-    color: hsl(0, 0%, 67%);
-    font-weight: normal;
 }
 
 .find-account-page-container h3,
