@@ -283,185 +283,187 @@ html {
     position: relative;
 }
 
-.new-style button {
-    display: inline-block;
-    vertical-align: top;
-    padding: 13px 22px 13px 22px;
-
-    font-family: "Source Sans Pro";
-
-    font-size: 1.2rem;
-    font-weight: 400;
-    box-sizing: border-box;
-    outline: none;
-    color: hsl(0, 0%, 100%);
-    background-color: hsl(213, 23%, 25%);
-    margin-top: 25px;
-
-    border: none;
-    border-radius: 4px;
-
-    transition: all 0.3s ease;
-
-    &:hover {
-        background-color: hsl(213, 33%, 31%);
-    }
-
-    &:active {
-        background-color: hsl(214, 28%, 16%);
-    }
-
-    &:focus {
-        outline: 3px solid hsl(213, 81%, 79%);
-    }
-
-    &.full-width {
-        width: 100%;
-    }
-}
-
-.new-style .alert {
-    &:not(.alert-info) {
-        padding: 0;
-        margin-bottom: 0;
-        font-weight: 600;
-        font-size: 0.7em;
-        line-height: 1.2;
-        background-color: transparent;
-
-        border: none;
-        color: hsl(0, 44%, 54%);
-    }
-
-    &.alert-error {
-        text-align: left;
-    }
-}
-
-.new-style .form-inline {
-    margin: 0px;
-}
-
-.new-style .get-started {
-    font-size: 2.5rem;
-    text-align: center;
-    color: hsl(0, 0%, 40%);
-    margin-bottom: 20px;
-}
-
-.new-style .right-side .alert {
-    max-width: 328px;
-}
-
-.new-style .input-box {
-    position: relative;
-    display: inline-block;
-    vertical-align: top;
-
-    input[type=text],
-    input[type=email],
-    input[type=password] {
-        padding: 9px 32px 11px 12px;
-        margin: 25px 0 4px;
+.new-style {
+    button {
+        display: inline-block;
+        vertical-align: top;
+        padding: 13px 22px 13px 22px;
 
         font-family: "Source Sans Pro";
+
         font-size: 1.2rem;
-        line-height: normal;
-        height: auto;
+        font-weight: 400;
+        box-sizing: border-box;
+        outline: none;
+        color: hsl(0, 0%, 100%);
+        background-color: hsl(213, 23%, 25%);
+        margin-top: 25px;
 
-        width: 280px;
-
-        border: 1px solid hsl(0, 0%, 87%);
-        box-shadow: none;
+        border: none;
         border-radius: 4px;
 
-        transition: border 0.3s ease;
+        transition: all 0.3s ease;
 
-        &:focus:invalid {
-            box-shadow: none;
-            color: hsl(0, 0%, 27%);
+        &:hover {
+            background-color: hsl(213, 33%, 31%);
+        }
+
+        &:active {
+            background-color: hsl(214, 28%, 16%);
         }
 
         &:focus {
-            border: 1px solid hsl(0, 0%, 53%);
+            outline: 3px solid hsl(213, 81%, 79%);
+        }
+
+        &.full-width {
+            width: 100%;
         }
     }
 
-    input[type=email] {
-        margin-bottom: 10px;
-    }
+    .alert {
+        &:not(.alert-info) {
+            padding: 0;
+            margin-bottom: 0;
+            font-weight: 600;
+            font-size: 0.7em;
+            line-height: 1.2;
+            background-color: transparent;
 
-    label {
-        position: absolute;
-        top: 0;
-        left: 0;
+            border: none;
+            color: hsl(0, 44%, 54%);
+        }
 
-        margin-top: 1px;
-
-        transition: all 0.3s ease;
-    }
-
-    &.moving-label {
-        input[type=text]:invalid + label,
-        input[type=email]:invalid + label,
-        input[type=password]:invalid + label {
-            transform: translateY(35px) translateX(14px);
-            font-size: 1.2rem;
-            font-weight: 400;
-            color: hsl(0, 0%, 67%);
-
-            pointer-events: none;
+        &.alert-error {
+            text-align: left;
         }
     }
 
-    label,
-    input[type=text]:focus + label,
-    input[type=email]:focus + label,
-    input[type=password]:focus + label,
-    input[type=text]:valid + label,
-    input[type=email]:valid + label,
-    input[type=password]:valid + label {
-        left: 0px;
-        transform: translateY(-0px) translateX(0px);
-        pointer-events: auto;
-
-        font-size: 1rem;
-        font-weight: 600;
-        color: hsl(0, 0%, 27%);
+    .form-inline {
+        margin: 0px;
     }
 
-    p.text-error {
-        display: block;
-        padding: 0px;
+    .get-started {
+        font-size: 2.5rem;
+        text-align: center;
+        color: hsl(0, 0%, 40%);
+        margin-bottom: 20px;
+    }
 
-        color: hsl(0, 54%, 61%);
-        font-size: 0.7em;
-        font-weight: 600;
-        text-align: left;
-        height: 0;
+    .right-side .alert {
+        max-width: 328px;
+    }
 
+    .input-box {
         position: relative;
-        top: -4px;
-        left: 1px;
+        display: inline-block;
+        vertical-align: top;
+
+        input[type=text],
+        input[type=email],
+        input[type=password] {
+            padding: 9px 32px 11px 12px;
+            margin: 25px 0 4px;
+
+            font-family: "Source Sans Pro";
+            font-size: 1.2rem;
+            line-height: normal;
+            height: auto;
+
+            width: 280px;
+
+            border: 1px solid hsl(0, 0%, 87%);
+            box-shadow: none;
+            border-radius: 4px;
+
+            transition: border 0.3s ease;
+
+            &:focus:invalid {
+                box-shadow: none;
+                color: hsl(0, 0%, 27%);
+            }
+
+            &:focus {
+                border: 1px solid hsl(0, 0%, 53%);
+            }
+        }
+
+        input[type=email] {
+            margin-bottom: 10px;
+        }
+
+        label {
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            margin-top: 1px;
+
+            transition: all 0.3s ease;
+        }
+
+        &.moving-label {
+            input[type=text]:invalid + label,
+            input[type=email]:invalid + label,
+            input[type=password]:invalid + label {
+                transform: translateY(35px) translateX(14px);
+                font-size: 1.2rem;
+                font-weight: 400;
+                color: hsl(0, 0%, 67%);
+
+                pointer-events: none;
+            }
+        }
+
+        label,
+        input[type=text]:focus + label,
+        input[type=email]:focus + label,
+        input[type=password]:focus + label,
+        input[type=text]:valid + label,
+        input[type=email]:valid + label,
+        input[type=password]:valid + label {
+            left: 0px;
+            transform: translateY(-0px) translateX(0px);
+            pointer-events: auto;
+
+            font-size: 1rem;
+            font-weight: 600;
+            color: hsl(0, 0%, 27%);
+        }
+
+        p.text-error {
+            display: block;
+            padding: 0px;
+
+            color: hsl(0, 54%, 61%);
+            font-size: 0.7em;
+            font-weight: 600;
+            text-align: left;
+            height: 0;
+
+            position: relative;
+            top: -4px;
+            left: 1px;
+        }
+
+        label.text-error {
+            display: block;
+
+            top: 66px;
+            color: hsl(0, 54%, 61%);
+            font-size: 0.7em;
+            font-weight: 600;
+            padding-left: 0px;
+        }
     }
 
-    label.text-error {
-        display: block;
-
-        top: 66px;
-        color: hsl(0, 54%, 61%);
-        font-size: 0.7em;
-        font-weight: 600;
-        padding-left: 0px;
+    .lead {
+        margin: 0px;
     }
-}
 
-.new-style .lead {
-    margin: 0px;
-}
-
-.new-style .inline-block {
-    text-align: left;
+    .inline-block {
+        text-align: left;
+    }
 }
 
 #login_form .input-box {
