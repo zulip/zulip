@@ -357,105 +357,103 @@ html {
     position: relative;
     display: inline-block;
     vertical-align: top;
-}
 
-.new-style .input-box input[type=text],
-.new-style .input-box input[type=email],
-.new-style .input-box input[type=password] {
-    padding: 9px 32px 11px 12px;
-    margin: 25px 0 4px;
+    input[type=text],
+    input[type=email],
+    input[type=password] {
+        padding: 9px 32px 11px 12px;
+        margin: 25px 0 4px;
 
-    font-family: "Source Sans Pro";
-    font-size: 1.2rem;
-    line-height: normal;
-    height: auto;
+        font-family: "Source Sans Pro";
+        font-size: 1.2rem;
+        line-height: normal;
+        height: auto;
 
-    width: 280px;
+        width: 280px;
 
-    border: 1px solid hsl(0, 0%, 87%);
-    box-shadow: none;
-    border-radius: 4px;
+        border: 1px solid hsl(0, 0%, 87%);
+        box-shadow: none;
+        border-radius: 4px;
 
-    transition: border 0.3s ease;
-}
+        transition: border 0.3s ease;
 
-.new-style .input-box input[type=text]:focus:invalid,
-.new-style .input-box input[type=email]:focus:invalid,
-.new-style .input-box input[type=password]:focus:invalid {
-    box-shadow: none;
-    color: hsl(0, 0%, 27%);
-}
+        &:focus:invalid {
+            box-shadow: none;
+            color: hsl(0, 0%, 27%);
+        }
 
-.new-style .input-box input[type=text]:focus,
-.new-style .input-box input[type=email]:focus,
-.new-style .input-box input[type=password]:focus {
-    border: 1px solid hsl(0, 0%, 53%);
-}
+        &:focus {
+            border: 1px solid hsl(0, 0%, 53%);
+        }
+    }
 
-.new-style .input-box input[type=email] {
-    margin-bottom: 10px;
-}
+    input[type=email] {
+        margin-bottom: 10px;
+    }
 
-.new-style .input-box label {
-    position: absolute;
-    top: 0;
-    left: 0;
+    label {
+        position: absolute;
+        top: 0;
+        left: 0;
 
-    margin-top: 1px;
+        margin-top: 1px;
 
-    transition: all 0.3s ease;
-}
+        transition: all 0.3s ease;
+    }
 
-.new-style .input-box.moving-label input[type=text]:invalid + label,
-.new-style .input-box.moving-label input[type=email]:invalid + label,
-.new-style .input-box.moving-label input[type=password]:invalid + label {
-    transform: translateY(35px) translateX(14px);
-    font-size: 1.2rem;
-    font-weight: 400;
-    color: hsl(0, 0%, 67%);
+    &.moving-label {
+        input[type=text]:invalid + label,
+        input[type=email]:invalid + label,
+        input[type=password]:invalid + label {
+            transform: translateY(35px) translateX(14px);
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: hsl(0, 0%, 67%);
 
-    pointer-events: none;
-}
+            pointer-events: none;
+        }
+    }
 
-.new-style .input-box label,
-.new-style .input-box input[type=text]:focus + label,
-.new-style .input-box input[type=email]:focus + label,
-.new-style .input-box input[type=password]:focus + label,
-.new-style .input-box input[type=text]:valid + label,
-.new-style .input-box input[type=email]:valid + label,
-.new-style .input-box input[type=password]:valid + label {
-    left: 0px;
-    transform: translateY(-0px) translateX(0px);
-    pointer-events: auto;
+    label,
+    input[type=text]:focus + label,
+    input[type=email]:focus + label,
+    input[type=password]:focus + label,
+    input[type=text]:valid + label,
+    input[type=email]:valid + label,
+    input[type=password]:valid + label {
+        left: 0px;
+        transform: translateY(-0px) translateX(0px);
+        pointer-events: auto;
 
-    font-size: 1rem;
-    font-weight: 600;
-    color: hsl(0, 0%, 27%);
-}
+        font-size: 1rem;
+        font-weight: 600;
+        color: hsl(0, 0%, 27%);
+    }
 
-.new-style .input-box p.text-error {
-    display: block;
-    padding: 0px;
+    p.text-error {
+        display: block;
+        padding: 0px;
 
-    color: hsl(0, 54%, 61%);
-    font-size: 0.7em;
-    font-weight: 600;
-    text-align: left;
-    height: 0;
+        color: hsl(0, 54%, 61%);
+        font-size: 0.7em;
+        font-weight: 600;
+        text-align: left;
+        height: 0;
 
-    position: relative;
-    top: -4px;
-    left: 1px;
-}
+        position: relative;
+        top: -4px;
+        left: 1px;
+    }
 
-.new-style .input-box label.text-error {
-    display: block;
+    label.text-error {
+        display: block;
 
-    top: 66px;
-    color: hsl(0, 54%, 61%);
-    font-size: 0.7em;
-    font-weight: 600;
-    padding-left: 0px;
+        top: 66px;
+        color: hsl(0, 54%, 61%);
+        font-size: 0.7em;
+        font-weight: 600;
+        padding-left: 0px;
+    }
 }
 
 .new-style .lead {
