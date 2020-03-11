@@ -114,8 +114,18 @@ exports.private_message_policy_values = {
         code: 1,
         description: i18n.t("Admins, members, and guests"),
     },
-    disabled: {
+    by_members: {
         order: 2,
+        code: 3,
+        description: i18n.t("Admins and members"),
+    },
+    not_between_guests: {
+        order: 3,
+        code: 4,
+        description: i18n.t("Private messages between guests disabled"),
+    },
+    disabled: {
+        order: 4,
         code: 2,
         description: i18n.t("Private messages disabled"),
     },

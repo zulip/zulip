@@ -597,6 +597,37 @@ function validate_private_message() {
                           $("#private_message_recipient"));
             return false;
         }
+    } else if (page_params.realm_private_message_policy === 3) {
+        // Frontend check for for PRIVATE_MESSAGE_POLICY_MEMBERS
+        const user_ids = compose_pm_pill.get_user_ids();
+        if (people.get_by_user_id(people.my_current_user_id()).is_guest) {
+            if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
+                // Unless we're composing to a bot
+                compose_error(i18n.t("Sending private messages is disabled for guests in this organization."),
+                              $("#private_message_recipient"));
+                return false;
+            }
+        } else {
+            for (var i = 0; i <= user_ids.length; i++) {
+                if (people.get_by_user_id(user_ids[i]).is_guest) {
+                    compose_error(i18n.t("Sending private messages to guests is disabled in this organization."),
+                              $("#private_message_recipient"));
+                    return false;
+                }
+            }
+        }
+    } else if (page_params.realm_private_message_policy === 4) {
+        // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED_BETWEEN_GUESTS
+        const user_ids = compose_pm_pill.get_user_ids();
+        if (people.get_by_user_id(people.my_current_user_id()).is_guest) {
+            for (var i = 0; i < user_ids.length; i++) {
+                if (people.get_by_user_id(user_ids[i]).is_guest) {
+                    compose_error(i18n.t("Sending private messages between guests is disabled in this organization."),
+                              $("#private_message_recipient"));
+                    return false;
+                }
+            }
+        }
     }
 
     if (compose_state.private_message_recipient().length === 0) {

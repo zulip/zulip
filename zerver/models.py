@@ -213,11 +213,15 @@ class Realm(models.Model):
 
     PRIVATE_MESSAGE_POLICY_UNLIMITED = 1
     PRIVATE_MESSAGE_POLICY_DISABLED = 2
+    PRIVATE_MESSAGE_POLICY_MEMBERS = 3
+    PRIVATE_MESSAGE_POLICY_DISABLED_BETWEEN_GUESTS = 4
     private_message_policy = models.PositiveSmallIntegerField(
         default=PRIVATE_MESSAGE_POLICY_UNLIMITED)  # type: int
     PRIVATE_MESSAGE_POLICY_TYPES = [
         PRIVATE_MESSAGE_POLICY_UNLIMITED,
         PRIVATE_MESSAGE_POLICY_DISABLED,
+        PRIVATE_MESSAGE_POLICY_MEMBERS,
+        PRIVATE_MESSAGE_POLICY_DISABLED_BETWEEN_GUESTS,
     ]
 
     # Who in the organization has access to users' actual email

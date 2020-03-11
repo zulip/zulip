@@ -2326,14 +2326,24 @@ def validate_stream_id_with_pm_notification(stream_id: int, realm: Realm,
 
 def check_private_message_policy(realm: Realm, sender: UserProfile,
                                  user_profiles: Sequence[UserProfile]) -> None:
+    if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
+        # We allow PMs only between users and bots, to avoid
+        # breaking the tutorial as well as automated
+        # notifications from system bots to users.
+        return
     if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
-        if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
-            # We allow PMs only between users and bots, to avoid
-            # breaking the tutorial as well as automated
-            # notifications from system bots to users.
-            return
-
         raise JsonableError(_("Private messages are disabled in this organization."))
+    elif realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_MEMBERS:
+        if sender.is_guest:
+            raise JsonableError(_("Sending private messages is disabled for guests in this organization."))
+        for user_profile in user_profiles:
+            if user_profile.is_guest:
+                raise JsonableError(_("Sending private messages to guests is disabled in this organization."))
+    elif realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED_BETWEEN_GUESTS:
+        if sender.is_guest:
+            for user_profile in user_profiles:
+                if user_profile.is_guest:
+                    raise JsonableError(_("Sending private messages to guests is disabled in this organization."))
 
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
