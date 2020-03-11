@@ -180,16 +180,13 @@ html {
     font-size: 2em;
 }
 
-.forgot-password-container h3 {
-    margin-bottom: 0px;
-}
-
 .forgot-password-container {
     width: 503px;
-}
 
-.forgot-password-container form {
-    margin-bottom: 0px;
+    h3,
+    form {
+        margin-bottom: 0px;
+    }
 }
 
 .deactivated-realm-container {
