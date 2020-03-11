@@ -507,6 +507,16 @@ html {
     display: block;
 }
 
+#login_form .loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+
+    height: 30px;
+    margin-top: -10px;
+    top: 5px;
+}
+
 /* -- /accounts/register/ page -- */
 .portico-page .pitch h1 {
     margin-bottom: 0px;
@@ -993,16 +1003,6 @@ button.login-social-button:active {
     .flex {
         min-height: calc(100vh - 560px);
     }
-}
-
-#login_form .loader {
-    display: none;
-    vertical-align: top;
-    position: relative;
-
-    height: 30px;
-    margin-top: -10px;
-    top: 5px;
 }
 
 #source_realm_select_section {
