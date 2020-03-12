@@ -243,7 +243,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 "zerver/emails/invitation_reminder",
                 referrer.realm,
                 to_emails=[invitee.email],
-                from_address=FromAddress.tokenized_no_reply_address(),
+                from_address=FromAddress.no_reply_placeholder,
                 language=referrer.realm.default_language,
                 context=context,
                 delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2))

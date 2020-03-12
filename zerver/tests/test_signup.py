@@ -1382,7 +1382,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             email = data["email"]
             send_future_email(
                 "zerver/emails/invitation_reminder", referrer.realm, to_emails=[email],
-                from_address=FromAddress.NOREPLY, context=context)
+                from_address=FromAddress.no_reply_placeholder, context=context)
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now())
         self.assertEqual(len(email_jobs_to_deliver), 1)
@@ -1397,7 +1397,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             email = data["email"]
             send_future_email(
                 "zerver/emails/invitation_reminder", referrer.realm, to_emails=[email],
-                from_address=FromAddress.NOREPLY, context=context)
+                from_address=FromAddress.no_reply_placeholder, context=context)
 
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER)
