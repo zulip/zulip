@@ -33,7 +33,7 @@ from zerver.models import CustomProfileField, DefaultStream, Message, Realm, Rea
     RealmDomain, Recipient, Service, Stream, Subscription, \
     UserMessage, UserPresence, UserProfile, Huddle, Client, \
     get_client, get_huddle, get_realm, get_stream, \
-    get_user, get_user_profile_by_id
+    get_user, get_user_by_delivery_email, get_user_profile_by_id
 from zerver.lib.types import ProfileFieldData
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
@@ -201,6 +201,7 @@ class Command(BaseCommand):
             create_internal_realm()
             zulip_realm = Realm.objects.create(
                 string_id="zulip", name="Zulip Dev", emails_restricted_to_domains=False,
+                email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 description="The Zulip development environment default organization."
                             "  It's great for testing!",
                 invite_required=False, org_type=Realm.CORPORATE)
@@ -264,12 +265,12 @@ class Command(BaseCommand):
 
             create_users(zulip_realm, names, tos_version=settings.TOS_VERSION)
 
-            iago = get_user("iago@zulip.com", zulip_realm)
+            iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
             do_change_is_admin(iago, True)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
 
-            guest_user = get_user("polonius@zulip.com", zulip_realm)
+            guest_user = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
             guest_user.role = UserProfile.ROLE_GUEST
             guest_user.save(update_fields=['role'])
 
@@ -284,7 +285,7 @@ class Command(BaseCommand):
 
             create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
-            zoe = get_user("zoe@zulip.com", zulip_realm)
+            zoe = get_user_by_delivery_email("zoe@zulip.com", zulip_realm)
             zulip_webhook_bots = [
                 ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
             ]
@@ -293,7 +294,7 @@ class Command(BaseCommand):
             # owner of the webhook bot, so bot_owner can't be None
             create_users(zulip_realm, zulip_webhook_bots,
                          bot_type=UserProfile.INCOMING_WEBHOOK_BOT, bot_owner=zoe)
-            aaron = get_user("AARON@zulip.com", zulip_realm)
+            aaron = get_user_by_delivery_email("AARON@zulip.com", zulip_realm)
 
             zulip_outgoing_bots = [
                 ("Outgoing Webhook", "outgoing-webhook@zulip.com")
@@ -345,10 +346,11 @@ class Command(BaseCommand):
                 }
 
                 for profile in profiles:
-                    if profile.email not in subscriptions_map:
-                        raise Exception('Subscriptions not listed for user %s' % (profile.email,))
+                    email = profile.delivery_email
+                    if email not in subscriptions_map:
+                        raise Exception('Subscriptions not listed for user %s' % (email,))
 
-                    for stream_name in subscriptions_map[profile.email]:
+                    for stream_name in subscriptions_map[email]:
                         stream = Stream.objects.get(name=stream_name)
                         r = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                         subscriptions_list.append((profile, r))
@@ -418,7 +420,7 @@ class Command(BaseCommand):
             github_profile = try_add_realm_default_custom_profile_field(zulip_realm, "github")
 
             # Fill in values for Iago and Hamlet
-            hamlet = get_user("hamlet@zulip.com", zulip_realm)
+            hamlet = get_user_by_delivery_email("hamlet@zulip.com", zulip_realm)
             do_update_user_custom_profile_data_if_changed(iago, [
                 {"id": phone_number.id, "value": "+1-234-567-8901"},
                 {"id": biography.id, "value": "Betrayer of Othello."},
@@ -739,7 +741,7 @@ def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> date
 
 def create_user_groups() -> None:
     zulip = get_realm('zulip')
-    members = [get_user('cordelia@zulip.com', zulip),
-               get_user('hamlet@zulip.com', zulip)]
+    members = [get_user_by_delivery_email('cordelia@zulip.com', zulip),
+               get_user_by_delivery_email('hamlet@zulip.com', zulip)]
     create_user_group("hamletcharacters", members, zulip,
                       description="Characters of Hamlet")
