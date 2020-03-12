@@ -11,7 +11,11 @@ from django.utils.timezone import now as timezone_now
 from django.core.exceptions import ValidationError
 
 from mock import patch, MagicMock
-from zerver.lib.test_helpers import get_test_image_file, avatar_disk_path
+from zerver.lib.test_helpers import (
+    avatar_disk_path,
+    get_test_image_file,
+    reset_emails_in_zulip_realm,
+)
 
 from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
     generate_key, confirmation_url, get_object_from_key, ConfirmationKeyException, \
@@ -219,7 +223,7 @@ class PasswordResetTest(ZulipTestCase):
 
     def test_password_reset(self) -> None:
         user = self.example_user("hamlet")
-        email = user.email
+        email = user.delivery_email
         old_password = initial_password(email)
 
         self.login_user(user)
@@ -310,7 +314,7 @@ class PasswordResetTest(ZulipTestCase):
 
     def test_password_reset_for_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
-        email = user_profile.email
+        email = user_profile.delivery_email
         do_deactivate_user(user_profile)
 
         # start the password reset process by supplying an email address
@@ -338,7 +342,7 @@ class PasswordResetTest(ZulipTestCase):
 
     def test_password_reset_with_deactivated_realm(self) -> None:
         user_profile = self.example_user("hamlet")
-        email = user_profile.email
+        email = user_profile.delivery_email
         do_deactivate_realm(user_profile.realm)
 
         # start the password reset process by supplying an email address
@@ -361,7 +365,7 @@ class PasswordResetTest(ZulipTestCase):
     @override_settings(RATE_LIMITING=True)
     def test_rate_limiting(self) -> None:
         user_profile = self.example_user("hamlet")
-        email = user_profile.email
+        email = user_profile.delivery_email
         from django.core.mail import outbox
 
         add_ratelimit_rule(10, 2, domain='password_reset_form_by_email')
@@ -531,7 +535,7 @@ class LoginTest(ZulipTestCase):
     @override_settings(RATE_LIMITING_AUTHENTICATE=True)
     def test_login_bad_password_rate_limiter(self) -> None:
         user_profile = self.example_user("hamlet")
-        email = user_profile.email
+        email = user_profile.delivery_email
         add_ratelimit_rule(10, 2, domain='authenticate_by_username')
 
         start_time = time.time()
@@ -576,6 +580,8 @@ class LoginTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_register(self) -> None:
+        reset_emails_in_zulip_realm()
+
         realm = get_realm("zulip")
         stream_names = ["stream_{}".format(i) for i in range(40)]
         for stream_name in stream_names:
@@ -1074,7 +1080,9 @@ class InviteUserTest(InviteUserBase):
         # The first, from notification-bot to the user who invited the new user.
         second_msg = last_3_messages[1]
         self.assertEqual(second_msg.sender.email, "notification-bot@zulip.com")
-        self.assertTrue(second_msg.content.startswith("alice_zulip.com <`alice@zulip.com`> accepted your"))
+        self.assertTrue(second_msg.content.startswith(
+            "alice_zulip.com <`{}`> accepted your".format(invitee_profile.email)
+        ))
 
         # The second, from welcome-bot to the user who was invited.
         third_msg = last_3_messages[2]
@@ -1477,10 +1485,13 @@ class InvitationsTestCase(InviteUserBase):
                                                 referred_by=user_profile, status=active_value)
         prereg_user_three.save()
 
-        multiuse_invite_one = MultiuseInvite.objects.create(referred_by=self.example_user("hamlet"), realm=realm)
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+
+        multiuse_invite_one = MultiuseInvite.objects.create(referred_by=hamlet, realm=realm)
         create_confirmation_link(multiuse_invite_one, realm.host, Confirmation.MULTIUSE_INVITE)
 
-        multiuse_invite_two = MultiuseInvite.objects.create(referred_by=self.example_user("othello"), realm=realm)
+        multiuse_invite_two = MultiuseInvite.objects.create(referred_by=othello, realm=realm)
         create_confirmation_link(multiuse_invite_two, realm.host, Confirmation.MULTIUSE_INVITE)
         confirmation = Confirmation.objects.last()
         confirmation.date_sent = expired_datetime
@@ -1488,8 +1499,12 @@ class InvitationsTestCase(InviteUserBase):
 
         result = self.client_get("/json/invites")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["TestOne@zulip.com", "hamlet@zulip.com"], result)
-        self.assert_not_in_success_response(["TestTwo@zulip.com", "TestThree@zulip.com", "othello@zulip.com"], result)
+        self.assert_in_success_response(
+            ["TestOne@zulip.com", hamlet.email],
+            result)
+        self.assert_not_in_success_response(
+            ["TestTwo@zulip.com", "TestThree@zulip.com", "othello@zulip.com", othello.email],
+            result)
 
     def test_successful_delete_invitation(self) -> None:
         """
@@ -2269,7 +2284,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result.status_code, 302)
 
         get_user(email, realm)
-        self.assertEqual(UserProfile.objects.filter(email=email).count(), 2)
+        self.assertEqual(UserProfile.objects.filter(delivery_email=email).count(), 2)
 
     def test_signup_invalid_name(self) -> None:
         """
@@ -2484,8 +2499,8 @@ class UserSignUpTest(InviteUserBase):
         result = self.submit_reg_form_for_user(email,
                                                password,
                                                full_name="New Guy")
-        user_profile = UserProfile.objects.get(email=email)
-        self.assertEqual(user_profile.email, email)
+        user_profile = UserProfile.objects.get(delivery_email=email)
+        self.assertEqual(user_profile.delivery_email, email)
 
         # Now try to to register using the first confirmation url:
         result = self.client_get(first_confirmation_url)
@@ -2542,13 +2557,13 @@ class UserSignUpTest(InviteUserBase):
             "newguy", list(set(default_streams + group1_streams + group2_streams)))
 
     def test_signup_without_user_settings_from_another_realm(self) -> None:
-        email = self.example_email('hamlet')
+        hamlet_in_zulip = self.example_user('hamlet')
+        email = hamlet_in_zulip.delivery_email
         password = "newpassword"
         subdomain = "lear"
         realm = get_realm("lear")
 
         # Make an account in the Zulip realm, but we're not copying from there.
-        hamlet_in_zulip = get_user(self.example_email("hamlet"), get_realm("zulip"))
         hamlet_in_zulip.left_side_userlist = True
         hamlet_in_zulip.default_language = "de"
         hamlet_in_zulip.emojiset = "twitter"
@@ -2577,16 +2592,16 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(hamlet.tutorial_status, UserProfile.TUTORIAL_WAITING)
 
     def test_signup_with_user_settings_from_another_realm(self) -> None:
-        email = self.example_email('hamlet')
+        hamlet_in_zulip = self.example_user('hamlet')
+        email = hamlet_in_zulip.delivery_email
         password = "newpassword"
         subdomain = "lear"
         lear_realm = get_realm("lear")
-        zulip_realm = get_realm("zulip")
 
         self.login('hamlet')
         with get_test_image_file('img.png') as image_file:
             self.client_post("/json/users/me/avatar", {'file': image_file})
-        hamlet_in_zulip = get_user(self.example_email("hamlet"), zulip_realm)
+        hamlet_in_zulip.refresh_from_db()
         hamlet_in_zulip.left_side_userlist = True
         hamlet_in_zulip.default_language = "de"
         hamlet_in_zulip.emojiset = "twitter"
@@ -2616,7 +2631,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.submit_reg_form_for_user(email, password, source_realm="zulip",
                                                HTTP_HOST=subdomain + ".testserver")
 
-        hamlet_in_lear = get_user(self.example_email("hamlet"), lear_realm)
+        hamlet_in_lear = get_user(email, lear_realm)
         self.assertEqual(hamlet_in_lear.left_side_userlist, True)
         self.assertEqual(hamlet_in_lear.default_language, "de")
         self.assertEqual(hamlet_in_lear.emojiset, "twitter")
@@ -2624,9 +2639,14 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(hamlet_in_lear.enter_sends, True)
         self.assertEqual(hamlet_in_lear.enable_stream_audible_notifications, False)
         self.assertEqual(hamlet_in_lear.tutorial_status, UserProfile.TUTORIAL_FINISHED)
+
         zulip_path_id = avatar_disk_path(hamlet_in_zulip)
-        hamlet_path_id = avatar_disk_path(hamlet_in_zulip)
-        self.assertEqual(open(zulip_path_id, "rb").read(), open(hamlet_path_id, "rb").read())
+        lear_path_id = avatar_disk_path(hamlet_in_lear)
+        zulip_avatar_bits = open(zulip_path_id, 'rb').read()
+        lear_avatar_bits = open(lear_path_id, 'rb').read()
+
+        self.assertTrue(len(zulip_avatar_bits) > 500)
+        self.assertEqual(zulip_avatar_bits, lear_avatar_bits)
 
     def test_signup_invalid_subdomain(self) -> None:
         """
@@ -2913,7 +2933,7 @@ class UserSignUpTest(InviteUserBase):
                                                    HTTP_HOST=subdomain + ".testserver")
             # Didn't create an account
             with self.assertRaises(UserProfile.DoesNotExist):
-                user_profile = UserProfile.objects.get(email=email)
+                user_profile = UserProfile.objects.get(delivery_email=email)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
 
@@ -2923,7 +2943,7 @@ class UserSignUpTest(InviteUserBase):
                                                    full_name=full_name,
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
-            user_profile = UserProfile.objects.get(email=email)
+            user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, full_name)
             # Short name comes from LDAP.
@@ -2966,7 +2986,7 @@ class UserSignUpTest(InviteUserBase):
                                                    full_name="Ignore",
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
-            user_profile = UserProfile.objects.get(email=email)
+            user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, "First Last")
             # Short name comes from LDAP.
@@ -3003,7 +3023,7 @@ class UserSignUpTest(InviteUserBase):
             self.login_with_return(email, password,
                                    HTTP_HOST=subdomain + ".testserver")
 
-            user_profile = UserProfile.objects.get(email=email)
+            user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, full_name)
             self.assertEqual(user_profile.short_name, 'shortname')
@@ -3035,8 +3055,8 @@ class UserSignUpTest(InviteUserBase):
             self.login_with_return(email, password,
                                    HTTP_HOST=subdomain + ".testserver")
 
-            user_profile = UserProfile.objects.get(email=email, realm=get_realm('zulip'))
-            self.assertEqual(user_profile.email, email)
+            user_profile = UserProfile.objects.get(
+                delivery_email=email, realm=get_realm('zulip'))
             self.logout()
 
             # Test registration in another realm works.
@@ -3044,8 +3064,9 @@ class UserSignUpTest(InviteUserBase):
             self.login_with_return(email, password,
                                    HTTP_HOST=subdomain + ".testserver")
 
-            user_profile = UserProfile.objects.get(email=email, realm=get_realm('test'))
-            self.assertEqual(user_profile.email, email)
+            user_profile = UserProfile.objects.get(
+                delivery_email=email, realm=get_realm('test'))
+            self.assertEqual(user_profile.delivery_email, email)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
@@ -3086,7 +3107,7 @@ class UserSignUpTest(InviteUserBase):
                                                        password,
                                                        # Pass HTTP_HOST for the target subdomain
                                                        HTTP_HOST=subdomain + ".testserver")
-            user_profile = UserProfile.objects.get(email=email)
+            user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from LDAP session.
             self.assertEqual(user_profile.full_name, 'New LDAP fullname')
 
@@ -3133,7 +3154,7 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(result.status_code, 302)
             # We get redirected back to the login page because password was wrong
             self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
-            self.assertFalse(UserProfile.objects.filter(email=email).exists())
+            self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
 
         # For the rest of the test we delete the user from ldap.
         del self.mock_ldap.directory["uid=newuser,ou=users,dc=zulip,dc=com"]
@@ -3154,7 +3175,7 @@ class UserSignUpTest(InviteUserBase):
             # We get redirected back to the login page because emails matching LDAP_APPEND_DOMAIN,
             # aren't allowed to create non-ldap accounts.
             self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
-            self.assertFalse(UserProfile.objects.filter(email=email).exists())
+            self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
 
         # If the email is outside of LDAP_APPEND_DOMAIN, we succesfully create a non-ldap account,
         # with the password managed in the zulip database.
@@ -3180,7 +3201,7 @@ class UserSignUpTest(InviteUserBase):
                                                    HTTP_HOST=subdomain + ".testserver")
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "http://zulip.testserver/")
-            user_profile = UserProfile.objects.get(email=email)
+            user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from the POST request, not LDAP
             self.assertEqual(user_profile.full_name, 'Non-LDAP Full Name')
 
@@ -3227,7 +3248,7 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(result.status_code, 302)
             # We get redirected back to the login page because password was wrong
             self.assertEqual(result.url, "/accounts/login/?email=newuser_email%40zulip.com")
-            self.assertFalse(UserProfile.objects.filter(email=email).exists())
+            self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
 
         # If the user's email is not in the LDAP directory , though, we
         # successfully create an account with a password in the Zulip
@@ -3266,7 +3287,7 @@ class UserSignUpTest(InviteUserBase):
                                                    HTTP_HOST=subdomain + ".testserver")
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "http://zulip.testserver/")
-            user_profile = UserProfile.objects.get(email=email)
+            user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from the POST request, not LDAP
             self.assertEqual(user_profile.full_name, 'Non-LDAP Full Name')
 
@@ -3310,14 +3331,16 @@ class UserSignUpTest(InviteUserBase):
                                                 'zproject.backends.EmailAuthBackend'))
     def test_ldap_invite_user_as_admin(self) -> None:
         self.ldap_invite_and_signup_as(PreregistrationUser.INVITE_AS['REALM_ADMIN'])
-        user_profile = UserProfile.objects.get(email=self.nonreg_email('newuser'))
+        user_profile = UserProfile.objects.get(
+            delivery_email=self.nonreg_email('newuser'))
         self.assertTrue(user_profile.is_realm_admin)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.EmailAuthBackend'))
     def test_ldap_invite_user_as_guest(self) -> None:
         self.ldap_invite_and_signup_as(PreregistrationUser.INVITE_AS['GUEST_USER'])
-        user_profile = UserProfile.objects.get(email=self.nonreg_email('newuser'))
+        user_profile = UserProfile.objects.get(
+            delivery_email=self.nonreg_email('newuser'))
         self.assertTrue(user_profile.is_guest)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
@@ -3333,7 +3356,7 @@ class UserSignUpTest(InviteUserBase):
         # Invite user.
         self.ldap_invite_and_signup_as(PreregistrationUser.INVITE_AS['REALM_ADMIN'], streams=[stream_name])
 
-        user_profile = UserProfile.objects.get(email=self.nonreg_email('newuser'))
+        user_profile = UserProfile.objects.get(delivery_email=self.nonreg_email('newuser'))
         self.assertTrue(user_profile.is_realm_admin)
         sub = get_stream_subscriptions_for_user(user_profile).filter(recipient__type_id=stream.id)
         self.assertEqual(len(sub), 1)
@@ -3361,7 +3384,7 @@ class UserSignUpTest(InviteUserBase):
                                                    full_name="New Name",
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
-            user_profile = UserProfile.objects.get(email=email)
+            user_profile = UserProfile.objects.get(delivery_email=email)
             # 'New Name' comes from POST data; not from LDAP session.
             self.assertEqual(user_profile.full_name, 'New Name')
 
@@ -3425,7 +3448,7 @@ class UserSignUpTest(InviteUserBase):
         password = "test"
         subdomain = "zephyr"
         user_profile = self.mit_user("sipbtest")
-        email = user_profile.email
+        email = user_profile.delivery_email
         user_profile.is_mirror_dummy = True
         user_profile.is_active = False
         user_profile.save()
@@ -3486,7 +3509,7 @@ class UserSignUpTest(InviteUserBase):
         raise an AssertionError.
         """
         user_profile = self.mit_user("sipbtest")
-        email = user_profile.email
+        email = user_profile.delivery_email
         user_profile.is_mirror_dummy = True
         user_profile.is_active = True
         user_profile.save()
@@ -3505,7 +3528,7 @@ class UserSignUpTest(InviteUserBase):
         user_profile = UserProfile.objects.all().order_by("id").last()
 
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(user_profile.email, email)
+        self.assertEqual(user_profile.delivery_email, email)
         self.assertEqual(result['Location'], "http://zulip.testserver/")
         self.assert_logged_in_user_id(user_profile.id)
 

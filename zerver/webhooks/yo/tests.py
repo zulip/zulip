@@ -13,8 +13,9 @@ class YoHookTests(WebhookTestCase):
         """
         Yo App sends notification whenever user receives a new Yo from another user.
         """
+        cordelia = self.example_user('cordelia')
         self.url = self.build_webhook_url(
-            email="cordelia@zulip.com",
+            email=cordelia.email,
             username="IAGO",
             user_ip="127.0.0.1"
         )

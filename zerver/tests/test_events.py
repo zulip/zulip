@@ -120,7 +120,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
     get_test_image_file, stub_event_queue_user_events, queries_captured, \
-    create_dummy_file, stdout_suppressed
+    create_dummy_file, stdout_suppressed, reset_emails_in_zulip_realm
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -1041,6 +1041,8 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_invitation_accept_invite_event(self) -> None:
+        reset_emails_in_zulip_realm()
+
         schema_checker = self.check_events_dict([
             ('type', equals('invites_changed')),
         ])
@@ -1258,7 +1260,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = realm_user_add_checker('events[0]', events[0])
         self.assert_on_error(error)
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
-        self.assertEqual(new_user_profile.email, "test1@zulip.com")
+        self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
     def test_register_events_email_address_visibility(self) -> None:
         realm_user_add_checker = self.check_events_dict([
@@ -1812,6 +1814,13 @@ class EventsRegisterTest(ZulipTestCase):
             self.assert_on_error(error)
 
     def test_change_is_admin(self) -> None:
+        reset_emails_in_zulip_realm()
+
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+
         schema_checker = self.check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
@@ -1821,6 +1830,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
             ])),
         ])
+
         do_change_is_admin(self.user_profile, False)
         for is_admin in [True, False]:
             events = self.do_test(lambda: do_change_is_admin(self.user_profile, is_admin))
@@ -3175,13 +3185,8 @@ class GetUnreadMsgsTest(ZulipTestCase):
     def test_unread_msgs(self) -> None:
         sender = self.example_user('cordelia')
         sender_id = sender.id
-        sender_email = sender.email
         user_profile = self.example_user('hamlet')
         othello = self.example_user('othello')
-
-        # our tests rely on order
-        assert(sender_email < user_profile.email)
-        assert(user_profile.email < othello.email)
 
         pm1_message_id = self.send_personal_message(sender, user_profile, "hello1")
         pm2_message_id = self.send_personal_message(sender, user_profile, "hello2")

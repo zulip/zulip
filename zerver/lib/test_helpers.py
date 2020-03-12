@@ -9,6 +9,7 @@ from django.conf import settings
 from django.test import override_settings
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.migrations.state import StateApps
+from django.db.models import F
 from boto.s3.connection import S3Connection
 from boto.s3.bucket import Bucket
 
@@ -25,9 +26,11 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.views.auth import get_login_data
 
 from zerver.models import (
+    get_realm,
     get_stream,
     Client,
     Message,
+    Realm,
     Subscription,
     UserMessage,
     UserProfile,
@@ -186,6 +189,15 @@ def stdout_suppressed() -> Iterator[IO[str]]:
         stdout, sys.stdout = sys.stdout, devnull
         yield stdout
         sys.stdout = stdout
+
+def reset_emails_in_zulip_realm() -> None:
+    realm = get_realm('zulip')
+    realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+    realm.save()
+
+    UserProfile.objects.filter(realm_id=realm.id).update(
+        email=F('delivery_email')
+    )
 
 def get_test_image_file(filename: str) -> IO[Any]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))

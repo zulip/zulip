@@ -216,12 +216,12 @@ class BugdownMiscTest(ZulipTestCase):
             for row in lst
         }
         self.assertEqual(by_id.get(fred2.id), dict(
-            email='fred2@example.com',
+            email=fred2.email,
             full_name='Fred Flintstone',
             id=fred2.id
         ))
         self.assertEqual(by_id.get(fred4.id), dict(
-            email='fred4@example.com',
+            email=fred4.email,
             full_name='Fred Flintstone',
             id=fred4.id
         ))
