@@ -161,6 +161,7 @@ exports.create = function ($container, list, opts) {
 
             if (Array.isArray(data)) {
                 meta.list = data;
+                meta.filtered_list = data;
 
                 if (opts.filter && opts.filter.element) {
                     const value = $(opts.filter.element).val().toLocaleLowerCase();
