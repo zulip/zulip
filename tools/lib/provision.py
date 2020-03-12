@@ -124,6 +124,18 @@ COMMON_DEPENDENCIES = [
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "moreutils",            # Used for sponge command
     "unzip",                # Needed for Slack import
+
+    # Puppeteer dependencies from here
+    "gconf-service",
+    "libgconf-2-4",
+    "libgtk-3-0",
+    "libatk-bridge2.0-0",
+    "libx11-xcb1",
+    "libxss1",
+    "fonts-liberation",
+    "libappindicator1",
+    "xdg-utils"
+    # Puppeteer dependencies end here.
 ]
 
 UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
