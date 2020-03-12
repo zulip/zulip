@@ -7,6 +7,7 @@ zrequire('Filter', 'js/filter');
 
 set_global('message_store', {});
 set_global('page_params', {});
+set_global('message_viewport', {});
 
 const me = {
     email: 'me@example.com',
@@ -87,6 +88,21 @@ run_test('basics', () => {
     assert(!filter.can_apply_locally());
     assert(filter.can_bucket_by('stream'));
     assert(filter.can_bucket_by('stream', 'topic'));
+
+    message_viewport.bottom_message_visible = () => true;
+
+    operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'bar'},
+        {operator: 'near', operand: 'pizza'},
+    ];
+    filter = new Filter(operators);
+
+    assert(!filter.is_search());
+    assert(filter.can_mark_messages_read());
+    assert(!filter.contains_only_private_messages());
+    assert(!filter.allow_use_first_unread_when_narrowing());
+    assert(filter.can_apply_locally());
 
     // If our only stream operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a stream operator, because we don't

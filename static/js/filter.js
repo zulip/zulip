@@ -390,6 +390,12 @@ Filter.prototype = {
     calc_can_mark_messages_read: function () {
         const term_types = this.sorted_term_types();
 
+        if (_.isEqual(term_types, ['stream', 'topic', 'near'])) {
+            if (message_viewport.bottom_message_visible()) {
+                return true;
+            }
+        }
+
         if (_.isEqual(term_types, ['stream', 'topic'])) {
             return true;
         }
@@ -434,7 +440,8 @@ Filter.prototype = {
     },
 
     allow_use_first_unread_when_narrowing: function () {
-        return this.can_mark_messages_read() || this.has_operator('is');
+        return !this.has_operator('near') && this.can_mark_messages_read() ||
+            this.has_operator('is');
     },
 
     contains_only_private_messages: function () {
