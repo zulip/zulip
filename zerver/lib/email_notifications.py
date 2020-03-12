@@ -546,7 +546,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         from_address = settings.WELCOME_EMAIL_SENDER['email']
     else:
         from_name = None
-        from_address = FromAddress.SUPPORT
+        from_address = FromAddress.support_placeholder
 
     other_account_count = UserProfile.objects.filter(
         delivery_email__iexact=user.delivery_email).exclude(id=user.id).count()
