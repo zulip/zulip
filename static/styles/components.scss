@@ -85,15 +85,6 @@ a.no-underline:hover {
             width: 15px;
             transition: width 0.2s ease;
         }
-
-        .simplebar-scrollbar {
-            transition: width 0.2s ease 1s;
-
-            &.simplebar-hover {
-                width: 11px;
-                transition: width 0.2s ease;
-            }
-        }
     }
 
     &.simplebar-horizontal {
