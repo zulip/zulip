@@ -53,3 +53,33 @@ class ZcommandTest(ZulipTestCase):
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
         self.assertIn('still in day mode', result.json()['msg'])
+
+    def test_fluid_zcommand(self) -> None:
+        self.login("hamlet")
+        user = self.example_user("hamlet")
+        user.fluid_layout_width = False
+        user.save()
+
+        payload = dict(command="/fluid-width")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        self.assert_in_response('Changed to fluid-width mode!', result)
+
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        self.assert_in_response('You are still in fluid width mode', result)
+
+    def test_fixed_zcommand(self) -> None:
+        self.login("hamlet")
+        user = self.example_user("hamlet")
+        user.fluid_layout_width = True
+        user.save()
+
+        payload = dict(command="/fixed-width")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        self.assert_in_response('Changed to fixed-width mode!', result)
+
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+        self.assert_in_response('You are still in fixed width mode', result)
