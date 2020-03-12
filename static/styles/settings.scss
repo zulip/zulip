@@ -677,10 +677,18 @@ input[type=checkbox].inline-block {
         td {
             text-align: center;
             vertical-align: middle;
+            cursor: default;
+
+            .stream-privacy span.hashtag,
+            .filter-icon i {
+                padding-right: 0px;
+            }
         }
 
         td:first-child {
+            text-align: left;
             font-weight: bold;
+            word-break: break-all;
         }
     }
 }

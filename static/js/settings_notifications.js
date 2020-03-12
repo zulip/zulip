@@ -1,3 +1,5 @@
+const render_stream_specific_notification_row = require('../templates/settings/stream_specific_notification_row.hbs');
+
 const general_notifications_table_columns = [
     /* An array of notification settings of any category like
     * `stream_notification_settings` which makes a single row of
@@ -11,6 +13,14 @@ exports.stream_notification_settings = [
     "enable_stream_audible_notifications",
     "enable_stream_push_notifications",
     "enable_stream_email_notifications",
+    "wildcard_mentions_notify",
+];
+
+const stream_specific_notification_settings = [
+    "desktop_notifications",
+    "audible_notifications",
+    "push_notifications",
+    "email_notifications",
     "wildcard_mentions_notify",
 ];
 
@@ -90,6 +100,7 @@ exports.all_notifications = {
         email_notification_settings: email_notification_settings,
     },
     show_push_notifications_tooltip: {
+        push_notifications: !page_params.realm_push_notifications_enabled,
         enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
     },
 };
@@ -108,6 +119,33 @@ exports.desktop_icon_count_display_values = {
         description: i18n.t("None"),
     },
 };
+
+function rerender_ui() {
+    const unmatched_streams_table = $("#stream-specific-notify-table");
+    if (unmatched_streams_table.length === 0) {
+        // If we haven't rendered "notification settings" yet, do nothing.
+        return;
+    }
+
+    const unmatched_streams = stream_data.get_unmatched_streams_for_notification_settings();
+
+    list_render.create(unmatched_streams_table, unmatched_streams, {
+        name: "unmatched-streams-list",
+        modifier: function (unmatched_streams) {
+            return render_stream_specific_notification_row({
+                stream: unmatched_streams,
+                stream_specific_notification_settings: stream_specific_notification_settings,
+                is_disabled: exports.all_notifications.show_push_notifications_tooltip,
+            });
+        },
+    }).init();
+
+    if (unmatched_streams.length === 0) {
+        unmatched_streams_table.css("display", "none");
+    } else {
+        unmatched_streams_table.css("display", "table-row-group");
+    }
+}
 
 function change_notification_setting(setting, setting_data, status_element) {
     const data = {};
@@ -134,6 +172,10 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         const input_elem = $(e.currentTarget);
+        if (input_elem.parents("#stream-specific-notify-table").length) {
+            stream_edit.stream_setting_clicked(e);
+            return;
+        }
         const setting_name = input_elem.attr("name");
         change_notification_setting(setting_name,
                                     settings_org.get_input_element_value(this),
@@ -159,6 +201,7 @@ exports.set_up = function () {
         }
     });
     exports.set_enable_digest_emails_visibility();
+    rerender_ui();
 };
 
 exports.update_page = function () {
@@ -175,6 +218,7 @@ exports.update_page = function () {
 
         $("#" + setting).prop('checked', page_params[setting]);
     }
+    rerender_ui();
 };
 
 window.settings_notifications = exports;

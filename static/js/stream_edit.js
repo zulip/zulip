@@ -328,12 +328,16 @@ function stream_is_muted_clicked(e) {
     }
 }
 
-function stream_setting_clicked(e) {
+exports.stream_setting_clicked = function (e) {
     if (e.currentTarget.id === 'sub_is_muted_setting') {
         return;
     }
 
-    const checkbox = $(e.currentTarget).find('.sub_setting_control');
+    let checkbox = $(e.currentTarget).find('.sub_setting_control');
+    // sub data is being changed from the notification settings page.
+    if (checkbox.length === 0) {
+        checkbox = $(e.currentTarget);
+    }
     const sub = get_sub_for_target(e.target);
     const setting = checkbox.attr('name');
     if (!sub) {
@@ -351,7 +355,7 @@ function stream_setting_clicked(e) {
         }
     }
     exports.set_stream_property(sub, setting, !sub[setting]);
-}
+};
 
 exports.bulk_set_stream_property = function (sub_data) {
     return channel.post({
@@ -548,7 +552,7 @@ exports.initialize = function () {
                                  stream_is_muted_clicked);
 
     $("#subscriptions_table").on("click", ".sub_setting_checkbox",
-                                 stream_setting_clicked);
+                                 exports.stream_setting_clicked);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
