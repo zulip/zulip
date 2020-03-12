@@ -61,7 +61,7 @@ class TestFollowupEmails(ZulipTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             self.login_with_return("newuser_email_as_uid@zulip.com",
                                    self.ldap_password("newuser_email_as_uid@zulip.com"))
-            user = UserProfile.objects.get(email="newuser_email_as_uid@zulip.com")
+            user = UserProfile.objects.get(delivery_email="newuser_email_as_uid@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
@@ -81,7 +81,7 @@ class TestFollowupEmails(ZulipTestCase):
         ):
             self.login_with_return("newuser@zulip.com", self.ldap_password("newuser"))
 
-            user = UserProfile.objects.get(email="newuser@zulip.com")
+            user = UserProfile.objects.get(delivery_email="newuser@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
@@ -100,7 +100,7 @@ class TestFollowupEmails(ZulipTestCase):
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
             self.login_with_return("newuser_with_email", self.ldap_password("newuser_with_email"))
-            user = UserProfile.objects.get(email="newuser_email@zulip.com")
+            user = UserProfile.objects.get(delivery_email="newuser_email@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)

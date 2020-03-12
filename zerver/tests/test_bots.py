@@ -149,6 +149,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_length(queries, 3)
 
     def test_add_bot(self) -> None:
+        hamlet = self.example_user('hamlet')
         self.login('hamlet')
         self.assert_num_bots_equal(0)
         events = []  # type: List[Mapping[str, Any]]
@@ -164,18 +165,20 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             dict(
                 type='realm_bot',
                 op='add',
-                bot=dict(email='hambot-bot@zulip.testserver',
-                         user_id=bot.id,
-                         bot_type=bot.bot_type,
-                         full_name='The Bot of Hamlet',
-                         is_active=True,
-                         api_key=result['api_key'],
-                         avatar_url=result['avatar_url'],
-                         default_sending_stream=None,
-                         default_events_register_stream=None,
-                         default_all_public_streams=False,
-                         services=[],
-                         owner=self.example_email('hamlet'))
+                bot=dict(
+                    email='hambot-bot@zulip.testserver',
+                    user_id=bot.id,
+                    bot_type=bot.bot_type,
+                    full_name='The Bot of Hamlet',
+                    is_active=True,
+                    api_key=result['api_key'],
+                    avatar_url=result['avatar_url'],
+                    default_sending_stream=None,
+                    default_events_register_stream=None,
+                    default_all_public_streams=False,
+                    services=[],
+                    owner=hamlet.email,
+                ),
             ),
             event['event']
         )
@@ -330,11 +333,12 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         is sent when add_subscriptions_backend is called in the above api call.
         """
         hamlet = self.example_user('hamlet')
+        iago = self.example_user('iago')
         self.login_user(hamlet)
 
         # Normal user i.e. not a bot.
         request_data = {
-            'principals': '["' + self.example_email('iago') + '"]'
+            'principals': '["' + iago.email + '"]'
         }
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
@@ -391,18 +395,20 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             dict(
                 type='realm_bot',
                 op='add',
-                bot=dict(email='hambot-bot@zulip.testserver',
-                         user_id=profile.id,
-                         full_name='The Bot of Hamlet',
-                         bot_type=profile.bot_type,
-                         is_active=True,
-                         api_key=result['api_key'],
-                         avatar_url=result['avatar_url'],
-                         default_sending_stream='Denmark',
-                         default_events_register_stream=None,
-                         default_all_public_streams=False,
-                         services=[],
-                         owner=self.example_email('hamlet'))
+                bot=dict(
+                    email='hambot-bot@zulip.testserver',
+                    user_id=profile.id,
+                    full_name='The Bot of Hamlet',
+                    bot_type=profile.bot_type,
+                    is_active=True,
+                    api_key=result['api_key'],
+                    avatar_url=result['avatar_url'],
+                    default_sending_stream='Denmark',
+                    default_events_register_stream=None,
+                    default_all_public_streams=False,
+                    services=[],
+                    owner=user_profile.email,
+                ),
             ),
             event['event']
         )
@@ -461,18 +467,20 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             dict(
                 type='realm_bot',
                 op='add',
-                bot=dict(email='hambot-bot@zulip.testserver',
-                         full_name='The Bot of Hamlet',
-                         user_id=bot_profile.id,
-                         bot_type=bot_profile.bot_type,
-                         is_active=True,
-                         api_key=result['api_key'],
-                         avatar_url=result['avatar_url'],
-                         default_sending_stream=None,
-                         default_events_register_stream='Denmark',
-                         default_all_public_streams=False,
-                         services=[],
-                         owner=self.example_email('hamlet'))
+                bot=dict(
+                    email='hambot-bot@zulip.testserver',
+                    full_name='The Bot of Hamlet',
+                    user_id=bot_profile.id,
+                    bot_type=bot_profile.bot_type,
+                    is_active=True,
+                    api_key=result['api_key'],
+                    avatar_url=result['avatar_url'],
+                    default_sending_stream=None,
+                    default_events_register_stream='Denmark',
+                    default_all_public_streams=False,
+                    services=[],
+                    owner=user_profile.email,
+                ),
             ),
             event['event']
         )
@@ -860,6 +868,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_patch_bot_owner(self) -> None:
         self.login('hamlet')
+        othello = self.example_user('othello')
+
         bot_info = {
             'full_name': u'The Bot of Hamlet',
             'short_name': u'hambot',
@@ -867,14 +877,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
-            'bot_owner_id': self.example_user('othello').id,
+            'bot_owner_id': othello.id,
         }
         email = 'hambot-bot@zulip.testserver'
         result = self.client_patch("/json/bots/{}".format(self.get_bot_user(email).id), bot_info)
         self.assert_json_success(result)
 
         # Test bot's owner has been changed successfully.
-        self.assertEqual(result.json()['bot_owner'], self.example_email('othello'))
+        self.assertEqual(result.json()['bot_owner'], othello.email)
 
         self.login('othello')
         bot = self.get_bot()

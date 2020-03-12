@@ -125,7 +125,7 @@ class TestReport(ZulipTestCase):
             self.assertEqual(report[k], params[k])
 
         self.assertEqual(report['more_info'], dict(foo='bar', draft_content="'**xxxxx**'"))
-        self.assertEqual(report['user_email'], user.email)
+        self.assertEqual(report['user_email'], user.delivery_email)
 
         # Teset with no more_info
         del params['more_info']

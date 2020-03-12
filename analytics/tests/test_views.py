@@ -12,6 +12,7 @@ from analytics.models import FillState, \
     RealmCount, UserCount, last_successful_fill
 from analytics.views import rewrite_client_arrays, \
     sort_by_totals, sort_client_labels
+from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, datetime_to_timestamp
@@ -334,6 +335,8 @@ class TestGetChartData(ZulipTestCase):
 
 class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
+        reset_emails_in_zulip_realm()
+
         def check_hamlet_user_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<span class="label">user</span>\n', '<h3>King Hamlet</h3>',
                                              '<b>Email</b>: hamlet@zulip.com', '<b>Is active</b>: True<br>',

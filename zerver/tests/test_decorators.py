@@ -1090,7 +1090,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         user = self.example_user("cordelia")
         self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  dict(password=initial_password(user.email)))
+                                  dict(password=initial_password(user.delivery_email)))
         self.assert_json_success(result)
 
     def test_fetch_api_key_email_address_visibility(self) -> None:
@@ -1100,7 +1100,7 @@ class FetchAPIKeyTest(ZulipTestCase):
 
         self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  dict(password=initial_password(user.email)))
+                                  dict(password=initial_password(user.delivery_email)))
         self.assert_json_success(result)
 
     def test_fetch_api_key_wrong_password(self) -> None:
@@ -1150,7 +1150,7 @@ class InactiveUserTest(ZulipTestCase):
 
         """
         user_profile = self.example_user('hamlet')
-        email = user_profile.email
+        email = user_profile.delivery_email
         test_password = "abcd1234"
         user_profile.set_password(test_password)
         user_profile.save()
@@ -1183,14 +1183,17 @@ class InactiveUserTest(ZulipTestCase):
         user_profile.is_mirror_dummy = True
         user_profile.save()
 
-        password = initial_password(user_profile.email)
+        password = initial_password(user_profile.delivery_email)
         request = mock.MagicMock()
         request.get_host.return_value = 'zulip.testserver'
 
+        payload = dict(
+            username=user_profile.delivery_email,
+            password=password,
+        )
+
         # Test a mirror-dummy active user.
-        form = OurAuthenticationForm(request,
-                                     data={'username': user_profile.email,
-                                           'password': password})
+        form = OurAuthenticationForm(request, payload)
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
             self.assertTrue(form.is_valid())
 
@@ -1198,9 +1201,7 @@ class InactiveUserTest(ZulipTestCase):
         do_deactivate_user(user_profile)
         user_profile.save()
 
-        form = OurAuthenticationForm(request,
-                                     data={'username': user_profile.email,
-                                           'password': password})
+        form = OurAuthenticationForm(request, payload)
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
             self.assertFalse(form.is_valid())
             self.assertIn("Please enter a correct email", str(form.errors))
@@ -1209,9 +1210,7 @@ class InactiveUserTest(ZulipTestCase):
         user_profile.is_mirror_dummy = False
         user_profile.save()
 
-        form = OurAuthenticationForm(request,
-                                     data={'username': user_profile.email,
-                                           'password': password})
+        form = OurAuthenticationForm(request, payload)
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
             self.assertFalse(form.is_valid())
             self.assertIn("Your account is no longer active", str(form.errors))
@@ -1235,11 +1234,15 @@ class InactiveUserTest(ZulipTestCase):
 class TestIncomingWebhookBot(ZulipTestCase):
     def test_webhook_bot_permissions(self) -> None:
         webhook_bot = self.example_user('webhook_bot')
-        result = self.api_post(webhook_bot,
-                               "/api/v1/messages", {"type": "private",
-                                                    "content": "Test message",
-                                                    "client": "test suite",
-                                                    "to": self.example_email("othello")})
+        othello = self.example_user('othello')
+        payload = dict(
+            type='private',
+            content='Test message',
+            client='test suite',
+            to=othello.email,
+        )
+
+        result = self.api_post(webhook_bot, "/api/v1/messages", payload)
         self.assert_json_success(result)
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
         result = self.api_get(webhook_bot, "/api/v1/messages", dict(post_params))
@@ -1449,6 +1452,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 
     def test_authenticated_json_post_view_if_subdomain_is_invalid(self) -> None:
         user = self.example_user('hamlet')
+        email = user.delivery_email
         self.login_user(user)
         with mock.patch('logging.warning') as mock_warning, \
                 mock.patch('zerver.decorator.get_subdomain', return_value=''):
@@ -1457,7 +1461,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
                                             "subdomain")
             mock_warning.assert_called_with(
                 "User {} ({}) attempted to access API on wrong "
-                "subdomain ({})".format(user.email, 'zulip', ''))
+                "subdomain ({})".format(email, 'zulip', ''))
 
         with mock.patch('logging.warning') as mock_warning, \
                 mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
@@ -1466,7 +1470,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
                                             "subdomain")
             mock_warning.assert_called_with(
                 "User {} ({}) attempted to access API on wrong "
-                "subdomain ({})".format(user.email, 'zulip', 'acme'))
+                "subdomain ({})".format(email, 'zulip', 'acme'))
 
     def test_authenticated_json_post_view_if_user_is_incoming_webhook(self) -> None:
         bot = self.example_user('webhook_bot')
@@ -1502,7 +1506,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
     def test_authenticated_json_view_if_subdomain_is_invalid(self) -> None:
         user = self.example_user('hamlet')
-        email = user.email
+        email = user.delivery_email
         self.login_user(user)
 
         with mock.patch('logging.warning') as mock_warning, \
