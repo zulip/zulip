@@ -33,14 +33,17 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     from zerver.openapi.python_examples import test_the_api, test_invalid_api_key
     from zerver.openapi.test_curl_examples import test_generated_curl_examples_for_success
     from zerver.lib.actions import do_create_user
+    from zerver.lib.test_helpers import reset_emails_in_zulip_realm
     from zerver.lib.users import get_api_key
     from zerver.models import get_user, get_realm
 
     print("Running API tests...")
 
+    reset_emails_in_zulip_realm()
+
     # Prepare the admin client
     email = 'iago@zulip.com'  # Iago is an admin
-    realm = get_realm("zulip")
+    realm = get_realm('zulip')
     user = get_user(email, realm)
     api_key = get_api_key(user)
     site = 'http://zulip.zulipdev.com:9981'
