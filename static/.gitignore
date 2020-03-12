@@ -10,6 +10,7 @@
 /generated/emoji-styles
 # From passing pygments data to the frontend
 /generated/pygments_data.json
+/generated/pygments_data.js
 # From `tools/update-authors-json`
 /generated/github-contributors.json
 
