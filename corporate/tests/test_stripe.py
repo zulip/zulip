@@ -1078,16 +1078,26 @@ class BillingHelpersTest(ZulipTestCase):
             returned = update_or_create_stripe_customer(user, stripe_token='token')
         mocked1.assert_called()
         self.assertEqual(returned, 'returned')
-        # Customer exists, replace payment source
-        customer = Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cus_12345')
-        with patch('corporate.lib.stripe.do_replace_payment_source') as mocked2:
-            returned_customer = update_or_create_stripe_customer(self.example_user('hamlet'), 'token')
+
+        customer = Customer.objects.create(realm=get_realm('zulip'))
+        # Customer exists but stripe_customer_id is None
+        with patch('corporate.lib.stripe.do_create_stripe_customer', return_value='returned') as mocked2:
+            returned = update_or_create_stripe_customer(user, stripe_token='token')
         mocked2.assert_called()
-        self.assertEqual(returned_customer, customer)
-        # Customer exists, do nothing
+        self.assertEqual(returned, 'returned')
+
+        customer.stripe_customer_id = 'cus_12345'
+        customer.save()
+        # Customer exists, replace payment source
         with patch('corporate.lib.stripe.do_replace_payment_source') as mocked3:
+            returned_customer = update_or_create_stripe_customer(self.example_user('hamlet'), 'token')
+        mocked3.assert_called()
+        self.assertEqual(returned_customer, customer)
+
+        # Customer exists, do nothing
+        with patch('corporate.lib.stripe.do_replace_payment_source') as mocked4:
             returned_customer = update_or_create_stripe_customer(self.example_user('hamlet'), None)
-        mocked3.assert_not_called()
+        mocked4.assert_not_called()
         self.assertEqual(returned_customer, customer)
 
 class LicenseLedgerTest(StripeTestCase):
