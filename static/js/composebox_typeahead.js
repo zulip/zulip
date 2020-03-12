@@ -381,6 +381,14 @@ exports.slash_commands = [
         name: "day",
     },
     {
+        text: i18n.t("/fixed-width (Toggle fixed width mode)"),
+        name: "fixed-width",
+    },
+    {
+        text: i18n.t("/fluid-width (Toggle fluid width mode)"),
+        name: "fluid-width",
+    },
+    {
         text: i18n.t("/light (Toggle day mode)"),
         name: "light",
     },
