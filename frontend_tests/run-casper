@@ -75,6 +75,10 @@ os.makedirs('var/casper', exist_ok=True)
 for f in glob.glob('var/casper/casper-failure*.png'):
     os.remove(f)
 
+def reset_database() -> None:
+    from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+    reset_emails_in_zulip_realm()
+
 def run_tests(files: Iterable[str], external_host: str) -> None:
     test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/casper_tests')
     test_files = []
@@ -118,9 +122,12 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
         return 0
 
     with test_server_running(options.force, external_host):
-        # Important: do this next call inside the `with` block, when Django
+        # Important: do next things inside the `with` block, when Django
         #            will be pointing at the test database.
+        reset_database()
         subprocess.check_call('tools/setup/generate-test-credentials')
+
+        # RUN THE TESTS!!!
         if options.interactive:
             response = input('Press Enter to run tests, "q" to quit: ')
             ret = 1
@@ -131,6 +138,7 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
         else:
             ret = 1
             ret = run_tests()
+
     if ret != 0:
         print("""
 The Casper frontend tests failed!  For help debugging, read:
