@@ -642,6 +642,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_get_custom_profile_fields_from_api(self) -> None:
         iago = self.example_user("iago")
         test_bot = self.create_test_bot("foo-bot", iago)
+        self.login_user(iago)
         assert(test_bot)
 
         url = "/json/users?client_gravatar=false&include_custom_profile_fields=true"
@@ -668,12 +669,14 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             raise AssertionError("Could not find required data from the response.")
 
         expected_keys_for_iago = {
+            "delivery_email",
             "email", "user_id", "avatar_url", "is_admin", "is_guest", "is_bot",
             "full_name", "timezone", "is_active", "date_joined", "profile_data"}
         self.assertEqual(set(iago_raw_data.keys()), expected_keys_for_iago)
         self.assertNotEqual(iago_raw_data["profile_data"], {})
 
         expected_keys_for_test_bot = {
+            "delivery_email",
             "email", "user_id", "avatar_url", "is_admin", "is_guest", "is_bot", "full_name",
             "timezone", "is_active", "date_joined", "bot_type", "bot_owner_id"}
         self.assertEqual(set(test_bot_raw_data.keys()), expected_keys_for_test_bot)
