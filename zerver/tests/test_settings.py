@@ -70,7 +70,7 @@ class ChangeSettingsTest(ZulipTestCase):
             "/json/settings",
             dict(
                 full_name='Foo Bar',
-                old_password=initial_password(user.email),
+                old_password=initial_password(user.delivery_email),
                 new_password='foobar1',
             ))
         self.assert_json_success(json_result)
@@ -86,7 +86,7 @@ class ChangeSettingsTest(ZulipTestCase):
         # with as few moving parts as possible).
         self.assertTrue(
             self.client.login(
-                username=user.email,
+                username=user.delivery_email,
                 password='foobar1',
                 realm=user.realm
             )

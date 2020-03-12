@@ -46,7 +46,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         # Also remove the "nocoverage" from check_translation above.
         # check_translation("Viele Grüße", "patch", "/json/settings", {"email": "hamlets-new@zulip.com"})
         check_translation("Incrível!", "post", "/accounts/home/", {"email": "new-email@zulip.com"}, HTTP_ACCEPT_LANGUAGE="pt")
-        check_translation("Danke, dass Du", "post", '/accounts/find/', {'emails': hamlet.email})
+        check_translation("Danke, dass Du", "post", '/accounts/find/', {'emails': hamlet.delivery_email})
         check_translation("Hallo", "post", "/json/invites",  {"invitee_emails": "new-email@zulip.com",
                                                               "stream_ids": ujson.dumps([stream.id])})
 

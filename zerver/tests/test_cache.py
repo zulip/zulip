@@ -271,7 +271,7 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             query_function=query_function,
             object_ids=[self.example_email("hamlet")]
         )  # type: Dict[str, UserProfile]
-        self.assertEqual(result, {hamlet.email: hamlet})
+        self.assertEqual(result, {hamlet.delivery_email: hamlet})
 
         flush_cache(Mock())
         # With the cache flushed, the query_function should get called:
