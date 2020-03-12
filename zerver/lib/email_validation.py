@@ -130,7 +130,7 @@ def get_existing_user_errors(
     errors = {}  # type: Dict[str, Tuple[str, bool]]
 
     users = get_users_by_delivery_email(emails, target_realm).only(
-        'email',
+        'delivery_email',
         'is_active',
         'is_mirror_dummy',
     )
@@ -143,7 +143,7 @@ def get_existing_user_errors(
     users in the same realm to have the same effective
     delivery email.)
     '''
-    user_dict = {user.email.lower(): user for user in users}
+    user_dict = {user.delivery_email.lower(): user for user in users}
 
     def process_email(email: str) -> None:
         if is_cross_realm_bot_email(email):
