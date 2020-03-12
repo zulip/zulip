@@ -27,7 +27,7 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE, exif_rotate, \
     upload_export_tarball, delete_export_tarball
 import zerver.lib.upload
-from zerver.models import Attachment, get_user, \
+from zerver.models import Attachment, get_user_by_delivery_email, \
     Message, UserProfile, Realm, \
     RealmDomain, RealmEmoji, get_realm, get_system_bot, \
     validate_attachment_request
@@ -453,7 +453,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             password = initial_password(email)
             if password is not None:
                 self.register(email, password, subdomain=realm_id)
-            return get_user(email, get_realm(realm_id))
+            return get_user_by_delivery_email(email, get_realm(realm_id))
 
         test_subdomain = "uploadtest.example.com"
         user1_email = 'user1@uploadtest.example.com'
@@ -476,11 +476,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://{}/user_uploads/".format(host) + fp_path_id + ")"
-        with self.settings(CROSS_REALM_BOT_EMAILS = set((user2_email, user3_email))):
+        with self.settings(CROSS_REALM_BOT_EMAILS = set((user_2.email, user_3.email))):
             internal_send_private_message(
                 realm=r1,
-                sender=get_system_bot(user2_email),
-                recipient_user=get_user(user1_email, r1),
+                sender=get_system_bot(user_2.email),
+                recipient_user=user_1,
                 content=body,
             )
 
@@ -850,6 +850,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_gravatar_avatar(self) -> None:
         self.login('hamlet')
         cordelia = self.example_user('cordelia')
+        cordelia.email = cordelia.delivery_email
+        cordelia.save()
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
         cordelia.save()
@@ -867,6 +869,9 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         cordelia = self.example_user('cordelia')
+        cordelia.email = cordelia.delivery_email
+        cordelia.save()
+
         cross_realm_bot = get_system_bot(settings.WELCOME_BOT)
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
@@ -911,6 +916,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         cordelia = self.example_user('cordelia')
+        cordelia.email = cordelia.delivery_email
+        cordelia.save()
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()

@@ -13,6 +13,7 @@ from boto.s3.connection import S3Connection
 from boto.s3.bucket import Bucket
 
 import zerver.lib.upload
+from zerver.lib.actions import do_set_realm_property
 from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
@@ -25,9 +26,11 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.views.auth import get_login_data
 
 from zerver.models import (
+    get_realm,
     get_stream,
     Client,
     Message,
+    Realm,
     Subscription,
     UserMessage,
     UserProfile,
@@ -186,6 +189,11 @@ def stdout_suppressed() -> Iterator[IO[str]]:
         stdout, sys.stdout = sys.stdout, devnull
         yield stdout
         sys.stdout = stdout
+
+def reset_emails_in_zulip_realm() -> None:
+    realm = get_realm('zulip')
+    do_set_realm_property(realm, 'email_address_visibility',
+                          Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
 
 def get_test_image_file(filename: str) -> IO[Any]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))

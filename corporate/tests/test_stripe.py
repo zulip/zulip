@@ -22,6 +22,7 @@ import stripe
 from zerver.lib.actions import do_deactivate_user, do_create_user, \
     do_activate_user, do_reactivate_user
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, \
@@ -219,6 +220,7 @@ class StripeTestCase(ZulipTestCase):
         super().setUp()
         # This test suite is not robust to users being added in populate_db. The following
         # hack ensures get_latest_seat_count is fixed, even as populate_db changes.
+        reset_emails_in_zulip_realm()
         realm = get_realm('zulip')
         seat_count = get_latest_seat_count(realm)
         assert(seat_count >= 6)

@@ -188,7 +188,7 @@ class EmailChangeTestCase(ZulipTestCase):
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
 
         self.login_user(user_profile)
-        old_email = user_profile.email
+        old_email = user_profile.delivery_email
         new_email = 'hamlet-new@zulip.com'
         obj = EmailChangeStatus.objects.create(new_email=new_email,
                                                old_email=old_email,

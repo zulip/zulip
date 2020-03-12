@@ -59,7 +59,7 @@ class TestZulipBaseCommand(ZulipTestCase):
     def test_get_user(self) -> None:
         mit_realm = get_realm("zephyr")
         user_profile = self.example_user("hamlet")
-        email = user_profile.email
+        email = user_profile.delivery_email
 
         self.assertEqual(self.command.get_user(email, self.zulip_realm), user_profile)
         self.assertEqual(self.command.get_user(email, None), user_profile)
@@ -78,7 +78,7 @@ class TestZulipBaseCommand(ZulipTestCase):
 
     def test_get_user_profile_by_email(self) -> None:
         user_profile = self.example_user("hamlet")
-        email = user_profile.email
+        email = user_profile.delivery_email
 
         self.assertEqual(get_user_profile_by_email(email), user_profile)
 
@@ -87,16 +87,26 @@ class TestZulipBaseCommand(ZulipTestCase):
         user_profiles = self.command.get_users(options, realm, **kwargs)
         return sorted(user_profiles, key = lambda x: x.email)
 
+    def sorted_users(self, users: List[UserProfile]) -> List[UserProfile]:
+        return sorted(users, key = lambda x: x.email)
+
     def test_get_users(self) -> None:
-        user_emails = self.example_email("hamlet") + "," + self.example_email("iago")
-        expected_user_profiles = [self.example_user("hamlet"), self.example_user("iago")]
+        expected_user_profiles = self.sorted_users([
+            self.example_user('hamlet'),
+            self.example_user('iago'),
+        ])
+
+        user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), self.zulip_realm)
         self.assertEqual(user_profiles, expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
         self.assertEqual(user_profiles, expected_user_profiles)
 
-        user_emails = self.example_email("iago") + "," + self.mit_email("sipbtest")
-        expected_user_profiles = [self.example_user("iago"), self.mit_user("sipbtest")]
+        expected_user_profiles = self.sorted_users([
+            self.mit_user('sipbtest'),
+            self.example_user('iago'),
+        ])
+        user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
         self.assertEqual(user_profiles, expected_user_profiles)
         error_message = "The realm '%s' does not contain a user with email" % (self.zulip_realm,)
@@ -109,8 +119,11 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(self.command.get_users(dict(users=None), None), [])
 
     def test_get_users_with_all_users_argument_enabled(self) -> None:
-        user_emails = self.example_email("hamlet") + "," + self.example_email("iago")
-        expected_user_profiles = [self.example_user("hamlet"), self.example_user("iago")]
+        expected_user_profiles = self.sorted_users([
+            self.example_user('hamlet'),
+            self.example_user('iago'),
+        ])
+        user_emails = ','.join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails, all_users=False), self.zulip_realm)
         self.assertEqual(user_profiles, expected_user_profiles)
         error_message = "You can't use both -u/--users and -a/--all-users."

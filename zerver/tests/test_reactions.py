@@ -216,13 +216,13 @@ class ReactionMessageIDTest(ZulipTestCase):
         Reacting to a inaccessible (for instance, private) message fails
         """
         pm_sender = self.example_user("hamlet")
-        pm_recipient = self.example_email("othello")
+        pm_recipient = self.example_user("othello")
         reaction_sender = self.example_user("iago")
 
         result = self.api_post(pm_sender,
                                "/api/v1/messages", {"type": "private",
                                                     "content": "Test message",
-                                                    "to": pm_recipient})
+                                                    "to": pm_recipient.email})
         self.assert_json_success(result)
         pm_id = result.json()['id']
         reaction_info = {
