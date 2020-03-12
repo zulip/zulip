@@ -19,7 +19,6 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
-    email_to_domain,
     Client,
     PushDeviceToken,
     UserActivity,
@@ -161,53 +160,55 @@ class UserPresenceTests(ZulipTestCase):
     def test_set_idle(self) -> None:
         client = 'website'
 
-        user = self.example_user("hamlet")
-        email = user.email
-        self.login_user(user)
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+
+        self.login_user(hamlet)
 
         result = self.client_post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
         json = result.json()
-        self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        self.assertIn('timestamp', json['presences'][email][client])
-        self.assertIsInstance(json['presences'][email][client]['timestamp'], int)
-        self.assertEqual(list(json['presences'].keys()), [self.example_email("hamlet")])
-        timestamp = json['presences'][email][client]['timestamp']
+        self.assertEqual(json['presences'][hamlet.email][client]['status'], 'idle')
+        self.assertIn('timestamp', json['presences'][hamlet.email][client])
+        self.assertIsInstance(json['presences'][hamlet.email][client]['timestamp'], int)
+        self.assertEqual(list(json['presences'].keys()), [hamlet.email])
+        timestamp = json['presences'][hamlet.email][client]['timestamp']
 
-        user = self.example_user("othello")
-        email = user.email
-        self.login_user(user)
+        self.login_user(othello)
 
         result = self.client_post("/json/users/me/presence", {'status': 'idle'})
         json = result.json()
-        self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
-        self.assertEqual(sorted(json['presences'].keys()), [self.example_email("hamlet"), self.example_email("othello")])
-        newer_timestamp = json['presences'][email][client]['timestamp']
+        self.assertEqual(json['presences'][othello.email][client]['status'], 'idle')
+        self.assertEqual(json['presences'][hamlet.email][client]['status'], 'idle')
+        self.assertEqual(set(json['presences'].keys()), {hamlet.email, othello.email})
+        newer_timestamp = json['presences'][othello.email][client]['timestamp']
         self.assertGreaterEqual(newer_timestamp, timestamp)
 
     def test_set_active(self) -> None:
-        self.login('hamlet')
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+
+        self.login_user(hamlet)
+
         client = 'website'
 
         result = self.client_post("/json/users/me/presence", {'status': 'idle'})
 
         self.assert_json_success(result)
-        self.assertEqual(result.json()['presences'][self.example_email("hamlet")][client]['status'], 'idle')
+        self.assertEqual(result.json()['presences'][hamlet.email][client]['status'], 'idle')
 
-        email = self.example_email("othello")
         self.login('othello')
         result = self.client_post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
         json = result.json()
-        self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
+        self.assertEqual(json['presences'][othello.email][client]['status'], 'idle')
+        self.assertEqual(json['presences'][hamlet.email][client]['status'], 'idle')
 
         result = self.client_post("/json/users/me/presence", {'status': 'active'})
         self.assert_json_success(result)
         json = result.json()
-        self.assertEqual(json['presences'][email][client]['status'], 'active')
-        self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
+        self.assertEqual(json['presences'][othello.email][client]['status'], 'active')
+        self.assertEqual(json['presences'][hamlet.email][client]['status'], 'idle')
 
     @mock.patch("stripe.Customer.list", return_value=[])
     def test_new_user_input(self, unused_mock: mock.Mock) -> None:
@@ -347,14 +348,16 @@ class UserPresenceTests(ZulipTestCase):
         self.logout()
 
         # Ensure we don't see hamlet@zulip.com information leakage
-        self.login('hamlet')
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
         result = self.client_post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
         json = result.json()
-        self.assertEqual(json['presences'][self.example_email("hamlet")]["website"]['status'], 'idle')
-        # We only want @zulip.com emails
-        for email in json['presences'].keys():
-            self.assertEqual(email_to_domain(email), 'zulip.com')
+        self.assertEqual(json['presences'][hamlet.email]["website"]['status'], 'idle')
+        self.assertEqual(
+            json['presences'].keys(),
+            {hamlet.email}
+        )
 
 class SingleUserPresenceTests(ZulipTestCase):
     def test_single_user_get(self) -> None:
@@ -374,7 +377,7 @@ class SingleUserPresenceTests(ZulipTestCase):
         self.assert_json_error(result, "No such user")
 
         result = self.client_get("/json/users/cordelia@zulip.com/presence")
-        self.assert_json_error(result, "No presence data for cordelia@zulip.com")
+        self.assert_json_error(result, "No presence data for user")
 
         do_deactivate_user(self.example_user('cordelia'))
         result = self.client_get("/json/users/cordelia@zulip.com/presence")
@@ -411,7 +414,6 @@ class SingleUserPresenceTests(ZulipTestCase):
 class UserPresenceAggregationTests(ZulipTestCase):
     def _send_presence_for_aggregated_tests(self, user: UserProfile, status: str,
                                             validate_time: datetime.datetime) -> Dict[str, Dict[str, Any]]:
-        email = user.email
         self.login_user(user)
         timezone_util = 'zerver.views.presence.timezone_now'
         with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=5)):
@@ -424,14 +426,16 @@ class UserPresenceAggregationTests(ZulipTestCase):
                                           HTTP_USER_AGENT="ZulipIOS/1.0")
         latest_result_dict = latest_result.json()
         self.assertDictEqual(
-            latest_result_dict['presences'][email]['aggregated'],
+            latest_result_dict['presences'][user.email]['aggregated'],
             {
                 'status': status,
                 'timestamp': datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2)),
                 'client': 'ZulipAndroid'
             }
         )
-        result = self.client_get("/json/users/%s/presence" % (email,))
+
+        # TODO: fix presence to take email, not delivery_email
+        result = self.client_get("/json/users/%s/presence" % (user.delivery_email,))
         return result.json()
 
     def test_aggregated_info(self) -> None:

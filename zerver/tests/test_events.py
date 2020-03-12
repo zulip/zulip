@@ -1039,6 +1039,13 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_invitation_accept_invite_event(self) -> None:
+        # TODO: we should test the case for when emails aren't
+        #       visible to everyone; we need the event logic to
+        #       add in `delivery_email`
+        realm = self.user_profile.realm
+        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        realm.save()
+
         schema_checker = self.check_events_dict([
             ('type', equals('invites_changed')),
         ])
@@ -1256,7 +1263,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = realm_user_add_checker('events[0]', events[0])
         self.assert_on_error(error)
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
-        self.assertEqual(new_user_profile.email, "test1@zulip.com")
+        self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
     def test_register_events_email_address_visibility(self) -> None:
         realm_user_add_checker = self.check_events_dict([
@@ -1819,6 +1826,12 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
             ])),
         ])
+        # TODO: we should test the case for when emails aren't
+        #       visible to everyone; we need the event logic to
+        #       add in `delivery_email`
+        realm = self.user_profile.realm
+        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        realm.save()
         do_change_is_admin(self.user_profile, False)
         for is_admin in [True, False]:
             events = self.do_test(lambda: do_change_is_admin(self.user_profile, is_admin))
@@ -3068,13 +3081,8 @@ class GetUnreadMsgsTest(ZulipTestCase):
     def test_unread_msgs(self) -> None:
         sender = self.example_user('cordelia')
         sender_id = sender.id
-        sender_email = sender.email
         user_profile = self.example_user('hamlet')
         othello = self.example_user('othello')
-
-        # our tests rely on order
-        assert(sender_email < user_profile.email)
-        assert(user_profile.email < othello.email)
 
         pm1_message_id = self.send_personal_message(sender, user_profile, "hello1")
         pm2_message_id = self.send_personal_message(sender, user_profile, "hello2")

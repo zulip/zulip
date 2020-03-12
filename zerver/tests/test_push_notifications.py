@@ -167,15 +167,15 @@ class PushBouncerNotificationTest(BouncerTestCase):
         result = self.uuid_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token, 'token_kind': 17})
         self.assert_json_error(result, "Invalid token type")
 
+        hamlet = self.example_user('hamlet')
+
         result = self.api_post(
-            self.example_user("hamlet"),
+            hamlet,
             endpoint,
             dict(user_id=user_id, token_kin=token_kind, token=token),
         )
         self.assert_json_error(result, "Account is not associated with this subdomain",
                                status_code=401)
-
-        hamlet = self.example_user('hamlet')
 
         # We need the root ('') subdomain to be in use for this next
         # test, since the push bouncer API is only available there:
@@ -1222,12 +1222,11 @@ class TestGetAPNsPayload(PushNotificationTest):
 
     def test_get_message_payload_apns_stream_message(self):
         # type: () -> None
-        user_profile = self.example_user("hamlet")
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = 'push_stream_notify'
         message.stream_name = 'Verona'
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(self.sender, message)
         expected = {
             'alert': {
                 'title': '#Verona > Test Topic',
@@ -1247,7 +1246,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
-                    "user_id": user_profile.id,
+                    "user_id": self.sender.id,
                 }
             }
         }
@@ -1364,10 +1363,10 @@ class TestGetGCMPayload(PushNotificationTest):
         message.save()
         message.trigger = 'mentioned'
 
-        user_profile = self.example_user('hamlet')
-        payload, gcm_options = get_message_payload_gcm(user_profile, message)
+        hamlet = self.example_user('hamlet')
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(payload, {
-            "user_id": user_profile.id,
+            "user_id": hamlet.id,
             "event": "message",
             "alert": "New mention from King Hamlet",
             "zulip_message_id": message.id,
@@ -1375,10 +1374,10 @@ class TestGetGCMPayload(PushNotificationTest):
             "content": 'a' * 200 + '…',
             "content_truncated": True,
             "server": settings.EXTERNAL_HOST,
-            "realm_id": self.example_user("hamlet").realm.id,
-            "realm_uri": self.example_user("hamlet").realm.uri,
-            "sender_id": self.example_user("hamlet").id,
-            "sender_email": self.example_email("hamlet"),
+            "realm_id": hamlet.realm.id,
+            "realm_uri": hamlet.realm.uri,
+            "sender_id": hamlet.id,
+            "sender_email": hamlet.email,
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
@@ -1392,10 +1391,10 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_message_payload_gcm_personal(self) -> None:
         message = self.get_message(Recipient.PERSONAL, 1)
         message.trigger = 'private_message'
-        user_profile = self.example_user('hamlet')
-        payload, gcm_options = get_message_payload_gcm(user_profile, message)
+        hamlet = self.example_user('hamlet')
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(payload, {
-            "user_id": user_profile.id,
+            "user_id": hamlet.id,
             "event": "message",
             "alert": "New private message from King Hamlet",
             "zulip_message_id": message.id,
@@ -1403,10 +1402,10 @@ class TestGetGCMPayload(PushNotificationTest):
             "content": message.content,
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
-            "realm_id": self.example_user("hamlet").realm.id,
-            "realm_uri": self.example_user("hamlet").realm.uri,
-            "sender_id": self.example_user("hamlet").id,
-            "sender_email": self.example_email("hamlet"),
+            "realm_id": hamlet.realm.id,
+            "realm_uri": hamlet.realm.uri,
+            "sender_id": hamlet.id,
+            "sender_email": hamlet.email,
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "private",
@@ -1419,10 +1418,10 @@ class TestGetGCMPayload(PushNotificationTest):
         message = self.get_message(Recipient.STREAM, 1)
         message.trigger = 'stream_push_notify'
         message.stream_name = 'Denmark'
-        user_profile = self.example_user('hamlet')
-        payload, gcm_options = get_message_payload_gcm(user_profile, message)
+        hamlet = self.example_user('hamlet')
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(payload, {
-            "user_id": user_profile.id,
+            "user_id": hamlet.id,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
             "zulip_message_id": message.id,
@@ -1430,10 +1429,10 @@ class TestGetGCMPayload(PushNotificationTest):
             "content": message.content,
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
-            "realm_id": self.example_user("hamlet").realm.id,
-            "realm_uri": self.example_user("hamlet").realm.uri,
-            "sender_id": self.example_user("hamlet").id,
-            "sender_email": self.example_email("hamlet"),
+            "realm_id": hamlet.realm.id,
+            "realm_uri": hamlet.realm.uri,
+            "sender_id": hamlet.id,
+            "sender_email": hamlet.email,
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
@@ -1449,10 +1448,10 @@ class TestGetGCMPayload(PushNotificationTest):
         message = self.get_message(Recipient.STREAM, 1)
         message.trigger = 'stream_push_notify'
         message.stream_name = 'Denmark'
-        user_profile = self.example_user('hamlet')
-        payload, gcm_options = get_message_payload_gcm(user_profile, message)
+        hamlet = self.example_user('hamlet')
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(payload, {
-            "user_id": user_profile.id,
+            "user_id": hamlet.id,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
             "zulip_message_id": message.id,
@@ -1460,10 +1459,10 @@ class TestGetGCMPayload(PushNotificationTest):
             "content": "***REDACTED***",
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
-            "realm_id": self.example_user("hamlet").realm.id,
-            "realm_uri": self.example_user("hamlet").realm.uri,
-            "sender_id": self.example_user("hamlet").id,
-            "sender_email": self.example_email("hamlet"),
+            "realm_id": hamlet.realm.id,
+            "realm_uri": hamlet.realm.uri,
+            "sender_id": hamlet.id,
+            "sender_email": hamlet.email,
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",

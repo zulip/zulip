@@ -240,6 +240,10 @@ class TestCreateStreams(ZulipTestCase):
         self.assertFalse(stream.history_public_to_subscribers)
 
     def test_auto_mark_stream_created_message_as_read_for_stream_creator(self) -> None:
+        # This test relies on email == delivery_email for
+        # convenience.
+        self.reset_emails_in_zulip_realm()
+
         realm = Realm.objects.get(name='Zulip Dev')
         iago = self.example_user('iago')
         hamlet = self.example_user('hamlet')
@@ -679,9 +683,11 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_realm_admin_can_update_unsub_private_stream(self) -> None:
         iago = self.example_user('iago')
+        hamlet = self.example_user('hamlet')
+
         self.login_user(iago)
         result = self.common_subscribe_to_streams(iago, ["private_stream"],
-                                                  dict(principals=ujson.dumps([self.example_email("hamlet")])),
+                                                  dict(principals=ujson.dumps([hamlet.email])),
                                                   invite_only=True)
         self.assert_json_success(result)
 
@@ -2654,13 +2660,16 @@ class SubscriptionAPITest(ZulipTestCase):
         Check users getting add_peer_event is correct
         """
         streams_to_sub = ['multi_user_stream']
-        orig_emails_to_subscribe = [self.test_email, self.example_email("othello")]
+        othello = self.example_user('othello')
+        cordelia = self.example_user('cordelia')
+        iago = self.example_user('iago')
+        orig_emails_to_subscribe = [self.test_email, othello.email]
         self.common_subscribe_to_streams(
             self.test_user,
             streams_to_sub,
             dict(principals=ujson.dumps(orig_emails_to_subscribe)))
 
-        new_emails_to_subscribe = [self.example_email("iago"), self.example_email("cordelia")]
+        new_emails_to_subscribe = [iago.email, cordelia.email]
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             self.common_subscribe_to_streams(
@@ -2826,15 +2835,18 @@ class SubscriptionAPITest(ZulipTestCase):
         You can't subscribe deactivated people to streams.
         """
         target_profile = self.example_user("cordelia")
-        result = self.common_subscribe_to_streams(self.test_user, "Verona",
-                                                  {"principals": ujson.dumps([target_profile.email])})
+        post_data = dict(
+            principals=ujson.dumps([target_profile.email])
+        )
+        result = self.common_subscribe_to_streams(self.test_user, "Verona", post_data)
         self.assert_json_success(result)
 
         do_deactivate_user(target_profile)
-        result = self.common_subscribe_to_streams(self.test_user, "Denmark",
-                                                  {"principals": ujson.dumps([target_profile.email])})
-        self.assert_json_error(result, "User not authorized to execute queries on behalf of 'cordelia@zulip.com'",
-                               status_code=403)
+        result = self.common_subscribe_to_streams(self.test_user, "Denmark", post_data)
+        self.assert_json_error(
+            result,
+            "User not authorized to execute queries on behalf of '{}'".format(target_profile.email),
+            status_code=403)
 
     def test_subscriptions_add_for_principal_invite_only(self) -> None:
         """
@@ -2851,7 +2863,8 @@ class SubscriptionAPITest(ZulipTestCase):
         You can subscribe other people to streams even if they containing
         non-ASCII characters.
         """
-        self.assert_adding_subscriptions_for_principal(self.example_email("iago"), get_realm('zulip'), [u"hümbüǵ"])
+        iago = self.example_user('iago')
+        self.assert_adding_subscriptions_for_principal(iago.email, get_realm('zulip'), [u"hümbüǵ"])
 
     def test_subscription_add_invalid_principal(self) -> None:
         """
@@ -3447,29 +3460,26 @@ class InviteOnlyStreamTest(ZulipTestCase):
     @slow("lots of queries")
     def test_inviteonly(self) -> None:
         # Creating an invite-only stream is allowed
-        user_profile = self.example_user('hamlet')
-        email = user_profile.email
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+
         stream_name = "Saxony"
 
-        result = self.common_subscribe_to_streams(user_profile, [stream_name], invite_only=True)
+        result = self.common_subscribe_to_streams(hamlet, [stream_name], invite_only=True)
         self.assert_json_success(result)
 
         json = result.json()
-        self.assertEqual(json["subscribed"], {email: [stream_name]})
+        self.assertEqual(json["subscribed"], {hamlet.email: [stream_name]})
         self.assertEqual(json["already_subscribed"], {})
 
         # Subscribing oneself to an invite-only stream is not allowed
-        user_profile = self.example_user('othello')
-        email = user_profile.email
-        self.login_user(user_profile)
-        result = self.common_subscribe_to_streams(user_profile, [stream_name])
+        self.login_user(othello)
+        result = self.common_subscribe_to_streams(othello, [stream_name])
         self.assert_json_error(result, 'Unable to access stream (Saxony).')
 
         # authorization_errors_fatal=False works
-        user_profile = self.example_user('othello')
-        email = user_profile.email
-        self.login_user(user_profile)
-        result = self.common_subscribe_to_streams(user_profile, [stream_name],
+        self.login_user(othello)
+        result = self.common_subscribe_to_streams(othello, [stream_name],
                                                   extra_post_data={'authorization_errors_fatal': ujson.dumps(False)})
         self.assert_json_success(result)
         json = result.json()
@@ -3478,31 +3488,29 @@ class InviteOnlyStreamTest(ZulipTestCase):
         self.assertEqual(json["already_subscribed"], {})
 
         # Inviting another user to an invite-only stream is allowed
-        user_profile = self.example_user('hamlet')
-        self.login_user(user_profile)
+        self.login_user(hamlet)
         result = self.common_subscribe_to_streams(
-            user_profile, [stream_name],
-            extra_post_data={'principals': ujson.dumps([self.example_email("othello")])})
+            hamlet, [stream_name],
+            extra_post_data={'principals': ujson.dumps([othello.email])})
         self.assert_json_success(result)
         json = result.json()
-        self.assertEqual(json["subscribed"], {self.example_email("othello"): [stream_name]})
+        self.assertEqual(json["subscribed"], {othello.email: [stream_name]})
         self.assertEqual(json["already_subscribed"], {})
 
         # Make sure both users are subscribed to this stream
-        stream_id = get_stream(stream_name, user_profile.realm).id
-        result = self.api_get(user_profile, "/api/v1/streams/%d/members" % (stream_id,))
+        stream_id = get_stream(stream_name, hamlet.realm).id
+        result = self.api_get(hamlet, "/api/v1/streams/%d/members" % (stream_id,))
         self.assert_json_success(result)
         json = result.json()
 
-        self.assertTrue(self.example_email("othello") in json['subscribers'])
-        self.assertTrue(self.example_email('hamlet') in json['subscribers'])
+        self.assertTrue(othello.email in json['subscribers'])
+        self.assertTrue(hamlet.email in json['subscribers'])
 
 class GetSubscribersTest(ZulipTestCase):
 
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user('hamlet')
-        self.email = self.user_profile.email
         self.login_user(self.user_profile)
 
     def assert_user_got_subscription_notification(self, expected_msg: str) -> None:
@@ -3562,7 +3570,11 @@ class GetSubscribersTest(ZulipTestCase):
         for stream_name in streams:
             self.make_stream(stream_name)
 
-        users_to_subscribe = [self.email, self.example_email("othello"), self.example_email("cordelia")]
+        users_to_subscribe = [
+            self.user_profile.email,
+            self.example_user("othello").email,
+            self.example_user("cordelia").email,
+        ]
         ret = self.common_subscribe_to_streams(
             self.user_profile,
             streams,
@@ -3591,7 +3603,7 @@ class GetSubscribersTest(ZulipTestCase):
         ret = self.common_subscribe_to_streams(
             self.user_profile,
             ["stream_invite_only_1"],
-            dict(principals=ujson.dumps([self.email])),
+            dict(principals=ujson.dumps([self.user_profile.email])),
             invite_only=True)
         self.assert_json_success(ret)
 
@@ -3626,8 +3638,8 @@ class GetSubscribersTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         users_to_subscribe = [
-            self.example_email("othello"),
-            self.example_email("cordelia"),
+            self.example_user("othello").email,
+            self.example_user("cordelia").email,
         ]
 
         public_streams = [

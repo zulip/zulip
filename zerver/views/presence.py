@@ -37,7 +37,7 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
 
     presence_dict = get_presence_for_user(target.id)
     if len(presence_dict) == 0:
-        return json_error(_('No presence data for %s') % (target.email,))
+        return json_error(_('No presence data for user'))
 
     # For initial version, we just include the status and timestamp keys
     result = dict(presence=presence_dict[target.email])

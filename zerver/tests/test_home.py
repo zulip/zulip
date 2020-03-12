@@ -496,15 +496,16 @@ class HomeTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.login_user(hamlet)
 
+        bots = {}
         for i in range(3):
-            self.create_bot(
+            bots[i] = self.create_bot(
                 owner=hamlet,
                 bot_email='bot-%d@zulip.com' % (i,),
                 bot_name='Bot %d' % (i,),
             )
 
         for i in range(3):
-            self.create_non_active_user(
+            defunct_user = self.create_non_active_user(
                 realm=realm,
                 email='defunct-%d@zulip.com' % (i,),
                 name='Defunct User %d' % (i,),
@@ -543,20 +544,20 @@ class HomeTest(ZulipTestCase):
                     self.assertIn('is_bot', rec)
                     self.assertNotIn('is_active', rec)
 
-        active_emails = {p['email'] for p in page_params['realm_users']}
-        non_active_emails = {p['email'] for p in page_params['realm_non_active_users']}
-        bot_emails = {p['email'] for p in page_params['realm_bots']}
+        active_ids = {p['user_id'] for p in page_params['realm_users']}
+        non_active_ids = {p['user_id'] for p in page_params['realm_non_active_users']}
+        bot_ids = {p['user_id'] for p in page_params['realm_bots']}
 
-        self.assertIn(hamlet.email, active_emails)
-        self.assertIn('defunct-1@zulip.com', non_active_emails)
+        self.assertIn(hamlet.id, active_ids)
+        self.assertIn(defunct_user.id, non_active_ids)
 
         # Bots can show up in multiple buckets.
-        self.assertIn('bot-2@zulip.com', bot_emails)
-        self.assertIn('bot-2@zulip.com', active_emails)
+        self.assertIn(bots[2].id, bot_ids)
+        self.assertIn(bots[2].id, active_ids)
 
         # Make sure nobody got mis-bucketed.
-        self.assertNotIn(hamlet.email, non_active_emails)
-        self.assertNotIn('defunct-1@zulip.com', active_emails)
+        self.assertNotIn(hamlet.id, non_active_ids)
+        self.assertNotIn(defunct_user.id, active_ids)
 
         cross_bots = page_params['cross_realm_bots']
         self.assertEqual(len(cross_bots), 3)

@@ -334,6 +334,8 @@ class TestGetChartData(ZulipTestCase):
 
 class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
+        self.reset_emails_in_zulip_realm()
+
         def check_hamlet_user_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<span class="label">user</span>\n', '<h3>King Hamlet</h3>',
                                              '<b>Email</b>: hamlet@zulip.com', '<b>Is active</b>: True<br>',

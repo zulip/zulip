@@ -216,6 +216,7 @@ class StripeTestCase(ZulipTestCase):
         super().setUp()
         # This test suite is not robust to users being added in populate_db. The following
         # hack ensures get_latest_seat_count is fixed, even as populate_db changes.
+        self.reset_emails_in_zulip_realm()
         realm = get_realm('zulip')
         seat_count = get_latest_seat_count(realm)
         assert(seat_count >= 6)

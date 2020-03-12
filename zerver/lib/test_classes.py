@@ -6,6 +6,7 @@ from typing import (cast, Any, Dict, Iterable, Iterator, List, Optional,
 
 from django.apps import apps
 from django.db.migrations.state import StateApps
+from django.db.models import F
 from django.urls import resolve
 from django.conf import settings
 from django.test import TestCase
@@ -282,11 +283,11 @@ class ZulipTestCase(TestCase):
 
     def nonreg_user(self, name: str) -> UserProfile:
         email = self.nonreg_user_map[name]
-        return get_user(email, get_realm("zulip"))
+        return get_user_by_delivery_email(email, get_realm("zulip"))
 
     def example_user(self, name: str) -> UserProfile:
         email = self.example_user_map[name]
-        return get_user(email, get_realm('zulip'))
+        return get_user_by_delivery_email(email, get_realm('zulip'))
 
     def mit_user(self, name: str) -> UserProfile:
         email = self.mit_user_map[name]
@@ -328,6 +329,15 @@ class ZulipTestCase(TestCase):
             bot_email = '{}-bot@zulip.testserver'.format(short_name)
             bot_profile = get_user(bot_email, user_profile.realm)
             return bot_profile
+
+    def reset_emails_in_zulip_realm(self) -> None:
+        realm = get_realm('zulip')
+        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        realm.save()
+
+        UserProfile.objects.filter(realm_id=realm.id).update(
+            email=F('delivery_email')
+        )
 
     def login_with_return(self, email: str, password: Optional[str]=None,
                           **kwargs: Any) -> HttpResponse:

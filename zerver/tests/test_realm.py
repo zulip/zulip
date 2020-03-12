@@ -241,7 +241,7 @@ class RealmTest(ZulipTestCase):
         self.assertIn('Reactivate your Zulip organization', outbox[0].subject)
         self.assertIn('Dear former administrators', outbox[0].body)
         admins = realm.get_human_admin_users()
-        confirmation_url = self.get_confirmation_url_from_outbox(admins[0].email)
+        confirmation_url = self.get_confirmation_url_from_outbox(admins[0].delivery_email)
         response = self.client_get(confirmation_url)
         self.assert_in_success_response(['Your organization has been successfully reactivated'], response)
         realm = get_realm('zulip')
@@ -392,8 +392,9 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid email_address_visibility')
 
+        self.reset_emails_in_zulip_realm()
         realm = get_realm("zulip")
-        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+
         req = dict(email_address_visibility = ujson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
