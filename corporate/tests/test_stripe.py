@@ -1139,16 +1139,16 @@ class BillingHelpersTest(ZulipTestCase):
         mocked1.assert_called()
         self.assertEqual(returned, 'returned')
         # Customer exists, replace payment source
-        Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cus_12345')
+        customer = Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cus_12345')
         with patch('corporate.lib.stripe.do_replace_payment_source') as mocked2:
-            customer = update_or_create_stripe_customer(self.example_user('hamlet'), 'token')
+            returned_customer = update_or_create_stripe_customer(self.example_user('hamlet'), 'token')
         mocked2.assert_called()
-        self.assertTrue(isinstance(customer, Customer))
+        self.assertEqual(returned_customer, customer)
         # Customer exists, do nothing
         with patch('corporate.lib.stripe.do_replace_payment_source') as mocked3:
-            customer = update_or_create_stripe_customer(self.example_user('hamlet'), None)
+            returned_customer = update_or_create_stripe_customer(self.example_user('hamlet'), None)
         mocked3.assert_not_called()
-        self.assertTrue(isinstance(customer, Customer))
+        self.assertEqual(returned_customer, customer)
 
     def test_get_customer_by_realm(self) -> None:
         realm = get_realm('zulip')
