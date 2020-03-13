@@ -1469,7 +1469,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
         do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
-        prereg_users = PreregistrationUser.objects.get(email="foo@zulip.com")
+        prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
         do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
         do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
 
@@ -1481,7 +1481,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             'password',
             self.user_profile.realm,
             'full name', 'short name',
-            prereg_user=prereg_users,
+            prereg_user=prereg_user,
         )
 
         accepted_invite = PreregistrationUser.objects.filter(
