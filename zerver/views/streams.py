@@ -6,7 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.exceptions import JsonableError, ErrorCode
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.decorator import authenticated_json_post_view, \
     require_realm_admin, to_non_negative_int, require_non_guest_user
@@ -34,28 +34,6 @@ from zerver.models import UserProfile, Stream, Realm, UserMessage, \
 
 from collections import defaultdict
 import ujson
-
-class PrincipalError(JsonableError):
-    code = ErrorCode.UNAUTHORIZED_PRINCIPAL
-    data_fields = ['principal']
-    http_status_code = 403
-
-    def __init__(self, principal: str) -> None:
-        self.principal: str = principal
-
-    @staticmethod
-    def msg_format() -> str:
-        return _("User not authorized to execute queries on behalf of '{principal}'")
-
-def principal_to_user_profile(agent: UserProfile, principal: str) -> UserProfile:
-    try:
-        return get_active_user(principal, agent.realm)
-    except UserProfile.DoesNotExist:
-        # We have to make sure we don't leak information about which users
-        # are registered for Zulip in a different realm.  We could do
-        # something a little more clever and check the domain part of the
-        # principal to maybe give a better error message
-        raise PrincipalError(principal)
 
 @require_realm_admin
 def deactivate_stream_backend(request: HttpRequest,
@@ -267,8 +245,14 @@ def remove_subscriptions_backend(
     streams, __ = list_to_streams(streams_as_dict, user_profile)
 
     if principals:
-        people_to_unsub = {principal_to_user_profile(
-            user_profile, principal) for principal in principals}
+        people_to_unsub = set()
+        for principal in principals:
+            try:
+                people_to_unsub.add(get_active_user(principal, user_profile.realm))
+            except UserProfile.DoesNotExist:
+                if principal:
+                    return json_error(_("Email '{}' not recognized!").format(principal), status=403)
+                return json_error(_("User email is missing!"), status=403)
     else:
         people_to_unsub = {user_profile}
 
@@ -362,7 +346,15 @@ def add_subscriptions_backend(
             assert user_profile.realm.invite_to_stream_policy == \
                 Realm.POLICY_FULL_MEMBERS_ONLY
             return json_error(_("Your account is too new to modify other users' subscriptions."))
-        subscribers = {principal_to_user_profile(user_profile, principal) for principal in principals}
+        subscribers = set()
+        for principal in principals:
+            try:
+                subscribers.add(get_active_user(principal, user_profile.realm))
+            except UserProfile.DoesNotExist:
+                if principal:
+                    return json_error(_("Email '{}' not recognized!").format(principal), status=403)
+                return json_error(_("User email is missing!"), status=403)
+
     else:
         subscribers = {user_profile}
 

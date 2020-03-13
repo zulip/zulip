@@ -1184,7 +1184,7 @@ class StreamAdminTest(ZulipTestCase):
                                      "principals": ujson.dumps(["baduser@zulip.com"])})
         self.assert_json_error(
             result,
-            "User not authorized to execute queries on behalf of 'baduser@zulip.com'",
+            "Email 'baduser@zulip.com' not recognized!",
             status_code=403)
 
 class DefaultStreamTest(ZulipTestCase):
@@ -2856,7 +2856,35 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.common_subscribe_to_streams(self.test_user, "Denmark", post_data)
         self.assert_json_error(
             result,
-            "User not authorized to execute queries on behalf of '{}'".format(target_profile.email),
+            "Email '{}' not recognized!".format(target_profile.email),
+            status_code=403)
+
+    def test_subscriptions_add_for_empty_principal(self) -> None:
+        """
+        You cannot subscribe a user with no name.
+        """
+        post_data = dict(
+            principals=ujson.dumps([''])
+        )
+        result = self.common_subscribe_to_streams(self.test_user, "Verona", post_data)
+        self.assert_json_error(
+            result,
+            "User email is missing!",
+            status_code=403)
+
+    def test_subscriptions_remove_for_empty_principal(self) -> None:
+        """
+        You cannot unsubscribe a user with no name.
+        """
+        admin = self.example_user('iago')
+        self.login_user(admin)
+        self.assertTrue(admin.is_realm_admin)
+        result = self.client_delete("/json/users/me/subscriptions",
+                                    {"subscriptions": ujson.dumps(["Verona"]),
+                                     "principals": ujson.dumps([""])})
+        self.assert_json_error(
+            result,
+            "User email is missing!",
             status_code=403)
 
     def test_subscriptions_add_for_principal_invite_only(self) -> None:
@@ -2889,7 +2917,7 @@ class SubscriptionAPITest(ZulipTestCase):
             get_user(invalid_principal, invalid_principal_realm)
         result = self.common_subscribe_to_streams(self.test_user, self.streams,
                                                   {"principals": ujson.dumps([invalid_principal])})
-        self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
+        self.assert_json_error(result, "Email '%s' not recognized!"
                                % (invalid_principal,), status_code=403)
 
     def test_subscription_add_principal_other_realm(self) -> None:
@@ -2903,7 +2931,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertIsInstance(profile, UserProfile)
         result = self.common_subscribe_to_streams(self.test_user, self.streams,
                                                   {"principals": ujson.dumps([principal])})
-        self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
+        self.assert_json_error(result, "Email '%s' not recognized!"
                                % (principal,), status_code=403)
 
     def helper_check_subs_before_and_after_remove(self, subscriptions: List[str],
