@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import ujson
+from mock import patch
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -10,6 +12,7 @@ class SemaphoreHookTests(WebhookTestCase):
     # contain information on the repo and branch, and the message has links and
     # details about the build, deploy, server, author, and commit
 
+    # Tests for Semaphore Classic
     def test_semaphore_build(self) -> None:
         expected_topic = u"knighthood/master"  # repo/branch
         expected_message = """
@@ -31,5 +34,89 @@ class SemaphoreHookTests(WebhookTestCase):
         self.send_and_test_stream_message('deploy', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
+    # Tests For Semaphore 2.0
+
+    def test_semaphore2_push(self) -> None:
+        expected_topic = u"notifications/rw/webhook_impl"  # repo/branch
+        expected_message = """
+[Notifications](https://semaphore.semaphoreci.com/workflows/acabe58e-4bcc-4d39-be06-e98d71917703) pipeline **stopped**:
+* **Commit**: [(2d9f5fc)](https://github.com/renderedtext/notifications/commit/2d9f5fcec1ca7c68fa7bd44dd58ec4ff65814563) Implement webhooks for SemaphoreCI
+* **Branch**: rw/webhook_impl
+* **Author**: [radwo](https://github.com/radwo)
+""".strip()
+        self.send_and_test_stream_message('push', expected_topic, expected_message,
+                                          content_type="application/json")
+
+    def test_semaphore2_push_non_gh_repo(self) -> None:
+        expected_topic = u"notifications/rw/webhook_impl"  # repo/branch
+        expected_message = """
+[Notifications](https://semaphore.semaphoreci.com/workflows/acabe58e-4bcc-4d39-be06-e98d71917703) pipeline **stopped**:
+* **Commit**: (2d9f5fc) Implement webhooks for SemaphoreCI
+* **Branch**: rw/webhook_impl
+* **Author**: radwo
+""".strip()
+        with patch('zerver.webhooks.semaphore.view.is_github_repo', return_value=False):
+            self.send_and_test_stream_message('push', expected_topic, expected_message,
+                                              content_type="application/json")
+
+    def test_semaphore_pull_request(self) -> None:
+        expected_topic = u"notifications/test-notifications"
+        expected_message = """
+[Notifications](https://semaphore.semaphoreci.com/workflows/84383f37-d025-4811-b719-61c6acc92a1e) pipeline **failed**:
+* **Pull Request**: [Testing PR notifications](https://github.com/renderedtext/notifications/pull/3)
+* **Branch**: test-notifications
+* **Author**: [radwo](https://github.com/radwo)
+""".strip()
+        self.send_and_test_stream_message('pull_request', expected_topic, expected_message,
+                                          content_type="application/json")
+
+    def test_semaphore_pull_request_non_gh_repo(self) -> None:
+        expected_topic = u"notifications/test-notifications"
+        expected_message = """
+[Notifications](https://semaphore.semaphoreci.com/workflows/84383f37-d025-4811-b719-61c6acc92a1e) pipeline **failed**:
+* **Pull Request**: Testing PR notifications (#3)
+* **Branch**: test-notifications
+* **Author**: radwo
+""".strip()
+        with patch('zerver.webhooks.semaphore.view.is_github_repo', return_value=False):
+            self.send_and_test_stream_message('pull_request', expected_topic, expected_message,
+                                              content_type="application/json")
+
+    def test_semaphore_tag(self) -> None:
+        expected_topic = u"notifications"
+        expected_message = """
+[Notifications](https://semaphore.semaphoreci.com/workflows/a8704319-2422-4828-9b11-6b2afa3554e6) pipeline **stopped**:
+* **Tag**: [v1.0.1](https://github.com/renderedtext/notifications/tree/v1.0.1)
+* **Author**: [radwo](https://github.com/radwo)
+""".strip()
+        self.send_and_test_stream_message('tag', expected_topic, expected_message,
+                                          content_type="application/json")
+
+    def test_semaphore_tag_non_gh_repo(self) -> None:
+        expected_topic = u"notifications"
+        expected_message = """
+[Notifications](https://semaphore.semaphoreci.com/workflows/a8704319-2422-4828-9b11-6b2afa3554e6) pipeline **stopped**:
+* **Tag**: v1.0.1
+* **Author**: radwo
+""".strip()
+        with patch('zerver.webhooks.semaphore.view.is_github_repo', return_value=False):
+            self.send_and_test_stream_message('tag', expected_topic, expected_message,
+                                              content_type="application/json")
+
+    def test_semaphore_unknown_event(self) -> None:
+        expected_topic = u"notifications"
+        expected_message = """
+[Notifications](https://semaphore.semaphoreci.com/workflows/a8704319-2422-4828-9b11-6b2afa3554e6) pipeline **stopped** for unknown event
+""".strip()
+        with patch('zerver.webhooks.semaphore.tests.SemaphoreHookTests.get_body', self.get_unknown_event):
+            self.send_and_test_stream_message('tag', expected_topic, expected_message,
+                                              content_type="application/json")
+
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("semaphore", fixture_name, file_type="json")
+
+    def get_unknown_event(self, fixture_name: str) -> str:
+        """Return modified payload with revision.reference_type changed"""
+        fixture_data = ujson.loads(self.webhook_fixture_data("semaphore", fixture_name, file_type="json"))
+        fixture_data['revision']['reference_type'] = 'unknown'
+        return fixture_data
