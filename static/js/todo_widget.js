@@ -7,7 +7,7 @@ exports.task_data_holder = function () {
     const all_tasks = [];
     const pending_tasks = [];
     const completed_tasks = [];
-    let my_idx = 0;
+    let my_idx = 1;
 
     self.get_widget_data = function () {
 
@@ -23,6 +23,10 @@ exports.task_data_holder = function () {
         task_exists: function (task) {
             const task_exists = all_tasks.some(item => item.task === task);
             return task_exists;
+        },
+
+        get_task_index: function (list, val) {
+            return Object.keys(list).find(index => list[index].key === val);
         },
     };
 
@@ -46,6 +50,7 @@ exports.task_data_holder = function () {
 
             inbound: function (sender_id, data) {
                 const idx = data.key;
+                const key = idx + "," + sender_id;
                 const task = data.task;
                 const desc = data.desc;
                 const completed = data.completed;
@@ -54,7 +59,7 @@ exports.task_data_holder = function () {
                     task: task,
                     desc: desc,
                     user_id: sender_id,
-                    key: idx,
+                    key: key,
                     completed: completed,
                 };
 
@@ -81,7 +86,8 @@ exports.task_data_holder = function () {
 
             inbound: function (sender_id, data) {
                 const key = data.key;
-                const task = all_tasks[key];
+                const task_index = self.check_task.get_task_index(all_tasks, key);
+                const task = all_tasks[task_index];
                 let index;
 
                 if (task === undefined) {
@@ -89,7 +95,7 @@ exports.task_data_holder = function () {
                     return;
                 }
 
-                all_tasks[key].completed = !all_tasks[key].completed;
+                all_tasks[task_index].completed = !all_tasks[task_index].completed;
 
                 // toggle
                 if (task.completed) {
