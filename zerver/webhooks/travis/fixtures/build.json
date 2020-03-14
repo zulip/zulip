@@ -8,7 +8,7 @@
   },
   "number": "4601",
   "config": {
-    "langauge": "java",
+    "language": "java",
     "jdk": [
       "oraclejdk8"
     ],
@@ -54,7 +54,7 @@
       "number": "4601.1",
       "state": "finished",
       "config": {
-        "langauge": "java",
+        "language": "java",
         "jdk": "oraclejdk8",
         "script": "./build.sh",
         "sudo": false,
