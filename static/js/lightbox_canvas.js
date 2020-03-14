@@ -79,7 +79,7 @@ const funcs = {
         canvas.addEventListener("wheel", function (e) {
             e.preventDefault();
 
-            // this is to reverese scrolling directions for the image.
+            // this is to reverse scrolling directions for the image.
             let delta = meta.direction * e.deltaY;
 
             if (e.deltaMode === DELTA_MODE.LINE) {

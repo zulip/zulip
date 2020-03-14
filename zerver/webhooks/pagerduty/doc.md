@@ -10,7 +10,7 @@ Get Zulip notifications for your PagerDuty services!
 
 1. Set **Extension Type** to **Generic V1 Webhook**. Set **Name** to a name
    of your choice, such as `Zulip`. Under **Details**, set **URL** to the
-   URL contructed above, and click **Save**.
+   URL constructed above, and click **Save**.
 
 {!congrats.md!}
 

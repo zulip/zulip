@@ -379,7 +379,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
         default_events_register_stream = get_stream_name(bot_profile.default_events_register_stream)
 
         # Bots are supposed to have only one API key, at least for now.
-        # Therefore we can safely asume that one and only valid API key will be
+        # Therefore we can safely assume that one and only valid API key will be
         # the first one.
         api_key = get_api_key(bot_profile)
 

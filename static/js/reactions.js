@@ -83,7 +83,7 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
         success: function () {},
         error: function (xhr) {
             const response = channel.xhr_error_message("Error sending reaction", xhr);
-            // Errors are somewhat commmon here, due to race conditions
+            // Errors are somewhat common here, due to race conditions
             // where the user tries to add/remove the reaction when there is already
             // an in-flight request.  We eventually want to make this a blueslip
             // error, rather than a warning, but we need to implement either

@@ -26,7 +26,7 @@ Unattended-Upgrade::Package-Blacklist {
 // is running is possible (with a small delay)
 //Unattended-Upgrade::MinimalSteps "true";
 
-// Install all unattended-upgrades when the machine is shuting down
+// Install all unattended-upgrades when the machine is shutting down
 // instead of doing it in the background while the machine is running
 // This will (obviously) make shutdown slower
 //Unattended-Upgrade::InstallOnShutdown "true";

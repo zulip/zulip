@@ -8,7 +8,7 @@ from zerver.lib.validator import check_required_string, \
     check_external_account_url_pattern, check_dict_only
 from zerver.lib.types import ProfileFieldData
 
-# Default external account fields are by default avaliable
+# Default external account fields are by default available
 # to realm admins, where realm admin only need to select
 # the default field and other values(i.e. name, url) will be
 # fetch from this dictionary.

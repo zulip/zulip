@@ -167,7 +167,7 @@ run_test('events', () => {
         stopPropagation: function () {},
     };
 
-    // Now call the hander.
+    // Now call the handler.
     red_handler_func(stub_event);
 
     // And verify it did what it was supposed to do.

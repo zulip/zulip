@@ -651,7 +651,7 @@ def label_mirror_dummy_users(num_teams: int, team_name: str, mattermost_data: Di
                              username_to_user: Dict[str, Dict[str, Any]]) -> None:
     # This function might looks like a great place to label admin users. But
     # that won't be fully correct since we are iterating only though posts and
-    # it covers only users that has sent atleast one message.
+    # it covers only users that have sent at least one message.
     for post in mattermost_data["post"]["channel_post"]:
         post_team = post["team"]
         if post_team == team_name:

@@ -143,7 +143,7 @@ function update_url() {
     /* Construct the URL that the webhook should be targeting, using
     the bot's API key and the integration name.  The stream and topic
     are both optional, and for the sake of completeness, it should be
-    noted that the topic is irrelavent without specifying the
+    noted that the topic is irrelevant without specifying the
     stream. */
     const url_field = $("#URL")[0];
 

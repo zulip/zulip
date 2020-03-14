@@ -1528,7 +1528,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                     # If an attacker managed to eavesdrop on the RelayState token,
                     # they may pass it here to the endpoint with an invalid SAMLResponse.
                     # We remove these potentially sensitive parameters that we have set in the session
-                    # ealier, to avoid leaking their values.
+                    # earlier, to avoid leaking their values.
                     self.strategy.session_set(param, None)
 
         return result

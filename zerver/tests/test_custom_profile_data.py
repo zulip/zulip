@@ -143,7 +143,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
                                       name=invalid_field_name,
                                   ))
         self.assert_json_success(result)
-        # Sliently overwrite name and hint with values set in default fields dict
+        # Silently overwrite name and hint with values set in default fields dict
         # for default custom external account fields.
         with self.assertRaises(CustomProfileField.DoesNotExist):
             field = CustomProfileField.objects.get(name=invalid_field_name, realm=realm)

@@ -250,7 +250,7 @@ run_test('sort_recipients', () => {
     stream_data.update_calculated_fields(dev_sub);
     stream_data.update_calculated_fields(linux_sub);
 
-    // For spliting based on whether a PM was sent
+    // For splitting based on whether a PM was sent
     global.pm_conversations.set_partner(5);
     global.pm_conversations.set_partner(6);
     global.pm_conversations.set_partner(2);
@@ -502,7 +502,7 @@ run_test('highlight_with_escaping', () => {
 });
 
 run_test('render_person when emails hidden', () => {
-    // Test render_person with regular person, under hidden email visiblity case
+    // Test render_person with regular person, under hidden email visibility case
     page_params.is_admin = false;
     let rendered = false;
     global.stub_templates(function (template_name, args) {

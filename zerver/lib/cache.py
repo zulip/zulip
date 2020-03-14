@@ -656,7 +656,7 @@ def ignore_unhashable_lru_cache(maxsize: int=128, typed: bool=False) -> DECORATO
                 pass
 
             # Deliberately calling this function from outside of exception
-            # handler to get a more descriptive traceback. Otherise traceback
+            # handler to get a more descriptive traceback. Otherwise traceback
             # can include the exception from cached_enabled_user_function as
             # well.
             return user_function(*args, **kwargs)

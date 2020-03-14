@@ -493,7 +493,7 @@ def process_long_term_idle_users(slack_data_dir: str, users: List[ZerverFieldsT]
     """Algorithmically, we treat users who have sent at least 10 messages
     or have sent a message within the last 60 days as active.
     Everyone else is treated as long-term idle, which means they will
-    have a slighly slower first page load when coming back to
+    have a slightly slower first page load when coming back to
     Zulip.
     """
     all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, dm_members)

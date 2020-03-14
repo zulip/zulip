@@ -9,7 +9,7 @@ set -e
 # usage: clean-branches --reviews
 # Deletes all the above mentioned branches as well as branches
 # created by the scripts like `fetch-rebase-pull-request`. Be careful
-# as this would also remove other branches woth names like review-*
+# as this would also remove other branches with names like review-*
 
 review=0
 if [ $# -ne 0 ] && [ "$1" == "--reviews" ]; then

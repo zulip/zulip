@@ -12,7 +12,7 @@
  * assert.notEqual().
  *
  * There is a default _output_formatter used to create the
- * AssertionError error message; this function can be overriden using
+ * AssertionError error message; this function can be overridden using
  * the exported setFormatter() function below.
  *
  * The HTML passed to the _output_formatter is not the original HTML, but

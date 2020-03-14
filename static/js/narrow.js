@@ -894,7 +894,7 @@ function show_search_query() {
 
         // if query contains stop words, it is enclosed by a <del> tag
         if (page_params.stop_words.includes(query_word)) {
-            // stop_words do not need sanitization so this is unnecesary but it is fail-safe.
+            // stop_words do not need sanitization so this is unnecessary but it is fail-safe.
             search_string_display.append($('<del>').text(query_word));
             query_contains_stop_words = true;
         } else {

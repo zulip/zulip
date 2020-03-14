@@ -761,7 +761,7 @@ with_overrides(function (override) {
 });
 
 with_overrides(function (override) {
-    // attachements
+    // attachments
     const event = event_fixtures.attachment;
     global.with_stub(function (stub) {
         override('attachments_ui.update_attachments', stub.f);
@@ -1519,7 +1519,7 @@ with_overrides(function (override) {
 });
 
 with_overrides(function (override) {
-    // attachements
+    // attachments
     let event = event_fixtures.user_status__set_away;
     global.with_stub(function (stub) {
         override('activity.on_set_away', stub.f);

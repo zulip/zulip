@@ -528,7 +528,7 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
         avatar_original['s3_path'] = original_image_path
         avatar_original_list.append(avatar_original)
 
-    # Run downloads parallely
+    # Run downloads in parallel
     output = []
     for (status, job) in run_parallel_wrapper(get_avatar, avatar_upload_list, threads=threads):
         output.append(job)
@@ -617,7 +617,7 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
         upload_url_list.append([upload_url, upload_s3_path])
         upload['path'] = upload_s3_path
 
-    # Run downloads parallely
+    # Run downloads in parallel
     output = []
     for (status, job) in run_parallel_wrapper(get_uploads, upload_url_list, threads=threads):
         output.append(job)
@@ -678,7 +678,7 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
 
         emoji_records.append(emoji_record)
 
-    # Run downloads parallely
+    # Run downloads in parallel
     output = []
     for (status, job) in run_parallel_wrapper(get_emojis, upload_emoji_list, threads=threads):
         output.append(job)

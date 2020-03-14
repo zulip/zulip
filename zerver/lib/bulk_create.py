@@ -93,7 +93,7 @@ def bulk_set_users_or_streams_recipient_fields(model: Model,
             # we take adventage of this, instead of calling save individually.
             result.save(update_fields=['recipient'])
 
-# This is only sed in populate_db, so doesn't realy need tests
+# This is only sed in populate_db, so doesn't really need tests
 def bulk_create_streams(realm: Realm,
                         stream_dict: Dict[str, Dict[str, Any]]) -> None:  # nocoverage
     existing_streams = frozenset([name.lower() for name in

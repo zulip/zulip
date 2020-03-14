@@ -210,7 +210,7 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str,
         for stripe_invoice in stripe.Invoice.list(
                 billing='charge_automatically', customer=stripe_customer.id, status='open'):
             # The user will get either a receipt or a "failed payment" email, but the in-app
-            # messaging could be clearer here (e.g. it could explictly tell the user that there
+            # messaging could be clearer here (e.g. it could explicitly tell the user that there
             # were payment(s) and that they succeeded or failed).
             # Worth fixing if we notice that a lot of cards end up failing at this step.
             stripe.Invoice.pay(stripe_invoice)

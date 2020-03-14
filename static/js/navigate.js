@@ -90,7 +90,7 @@ exports.page_up_the_right_amount = function () {
     // because we can't rely on the browser to account for certain
     // page elements, like the compose box, that sit in fixed
     // positions above the message pane.  For other scrolling
-    // related adjustements, try to make those happen in the
+    // related adjustments, try to make those happen in the
     // scroll handlers, not here.
     const delta = amount_to_paginate();
     message_viewport.scrollTop(message_viewport.scrollTop() - delta);

@@ -257,7 +257,7 @@ def get_page_build_body(payload: Dict[str, Any]) -> str:
         CONTENT_MESSAGE_TEMPLATE.format(message=build['error']['message'])
     )
 
-    return u"Github Pages build, trigerred by {}, {}.".format(
+    return u"Github Pages build, triggered by {}, {}.".format(
         payload['build']['pusher']['login'],
         action
     )

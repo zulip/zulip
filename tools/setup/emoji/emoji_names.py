@@ -15,7 +15,7 @@ EMOJI_NAME_MAPS = {
     # laughter_tears from https://beebom.com/emoji-meanings/
     '1f602': {'canonical_name': 'joy', 'aliases': ['tears', 'laughter_tears']},
     '1f923': {'canonical_name': 'rolling_on_the_floor_laughing', 'aliases': ['rofl']},
-    # not sure how the glpyhs match relaxed, but both iamcal and gemoji have it
+    # not sure how the glyphs match relaxed, but both iamcal and gemoji have it
     '263a': {'canonical_name': 'smile', 'aliases': ['relaxed']},
     '1f60a': {'canonical_name': 'blush', 'aliases': []},
     # halo comes from gemoji/unicode
@@ -894,7 +894,7 @@ EMOJI_NAME_MAPS = {
     '26f5': {'canonical_name': 'boat', 'aliases': ['sailboat']},
     '1f6e5': {'canonical_name': 'motor_boat', 'aliases': []},
     '1f6a4': {'canonical_name': 'speedboat', 'aliases': []},
-    # yatch and cruise seem like reasonable additions
+    # yacht and cruise seem like reasonable additions
     '1f6f3': {'canonical_name': 'passenger_ship', 'aliases': ['yacht', 'cruise']},
     '26f4': {'canonical_name': 'ferry', 'aliases': []},
     '1f6a2': {'canonical_name': 'ship', 'aliases': []},

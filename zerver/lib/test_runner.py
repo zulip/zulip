@@ -382,7 +382,7 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
 
 def check_import_error(test_name: str) -> None:
     try:
-        # Directly using __import__ is not recommeded, but here it gives
+        # Directly using __import__ is not recommended, but here it gives
         # clearer traceback as compared to importlib.import_module.
         __import__(test_name)
     except ImportError as exc:

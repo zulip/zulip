@@ -19,7 +19,7 @@ def api_zendesk_webhook(request: HttpRequest, user_profile: UserProfile,
                         ticket_title: str=REQ(), ticket_id: str=REQ(),
                         message: str=REQ()) -> HttpResponse:
     """
-    Zendesk uses trigers with message templates. This webhook uses the
+    Zendesk uses triggers with message templates. This webhook uses the
     ticket_id and ticket_title to create a subject. And passes with zendesk
     user's configured message to zulip.
     """

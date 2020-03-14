@@ -81,7 +81,7 @@ endpoint and a queue would be registered in the absence of a `queue_id`.
 #### Return values
 
 * `events`: An array (possibly zero-length if `dont_block` is set) of events
-  with IDs newer than `last_event_id`. Event IDs are guaranted to be increasing,
+  with IDs newer than `last_event_id`. Event IDs are guaranteed to be increasing,
   but they are not guaranteed to be consecutive.
 
 #### Example response

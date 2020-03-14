@@ -490,7 +490,7 @@ class PermissionTest(ZulipTestCase):
                                        {'profile_data': ujson.dumps(new_profile_data)})
             self.assert_json_error(result, error_msg)
 
-        # non-existant field and no data
+        # non-existent field and no data
         invalid_profile_data = [{
             'id': 9001,
             'value': ''
@@ -499,7 +499,7 @@ class PermissionTest(ZulipTestCase):
                                    {'profile_data': ujson.dumps(invalid_profile_data)})
         self.assert_json_error(result, 'Field id 9001 not found.')
 
-        # non-existant field and data
+        # non-existent field and data
         invalid_profile_data = [{
             'id': 9001,
             'value': 'some data'
@@ -726,7 +726,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(check_valid_user_ids(realm.id, [bot.id]),
                          "User with ID %d is a bot" % (bot.id,))
 
-        # Succesfully get non-bot, active user belong to your realm
+        # Successfully get non-bot, active user belong to your realm
         self.assertEqual(check_valid_user_ids(realm.id, [othello.id]), None)
 
     def test_cache_invalidation(self) -> None:

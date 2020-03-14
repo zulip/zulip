@@ -640,7 +640,7 @@ class DesktopFlowTestingLib(ZulipTestCase):
 
 class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     """This is a base class for testing social-auth backends. These
-    methods are often overriden by subclasses:
+    methods are often overridden by subclasses:
 
         register_extra_endpoints() - If the backend being tested calls some extra
                                      endpoints then they can be added here.
@@ -1561,7 +1561,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assert_in_success_response(["Log in with Second Test IdP"], result)
             self.assert_in_success_response(["/accounts/login/social/saml/test_idp2"], result)
 
-            # Try succesful authentication with the regular idp from all previous tests:
+            # Try successful authentication with the regular idp from all previous tests:
             self.test_social_auth_success()
 
             # Now test with the second idp:

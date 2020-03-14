@@ -823,7 +823,7 @@ def do_deactivate_stream(stream: Stream, log: bool=True) -> None:
     new_name = ("!DEACTIVATED:" + old_name)[:Stream.MAX_NAME_LENGTH]
     for i in range(20):
         if stream_name_in_use(new_name, stream.realm_id):
-            # This stream has alrady been deactivated, keep prepending !s until
+            # This stream has already been deactivated, keep prepending !s until
             # we have a unique stream name or you've hit a rename limit.
             new_name = ("!" + new_name)[:Stream.MAX_NAME_LENGTH]
         else:
@@ -1220,7 +1220,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
         # Mention triggers, for stream messages
         if is_stream and user_profile_id in mentioned_user_ids:
             trigger = 'mention'
-        # PM triggers for personal and huddle messsages
+        # PM triggers for personal and huddle messages
         elif (not is_stream) and (user_profile_id in active_user_ids):
             trigger = 'private_message'
         else:
@@ -5228,7 +5228,7 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     email = prereg_user.email
 
     # Delete both the confirmation objects and the prereg_user object.
-    # TODO: Probably we actaully want to set the confirmation objects
+    # TODO: Probably we actually want to set the confirmation objects
     # to a "revoked" status so that we can give the invited user a better
     # error message.
     content_type = ContentType.objects.get_for_model(PreregistrationUser)

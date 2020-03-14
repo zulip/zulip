@@ -4,7 +4,7 @@
     "name": "ToHighTemeprature",
     "runbook_url": "http://www.use.water.pl",
     "version": 2,
-    "description": "Measurment of temperature in your computer"
+    "description": "Measurement of temperature in your computer"
   },
   "account": "lizonr@gmail.com",
   "trigger_time": 1460407214,

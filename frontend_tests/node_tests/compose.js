@@ -328,8 +328,8 @@ run_test('validate_stream_message', () => {
 });
 
 run_test('test_validate_stream_message_post_policy', () => {
-    // This test is in continuation with test_validate but it has been seperated out
-    // for better readabilty. Their relative position of execution should not be changed.
+    // This test is in continuation with test_validate but it has been separated out
+    // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
     // as `get_stream_post_policy` is reset at the end.
     page_params.is_admin = false;

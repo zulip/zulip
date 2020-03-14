@@ -156,7 +156,7 @@ HOME_NOT_LOGGED_IN = '/login/'
 LOGIN_URL = '/accounts/login/'
 
 # By default will not send emails when login occurs.
-# Explicity set this to True within tests that must have this on.
+# Explicitly set this to True within tests that must have this on.
 SEND_LOGIN_EMAILS = False
 
 GOOGLE_OAUTH2_CLIENT_ID = "id"

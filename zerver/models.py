@@ -377,7 +377,7 @@ class Realm(models.Model):
                                    max_length=1)  # type: str
     icon_version = models.PositiveSmallIntegerField(default=1)  # type: int
 
-    # Logo is the horizonal logo we show in top-left of webapp navbar UI.
+    # Logo is the horizontal logo we show in top-left of webapp navbar UI.
     LOGO_DEFAULT = u'D'
     LOGO_UPLOADED = u'U'
     LOGO_SOURCES = (
@@ -795,7 +795,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # with EMAIL_ADDRESS_VISIBILITY_EVERYONE.  For other
     # organizations, it will be a unique value of the form
     # user1234@example.com.  This field exists for backwards
-    # compatibility in Zulip APIs where users are refered to by their
+    # compatibility in Zulip APIs where users are referred to by their
     # email address, not their ID; it should be used in all API use cases.
     #
     # Both fields are unique within a realm (in a case-insensitive fashion).
@@ -1675,7 +1675,7 @@ class Message(AbstractMessage):
         Find out whether a message is a stream message by
         looking up its recipient.type.  TODO: Make this
         an easier operation by denormalizing the message
-        type onto Message, either explicity (message.type)
+        type onto Message, either explicitly (message.type)
         or implicitly (message.stream_id is not None).
         '''
         return self.recipient.type == Recipient.STREAM
@@ -2068,7 +2068,7 @@ class Subscription(models.Model):
 
     # Whether the user has since unsubscribed.  We mark Subscription
     # objects as inactive, rather than deleting them, when a user
-    # unsubscribes, so we can preseve user customizations like
+    # unsubscribes, so we can preserve user customizations like
     # notification settings, stream color, etc., if the user later
     # resubscribes.
     active = models.BooleanField(default=True)  # type: bool

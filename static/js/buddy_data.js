@@ -270,7 +270,7 @@ exports.get_item = function (user_id) {
 };
 
 function user_is_recently_active(user_id) {
-    // return true if the user has a green/orange cirle
+    // return true if the user has a green/orange circle
     return exports.level(user_id) <= 2;
 }
 

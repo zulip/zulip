@@ -334,7 +334,7 @@ run_test('narrow_to_compose_target', () => {
         {operator: 'pm-with', operand: 'alice@example.com,ray@example.com'},
     ]);
 
-    // Test with some inavlid persons
+    // Test with some invalid persons
     global.compose_state.private_message_recipient = () => 'alice@example.com,random,ray@example.com';
     args.called = false;
     narrow.to_compose_target();
@@ -343,7 +343,7 @@ run_test('narrow_to_compose_target', () => {
         {operator: 'is', operand: 'private'},
     ]);
 
-    // Test with all inavlid persons
+    // Test with all invalid persons
     global.compose_state.private_message_recipient = () => 'alice,random,ray';
     args.called = false;
     narrow.to_compose_target();

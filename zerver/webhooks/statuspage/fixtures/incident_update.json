@@ -58,7 +58,7 @@
             },
             {
                 "status": "identified",
-                "body": "We just encountered that database queries are timing out resulting in inconvenience to our end users...we'll do quick fix latest by tommorow !!!",
+                "body": "We just encountered that database queries are timing out resulting in inconvenience to our end users...we'll do quick fix latest by tomorrow !!!",
                 "created_at": "2017-12-26T07:32:00.548Z",
                 "wants_twitter_update": false,
                 "twitter_updated_at": null,

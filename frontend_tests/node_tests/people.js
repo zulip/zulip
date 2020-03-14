@@ -724,7 +724,7 @@ run_test('get_people_for_search_bar', () => {
 
     // As long as there are 5+ results among the user_ids
     // in message_store, we will get a small result and not
-    // seach all people.
+    // search all people.
     assert.equal(small_results.length, 6);
 });
 

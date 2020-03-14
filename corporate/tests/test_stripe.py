@@ -1047,7 +1047,7 @@ class BillingHelpersTest(ZulipTestCase):
             datetime(2021, 2, 28, 1, 2, 3).replace(tzinfo=timezone_utc)]
         with self.assertRaises(AssertionError):
             add_months(anchor, -1)
-        # Explictly test add_months for each value of MAX_DAY_FOR_MONTH and
+        # Explicitly test add_months for each value of MAX_DAY_FOR_MONTH and
         # for crossing a year boundary
         for i, boundary in enumerate(period_boundaries):
             self.assertEqual(add_months(anchor, i), boundary)

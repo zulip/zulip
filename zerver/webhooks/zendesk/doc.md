@@ -40,7 +40,7 @@ top right.
 
 Let's say you want a notification each time a ticket is updated. Put
 in a descriptive title like "Announce ticket update". Under **Meet all of
-the folllowing conditions** select **Ticket: is...** and then select
+the following conditions** select **Ticket: is...** and then select
 **Updated**. In the **Perform these actions** section, select
 **Notification: Notify target**, then select **Zulip**.
 

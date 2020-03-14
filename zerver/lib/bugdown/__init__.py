@@ -2091,7 +2091,7 @@ def privacy_clean_markdown(content: str) -> str:
 
 def log_bugdown_error(msg: str) -> None:
     """We use this unusual logging approach to log the bugdown error, in
-    order to prevent AdminNotifyHandler from sending the santized
+    order to prevent AdminNotifyHandler from sending the sanitized
     original markdown formatting into another Zulip message, which
     could cause an infinite exception loop."""
     bugdown_logger.error(msg)

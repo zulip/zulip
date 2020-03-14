@@ -795,7 +795,7 @@ run_test('set_up', () => {
     const stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
     settings_org.render_notifications_stream_ui = noop;
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
-    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limti parent>'));
+    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limit parent>'));
     $("#message_content_in_email_notifications_label").set_parent($.create('<stub in-content setting checkbox>'));
     $("#enable_digest_emails_label").set_parent($.create('<stub digest setting checkbox>'));
     $("#id_realm_digest_weekday").set_parent($.create('<stub digest weekday setting dropdown>'));

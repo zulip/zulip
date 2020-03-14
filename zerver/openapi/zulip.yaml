@@ -94,7 +94,7 @@ paths:
                       description: An array of `event` objects (possibly
                         zero-length if `dont_block` is set) of events with
                         IDs newer than `last_event_id`. Event IDs are
-                        guaranted to be increasing, but they are not
+                        guaranteed to be increasing, but they are not
                         guaranteed to be consecutive.
                 - example:
                     {

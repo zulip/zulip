@@ -117,7 +117,7 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
             raise SchemaError('Expected to find the "{}" required key')
 
 def to_python_type(py_type: str) -> type:
-    """Transform an OpenAPI-like type to a Pyton one.
+    """Transform an OpenAPI-like type to a Python one.
     https://swagger.io/docs/specification/data-models/data-types
     """
     TYPES = {

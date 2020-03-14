@@ -399,7 +399,7 @@ def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]
         with open(path, 'rb') as file_to_hash:
             sha1sum.update(file_to_hash.read())
 
-    # The ouput of tools like build_pygments_data depends
+    # The output of tools like build_pygments_data depends
     # on the version of some pip packages as well.
     for package_version in package_versions:
         sha1sum.update(package_version.encode("utf-8"))

@@ -50,7 +50,7 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
         # If another user has already reacted to this message with
         # same emoji code, we treat the new reaction as a vote for the
         # existing reaction.  So the emoji name used by that earlier
-        # reaction takes precendence over whatever was passed in this
+        # reaction takes precedence over whatever was passed in this
         # request.  This is necessary to avoid a message having 2
         # "different" emoji reactions with the same emoji code (and
         # thus same image) on the same message, which looks ugly.

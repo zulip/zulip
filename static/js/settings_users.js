@@ -451,7 +451,7 @@ exports.on_load_success = function (realm_people_data) {
             } else {
                 const new_profile_data = [];
                 $("#user-info-form-modal .custom_user_field_value").each(function () {
-                    // Remove duplicate datepicker input element genearted flatpicker library
+                    // Remove duplicate datepicker input element generated flatpicker library
                     if (!$(this).hasClass("form-control")) {
                         new_profile_data.push({
                             id: parseInt($(this).closest(".custom_user_field").attr("data-field-id"), 10),

@@ -238,7 +238,7 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
 
     @param streams_raw The list of stream dictionaries to process;
       names should already be stripped of whitespace by the caller.
-    @param user_profile The user for whom we are retreiving the streams
+    @param user_profile The user for whom we are retrieving the streams
     @param autocreate Whether we should create streams if they don't already exist
     """
     # Validate all streams, getting extant ones, then get-or-creating the rest.

@@ -3156,7 +3156,7 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
             self.assertFalse(UserProfile.objects.filter(email=email).exists())
 
-        # If the email is outside of LDAP_APPEND_DOMAIN, we succesfully create a non-ldap account,
+        # If the email is outside of LDAP_APPEND_DOMAIN, we successfully create a non-ldap account,
         # with the password managed in the zulip database.
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,

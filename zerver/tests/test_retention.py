@@ -309,7 +309,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         expired_usermsg_ids = self._get_usermessage_ids(expired_msg_ids)
 
         archive_messages(chunk_size=2)  # Specify low chunk_size to test batching.
-        # Make sure we archived what neeeded:
+        # Make sure we archived what needed:
         self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
 
         restore_all_data_from_archive()

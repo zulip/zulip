@@ -100,7 +100,7 @@ exports.open_modal = function (name) {
     $("#" + name).modal("show").attr("aria-hidden", false);
     // Disable background mouse events when modal is active
     $('.overlay.show').attr("style", "pointer-events: none");
-    // Remove previous alert messsages from modal, if exists.
+    // Remove previous alert messages from modal, if exists.
     $("#" + name).find(".alert").hide();
     $("#" + name).find(".alert-notification").html("");
 };

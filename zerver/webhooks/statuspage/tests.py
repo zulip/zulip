@@ -11,7 +11,7 @@ class StatuspageHookTests(WebhookTestCase):
         expected_message = """
 **Database query delays**:
 * State: **identified**
-* Description: We just encountered that database queries are timing out resulting in inconvenience to our end users...we'll do quick fix latest by tommorow !!!
+* Description: We just encountered that database queries are timing out resulting in inconvenience to our end users...we'll do quick fix latest by tomorrow !!!
 """.strip()
         self.send_and_test_stream_message('incident_created',
                                           expected_topic,

@@ -87,7 +87,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
 
-        # Files uploaded through the API should be accesible via the web client
+        # Files uploaded through the API should be accessible via the web client
         self.login('hamlet')
         self.assert_url_serves_contents_of_file(uri, b"zulip!")
 
@@ -529,7 +529,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.logout()
         self.assertEqual(len(queries), 5)
 
-        # Subscribed user who recieved the message should be able to view file
+        # Subscribed user who received the message should be able to view file
         self.login_user(cordelia)
         with queries_captured() as queries:
             response = self.client_get(uri)

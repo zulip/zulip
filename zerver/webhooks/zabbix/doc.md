@@ -36,7 +36,7 @@ Receive Zabbix notifications in Zulip!
    to use to set the notification. Click **Media**, and click **Add**.
 
 1. Set **Type** to **Zulip**, and set **Send To** to the URL constructed.
-   Tweak the serverity for notifications as appropriate, and check the
+   Tweak the severity for notifications as appropriate, and check the
    **Enabled** option.
 
 1. Go back to your Zabbix Web Interface, and click **Configuration**.

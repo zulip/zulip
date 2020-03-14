@@ -60,7 +60,7 @@ run_test('basics', () => {
     blueslip.clear_test_data();
 
     // Let's repeat the above procedue with warnings. Unlike errors,
-    // warnings shoudln't stop the code execution, and thus, the
+    // warnings shouldn't stop the code execution, and thus, the
     // behaviour is slightly different.
 
     function throw_a_warning() {

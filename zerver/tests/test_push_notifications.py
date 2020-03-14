@@ -376,7 +376,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                                                server=server))
             self.assertEqual(len(tokens), 2)
 
-        # Now we succesfully remove them:
+        # Now we successfully remove them:
         do_regenerate_api_key(user, user)
         tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id,
                                                            server=server))

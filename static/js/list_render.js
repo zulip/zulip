@@ -80,7 +80,7 @@ exports.create = function ($container, list, opts) {
     const prototype = {
         // Reads the provided list (in the scope directly above)
         // and renders the next block of messages automatically
-        // into the specified contianer.
+        // into the specified container.
         render: function (load_count) {
             load_count = load_count || opts.load_count || DEFAULTS.LOAD_COUNT;
 

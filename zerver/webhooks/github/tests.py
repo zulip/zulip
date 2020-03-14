@@ -131,13 +131,13 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('issue_comment', expected_topic, expected_message)
 
     def test_issue_msg(self) -> None:
-        expected_message = u"baxterthehacker opened [Issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidently spelled 'commit' with two 't's.\n~~~"
+        expected_message = u"baxterthehacker opened [Issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.send_and_test_stream_message('issues', self.EXPECTED_TOPIC_ISSUE_EVENTS, expected_message)
 
     def test_issue_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
-        expected_message = u"baxterthehacker opened [Issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidently spelled 'commit' with two 't's.\n~~~"
+        expected_message = u"baxterthehacker opened [Issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.send_and_test_stream_message('issues', expected_topic, expected_message)
 
     def test_membership_msg(self) -> None:
@@ -210,7 +210,7 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('release', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_page_build_msg(self) -> None:
-        expected_message = u"Github Pages build, trigerred by baxterthehacker, has finished building."
+        expected_message = u"Github Pages build, triggered by baxterthehacker, has finished building."
         self.send_and_test_stream_message('page_build', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_status_msg(self) -> None:

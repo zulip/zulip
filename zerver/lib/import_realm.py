@@ -48,7 +48,7 @@ realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
 # that map old ids to new ids.  We use this in
 # re_map_foreign_keys and other places.
 #
-# We explicity initialize ID_MAP with the tables that support
+# We explicitly initialize ID_MAP with the tables that support
 # id re-mapping.
 #
 # Code reviewers: give these tables extra scrutiny, as we need to

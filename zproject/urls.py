@@ -634,7 +634,7 @@ urls += [
                  {'override_api_url_scheme'})}),
 ]
 
-# This url serves as a way to recieve CSP violation reports from the users.
+# This url serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
 urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
             name='zerver.views.report.report_csp_violations'),
