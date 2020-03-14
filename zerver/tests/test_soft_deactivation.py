@@ -41,8 +41,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
 
         # We are sending this message to ensure that users have at least
         # one UserMessage row.
-        self.send_huddle_message(users[0].email,
-                                 [user.email for user in users])
+        self.send_huddle_message(users[0], users)
 
         with mock.patch('logging.info'):
             do_soft_deactivate_users(users)
@@ -87,8 +86,8 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user('iago'),
             self.example_user('cordelia'),
         ]
-        self.send_huddle_message(users[0].email,
-                                 [user.email for user in users])
+        self.send_huddle_message(users[0], users)
+
         with mock.patch('logging.info'):
             do_soft_deactivate_users(users)
         for user in users:
@@ -139,7 +138,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         for user in users:
             self.assertTrue(user.long_term_idle)
 
-        message_id = self.send_stream_message(hamlet.email, stream, 'Hello world!')
+        message_id = self.send_stream_message(hamlet, stream, 'Hello world!')
         already_received = UserMessage.objects.filter(message_id=message_id).count()
         with mock.patch('logging.info'):
             do_catch_up_soft_deactivated_users(users)
@@ -188,7 +187,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
 
         # Verify that deactivated users are caught up automatically
 
-        message_id = self.send_stream_message(sender.email, stream_name)
+        message_id = self.send_stream_message(sender, stream_name)
         received_count = UserMessage.objects.filter(user_profile__in=users,
                                                     message_id=message_id).count()
         self.assertEqual(0, received_count)
@@ -204,7 +203,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         # Verify that deactivated users are NOT caught up if
         # AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS is off
 
-        message_id = self.send_stream_message(sender.email, stream_name)
+        message_id = self.send_stream_message(sender, stream_name)
         received_count = UserMessage.objects.filter(user_profile__in=users,
                                                     message_id=message_id).count()
         self.assertEqual(0, received_count)

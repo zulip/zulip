@@ -4,6 +4,8 @@
 * [Get a raw message](/api/get-raw-message)
 * [Send a message](/api/send-message)
 * [Update a message](/api/update-message)
+* [Add an emoji reaction](/api/add-emoji-reaction)
+* [Remove an emoji reaction](/api/remove-emoji-reaction)
 * [Render a message](/api/render-message)
 * [Upload a file](/api/upload-file)
 * [Delete a message](/api/delete-message)

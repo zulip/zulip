@@ -1359,6 +1359,7 @@ class TestRealmActiveHumans(AnalyticsTestCase):
         self.create_user(realm=third_realm)
 
         RealmCount.objects.all().delete()
+        InstallationCount.objects.all().delete()
         for i in [-1, 0, 1]:
             do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO + i*self.DAY)
         self.assertTableState(RealmCount, ['value', 'realm', 'end_time'],

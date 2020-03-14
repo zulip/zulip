@@ -228,7 +228,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
-        insecure_desktop_app  = is_outdated_desktop_app(request.META["HTTP_USER_AGENT"]),
+        insecure_desktop_app  = is_outdated_desktop_app(request.META.get("HTTP_USER_AGENT", "")),
         login_page            = settings.HOME_NOT_LOGGED_IN,
         root_domain_uri       = settings.ROOT_DOMAIN_URI,
         max_file_upload_size  = settings.MAX_FILE_UPLOAD_SIZE,
@@ -323,8 +323,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
                       context={'user_profile': user_profile,
                                'page_params': page_params,
                                'csp_nonce': csp_nonce,
-                               'show_debug':
-                               settings.DEBUG and ('show_debug' in request.GET),
                                'search_pills_enabled': settings.SEARCH_PILLS_ENABLED,
                                'show_invites': show_invites,
                                'show_add_streams': show_add_streams,

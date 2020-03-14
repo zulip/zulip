@@ -63,8 +63,8 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         self.set_http_headers(kwargs)
         self.fetch_async('GET', path, **kwargs)
 
-    def login(self, *args: Any, **kwargs: Any) -> None:
-        super().login(*args, **kwargs)
+    def login_user(self, *args: Any, **kwargs: Any) -> None:
+        super().login_user(*args, **kwargs)
         session_cookie = settings.SESSION_COOKIE_NAME
         session_key = self.client.session.session_key
         self.session_cookie = {
@@ -91,13 +91,13 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
 class EventsTestCase(TornadoWebTestCase):
     def test_create_queue(self) -> None:
-        self.login(self.example_email('hamlet'))
+        self.login_user(self.example_user('hamlet'))
         queue_id = self.create_queue()
         self.assertIn(queue_id, event_queue.clients)
 
     def test_events_async(self) -> None:
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         event_queue_id = self.create_queue()
         data = {
             'queue_id': event_queue_id,

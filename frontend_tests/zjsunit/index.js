@@ -53,7 +53,7 @@ global.make_zjquery = require('./zjquery.js').make_zjquery;
 global.make_zblueslip = require('./zblueslip.js').make_zblueslip;
 
 // Set up fake translation
-global.stub_i18n = require('./i18n.js');
+const stub_i18n = require('./i18n.js');
 
 // Set up Handlebars
 const handlebars = require('./handlebars.js');
@@ -113,6 +113,7 @@ try {
         _.throttle = immediate;
         _.debounce = immediate;
 
+        set_global('i18n', stub_i18n);
         namespace.clear_zulip_refs();
         run_one_module(file);
         namespace.restore();

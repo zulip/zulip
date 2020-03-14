@@ -3,7 +3,7 @@ from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, \
 
 from django.db import models
 from django.db.models.query import QuerySet
-from django.db.models import Manager, Sum, CASCADE
+from django.db.models import Manager, Q, Sum, CASCADE
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
@@ -30,7 +30,6 @@ from zerver.lib import cache
 from zerver.lib.validator import check_int, \
     check_short_string, check_long_string, validate_choice_field, check_date, \
     check_url, check_list
-from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator, ExtendedValidator, \
     ProfileDataElement, ProfileData, RealmUserValidator, \
     ExtendedFieldElement, UserFieldElement, FieldElement, \
@@ -227,12 +226,14 @@ class Realm(models.Model):
     EMAIL_ADDRESS_VISIBILITY_EVERYONE = 1
     EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
     EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
+    EMAIL_ADDRESS_VISIBILITY_NOBODY = 4
     email_address_visibility = models.PositiveSmallIntegerField(default=EMAIL_ADDRESS_VISIBILITY_EVERYONE)  # type: int
     EMAIL_ADDRESS_VISIBILITY_TYPES = [
         EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         # The MEMBERS level is not yet implemented on the backend.
         ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
         EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        EMAIL_ADDRESS_VISIBILITY_NOBODY,
     ]
 
     # Threshold in days for new users to create streams, and potentially take
@@ -569,31 +570,6 @@ class DisposableEmailError(Exception):
 
 class EmailContainsPlusError(Exception):
     pass
-
-# Is a user with the given email address allowed to be in the given realm?
-# (This function does not check whether the user has been invited to the realm.
-# So for invite-only realms, this is the test for whether a user can be invited,
-# not whether the user can sign up currently.)
-def email_allowed_for_realm(email: str, realm: Realm) -> None:
-    if not realm.emails_restricted_to_domains:
-        if realm.disallow_disposable_email_addresses and \
-                is_disposable_domain(email_to_domain(email)):
-            raise DisposableEmailError
-        return
-    elif '+' in email_to_username(email):
-        raise EmailContainsPlusError
-
-    domain = email_to_domain(email)
-    query = RealmDomain.objects.filter(realm=realm)
-    if query.filter(domain=domain).exists():
-        return
-    else:
-        query = query.filter(allow_subdomains=True)
-        while len(domain) > 0:
-            subdomain, sep, domain = domain.partition('.')
-            if query.filter(domain=domain).exists():
-                return
-    raise DomainNotAllowedForRealmError
 
 def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
@@ -1200,6 +1176,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         else:
             return -1
 
+    def format_requestor_for_logs(self) -> str:
+        return "{}/{}".format(self.realm.string_id, self.id)
+
     def set_password(self, password: Optional[str]) -> None:
         if password is None:
             self.set_unusable_password()
@@ -1432,7 +1411,7 @@ class Stream(models.Model):
     # * "email_token" is not realm-public and thus is not included here.
     # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
-    # * "realm" and "recipient" and not exposed to clients via the API.
+    # * "realm" and "recipient" are not exposed to clients via the API.
     # * "date_created" should probably be added here, as it's useful information
     #   to subscribers and is needed to compute is_old_stream.
     # * message_retention_days should be added here once the feature is
@@ -1449,7 +1428,11 @@ class Stream(models.Model):
         "first_message_id",
     ]
 
-    # This is stream information that is sent to clients
+    @staticmethod
+    def get_client_data(query: QuerySet) -> List[Dict[str, Any]]:
+        query = query.only(*Stream.API_FIELDS)
+        return [row.to_dict() for row in query]
+
     def to_dict(self) -> Dict[str, Any]:
         result = {}
         for field_name in self.API_FIELDS:
@@ -2153,8 +2136,22 @@ def get_user_profile_by_email(email: str) -> UserProfile:
     return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600*24*7)
+def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
+    try:
+        return UserProfile.objects.select_related().get(api_key=api_key)
+    except UserProfile.DoesNotExist:
+        # We will cache failed lookups with None.  The
+        # use case here is that broken API clients may
+        # continually ask for the same wrong API key, and
+        # we want to handle that as quickly as possible.
+        return None
+
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
-    return UserProfile.objects.select_related().get(api_key=api_key)
+    user_profile = maybe_get_user_profile_by_api_key(api_key)
+    if user_profile is None:
+        raise UserProfile.DoesNotExist()
+
+    return user_profile
 
 def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     """Fetches a user given their delivery email.  For use in
@@ -2165,6 +2162,28 @@ def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     """
     return UserProfile.objects.select_related().get(
         delivery_email__iexact=email.strip(), realm=realm)
+
+def get_users_by_delivery_email(emails: Set[str], realm: Realm) -> QuerySet:
+    """This is similar to get_users_by_delivery_email, and
+    it has the same security caveats.  It gets multiple
+    users and returns a QuerySet, since most callers
+    will only need two or three fields.
+
+    If you are using this to get large UserProfile objects, you are
+    probably making a mistake, but if you must,
+    then use `select_related`.
+    """
+
+    '''
+    Django doesn't support delivery_email__iexact__in, so
+    we simply OR all the filters that we'd do for the
+    one-email case.
+    '''
+    email_filter = Q()
+    for email in emails:
+        email_filter |= Q(delivery_email__iexact=email.strip())
+
+    return UserProfile.objects.filter(realm=realm).filter(email_filter)
 
 @cache_with_key(user_profile_cache_key, timeout=3600*24*7)
 def get_user(email: str, realm: Realm) -> UserProfile:

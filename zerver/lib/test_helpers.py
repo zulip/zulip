@@ -280,7 +280,6 @@ class HostRequestMock:
         self.method = ''
         self.body = ''
         self.content_type = ''
-        self._email = ''
 
     def get_host(self) -> str:
         return self.host

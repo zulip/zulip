@@ -21,7 +21,7 @@ from zerver.lib.exceptions import UnexpectedWebhookEventType
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, is_remote_server, has_api_key_format
+from zerver.lib.utils import statsd, has_api_key_format
 from zerver.lib.exceptions import JsonableError, ErrorCode, \
     InvalidJSONError, InvalidAPIKeyError, InvalidAPIKeyFormatError, \
     OrganizationAdministratorRequired
@@ -122,11 +122,11 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
 
 from zerver.lib.user_agent import parse_user_agent
 
-def get_client_name(request: HttpRequest, is_browser_view: bool) -> str:
+def get_client_name(request: HttpRequest) -> str:
     # If the API request specified a client in the request content,
     # that has priority.  Otherwise, extract the client from the
     # User-Agent.
-    if 'client' in request.GET:
+    if 'client' in request.GET:  # nocoverage
         return request.GET['client']
     if 'client' in request.POST:
         return request.POST['client']
@@ -135,23 +135,12 @@ def get_client_name(request: HttpRequest, is_browser_view: bool) -> str:
     else:
         user_agent = None
     if user_agent is not None:
-        # We could check for a browser's name being "Mozilla", but
-        # e.g. Opera and MobileSafari don't set that, and it seems
-        # more robust to just key off whether it was a browser view
-        if is_browser_view and not user_agent["name"].startswith("Zulip"):
-            # Avoid changing the client string for browsers, but let
-            # the Zulip desktop and mobile apps be themselves.
-            return "website"
-        else:
-            return user_agent["name"]
-    else:
-        # In the future, we will require setting USER_AGENT, but for
-        # now we just want to tag these requests so we can review them
-        # in logs and figure out the extent of the problem
-        if is_browser_view:
-            return "website"
-        else:
-            return "Unspecified"
+        return user_agent["name"]
+
+    # In the future, we will require setting USER_AGENT, but for
+    # now we just want to tag these requests so we can review them
+    # in logs and figure out the extent of the problem
+    return "Unspecified"
 
 def process_client(request: HttpRequest, user_profile: UserProfile,
                    *, is_browser_view: bool=False,
@@ -159,7 +148,15 @@ def process_client(request: HttpRequest, user_profile: UserProfile,
                    skip_update_user_activity: bool=False,
                    query: Optional[str]=None) -> None:
     if client_name is None:
-        client_name = get_client_name(request, is_browser_view)
+        client_name = get_client_name(request)
+
+    # We could check for a browser's name being "Mozilla", but
+    # e.g. Opera and MobileSafari don't set that, and it seems
+    # more robust to just key off whether it was a browser view
+    if is_browser_view and not client_name.startswith("Zulip"):
+        # Avoid changing the client string for browsers, but let
+        # the Zulip desktop apps be themselves.
+        client_name = "website"
 
     request.client = get_client(client_name)
     if not skip_update_user_activity:
@@ -189,7 +186,8 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
     if role is not None:
         role = role.strip()
 
-    if settings.ZILENCER_ENABLED and role is not None and is_remote_server(role):
+    # If `role` doesn't look like an email, it might be a uuid.
+    if settings.ZILENCER_ENABLED and role is not None and '@' not in role:
         try:
             remote_server = get_remote_server_by_uuid(role)
         except RemoteZulipServer.DoesNotExist:
@@ -200,7 +198,6 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
         request.user = remote_server
-        request._email = "zulip-server:" + role
         remote_server.rate_limits = ""
         # Skip updating UserActivity, since remote_server isn't actually a UserProfile object.
         process_client(request, remote_server, skip_update_user_activity=True)
@@ -211,7 +208,6 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         raise JsonableError(_("This API is not available to incoming webhook bots."))
 
     request.user = user_profile
-    request._email = user_profile.delivery_email
     process_client(request, user_profile, client_name=client_name)
 
     return user_profile
@@ -412,7 +408,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     and also adds helpful data needed by our server logs.
     """
     django_login(request, user_profile)
-    request._email = user_profile.delivery_email
+    request._requestor_for_logs = user_profile.format_requestor_for_logs()
     process_client(request, user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         # Login with two factor authentication as well.
@@ -428,7 +424,6 @@ def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
 def add_logging_data(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        request._email = request.user.delivery_email
         process_client(request, request.user, is_browser_view=True,
                        query=view_func.__name__)
         return rate_limit()(view_func)(request, *args, **kwargs)
@@ -652,7 +647,6 @@ def authenticate_log_and_execute_json(request: HttpRequest,
 
     process_client(request, user_profile, is_browser_view=True,
                    query=view_func.__name__)
-    request._email = user_profile.delivery_email
     return limited_view_func(request, user_profile, *args, **kwargs)
 
 # Checks if the request is a POST request and that the user is logged
@@ -715,7 +709,7 @@ def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFun
                 raise RuntimeError('Tornado notify view called with no Tornado handler')
             if not is_tornado_view and is_tornado_request:
                 raise RuntimeError('Django notify view called with Tornado handler')
-            request._email = "internal"
+            request._requestor_for_logs = "internal"
             return view_func(request, *args, **kwargs)
         return _wrapped_func_arguments
     return _wrapped_view_func

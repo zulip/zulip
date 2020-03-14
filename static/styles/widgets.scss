@@ -85,6 +85,7 @@ img.task-completed {
 input,
 button {
     &.add-task,
+    &.add-desc,
     &.poll-option,
     &.poll-question {
         padding: 4px 6px;
@@ -94,6 +95,7 @@ button {
 
 button {
     &.add-task,
+    &.add-desc,
     &.poll-option,
     &.poll-question {
         border-radius: 3px;

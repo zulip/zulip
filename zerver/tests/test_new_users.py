@@ -63,8 +63,8 @@ class SendLoginEmailTest(ZulipTestCase):
 
     def test_dont_send_login_emails_if_send_login_emails_is_false(self) -> None:
         self.assertFalse(settings.SEND_LOGIN_EMAILS)
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
 
         self.assertEqual(len(mail.outbox), 0)
 
@@ -98,13 +98,13 @@ class SendLoginEmailTest(ZulipTestCase):
         do_change_notification_settings(user, "enable_login_emails", False)
         self.assertFalse(user.enable_login_emails)
         with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
-            self.login(user.email)
+            self.login_user(user)
         self.assertEqual(len(mail.outbox), 0)
 
         do_change_notification_settings(user, "enable_login_emails", True)
         self.assertTrue(user.enable_login_emails)
         with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
-            self.login(user.email)
+            self.login_user(user)
         self.assertEqual(len(mail.outbox), 1)
 
 

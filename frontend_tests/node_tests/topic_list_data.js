@@ -2,7 +2,6 @@ set_global('narrow_state', {});
 set_global('unread', {});
 set_global('muting', {});
 set_global('message_list', {});
-set_global('i18n', global.stub_i18n);
 
 zrequire('hash_util');
 zrequire('stream_data');

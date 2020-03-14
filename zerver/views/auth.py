@@ -309,7 +309,7 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    request._email = user_profile.delivery_email
+    request._requestor_for_logs = user_profile.format_requestor_for_logs()
 
     return response
 
@@ -455,9 +455,9 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
                          .format(extra_arg))
             return redirect_to_config_error("saml")
         extra_url_params = {'idp': extra_arg}
-    backends = ["github", "google", "gitlab"]
+
     # TODO: Add AzureAD also.
-    for backend in backends:
+    if backend in ["github", "google", "gitlab"]:
         key_setting = "SOCIAL_AUTH_" + backend.upper() + "_KEY"
         secret_setting = "SOCIAL_AUTH_" + backend.upper() + "_SECRET"
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):
@@ -920,7 +920,7 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    request._email = user_profile.delivery_email
+    request._requestor_for_logs = user_profile.format_requestor_for_logs()
 
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})

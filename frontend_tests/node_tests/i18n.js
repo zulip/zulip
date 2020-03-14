@@ -1,24 +1,22 @@
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
-set_global('i18n', zrequire('i18n', 'i18next'));
 
-i18n.init({
-    nsSeparator: false,
-    keySeparator: false,
-    interpolation: {
-        prefix: "__",
-        suffix: "__",
-    },
-    lng: 'fr',
-    resources: {
-        fr: {
-            translation: {
-                "Quote and reply": "French translation",
-                "Desktop notifications are triggered for messages that are offscreen when they arrive. Mobile and email notifications are triggered once you have been away from Zulip for a few minutes.": "Some French text",
-            },
-        },
+// We download our translations in `page_params` (which
+// are for the user's chosen language), so we simulate
+// that here for the tests.
+set_global('page_params', {
+    translation_data: {
+        "Quote and reply": "French translation",
+        "Desktop notifications are triggered for messages that are offscreen when they arrive. Mobile and email notifications are triggered once you have been away from Zulip for a few minutes.": "Some French text",
     },
 });
+
+// All of our other tests stub out i18n activity;
+// here we do a quick sanity check on the engine itself.
+// We use `i18n.js` to initialize `i18next` and
+// to set `i18n` to `i18next` on the global namespace
+// for `templates.js`.
+zrequire('i18n');
 
 run_test('t_tag', () => {
     const args = {

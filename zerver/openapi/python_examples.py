@@ -646,6 +646,8 @@ def get_raw_message(client, message_id):
 def send_message(client):
     # type: (Client) -> int
 
+    request = {}  # type: Dict[str, Any]
+
     # {code_example|start}
     # Send a stream message
     request = {
@@ -669,11 +671,14 @@ def send_message(client):
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
 
+    ensure_users([9], ['hamlet'])
+
     # {code_example|start}
     # Send a private message
+    user_id = 9
     request = {
         "type": "private",
-        "to": "iago@zulip.com",
+        "to": [user_id],
         "content": "With mirth and laughter let old wrinkles come."
     }
     result = client.send_message(request)
@@ -693,31 +698,33 @@ def send_message(client):
 
     return message_id
 
+@openapi_test_function("/messages/{message_id}/reactions:post")
 def add_reaction(client, message_id):
     # type: (Client, int) -> None
+    # {code_example|start}
+    # Add an emoji reaction
     request = {
         'message_id': str(message_id),
-        'emoji_name': 'joy',
-        'emoji_code': '1f602',
-        'emoji_type': 'unicode_emoji'
+        'emoji_name': 'octopus',
     }
-    result = client.add_reaction(request)
 
-    assert result['result'] == 'success'
+    result = client.add_reaction(request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/messages/{message_id}/reactions', 'post', '200')
 
 @openapi_test_function("/messages/{message_id}/reactions:delete")
 def remove_reaction(client, message_id):
     # type: (Client, int) -> None
+    # {code_example|start}
+    # Remove an emoji reaction
     request = {
         'message_id': str(message_id),
-        'emoji_name': 'joy',
-        'emoji_code': '1f602',
-        'reaction_type': 'unicode_emoji'
+        'emoji_name': 'octopus',
     }
 
     result = client.remove_reaction(request)
-
-    assert result['result'] == 'success'
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/messages/{message_id}/reactions', 'delete', '200')
 
 def test_nonexistent_stream_error(client):
     # type: (Client) -> None
@@ -976,12 +983,16 @@ def get_stream_topics(client, stream_id):
 @openapi_test_function("/typing:post")
 def set_typing_status(client):
     # type: (Client) -> None
+    ensure_users([9, 10], ['hamlet', 'iago'])
 
     # {code_example|start}
     # The user has started to type in the group PM with Iago and Polonius
+    user_id1 = 9
+    user_id2 = 10
+
     request = {
         'op': 'start',
-        'to': ['iago@zulip.com', 'polonius@zulip.com']
+        'to': [user_id1, user_id2],
     }
     result = client.set_typing_status(request)
     # {code_example|end}
@@ -990,9 +1001,12 @@ def set_typing_status(client):
 
     # {code_example|start}
     # The user has finished typing in the group PM with Iago and Polonius
+    user_id1 = 9
+    user_id2 = 10
+
     request = {
         'op': 'stop',
-        'to': ['iago@zulip.com', 'polonius@zulip.com']
+        'to': [user_id1, user_id2],
     }
     result = client.set_typing_status(request)
     # {code_example|end}

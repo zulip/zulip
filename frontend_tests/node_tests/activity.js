@@ -54,7 +54,6 @@ const _resize = {
     resize_page_components: () => {},
 };
 
-set_global('i18n', global.stub_i18n);
 set_global('padded_widget', {
     update_padding: () => {},
 });

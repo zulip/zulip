@@ -9,7 +9,6 @@ set_global('$', function () {
 
 set_global('blueslip', global.make_zblueslip());
 set_global('document', null);
-set_global('i18n', global.stub_i18n);
 global.stub_out_jquery();
 
 zrequire('color_data');

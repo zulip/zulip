@@ -30,11 +30,12 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_set_realm_property,
     ensure_stream,
-    validate_email,
 )
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
+from zerver.lib.email_validation import get_realm_email_validator, \
+    validate_email_is_valid, get_existing_user_errors
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
@@ -267,7 +268,7 @@ class AuthBackendTest(ZulipTestCase):
     def test_login_preview(self) -> None:
         # Test preview=true displays organization login page
         # instead of redirecting to app
-        self.login(self.example_email("iago"))
+        self.login('iago')
         realm = get_realm("zulip")
         result = self.client_get('/login/?preview=true')
         self.assertEqual(result.status_code, 200)
@@ -1217,6 +1218,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_registration_without_is_signup_closed_realm(self) -> None:
         """If the user doesn't exist yet in closed realm, give an error"""
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "emails_restricted_to_domains", True)
         email = "nonexisting@phantom.com"
         name = 'Full Name'
         account_data_dict = self.get_account_data_dict(email=email, name=name)
@@ -1665,7 +1668,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_social_auth_github_team_not_member_failed(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        with mock.patch('social_core.backends.github.GithubTeamOAuth2.user_data',
+        with mock.patch('zproject.backends.GithubTeamBackend.user_data',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info') as mock_info:
             result = self.social_auth_test(account_data_dict,
@@ -1677,7 +1680,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_social_auth_github_team_member_success(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        with mock.patch('social_core.backends.github.GithubTeamOAuth2.user_data',
+        with mock.patch('zproject.backends.GithubTeamBackend.user_data',
                         return_value=account_data_dict):
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
@@ -1690,7 +1693,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip')
     def test_social_auth_github_organization_not_member_failed(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.user_data',
+        with mock.patch('zproject.backends.GithubOrganizationBackend.user_data',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info') as mock_info:
             result = self.social_auth_test(account_data_dict,
@@ -1702,7 +1705,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip')
     def test_social_auth_github_organization_member_success(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.user_data',
+        with mock.patch('zproject.backends.GithubOrganizationBackend.user_data',
                         return_value=account_data_dict):
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
@@ -2074,7 +2077,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
              'key': confirmation_key,
              'terms': True})
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(sorted(self.get_streams('new@zulip.com', realm)), stream_names)
+        new_user = get_user('new@zulip.com', realm)
+        new_streams = self.get_streams(new_user)
+        self.assertEqual(sorted(new_streams), stream_names)
 
     def test_log_into_subdomain_when_email_is_none(self) -> None:
         data = {'name': None,
@@ -2095,29 +2100,27 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_json_error(result, "Invalid subdomain")
 
 class JSONFetchAPIKeyTest(ZulipTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.user_profile = self.example_user('hamlet')
-        self.email = self.user_profile.email
-
     def test_success(self) -> None:
-        self.login(self.email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=self.user_profile,
-                                       password=initial_password(self.email)))
+                                  dict(user_profile=user,
+                                       password=initial_password(user.email)))
         self.assert_json_success(result)
 
     def test_not_loggedin(self) -> None:
+        user = self.example_user('hamlet')
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=self.user_profile,
-                                       password=initial_password(self.email)))
+                                  dict(user_profile=user,
+                                       password=initial_password(user.email)))
         self.assert_json_error(result,
                                "Not logged in: API authentication or user session required", 401)
 
     def test_wrong_password(self) -> None:
-        self.login(self.email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  dict(user_profile=self.user_profile,
+                                  dict(user_profile=user,
                                        password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 400)
 
@@ -3775,7 +3778,7 @@ class TestAdminSetBackends(ZulipTestCase):
 
     def test_change_enabled_backends(self) -> None:
         # Log in as admin
-        self.login(self.example_email("iago"))
+        self.login('iago')
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True})})
         self.assert_json_success(result)
@@ -3785,7 +3788,7 @@ class TestAdminSetBackends(ZulipTestCase):
 
     def test_disable_all_backends(self) -> None:
         # Log in as admin
-        self.login(self.example_email("iago"))
+        self.login('iago')
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': False})})
         self.assert_json_error(result, 'At least one authentication method must be enabled.')
@@ -3795,7 +3798,7 @@ class TestAdminSetBackends(ZulipTestCase):
 
     def test_supported_backends_only_updated(self) -> None:
         # Log in as admin
-        self.login(self.example_email("iago"))
+        self.login('iago')
         # Set some supported and unsupported backends
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True, u'GitHub': False})})
@@ -3818,24 +3821,30 @@ class EmailValidatorTestCase(ZulipTestCase):
         inviter = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
 
-        error, _, is_deactivated = validate_email(inviter, 'fred+5555@zulip.com')
-        self.assertEqual(False, is_deactivated)
+        realm = inviter.realm
+        do_set_realm_property(realm, 'emails_restricted_to_domains', True)
+        inviter.realm.refresh_from_db()
+        error = validate_email_is_valid(
+            'fred+5555@zulip.com',
+            get_realm_email_validator(realm),
+        )
         self.assertIn('containing + are not allowed', error)
 
-        _, error, is_deactivated = validate_email(inviter, cordelia.email)
+        errors = get_existing_user_errors(realm, {cordelia.email})
+        error, is_deactivated = errors[cordelia.email]
         self.assertEqual(False, is_deactivated)
         self.assertEqual(error, 'Already has an account.')
 
         cordelia.is_active = False
         cordelia.save()
 
-        _, error, is_deactivated = validate_email(inviter, cordelia.email)
+        errors = get_existing_user_errors(realm, {cordelia.email})
+        error, is_deactivated = errors[cordelia.email]
         self.assertEqual(True, is_deactivated)
         self.assertEqual(error, 'Account has been deactivated.')
 
-        _, error, is_deactivated = validate_email(inviter, 'fred-is-fine@zulip.com')
-        self.assertEqual(False, is_deactivated)
-        self.assertEqual(error, None)
+        errors = get_existing_user_errors(realm, {'fred-is-fine@zulip.com'})
+        self.assertEqual(errors, {})
 
 class LDAPBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))

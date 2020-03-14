@@ -1632,12 +1632,13 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             el = markdown.util.etree.Element("span")
             el.set('data-user-id', user_id)
+            text = "%s" % (name,)
             if silent:
                 el.set('class', 'user-mention silent')
-                el.text = "%s" % (name,)
             else:
                 el.set('class', 'user-mention')
-                el.text = "@%s" % (name,)
+                text = "@{}".format(text)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
@@ -1661,7 +1662,8 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
             el = markdown.util.etree.Element("span")
             el.set('class', 'user-group-mention')
             el.set('data-user-group-id', user_group_id)
-            el.text = "@%s" % (name,)
+            text = "@%s" % (name,)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
@@ -1690,7 +1692,8 @@ class StreamPattern(CompiledPattern):
             # Also do the same for StreamTopicPattern.
             stream_url = encode_stream(stream['id'], name)
             el.set('href', '/#narrow/stream/{stream_url}'.format(stream_url=stream_url))
-            el.text = '#{stream_name}'.format(stream_name=name)
+            text = '#{stream_name}'.format(stream_name=name)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
@@ -1718,7 +1721,8 @@ class StreamTopicPattern(CompiledPattern):
             link = '/#narrow/stream/{stream_url}/topic/{topic_url}'.format(stream_url=stream_url,
                                                                            topic_url=topic_url)
             el.set('href', link)
-            el.text = '#{stream_name} > {topic_name}'.format(stream_name=stream_name, topic_name=topic_name)
+            text = '#{stream_name} > {topic_name}'.format(stream_name=stream_name, topic_name=topic_name)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
@@ -1858,21 +1862,20 @@ class Bugdown(markdown.Markdown):
         # We disable the following blockparsers from upstream:
         #
         # indent - replaced by ours
-        # hashheader - disabled, since headers look bad and don't make sense in a chat context.
-        # setextheader - disabled, since headers look bad and don't make sense in a chat context.
+        # setextheader - disabled; we only support hashheaders for headings
         # olist - replaced by ours
         # ulist - replaced by ours
         # quote - replaced by ours
         parser = markdown.blockprocessors.BlockParser(self)
-        parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 85)
+        parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 95)
+        parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 90)
         if not self.getConfig('code_block_processor_disabled'):
-            parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 80)
-        parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 78)
+            parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 85)
+        parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 80)
         # We get priority 75 from 'table' extension
         parser.blockprocessors.register(markdown.blockprocessors.HRProcessor(parser), 'hr', 70)
-        parser.blockprocessors.register(OListProcessor(parser), 'olist', 68)
-        parser.blockprocessors.register(UListProcessor(parser), 'ulist', 65)
-        parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 60)
+        parser.blockprocessors.register(OListProcessor(parser), 'olist', 65)
+        parser.blockprocessors.register(UListProcessor(parser), 'ulist', 60)
         parser.blockprocessors.register(BlockQuoteProcessor(parser), 'quote', 55)
         parser.blockprocessors.register(markdown.blockprocessors.ParagraphProcessor(parser), 'paragraph', 50)
         return parser

@@ -21,7 +21,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         # TODO: Ideally, this test would use the full flow, rather
         # than making a mock message like this.
-        message_id = self.send_stream_message(self.example_email('othello'),
+        message_id = self.send_stream_message(self.example_user('othello'),
                                               "Denmark", content="@**test**")
         message = Message.objects.get(id=message_id)
         wide_message_dict = MessageDict.wide_dict(message)

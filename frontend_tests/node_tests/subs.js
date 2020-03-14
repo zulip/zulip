@@ -1,4 +1,3 @@
-set_global('i18n', global.stub_i18n);
 global.stub_out_jquery();
 
 set_global('ui', {

@@ -1,4 +1,3 @@
-set_global('i18n', global.stub_i18n);
 
 zrequire('unread');
 zrequire('stream_data');
@@ -397,7 +396,10 @@ run_test('topic_stuff', () => {
     assert(!filter.has_topic('wrong', 'old topic'));
     assert(!filter.has_topic('foo', 'wrong'));
 
-    const new_filter = filter.filter_with_new_topic('new topic');
+    const new_filter = filter.filter_with_new_params({
+        operator: 'topic',
+        operand: 'new topic',
+    });
 
     assert.deepEqual(new_filter.operands('stream'), ['foo']);
     assert.deepEqual(new_filter.operands('topic'), ['new topic']);

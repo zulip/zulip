@@ -1,3 +1,4 @@
+const settings_data = require("./settings_data");
 const render_admin_user_list = require("../templates/admin_user_list.hbs");
 const render_bot_owner_select = require("../templates/bot_owner_select.hbs");
 const render_user_info_form_modal = require('../templates/user_info_form_modal.hbs');
@@ -210,7 +211,7 @@ function populate_users(realm_people_data) {
             const $row = $(render_admin_user_list({
                 can_modify: page_params.is_admin,
                 is_current_user: people.is_my_user_id(item.user_id),
-                display_email: people.email_for_user_settings(item),
+                display_email: settings_data.email_for_user_settings(item),
                 user: item,
             }));
             $row.find(".last_active").append(get_rendered_last_activity(item));
@@ -246,7 +247,7 @@ function populate_users(realm_people_data) {
         modifier: function (item) {
             return render_admin_user_list({
                 user: item,
-                display_email: people.email_for_user_settings(item),
+                display_email: settings_data.email_for_user_settings(item),
                 can_modify: page_params.is_admin,
             });
         },
@@ -403,7 +404,7 @@ exports.on_load_success = function (realm_people_data) {
     });
 
     $('.admin_bot_table').on('click', '.user_row .view_user_profile', function (e) {
-        const owner_id = $(e.target).attr('data-owner-id');
+        const owner_id = parseInt($(e.target).attr('data-owner-id'), 10);
         const owner = people.get_by_user_id(owner_id);
         popovers.show_user_profile(owner);
         e.stopPropagation();

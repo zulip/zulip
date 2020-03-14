@@ -37,9 +37,9 @@ class PointerTest(ZulipTestCase):
         Posting a pointer to /update (in the form {"pointer": pointer}) changes
         the pointer we store for your UserProfile.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
-        msg_id = self.send_stream_message(self.example_email("othello"), "Verona")
+        msg_id = self.send_stream_message(self.example_user("othello"), "Verona")
         result = self.client_post("/json/users/me/pointer", {"pointer": msg_id})
         self.assert_json_success(result)
         self.assertEqual(self.example_user('hamlet').pointer, msg_id)
@@ -51,8 +51,8 @@ class PointerTest(ZulipTestCase):
         user = self.example_user('hamlet')
         email = user.email
         self.assertEqual(user.pointer, -1)
-        msg_id = self.send_stream_message(self.example_email("othello"), "Verona")
-        result = self.api_post(email, "/api/v1/users/me/pointer", {"pointer": msg_id})
+        msg_id = self.send_stream_message(self.example_user("othello"), "Verona")
+        result = self.api_post(user, "/api/v1/users/me/pointer", {"pointer": msg_id})
         self.assert_json_success(result)
         self.assertEqual(get_user(email, user.realm).pointer, msg_id)
 
@@ -61,7 +61,7 @@ class PointerTest(ZulipTestCase):
         Posting json to /json/users/me/pointer which does not contain a pointer key/value pair
         returns a 400 and error message.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"foo": 1})
         self.assert_json_error(result, "Missing 'pointer' argument")
@@ -72,7 +72,7 @@ class PointerTest(ZulipTestCase):
         Posting json to /json/users/me/pointer with an invalid pointer returns a 400 and error
         message.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Bad value for 'pointer': foo")
@@ -83,7 +83,7 @@ class PointerTest(ZulipTestCase):
         Posting json to /json/users/me/pointer with an out of range (< 0) pointer returns a 400
         and error message.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"pointer": -2})
         self.assert_json_error(result, "Bad value for 'pointer': -2")
@@ -95,7 +95,7 @@ class PointerTest(ZulipTestCase):
         return an unread message older than the current pointer, when there's
         no narrow set.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         # Ensure the pointer is not set (-1)
         self.assertEqual(self.example_user('hamlet').pointer, -1)
 
@@ -104,7 +104,7 @@ class PointerTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Send a new message (this will be unread)
-        new_message_id = self.send_stream_message(self.example_email("othello"), "Verona",
+        new_message_id = self.send_stream_message(self.example_user("othello"), "Verona",
                                                   "test")
 
         # If we call get_messages with use_first_unread_anchor=True, we
@@ -177,13 +177,13 @@ class PointerTest(ZulipTestCase):
         self.assertEqual(messages_response['anchor'], new_message_id)
 
     def test_visible_messages_use_first_unread_anchor(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
 
         result = self.client_post("/json/mark_all_as_read")
         self.assert_json_success(result)
 
-        new_message_id = self.send_stream_message(self.example_email("othello"), "Verona",
+        new_message_id = self.send_stream_message(self.example_user("othello"), "Verona",
                                                   "test")
 
         messages_response = self.get_messages_response(
@@ -215,16 +215,16 @@ class UnreadCountTests(ZulipTestCase):
                         return_value = True) as mock_push_notifications_enabled:
             self.unread_msg_ids = [
                 self.send_personal_message(
-                    self.example_email("iago"), self.example_email("hamlet"), "hello"),
+                    self.example_user("iago"), self.example_user("hamlet"), "hello"),
                 self.send_personal_message(
-                    self.example_email("iago"), self.example_email("hamlet"), "hello2")]
+                    self.example_user("iago"), self.example_user("hamlet"), "hello2")]
             mock_push_notifications_enabled.assert_called()
 
     # Sending a new message results in unread UserMessages being created
     def test_new_message(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         content = "Test message for unset read bit"
-        last_msg = self.send_stream_message(self.example_email("hamlet"), "Verona", content)
+        last_msg = self.send_stream_message(self.example_user("hamlet"), "Verona", content)
         user_messages = list(UserMessage.objects.filter(message=last_msg))
         self.assertEqual(len(user_messages) > 0, True)
         for um in user_messages:
@@ -233,7 +233,7 @@ class UnreadCountTests(ZulipTestCase):
                 self.assertFalse(um.flags.read)
 
     def test_update_flags(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
 
         result = self.client_post("/json/messages/flags",
                                   {"messages": ujson.dumps(self.unread_msg_ids),
@@ -262,13 +262,13 @@ class UnreadCountTests(ZulipTestCase):
                 self.assertEqual(msg['flags'], [])
 
     def test_mark_all_in_stream_read(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         user_profile = self.example_user('hamlet')
         stream = self.subscribe(user_profile, "test_stream")
         self.subscribe(self.example_user("cordelia"), "test_stream")
 
-        message_id = self.send_stream_message(self.example_email("hamlet"), "test_stream", "hello")
-        unrelated_message_id = self.send_stream_message(self.example_email("hamlet"), "Denmark", "hello")
+        message_id = self.send_stream_message(self.example_user("hamlet"), "test_stream", "hello")
+        unrelated_message_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", "hello")
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
@@ -302,7 +302,7 @@ class UnreadCountTests(ZulipTestCase):
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_stream_read(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         invalid_stream_id = "12345678"
         result = self.client_post("/json/mark_stream_as_read", {
             "stream_id": invalid_stream_id
@@ -310,7 +310,7 @@ class UnreadCountTests(ZulipTestCase):
         self.assert_json_error(result, 'Invalid stream id')
 
     def test_mark_all_topics_unread_with_invalid_stream_name(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         invalid_stream_id = "12345678"
         result = self.client_post("/json/mark_topic_as_read", {
             "stream_id": invalid_stream_id,
@@ -319,12 +319,12 @@ class UnreadCountTests(ZulipTestCase):
         self.assert_json_error(result, "Invalid stream id")
 
     def test_mark_all_in_stream_topic_read(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         user_profile = self.example_user('hamlet')
         self.subscribe(user_profile, "test_stream")
 
-        message_id = self.send_stream_message(self.example_email("hamlet"), "test_stream", "hello", "test_topic")
-        unrelated_message_id = self.send_stream_message(self.example_email("hamlet"), "Denmark", "hello", "Denmark2")
+        message_id = self.send_stream_message(self.example_user("hamlet"), "test_stream", "hello", "test_topic")
+        unrelated_message_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", "hello", "Denmark2")
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/mark_topic_as_read", {
@@ -356,7 +356,7 @@ class UnreadCountTests(ZulipTestCase):
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_topic_read(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         invalid_topic_name = "abc"
         result = self.client_post("/json/mark_topic_as_read", {
             "stream_id": get_stream("Denmark", get_realm("zulip")).id,
@@ -371,7 +371,7 @@ class FixUnreadTests(ZulipTestCase):
 
         def send_message(stream_name: str, topic_name: str) -> int:
             msg_id = self.send_stream_message(
-                self.example_email("othello"),
+                self.example_user("othello"),
                 stream_name,
                 topic_name=topic_name)
             um = UserMessage.objects.get(
@@ -490,26 +490,26 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
     @mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value=True)
     def test_track_active_mobile_push_notifications(self, mock_push_notifications: mock.MagicMock) -> None:
         mock_push_notifications.return_value = True
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         user_profile = self.example_user('hamlet')
         stream = self.subscribe(user_profile, "test_stream")
         second_stream = self.subscribe(user_profile, "second_stream")
 
         property_name = "push_notifications"
-        result = self.api_post(user_profile.email, "/api/v1/users/me/subscriptions/properties",
+        result = self.api_post(user_profile, "/api/v1/users/me/subscriptions/properties",
                                {"subscription_data": ujson.dumps([{"property": property_name,
                                                                    "value": True,
                                                                    "stream_id": stream.id}])})
-        result = self.api_post(user_profile.email, "/api/v1/users/me/subscriptions/properties",
+        result = self.api_post(user_profile, "/api/v1/users/me/subscriptions/properties",
                                {"subscription_data": ujson.dumps([{"property": property_name,
                                                                    "value": True,
                                                                    "stream_id": second_stream.id}])})
         self.assert_json_success(result)
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [])
 
-        message_id = self.send_stream_message(self.example_email("cordelia"), "test_stream", "hello", "test_topic")
-        second_message_id = self.send_stream_message(self.example_email("cordelia"), "test_stream", "hello", "other_topic")
-        third_message_id = self.send_stream_message(self.example_email("cordelia"), "second_stream", "hello", "test_topic")
+        message_id = self.send_stream_message(self.example_user("cordelia"), "test_stream", "hello", "test_topic")
+        second_message_id = self.send_stream_message(self.example_user("cordelia"), "test_stream", "hello", "other_topic")
+        third_message_id = self.send_stream_message(self.example_user("cordelia"), "second_stream", "hello", "test_topic")
 
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile),
                          [message_id, second_message_id, third_message_id])
@@ -530,7 +530,7 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile),
                          [third_message_id])
 
-        fourth_message_id = self.send_stream_message(self.example_email("cordelia"), "test_stream", "hello", "test_topic")
+        fourth_message_id = self.send_stream_message(self.example_user("cordelia"), "test_stream", "hello", "test_topic")
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile),
                          [third_message_id, fourth_message_id])
 
