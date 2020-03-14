@@ -1,0 +1,18 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/email_logo.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+{{ _('New organization details') }}
+
+{{ _('Organization Name:') }} {{ realm_name }} <br/>
+{{ _('Organization Type:') }} {{ organization_type }}<br/>
+{% if repository_link %} {{ _('Repository Link:') }} {{ repository_link }}<br/> {% endif %}
+{% if organization_nature %} {{ _('Organization Nature:') }} {{ organization_nature }}<br/> {% endif %}
+{% if organization_website %} {{ _('Organization Website:') }} {{ organization_website }}<br/> {% endif %}
+{% if organization_description %} {{ _('Organization Description:') }} {{ organization_description }}<br/> {% endif %}
+{{ _('Realm Link:') }} {{ realm_uri }}<br/>
+
+{% endblock %}

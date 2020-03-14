@@ -156,6 +156,7 @@ SEARCH_PILLS_ENABLED = bool(os.getenv('SEARCH_PILLS_ENABLED', False))
 
 BILLING_ENABLED = True
 LANDING_PAGE_NAVBAR_MESSAGE = None
+STAFF_SUBDOMAIN = 'zulip'
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'

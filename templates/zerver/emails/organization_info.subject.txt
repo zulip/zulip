@@ -1,0 +1,5 @@
+{% if realm_creation %}
+{% trans -%}
+{{ realm_name }}: New organization registration details
+{% endtrans %}
+{% endif %}

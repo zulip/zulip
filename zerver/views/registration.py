@@ -1,4 +1,5 @@
 from typing import List, Dict, Optional
+from urllib.parse import urljoin, urlencode, urlunsplit
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -32,6 +33,7 @@ from zerver.lib.timezone import get_all_timezones
 from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
+from zerver.context_processors import common_context_unauthed
 from zerver.views.auth import create_preregistration_user, redirect_and_log_into_subdomain, \
     redirect_to_deactivation_notice, get_safe_redirect_to, finish_desktop_flow, finish_mobile_flow
 
@@ -251,6 +253,11 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         short_name = email_to_username(email)
         default_stream_group_names = request.POST.getlist('default_stream_group')
         default_stream_groups = lookup_default_stream_groups(default_stream_group_names, realm)
+        organization_type = request.POST.get('organization_type')
+        repository_link = request.POST.get('repository_link')
+        organization_nature = request.POST.get('organization_nature')
+        organization_website = request.POST.get('organization_website')
+        organization_description = request.POST.get('organization_description')
 
         timezone = ""
         if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
@@ -347,6 +354,15 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           source_profile=source_profile,
                                           realm_creation=realm_creation)
 
+        if realm_creation and settings.BILLING_ENABLED:
+            notify_support_new_realm(realm=user_profile.realm,
+                                     organization_type=organization_type,
+                                     repository_link=repository_link,
+                                     organization_nature=organization_nature,
+                                     organization_website=organization_website,
+                                     organization_description=organization_description)
+        assert(realm is not None)
+
         if realm_creation:
             bulk_add_subscriptions([realm.signup_notifications_stream], [user_profile])
             send_initial_realm_messages(realm)
@@ -376,27 +392,69 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         'zerver/register.html',
-        context={'form': form,
-                 'email': email,
-                 'key': key,
-                 'full_name': request.session.get('authenticated_full_name', None),
-                 'lock_name': name_validated and name_changes_disabled(realm),
-                 # password_auth_enabled is normally set via our context processor,
-                 # but for the registration form, there is no logged in user yet, so
-                 # we have to set it here.
-                 'creating_new_team': realm_creation,
-                 'password_required': password_auth_enabled(realm) and password_required,
-                 'require_ldap_password': require_ldap_password,
-                 'password_auth_enabled': password_auth_enabled(realm),
-                 'root_domain_available': is_root_domain_available(),
-                 'default_stream_groups': get_default_stream_groups(realm),
-                 'accounts': get_accounts_for_email(email),
-                 'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
-                 'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
-                 'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
-                 'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH)
-                 }
+        context = {
+            'form': form,
+            'email': email,
+            'key': key,
+            'full_name': request.session.get('authenticated_full_name', None),
+            'lock_name': name_validated and name_changes_disabled(realm),
+            # password_auth_enabled is normally set via our context processor,
+            # but for the registration form, there is no logged in user yet, so
+            # we have to set it here.
+            'creating_new_team': realm_creation,
+            'billing_enabled': settings.BILLING_ENABLED,
+            'password_required': password_auth_enabled(realm) and password_required,
+            'require_ldap_password': require_ldap_password,
+            'password_auth_enabled': password_auth_enabled(realm),
+            'root_domain_available': is_root_domain_available(),
+            'default_stream_groups': get_default_stream_groups(realm),
+            'accounts': get_accounts_for_email(email),
+            'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
+            'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
+            'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
+            'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH)
+        }
     )
+
+def notify_support_new_realm(realm: Realm, organization_type: str,
+                             repository_link: str,
+                             organization_nature: str,
+                             organization_website: str,
+                             organization_description: str) -> HttpResponse:
+
+    context = common_context_unauthed(realm)
+
+    if settings.STAFF_SUBDOMAIN is not None:
+        realm_uri = urljoin(get_realm(settings.STAFF_SUBDOMAIN).uri, reverse('analytics.views.support'))
+        query_component = urlencode({"q": realm.string_id})
+        realm_page_on_staff_subdomain = urlunsplit(("", "", realm_uri, query_component, ""))
+        context.update({"realm_uri": realm_page_on_staff_subdomain})
+
+    if organization_type == "Open-source":
+        context.update({
+            'organization_type': organization_type,
+            'repository_link': repository_link,
+        })
+    elif organization_type == "Education" or organization_type == "Non-profit":
+        context.update({
+            'organization_type': organization_type,
+            'organization_nature': organization_nature,
+            'organization_website': organization_website,
+        })
+    elif organization_type == "Other":
+        context.update({
+            'organization_type': organization_type,
+            'organization_description': organization_description,
+        })
+
+    if organization_type != "Corporate":
+        send_email(
+            "zerver/emails/organization_info",
+            to_emails=[FromAddress.SUPPORT],
+            from_name="Zulip Account Security",
+            from_address=FromAddress.tokenized_no_reply_address(),
+            context=context
+        )
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     mobile_flow_otp = get_expirable_session_var(request.session, 'registration_mobile_flow_otp',

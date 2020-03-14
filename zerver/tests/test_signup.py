@@ -28,6 +28,7 @@ from zerver.views.auth import \
     redirect_and_log_into_subdomain, start_two_factor_auth
 from zerver.views.invite import get_invitee_emails_set
 from zerver.views.development.registration import confirmation_key
+from zerver.views.registration import notify_support_new_realm
 
 from zerver.models import (
     get_realm, get_user, CustomProfileField,
@@ -44,6 +45,7 @@ from zerver.lib.actions import (
     do_create_realm,
     get_default_streams_for_realm,
     do_invite_users, do_create_user)
+from django.core import mail
 from zerver.lib.send_email import send_future_email, FromAddress, \
     deliver_email
 from zerver.lib.initial_password import initial_password
@@ -2214,6 +2216,74 @@ class RealmCreationTest(ZulipTestCase):
 
     def test_create_realm_existing_email(self) -> None:
         self.check_able_to_create_realm("hamlet@zulip.com")
+
+    def test_notify_support_new_realm(self) -> None:
+        password = "test"
+        string_id = "zuliptest"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        # Make sure the realm does not exist
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
+
+        # Create new realm with the email
+        result = self.client_post('/new/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/new/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(email, password,
+                                               realm_subdomain = string_id,
+                                               realm_name=realm_name,
+                                               # Pass HTTP_HOST for the target subdomain
+                                               HTTP_HOST=string_id + ".testserver")
+        self.assertEqual(result.status_code, 302)
+
+        # Make sure the realm is created
+        realm = get_realm(string_id)
+        self.assertEqual(realm.string_id, string_id)
+        self.assertEqual(get_user(email, realm).realm, realm)
+
+        self.assertEqual(realm.name, realm_name)
+        self.assertEqual(realm.subdomain, string_id)
+
+        repository_link = "github.com/test"
+        organization_nature = "Organization Nature"
+        organization_website = "Organization Website"
+        organization_description = "Organization Description"
+        organization_types = ["Open-source", "Non-profit", "Education", "Other"]
+
+        with self.settings(BILLING_ENABLED=True):
+            for organization_type in organization_types:
+                notify_support_new_realm(realm=realm,
+                                         organization_type=organization_type,
+                                         repository_link=repository_link,
+                                         organization_nature=organization_nature,
+                                         organization_website=organization_website,
+                                         organization_description=organization_description)
+
+                msg = mail.outbox[-1]
+                from_email = msg.from_email
+                self.assertIn("Zulip Account Security", from_email)
+                tokenized_no_reply_email = parseaddr(from_email)[1]
+                self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
+                self.assertIn(organization_type, msg.body)
+
+                if organization_type == "Open-source":
+                    self.assertIn(repository_link, msg.body)
+                elif organization_type == "Education" or organization_type == "Non-profit":
+                    self.assertIn(organization_nature, msg.body)
+                    self.assertIn(organization_website, msg.body)
+                elif organization_type == "Other":
+                    self.assertIn(organization_description, msg.body)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_create_realm_ldap_email(self) -> None:

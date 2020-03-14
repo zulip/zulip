@@ -196,4 +196,38 @@ $(function () {
     $("body").on("click", "#choose_email .choose-email-box", function () {
         this.parentNode.submit();
     });
+
+    const offer_details_behavior = function () {
+        const selected_object = $("#organization_type_select").val();
+        const offer_details = $("#offer_details");
+        const repository_link_input = $("#repository_link_input");
+        const organization_nature_input = $("#organization_nature_input");
+        const organization_website_input = $("#organization_website_input");
+        const offer_details_help_box = $("#offer_details_help_box");
+        if (selected_object === "Open-source") {
+            offer_details.show();
+            repository_link_input.show();
+            organization_nature_input.hide();
+            organization_website_input.hide();
+            offer_details_help_box.text(i18n.t("You may qualify for the standard plan for free. Please provide your official repository link."));
+        } else if (selected_object === "Education" || selected_object === "Non-profit") {
+            offer_details.show();
+            repository_link_input.hide();
+            organization_nature_input.show();
+            organization_website_input.show();
+            offer_details_help_box.text(i18n.t("You may qualify for a discount on the standard plan."));
+        } else if (selected_object === "Other") {
+            offer_details.show();
+            repository_link_input.hide();
+            organization_nature_input.show();
+            organization_website_input.hide();
+            offer_details_help_box.text(i18n.t("You may qualify for a discount on the standard plan."));
+        } else {
+            offer_details.hide();
+        }
+    };
+
+    $('#organization_type_select').on('change', function () {
+        offer_details_behavior();
+    });
 });

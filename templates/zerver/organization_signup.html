@@ -1,0 +1,49 @@
+{% block portico_content %}
+
+<div class="input-box">
+    <div class="input-box">
+        <label class="inline-block">{{ _('Organization type') }}</label>
+    </div>
+    <div id="organization_type_select_section" class="input-group inline-block">
+        <select class="organization_type" name="organization_type" id="organization_type_select">
+            <option value="Corporate">{{_('Corporate')}}</option>
+            <option value="Open-source">{{_('Open Source')}}</option>
+            <option value="Education">{{_('Education')}}</option>
+            <option value="Non-profit">{{_('Non-Profit')}}</option>
+            <option value="Other">{{_('Other')}}</option>
+        </select>
+    </div>
+</div>
+<div id="offer_details">
+    <div class="input-box">
+        <div class="help-box margin-top" id="offer_details_help_box"></div>
+        <div id="repository_link_input">
+            <div class="input-box">
+                <label for="repository_link_label" class="inline-block label-title">{{ _('Repository Link') }}</label>
+                <div class="inline-block relative">
+                    <input id="repository_link_label" class="required" type="text"
+                      name="repository_link" required />
+                </div>
+            </div>
+        </div>
+        <div id="organization_nature_input">
+            <div class="input-box">
+                <label for="organization_nature_label" class="inline-block label-title">{{ _('Briefly describe the nature of your organization') }}</label>
+                <div class="inline-block relative">
+                    <input id="organization_nature" class="required" type="text"
+                      name="organization_nature" required />
+                </div>
+            </div>
+        </div>
+        <div id="organization_website_input">
+            <div class="input-box">
+                <label for="organization_website_label" class="inline-block label-title">{{ _('Website of your organization') }}</label>
+                <div class="inline-block relative">
+                    <input id="organization_website" class="required" type="text"
+                      name="organization_website" required />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
