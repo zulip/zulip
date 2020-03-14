@@ -277,7 +277,7 @@ lose the setting and need to re-enable it.
 - Replaced title attributes with nice tooltips in the message feed and
   buddy list.
 - Fixed incorrect caching settings for the Zulip API, which could result
-  in browers appearing to display old content or remark messages unread.
+  in browsers appearing to display old content or remark messages unread.
 - Fixed a bug that prevented sending mobile push notifications when the
   user was recently online via the mobile app.
 - Fixed buggy handling of LaTeX in quote-and-reply.
@@ -618,7 +618,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Fixed confusing intermediate states of group PMs online indicators.
 - Fixed several subtle unread count corner case bugs.
 - Fixed several installer issues to make it easier to Dockerize Zulip.
-- Fixed several subtle issues with both the LDAP/Active Direcotry
+- Fixed several subtle issues with both the LDAP/Active Directory
   integration and its documentation, making it much easier to setup.
 - Fixed several minor bugs and otherwise optimized search typeahead.
 - Fixed a bad nginx configuration interaction with servers that have

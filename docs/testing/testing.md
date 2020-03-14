@@ -77,7 +77,7 @@ Additionally, Zulip also has about a dozen smaller tests suites:
   details on the system this is verifying.
 - `tools/check-capitalization`: Checks whether translated strings (aka
   user-facing strings) correctly follow Zulip's capitalization
-  conventions.  This requires some maintainance of an exclude list
+  conventions.  This requires some maintenance of an exclude list
   (`tools.lib.capitalization.IGNORED_PHRASES`) of proper nouns
   mentioned in the Zulip project, but helps a lot in avoiding new
   strings being added that don't match our style.
