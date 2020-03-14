@@ -1,10 +1,4 @@
 {
-    "bad_event_queue_id_error": {
-        "code": "BAD_EVENT_QUEUE_ID",
-        "msg": "Bad event queue id: 1518820930:1",
-        "queue_id": "1518820930:1",
-        "result": "error"
-    },
     "invalid-api-key": {
         "msg": "Invalid API key",
         "result": "error"
@@ -14,10 +8,6 @@
         "msg": "Missing 'content' argument",
         "result": "error",
         "var_name": "content"
-    },
-    "successful-response-empty": {
-        "msg": "",
-        "result": "success"
     },
     "update-message-edit-permission-error": {
         "code": "BAD_REQUEST",
