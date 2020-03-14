@@ -327,7 +327,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('pivotal', ['project-management'], display_name='Pivotal Tracker'),
     WebhookIntegration('raygun', ['monitoring'], display_name="Raygun"),
     WebhookIntegration('reviewboard', ['version-control'], display_name="ReviewBoard"),
-    WebhookIntegration('semaphore', ['continuous-integration', 'deployment'], stream_name='builds'),
+    WebhookIntegration('semaphore', ['continuous-integration', 'deployment']),
     WebhookIntegration('sentry', ['monitoring']),
     WebhookIntegration('slack', ['communication']),
     WebhookIntegration('solano', ['continuous-integration'], display_name='Solano Labs'),
