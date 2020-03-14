@@ -10,6 +10,7 @@ class SemaphoreHookTests(WebhookTestCase):
     # contain information on the repo and branch, and the message has links and
     # details about the build, deploy, server, author, and commit
 
+    # Tests for Semaphore Classic
     def test_semaphore_build(self) -> None:
         expected_topic = u"knighthood/master"  # repo/branch
         expected_message = """
@@ -30,6 +31,99 @@ class SemaphoreHookTests(WebhookTestCase):
 """.strip()
         self.send_and_test_stream_message('deploy', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
+
+    # Tests For Semaphore 2.0
+    def test_semaphore2_push_known_host(self) -> None:
+        expected_topic = u"notifications/rw/webhook_impl"  # repo/branch
+        expected_message = """
+**[radwo](https://github.com/radwo)** pushed to branch **rw/webhook_impl** of [semaphore/notifications](https://github.com/renderedtext/notifications):
+* **Commit**: [(#2d9f5fc) empty](https://github.com/renderedtext/notifications/commit/2d9f5fcec1ca7c68fa7bd44dd58ec4ff65814563)
+* **Pipeline**:
+  - Name: Notifications
+  - Result: stopped
+* **Blocks**:
+  1. **List & Test & Build**:
+    - Result: stopped
+  1. **List & Test & Build 2**:
+    - Result: stopped
+""".strip()
+        self.send_and_test_stream_message('push', expected_topic, expected_message,
+                                          content_type="application/json")
+
+    def test_semaphore2_push_unknown_host(self) -> None:
+        expected_topic = u"notifications/rw/webhook_impl"  # repo/branch
+        expected_message = """
+**[radwo](https://enterprise.github.com/renderedtext/notifications)** pushed to branch **rw/webhook_impl** of [semaphore/notifications](https://enterprise.github.com/renderedtext/notifications):
+* **Commit**: [(#2d9f5fc) empty](https://enterprise.github.com/renderedtext/notifications)
+* **Pipeline**:
+  - Name: Notifications
+  - Result: stopped
+* **Blocks**:
+  1. **List & Test & Build**:
+    - Result: stopped
+""".strip()
+        self.send_and_test_stream_message('push_unknown_host', expected_topic, expected_message,
+                                          content_type="application/json")
+
+    def test_semaphore_pull_request_known_host(self) -> None:
+        expected_topic = u"notifications/rw/webhook_impl"
+        expected_message = """
+**[radwo](https://github.com/radwo)** created a pull request to branch **rw/webhook_impl** of [semaphore/notifications](https://github.com/renderedtext/notifications):
+* **Pull Request**: [Add docs for webhook notifications](https://github.com/renderedtext/notifications/pull/2)
+* **Pipeline**:
+  - Name: Notifications
+  - Result: stopped
+* **Blocks**:
+  1. **List & Test & Build**:
+    - Result: stopped
+""".strip()
+        self.send_and_test_stream_message('pull_request', expected_topic, expected_message,
+                                          content_type="application/json")
+
+    def test_semaphore_pull_request_unkown_host(self) -> None:
+        expected_topic = u"notifications/rw/webhook_impl"
+        expected_message = """
+**[radwo](https://enterprise.github.com/renderedtext/notifications)** created a pull request to branch **rw/webhook_impl** of [semaphore/notifications](https://enterprise.github.com/renderedtext/notifications):
+* **Pull Request**: [Add docs for webhook notifications](https://enterprise.github.com/renderedtext/notifications)
+* **Pipeline**:
+  - Name: Notifications
+  - Result: stopped
+* **Blocks**:
+  1. **List & Test & Build**:
+    - Result: stopped
+""".strip()
+        self.send_and_test_stream_message('pull_request_unknown_host', expected_topic, expected_message,
+                                          content_type="application/json")
+
+    def test_semaphore_tag_known_host(self) -> None:
+        expected_topic = u"notifications/rw/webhook_impl"
+        expected_message = """
+**[radwo](https://github.com/radwo)** pushed a tag to [semaphore/notifications](https://github.com/renderedtext/notifications):
+* **Tag**: [v1.0.1](https://github.com/renderedtext/notifications/releases/tag/v1.0.1)
+* **Pipeline**:
+  - Name: Notifications
+  - Result: stopped
+* **Blocks**:
+  1. **List & Test & Build**:
+    - Result: stopped
+""".strip()
+        self.send_and_test_stream_message('tag', expected_topic, expected_message,
+                                          content_type="application/json")
+
+    def test_semaphore_tag_unknown_host(self) -> None:
+        expected_topic = u"notifications/rw/webhook_impl"
+        expected_message = """
+**[radwo](https://enterprise.github.com/renderedtext/notifications)** pushed a tag to [semaphore/notifications](https://enterprise.github.com/renderedtext/notifications):
+* **Tag**: [v1.0.1](https://enterprise.github.com/renderedtext/notifications)
+* **Pipeline**:
+  - Name: Notifications
+  - Result: stopped
+* **Blocks**:
+  1. **List & Test & Build**:
+    - Result: stopped
+""".strip()
+        self.send_and_test_stream_message('tag_unknown_host', expected_topic, expected_message,
+                                          content_type="application/json")
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("semaphore", fixture_name, file_type="json")
