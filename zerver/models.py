@@ -1547,9 +1547,6 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
                                      [stream_name.lower() for stream_name in stream_names],
                                      id_fetcher=stream_to_lower_name)
 
-def get_recipient_cache_key(type: int, type_id: int) -> str:  # nocoverage
-    return u"%s:get_recipient:%s:%s" % (cache.KEY_PREFIX, type, type_id,)
-
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
 
     # The caller should ensure that user_profile_ids includes
