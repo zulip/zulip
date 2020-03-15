@@ -87,6 +87,8 @@ class AnalyticsTestCase(TestCase):
             kwargs[key] = kwargs.get(key, value)
         huddle = Huddle.objects.create(**kwargs)
         recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.HUDDLE)
+        huddle.recipient = recipient
+        huddle.save(update_fields=["recipient"])
         return huddle, recipient
 
     def create_message(self, sender: UserProfile, recipient: Recipient, **kwargs: Any) -> Message:

@@ -1013,6 +1013,11 @@ class ImportExportTest(ZulipTestCase):
             self.assertEqual(stream.recipient_id, Recipient.objects.get(type=Recipient.STREAM,
                                                                         type_id=stream.id).id)
 
+        for huddle_object in Huddle.objects.all():
+            # Huddles don't have a realm column, so we just test all Huddles for simplicity.
+            self.assertEqual(huddle_object.recipient_id, Recipient.objects.get(type=Recipient.HUDDLE,
+                                                                               type_id=huddle_object.id).id)
+
     def test_import_files_from_local(self) -> None:
 
         realm = Realm.objects.get(string_id='zulip')
