@@ -1547,12 +1547,8 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
                                      [stream_name.lower() for stream_name in stream_names],
                                      id_fetcher=stream_to_lower_name)
 
-def get_recipient_cache_key(type: int, type_id: int) -> str:
+def get_recipient_cache_key(type: int, type_id: int) -> str:  # nocoverage
     return u"%s:get_recipient:%s:%s" % (cache.KEY_PREFIX, type, type_id,)
-
-@cache_with_key(get_recipient_cache_key, timeout=3600*24*7)
-def get_recipient(type: int, type_id: int) -> Recipient:
-    return Recipient.objects.get(type_id=type_id, type=type)
 
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
 
@@ -1561,7 +1557,7 @@ def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
     # we hit another cache to get the recipient.  We may want to
     # unify our caching strategy here.
     huddle = get_huddle(list(user_profile_ids))
-    return get_recipient(Recipient.HUDDLE, huddle.id)
+    return huddle.recipient
 
 def get_huddle_user_ids(recipient: Recipient) -> List[int]:
     assert(recipient.type == Recipient.HUDDLE)
@@ -2287,6 +2283,8 @@ class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
     huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)  # type: str
+    # Foreign key to the Recipient object for this Huddle.
+    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
 def get_huddle_hash(id_list: List[int]) -> str:
     id_list = sorted(set(id_list))
@@ -2307,6 +2305,8 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
         if created:
             recipient = Recipient.objects.create(type_id=huddle.id,
                                                  type=Recipient.HUDDLE)
+            huddle.recipient = recipient
+            huddle.save(update_fields=["recipient"])
             subs_to_create = [Subscription(recipient=recipient,
                                            user_profile_id=user_profile_id)
                               for user_profile_id in id_list]
