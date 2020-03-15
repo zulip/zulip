@@ -583,6 +583,37 @@ def get_messages(client: Client) -> None:
     validate_against_openapi_schema(result, '/messages', 'get', '200')
     assert len(result['messages']) <= request['num_before']
 
+@openapi_test_function("/messages/matches_narrow:get")
+def check_messages_match_narrow(client: Client) -> None:
+    message = {
+        "type": "stream",
+        "to": "Verona",
+        "topic": "test_topic",
+        "content": "http://foo.com"
+    }
+    msg_ids = []
+    response = client.send_message(message)
+    msg_ids.append(response['id'])
+    message['content'] = "no link here"
+    response = client.send_message(message)
+    msg_ids.append(response['id'])
+
+    # {code_example|start}
+    # Check whether a set of messages match a narrow.
+    request = {
+        'msg_ids': msg_ids,
+        'narrow': [{'operator': 'has', 'operand': 'link'}],
+    }
+
+    result = client.call_endpoint(
+        url='messages/matches_narrow',
+        method='GET',
+        request=request
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/messages/matches_narrow', 'get', '200')
+
 @openapi_test_function("/messages/{message_id}:get")
 def get_raw_message(client: Client, message_id: int) -> None:
 
@@ -1117,6 +1148,7 @@ def test_messages(client: Client, nonadmin_client: Client) -> None:
     update_message(client, message_id)
     get_raw_message(client, message_id)
     get_messages(client)
+    check_messages_match_narrow(client)
     get_message_history(client, message_id)
     delete_message(client, message_id)
     mark_all_as_read(client)

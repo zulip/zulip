@@ -1342,6 +1342,72 @@ paths:
                         "msg": "Invalid message(s)",
                         "code": "BAD_REQUEST"
                     }
+  /messages/matches_narrow:
+    get:
+      operationId: check_messages_match_narrow
+      tags: ["messages"]
+      description: |
+        Check whether a set of messages match a [narrow](/api/construct-narrow).
+
+        `GET {{ api_url }}/v1/messages/matches_narrow`
+      parameters:
+      - name: msg_ids
+        in: query
+        description: List of message ids to be passed.
+        schema:
+          type: array
+          items:
+            type: integer
+        example: [31,32]
+        required: true
+      - name: narrow
+        in: query
+        description: The narrow to be matched with. See how to
+          [construct a narrow](/api/construct-narrow).
+        schema:
+          type: array
+          items:
+            type: object
+        example: [{'operator': 'has', 'operand': 'link'}]
+        required: true
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    messages:
+                      type: object
+                      description: |
+                        A dictionary of messages matching the narrow with message ids
+                        as keys and `message` objects as values.
+                      additionalProperties:
+                        type: object
+                        properties:
+                          match_content:
+                            type: string
+                            description: |
+                              Contents of the message that matches the narrow.
+                          match_subject:
+                            type: string
+                            description: |
+                              Topic of the message matched.
+                        description: |
+                          The ID of the message that matches the narrow.
+                - example:
+                    {
+                      'result': 'success',
+                      'msg': '',
+                      'messages': {
+                        '31': {
+                          'match_content': '<p><a href="http://foo.com" target="_blank" title="http://foo.com">http://foo.com</a></p>',
+                          'match_subject': 'test_topic'
+                        }
+                      }
+                    }
   /user_uploads:
     post:
       operationId: upload_file

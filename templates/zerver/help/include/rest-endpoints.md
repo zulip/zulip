@@ -10,6 +10,7 @@
 * [Remove an emoji reaction](/api/remove-reaction)
 * [Render a message](/api/render-message)
 * [Get a message's raw markdown](/api/get-raw-message)
+* [Check messages match narrow](/api/check-narrow-matches)
 * [Get a message's edit history](/api/get-message-history)
 * [Update personal message flags](/api/update-message-flags)
 * [Mark messages as read in bulk](/api/mark-all-as-read)
