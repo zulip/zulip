@@ -1010,7 +1010,8 @@ class ImportExportTest(ZulipTestCase):
             self.assertEqual(user_profile.recipient_id, Recipient.objects.get(type=Recipient.PERSONAL,
                                                                               type_id=user_profile.id).id)
         for stream in Stream.objects.filter(realm=imported_realm):
-            self.assertEqual(stream.recipient_id, stream.recipient.id)
+            self.assertEqual(stream.recipient_id, Recipient.objects.get(type=Recipient.STREAM,
+                                                                        type_id=stream.id).id)
 
     def test_import_files_from_local(self) -> None:
 
