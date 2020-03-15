@@ -9,11 +9,6 @@
         "result": "error",
         "var_name": "content"
     },
-    "update-message-edit-permission-error": {
-        "code": "BAD_REQUEST",
-        "msg": "You don't have permission to edit this message",
-        "result": "error"
-    },
     "user-not-authorized-error": {
         "code": "BAD_REQUEST",
         "msg": "User not authorized for this query",

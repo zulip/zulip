@@ -796,8 +796,7 @@ def test_update_message_edit_permission_error(client, nonadmin_client):
     }
     result = nonadmin_client.update_message(request)
 
-    fixture = FIXTURES['update-message-edit-permission-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'patch', '400')
 
 @openapi_test_function("/messages/{message_id}:delete")
 def delete_message(client, message_id):

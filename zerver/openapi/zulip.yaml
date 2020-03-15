@@ -632,7 +632,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                - $ref: '#/components/schemas/JsonError'
+                - $ref: '#/components/schemas/CodedError'
                 - properties:
                     msg:
                       enum:
