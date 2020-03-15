@@ -541,27 +541,6 @@ exports.update_selection = function (opts) {
     unread_ops.process_visible();
 };
 
-exports.stream_topic = function () {
-    // This function returns the stream/topic that we most
-    // specifically care about, according (mostly) to the
-    // currently selected message.
-    const msg = current_msg_list.selected_message();
-
-    if (msg) {
-        return {
-            stream: msg.stream || undefined,
-            topic: msg.topic || undefined,
-        };
-    }
-
-    // We may be in an empty narrow.  In that case we use
-    // our narrow parameters to return the stream/topic.
-    return {
-        stream: narrow_state.stream(),
-        topic: narrow_state.topic(),
-    };
-};
-
 exports.activate_stream_for_cycle_hotkey = function (stream_name) {
     // This is the common code for A/D hotkeys.
     const filter_expr = [
@@ -604,11 +583,10 @@ exports.stream_cycle_forward = function () {
 };
 
 exports.narrow_to_next_topic = function () {
-    const curr_info = exports.stream_topic();
-
-    if (!curr_info) {
-        return;
-    }
+    const curr_info = {
+        stream: narrow_state.stream(),
+        topic: narrow_state.topic(),
+    };
 
     const next_narrow = topic_generator.get_next_topic(
         curr_info.stream,
