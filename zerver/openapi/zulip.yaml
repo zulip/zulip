@@ -1342,6 +1342,91 @@ paths:
                         "msg": "Invalid message(s)",
                         "code": "BAD_REQUEST"
                     }
+  /messages/matches_narrow:
+    get:
+      operationId: check_messages_match_narrow
+      tags: ["messages"]
+      description: |
+        Check whether a set of messages match a [narrow](/api/construct-narrow).
+
+        `GET {{ api_url }}/v1/messages/matches_narrow`
+
+        For many common narrows (E.g. a topic), clients can write an
+        efficient client-side check to determine whether a
+        newly arrived message belongs in the view.
+
+        This endpoint is designed to allow clients to handle more complex narrows
+        for which the client does not (or in the case of full-text search,
+        cannot) implement this check.
+
+        The format of the `match_subject` and `match_content` objects is designed to match
+        those of `GET /messages`, so that a client can splice these fields into a
+        `message` object received from `GET /events` and end up with an extended message
+        object identical to how a `GET /messages` for the current narrow would have
+        returned the message.
+      parameters:
+      - name: msg_ids
+        in: query
+        description: List of IDs for the messages to check.
+        schema:
+          type: array
+          items:
+            type: integer
+        example: [31, 32]
+        required: true
+      - name: narrow
+        in: query
+        description: A structure defining the narrow to check against. See how to
+          [construct a narrow](/api/construct-narrow).
+        schema:
+          type: array
+          items:
+            type: object
+        example: [{'operator': 'has', 'operand': 'link'}]
+        required: true
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    messages:
+                      type: object
+                      description: |
+                        A dictionary with a key for each queried message that matches the narrow,
+                        with message IDs as keys and search rendering data as values.
+                      additionalProperties:
+                        type: object
+                        properties:
+                          match_content:
+                            type: string
+                            description: |
+                              HTML content of a queried message that matches the narrow.  If the
+                              narrow is a search narrow, `<span class="highlight">` elements
+                              will be included, wrapping the matches for the search keywords.
+                          match_subject:
+                            type: string
+                            description: |
+                              HTML-escaped topic of a queried message that matches the narrow.  If the
+                              narrow is a search narrow, `<span class="highlight">` elements
+                              will be included wrapping the matches for the search keywords.
+                        description: |
+                          The ID of the message that matches the narrow.  No record will be returned
+                          for queried messages that do not match the narrow.
+                - example:
+                    {
+                      'result': 'success',
+                      'msg': '',
+                      'messages': {
+                        '31': {
+                          'match_content': '<p><a href="http://foo.com" target="_blank" title="http://foo.com">http://foo.com</a></p>',
+                          'match_subject': 'test_topic'
+                        }
+                      }
+                    }
   /user_uploads:
     post:
       operationId: upload_file
