@@ -502,6 +502,13 @@ Filter.prototype = {
     },
 
     sorted_term_types: function () {
+        if (this._sorted_term_types === undefined) {
+            this._sorted_term_types = this._build_sorted_term_types();
+        }
+        return this._sorted_term_types;
+    },
+
+    _build_sorted_term_types: function () {
         const terms = this._operators;
         const term_types = terms.map(Filter.term_type);
         const sorted_terms = Filter.sorted_term_types(term_types);
