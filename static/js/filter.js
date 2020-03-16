@@ -387,7 +387,7 @@ Filter.prototype = {
         return this.has_operator('search');
     },
 
-    can_mark_messages_read: function () {
+    calc_can_mark_messages_read: function () {
         const term_types = this.sorted_term_types();
 
         if (_.isEqual(term_types, ['stream', 'topic'])) {
@@ -424,6 +424,13 @@ Filter.prototype = {
         }
 
         return false;
+    },
+
+    can_mark_messages_read: function () {
+        if (this._can_mark_messages_read === undefined) {
+            this._can_mark_messages_read = this.calc_can_mark_messages_read();
+        }
+        return this._can_mark_messages_read;
     },
 
     allow_use_first_unread_when_narrowing: function () {

@@ -357,6 +357,25 @@ run_test('can_mark_messages_read', () => {
     assert(!filter.can_mark_messages_read());
     filter = new Filter(in_random_negated);
     assert(!filter.can_mark_messages_read());
+
+    // test caching of term types
+    // init and stub
+    filter = new Filter(pm_with);
+    filter.stub = filter.calc_can_mark_messages_read;
+    filter.calc_can_mark_messages_read = function () {
+        this.calc_can_mark_messages_read_called = true;
+        return this.stub();
+    };
+
+    // uncached trial
+    filter.calc_can_mark_messages_read_called = false;
+    assert(filter.can_mark_messages_read());
+    assert(filter.calc_can_mark_messages_read_called);
+
+    // cached trial
+    filter.calc_can_mark_messages_read_called = false;
+    assert(filter.can_mark_messages_read());
+    assert(!filter.calc_can_mark_messages_read_called);
 });
 
 run_test('show_first_unread', () => {
