@@ -28,7 +28,7 @@ authenticate users with any of several single-sign-on (SSO)
 authentication providers:
 * Google accounts, with `GoogleAuthBackend`
 * GitHub accounts, with `GitHubAuthBackend`
-* GitHub accounts, with `GitLabAuthBackend`
+* GitLab accounts, with `GitLabAuthBackend`
 * Microsoft Azure Active Directory, with `AzureADAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
