@@ -5,7 +5,7 @@ from typing import (
 from typing_extensions import TypedDict
 
 import django.db.utils
-from django.db.models import Count
+from django.db.models import Count, Exists, OuterRef
 from django.contrib.contenttypes.models import ContentType
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
@@ -5399,12 +5399,14 @@ def do_remove_realm_domain(realm_domain: RealmDomain) -> None:
 def get_occupied_streams(realm: Realm) -> QuerySet:
     # TODO: Make a generic stub for QuerySet
     """ Get streams with subscribers """
-    subs_filter = Subscription.objects.filter(active=True, user_profile__realm=realm,
-                                              user_profile__is_active=True).values('recipient_id')
-    stream_ids = Recipient.objects.filter(
-        type=Recipient.STREAM, id__in=subs_filter).values('type_id')
-
-    return Stream.objects.filter(id__in=stream_ids, realm=realm, deactivated=False)
+    exists_expression = Exists(
+        Subscription.objects.filter(active=True, user_profile__is_active=True,
+                                    user_profile__realm=realm,
+                                    recipient_id=OuterRef('recipient_id'))
+    )
+    occupied_streams = Stream.objects.filter(realm=realm, deactivated=False) \
+        .annotate(occupied=exists_expression).filter(occupied=True)
+    return occupied_streams
 
 def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:
     query = Stream.objects.filter(realm=realm, deactivated=False, is_web_public=True)
