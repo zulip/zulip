@@ -70,7 +70,7 @@ class AlertWordTests(ZulipTestCase):
         theoretical_remaining_alerts = self.interesting_alert_word_list[:]
 
         for alert_word in self.interesting_alert_word_list:
-            remove_user_alert_words(user, alert_word)
+            remove_user_alert_words(user, [alert_word])
             theoretical_remaining_alerts.remove(alert_word)
             actual_remaining_alerts = user_alert_words(user)
             self.assertEqual(actual_remaining_alerts,

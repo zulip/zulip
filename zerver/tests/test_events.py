@@ -3515,10 +3515,10 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 31)
+        self.assert_length(queries, 32)
 
         expected_counts = dict(
-            alert_words=0,
+            alert_words=1,
             custom_profile_fields=1,
             default_streams=1,
             default_stream_groups=1,

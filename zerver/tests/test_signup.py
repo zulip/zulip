@@ -589,7 +589,11 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
+<<<<<<< HEAD
         self.assertEqual(len(queries), 77)
+=======
+        self.assertEqual(len(queries), 92)
+>>>>>>> alert_words: Moving alert_words from UserProfile to seperate model
         user_profile = self.nonreg_user('test')
         self.assert_logged_in_user_id(user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)

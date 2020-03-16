@@ -77,6 +77,7 @@ ALL_ZULIP_TABLES = {
     'social_auth_partial',
     'social_auth_usersocialauth',
     'two_factor_phonedevice',
+    'zerver_alertwords',
     'zerver_archivedattachment',
     'zerver_archivedattachment_messages',
     'zerver_archivedmessage',

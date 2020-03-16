@@ -1018,7 +1018,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 15)
+        self.assert_length(queries, 27)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user('iago')
@@ -4514,8 +4514,8 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
         message = 'Testing test_alert_word'
         send_stream_message(message)
-        assert_last_um_content(long_term_idle_user, message)
-        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_last_um_content(long_term_idle_user, message, negate=True)
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)
         assert_um_count(cordelia, general_user_msg_count + 1)
         assert_last_um_content(cordelia, message)
 

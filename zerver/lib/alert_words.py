@@ -1,17 +1,18 @@
-from django.db.models import Q
-from zerver.models import UserProfile, Realm
+from zerver.models import UserProfile, Realm, AlertWords
 from zerver.lib.cache import cache_with_key, realm_alert_words_cache_key, \
     realm_alert_words_automaton_cache_key
-import ujson
 import ahocorasick
 from typing import Dict, Iterable, List
 
 @cache_with_key(realm_alert_words_cache_key, timeout=3600*24)
 def alert_words_in_realm(realm: Realm) -> Dict[int, List[str]]:
     users_query = UserProfile.objects.filter(realm=realm, is_active=True)
-    alert_word_data = users_query.filter(~Q(alert_words=ujson.dumps([]))).values('id', 'alert_words')
-    all_user_words = dict((elt['id'], ujson.loads(elt['alert_words'])) for elt in alert_word_data)
-    user_ids_with_words = dict((user_id, w) for (user_id, w) in all_user_words.items() if len(w))
+    user_ids_with_words = dict()
+    for user_profile in users_query:
+        alert_words_objects = AlertWords.objects.filter(user_profile=user_profile)
+        if len(alert_words_objects):
+            alert_words = [alert_word.word for alert_word in alert_words_objects]
+            user_ids_with_words[user_profile.id] = alert_words
     return user_ids_with_words
 
 @cache_with_key(realm_alert_words_automaton_cache_key, timeout=3600*24)
@@ -36,26 +37,32 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
     return alert_word_automaton
 
 def user_alert_words(user_profile: UserProfile) -> List[str]:
-    return ujson.loads(user_profile.alert_words)
+    alert_word_list = []
+    for alert in AlertWords.objects.filter(user_profile=user_profile):
+        alert_word_list.append(alert.word)
+    return alert_word_list
 
 def add_user_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> List[str]:
     words = user_alert_words(user_profile)
 
     new_words = [w for w in alert_words if w not in words]
-    words.extend(new_words)
 
-    set_user_alert_words(user_profile, words)
+    for word in new_words:
+        AlertWords.objects.create(user_profile= user_profile, word= word)
 
-    return words
+    return words+new_words
 
 def remove_user_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> List[str]:
     words = user_alert_words(user_profile)
-    words = [w for w in words if w not in alert_words]
+    print(alert_words)
+    delete_words = [w for w in alert_words if w in words]
+    for word in delete_words:
+        w = AlertWords.objects.get(user_profile=user_profile, word=word)
+        w.delete()
 
-    set_user_alert_words(user_profile, words)
-
-    return words
+    return user_alert_words(user_profile)
 
 def set_user_alert_words(user_profile: UserProfile, alert_words: List[str]) -> None:
-    user_profile.alert_words = ujson.dumps(alert_words)
-    user_profile.save(update_fields=['alert_words'])
+    AlertWords.objects.filter(user_profile=user_profile).delete()
+    for word in alert_words:
+        AlertWords.objects.create(user_profile= user_profile, word= word)
