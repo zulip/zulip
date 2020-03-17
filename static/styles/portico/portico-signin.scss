@@ -786,6 +786,7 @@ button.login-social-button {
 }
 
 #registration #id_team_subdomain.subdomain {
+    margin-top: 0px;
     text-align: right;
     position: relative;
     padding-right: 10px;
@@ -805,10 +806,6 @@ button.login-social-button {
 #registration #id_team_subdomain-error {
     margin-top: 5px;
     display: block;
-}
-
-#registration #id_team_subdomain.subdomain {
-    margin-top: 0px;
 }
 
 #registration #subdomain_section .inline-block {
