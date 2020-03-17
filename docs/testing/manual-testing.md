@@ -492,7 +492,7 @@ Do these tasks as Cordelia.
     - Turn on/off "Enable desktop notifications for new streams" and test.
       (We may eliminate this option soon.)
 
-### Keyboard Shorcuts ###
+### Keyboard Shortcuts ###
 
 We mostly test keyboard shortcuts as part of other tasks.
 

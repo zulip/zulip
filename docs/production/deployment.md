@@ -241,7 +241,7 @@ server {
 ```
 
 Don't forget to update `server_name`, `ssl_certificate`,
-`ssl_certificate_key` and `proxy_pass` with propper values.
+`ssl_certificate_key` and `proxy_pass` with proper values.
 
 [nginx-proxy-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy
 [nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling

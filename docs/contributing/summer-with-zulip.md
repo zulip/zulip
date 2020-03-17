@@ -199,7 +199,7 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     necessary to test a feature.
 
   - Make a plan for how to create a series of small (<100LOC) commits that are
-    each safely mergable and move you towards your goal. Often this ends up
+    each safely mergeable and move you towards your goal. Often this ends up
     happening through first doing a hacky attempt to hooking together the
     feature, with reading and print statements as part of the effort, to
     identify any refactoring needed or tests you want to write to help make sure
