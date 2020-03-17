@@ -38,7 +38,7 @@ example; accessible live
 [here](https://zulipchat.com/api/render-message) or in the development
 environment at `http://localhost:9991/api/render-message`).
 
-We highly recommend looking at those resouces while reading this page.
+We highly recommend looking at those resources while reading this page.
 
 If you look at the documentation for existing endpoints, you'll notice
 that a typical endpoint's documentation is divided into four sections:

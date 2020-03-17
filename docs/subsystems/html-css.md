@@ -152,7 +152,7 @@ are written in the Sass extension of CSS (with the scss syntax), they
 are converted from plain CSS and we have yet to take full advantage of
 the features Sass offers.  We use Webpack to transpile and build JS
 and CSS bundles that the browser can understand, one for each entry
-points specifed in `tools/webpack.assets.json`; source maps are
+points specified in `tools/webpack.assets.json`; source maps are
 generated in the process for better debugging experience.
 
 In development mode, bundles are built and served on the fly using
@@ -239,7 +239,7 @@ server is restarted, files are copied into that directory.
 
 ### CommonJS/Typescript modules
 
-Webpack provides seemless interoperability between different module
+Webpack provides seamless interoperability between different module
 systems such as CommonJS, AMD and ES6. Our JS files are written in the
 CommonJS format, which specifies public functions and variables as
 properties of the special `module.exports` object.  We also currently

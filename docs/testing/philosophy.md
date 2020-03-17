@@ -51,7 +51,7 @@ any large software project will eventually have its test suite rot
 into one that is slow, unreliable, untrustworthy, and hated.  We aim
 for Zulip to avoid that fate.
 
-So we consider it essential to maintaing every automated test suite
+So we consider it essential to maintaining every automated test suite
 setup in a way where it is fast and reliable (tests pass both in CI
 and locally if there are no problems with the developer's changes).
 

@@ -116,7 +116,7 @@ CI will run tests for new refs you push to GitHub and email you the outcome
 
 Running CI against your fork can help save both your and the
 Zulip maintainers time by making it easy to test a change fully before
-submitting a pull request.  We generally recommend a worfklow where as
+submitting a pull request.  We generally recommend a workflow where as
 you make changes, you use a fast edit-refresh cycle running individual
 tests locally until your changes work.  But then once you've gotten
 the tests you'd expect to be relevant to your changes working, push a

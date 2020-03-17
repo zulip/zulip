@@ -96,7 +96,7 @@ for writing Casper tests in addition to the debugging notes below:
     code to wait for the right events. Before essentially every action
     you take on the page, you'll want to use `waitUntilVisible`,
     `waitWhileVisible`, or a similar function to make sure the page
-    or elemant is ready before you interact with it. For instance, if
+    or element is ready before you interact with it. For instance, if
     you want to click a button that you can select via `#btn-submit`,
     and then check that it causes `success-elt` to appear, you'll want
     to write something like:
