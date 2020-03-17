@@ -665,16 +665,16 @@ button.login-social-button {
     margin-top: 0px;
 
     color: hsl(0, 0%, 34%);
-}
 
-button.login-social-button:hover {
-    background-color: hsl(0, 0%, 98%);
-    box-shadow: 1px 2px 5px hsla(0, 0%, 0%, 0.2);
-}
+    &:hover {
+        background-color: hsl(0, 0%, 98%);
+        box-shadow: 1px 2px 5px hsla(0, 0%, 0%, 0.2);
+    }
 
-button.login-social-button:active {
-    background-color: hsl(0, 0%, 93%);
-    box-shadow: 0px 1px 1px hsla(0, 0%, 0%, 0.3);
+    &:active {
+        background-color: hsl(0, 0%, 93%);
+        box-shadow: 0px 1px 1px hsla(0, 0%, 0%, 0.3);
+    }
 }
 
 .login-page-container .right-side .actions,
