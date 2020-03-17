@@ -92,6 +92,8 @@ elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
     POSTGRES_VERSION = "10"
 elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
     POSTGRES_VERSION = "11"
+elif vendor == "ubuntu" and os_version == "20.04":  # focal
+    POSTGRES_VERSION = "12"
 elif vendor == "fedora" and os_version == "29":
     POSTGRES_VERSION = "10"
 elif vendor == "rhel" and os_version.startswith("7."):
@@ -146,7 +148,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == 'debian' and os_version in []:
+if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in ['20.04']:
     # For platforms without a pgroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
