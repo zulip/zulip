@@ -529,6 +529,35 @@ html {
     color: hsl(0, 0%, 67%);
 }
 
+.portico-page .or {
+    width: 100%;
+    display: block;
+    margin: 10px auto;
+    color: hsl(0, 0%, 34%);
+    font-weight: 600;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.portico-page .or::before {
+    content: " ";
+
+    display: inline-block;
+    position: absolute;
+    width: calc(100% - 5px);
+    top: calc(50% - 2px);
+    left: 0;
+    z-index: -1;
+
+    border-bottom: 2px solid hsl(0, 0%, 87%);
+}
+
+.portico-page .or span {
+    background-color: hsl(0, 0%, 100%);
+    padding: 0 5px;
+}
+
 .register-account .pitch,
 .account-accept-terms-page .pitch {
     margin-bottom: 5px;
@@ -584,35 +613,6 @@ html {
 
 .confirm-email-change-page .white-box {
     max-width: 500px;
-}
-
-.portico-page .or {
-    width: 100%;
-    display: block;
-    margin: 10px auto;
-    color: hsl(0, 0%, 34%);
-    font-weight: 600;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-}
-
-.portico-page .or::before {
-    content: " ";
-
-    display: inline-block;
-    position: absolute;
-    width: calc(100% - 5px);
-    top: calc(50% - 2px);
-    left: 0;
-    z-index: -1;
-
-    border-bottom: 2px solid hsl(0, 0%, 87%);
-}
-
-.portico-page .or span {
-    background-color: hsl(0, 0%, 100%);
-    padding: 0 5px;
 }
 
 button.login-social-button {
