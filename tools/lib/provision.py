@@ -5,7 +5,6 @@ import logging
 import argparse
 import platform
 import subprocess
-import glob
 import hashlib
 
 os.environ["PYTHONUNBUFFERED"] = "y"
@@ -306,11 +305,12 @@ def main(options):
     if "debian" in os_families():
         sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
     else:
-        # hash the content of setup-yum-repo and build-*
+        # hash the content of setup-yum-repo*
         sha_sum.update(open('scripts/lib/setup-yum-repo', 'rb').read())
-        build_paths = glob.glob("scripts/lib/build-")
-        for bp in build_paths:
-            sha_sum.update(open(bp, 'rb').read())
+
+    # hash the content of build-pgroonga if pgroonga is built from source
+    if BUILD_PGROONGA_FROM_SOURCE:
+        sha_sum.update(open('scripts/lib/build-pgroonga', 'rb').read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
