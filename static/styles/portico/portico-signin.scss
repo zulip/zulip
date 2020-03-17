@@ -716,12 +716,11 @@ button.login-social-button {
     vertical-align: top;
 
     transition: color 0.2s ease;
-}
 
-.split-view .actions a:hover,
-.back-to-login:hover {
-    text-decoration: none;
-    color: hsl(156, 62%, 61%);
+    &:hover {
+        text-decoration: none;
+        color: hsl(156, 62%, 61%);
+    }
 }
 
 #registration {
