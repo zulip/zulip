@@ -568,45 +568,47 @@ html {
     text-align: center;
 }
 
-.split-view .org-header {
-    text-align: left;
-}
+.split-view {
+    .org-header {
+        text-align: left;
 
-.split-view .org-header .info-box {
-    display: inline-block;
-    position: relative;
-    margin: 20px 0px 0px 20px;
-    width: calc(100% - 125px);
+        .info-box {
+            display: inline-block;
+            position: relative;
+            margin: 20px 0px 0px 20px;
+            width: calc(100% - 125px);
 
-    /* full width minus the avatar + padding + borders */
-    text-align: left;
-}
+            /* full width minus the avatar + padding + borders */
+            text-align: left;
+        }
+    }
 
-.split-view .left-side {
-    width: 500px;
-    border-right: 1px solid hsl(0, 0%, 93%);
-    position: relative;
-    left: -1px;
-}
+    .left-side {
+        width: 500px;
+        border-right: 1px solid hsl(0, 0%, 93%);
+        position: relative;
+        left: -1px;
 
-.split-view .left-side .description {
-    text-align: left;
-    font-weight: normal;
+        .description {
+            text-align: left;
+            font-weight: normal;
 
-    margin-top: 20px;
-    margin-right: 10px;
-}
+            margin-top: 20px;
+            margin-right: 10px;
+        }
 
-.split-view .left-side + .right-side {
-    border-left: 1px solid hsl(0, 0%, 93%);
-    /* this is to make sure the borders of the left and right side overlap
-       each other. */
-    padding-left: 15px;
-    margin-left: -5px;
-}
+        + .right-side {
+            border-left: 1px solid hsl(0, 0%, 93%);
+            /* this is to make sure the borders of the left and right side overlap
+               each other. */
+            padding-left: 15px;
+            margin-left: -5px;
+        }
+    }
 
-.split-view .right-side .form-inline {
-    width: 328px;
+    .right-side .form-inline {
+        width: 328px;
+    }
 }
 
 .split-view .right-side,
