@@ -16,7 +16,7 @@ from scripts.lib.zulip_tools import run_as_root, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL, os_families, parse_os_release, \
     overwrite_symlink
 from scripts.lib.setup_venv import (
-    VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
+    get_venv_dependencies, REDHAT_VENV_DEPENDENCIES,
     THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES,
     FEDORA_VENV_DEPENDENCIES
 )
@@ -107,6 +107,8 @@ else:
             print("To upgrade, run `vagrant destroy`, and then recreate the Vagrant guest.\n")
             print("See: https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html")
     sys.exit(1)
+
+VENV_DEPENDENCIES = get_venv_dependencies(vendor, os_version)
 
 COMMON_DEPENDENCIES = [
     "memcached",

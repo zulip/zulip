@@ -23,7 +23,6 @@ VENV_DEPENDENCIES = [
     "libldap2-dev",
     "libmemcached-dev",
     "python3-dev",          # Needed to install typed-ast dependency of mypy
-    "python-dev",
     "python3-pip",
     "python-pip",
     "virtualenv",
@@ -44,6 +43,10 @@ VENV_DEPENDENCIES = [
     # another call to `apt install` for.
     "jq",                   # Used by scripts/lib/install-node to check yarn version
 ]
+
+# python-dev is depreciated in Focal but can be used as python2-dev.
+# So it is removed from VENV_DEPENDENCIES and added here.
+PYTHON_DEV_DEPENDENCY = "python{}-dev"
 
 COMMON_YUM_VENV_DEPENDENCIES = [
     "libffi-devel",
@@ -98,6 +101,13 @@ YUM_THUMBOR_VENV_DEPENDENCIES = [
     "libpng-devel",
     "gifsicle",
 ]
+
+def get_venv_dependencies(vendor, os_version):
+    # type: (str, str) -> List[str]
+    if vendor == 'ubuntu' and os_version == '20.04':
+        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format("2"), ]
+    else:
+        return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format(""), ]
 
 def install_venv_deps(pip, requirements_file, python2):
     # type: (str, str, bool) -> None

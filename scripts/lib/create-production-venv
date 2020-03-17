@@ -10,7 +10,7 @@ if ZULIP_PATH not in sys.path:
 
 from scripts.lib.zulip_tools import os_families, overwrite_symlink, run, parse_os_release
 from scripts.lib.setup_venv import (
-    setup_virtualenv, VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
+    setup_virtualenv, get_venv_dependencies, REDHAT_VENV_DEPENDENCIES,
     FEDORA_VENV_DEPENDENCIES
 )
 
@@ -20,6 +20,9 @@ args = parser.parse_args()
 
 # install dependencies for setting up the virtualenv
 distro_info = parse_os_release()
+vendor = distro_info['ID']
+os_version = distro_info['VERSION_ID']
+VENV_DEPENDENCIES = get_venv_dependencies(vendor, os_version)
 if "debian" in os_families():
     run(["apt-get", "-y", "install"] + VENV_DEPENDENCIES)
 elif "fedora" in os_families():
