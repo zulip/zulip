@@ -982,12 +982,14 @@ button.login-social-button {
         width: calc(100% - 40px);
     }
 
-    .forgot-password-container form .input-box {
-        text-align: center;
-    }
+    .forgot-password-container form {
+        .input-box {
+            text-align: center;
+        }
 
-    .forgot-password-container form button {
-        width: 328px;
+        button {
+            width: 328px;
+        }
     }
 
     .white-box {
