@@ -626,24 +626,26 @@ html {
     height: 100px;
 }
 
-.info-box .organization-name,
-.info-box .organization-path {
-    max-width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
+.info-box {
+    .organization-name,
+    .organization-path {
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 
-.info-box .organization-name {
-    font-size: 1.5em;
-    font-weight: 300;
-    line-height: 1.2;
-}
+    .organization-name {
+        font-size: 1.5em;
+        font-weight: 300;
+        line-height: 1.2;
+    }
 
-.info-box .organization-path {
-    font-weight: 400;
-    color: hsl(0, 0%, 47%);
-    margin-top: 5px;
+    .organization-path {
+        font-weight: 400;
+        color: hsl(0, 0%, 47%);
+        margin-top: 5px;
+    }
 }
 
 .confirm-email-change-page .white-box {
