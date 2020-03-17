@@ -284,6 +284,10 @@ exports.create = function ($container, list, opts) {
                 }
             });
 
+            if (opts.parent_container) {
+                opts.parent_container.on("click", "[data-sort]", exports.handle_sort);
+            }
+
             if (opts.filter.element) {
                 opts.filter.element.on(opts.filter.event || "input", function () {
                     const self = this;
@@ -346,11 +350,6 @@ exports.create = function ($container, list, opts) {
     // Save the instance for potential future retrieval if a name is provided.
     if (opts.name) {
         DEFAULTS.instances.set(opts.name, prototype);
-    }
-
-    // Attach click handler to column heads for sorting rows accordingly
-    if (opts.parent_container) {
-        opts.parent_container.on("click", "[data-sort]", exports.handle_sort);
     }
 
     return prototype;
