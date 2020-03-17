@@ -112,8 +112,10 @@ from zerver.lib.events import (
 )
 from zerver.lib.message import (
     aggregate_unread_data,
+    apply_unread_message_event,
     get_raw_unread_data,
     render_markdown,
+    MessageDict,
     UnreadMessagesResult,
 )
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
@@ -3063,6 +3065,111 @@ class GetUnreadMsgsTest(ZulipTestCase):
         self.assertEqual(
             pm_dict[cordelia_pm_message_ids[0]],
             dict(sender_id=cordelia.id),
+        )
+
+    def test_raw_unread_personal_from_self(self) -> None:
+        hamlet = self.example_user('hamlet')
+
+        def send_unread_pm(other_user: UserProfile) -> Message:
+            # It is rare to send a message from Hamlet to Othello
+            # (or any other user) and have it be unread for
+            # Hamlet himself, but that is actually normal
+            # behavior for most API clients.
+            message_id = self.send_personal_message(
+                from_user=hamlet,
+                to_user=other_user,
+                sending_client_name='some_api_program',
+            )
+
+            # Check our test setup is correct--the message should
+            # not have looked like it was sent by a human.
+            message = Message.objects.get(id=message_id)
+            self.assertFalse(message.sent_by_human())
+
+            # And since it was not sent by a human, it should not
+            # be read, not even by the sender (Hamlet).
+            um = UserMessage.objects.get(
+                user_profile_id=hamlet.id,
+                message_id=message_id,
+            )
+            self.assertFalse(um.flags.read)
+
+            return message
+
+        othello = self.example_user('othello')
+        othello_msg = send_unread_pm(other_user=othello)
+
+        # And now check the unread data structure...
+        raw_unread_data = get_raw_unread_data(
+            user_profile=hamlet,
+        )
+
+        pm_dict = raw_unread_data['pm_dict']
+
+        self.assertEqual(set(pm_dict.keys()), {othello_msg.id})
+
+        # For legacy reason we call the field `sender_id` here,
+        # but it really refers to the other user id in the conversation,
+        # which is Othello.
+        self.assertEqual(
+            pm_dict[othello_msg.id],
+            dict(sender_id=othello.id),
+        )
+
+        cordelia = self.example_user('cordelia')
+        cordelia_msg = send_unread_pm(other_user=cordelia)
+
+        apply_unread_message_event(
+            user_profile=hamlet,
+            state=raw_unread_data,
+            message=MessageDict.wide_dict(cordelia_msg),
+            flags=[],
+        )
+        self.assertEqual(
+            set(pm_dict.keys()),
+            {othello_msg.id, cordelia_msg.id}
+        )
+
+        # Again, `sender_id` is misnamed here.
+        self.assertEqual(
+            pm_dict[cordelia_msg.id],
+            dict(sender_id=cordelia.id),
+        )
+
+        # Send a message to ourself.
+        hamlet_msg = send_unread_pm(other_user=hamlet)
+        apply_unread_message_event(
+            user_profile=hamlet,
+            state=raw_unread_data,
+            message=MessageDict.wide_dict(hamlet_msg),
+            flags=[],
+        )
+        self.assertEqual(
+            set(pm_dict.keys()),
+            {othello_msg.id, cordelia_msg.id, hamlet_msg.id}
+        )
+
+        # Again, `sender_id` is misnamed here.
+        self.assertEqual(
+            pm_dict[hamlet_msg.id],
+            dict(sender_id=hamlet.id),
+        )
+
+        # Call get_raw_unread_data again.
+        raw_unread_data = get_raw_unread_data(
+            user_profile=hamlet,
+        )
+        pm_dict = raw_unread_data['pm_dict']
+
+        self.assertEqual(
+            set(pm_dict.keys()),
+            {othello_msg.id, cordelia_msg.id, hamlet_msg.id}
+        )
+
+        # Again, `sender_id` is misnamed here.
+        self.assertEqual(
+            pm_dict[hamlet_msg.id],
+            dict(sender_id=hamlet.id),
         )
 
     def test_unread_msgs(self) -> None:

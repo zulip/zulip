@@ -853,8 +853,19 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
                 unmuted_stream_msgs.add(message_id)
 
         elif msg_type == Recipient.PERSONAL:
+            if sender_id == user_profile.id:
+                other_user_id = row['message__recipient__type_id']
+            else:
+                other_user_id = sender_id
+
+            # The `sender_id` field here is misnamed.  It's really
+            # just the other participant in a PM conversation.  For
+            # most unread PM messages, the other user is also the sender,
+            # but that's not true for certain messages sent from the
+            # API.  Unfortunately, it's difficult now to rename the
+            # field without breaking mobile.
             pm_dict[message_id] = dict(
-                sender_id=sender_id,
+                sender_id=other_user_id,
             )
 
         elif msg_type == Recipient.HUDDLE:
@@ -940,7 +951,7 @@ def apply_unread_message_event(user_profile: UserProfile,
     elif message['type'] == 'private':
         others = [
             recip for recip in message['display_recipient']
-            if recip['id'] != message['sender_id']
+            if recip['id'] != user_profile.id
         ]
         if len(others) <= 1:
             message_type = 'private'
@@ -967,9 +978,14 @@ def apply_unread_message_event(user_profile: UserProfile,
                 state['unmuted_stream_msgs'].add(message_id)
 
     elif message_type == 'private':
-        sender_id = message['sender_id']
+        if len(others) == 1:
+            other_id = others[0]['id']
+        else:
+            other_id = user_profile.id
+
+        # The `sender_id` field here is misnamed.
         new_row = dict(
-            sender_id=sender_id,
+            sender_id=other_id,
         )
         state['pm_dict'][message_id] = new_row
 
