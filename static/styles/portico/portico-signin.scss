@@ -753,6 +753,10 @@ button.login-social-button {
     margin-top: 50px;
 }
 
+#registration .input-box.full-width {
+    width: calc(100% - 20px);
+}
+
 #registration .input-box label {
     position: absolute;
     margin: 0;
@@ -789,11 +793,6 @@ button.login-social-button {
     width: 150px;
 }
 
-#registration #id_team_subdomain-error {
-    margin-top: 5px;
-    display: block;
-}
-
 #registration #id_team_subdomain.subdomain + .realm_subdomain_label {
     margin-top: 12px;
     margin-left: 180px;
@@ -801,6 +800,11 @@ button.login-social-button {
 
     font-weight: normal;
     font-size: inherit;
+}
+
+#registration #id_team_subdomain-error {
+    margin-top: 5px;
+    display: block;
 }
 
 #registration #id_team_subdomain.subdomain {
@@ -813,18 +817,6 @@ button.login-social-button {
 
 #registration #subdomain_section .or {
     margin-top: 0px;
-}
-
-.static.org-url + #subdomain_section {
-    margin-top: 0px !important;
-}
-
-.static.org-url + #subdomain_section .or {
-    display: none;
-}
-
-#registration .input-box.full-width {
-    width: calc(100% - 20px);
 }
 
 #registration .help-box {
@@ -867,6 +859,14 @@ button.login-social-button {
 
 #registration .org-url {
     margin-bottom: 5px !important;
+}
+
+.static.org-url + #subdomain_section {
+    margin-top: 0px !important;
+}
+
+.static.org-url + #subdomain_section .or {
+    display: none;
 }
 
 #profile_info_section {
