@@ -1,5 +1,10 @@
 body {
     background-color: hsl(0, 0%, 98%);
+    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+    line-height: 150%;
+    height: 100%;
+    font-weight: 300;
+    font-size: 17px;
 }
 
 .noscroll {
@@ -73,14 +78,6 @@ body {
 
 html {
     height: 100%;
-}
-
-body {
-    font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
-    line-height: 150%;
-    height: 100%;
-    font-weight: 300;
-    font-size: 17px;
 }
 
 /* The API tabbed content tends to have a lot of code blocks,
