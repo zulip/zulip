@@ -403,7 +403,7 @@ class HomeTest(ZulipTestCase):
             result = self.client_post('/accounts/accept_terms/')
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)
-            self.assert_in_response("most productive team chat", result)
+            self.assert_in_response("Chat for distributed teams", result)
 
     def test_accept_terms_of_service(self) -> None:
         self.login('hamlet')
@@ -788,7 +788,7 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.views.home.get_subdomain', return_value=""):
                 result = self._get_home_page()
             self.assertEqual(result.status_code, 200)
-            self.assert_in_response('most productive team chat', result)
+            self.assert_in_response('Chat for distributed teams', result)
 
             with patch('zerver.views.home.get_subdomain', return_value="subdomain"):
                 result = self._get_home_page()
