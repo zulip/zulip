@@ -864,10 +864,10 @@ button.login-social-button {
 
 .static.org-url + #subdomain_section {
     margin-top: 0px !important;
-}
 
-.static.org-url + #subdomain_section .or {
-    display: none;
+    .or {
+        display: none;
+    }
 }
 
 #profile_info_section {
