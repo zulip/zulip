@@ -659,15 +659,11 @@ button.login-social-button {
     background-size: auto 60%;
     background-repeat: no-repeat;
     background-position: 13px 50%;
+    background-color: hsl(0, 0%, 100%);
+    box-shadow: 0px 1px 3px hsla(0, 0%, 0%, 0.3), 0px 0px 5px hsla(0, 0%, 0%, 0.1);
     margin-left: 0px;
     margin-top: 0px;
 
-    color: hsl(0, 0%, 100%);
-}
-
-button.login-social-button {
-    background-color: hsl(0, 0%, 100%);
-    box-shadow: 0px 1px 3px hsla(0, 0%, 0%, 0.3), 0px 0px 5px hsla(0, 0%, 0%, 0.1);
     color: hsl(0, 0%, 34%);
 }
 
