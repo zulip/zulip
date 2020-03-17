@@ -1666,6 +1666,10 @@ nav ul li.active::after {
     margin-right: -3px;
 }
 
+.portico-landing .testimonials blockquote::after {
+    content: "”";
+}
+
 .portico-landing .testimonials blockquote + cite {
     display: block;
     margin-top: 5px;
@@ -2346,6 +2350,10 @@ nav ul li.active::after {
     content: "“";
     margin-left: -10px;
     margin-right: -3px;
+}
+
+.portico-landing.why-page .testimonials blockquote::after {
+    content: "”";
 }
 
 .portico-landing.why-page .testimonials blockquote + cite {
