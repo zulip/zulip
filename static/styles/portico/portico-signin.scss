@@ -727,135 +727,139 @@ button.login-social-button {
     width: auto;
     padding: 0;
     margin: 30px;
-}
 
-#registration section {
-    margin: 30px;
-}
+    section {
+        margin: 30px;
+    }
 
-#registration .info-box {
-    margin: 10px 0px 0px 20px;
-}
+    .info-box {
+        margin: 10px 0px 0px 20px;
 
-#registration .info-box .organization-name {
-    max-width: 228px;
-}
+        .organization-name {
+            max-width: 228px;
+        }
+    }
 
-#registration .input-box {
-    display: block;
-    text-align: center;
-    width: 330px;
-    margin: 30px auto 10px;
-    position: relative;
-}
+    .input-box {
+        display: block;
+        text-align: center;
+        width: 330px;
+        margin: 30px auto 10px;
+        position: relative;
 
-#registration .input-box.with-top-space {
-    margin-top: 50px;
-}
+        &.with-top-space {
+            margin-top: 50px;
+        }
 
-#registration .input-box.full-width {
-    width: calc(100% - 20px);
-}
+        &.full-width {
+            width: calc(100% - 20px);
+        }
 
-#registration .input-box label {
-    position: absolute;
-    margin: 0;
-    top: 0;
-    left: 2px;
-}
+        label {
+            position: absolute;
+            margin: 0;
+            top: 0;
+            left: 2px;
 
-#registration .input-box label.static {
-    width: 100%;
-    text-align: left;
-    position: static !important;
-    margin-left: 2px;
-}
+            &.static {
+                width: 100%;
+                text-align: left;
+                position: static !important;
+                margin-left: 2px;
+            }
+        }
+    }
 
-#registration [for="realm_in_root_domain"] {
-    font-weight: normal !important;
-}
+    & [for="realm_in_root_domain"] {
+        font-weight: normal !important;
+    }
 
-#registration .register-button-box {
-    text-align: center;
-}
+    .register-button-box {
+        text-align: center;
+    }
 
-#registration .register-button {
-    margin: 25px auto 30px;
-    width: 330px;
-    border-radius: 4px;
-}
+    .register-button {
+        margin: 25px auto 30px;
+        width: 330px;
+        border-radius: 4px;
+    }
 
-#registration #id_team_subdomain.subdomain {
-    margin-top: 0px;
-    text-align: right;
-    position: relative;
-    padding-right: 10px;
+    #id_team_subdomain.subdomain {
+        margin-top: 0px;
+        text-align: right;
+        position: relative;
+        padding-right: 10px;
 
-    width: 150px;
-}
+        width: 150px;
 
-#registration #id_team_subdomain.subdomain + .realm_subdomain_label {
-    margin-top: 12px;
-    margin-left: 180px;
-    display: inline-block;
+        + .realm_subdomain_label {
+            margin-top: 12px;
+            margin-left: 180px;
+            display: inline-block;
 
-    font-weight: normal;
-    font-size: inherit;
-}
+            font-weight: normal;
+            font-size: inherit;
+        }
+    }
 
-#registration #id_team_subdomain-error {
-    margin-top: 5px;
-    display: block;
-}
+    #id_team_subdomain-error {
+        margin-top: 5px;
+        display: block;
+    }
 
-#registration #subdomain_section .inline-block {
-    width: 100%;
-}
+    #subdomain_section {
+        .inline-block {
+            width: 100%;
+        }
 
-#registration #subdomain_section .or {
-    margin-top: 0px;
-}
+        .or {
+            margin-top: 0px;
+        }
+    }
 
-#registration .help-box {
-    width: calc(100% - 25px);
-    max-width: none;
-    margin: 0 auto;
-}
+    .help-box {
+        width: calc(100% - 25px);
+        max-width: none;
+        margin: 0 auto;
 
-#registration .help-box.margin-top {
-    margin-top: 21px;
-    text-align: left;
-}
+        &.margin-top {
+            margin-top: 21px;
+            text-align: left;
+        }
+    }
 
-#registration .external-host {
-    margin: 25px 0px 0px -3px;
-    padding: 11.5px 10px;
+    .external-host {
+        margin: 25px 0px 0px -3px;
+        padding: 11.5px 10px;
 
-    font-weight: 400;
-    font-size: 1.2rem;
+        font-weight: 400;
+        font-size: 1.2rem;
 
-    background-color: hsl(0, 0%, 87%);
-}
+        background-color: hsl(0, 0%, 87%);
+    }
 
-#registration .center-block .pitch {
-    margin-bottom: 0px;
-}
+    .center-block .pitch {
+        margin-bottom: 0px;
+    }
 
-#registration .input-group label {
-    font-size: 1rem;
-}
+    .input-group {
+        label {
+            font-size: 1rem;
 
-#registration .input-group.radio {
-    margin: 0;
-    padding: 0;
-}
+            &.inline-block {
+                margin-top: -1px;
+            }
+        }
 
-#registration .input-group label.inline-block {
-    margin-top: -1px;
-}
+        &.radio {
+            margin: 0;
+            padding: 0;
+        }
+    }
 
-#registration .org-url {
-    margin-bottom: 5px !important;
+    .org-url {
+        margin-bottom: 5px !important;
+    }
 }
 
 .static.org-url + #subdomain_section {
