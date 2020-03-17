@@ -10,6 +10,7 @@ from zerver.models import UserProfile
 
 import base64
 import logging
+import re
 import subprocess
 import ujson
 
@@ -38,6 +39,9 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
         if user in kerberos_alter_egos:
             user = kerberos_alter_egos[user]
         assert(user == user_profile.email.split("@")[0])
+        # Limit characters in usernames to valid MIT usernames
+        # This is important for security since DNS is not secure.
+        assert(re.match(r'^[a-z0-9_.-]+$', user) is not None)
         ccache = make_ccache(parsed_cred)
     except Exception:
         return json_error(_("Invalid Kerberos cache"))
