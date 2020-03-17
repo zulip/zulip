@@ -157,7 +157,7 @@ step, to do the migration.
     this command runs on 6 parallel processes, since uploading is a
     latency-sensitive operation.  You can control this parameter using
     the `--processes` option.
-3. Once the transer script compltes, disable `LOCAL_UPLOADS_DIR`, and
+3. Once the transfer script completes, disable `LOCAL_UPLOADS_DIR`, and
     restart your server (continuing the last few steps of the S3
     backend setup instructions).
 

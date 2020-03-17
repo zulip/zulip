@@ -38,7 +38,7 @@ the reader and remember to capitalize *Du*.
 For instructions, try to use the imperative (e.g. *"Gehe auf die Seite"* -
 *"Go to the page"*) instead of constructions with auxiliary verbs
 (e.g. *"Du musst auf die Seite ... gehen"* - *"You have to go the page ..."*).
-This keeps the phrases short, less stiff and avoids unnecessary addressings
+This keeps the phrases short, less stiff and avoids unnecessary addressing
 of the reader.
 
 ### Rules for labels

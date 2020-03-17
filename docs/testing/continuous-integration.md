@@ -79,7 +79,7 @@ create the directory mentioned in `working_directory` and all the
 steps are be run from here.
 
 The `steps` section describes describes everything: fetching the Zulip
-code, provisioning, fetching catched data, running tests and uploading
+code, provisioning, fetching caught data, running tests and uploading
 coverage reports. The steps with prefix `*` reference aliases, which
 are defined in the `aliases` section at the top of the file.
 

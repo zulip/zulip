@@ -117,7 +117,7 @@ There are a few ways to see your translations in the Zulip UI:
   print(response.content)
   ```
 
-  This can occassionally be useful for debugging.
+  This can occasionally be useful for debugging.
 
 ### Translation style guides
 
