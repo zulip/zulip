@@ -885,6 +885,120 @@ button.login-social-button {
     }
 }
 
+#source_realm_select_section {
+    position: relative;
+    top: 15px;
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+#source_realm_select {
+    font-size: 1.2rem;
+    height: 45px;
+    width: 325px;
+    &:focus {
+        outline: none;
+    }
+}
+
+.goto-account-page {
+    #realm_redirect_subdomain {
+        text-align: right;
+        position: relative;
+        padding-right: 10px;
+    }
+
+    #realm_redirect_external_host {
+        font-size: 20px;
+        top: 13px;
+        left: 5px;
+        position: relative;
+    }
+
+    #realm_redirect_description {
+        top: 15px;
+        position: relative;
+    }
+
+    #enter-realm-button {
+        margin-top: 14px;
+    }
+
+    #find-account-section {
+        margin-top: 20px;
+        text-align: center;
+        font-weight: 500;
+        font-size: 0.9em;
+    }
+
+    .find-account-link {
+        color: hsl(165, 100.0%, 14.7%);
+    }
+}
+
+#choose_email {
+    flex-direction: column;
+
+    .white-box {
+        min-width: 450px;
+        padding: 30px 0 50px 0;
+    }
+
+    form {
+        padding: 0;
+        margin: 0;
+
+        &.form-horizontal:hover {
+            background-color: hsl(202, 56%, 91%);
+            cursor: pointer;
+
+            i.fa {
+                color: hsl(203, 63%, 76%);
+            }
+        }
+    }
+
+    .choose-email-box {
+        padding: 13px 0;
+        margin: 0 30px;
+        border-bottom: 1px solid hsl(0, 0%, 95%);
+        display: flex;
+        align-items: center;
+
+        p {
+            margin: 0;
+            font-size: 0.8em;
+
+            &:last-child {
+                line-height: 1.2em;
+            }
+        }
+
+        .email {
+            font-size: 0.95em;
+            font-weight: 500;
+        }
+
+        img,
+        i {
+            width: 35px;
+            height: 35px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+
+        i.fa {
+            color: hsl(0, 0%, 67%);
+            text-align: center;
+            line-height: 38px;
+
+            &::before {
+                font-size: 30px;
+            }
+        }
+    }
+}
+
 /* -- media queries -- */
 
 @media (max-width: 950px) {
@@ -1014,119 +1128,5 @@ button.login-social-button {
 @media (max-width: 400px) {
     .flex {
         min-height: calc(100vh - 560px);
-    }
-}
-
-#source_realm_select_section {
-    position: relative;
-    top: 15px;
-    margin-bottom: 20px;
-    font-size: 22px;
-}
-
-#source_realm_select {
-    font-size: 1.2rem;
-    height: 45px;
-    width: 325px;
-    &:focus {
-        outline: none;
-    }
-}
-
-.goto-account-page {
-    #realm_redirect_subdomain {
-        text-align: right;
-        position: relative;
-        padding-right: 10px;
-    }
-
-    #realm_redirect_external_host {
-        font-size: 20px;
-        top: 13px;
-        left: 5px;
-        position: relative;
-    }
-
-    #realm_redirect_description {
-        top: 15px;
-        position: relative;
-    }
-
-    #enter-realm-button {
-        margin-top: 14px;
-    }
-
-    #find-account-section {
-        margin-top: 20px;
-        text-align: center;
-        font-weight: 500;
-        font-size: 0.9em;
-    }
-
-    .find-account-link {
-        color: hsl(165, 100.0%, 14.7%);
-    }
-}
-
-#choose_email {
-    flex-direction: column;
-
-    .white-box {
-        min-width: 450px;
-        padding: 30px 0 50px 0;
-    }
-
-    form {
-        padding: 0;
-        margin: 0;
-
-        &.form-horizontal:hover {
-            background-color: hsl(202, 56%, 91%);
-            cursor: pointer;
-
-            i.fa {
-                color: hsl(203, 63%, 76%);
-            }
-        }
-    }
-
-    .choose-email-box {
-        padding: 13px 0;
-        margin: 0 30px;
-        border-bottom: 1px solid hsl(0, 0%, 95%);
-        display: flex;
-        align-items: center;
-
-        p {
-            margin: 0;
-            font-size: 0.8em;
-
-            &:last-child {
-                line-height: 1.2em;
-            }
-        }
-
-        .email {
-            font-size: 0.95em;
-            font-weight: 500;
-        }
-
-        img,
-        i {
-            width: 35px;
-            height: 35px;
-            margin-right: 10px;
-            border-radius: 3px;
-        }
-
-        i.fa {
-            color: hsl(0, 0%, 67%);
-            text-align: center;
-            line-height: 38px;
-
-            &::before {
-                font-size: 30px;
-            }
-        }
     }
 }
