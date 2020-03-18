@@ -175,6 +175,9 @@ class SimpleQueueClient:
         self.ensure_queue(queue_name, opened)
         return messages
 
+    def queue_size(self) -> int:
+        return len(self.channel._pending_events)
+
     def start_consuming(self) -> None:
         self.channel.start_consuming()
 

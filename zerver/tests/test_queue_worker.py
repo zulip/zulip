@@ -78,6 +78,9 @@ class WorkerTest(ZulipTestCase):
 
             return events
 
+        def queue_size(self) -> int:
+            return len(self.queue)
+
     @override_settings(SLOW_QUERY_LOGS_STREAM="errors")
     def test_slow_queries_worker(self) -> None:
         error_bot = get_system_bot(settings.ERROR_BOT)
