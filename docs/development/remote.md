@@ -193,6 +193,7 @@ To setup [rmate](https://github.com/textmate/rmate) for VS Code:
 [Remote VSCode](https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode).
 2. On your remote machine, run:
 ```
+$ mkdir -p ~/bin
 $ curl -Lo ~/bin/rmate https://raw.githubusercontent.com/textmate/rmate/master/bin/rmate
 $ chmod a+x ~/bin/rmate
 ```
