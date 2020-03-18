@@ -200,6 +200,9 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # section of the same page.
         '/users/me/subscriptions/{stream_id}',
 
+        # Real-time-events endpoint
+        '/real-time',
+
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for fetching API keys
         '/fetch_api_key',
