@@ -1008,7 +1008,11 @@ input[type=checkbox].inline-block {
 #upload_icon_spinner,
 .upload-logo-spinner {
     font-size: 14px;
-    margin: auto;
+    transform: translate(80px, -135px)
+}
+
+#myHeight {
+    height: 200px;
 }
 
 .bot_name_header {
