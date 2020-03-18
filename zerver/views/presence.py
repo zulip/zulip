@@ -21,7 +21,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool, check_capped_string
 from zerver.models import UserActivity, UserPresence, UserProfile, \
-    get_active_user_by_delivery_email
+    get_active_user
 
 def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
                          email: str) -> HttpResponse:
@@ -29,7 +29,7 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
     try:
-        target = get_active_user_by_delivery_email(email, user_profile.realm)
+        target = get_active_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
     if target.is_bot:
@@ -37,7 +37,7 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
 
     presence_dict = get_presence_for_user(target.id)
     if len(presence_dict) == 0:
-        return json_error(_('No presence data for %s') % (target.email,))
+        return json_error(_('No presence data for %s') % (email,))
 
     # For initial version, we just include the status and timestamp keys
     result = dict(presence=presence_dict[target.email])
