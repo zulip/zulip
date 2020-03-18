@@ -47,12 +47,13 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
                         active: bool, bot_type: Optional[int], full_name: str,
                         short_name: str, bot_owner: Optional[UserProfile],
                         is_mirror_dummy: bool, tos_version: Optional[str],
-                        timezone: Optional[str],
+                        timezone: Optional[str], twenty_four_hour_time: Optional[bool],
                         tutorial_status: Optional[str] = UserProfile.TUTORIAL_WAITING,
                         enter_sends: bool = False) -> UserProfile:
     now = timezone_now()
     email = UserManager.normalize_email(email)
-
+    if twenty_four_hour_time is None:
+        twenty_four_hour_time = realm.default_twenty_four_hour_time
     user_profile = UserProfile(is_staff=False, is_active=active,
                                full_name=full_name, short_name=short_name,
                                last_login=now, date_joined=now, realm=realm,
@@ -63,7 +64,7 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
                                enter_sends=enter_sends,
                                onboarding_steps=ujson.dumps([]),
                                default_language=realm.default_language,
-                               twenty_four_hour_time=realm.default_twenty_four_hour_time,
+                               twenty_four_hour_time=twenty_four_hour_time,
                                delivery_email=email)
     if bot_type or not active:
         password = None
@@ -80,7 +81,8 @@ def create_user(email: str, password: Optional[str], realm: Realm,
                 is_guest: bool = False,
                 bot_type: Optional[int] = None,
                 bot_owner: Optional[UserProfile] = None,
-                tos_version: Optional[str] = None, timezone: str = "",
+                tos_version: Optional[str] = None,
+                timezone: str = "", twenty_four_hour_time: Optional[bool] = None,
                 avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
                 is_mirror_dummy: bool = False,
                 default_sending_stream: Optional[Stream] = None,
@@ -89,7 +91,7 @@ def create_user(email: str, password: Optional[str], realm: Realm,
                 source_profile: Optional[UserProfile] = None) -> UserProfile:
     user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
-                                       is_mirror_dummy, tos_version, timezone)
+                                       is_mirror_dummy, tos_version, timezone, twenty_four_hour_time)
     if is_realm_admin:
         user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
     if is_guest:

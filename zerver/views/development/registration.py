@@ -36,7 +36,8 @@ def register_development_user(request: HttpRequest) -> HttpResponse:
                                               Confirmation.USER_REGISTRATION)
     key = activation_url.split('/')[-1]
     # Need to add test data to POST request as it doesnt originally contain the required parameters
-    modify_postdata(request, key=key, full_name=name, password='test', terms='true')
+    modify_postdata(request, key=key, full_name=name, password='test', terms='true',
+                    twenty_four_hour_time=True)
 
     return accounts_register(request)
 
@@ -53,6 +54,6 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
     key = activation_url.split('/')[-1]
     # Need to add test data to POST request as it doesnt originally contain the required parameters
     modify_postdata(request, key=key, realm_name=realm_name, full_name=name, password='test',
-                    realm_subdomain=realm_name, terms='true')
+                    realm_subdomain=realm_name, terms='true', twenty_four_hour_time=False)
 
     return accounts_register(request)
