@@ -1940,8 +1940,14 @@ def get_recipient_from_user_profiles(recipient_profiles: Sequence[UserProfile],
         user_profile = list(recipient_profiles_map.values())[0]
         return user_profile.recipient
 
-    # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages
-    recipient_profiles_map[sender.id] = sender
+    # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages, unless:
+
+    # If a bot is a sender and it wasn't already in the list of recipients, we shouldn't now add
+    # the bot to the list of recipients, thereby avoiding spawning a new group PM thread starting
+    # with the bot's reply. See https://github.com/zulip/zulip/issues/14228 for details.
+
+    if not sender.is_bot:
+        recipient_profiles_map[sender.id] = sender
 
     user_ids = set([user_id for user_id in recipient_profiles_map])  # type: Set[int]
     return get_huddle_recipient(user_ids)
