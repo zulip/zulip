@@ -17,9 +17,8 @@ import logging
 import magic
 import ujson
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union, no_type_check
+from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 from typing_extensions import TypedDict
-from urllib.parse import urljoin
 from zxcvbn import zxcvbn
 
 from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, \
@@ -36,7 +35,7 @@ from django.urls import reverse
 from requests import HTTPError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
-    GithubTeamOAuth2, GithubMemberOAuth2
+    GithubTeamOAuth2
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.google import GoogleOAuth2
@@ -1224,55 +1223,19 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 access_token, *args, **kwargs
             )
         elif team_id is not None:
-            backend = GithubTeamBackend(self.strategy, self.redirect_uri)
+            backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
             try:
                 return backend.user_data(access_token, *args, **kwargs)
             except AuthFailed:
                 return dict(auth_failed_reason="GitHub user is not member of required team")
         elif org_name is not None:
-            backend = GithubOrganizationBackend(self.strategy, self.redirect_uri)
+            backend = GithubOrganizationOAuth2(self.strategy, self.redirect_uri)
             try:
                 return backend.user_data(access_token, *args, **kwargs)
             except AuthFailed:
                 return dict(auth_failed_reason="GitHub user is not member of required organization")
 
         raise AssertionError("Invalid configuration")
-
-    def _user_data(self, access_token: str, path: Any=None) -> Any:
-        # Monkey patching. Should be removed once upstream merges a fix for
-        # https://github.com/python-social-auth/social-core/issues/430
-        url = urljoin(self.api_url(), 'user{0}'.format(path or ''))
-        return self.get_json(url, headers={'Authorization': 'token {0}'.format(access_token)})
-
-class GithubMemberUserDataMixin(GithubMemberOAuth2):
-    """
-    This mixin class and the ones inheriting from it serve as a way
-    to monkey-patch a fix for https://github.com/python-social-auth/social-core/issues/430
-    Changes from the commit adding this should be reverted once the issue is fixed upstream.
-    """
-    @no_type_check
-    def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Any:  # nocoverage
-        # this is copy-pasted from a good PR upstream that fixes the issue.
-        """Loads user data from service"""
-        user_data = super(GithubMemberOAuth2, self).user_data(
-            access_token, *args, **kwargs
-        )
-        headers = {'Authorization': 'token {0}'.format(access_token)}
-        try:
-            self.request(self.member_url(user_data), headers=headers)
-        except HTTPError as err:
-            # if the user is a member of the organization, response code
-            # will be 204, see http://bit.ly/ZS6vFl
-            if err.response.status_code != 204:
-                raise AuthFailed(self,
-                                 'User doesn\'t belong to the organization')
-        return user_data
-
-class GithubTeamBackend(GithubMemberUserDataMixin, GithubTeamOAuth2):
-    pass
-
-class GithubOrganizationBackend(GithubMemberUserDataMixin, GithubOrganizationOAuth2):
-    pass
 
 @external_auth_method
 class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
