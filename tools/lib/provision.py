@@ -385,6 +385,9 @@ def main(options):
     # Install shellcheck.
     run_as_root(["tools/setup/install-shellcheck"])
 
+    # Install sgrep.
+    run_as_root(["tools/setup/install-sgrep"])
+
     setup_venvs.main()
 
     run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
