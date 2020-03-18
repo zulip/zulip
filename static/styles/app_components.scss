@@ -289,7 +289,7 @@
         opacity: 1;
         pointer-events: all;
         visibility: visible;
-        transition-timing-function: ease-out;
+        transition: opacity 0.2s ease-out;
 
         .overlay-content {
             transform: translateY(0px);
