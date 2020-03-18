@@ -69,9 +69,6 @@ class BaseDocumentationSpider(scrapy.Spider):
         if (len(url) > 4 and url[:4] == "file") or ("localhost" in url):
             # We also want CI to check any links to built documentation.
             return False
-        if 'github.com/zulip' in url:
-            # Finally, links to our own GitHub organization should always work.
-            return False
         return True
 
     def check_fragment(self, response: Response) -> None:
