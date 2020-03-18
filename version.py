@@ -27,4 +27,4 @@ LATEST_DESKTOP_VERSION = "4.0.3"
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = '75.5'
+PROVISION_VERSION = '75.6'

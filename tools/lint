@@ -92,6 +92,11 @@ def run():
                                   description="Checks commit messages for common formatting errors."
                                   "(config: .gitlint)")
 
+    sgrep_command = ["sgrep-lint", "--config=./tools/sgrep.yml", "--error"]
+    linter_config.external_linter('sgrep-py', [*sgrep_command, "--lang=python"], ['py'],
+                                  description="Syntactic Grep (sgrep) Code Search Tool "
+                                  "(config: ./tools/sgrep.yml")
+
     @linter_config.lint
     def custom_py():
         # type: () -> int
