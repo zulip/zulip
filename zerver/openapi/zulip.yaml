@@ -3254,6 +3254,53 @@ paths:
                             }
                         ]
                     }
+  /real-time:
+    # This entry is a hack; it exists to give us a place to put the text
+    # documenting the arguments for call_on_each_event and friends.
+    post:
+      description: (Ignored)
+      parameters:
+      - name: narrow
+        in: query
+        description: |
+          A JSON-encoded array of length 2 indicating the narrow
+          for which you'd like to receive events for. For instance, to receive
+          events for the stream `Denmark`, you would specify
+          `narrow=['stream', 'Denmark']`. Another example is
+          `narrow=['is', 'private']` for private messages. Default is `[]`.
+        schema:
+          type: array
+          items:
+            type: string
+        example: narrow=['stream', 'Denmark']
+        required: false
+      - name: event_types
+        in: query
+        description: |
+          A JSON-encoded array indicating which types of events you're
+          interested in. Values that you might find useful include:
+
+            * **message** (messages)
+            * **subscription** (changes in your subscriptions)
+            * **realm_user** (changes to users in the organization and
+              their properties, such as their name).
+
+          If you do not specify this argument, you will receive all
+          events, and have to filter out the events not relevant to
+          your client in your client code.  For most applications, one
+          is only interested in messages, so one specifies:
+          `event_types=['message']`
+        schema:
+          type: array
+          items:
+            type: string
+          default:
+        example: event_types=['message']
+        required: false
+        default: null
+      security:
+      - basicAuth: []
+
 components:
   #######################
   # Security definitions
