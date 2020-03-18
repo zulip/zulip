@@ -1,4 +1,11 @@
+
+
 <div class="right-sidebar" id="right-sidebar" role="navigation">
+<button class="openbtn" onclick="openNav()">☰ Open Sidebar</button>
+
+<div id="closing">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+    
     <div class="right-sidebar-items">
         <div id="user-list">
             <div id="userlist-header">
@@ -30,4 +37,20 @@
             <i class="fa fa-keyboard-o fa-2x" id="keyboard-icon" data-html="true" data-toggle="tooltip" title="{{ _('Keyboard shortcuts') }} <span class='hotkey-hint'>(?)</span>"></i>
         </a>
     </div>
+
 </div>
+</div>
+
+<script>
+
+function openNav() {
+  document.getElementById("closing").style.display = "block";
+
+}
+
+    
+    function closeNav() {
+  document.getElementById("closing").style.display = "none";
+  
+}
+</script>
