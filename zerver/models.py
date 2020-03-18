@@ -2189,14 +2189,6 @@ def get_user(email: str, realm: Realm) -> UserProfile:
     """
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
-def get_active_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
-    """Variant of get_user_by_delivery_email that excludes deactivated users.
-    See get_user_by_delivery_email docstring for important usage notes."""
-    user_profile = get_user_by_delivery_email(email, realm)
-    if not user_profile.is_active:
-        raise UserProfile.DoesNotExist()
-    return user_profile
-
 def get_active_user(email: str, realm: Realm) -> UserProfile:
     """Variant of get_user_by_email that excludes deactivated users.
     See get_user docstring for important usage notes."""

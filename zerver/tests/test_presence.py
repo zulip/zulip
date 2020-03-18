@@ -357,6 +357,26 @@ class UserPresenceTests(ZulipTestCase):
             self.assertEqual(email_to_domain(email), 'zulip.com')
 
 class SingleUserPresenceTests(ZulipTestCase):
+    def test_email_access(self) -> None:
+        user = self.example_user('hamlet')
+        self.login_user(user)
+
+        other_user = self.example_user('othello')
+        other_user.email = 'email@zulip.com'
+        other_user.delivery_email = 'delivery_email@zulip.com'
+        other_user.save()
+
+        # Note that we don't leak any info on delivery emails.
+        result = self.client_get('/json/users/delivery_email@zulip.com/presence')
+        self.assert_json_error(result, 'No such user')
+
+        result = self.client_get('/json/users/not_even_in_realm@zulip.com/presence')
+        self.assert_json_error(result, 'No such user')
+
+        # For a known email, we may simply complain about lack of presence info.
+        result = self.client_get("/json/users/email@zulip.com/presence")
+        self.assert_json_error(result, 'No presence data for email@zulip.com')
+
     def test_single_user_get(self) -> None:
 
         # First, we setup the test with some data
