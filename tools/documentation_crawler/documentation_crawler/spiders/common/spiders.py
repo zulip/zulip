@@ -70,8 +70,10 @@ class BaseDocumentationSpider(scrapy.Spider):
             # We also want CI to check any links to built documentation.
             return False
         if 'github.com/zulip' in url:
-            # Finally, links to our own GitHub organization should always work.
-            return False
+            # We want to check these links but due to rate limiting from GitHub, these checks often
+            # fail in the CI. Thus, we should treat these as external links for now.
+            # TODO: Figure out how to test github.com/zulip links in CI.
+            return True
         return True
 
     def check_fragment(self, response: Response) -> None:
