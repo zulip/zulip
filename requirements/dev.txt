@@ -761,10 +761,10 @@ social-auth-app-django==3.1.0 \
     --hash=sha256:6d0dd18c2d9e71ca545097d57b44d26f59e624a12833078e8e52f91baf849778 \
     --hash=sha256:9237e3d7b6f6f59494c3b02e0cce6efc69c9d33ad9d1a064e3b2318bcbe89ae3 \
     --hash=sha256:f151396e5b16e2eee12cd2e211004257826ece24fc4ae97a147df386c1cd7082
-social-auth-core[azuread,saml]==3.2.0 \
-    --hash=sha256:47cd2458c8fefd02466b0c514643e02ad8b61d8b4b69f7573e80882e3a97b0f0 \
-    --hash=sha256:8320666548a532eb158968eda542bbe1863682357c432d8c4e28034a7f1e3b58 \
-    --hash=sha256:d81ed681e3c0722300b61a0792c5db5d21206793f95ca810f010c1cc931c8d89
+social-auth-core[azuread,saml]==3.3.0 \
+    --hash=sha256:24d8cf5b37daf9ebd3b3687546f80639db6dcd7f1279daa99bb26b0637a6aec0 \
+    --hash=sha256:5e1ef182370bb2dab4c15a89be725737fb5b2242a12dc40cf22a23d9c00ebc5f \
+    --hash=sha256:64688f99158debbf38f67a2735a8ad750a86cc8c849bfd23263a203337f7bcc6
 soupsieve==1.9.5 \
     --hash=sha256:bdb0d917b03a1369ce964056fc195cfdff8819c40de04695a80bc813c3cfa1f5 \
     --hash=sha256:e2c1c5dee4a1c36bcb790e0fabd5492d874b8ebd4617622c4f6a731701060dda \
@@ -891,6 +891,10 @@ typing-extensions==3.7.4.1 \
     --hash=sha256:cf8b63fedea4d89bab840ecbb93e75578af28f76f66c35889bd7065f5af88575
 https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab8a8.zip#egg=ujson==1.35+git \
     --hash=sha256:e95c20f47093dc7376ddf70b95489979375fb6e88b8d7e4b5576d917dda8ef5a
+unidecode==1.1.1 \
+    --hash=sha256:1d7a042116536098d05d599ef2b8616759f02985c85b4fef50c78a5aaf10822a \
+    --hash=sha256:2b6aab710c2a1647e928e36d69c21e76b453cd455f4e2621000e54b2a9b8cce8 \
+    # via social-auth-core
 urllib3==1.25.8 \
     --hash=sha256:2f3db8b19923a873b3e5256dc9c2dedfa883e33d87c690d9c7913e1f40673cdc \
     --hash=sha256:87716c2d2a7121198ebcb7ce7cccf6ce5e9ba539041cfbaeecfb641dc0bf6acc \

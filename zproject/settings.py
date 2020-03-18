@@ -225,10 +225,6 @@ SILENCED_SYSTEM_CHECKS = [
     # backends support the username not being unique; and they do.
     # See: https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
-    # urls.W003 warns against using colons in the name in url(..., name) because colons are used
-    # for namespaces. We need to override a url entry in the social: namespace, so we use
-    # the colon in this way intentionally.
-    "urls.W003",
 ]
 
 ########################################################################
