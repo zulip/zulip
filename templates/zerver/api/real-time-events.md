@@ -54,4 +54,7 @@ client.call_on_each_event(lambda event: sys.stdout.write(str(event) + "\n"))
 
 You may also pass in the following keyword arguments to `call_on_each_event`:
 
-{generate_api_arguments_table|arguments.json|call_on_each_event}
+{generate_api_arguments_table|zulip.yaml|/real-time:post}
+
+See the [GET /events](/api/get-events-from-queue) documentation for
+more details on the format of individual events.
