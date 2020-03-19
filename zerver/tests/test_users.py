@@ -1451,11 +1451,10 @@ class GetProfileTest(ZulipTestCase):
         result = self.api_get(hamlet, "/api/v1/users")
         self.assert_json_success(result)
 
-        my_user = self.find_one(
-            result.json()['members'],
-            lambda user: user['email'] == hamlet.email,
-            'member for Hamlet'
-        )
+        (my_user,) = [
+            user for user in result.json()['members']
+            if user['email'] == hamlet.email
+        ]
 
         self.assertEqual(
             my_user['avatar_url'],
