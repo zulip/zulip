@@ -49,7 +49,6 @@ import jwt
 import logging
 
 from social_django.utils import load_backend, load_strategy
-from social_django.views import auth as social_django_auth
 
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -309,7 +308,7 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    request._email = user_profile.delivery_email
+    request._requestor_for_logs = user_profile.format_requestor_for_logs()
 
     return response
 
@@ -455,9 +454,9 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
                          .format(extra_arg))
             return redirect_to_config_error("saml")
         extra_url_params = {'idp': extra_arg}
-    backends = ["github", "google", "gitlab"]
+
     # TODO: Add AzureAD also.
-    for backend in backends:
+    if backend in ["github", "google", "gitlab"]:
         key_setting = "SOCIAL_AUTH_" + backend.upper() + "_KEY"
         secret_setting = "SOCIAL_AUTH_" + backend.upper() + "_SECRET"
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):
@@ -481,24 +480,6 @@ def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[
         extra_url_params = {'idp': extra_arg}
     return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True,
                                   extra_url_params=extra_url_params)
-
-def social_auth(request: HttpRequest, backend: str) -> HttpResponse:
-    """
-    python-social-auth sets certain fields from the request into the session
-    and doesn't clear them if another request is made with a field that was present
-    in the previous request now missing. We use this function to hook into the beginning
-    of the social auth flow to ensure the session is properly cleared out.
-    This function and the corresponding url entry in urls.py should be removed if this issue
-    gets fixed upstream - https://github.com/python-social-auth/social-core/issues/425
-    """
-
-    for field_name in settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION:
-        try:
-            del request.session[field_name]
-        except KeyError:
-            pass
-
-    return social_django_auth(request, backend)
 
 def authenticate_remote_user(realm: Realm,
                              email_address: Optional[str]) -> Optional[UserProfile]:
@@ -920,7 +901,7 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    request._email = user_profile.delivery_email
+    request._requestor_for_logs = user_profile.format_requestor_for_logs()
 
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})

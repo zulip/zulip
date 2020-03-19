@@ -9,11 +9,13 @@ import sys
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple, cast
 import ujson
 import json
+import responses
 
 from django.core import signing
 from django.urls.resolvers import get_resolver
 from django.http import HttpResponse
 from django.utils.timezone import utc as timezone_utc
+from django.conf import settings
 
 import stripe
 
@@ -35,7 +37,6 @@ from corporate.models import Customer, CustomerPlan, LicenseLedger
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
-GENERATE_STRIPE_FIXTURES = False
 STRIPE_FIXTURES_DIR = "corporate/tests/stripe_fixtures"
 
 # TODO: check that this creates a token similar to what is created by our
@@ -77,8 +78,10 @@ def generate_and_save_stripe_fixture(decorated_function_name: str, mocked_functi
         mock = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
         fixture_path = stripe_fixture_path(decorated_function_name, mocked_function_name, mock.call_count)
         try:
-            # Talk to Stripe
-            stripe_object = mocked_function(*args, **kwargs)
+            with responses.RequestsMock() as request_mock:
+                request_mock.add_passthru("https://api.stripe.com")
+                # Talk to Stripe
+                stripe_object = mocked_function(*args, **kwargs)
         except stripe.error.StripeError as e:
             with open(fixture_path, 'w') as f:
                 error_dict = e.__dict__
@@ -183,7 +186,7 @@ def mock_stripe(tested_timestamp_fields: List[str]=[],
     def _mock_stripe(decorated_function: CallableT) -> CallableT:
         generate_fixture = generate
         if generate_fixture is None:
-            generate_fixture = GENERATE_STRIPE_FIXTURES
+            generate_fixture = settings.GENERATE_STRIPE_FIXTURES
         for mocked_function_name in MOCKED_STRIPE_FUNCTION_NAMES:
             mocked_function = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
             if generate_fixture:
@@ -320,15 +323,16 @@ class StripeTest(StripeTestCase):
         mock_billing_logger_error.assert_called()
 
     def test_billing_not_enabled(self) -> None:
+        iago = self.example_user('iago')
         with self.settings(BILLING_ENABLED=False):
-            self.login(self.example_email("iago"))
+            self.login_user(iago)
             response = self.client_get("/upgrade/")
             self.assert_in_success_response(["Page not found (404)"], response)
 
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_upgrade_by_card(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
-        self.login(user.email)
+        self.login_user(user)
         response = self.client_get("/upgrade/")
         self.assert_in_success_response(['Pay annually'], response)
         self.assertNotEqual(user.realm.plan_type, Realm.STANDARD)
@@ -438,7 +442,7 @@ class StripeTest(StripeTestCase):
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_upgrade_by_invoice(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
-        self.login(user.email)
+        self.login_user(user)
         # Click "Make payment" in Stripe Checkout
         with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
             self.upgrade(invoice=True)
@@ -520,8 +524,12 @@ class StripeTest(StripeTestCase):
 
     @mock_stripe()
     def test_billing_page_permissions(self, *mocks: Mock) -> None:
+        hamlet = self.example_user('hamlet')
+        iago = self.example_user('iago')
+        cordelia = self.example_user('cordelia')
+
         # Check that non-admins can access /upgrade via /billing, when there is no Customer object
-        self.login(self.example_email('hamlet'))
+        self.login_user(hamlet)
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
@@ -531,17 +539,18 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(["for billing history or to make changes"], response)
         # Check admins can access billing, even though they are not a billing admin
-        self.login(self.example_email('iago'))
+        self.login_user(iago)
         response = self.client_get("/billing/")
         self.assert_in_success_response(["for billing history or to make changes"], response)
         # Check that a non-admin, non-billing admin user does not have access
-        self.login(self.example_email("cordelia"))
+        self.login_user(cordelia)
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You must be an organization administrator"], response)
 
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_upgrade_by_card_with_outdated_seat_count(self, *mocks: Mock) -> None:
-        self.login(self.example_email("hamlet"))
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
         new_seat_count = 23
         # Change the seat count while the user is going through the upgrade flow
         with patch('corporate.lib.stripe.get_latest_seat_count', return_value=new_seat_count):
@@ -561,7 +570,7 @@ class StripeTest(StripeTestCase):
     @mock_stripe()
     def test_upgrade_where_first_card_fails(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
-        self.login(user.email)
+        self.login_user(user)
         # From https://stripe.com/docs/testing#cards: Attaching this card to
         # a Customer object succeeds, but attempts to charge the customer fail.
         with patch("corporate.lib.stripe.billing_logger.error") as mock_billing_logger:
@@ -627,13 +636,15 @@ class StripeTest(StripeTestCase):
         self.assertEqual('/billing/', response.url)
 
     def test_upgrade_with_tampered_seat_count(self) -> None:
-        self.login(self.example_email("hamlet"))
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
         response = self.upgrade(talk_to_stripe=False, salt='badsalt')
         self.assert_json_error_contains(response, "Something went wrong. Please contact")
         self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered seat count')
 
     def test_upgrade_race_condition(self) -> None:
-        self.login(self.example_email("hamlet"))
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
         self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
         with patch("corporate.lib.stripe.billing_logger.warning") as mock_billing_logger:
             with self.assertRaises(BillingError) as context:
@@ -649,7 +660,8 @@ class StripeTest(StripeTestCase):
             self.assert_json_error_contains(response, "Something went wrong. Please contact")
             self.assertEqual(ujson.loads(response.content)['error_description'], error_description)
 
-        self.login(self.example_email("hamlet"))
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
         check_error('unknown billing_modality', {'billing_modality': 'invalid'})
         check_error('unknown schedule', {'schedule': 'invalid'})
         check_error('unknown license_management', {'license_management': 'invalid'})
@@ -679,7 +691,8 @@ class StripeTest(StripeTestCase):
                                         del_args=del_args, **upgrade_params)
             self.assert_json_success(response)
 
-        self.login(self.example_email("hamlet"))
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
         # Autopay with licenses < seat count
         check_error(False, self.seat_count - 1, self.seat_count, {'license_management': 'manual'})
         # Autopay with not setting licenses
@@ -703,7 +716,8 @@ class StripeTest(StripeTestCase):
 
     @patch("corporate.lib.stripe.billing_logger.error")
     def test_upgrade_with_uncaught_exception(self, mock_: Mock) -> None:
-        self.login(self.example_email("hamlet"))
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
         with patch("corporate.views.process_initial_upgrade", side_effect=Exception):
             response = self.upgrade(talk_to_stripe=False)
         self.assert_json_error_contains(response, "Something went wrong. Please contact zulip-admin@example.com.")
@@ -711,7 +725,7 @@ class StripeTest(StripeTestCase):
 
     def test_redirect_for_billing_home(self) -> None:
         user = self.example_user("iago")
-        self.login(user.email)
+        self.login_user(user)
         # No Customer yet; check that we are redirected to /upgrade
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
@@ -776,7 +790,7 @@ class StripeTest(StripeTestCase):
         # "Billed by invoice", even if you have a card on file
         # user = self.example_user("hamlet")
         # do_create_stripe_customer(user, stripe_create_token().id)
-        # self.login(user.email)
+        # self.login_user(user)
         # self.upgrade(invoice=True)
         # stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
         # self.assertEqual('Billed by invoice', payment_method_string(stripe_customer))
@@ -790,7 +804,7 @@ class StripeTest(StripeTestCase):
         # Attach discount before Stripe customer exists
         user = self.example_user('hamlet')
         attach_discount_to_realm(user.realm, Decimal(85))
-        self.login(user.email)
+        self.login_user(user)
         # Check that the discount appears in page_params
         self.assert_in_success_response(['85'], self.client_get("/upgrade/"))
         # Check that the customer was charged the discounted amount
@@ -826,7 +840,7 @@ class StripeTest(StripeTestCase):
     @mock_stripe()
     def test_replace_payment_source(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
-        self.login(user.email)
+        self.login_user(user)
         self.upgrade()
         # Create an open invoice
         stripe_customer_id = Customer.objects.first().stripe_customer_id
@@ -883,7 +897,7 @@ class StripeTest(StripeTestCase):
     @patch("corporate.lib.stripe.billing_logger.info")
     def test_downgrade(self, mock_: Mock) -> None:
         user = self.example_user("hamlet")
-        self.login(user.email)
+        self.login_user(user)
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
         response = self.client_post("/json/billing/plan/change",
@@ -948,7 +962,7 @@ class StripeTest(StripeTestCase):
         # This test is essentially checking that we call make_end_of_cycle_updates_if_needed
         # during the invoicing process.
         user = self.example_user("hamlet")
-        self.login(user.email)
+        self.login_user(user)
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
         self.client_post("/json/billing/plan/change",
@@ -971,7 +985,8 @@ class RequiresBillingAccessTest(ZulipTestCase):
 
     def verify_non_admins_blocked_from_endpoint(
             self, url: str, request_data: Optional[Dict[str, Any]]={}) -> None:
-        self.login(self.example_email('cordelia'))
+        cordelia = self.example_user('cordelia')
+        self.login_user(cordelia)
         response = self.client_post(url, request_data)
         self.assert_json_error_contains(response, "Must be a billing administrator or an organization")
 
@@ -996,7 +1011,9 @@ class RequiresBillingAccessTest(ZulipTestCase):
 
     def test_admins_and_billing_admins_can_access(self) -> None:
         # Billing admins have access
-        self.login(self.example_email('hamlet'))
+        hamlet = self.example_user('hamlet')
+        iago = self.example_user('iago')
+        self.login_user(hamlet)
         with patch("corporate.views.do_replace_payment_source") as mocked1:
             response = self.client_post("/json/billing/sources/change",
                                         {'stripe_token': ujson.dumps('token')})
@@ -1004,7 +1021,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
         mocked1.assert_called()
 
         # Realm admins have access, even if they are not billing admins
-        self.login(self.example_email('iago'))
+        self.login_user(iago)
         with patch("corporate.views.do_replace_payment_source") as mocked2:
             response = self.client_post("/json/billing/sources/change",
                                         {'stripe_token': ujson.dumps('token')})
@@ -1191,7 +1208,7 @@ class InvoiceTest(StripeTestCase):
     @mock_stripe()
     def test_invoice_plan(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
-        self.login(user.email)
+        self.login_user(user)
         with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
             self.upgrade()
         # Increase
@@ -1253,7 +1270,7 @@ class InvoiceTest(StripeTestCase):
     def test_fixed_price_plans(self, *mocks: Mock) -> None:
         # Also tests charge_automatically=False
         user = self.example_user("hamlet")
-        self.login(user.email)
+        self.login_user(user)
         with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
             self.upgrade(invoice=True)
         plan = CustomerPlan.objects.first()

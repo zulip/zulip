@@ -5,7 +5,6 @@ import logging
 import argparse
 import platform
 import subprocess
-import glob
 import hashlib
 
 os.environ["PYTHONUNBUFFERED"] = "y"
@@ -17,7 +16,7 @@ from scripts.lib.zulip_tools import run_as_root, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL, os_families, parse_os_release, \
     overwrite_symlink
 from scripts.lib.setup_venv import (
-    VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
+    get_venv_dependencies, REDHAT_VENV_DEPENDENCIES,
     THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES,
     FEDORA_VENV_DEPENDENCIES
 )
@@ -93,6 +92,8 @@ elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
     POSTGRES_VERSION = "10"
 elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
     POSTGRES_VERSION = "11"
+elif vendor == "ubuntu" and os_version == "20.04":  # focal
+    POSTGRES_VERSION = "12"
 elif vendor == "fedora" and os_version == "29":
     POSTGRES_VERSION = "10"
 elif vendor == "rhel" and os_version.startswith("7."):
@@ -108,6 +109,8 @@ else:
             print("To upgrade, run `vagrant destroy`, and then recreate the Vagrant guest.\n")
             print("See: https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html")
     sys.exit(1)
+
+VENV_DEPENDENCIES = get_venv_dependencies(vendor, os_version)
 
 COMMON_DEPENDENCIES = [
     "memcached",
@@ -145,7 +148,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == 'debian' and os_version in []:
+if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in ['20.04']:
     # For platforms without a pgroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
@@ -306,11 +309,12 @@ def main(options):
     if "debian" in os_families():
         sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
     else:
-        # hash the content of setup-yum-repo and build-*
+        # hash the content of setup-yum-repo*
         sha_sum.update(open('scripts/lib/setup-yum-repo', 'rb').read())
-        build_paths = glob.glob("scripts/lib/build-")
-        for bp in build_paths:
-            sha_sum.update(open(bp, 'rb').read())
+
+    # hash the content of build-pgroonga if pgroonga is built from source
+    if BUILD_PGROONGA_FROM_SOURCE:
+        sha_sum.update(open('scripts/lib/build-pgroonga', 'rb').read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None

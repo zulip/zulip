@@ -230,7 +230,7 @@ to:
 * Pros and cons: What are the pros and cons of Zulip for your organization,
   and the pros and cons of other products you are evaluating?
 * Features: What are the features that are most important for your
-  organization? In the best case scenario, what would your chat solution do
+  organization? In the best-case scenario, what would your chat solution do
   for you?
 * Onboarding: If you remember it, what was your impression during your first
   few minutes of using Zulip? What did you notice, and how did you feel? Was
@@ -251,7 +251,7 @@ While each third-party program has its own rules and requirements, the
 Zulip community's approaches all of these programs with these ideas in
 mind:
 * We try to make the application process as valuable for the applicant as
-  possible. Expect high quality code reviews, a supportive community, and
+  possible. Expect high-quality code reviews, a supportive community, and
   publicly viewable patches you can link to from your resume, regardless of
   whether you are selected.
 * To apply, you'll have to submit at least one pull request to a Zulip
@@ -271,7 +271,7 @@ important parts of the project. We hope you apply!
 
 ### Google Summer of Code
 
-The largest outreachy program Zulip participates in in GSoc (14
+The largest outreach program Zulip participates in is GSoC (14
 students in 2017; 11 in 2018; 17 in 2019).  While we don't control how
 many slots Google allocates to Zulip, we hope to mentor a similar
 number of students in future summers.
@@ -279,8 +279,8 @@ number of students in future summers.
 If you're reading this well before the application deadline and want
 to make your application strong, we recommend getting involved in the
 community and fixing issues in Zulip now. Having good contributions
-and building a reputation for doing good work is best way to have a
-strong application.  About half of Zulip's GSoC students for Summer
+and building a reputation for doing good work is the best way to have
+a strong application.  About half of Zulip's GSoC students for Summer
 2017 had made significant contributions to the project by February
 2017, and about half had not.  Our
 [GSoC project ideas page][gsoc-guide] has lots more details on how
@@ -333,7 +333,7 @@ have been using Zulip for a while and want to contribute more.
 about a technical aspect of Zulip can be a great way to spread the word
 about Zulip.
 
-We also occasionally [publish](http://blog.zulip.org/) longer form
+We also occasionally [publish](http://blog.zulip.org/) long-form
 articles related to Zulip. Our posts typically get tens of thousands
 of views, and we always have good ideas for blog posts that we can
 outline but don't have time to write. If you are an experienced writer

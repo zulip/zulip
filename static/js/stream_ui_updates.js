@@ -172,7 +172,7 @@ exports.update_subscribers_list = function (sub) {
     if (!sub.can_access_subscribers) {
         $(".subscriber_list_settings_container").hide();
     } else {
-        const emails = stream_edit.get_email_of_subscribers(sub.subscribers);
+        const users = stream_edit.get_users_from_subscribers(sub.subscribers);
 
         /*
             We try to find a subscribers list that is already in the
@@ -187,8 +187,8 @@ exports.update_subscribers_list = function (sub) {
         // Perform re-rendering only when the stream settings form of the corresponding
         // stream is open.
         if (subscribers_list) {
-            stream_edit.sort_but_pin_current_user_on_top(emails);
-            subscribers_list.data(emails);
+            stream_edit.sort_but_pin_current_user_on_top(users);
+            subscribers_list.data(users);
             subscribers_list.render();
         }
         $(".subscriber_list_settings_container").show();

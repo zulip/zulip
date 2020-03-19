@@ -68,7 +68,7 @@ export function check_duplicate_ids() {
  *
  * Example:
  *
- *     var ip = new debug.IterationProfiler();
+ *     let ip = new debug.IterationProfiler();
  *     _.each(myarray, function (elem) {
  *         ip.iteration_start();
  *

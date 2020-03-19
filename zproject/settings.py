@@ -68,6 +68,8 @@ TUTORIAL_ENABLED = True
 CASPER_TESTS = False
 # This is overridden in test_settings.py for the test suites
 RUNNING_OPENAPI_CURL_TEST = False
+# This is overridden in test_settings.py for the test suites
+GENERATE_STRIPE_FIXTURES = False
 
 # Google Compute Engine has an /etc/boto.cfg that is "nicely
 # configured" to work with GCE's storage service.  However, their
@@ -223,10 +225,6 @@ SILENCED_SYSTEM_CHECKS = [
     # backends support the username not being unique; and they do.
     # See: https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
-    # urls.W003 warns against using colons in the name in url(..., name) because colons are used
-    # for namespaces. We need to override a url entry in the social: namespace, so we use
-    # the colon in this way intentionally.
-    "urls.W003",
 ]
 
 ########################################################################
@@ -984,6 +982,8 @@ SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
 SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
 SOCIAL_AUTH_GITLAB_SECRET = get_secret('social_auth_gitlab_secret')
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
+if SOCIAL_AUTH_GITHUB_ORG_NAME or SOCIAL_AUTH_GITHUB_TEAM_ID:
+    SOCIAL_AUTH_GITHUB_SCOPE.append("read:org")
 SOCIAL_AUTH_GITHUB_ORG_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY

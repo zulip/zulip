@@ -157,7 +157,7 @@ class UserStatusTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         realm_id = hamlet.realm_id
 
-        self.login(hamlet.email)
+        self.login_user(hamlet)
 
         # Try to omit parameter--this should be an error.
         payload = dict()  # type: Dict[str, Any]

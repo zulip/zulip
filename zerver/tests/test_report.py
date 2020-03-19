@@ -32,8 +32,7 @@ class StatsMock:
 
 class TestReport(ZulipTestCase):
     def test_send_time(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
 
         params = dict(
             time=5,
@@ -58,8 +57,7 @@ class TestReport(ZulipTestCase):
         self.assertEqual(stats_mock.func_calls, expected_calls)
 
     def test_narrow_time(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
 
         params = dict(
             initial_core=5,
@@ -80,8 +78,7 @@ class TestReport(ZulipTestCase):
         self.assertEqual(stats_mock.func_calls, expected_calls)
 
     def test_unnarrow_time(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        self.login('hamlet')
 
         params = dict(
             initial_core=5,
@@ -101,8 +98,8 @@ class TestReport(ZulipTestCase):
 
     @override_settings(BROWSER_ERROR_REPORTING=True)
     def test_report_error(self) -> None:
-        email = self.example_email('hamlet')
-        self.login(email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
 
         params = fix_params(dict(
             message='hello',
@@ -128,7 +125,7 @@ class TestReport(ZulipTestCase):
             self.assertEqual(report[k], params[k])
 
         self.assertEqual(report['more_info'], dict(foo='bar', draft_content="'**xxxxx**'"))
-        self.assertEqual(report['user_email'], email)
+        self.assertEqual(report['user_email'], user.email)
 
         # Teset with no more_info
         del params['more_info']

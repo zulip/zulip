@@ -48,10 +48,12 @@ from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
 from zerver.decorator import client_is_exempt_from_rate_limiting
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
-    do_update_user_custom_profile_data_if_changed, validate_email_for_realm
+    do_update_user_custom_profile_data_if_changed
 from zerver.lib.avatar import is_avatar_new, avatar_url
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
+from zerver.lib.email_validation import email_allowed_for_realm, \
+    validate_email_not_already_in_realm
 from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.rate_limiter import clear_history, rate_limit_request_by_entity, RateLimitedObject
 from zerver.lib.request import JsonableError
@@ -59,7 +61,7 @@ from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
 from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
-    email_allowed_for_realm, get_user_profile_by_id, remote_user_to_email, \
+    get_user_profile_by_id, remote_user_to_email, \
     email_to_username, get_realm, get_user_by_delivery_email, supported_auth_backends
 
 redis_client = get_redis_client()
@@ -672,11 +674,11 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         # Makes sure that email domain hasn't be restricted for this
         # realm.  The main thing here is email_allowed_for_realm; but
-        # we also call validate_email_for_realm just for consistency,
+        # we also call validate_email_not_already_in_realm just for consistency,
         # even though its checks were already done above.
         try:
             email_allowed_for_realm(username, self._realm)
-            validate_email_for_realm(self._realm, username)
+            validate_email_not_already_in_realm(self._realm, username)
         except DomainNotAllowedForRealmError:
             raise ZulipLDAPException("This email domain isn't allowed in this organization.")
         except (DisposableEmailError, EmailContainsPlusError):

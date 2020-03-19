@@ -20,6 +20,7 @@ from zerver.lib.retention import (
     restore_all_data_from_archive,
     clean_archived_data,
 )
+from zerver.tornado.event_queue import send_event
 
 # Class with helper functions useful for testing archiving of reactions:
 from zerver.tests.test_reactions import EmojiReactionBase
@@ -98,8 +99,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         # send messages from mit.edu realm and change messages pub date
         sender = self.mit_user('espuser')
         recipient = self.mit_user('starnine')
-        msg_ids = [self.send_personal_message(sender.email, recipient.email,
-                                              sender_realm='zephyr')
+        msg_ids = [self.send_personal_message(sender, recipient)
                    for i in range(message_quantity)]
 
         self._change_messages_date_sent(msg_ids, date_sent)
@@ -131,7 +131,6 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
 
     def _send_messages_with_attachments(self) -> Dict[str, int]:
         user_profile = self.example_user("hamlet")
-        sender_email = user_profile.email
         sample_size = 10
         host = user_profile.realm.host
         realm_id = get_realm("zulip").id
@@ -149,9 +148,11 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
                 " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." +
                 " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py").format(id=realm_id, host=host)
 
-        expired_message_id = self.send_stream_message(sender_email, "Denmark", body)
-        actual_message_id = self.send_stream_message(sender_email, "Denmark", body)
-        other_message_id = self.send_stream_message("othello@zulip.com", "Denmark", body)
+        expired_message_id = self.send_stream_message(user_profile, "Denmark", body)
+        actual_message_id = self.send_stream_message(user_profile, "Denmark", body)
+
+        othello = self.example_user('othello')
+        other_message_id = self.send_stream_message(othello, "Denmark", body)
         self._change_messages_date_sent([expired_message_id], timezone_now() - timedelta(days=MIT_REALM_DAYS + 1))
         return {'expired_message_id': expired_message_id, 'actual_message_id': actual_message_id,
                 'other_user_message_id': other_message_id}
@@ -226,7 +227,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
 
     def test_different_stream_realm_policies(self) -> None:
         verona = get_stream("Verona", self.zulip_realm)
-        hamlet = self.example_email("hamlet")
+        hamlet = self.example_user("hamlet")
 
         msg_id = self.send_stream_message(hamlet, "Verona", "test")
         usermsg_ids = self._get_usermessage_ids([msg_id])
@@ -475,8 +476,8 @@ class TestArchivingReactions(ArchiveMessagesTestingBase, EmojiReactionBase):
 class MoveMessageToArchiveBase(RetentionTestingBase):
     def setUp(self) -> None:
         super().setUp()
-        self.sender = 'hamlet@zulip.com'
-        self.recipient = 'cordelia@zulip.com'
+        self.sender = self.example_user('hamlet')
+        self.recipient = self.example_user('cordelia')
 
     def _create_attachments(self) -> None:
         sample_size = 10
@@ -612,8 +613,8 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         msg_id = self.send_personal_message(self.sender, self.recipient, body)
         # Simulate a reply with the same contents.
         reply_msg_id = self.send_personal_message(
-            from_email=self.recipient,
-            to_email=self.sender,
+            from_user=self.recipient,
+            to_user=self.sender,
             content=body,
         )
 
@@ -748,8 +749,8 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
 class TestDoDeleteMessages(ZulipTestCase):
     def test_do_delete_messages_multiple(self) -> None:
         realm = get_realm("zulip")
-        cordelia_email = self.example_email('cordelia')
-        message_ids = [self.send_stream_message(cordelia_email, "Denmark", str(i)) for i in range(0, 10)]
+        cordelia = self.example_user('cordelia')
+        message_ids = [self.send_stream_message(cordelia, "Denmark", str(i)) for i in range(0, 10)]
         messages = Message.objects.filter(id__in=message_ids)
 
         with queries_captured() as queries:
@@ -760,3 +761,28 @@ class TestDoDeleteMessages(ZulipTestCase):
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))
         self.assertEqual(len({message.archive_transaction_id for message in archived_messages}), 1)
+
+    def test_old_event_format_processed_correctly(self) -> None:
+        """
+        do_delete_messages used to send events with users in dict format {"id": <int>}.
+        We have a block in process_notification to deal with that old format, that should be
+        deleted in a later release. This test is meant to ensure correctness of that block.
+        """
+        realm = get_realm("zulip")
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        message_id = self.send_personal_message(cordelia, hamlet)
+        message = Message.objects.get(id=message_id)
+
+        event = {
+            'type': 'delete_message',
+            'sender': message.sender.email,
+            'sender_id': message.sender_id,
+            'message_id': message.id,
+            'message_type': "private",
+            'recipient_id': message.recipient_id
+        }
+        move_messages_to_archive([message_id])
+        # We only send the event to see no exception is thrown - as it would be if the block
+        # in process_notification to handle this old format of "users to notify" wasn't correct.
+        send_event(realm, event, [{"id": cordelia.id}, {"id": hamlet.id}])

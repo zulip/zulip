@@ -198,11 +198,3 @@ def split_by(array: List[Any], group_size: int, filler: Any) -> List[List[Any]]:
     """
     args = [iter(array)] * group_size
     return list(map(list, zip_longest(*args, fillvalue=filler)))
-
-def is_remote_server(identifier: str) -> bool:
-    """
-    This function can be used to identify the source of API auth
-    request. We can have two types of sources, Remote Zulip Servers
-    and UserProfiles.
-    """
-    return "@" not in identifier

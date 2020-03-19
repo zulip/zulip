@@ -105,8 +105,9 @@ statsd_blacklisted_requests = [
     'upload_file', 'realm_activity', 'user_activity'
 ]
 
-def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str, email: str,
-                   client_name: str, status_code: int=200, error_content: Optional[AnyStr]=None,
+def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str,
+                   requestor_for_logs: str, client_name: str, status_code: int=200,
+                   error_content: Optional[AnyStr]=None,
                    error_content_iter: Optional[Iterable[AnyStr]]=None) -> None:
     assert error_content is None or error_content_iter is None
     if error_content is not None:
@@ -199,7 +200,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         extra_request_data = " %s" % (log_data['extra'],)
     else:
         extra_request_data = ""
-    logger_client = "(%s via %s)" % (email, client_name)
+    logger_client = "(%s via %s)" % (requestor_for_logs, client_name)
     logger_timing = ('%5s%s%s%s%s%s %s' %
                      (format_timedelta(time_delta), optional_orig_delta,
                       remote_cache_output, bugdown_output,
@@ -214,7 +215,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
 
     if (is_slow_query(time_delta, path)):
         queue_json_publish("slow_queries", dict(
-            query="%s (%s)" % (logger_line, email)))
+            query="%s (%s)" % (logger_line, requestor_for_logs)))
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
@@ -233,7 +234,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
             error_data = repr(b''.join(error_content_list))
         if len(error_data) > 200:
             error_data = u"[content more than 200 characters]"
-        logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, email))
+        logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, requestor_for_logs))
 
 class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
@@ -284,11 +285,14 @@ class LogRequests(MiddlewareMixin):
         if remote_ip is None:
             remote_ip = request.META['REMOTE_ADDR']
 
-        # Get the requestor's email address and client, if available.
+        # Get the requestor's identifier and client, if available.
         try:
-            email = request._email
+            requestor_for_logs = request._requestor_for_logs
         except Exception:
-            email = "unauth"
+            if hasattr(request, 'user') and hasattr(request.user, 'format_requestor_for_logs'):
+                requestor_for_logs = request.user.format_requestor_for_logs()
+            else:
+                requestor_for_logs = "unauth"
         try:
             client = request.client.name
         except Exception:
@@ -302,7 +306,7 @@ class LogRequests(MiddlewareMixin):
             content_iter = None
 
         write_log_line(request._log_data, request.path, request.method,
-                       remote_ip, email, client, status_code=response.status_code,
+                       remote_ip, requestor_for_logs, client, status_code=response.status_code,
                        error_content=content, error_content_iter=content_iter)
         return response
 

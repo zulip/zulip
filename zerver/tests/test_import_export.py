@@ -98,11 +98,10 @@ from zerver.lib.test_helpers import (
 
 class QueryUtilTest(ZulipTestCase):
     def _create_messages(self) -> None:
-        for email in [self.example_email('cordelia'),
-                      self.example_email('hamlet'),
-                      self.example_email('iago')]:
+        for name in ['cordelia', 'hamlet', 'iago']:
+            user = self.example_user(name)
             for _ in range(5):
-                self.send_personal_message(email, self.example_email('othello'))
+                self.send_personal_message(user, self.example_user('othello'))
 
     @slow('creates lots of data')
     def test_query_chunker(self) -> None:
@@ -458,9 +457,10 @@ class ImportExportTest(ZulipTestCase):
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
 
-        pm_a_msg_id = self.send_personal_message(self.example_email("AARON"), "default-bot@zulip.com")
-        pm_b_msg_id = self.send_personal_message("default-bot@zulip.com", self.example_email("iago"))
-        pm_c_msg_id = self.send_personal_message(self.example_email("othello"), self.example_email("hamlet"))
+        default_bot = self.example_user('default_bot')
+        pm_a_msg_id = self.send_personal_message(self.example_user("AARON"), default_bot)
+        pm_b_msg_id = self.send_personal_message(default_bot, self.example_user("iago"))
+        pm_c_msg_id = self.send_personal_message(self.example_user("othello"), self.example_user("hamlet"))
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
@@ -502,10 +502,10 @@ class ImportExportTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         user_ids = set([cordelia.id, hamlet.id])
 
-        pm_a_msg_id = self.send_personal_message(self.example_email("AARON"), self.example_email("othello"))
-        pm_b_msg_id = self.send_personal_message(self.example_email("cordelia"), self.example_email("iago"))
-        pm_c_msg_id = self.send_personal_message(self.example_email("hamlet"), self.example_email("othello"))
-        pm_d_msg_id = self.send_personal_message(self.example_email("iago"), self.example_email("hamlet"))
+        pm_a_msg_id = self.send_personal_message(self.example_user("AARON"), self.example_user("othello"))
+        pm_b_msg_id = self.send_personal_message(self.example_user("cordelia"), self.example_user("iago"))
+        pm_c_msg_id = self.send_personal_message(self.example_user("hamlet"), self.example_user("othello"))
+        pm_d_msg_id = self.send_personal_message(self.example_user("iago"), self.example_user("hamlet"))
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
@@ -542,42 +542,42 @@ class ImportExportTest(ZulipTestCase):
         create_stream_if_needed(realm, "Private A", invite_only=True)
         self.subscribe(self.example_user("iago"), "Private A")
         self.subscribe(self.example_user("othello"), "Private A")
-        self.send_stream_message(self.example_email("iago"), "Private A", "Hello Stream A")
+        self.send_stream_message(self.example_user("iago"), "Private A", "Hello Stream A")
 
         create_stream_if_needed(realm, "Private B", invite_only=True)
         self.subscribe(self.example_user("prospero"), "Private B")
-        stream_b_message_id = self.send_stream_message(self.example_email("prospero"),
+        stream_b_message_id = self.send_stream_message(self.example_user("prospero"),
                                                        "Private B", "Hello Stream B")
         self.subscribe(self.example_user("hamlet"), "Private B")
 
         create_stream_if_needed(realm, "Private C", invite_only=True)
         self.subscribe(self.example_user("othello"), "Private C")
         self.subscribe(self.example_user("prospero"), "Private C")
-        stream_c_message_id = self.send_stream_message(self.example_email("othello"),
+        stream_c_message_id = self.send_stream_message(self.example_user("othello"),
                                                        "Private C", "Hello Stream C")
 
         # Create huddles
-        self.send_huddle_message(self.example_email("iago"), [self.example_email("cordelia"),
-                                                              self.example_email("AARON")])
+        self.send_huddle_message(self.example_user("iago"), [self.example_user("cordelia"),
+                                                             self.example_user("AARON")])
         huddle_a = Huddle.objects.last()
-        self.send_huddle_message(self.example_email("ZOE"), [self.example_email("hamlet"),
-                                                             self.example_email("AARON"),
-                                                             self.example_email("othello")])
+        self.send_huddle_message(self.example_user("ZOE"), [self.example_user("hamlet"),
+                                                            self.example_user("AARON"),
+                                                            self.example_user("othello")])
         huddle_b = Huddle.objects.last()
 
         huddle_c_message_id = self.send_huddle_message(
-            self.example_email("AARON"), [self.example_email("cordelia"),
-                                          self.example_email("ZOE"),
-                                          self.example_email("othello")])
+            self.example_user("AARON"), [self.example_user("cordelia"),
+                                         self.example_user("ZOE"),
+                                         self.example_user("othello")])
 
         # Create PMs
-        pm_a_msg_id = self.send_personal_message(self.example_email("AARON"), self.example_email("othello"))
-        pm_b_msg_id = self.send_personal_message(self.example_email("cordelia"), self.example_email("iago"))
-        pm_c_msg_id = self.send_personal_message(self.example_email("hamlet"), self.example_email("othello"))
-        pm_d_msg_id = self.send_personal_message(self.example_email("iago"), self.example_email("hamlet"))
+        pm_a_msg_id = self.send_personal_message(self.example_user("AARON"), self.example_user("othello"))
+        pm_b_msg_id = self.send_personal_message(self.example_user("cordelia"), self.example_user("iago"))
+        pm_c_msg_id = self.send_personal_message(self.example_user("hamlet"), self.example_user("othello"))
+        pm_d_msg_id = self.send_personal_message(self.example_user("iago"), self.example_user("hamlet"))
 
         # Send message advertising export and make users react
-        self.send_stream_message(self.example_email("othello"), "Verona",
+        self.send_stream_message(self.example_user("othello"), "Verona",
                                  topic_name="Export",
                                  content="Thumbs up for export")
         message = Message.objects.last()
@@ -698,24 +698,24 @@ class ImportExportTest(ZulipTestCase):
         RealmEmoji.objects.get(realm=original_realm).delete()
         # data to test import of huddles
         huddle = [
-            self.example_email('hamlet'),
-            self.example_email('othello')
+            self.example_user('hamlet'),
+            self.example_user('othello')
         ]
         self.send_huddle_message(
-            self.example_email('cordelia'), huddle, 'test huddle message'
+            self.example_user('cordelia'), huddle, 'test huddle message'
         )
 
         user_mention_message = '@**King Hamlet** Hello'
-        self.send_stream_message(self.example_email("iago"), "Verona", user_mention_message)
+        self.send_stream_message(self.example_user("iago"), "Verona", user_mention_message)
 
         stream_mention_message = 'Subscribe to #**Denmark**'
-        self.send_stream_message(self.example_email("hamlet"), "Verona", stream_mention_message)
+        self.send_stream_message(self.example_user("hamlet"), "Verona", stream_mention_message)
 
         user_group_mention_message = 'Hello @*hamletcharacters*'
-        self.send_stream_message(self.example_email("othello"), "Verona", user_group_mention_message)
+        self.send_stream_message(self.example_user("othello"), "Verona", user_group_mention_message)
 
         special_characters_message = "```\n'\n```\n@**Polonius**"
-        self.send_stream_message(self.example_email("iago"), "Denmark", special_characters_message)
+        self.send_stream_message(self.example_user("iago"), "Denmark", special_characters_message)
 
         sample_user = self.example_user('hamlet')
 
@@ -1010,7 +1010,13 @@ class ImportExportTest(ZulipTestCase):
             self.assertEqual(user_profile.recipient_id, Recipient.objects.get(type=Recipient.PERSONAL,
                                                                               type_id=user_profile.id).id)
         for stream in Stream.objects.filter(realm=imported_realm):
-            self.assertEqual(stream.recipient_id, stream.recipient.id)
+            self.assertEqual(stream.recipient_id, Recipient.objects.get(type=Recipient.STREAM,
+                                                                        type_id=stream.id).id)
+
+        for huddle_object in Huddle.objects.all():
+            # Huddles don't have a realm column, so we just test all Huddles for simplicity.
+            self.assertEqual(huddle_object.recipient_id, Recipient.objects.get(type=Recipient.HUDDLE,
+                                                                               type_id=huddle_object.id).id)
 
     def test_import_files_from_local(self) -> None:
 

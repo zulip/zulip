@@ -55,56 +55,32 @@ import ujson
 
 class DecoratorTestCase(TestCase):
     def test_get_client_name(self) -> None:
-        class Request:
-            def __init__(self, GET: Dict[str, str], POST: Dict[str, str], META: Dict[str, str]) -> None:
-                self.GET = GET
-                self.POST = POST
-                self.META = META
+        req = HostRequestMock()
+        self.assertEqual(get_client_name(req), 'Unspecified')
 
-        req = Request(
-            GET=dict(),
-            POST=dict(),
-            META=dict(),
-        )
+        req.META['HTTP_USER_AGENT'] = 'ZulipElectron/4.0.3 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36'
+        self.assertEqual(get_client_name(req), 'ZulipElectron')
 
-        self.assertEqual(get_client_name(req, is_browser_view=True), 'website')
-        self.assertEqual(get_client_name(req, is_browser_view=False), 'Unspecified')
+        req.META['HTTP_USER_AGENT'] = 'ZulipDesktop/0.4.4 (Mac)'
+        self.assertEqual(get_client_name(req), 'ZulipDesktop')
 
-        req = Request(
-            GET=dict(),
-            POST=dict(),
-            META=dict(HTTP_USER_AGENT='Mozilla/bla bla bla'),
-        )
+        req.META['HTTP_USER_AGENT'] = 'ZulipMobile/26.22.145 (Android 10)'
+        self.assertEqual(get_client_name(req), 'ZulipMobile')
 
-        self.assertEqual(get_client_name(req, is_browser_view=True), 'website')
-        self.assertEqual(get_client_name(req, is_browser_view=False), 'Mozilla')
+        req.META['HTTP_USER_AGENT'] = 'ZulipMobile/26.22.145 (iOS 13.3.1)'
+        self.assertEqual(get_client_name(req), 'ZulipMobile')
 
-        req = Request(
-            GET=dict(),
-            POST=dict(),
-            META=dict(HTTP_USER_AGENT='ZulipDesktop/bla bla bla'),
-        )
+        # TODO: This should ideally be Firefox.
+        req.META['HTTP_USER_AGENT'] = 'Mozilla/5.0 (X11; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/73.0'
+        self.assertEqual(get_client_name(req), 'Mozilla')
 
-        self.assertEqual(get_client_name(req, is_browser_view=True), 'ZulipDesktop')
-        self.assertEqual(get_client_name(req, is_browser_view=False), 'ZulipDesktop')
+        # TODO: This should ideally be Chrome.
+        req.META['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.43 Safari/537.36'
+        self.assertEqual(get_client_name(req), 'Mozilla')
 
-        req = Request(
-            GET=dict(),
-            POST=dict(),
-            META=dict(HTTP_USER_AGENT='ZulipMobile/bla bla bla'),
-        )
-
-        self.assertEqual(get_client_name(req, is_browser_view=True), 'ZulipMobile')
-        self.assertEqual(get_client_name(req, is_browser_view=False), 'ZulipMobile')
-
-        req = Request(
-            GET=dict(client='fancy phone'),
-            POST=dict(),
-            META=dict(),
-        )
-
-        self.assertEqual(get_client_name(req, is_browser_view=True), 'fancy phone')
-        self.assertEqual(get_client_name(req, is_browser_view=False), 'fancy phone')
+        # TODO: This should ideally be Mobile Safari if we had better user-agent parsing.
+        req.META['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Linux; Android 8.0.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Mobile Safari/537.36'
+        self.assertEqual(get_client_name(req), 'Mozilla')
 
     def test_REQ_aliases(self) -> None:
 
@@ -402,9 +378,6 @@ body:
         # Verify rate limiting was attempted.
         self.assertTrue(rate_limit_mock.called)
 
-        # Verify decorator set the magic _email field used by some of our back end logging.
-        self.assertEqual(request._email, webhook_bot_email)
-
         # Verify the main purpose of the decorator, which is that it passed in the
         # user_profile to my_webhook, allowing it return the correct
         # email for the bot (despite the API caller only knowing the API key).
@@ -435,7 +408,7 @@ class SkipRateLimitingTest(ZulipTestCase):
             return json_success()
 
         request = HostRequestMock(host="zulip.testserver")
-        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials(self.example_email("hamlet"))
+        request.META['HTTP_AUTHORIZATION'] = self.encode_email(self.example_email("hamlet"))
         request.method = 'POST'
 
         with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
@@ -503,7 +476,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         webhook_bot_realm = get_realm('zulip')
 
         request = HostRequestMock()
-        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials(webhook_bot_email)
+        request.META['HTTP_AUTHORIZATION'] = self.encode_email(webhook_bot_email)
         request.method = 'POST'
         request.host = "zulip.testserver"
 
@@ -546,7 +519,7 @@ body:
         webhook_bot_realm = get_realm('zulip')
 
         request = HostRequestMock()
-        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials(webhook_bot_email)
+        request.META['HTTP_AUTHORIZATION'] = self.encode_email(webhook_bot_email)
         request.method = 'POST'
         request.host = "zulip.testserver"
 
@@ -587,7 +560,7 @@ body:
             raise Exception("raised by a non-webhook view")
 
         request = HostRequestMock()
-        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials("aaron@zulip.com")
+        request.META['HTTP_AUTHORIZATION'] = self.encode_email("aaron@zulip.com")
         request.method = 'POST'
         request.host = "zulip.testserver"
 
@@ -1031,7 +1004,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         # Even if a logged-in session was leaked, it still wouldn't work
         realm.deactivated = False
         realm.save()
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         realm.deactivated = True
         realm.save()
 
@@ -1041,7 +1014,7 @@ class DeactivatedRealmTest(ZulipTestCase):
                                                      "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
-        result = self.api_post(self.example_email("hamlet"),
+        result = self.api_post(self.example_user("hamlet"),
                                "/api/v1/messages", {"type": "private",
                                                     "content": "Test message",
                                                     "client": "test suite",
@@ -1055,11 +1028,10 @@ class DeactivatedRealmTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         user_profile = self.example_user('hamlet')
-        email = user_profile.email
         test_password = "abcd1234"
         user_profile.set_password(test_password)
 
-        self.login(email)
+        self.login_user(user_profile)
         realm.deactivated = True
         realm.save()
         result = self.client_post("/json/fetch_api_key", {"password": test_password})
@@ -1085,14 +1057,13 @@ class LoginRequiredTest(ZulipTestCase):
         Verifies the zulip_login_required decorator blocks deactivated users.
         """
         user_profile = self.example_user('hamlet')
-        email = user_profile.email
 
         # Verify fails if logged-out
         result = self.client_get('/accounts/accept_terms/')
         self.assertEqual(result.status_code, 302)
 
         # Verify succeeds once logged-in
-        self.login(email)
+        self.login_user(user_profile)
         result = self.client_get('/accounts/accept_terms/')
         self.assert_in_response("I agree to the", result)
 
@@ -1104,7 +1075,7 @@ class LoginRequiredTest(ZulipTestCase):
 
         # Verify succeeds if user reactivated
         do_reactivate_user(user_profile)
-        self.login(email)
+        self.login_user(user_profile)
         result = self.client_get('/accounts/accept_terms/')
         self.assert_in_response("I agree to the", result)
 
@@ -1116,28 +1087,26 @@ class LoginRequiredTest(ZulipTestCase):
 
 class FetchAPIKeyTest(ZulipTestCase):
     def test_fetch_api_key_success(self) -> None:
-        email = self.example_email("cordelia")
-
-        self.login(email)
-        result = self.client_post("/json/fetch_api_key", {"password": initial_password(email)})
+        user = self.example_user("cordelia")
+        self.login_user(user)
+        result = self.client_post("/json/fetch_api_key",
+                                  dict(password=initial_password(user.email)))
         self.assert_json_success(result)
 
     def test_fetch_api_key_email_address_visibility(self) -> None:
-        user_profile = self.example_user("cordelia")
-        email = user_profile.email
-        do_set_realm_property(user_profile.realm, "email_address_visibility",
+        user = self.example_user("cordelia")
+        do_set_realm_property(user.realm, "email_address_visibility",
                               Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
 
-        self.login(email)
+        self.login_user(user)
         result = self.client_post("/json/fetch_api_key",
-                                  {"password": initial_password(email)})
+                                  dict(password=initial_password(user.email)))
         self.assert_json_success(result)
 
     def test_fetch_api_key_wrong_password(self) -> None:
-        email = self.example_email("cordelia")
-
-        self.login(email)
-        result = self.client_post("/json/fetch_api_key", {"password": "wrong_password"})
+        self.login('cordelia')
+        result = self.client_post("/json/fetch_api_key",
+                                  dict(password='wrong_password'))
         self.assert_json_error_contains(result, "password is incorrect")
 
 class InactiveUserTest(ZulipTestCase):
@@ -1147,8 +1116,7 @@ class InactiveUserTest(ZulipTestCase):
 
         """
         user_profile = self.example_user('hamlet')
-        email = user_profile.email
-        self.login(email)
+        self.login_user(user_profile)
         do_deactivate_user(user_profile)
 
         result = self.client_post("/json/messages", {"type": "private",
@@ -1159,7 +1127,7 @@ class InactiveUserTest(ZulipTestCase):
 
         # Even if a logged-in session was leaked, it still wouldn't work
         do_reactivate_user(user_profile)
-        self.login(email)
+        self.login_user(user_profile)
         user_profile.is_active = False
         user_profile.save()
 
@@ -1169,7 +1137,7 @@ class InactiveUserTest(ZulipTestCase):
                                                      "to": self.example_email("othello")})
         self.assert_json_error_contains(result, "Account is deactivated", status_code=400)
 
-        result = self.api_post(self.example_email("hamlet"),
+        result = self.api_post(self.example_user("hamlet"),
                                "/api/v1/messages", {"type": "private",
                                                     "content": "Test message",
                                                     "client": "test suite",
@@ -1187,7 +1155,7 @@ class InactiveUserTest(ZulipTestCase):
         user_profile.set_password(test_password)
         user_profile.save()
 
-        self.login(email, password=test_password)
+        self.login_by_email(email, password=test_password)
         user_profile.is_active = False
         user_profile.save()
         result = self.client_post("/json/fetch_api_key", {"password": test_password})
@@ -1265,20 +1233,16 @@ class InactiveUserTest(ZulipTestCase):
 
 
 class TestIncomingWebhookBot(ZulipTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        zulip_realm = get_realm('zulip')
-        self.webhook_bot = get_user('webhook-bot@zulip.com', zulip_realm)
-
     def test_webhook_bot_permissions(self) -> None:
-        result = self.api_post("webhook-bot@zulip.com",
+        webhook_bot = self.example_user('webhook_bot')
+        result = self.api_post(webhook_bot,
                                "/api/v1/messages", {"type": "private",
                                                     "content": "Test message",
                                                     "client": "test suite",
                                                     "to": self.example_email("othello")})
         self.assert_json_success(result)
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
-        result = self.api_get("webhook-bot@zulip.com", "/api/v1/messages", dict(post_params))
+        result = self.api_get(webhook_bot, "/api/v1/messages", dict(post_params))
         self.assert_json_error(result, 'This API is not available to incoming webhook bots.',
                                status_code=401)
 
@@ -1389,7 +1353,7 @@ class TestInternalNotifyView(TestCase):
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(req))
             self.assertEqual(self.internal_notify(False, req), self.BORING_RESULT)
-            self.assertEqual(req._email, 'internal')
+            self.assertEqual(req._requestor_for_logs, 'internal')
 
             with self.assertRaises(RuntimeError):
                 self.internal_notify(True, req)
@@ -1398,7 +1362,7 @@ class TestInternalNotifyView(TestCase):
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(req))
             self.assertEqual(self.internal_notify(True, req), self.BORING_RESULT)
-            self.assertEqual(req._email, 'internal')
+            self.assertEqual(req._requestor_for_logs, 'internal')
 
             with self.assertRaises(RuntimeError):
                 self.internal_notify(False, req)
@@ -1432,6 +1396,8 @@ class TestInternalNotifyView(TestCase):
 
 class TestHumanUsersOnlyDecorator(ZulipTestCase):
     def test_human_only_endpoints(self) -> None:
+        default_bot = self.example_user('default_bot')
+
         post_endpoints = [
             "/api/v1/users/me/apns_device_token",
             "/api/v1/users/me/android_gcm_reg_id",
@@ -1444,7 +1410,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/report/unnarrow_times",
         ]
         for endpoint in post_endpoints:
-            result = self.api_post('default-bot@zulip.com', endpoint)
+            result = self.api_post(default_bot, endpoint)
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
         patch_endpoints = [
@@ -1454,7 +1420,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/profile_data"
         ]
         for endpoint in patch_endpoints:
-            result = self.api_patch('default-bot@zulip.com', endpoint)
+            result = self.api_patch(default_bot, endpoint)
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
         delete_endpoints = [
@@ -1462,21 +1428,18 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/android_gcm_reg_id",
         ]
         for endpoint in delete_endpoints:
-            result = self.api_delete('default-bot@zulip.com', endpoint)
+            result = self.api_delete(default_bot, endpoint)
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
 class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
     def test_authenticated_json_post_view_if_everything_is_correct(self) -> None:
-        user_email = self.example_email('hamlet')
-        user_realm = get_realm('zulip')
-        self._login(user_email, user_realm)
-        response = self._do_test(user_email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
+        response = self._do_test(user)
         self.assertEqual(response.status_code, 200)
 
     def test_authenticated_json_post_view_with_get_request(self) -> None:
-        user_email = self.example_email('hamlet')
-        user_realm = get_realm('zulip')
-        self._login(user_email, user_realm)
+        self.login('hamlet')
         with mock.patch('logging.warning') as mock_warning:
             result = self.client_get(r'/json/subscriptions/exists', {'stream': 'Verona'})
             self.assertEqual(result.status_code, 405)
@@ -1485,91 +1448,80 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
                              ('Method Not Allowed (%s): %s', 'GET', '/json/subscriptions/exists'))
 
     def test_authenticated_json_post_view_if_subdomain_is_invalid(self) -> None:
-        user_email = self.example_email('hamlet')
-        user_realm = get_realm('zulip')
-        self._login(user_email, user_realm)
+        user = self.example_user('hamlet')
+        self.login_user(user)
         with mock.patch('logging.warning') as mock_warning, \
                 mock.patch('zerver.decorator.get_subdomain', return_value=''):
-            self.assert_json_error_contains(self._do_test(user_email),
+            self.assert_json_error_contains(self._do_test(user),
                                             "Account is not associated with this "
                                             "subdomain")
             mock_warning.assert_called_with(
                 "User {} ({}) attempted to access API on wrong "
-                "subdomain ({})".format(user_email, 'zulip', ''))
+                "subdomain ({})".format(user.email, 'zulip', ''))
 
         with mock.patch('logging.warning') as mock_warning, \
                 mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
-            self.assert_json_error_contains(self._do_test(user_email),
+            self.assert_json_error_contains(self._do_test(user),
                                             "Account is not associated with this "
                                             "subdomain")
             mock_warning.assert_called_with(
                 "User {} ({}) attempted to access API on wrong "
-                "subdomain ({})".format(user_email, 'zulip', 'acme'))
+                "subdomain ({})".format(user.email, 'zulip', 'acme'))
 
     def test_authenticated_json_post_view_if_user_is_incoming_webhook(self) -> None:
-        user_email = 'webhook-bot@zulip.com'
-        user_realm = get_realm('zulip')
-        self._login(user_email, user_realm, password="test")  # we set a password because user is a bot
-        self.assert_json_error_contains(self._do_test(user_email), "Webhook bots can only access webhooks")
+        bot = self.example_user('webhook_bot')
+        bot.set_password('test')
+        bot.save()
+        self.login_by_email(bot.email, password='test')
+        self.assert_json_error_contains(self._do_test(bot), "Webhook bots can only access webhooks")
 
     def test_authenticated_json_post_view_if_user_is_not_active(self) -> None:
-        user_email = self.example_email('hamlet')
-        user_realm = get_realm('zulip')
-        self._login(user_email, user_realm, password="test")
-        # Get user_profile after _login so that we have the latest data.
-        user_profile = get_user(user_email, user_realm)
+        user_profile = self.example_user('hamlet')
+        self.login_user(user_profile)
         # we deactivate user manually because do_deactivate_user removes user session
         user_profile.is_active = False
         user_profile.save()
-        self.assert_json_error_contains(self._do_test(user_email), "Account is deactivated")
+        self.assert_json_error_contains(self._do_test(user_profile), "Account is deactivated")
         do_reactivate_user(user_profile)
 
     def test_authenticated_json_post_view_if_user_realm_is_deactivated(self) -> None:
-        user_email = self.example_email('hamlet')
-        user_realm = get_realm('zulip')
-        user_profile = get_user(user_email, user_realm)
-        self._login(user_email, user_realm)
+        user_profile = self.example_user('hamlet')
+        self.login_user(user_profile)
         # we deactivate user's realm manually because do_deactivate_user removes user session
         user_profile.realm.deactivated = True
         user_profile.realm.save()
-        self.assert_json_error_contains(self._do_test(user_email), "This organization has been deactivated")
+        self.assert_json_error_contains(self._do_test(user_profile), "This organization has been deactivated")
         do_reactivate_realm(user_profile.realm)
 
-    def _do_test(self, user_email: str) -> HttpResponse:
+    def _do_test(self, user: UserProfile) -> HttpResponse:
         stream_name = "stream name"
-        self.common_subscribe_to_streams(user_email, [stream_name])
-        data = {"password": initial_password(user_email), "stream": stream_name}
-        return self.client_post(r'/json/subscriptions/exists', data)
-
-    def _login(self, user_email: str, user_realm: Realm, password: str=None) -> None:
-        if password:
-            user_profile = get_user(user_email, user_realm)
-            user_profile.set_password(password)
-            user_profile.save()
-        self.login(user_email, password)
+        self.common_subscribe_to_streams(user, [stream_name])
+        data = {"password": initial_password(user.email), "stream": stream_name}
+        return self.client_post('/json/subscriptions/exists', data)
 
 class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
     def test_authenticated_json_view_if_subdomain_is_invalid(self) -> None:
-        user_email = self.example_email("hamlet")
-        self.login(user_email)
+        user = self.example_user('hamlet')
+        email = user.email
+        self.login_user(user)
 
         with mock.patch('logging.warning') as mock_warning, \
                 mock.patch('zerver.decorator.get_subdomain', return_value=''):
-            self.assert_json_error_contains(self._do_test(str(user_email)),
+            self.assert_json_error_contains(self._do_test(email),
                                             "Account is not associated with this "
                                             "subdomain")
             mock_warning.assert_called_with(
                 "User {} ({}) attempted to access API on wrong "
-                "subdomain ({})".format(user_email, 'zulip', ''))
+                "subdomain ({})".format(email, 'zulip', ''))
 
         with mock.patch('logging.warning') as mock_warning, \
                 mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
-            self.assert_json_error_contains(self._do_test(str(user_email)),
+            self.assert_json_error_contains(self._do_test(email),
                                             "Account is not associated with this "
                                             "subdomain")
             mock_warning.assert_called_with(
                 "User {} ({}) attempted to access API on wrong "
-                "subdomain ({})".format(user_email, 'zulip', 'acme'))
+                "subdomain ({})".format(email, 'zulip', 'acme'))
 
     def _do_test(self, user_email: str) -> HttpResponse:
         data = {"password": initial_password(user_email)}
@@ -1577,8 +1529,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
 
 class TestZulipLoginRequiredDecorator(ZulipTestCase):
     def test_zulip_login_required_if_subdomain_is_invalid(self) -> None:
-        user_email = self.example_email("hamlet")
-        self.login(user_email)
+        self.login('hamlet')
 
         with mock.patch('zerver.decorator.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/accept_terms/')
@@ -1603,7 +1554,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
         request.META['PATH_INFO'] = ''
         request.user = hamlet = self.example_user('hamlet')
         request.user.is_verified = lambda: False
-        self.login(hamlet.email)
+        self.login_user(hamlet)
         request.session = self.client.session
         request.get_host = lambda: 'zulip.testserver'
 
@@ -1618,7 +1569,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             request.META['PATH_INFO'] = ''
             request.user = hamlet = self.example_user('hamlet')
             request.user.is_verified = lambda: False
-            self.login(hamlet.email)
+            self.login_user(hamlet)
             request.session = self.client.session
             request.get_host = lambda: 'zulip.testserver'
             self.create_default_device(request.user)
@@ -1644,7 +1595,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             request.META['PATH_INFO'] = ''
             request.user = hamlet = self.example_user('hamlet')
             request.user.is_verified = lambda: True
-            self.login(hamlet.email)
+            self.login_user(hamlet)
             request.session = self.client.session
             request.get_host = lambda: 'zulip.testserver'
             self.create_default_device(request.user)
@@ -1655,32 +1606,30 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
 
 class TestRequireDecorators(ZulipTestCase):
     def test_require_server_admin_decorator(self) -> None:
-        user_email = self.example_email('hamlet')
-        user_realm = get_realm('zulip')
-        self.login(user_email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
 
         result = self.client_get('/activity')
         self.assertEqual(result.status_code, 302)
 
-        user_profile = get_user(user_email, user_realm)
-        user_profile.is_staff = True
-        user_profile.save()
+        user.is_staff = True
+        user.save()
 
         result = self.client_get('/activity')
         self.assertEqual(result.status_code, 200)
 
     def test_require_non_guest_user_decorator(self) -> None:
         guest_user = self.example_user('polonius')
-        self.login(guest_user.email)
-        result = self.common_subscribe_to_streams(guest_user.email, ["Denmark"])
+        self.login_user(guest_user)
+        result = self.common_subscribe_to_streams(guest_user, ["Denmark"])
         self.assert_json_error(result, "Not allowed for guest users")
 
-    def test_require_member_or_admin_decorator(self) -> None:
-        result = self.api_get("outgoing-webhook@zulip.com", '/api/v1/bots')
+        outgoing_webhook_bot = self.example_user('outgoing_webhook_bot')
+        result = self.api_get(outgoing_webhook_bot, '/api/v1/bots')
         self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
         guest_user = self.example_user('polonius')
-        self.login(guest_user.email)
+        self.login_user(guest_user)
         result = self.client_get('/json/bots')
         self.assert_json_error(result, "Not allowed for guest users")
 
@@ -1715,13 +1664,13 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
 class RestAPITest(ZulipTestCase):
     def test_method_not_allowed(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         result = self.client_patch('/json/users')
         self.assertEqual(result.status_code, 405)
         self.assert_in_response('Method Not Allowed', result)
 
     def test_options_method(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         result = self.client_options('/json/users')
         self.assertEqual(result.status_code, 204)
         self.assertEqual(str(result['Allow']), 'GET, HEAD, POST')

@@ -38,7 +38,7 @@
 * settings - **настройки**
 * invalid - **неверный**
 * incorrect - **неправильный**
-* uknown - **неизвестный**
+* unknown - **неизвестный**
 * account - **учетная запись**
 * subdomain - **поддомен**
 * API key - **API-ключ**

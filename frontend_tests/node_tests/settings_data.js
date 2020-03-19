@@ -1,4 +1,5 @@
 const settings_data = zrequire('settings_data');
+const settings_config = zrequire('settings_config');
 
 set_global('page_params', {});
 
@@ -17,26 +18,21 @@ const isaac = {
 run_test('email_for_user_settings', () => {
     const email = settings_data.email_for_user_settings;
 
-    settings_data.show_email = () => {
-        return false;
-    };
-
+    page_params.realm_email_address_visibility = settings_config.email_address_visibility_values
+        .admins_only.code;
     assert.equal(email(isaac), undefined);
-
-    settings_data.show_email = () => {
-        return true;
-    };
 
     page_params.is_admin = true;
     assert.equal(email(isaac), isaac.delivery_email);
 
-    // Fall back to email if delivery_email is not there.
-    assert.equal(
-        email({email: 'foo@example.com'}),
-        'foo@example.com');
+    page_params.realm_email_address_visibility = settings_config.email_address_visibility_values
+        .nobody.code;
+    assert.equal(email(isaac), undefined);
 
     page_params.is_admin = false;
+    assert.equal(email(isaac), undefined);
+
+    page_params.realm_email_address_visibility = settings_config.email_address_visibility_values
+        .everyone.code;
     assert.equal(email(isaac), isaac.email);
 });
-
-

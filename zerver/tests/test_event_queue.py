@@ -200,7 +200,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         client = allocate_client_descriptor(queue_data)
 
-        self.send_stream_message(cordelia.email, stream_name)
+        self.send_stream_message(cordelia, stream_name)
 
         self.assertEqual(len(client.event_queue.contents()), 1)
 
@@ -221,13 +221,12 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         user_profile.enable_online_push_notifications = False
         user_profile.save()
 
-        email = user_profile.email
         # Fetch the Denmark stream for testing
         stream = get_stream("Denmark", user_profile.realm)
         sub = Subscription.objects.get(user_profile=user_profile, recipient__type=Recipient.STREAM,
                                        recipient__type_id=stream.id)
 
-        self.login(email)
+        self.login_user(user_profile)
 
         def change_subscription_properties(user_profile: UserProfile, stream: Stream, sub: Subscription,
                                            properties: Dict[str, bool]) -> None:
@@ -253,7 +252,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         client_descriptor = allocate_event_queue()
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             # To test the missed_message hook, we first need to send a message
-            msg_id = self.send_stream_message(self.example_email("iago"), "Denmark")
+            msg_id = self.send_stream_message(self.example_user("iago"), "Denmark")
 
             # Verify that nothing happens if you call it as not the
             # "last client descriptor", in which case the function
@@ -275,7 +274,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # Test the hook with a private message; this should trigger notifications
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_personal_message(self.example_email("iago"), email)
+        msg_id = self.send_personal_message(self.example_user("iago"), user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)
             mock_enqueue.assert_called_once()
@@ -289,7 +288,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # Test the hook with a mention; this should trigger notifications
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
                                           content="@**King Hamlet** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -304,7 +303,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # Test the hook with a wildcard mention; this should trigger notifications
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
                                           content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -320,7 +319,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # themself using a human client; should not notify.
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_stream_message(self.example_email("hamlet"), "Denmark",
+        msg_id = self.send_stream_message(self.example_user("hamlet"), "Denmark",
                                           content="@**all** what's up?",
                                           sending_client_name="website")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
@@ -337,7 +336,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         change_subscription_properties(user_profile, stream, sub, {'is_muted': True})
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
                                           content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -355,7 +354,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         user_profile.save()
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
                                           content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -377,7 +376,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         sub.save()
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
                                           content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -397,7 +396,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         change_subscription_properties(user_profile, stream, sub, {'push_notifications': True})
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
                                           content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -415,7 +414,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                                        {'push_notifications': False,
                                         'email_notifications': True})
         self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
                                           content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -436,7 +435,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         self.assertTrue(client_descriptor.event_queue.empty())
         do_mute_topic(user_profile, stream, sub.recipient, "mutingtest")
-        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
                                           content="what's up everyone?", topic_name="mutingtest")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)
@@ -457,7 +456,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         self.assertTrue(client_descriptor.event_queue.empty())
         change_subscription_properties(user_profile, stream, sub, {'is_muted': True})
-        msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
                                           content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(user_profile.id, client_descriptor, True)

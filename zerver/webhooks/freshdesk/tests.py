@@ -26,7 +26,7 @@ Test ticket description ☃.
 * **Status**: Pending
 """.strip()
 
-        self.api_stream_message(self.TEST_USER_EMAIL, 'ticket_created', expected_topic, expected_message,
+        self.api_stream_message(self.test_user, 'ticket_created', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def test_status_change(self) -> None:
@@ -41,7 +41,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
 * **Status**: Resolved -> Waiting on Customer
 """.strip()
 
-        self.api_stream_message(self.TEST_USER_EMAIL, 'status_changed', expected_topic, expected_message,
+        self.api_stream_message(self.test_user, 'status_changed', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def test_status_change_fixture_without_required_key(self) -> None:
@@ -51,7 +51,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         self.url = self.build_webhook_url()
         payload = self.get_body('status_changed_fixture_with_missing_key')
         kwargs = {
-            'HTTP_AUTHORIZATION': self.encode_credentials(self.TEST_USER_EMAIL),
+            'HTTP_AUTHORIZATION': self.encode_email(self.test_user.email),
             'content_type': 'application/x-www-form-urlencoded',
         }
         result = self.client_post(self.url, payload, **kwargs)
@@ -68,7 +68,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
 
 * **Priority**: High -> Low
 """.strip()
-        self.api_stream_message(self.TEST_USER_EMAIL, 'priority_changed', expected_topic, expected_message,
+        self.api_stream_message(self.test_user, 'priority_changed', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     @patch('zerver.lib.webhooks.common.check_send_webhook_message')
@@ -80,7 +80,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         self.url = self.build_webhook_url()
         payload = self.get_body('unknown_payload')
         kwargs = {
-            'HTTP_AUTHORIZATION': self.encode_credentials(self.TEST_USER_EMAIL),
+            'HTTP_AUTHORIZATION': self.encode_email(self.test_user.email),
             'content_type': 'application/x-www-form-urlencoded',
         }
         result = self.client_post(self.url, payload, **kwargs)
@@ -97,7 +97,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
 Requester Bob <requester-bob@example.com> added a {} note to \
 [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11).
 """.strip().format(note_type)
-        self.api_stream_message(self.TEST_USER_EMAIL, fixture, expected_topic, expected_message,
+        self.api_stream_message(self.test_user, fixture, expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def test_private_note_change(self) -> None:
@@ -116,7 +116,7 @@ Requester Bob <requester-bob@example.com> added a {} note to \
         expected_message = """
 Requester \u2603 Bob <requester-bob@example.com> created [ticket #12](http://test1234zzz.freshdesk.com/helpdesk/tickets/12):\n\n``` quote\nThere are too many cat pictures on the internet \u2603. We need more guinea pigs.\nExhibit 1:\n\n  \n\n[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png)\n```\n\n* **Type**: Problem\n* **Priority**: Urgent\n* **Status**: Open
 """.strip()
-        self.api_stream_message(self.TEST_USER_EMAIL, "inline_images", expected_topic, expected_message,
+        self.api_stream_message(self.test_user, "inline_images", expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: str) -> str:

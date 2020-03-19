@@ -98,15 +98,18 @@ class BouncerTestCase(ZulipTestCase):
         # args[0] is method, args[1] is URL.
         local_url = args[1].replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if args[0] == "POST":
-            result = self.api_post(self.server_uuid,
-                                   local_url,
-                                   kwargs['data'],
-                                   subdomain="")
+            result = self.uuid_post(
+                self.server_uuid,
+                local_url,
+                kwargs['data'],
+                subdomain='')
+
         elif args[0] == "GET":
-            result = self.api_get(self.server_uuid,
-                                  local_url,
-                                  kwargs['data'],
-                                  subdomain="")
+            result = self.uuid_get(
+                self.server_uuid,
+                local_url,
+                kwargs['data'],
+                subdomain='')
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
@@ -128,21 +131,24 @@ class PushBouncerNotificationTest(BouncerTestCase):
         token_kind = PushDeviceToken.GCM
 
         endpoint = '/api/v1/remotes/push/unregister'
-        result = self.api_post(self.server_uuid, endpoint, {'token_kind': token_kind})
+        result = self.uuid_post(self.server_uuid, endpoint, {'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'token' argument")
-        result = self.api_post(self.server_uuid, endpoint, {'token': token})
+        result = self.uuid_post(self.server_uuid, endpoint, {'token': token})
         self.assert_json_error(result, "Missing 'token_kind' argument")
 
         # We need the root ('') subdomain to be in use for this next
         # test, since the push bouncer API is only available there:
+        hamlet = self.example_user('hamlet')
         realm = get_realm("zulip")
         realm.string_id = ""
         realm.save()
 
-        result = self.api_post(self.example_email("hamlet"), endpoint, {'token': token,
-                                                                        'user_id': 15,
-                                                                        'token_kind': token_kind},
-                               subdomain="")
+        result = self.api_post(
+            hamlet,
+            endpoint,
+            dict(user_id=15, token=token, token_kind=token_kind),
+            subdomain='',
+        )
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
     def test_register_remote_push_user_paramas(self) -> None:
@@ -152,20 +158,24 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         endpoint = '/api/v1/remotes/push/register'
 
-        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token_kind': token_kind})
+        result = self.uuid_post(self.server_uuid, endpoint, {'user_id': user_id, 'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'token' argument")
-        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token})
+        result = self.uuid_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token})
         self.assert_json_error(result, "Missing 'token_kind' argument")
-        result = self.api_post(self.server_uuid, endpoint, {'token': token, 'token_kind': token_kind})
+        result = self.uuid_post(self.server_uuid, endpoint, {'token': token, 'token_kind': token_kind})
         self.assert_json_error(result, "Missing 'user_id' argument")
-        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token, 'token_kind': 17})
+        result = self.uuid_post(self.server_uuid, endpoint, {'user_id': user_id, 'token': token, 'token_kind': 17})
         self.assert_json_error(result, "Invalid token type")
 
-        result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
-                                                                        'token_kind': token_kind,
-                                                                        'token': token})
+        result = self.api_post(
+            self.example_user("hamlet"),
+            endpoint,
+            dict(user_id=user_id, token_kin=token_kind, token=token),
+        )
         self.assert_json_error(result, "Account is not associated with this subdomain",
                                status_code=401)
+
+        hamlet = self.example_user('hamlet')
 
         # We need the root ('') subdomain to be in use for this next
         # test, since the push bouncer API is only available there:
@@ -173,24 +183,28 @@ class PushBouncerNotificationTest(BouncerTestCase):
         realm.string_id = ""
         realm.save()
 
-        result = self.api_post(self.example_email("hamlet"), endpoint, {'user_id': user_id,
-                                                                        'token_kind': token_kind,
-                                                                        'token': token})
+        result = self.api_post(
+            hamlet,
+            endpoint,
+            dict(user_id=user_id, token_kind=token_kind, token=token),
+        )
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
-        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id,
-                                                            'token_kind': token_kind,
-                                                            'token': token},
-                               subdomain="zulip")
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            dict(user_id=user_id, token_kind=token_kind, token=token),
+            subdomain="zulip")
         self.assert_json_error(result, "Invalid subdomain for push notifications bouncer",
                                status_code=401)
 
         # We do a bit of hackery here to the API_KEYS cache just to
         # make the code simple for sending an incorrect API key.
         self.API_KEYS[self.server_uuid] = 'invalid'
-        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id,
-                                                            'token_kind': token_kind,
-                                                            'token': token})
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            dict(user_id=user_id, token_kind=token_kind, token=token))
         self.assert_json_error(result, "Zulip server auth failure: key does not match role 1234-abcd",
                                status_code=401)
 
@@ -215,7 +229,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             payload = self.get_generic_payload(method)
 
             # Verify correct results are success
-            result = self.api_post(self.server_uuid, endpoint, payload)
+            result = self.uuid_post(self.server_uuid, endpoint, payload)
             self.assert_json_success(result)
 
             remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
@@ -225,22 +239,22 @@ class PushBouncerNotificationTest(BouncerTestCase):
             # Try adding/removing tokens that are too big...
             broken_token = "x" * 5000  # too big
             payload['token'] = broken_token
-            result = self.api_post(self.server_uuid, endpoint, payload)
+            result = self.uuid_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, 'Empty or invalid length token')
 
     def test_remote_push_unregister_all(self) -> None:
         payload = self.get_generic_payload('register')
 
         # Verify correct results are success
-        result = self.api_post(self.server_uuid,
-                               '/api/v1/remotes/push/register', payload)
+        result = self.uuid_post(self.server_uuid,
+                                '/api/v1/remotes/push/register', payload)
         self.assert_json_success(result)
 
         remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
         self.assertEqual(len(remote_tokens), 1)
-        result = self.api_post(self.server_uuid,
-                               '/api/v1/remotes/push/unregister/all',
-                               dict(user_id=10))
+        result = self.uuid_post(self.server_uuid,
+                                '/api/v1/remotes/push/unregister/all',
+                                dict(user_id=10))
         self.assert_json_success(result)
 
         remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
@@ -257,7 +271,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 'token': 'xyz uses non-hex characters',
                 'token_kind': PushDeviceToken.APNS,
             }
-            result = self.api_post(self.server_uuid, endpoint, payload)
+            result = self.uuid_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, 'Invalid APNS token')
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
@@ -268,8 +282,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         """
         mock_request.side_effect = self.bounce_request
         user = self.example_user('cordelia')
-        email = user.email
-        self.login(email)
+        self.login_user(user)
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
 
         endpoints = [
@@ -466,12 +479,13 @@ class AnalyticsBouncerTest(BouncerTestCase):
          realmauditlog_data) = build_analytics_data(RealmCount.objects.all(),
                                                     InstallationCount.objects.all(),
                                                     RealmAuditLog.objects.all())
-        result = self.api_post(self.server_uuid,
-                               '/api/v1/remotes/server/analytics',
-                               {'realm_counts': ujson.dumps(realm_count_data),
-                                'installation_counts': ujson.dumps(installation_count_data),
-                                'realmauditlog_rows': ujson.dumps(realmauditlog_data)},
-                               subdomain="")
+        result = self.uuid_post(
+            self.server_uuid,
+            '/api/v1/remotes/server/analytics',
+            {'realm_counts': ujson.dumps(realm_count_data),
+             'installation_counts': ujson.dumps(installation_count_data),
+             'realmauditlog_rows': ujson.dumps(realmauditlog_data)},
+            subdomain="")
         self.assert_json_error(result, "Data is out of order.")
 
         with mock.patch("zilencer.views.validate_incoming_table_data"):
@@ -479,7 +493,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             # IntegrityError that will be thrown in here from breaking
             # the unittest transaction.
             with transaction.atomic():
-                result = self.api_post(
+                result = self.uuid_post(
                     self.server_uuid,
                     '/api/v1/remotes/server/analytics',
                     {'realm_counts': ujson.dumps(realm_count_data),
@@ -656,10 +670,11 @@ class HandlePushNotificationTest(PushNotificationTest):
         # args[0] is method, args[1] is URL.
         local_url = args[1].replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if args[0] == "POST":
-            result = self.api_post(self.server_uuid,
-                                   local_url,
-                                   kwargs['data'],
-                                   content_type="application/json")
+            result = self.uuid_post(
+                self.server_uuid,
+                local_url,
+                kwargs['data'],
+                content_type="application/json")
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
@@ -957,7 +972,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         not long-term idle; we fake it, though, in the sense that the user should
         not have received the message in the first place"""
         self.make_stream('public_stream')
-        message_id = self.send_stream_message("iago@zulip.com", "public_stream", "test")
+        sender = self.example_user('iago')
+        message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {'message_id': message_id}
         with mock.patch('zerver.lib.push_notifications.logger.error') as mock_logger, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
@@ -977,7 +993,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.subscribe(self.user_profile, 'public_stream')
         do_soft_deactivate_users([self.user_profile])
 
-        message_id = self.send_stream_message("iago@zulip.com", "public_stream", "test")
+        sender = self.example_user('iago')
+        message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {
             'message_id': message_id,
             'trigger': 'stream_push_notify',
@@ -1136,8 +1153,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_personal_message(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_personal_message(
-            self.sender.email,
-            user_profile.email,
+            self.sender,
+            user_profile,
             'Content of personal message',
         )
         message = Message.objects.get(id=message_id)
@@ -1170,8 +1187,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_huddle_message(self, mock_push_notifications: mock.MagicMock) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_huddle_message(
-            self.sender.email,
-            [self.example_email('othello'), self.example_email('cordelia')])
+            self.sender,
+            [self.example_user('othello'), self.example_user('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
         payload = get_message_payload_apns(user_profile, message)
@@ -1306,8 +1323,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_redacted_content(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_huddle_message(
-            self.sender.email,
-            [self.example_email('othello'), self.example_email('cordelia')])
+            self.sender,
+            [self.example_user('othello'), self.example_user('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
         payload = get_message_payload_apns(user_profile, message)
@@ -1534,8 +1551,7 @@ class TestNumPushDevicesForUser(PushNotificationTest):
 class TestPushApi(ZulipTestCase):
     def test_push_api(self) -> None:
         user = self.example_user('cordelia')
-        email = user.email
-        self.login(email)
+        self.login_user(user)
 
         endpoints = [
             ('/json/users/me/apns_device_token', 'apple-tokenaz'),
@@ -1756,7 +1772,7 @@ class TestClearOnRead(ZulipTestCase):
         hamlet.save()
         stream = self.subscribe(hamlet, "Denmark")
 
-        message_ids = [self.send_stream_message(self.example_email("iago"),
+        message_ids = [self.send_stream_message(self.example_user("iago"),
                                                 stream.name,
                                                 "yo {}".format(i))
                        for i in range(n_msgs)]

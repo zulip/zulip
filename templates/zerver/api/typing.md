@@ -25,9 +25,12 @@ const config = {
     zuliprc: 'zuliprc',
 };
 
+const user_id1 = 9;
+const user_id2 = 10;
+
 const typingParams = {
     op: 'start',
-    to: ['iago@zulip.com', 'polonius@zulip.com'],
+    to: [user_id1, user_id2],
 };
 
 zulip(config).then((client) => {

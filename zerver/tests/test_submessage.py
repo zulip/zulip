@@ -20,7 +20,7 @@ class TestBasics(ZulipTestCase):
         stream_name = 'Verona'
 
         message_id = self.send_stream_message(
-            sender_email=cordelia.email,
+            sender=cordelia,
             stream_name=stream_name,
         )
 
@@ -80,10 +80,10 @@ class TestBasics(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         stream_name = 'Verona'
         message_id = self.send_stream_message(
-            sender_email=cordelia.email,
+            sender=cordelia,
             stream_name=stream_name,
         )
-        self.login(cordelia.email)
+        self.login_user(cordelia)
 
         payload = dict(
             message_id=message_id,
@@ -95,8 +95,8 @@ class TestBasics(ZulipTestCase):
 
         hamlet = self.example_user('hamlet')
         bad_message_id = self.send_personal_message(
-            from_email=hamlet.email,
-            to_email=hamlet.email,
+            from_user=hamlet,
+            to_user=hamlet,
         )
         payload = dict(
             message_id=bad_message_id,
@@ -111,10 +111,10 @@ class TestBasics(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         stream_name = 'Verona'
         message_id = self.send_stream_message(
-            sender_email=cordelia.email,
+            sender=cordelia,
             stream_name=stream_name,
         )
-        self.login(cordelia.email)
+        self.login_user(cordelia)
 
         payload = dict(
             message_id=message_id,

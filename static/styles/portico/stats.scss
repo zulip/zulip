@@ -1,16 +1,20 @@
-.app-main {
-    padding: 0;
-    width: auto;
-    max-width: none;
-}
-
 body {
     font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
     background-color: hsl(0, 0%, 98%);
 }
 
+hr {
+    border-width: 2px;
+}
+
 p {
     margin-bottom: 0px;
+}
+
+.app-main {
+    padding: 0;
+    width: auto;
+    max-width: none;
 }
 
 .svg-container {
@@ -25,20 +29,47 @@ p {
 .chart-container {
     display: inline-block;
     vertical-align: top;
-
     margin: 10px 0px;
     padding: 20px;
-
     border: 2px solid hsl(0, 0%, 93%);
     background-color: hsl(0, 0%, 100%);
+
+    button {
+        position: relative;
+        z-index: 1;
+    }
+
+    h1 {
+        margin-top: 0px;
+        font-size: 1.5em;
+    }
+
+    &:not(.pie-chart) .number-stat {
+        position: relative;
+        top: -30px;
+    }
+
+    &.pie-chart hr {
+        margin-bottom: 8px;
+    }
+
+    .button-container {
+        position: relative;
+        z-index: 1;
+
+        label {
+            margin: 3px;
+        }
+
+        > * {
+            display: inline-block;
+            vertical-align: top;
+        }
+    }
 }
 
 .analytics-page-header {
     margin-left: 10px;
-}
-
-hr {
-    border-width: 2px;
 }
 
 .rangeslider-container {
@@ -49,99 +80,35 @@ hr {
     font-weight: 400;
 }
 
-.pie-chart .number-stat {
-    float: left;
-    font-size: 0.8em;
-    font-weight: 400;
-}
+.pie-chart {
+    .number-stat {
+        float: left;
+        font-size: 0.8em;
+        font-weight: 400;
+    }
 
-.chart-container:not(.pie-chart) .number-stat {
-    position: relative;
-    top: -30px;
+    .buttons {
+        float: right;
+
+        button {
+            padding: 2px 6px;
+        }
+    }
 }
 
 .buttons button {
     background-color: hsl(0, 0%, 94%);
-}
 
-.buttons button.selected {
-    background-color: hsl(0, 0%, 85%);
-}
-
-.pie-chart .buttons {
-    float: right;
-}
-
-.pie-chart .buttons button {
-    padding: 2px 6px;
-}
-
-.chart-container.pie-chart hr {
-    margin-bottom: 8px;
-}
-
-.chart-container button {
-    position: relative;
-    z-index: 1;
-}
-
-.chart-container h1 {
-    margin-top: 0px;
-    font-size: 1.5em;
-}
-
-.chart-container .button-container {
-    position: relative;
-    z-index: 1;
-}
-
-.chart-container .button-container label {
-    margin: 3px;
+    &.selected {
+        background-color: hsl(0, 0%, 85%);
+    }
 }
 
 .button-active-users {
     float: right;
 }
 
-.chart-container .button-container > * {
-    display: inline-block;
-    vertical-align: top;
-}
-
 .alert {
-    display: none;
-}
-
-#id_messages_sent_by_client {
-    min-height: 100px;
-    width: 750px;
-    position: relative;
-}
-
-#id_messages_sent_by_message_type {
-    height: 300px;
-    width: 750px;
-    position: relative;
-}
-
-#id_messages_sent_over_time {
-    height: 400px;
-    width: 750px;
-    position: relative;
-}
-
-#id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
-    opacity: 0.5;
-}
-
-#id_number_of_users {
-    height: 370px;
-    width: 750px;
-    position: relative;
-}
-
-#users_hover_info,
-#hoverinfo {
     display: none;
 }
 
@@ -150,14 +117,14 @@ hr {
     border: none;
     border-radius: 4px;
     outline: none;
-}
 
-.button:hover {
-    background-color: hsl(0, 0%, 84%) !important;
-}
+    &:hover {
+        background-color: hsl(0, 0%, 84%) !important;
+    }
 
-.button[data-user="everyone"] {
-    margin-right: 10px;
+    &[data-user="everyone"] {
+        margin-right: 10px;
+    }
 }
 
 .docs_link a {
@@ -185,10 +152,48 @@ hr {
     color: hsl(0, 0%, 67%);
 }
 
-@keyframes spinner {
-    to {
-        transform: rotate(360deg);
+#users_hover_humans,
+#hover_human {
+    margin-left: 10px;
+}
+
+#id_messages_sent_by_client {
+    min-height: 100px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_by_message_type {
+    height: 300px;
+    width: 750px;
+    position: relative;
+}
+
+#id_messages_sent_over_time {
+    height: 400px;
+    width: 750px;
+    position: relative;
+
+    &[last_value_is_partial='true'] .points path:last-of-type {
+        opacity: 0.5;
     }
+}
+
+#id_number_of_users {
+    height: 370px;
+    width: 750px;
+    position: relative;
+}
+
+#users_hover_info,
+#hoverinfo {
+    display: none;
+    font-size: 0.8em;
+    font-weight: 400;
+    position: relative;
+    height: 0px;
+    top: -35px;
+    left: 40px;
 }
 
 .spinner::before {
@@ -207,41 +212,22 @@ hr {
     animation: spinner 1s linear infinite;
 }
 
-#users_hover_info,
-#hoverinfo {
-    font-size: 0.8em;
-    font-weight: 400;
-}
-
-#users_hover_humans,
-#hover_human {
-    margin-left: 10px;
-}
-
-#hoverinfo,
-#users_hover_info {
-    position: relative;
-    height: 0px;
-    top: -35px;
-    left: 40px;
-}
-
-#users_hover_info {
-    left: 25px;
-    top: -40px;
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (min-width: 1680px) {
     .center-charts {
         width: calc(816px * 2); /* 790px + 4px for borders + 2px for il-block + 20px margins */
-    }
 
-    .center-charts .left,
-    .center-charts .right {
-        display: inline-block;
-        vertical-align: top;
-        margin: 0px 10px;
-
-        width: 790px;
+        .left,
+        .right {
+            display: inline-block;
+            vertical-align: top;
+            margin: 0px 10px;
+            width: 790px;
+        }
     }
 }

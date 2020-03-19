@@ -178,8 +178,7 @@ button {
         }
     }
 
-    &.black-disabled {
-        cursor: default;
+    &.black-current-value {
         color: hsl(0, 0%, 20%);
         background-color: transparent;
         border-color: hsl(0, 0%, 53%);
@@ -1667,6 +1666,10 @@ nav ul li.active::after {
     margin-right: -3px;
 }
 
+.portico-landing .testimonials blockquote::after {
+    content: "”";
+}
+
 .portico-landing .testimonials blockquote + cite {
     display: block;
     margin-top: 5px;
@@ -2169,6 +2172,16 @@ nav ul li.active::after {
     margin-top: 10px;
 }
 
+.download-from-google-play-store img {
+    height: 42px;
+    padding: 15px 0 15px 0;
+}
+
+.download-from-apple-app-store img {
+    height: 42px;
+    padding: 15px 0 15px 0;
+}
+
 /* -- /for/open-source/ -- */
 .portico-landing.why-page {
     padding-top: 0px;
@@ -2337,6 +2350,10 @@ nav ul li.active::after {
     content: "“";
     margin-left: -10px;
     margin-right: -3px;
+}
+
+.portico-landing.why-page .testimonials blockquote::after {
+    content: "”";
 }
 
 .portico-landing.why-page .testimonials blockquote + cite {
@@ -2657,6 +2674,7 @@ nav ul li.active::after {
 
 .pricing-model .pricing-container .text-content .standard-price-box {
     display: flex;
+    height: 55px;
 }
 
 .pricing-model .pricing-container .text-content .price .price-cents {

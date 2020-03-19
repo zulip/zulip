@@ -5,12 +5,11 @@ from typing import (
 from typing_extensions import TypedDict
 
 import django.db.utils
-from django.db.models import Count
+from django.db.models import Count, Exists, OuterRef
 from django.contrib.contenttypes.models import ContentType
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
 from django.conf import settings
-from django.core import validators
 from django.core.files import File
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
     RealmCount
@@ -61,6 +60,7 @@ from zerver.lib.stream_subscription import (
     get_bulk_stream_subscriber_info,
     get_stream_subscriptions_for_user,
     get_stream_subscriptions_for_users,
+    get_subscribed_stream_ids_for_user,
     num_subscribers_for_stream_id,
 )
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -99,7 +99,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, \
     get_user_profile_by_id, PreregistrationUser, \
-    email_allowed_for_realm, email_to_username, \
+    email_to_username, \
     get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
     realm_filters_for_realm, RealmFilter, stream_name_in_use, \
@@ -109,13 +109,15 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
     query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
-    get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
-    DisposableEmailError, EmailContainsPlusError, \
+    get_bot_services, get_bot_dicts_in_realm, \
     get_user_including_cross_realm, get_user_by_id_in_realm_including_cross_realm, \
     get_stream_by_id_in_realm
 
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
+from zerver.lib.email_validation import get_realm_email_validator, \
+    validate_email_is_valid, get_existing_user_errors, \
+    email_reserved_for_system_bots_error
 from zerver.lib.stream_recipient import StreamRecipientMap
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
@@ -865,8 +867,9 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     else:
         user_profile.save(update_fields=["delivery_email"])
 
-    # We notify just the target user (and eventually org admins) about
-    # their new delivery email, since that field is private.
+    # We notify just the target user (and eventually org admins, only
+    # when email_address_visibility=EMAIL_ADDRESS_VISIBILITY_ADMINS)
+    # about their new delivery email, since that field is private.
     payload = dict(user_id=user_profile.id,
                    delivery_email=new_email)
     event = dict(type='realm_user', op='update', person=payload)
@@ -4648,12 +4651,15 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
 
 def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     message_ids = [message.id for message in messages]
+    if not message_ids:
+        return
+
     usermessages = UserMessage.objects.filter(message_id__in=message_ids)
-    message_id_to_notifiable_users = {}  # type: Dict[int, List[Dict[str, int]]]
+    message_id_to_notifiable_users = {}  # type: Dict[int, List[int]]
     for um in usermessages:
         if um.message_id not in message_id_to_notifiable_users:
             message_id_to_notifiable_users[um.message_id] = []
-        message_id_to_notifiable_users[um.message_id].append({"id": um.user_profile_id})
+        message_id_to_notifiable_users[um.message_id].append(um.user_profile_id)
 
     events_and_users_to_notify = []
     for message in messages:
@@ -5023,48 +5029,13 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
 
 def email_not_system_bot(email: str) -> None:
     if is_cross_realm_bot_email(email):
-        raise ValidationError('%s is reserved for system bots' % (email,))
-
-def validate_email_for_realm(target_realm: Realm, email: str) -> None:
-    email_not_system_bot(email)
-
-    try:
-        existing_user_profile = get_user_by_delivery_email(email, target_realm)
-    except UserProfile.DoesNotExist:
-        return
-
-    if existing_user_profile.is_active:
-        if existing_user_profile.is_mirror_dummy:
-            raise AssertionError("Mirror dummy user is already active!")
-        # Other users should not already exist at all.
-        raise ValidationError(_('%s already has an account') %
-                              (email,), code = _("Already has an account."), params={'deactivated': False})
-    elif not existing_user_profile.is_mirror_dummy:
-        raise ValidationError('The account for %s has been deactivated' % (email,),
-                              code = _("Account has been deactivated."), params={'deactivated': True})
-
-def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str], Optional[str],
-                                                                   bool]:
-    try:
-        validators.validate_email(email)
-    except ValidationError:
-        return _("Invalid address."), None, False
-
-    try:
-        email_allowed_for_realm(email, user_profile.realm)
-    except DomainNotAllowedForRealmError:
-        return _("Outside your domain."), None, False
-    except DisposableEmailError:
-        return _("Please use your real email address."), None, False
-    except EmailContainsPlusError:
-        return _("Email addresses containing + are not allowed."), None, False
-
-    try:
-        validate_email_for_realm(user_profile.realm, email)
-    except ValidationError as error:
-        return None, (error.code), (error.params['deactivated'])
-
-    return None, None, False
+        msg = email_reserved_for_system_bots_error(email)
+        code = msg
+        raise ValidationError(
+            msg,
+            code=code,
+            params=dict(deactivated=False),
+        )
 
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
@@ -5140,19 +5111,36 @@ def do_invite_users(user_profile: UserProfile,
                   "Ask an organization admin, or a more experienced user."),
                 [], sent_invitations=False)
 
-    validated_emails = []  # type: List[str]
+    good_emails = set()  # type: Set[str]
     errors = []  # type: List[Tuple[str, str, bool]]
-    skipped = []  # type: List[Tuple[str, str, bool]]
+    validate_email_allowed_in_realm = get_realm_email_validator(user_profile.realm)
     for email in invitee_emails:
         if email == '':
             continue
-        email_error, email_skipped, deactivated = validate_email(user_profile, email)
-        if not (email_error or email_skipped):
-            validated_emails.append(email)
-        elif email_error:
-            errors.append((email, email_error, deactivated))
-        elif email_skipped:
-            skipped.append((email, email_skipped, deactivated))
+        email_error = validate_email_is_valid(
+            email,
+            validate_email_allowed_in_realm,
+        )
+
+        if email_error:
+            errors.append((email, email_error, False))
+        else:
+            good_emails.add(email)
+
+    '''
+    good_emails are emails that look ok so far,
+    but we still need to make sure they're not
+    gonna conflict with existing users
+    '''
+    error_dict = get_existing_user_errors(user_profile.realm, good_emails)
+
+    skipped = []  # type: List[Tuple[str, str, bool]]
+    for email in error_dict:
+        msg, deactivated = error_dict[email]
+        skipped.append((email, msg, deactivated))
+        good_emails.remove(email)
+
+    validated_emails = list(good_emails)
 
     if errors:
         raise InvitationError(
@@ -5411,16 +5399,18 @@ def do_remove_realm_domain(realm_domain: RealmDomain) -> None:
 def get_occupied_streams(realm: Realm) -> QuerySet:
     # TODO: Make a generic stub for QuerySet
     """ Get streams with subscribers """
-    subs_filter = Subscription.objects.filter(active=True, user_profile__realm=realm,
-                                              user_profile__is_active=True).values('recipient_id')
-    stream_ids = Recipient.objects.filter(
-        type=Recipient.STREAM, id__in=subs_filter).values('type_id')
-
-    return Stream.objects.filter(id__in=stream_ids, realm=realm, deactivated=False)
+    exists_expression = Exists(
+        Subscription.objects.filter(active=True, user_profile__is_active=True,
+                                    user_profile__realm=realm,
+                                    recipient_id=OuterRef('recipient_id'))
+    )
+    occupied_streams = Stream.objects.filter(realm=realm, deactivated=False) \
+        .annotate(occupied=exists_expression).filter(occupied=True)
+    return occupied_streams
 
 def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:
     query = Stream.objects.filter(realm=realm, deactivated=False, is_web_public=True)
-    streams = [(row.to_dict()) for row in query]
+    streams = Stream.get_client_data(query)
     return streams
 
 def do_get_streams(
@@ -5435,11 +5425,9 @@ def do_get_streams(
     # Start out with all streams in the realm with subscribers
     query = get_occupied_streams(user_profile.realm)
 
-    if not include_all_active:
-        user_subs = get_stream_subscriptions_for_user(user_profile).filter(
-            active=True,
-        ).select_related('recipient')
-
+    if include_all_active:
+        streams = Stream.get_client_data(query)
+    else:
         # We construct a query as the or (|) of the various sources
         # this user requested streams from.
         query_filter = None  # type: Optional[Q]
@@ -5452,27 +5440,28 @@ def do_get_streams(
                 query_filter |= option
 
         if include_subscribed:
-            recipient_check = Q(id__in=[sub.recipient.type_id for sub in user_subs])
+            subscribed_stream_ids = get_subscribed_stream_ids_for_user(user_profile)
+            recipient_check = Q(id__in=set(subscribed_stream_ids))
             add_filter_option(recipient_check)
         if include_public:
             invite_only_check = Q(invite_only=False)
             add_filter_option(invite_only_check)
         if include_owner_subscribed and user_profile.is_bot:
-            assert user_profile.bot_owner is not None
-            owner_subs = get_stream_subscriptions_for_user(user_profile.bot_owner).filter(
-                active=True,
-            ).select_related('recipient')
-            owner_subscribed_check = Q(id__in=[sub.recipient.type_id for sub in owner_subs])
+            bot_owner = user_profile.bot_owner
+            assert bot_owner is not None
+            owner_stream_ids = get_subscribed_stream_ids_for_user(bot_owner)
+            owner_subscribed_check = Q(id__in=set(owner_stream_ids))
             add_filter_option(owner_subscribed_check)
 
         if query_filter is not None:
             query = query.filter(query_filter)
+            streams = Stream.get_client_data(query)
         else:
-            # Don't bother doing to the database with no valid sources
-            query = []
+            # Don't bother going to the database with no valid sources
+            streams = []
 
-    streams = [(row.to_dict()) for row in query]
     streams.sort(key=lambda elt: elt["name"])
+
     if include_default:
         is_default = {}
         default_streams = get_default_streams_for_realm(user_profile.realm_id)

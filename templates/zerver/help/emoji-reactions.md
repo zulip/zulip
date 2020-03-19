@@ -37,4 +37,6 @@ added to remove it.
 
 ## Related articles
 
+* [Add custom emoji](/help/add-custom-emoji)
 * [View emoji reactions as text](/help/view-emoji-as-text)
+* [Emoji in messages](/help/emoji-and-emoticons)

@@ -17,6 +17,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_update_user_custom_profile_data_if_changed, check_remove_custom_profile_field_value
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
+from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import has_request_variables, REQ
@@ -29,7 +30,7 @@ from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     access_bot_by_id, add_service, access_user_by_id, check_bot_name_available, \
     validate_user_custom_profile_data, get_raw_user_data, get_api_key
 from zerver.lib.utils import generate_api_key, generate_random_token
-from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
+from zerver.models import UserProfile, Stream, Message, \
     get_user_by_delivery_email, Service, get_user_including_cross_realm, \
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
     EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm, Realm, \
@@ -407,7 +408,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id
     the server to compute this for us.
     '''
     realm = user_profile.realm
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
@@ -419,7 +420,13 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id
     members = get_raw_user_data(realm, user_profile, client_gravatar=client_gravatar,
                                 target_user=target_user,
                                 include_custom_profile_fields=include_custom_profile_fields)
-    return json_success({'members': members.values()})
+
+    if target_user is not None:
+        data = {"user": members[target_user.id]}  # type: Dict[str, Any]
+    else:
+        data = {"members": [members[k] for k in members]}
+
+    return json_success(data)
 
 @require_realm_admin
 @has_request_variables

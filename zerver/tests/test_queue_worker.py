@@ -96,7 +96,7 @@ class WorkerTest(ZulipTestCase):
                     worker.setup()
                     # `write_log_line` is where we publish slow queries to the queue.
                     with patch('zerver.middleware.is_slow_query', return_value=True):
-                        write_log_line(log_data=dict(test='data'), email='test@zulip.com',
+                        write_log_line(log_data=dict(test='data'), requestor_for_logs='test@zulip.com',
                                        remote_ip='127.0.0.1', client_name='website', path='/test/',
                                        method='GET')
                     worker.start()
@@ -173,26 +173,26 @@ class WorkerTest(ZulipTestCase):
         othello = self.example_user('othello')
 
         hamlet1_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=hamlet.email,
+            from_user=cordelia,
+            to_user=hamlet,
             content='hi hamlet',
         )
 
         hamlet2_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=hamlet.email,
+            from_user=cordelia,
+            to_user=hamlet,
             content='goodbye hamlet',
         )
 
         hamlet3_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=hamlet.email,
+            from_user=cordelia,
+            to_user=hamlet,
             content='hello again hamlet',
         )
 
         othello_msg_id = self.send_personal_message(
-            from_email=cordelia.email,
-            to_email=othello.email,
+            from_user=cordelia,
+            to_user=othello,
             content='where art thou, othello?',
         )
 

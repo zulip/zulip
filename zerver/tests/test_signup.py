@@ -156,9 +156,9 @@ class AddNewUserHistoryTest(ZulipTestCase):
         stream = Stream.objects.get(realm=realm, name='Denmark')
         DefaultStream.objects.create(stream=stream, realm=realm)
         # Make sure at least 3 messages are sent to Denmark and it's a default stream.
-        message_id = self.send_stream_message(self.example_email('hamlet'), stream.name, "test 1")
-        self.send_stream_message(self.example_email('hamlet'), stream.name, "test 2")
-        self.send_stream_message(self.example_email('hamlet'), stream.name, "test 3")
+        message_id = self.send_stream_message(self.example_user('hamlet'), stream.name, "test 1")
+        self.send_stream_message(self.example_user('hamlet'), stream.name, "test 2")
+        self.send_stream_message(self.example_user('hamlet'), stream.name, "test 3")
 
         with patch("zerver.lib.actions.add_new_user_history"):
             self.register(self.nonreg_email('test'), "test")
@@ -169,7 +169,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
 
         # Sent a message afterwards to trigger a race between message
         # sending and `add_new_user_history`.
-        race_message_id = self.send_stream_message(self.example_email('hamlet'),
+        race_message_id = self.send_stream_message(self.example_user('hamlet'),
                                                    streams[0].name, "test")
 
         # Overwrite ONBOARDING_UNREAD_MESSAGES to 2
@@ -218,10 +218,11 @@ class PasswordResetTest(ZulipTestCase):
     """
 
     def test_password_reset(self) -> None:
-        email = self.example_email("hamlet")
+        user = self.example_user("hamlet")
+        email = user.email
         old_password = initial_password(email)
 
-        self.login(email)
+        self.login_user(user)
 
         # test password reset template
         result = self.client_get('/accounts/password/reset/')
@@ -274,12 +275,12 @@ class PasswordResetTest(ZulipTestCase):
             self.assertTrue(result["Location"].endswith("/password/done/"))
 
             # log back in with new password
-            self.login(email, password='f657gdGGk9')
+            self.login_by_email(email, password='f657gdGGk9')
             user_profile = self.example_user('hamlet')
             self.assert_logged_in_user_id(user_profile.id)
 
             # make sure old password no longer works
-            self.login(email, password=old_password, fails=True)
+            self.assert_login_failure(email, password=old_password)
 
     def test_password_reset_for_non_existent_user(self) -> None:
         email = 'nonexisting@mars.com'
@@ -509,7 +510,7 @@ class LoginTest(ZulipTestCase):
     """
 
     def test_login(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         user_profile = self.example_user('hamlet')
         self.assert_logged_in_user_id(user_profile.id)
 
@@ -588,7 +589,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 79)
+        self.assertEqual(len(queries), 77)
         user_profile = self.nonreg_user('test')
         self.assert_logged_in_user_id(user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -645,7 +646,7 @@ class LoginTest(ZulipTestCase):
         self.assertEqual('/accounts/deactivated/', result.url)
 
     def test_logout(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         # We use the logout API, not self.logout, to make sure we test
         # the actual logout code path.
         self.client_post('/accounts/logout/')
@@ -667,7 +668,7 @@ class LoginTest(ZulipTestCase):
 
         # Logging in succeeds.
         self.logout()
-        self.login(email, password)
+        self.login_by_email(email, password)
         self.assert_logged_in_user_id(user_profile.id)
 
     @override_settings(TWO_FACTOR_AUTHENTICATION_ENABLED=False)
@@ -675,7 +676,7 @@ class LoginTest(ZulipTestCase):
         """You will be redirected to the app's main page if you land on the
         login page when already logged in.
         """
-        self.login(self.example_email("cordelia"))
+        self.login('cordelia')
         response = self.client_get("/login/")
         self.assertEqual(response["Location"], "http://zulip.testserver")
 
@@ -691,7 +692,7 @@ class LoginTest(ZulipTestCase):
         user_profile = self.example_user("cordelia")
         self.create_default_device(user_profile)
 
-        self.login(self.example_email("cordelia"))
+        self.login('cordelia')
         self.login_2fa(user_profile)
 
         response = self.client_get("/login/")
@@ -764,7 +765,7 @@ class InviteUserTest(InviteUserBase):
         A call to /json/invites with valid parameters causes an invitation
         email to be sent.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         invitee = "alice-test@zulip.com"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
@@ -775,7 +776,7 @@ class InviteUserTest(InviteUserBase):
         invitee = "alice-test@zulip.com"
         stream_name = 'Denmark'
 
-        self.login(user_profile.email)
+        self.login_user(user_profile)
 
         result = self.invite(invitee, [stream_name])
         self.assert_json_success(result)
@@ -812,7 +813,7 @@ class InviteUserTest(InviteUserBase):
         ]
         invitees = ','.join(invite_emails)
 
-        self.login(user_profile.email)
+        self.login_user(user_profile)
 
         realm.max_invites = realm_max
         realm.date_created = timezone_now()
@@ -834,7 +835,27 @@ class InviteUserTest(InviteUserBase):
         realm.date_created = timezone_now() - datetime.timedelta(days=8)
         realm.save()
 
-        result = try_invite()
+        with queries_captured() as queries:
+            result = try_invite()
+
+        # TODO: Fix large query count here.
+        #
+        # TODO: There is some test OTHER than this one
+        #       that is leaking some kind of state change
+        #       that throws off the query count here.  It
+        #       is hard to investigate currently (due to
+        #       the large number of queries), so I just
+        #       use an approximate equality check.
+        actual_count = len(queries)
+        expected_count = 312
+        if abs(actual_count - expected_count) > 1:
+            raise AssertionError('''
+                Unexpected number of queries:
+
+                expected query count: {}
+                actual: {}
+                '''.format(expected_count, actual_count))
+
         self.assert_json_success(result)
 
         # Next get line coverage on bumping a realm's max_invites.
@@ -852,12 +873,62 @@ class InviteUserTest(InviteUserBase):
 
         self.assert_json_success(result)
 
+    def test_cross_realm_bot(self) -> None:
+        inviter = self.example_user('hamlet')
+        self.login_user(inviter)
+
+        cross_realm_bot_email = 'emailgateway@zulip.com'
+        legit_new_email = 'fred@zulip.com'
+        invitee_emails = ','.join([cross_realm_bot_email, legit_new_email])
+
+        result = self.invite(invitee_emails, ['Denmark'])
+        self.assert_json_error(
+            result,
+            "Some of those addresses are already using Zulip," +
+            " so we didn't send them an invitation." +
+            " We did send invitations to everyone else!")
+
+    def test_invite_mirror_dummy_user(self) -> None:
+        '''
+        A mirror dummy account is a temporary account
+        that we keep in our system if we are mirroring
+        data from something like Zephyr or IRC.
+
+        We want users to eventually just sign up or
+        register for Zulip, in which case we will just
+        fully "activate" the account.
+
+        Here we test that you can invite a person who
+        has a mirror dummy account.
+        '''
+        inviter = self.example_user('hamlet')
+        self.login_user(inviter)
+
+        mirror_user = self.example_user('cordelia')
+        mirror_user.is_mirror_dummy = True
+        mirror_user.is_active = False
+        mirror_user.save()
+
+        self.assertEqual(
+            PreregistrationUser.objects.filter(email=mirror_user.email).count(),
+            0,
+        )
+
+        result = self.invite(mirror_user.email, ['Denmark'])
+        self.assert_json_success(result)
+
+        prereg_user = PreregistrationUser.objects.get(email=mirror_user.email)
+        self.assertEqual(
+            prereg_user.referred_by.email,
+            inviter.email,
+        )
+
     def test_successful_invite_user_as_admin_from_admin_account(self) -> None:
         """
         Test that a new user invited to a stream receives some initial
         history but only from public streams.
         """
-        self.login(self.example_email('iago'))
+        self.login('iago')
         invitee = self.nonreg_email('alice')
         result = self.invite(invitee, ["Denmark"],
                              invite_as=PreregistrationUser.INVITE_AS['REALM_ADMIN'])
@@ -874,7 +945,7 @@ class InviteUserTest(InviteUserBase):
         Test that a new user invited to a stream receives some initial
         history but only from public streams.
         """
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         invitee = self.nonreg_email('alice')
         response = self.invite(invitee, ["Denmark"],
                                invite_as=PreregistrationUser.INVITE_AS['REALM_ADMIN'])
@@ -885,13 +956,13 @@ class InviteUserTest(InviteUserBase):
         Test inviting a user as invalid type of user i.e. type of invite_as
         is not in PreregistrationUser.INVITE_AS
         """
-        self.login(self.example_email('iago'))
+        self.login('iago')
         invitee = self.nonreg_email('alice')
         response = self.invite(invitee, ["Denmark"], invite_as=100)
         self.assert_json_error(response, "Must be invited as an valid type of user")
 
     def test_successful_invite_user_as_guest_from_normal_account(self) -> None:
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         invitee = self.nonreg_email('alice')
         self.assert_json_success(self.invite(invitee, ["Denmark"],
                                              invite_as=PreregistrationUser.INVITE_AS['GUEST_USER']))
@@ -903,7 +974,7 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(invitee_profile.is_guest)
 
     def test_successful_invite_user_as_guest_from_admin_account(self) -> None:
-        self.login(self.example_email('iago'))
+        self.login('iago')
         invitee = self.nonreg_email('alice')
         self.assert_json_success(self.invite(invitee, ["Denmark"],
                                              invite_as=PreregistrationUser.INVITE_AS['GUEST_USER']))
@@ -919,7 +990,7 @@ class InviteUserTest(InviteUserBase):
         A call to /json/invites with valid parameters causes an invitation
         email to be sent.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         email = "alice-test@zulip.com"
         invitee = "Alice Test <{}>".format(email)
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
@@ -931,7 +1002,7 @@ class InviteUserTest(InviteUserBase):
         A call to /json/invites with valid parameters causes an invitation
         email to be sent.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         email = "alice-test@zulip.com"
         email2 = "bob-test@zulip.com"
         invitee = "Alice Test <{}>, {}".format(email, email2)
@@ -948,7 +1019,7 @@ class InviteUserTest(InviteUserBase):
         realm.invite_by_admins_only = True
         realm.save()
 
-        self.login("hamlet@zulip.com")
+        self.login('hamlet')
         email = "alice-test@zulip.com"
         email2 = "bob-test@zulip.com"
         invitee = "Alice Test <{}>, {}".format(email, email2)
@@ -956,7 +1027,7 @@ class InviteUserTest(InviteUserBase):
                                "Must be an organization administrator")
 
         # Now verify an administrator can do it
-        self.login("iago@zulip.com")
+        self.login('iago')
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(email))
         self.assertTrue(find_key_by_email(email2))
@@ -967,19 +1038,19 @@ class InviteUserTest(InviteUserBase):
         Test that a new user invited to a stream receives some initial
         history but only from public streams.
         """
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         user_profile = self.example_user('hamlet')
         private_stream_name = "Secret"
         self.make_stream(private_stream_name, invite_only=True)
         self.subscribe(user_profile, private_stream_name)
         public_msg_id = self.send_stream_message(
-            self.example_email("hamlet"),
+            self.example_user("hamlet"),
             "Denmark",
             topic_name="Public topic",
             content="Public message",
         )
         secret_msg_id = self.send_stream_message(
-            self.example_email("hamlet"),
+            self.example_user("hamlet"),
             private_stream_name,
             topic_name="Secret topic",
             content="Secret message",
@@ -1014,7 +1085,7 @@ class InviteUserTest(InviteUserBase):
         """
         Invites multiple users with a variety of delimiters.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         # Intentionally use a weird string.
         self.assert_json_success(self.invite(
             """bob-test@zulip.com,     carol-test@zulip.com,
@@ -1039,7 +1110,7 @@ earl-test@zulip.com""", ["Denmark"]))
     def test_invite_too_many_users(self) -> None:
         # Only a light test of this pathway; e.g. doesn't test that
         # the limit gets reset after 24 hours
-        self.login(self.example_email("iago"))
+        self.login('iago')
         invitee_emails = "1@zulip.com, 2@zulip.com"
         self.invite(invitee_emails, ["Denmark"])
         invitee_emails = ", ".join([str(i) for i in range(get_realm("zulip").max_invites - 1)])
@@ -1052,7 +1123,10 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         Tests inviting with various missing or invalid parameters.
         """
-        self.login(self.example_email("hamlet"))
+        realm = get_realm('zulip')
+        do_set_realm_property(realm, 'emails_restricted_to_domains', True)
+
+        self.login('hamlet')
         invitee_emails = "foo@zulip.com"
         self.assert_json_error(self.invite(invitee_emails, []),
                                "You must specify at least one stream for invitees to join.")
@@ -1072,7 +1146,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         Guest user can't invite new users
         """
-        self.login(self.example_email("polonius"))
+        self.login('polonius')
         invitee = "alice-test@zulip.com"
         self.assert_json_error(self.invite(invitee, ["Denmark"]), "Not allowed for guest users")
         self.assertEqual(find_key_by_email(invitee), None)
@@ -1082,7 +1156,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         Tests inviting to a non-existent stream.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         self.assert_json_error(self.invite("iago-test@zulip.com", ["NotARealStream"]),
                                "Stream does not exist with id: {}. No invites were sent.".format(self.INVALID_STREAM_ID))
         self.check_sent_emails([])
@@ -1091,12 +1165,15 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         If you invite an address already using Zulip, no invitation is sent.
         """
-        self.login(self.example_email("hamlet"))
-        self.assert_json_error(self.invite(self.example_email("hamlet"), ["Denmark"]),
-                               "We weren't able to invite anyone.")
-        self.assertRaises(PreregistrationUser.DoesNotExist,
-                          lambda: PreregistrationUser.objects.get(
-                              email=self.example_email("hamlet")))
+        self.login('hamlet')
+
+        hamlet_email = 'hAmLeT@zUlIp.com'
+        result = self.invite(hamlet_email, ["Denmark"])
+        self.assert_json_error(result, "We weren't able to invite anyone.")
+
+        self.assertFalse(
+            PreregistrationUser.objects.filter(email__iexact=hamlet_email).exists()
+        )
         self.check_sent_emails([])
 
     def test_invite_some_existing_some_new(self) -> None:
@@ -1104,7 +1181,7 @@ earl-test@zulip.com""", ["Denmark"]))
         If you invite a mix of already existing and new users, invitations are
         only sent to the new users.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         existing = [self.example_email("hamlet"), u"othello@zulip.com"]
         new = [u"foo-test@zulip.com", u"bar-test@zulip.com"]
         invitee_emails = "\n".join(existing + new)
@@ -1135,7 +1212,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         zulip_realm.emails_restricted_to_domains = True
         zulip_realm.save()
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         external_address = "foo@example.com"
 
         self.assert_json_error(
@@ -1152,7 +1229,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         zulip_realm.disallow_disposable_email_addresses = True
         zulip_realm.save()
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         external_address = "foo@mailnator.com"
 
         self.assert_json_error(
@@ -1168,7 +1245,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         zulip_realm.emails_restricted_to_domains = False
         zulip_realm.save()
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         external_address = "foo@example.com"
 
         self.assert_json_success(self.invite(external_address, ["Denmark"]))
@@ -1185,7 +1262,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         zulip_realm.emails_restricted_to_domains = False
         zulip_realm.save()
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         external_address = "foo@example.com"
 
         self.assert_json_success(self.invite(external_address, ["Denmark"]))
@@ -1210,7 +1287,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         zulip_realm.disallow_disposable_email_addresses = False
         zulip_realm.save()
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         external_address = "foo@mailnator.com"
 
         self.assert_json_success(self.invite(external_address, ["Denmark"]))
@@ -1236,7 +1313,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         zulip_realm.emails_restricted_to_domains = False
         zulip_realm.save()
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         external_address = "foo+label@zulip.com"
 
         self.assert_json_success(self.invite(external_address, ["Denmark"]))
@@ -1250,7 +1327,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assert_in_response("Zulip Dev, does not allow signups using emails\n        that contains +", result)
 
     def test_invalid_email_check_after_confirming_email(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         email = "test@zulip.com"
 
         self.assert_json_success(self.invite(email, ["Denmark"]))
@@ -1268,7 +1345,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         """
         Inviting someone to streams with non-ASCII characters succeeds.
         """
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         invitee = "alice-test@zulip.com"
 
         stream_name = u"hÃ¼mbÃ¼Çµ"
@@ -1282,17 +1359,17 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         from django.core.mail import outbox
 
         # All users belong to zulip realm
-        referrer_user = 'hamlet'
-        current_user_email = self.example_email(referrer_user)
-        self.login(current_user_email)
+        referrer_name = 'hamlet'
+        current_user = self.example_user(referrer_name)
+        self.login_user(current_user)
         invitee_email = self.nonreg_email('alice')
         self.assert_json_success(self.invite(invitee_email, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee_email))
         self.check_sent_emails([invitee_email])
 
-        data = {"email": invitee_email, "referrer_email": current_user_email}
+        data = {"email": invitee_email, "referrer_email": current_user.email}
         invitee = PreregistrationUser.objects.get(email=data["email"])
-        referrer = self.example_user(referrer_user)
+        referrer = self.example_user(referrer_name)
         link = create_confirmation_link(invitee, referrer.realm.host, Confirmation.INVITATION)
         context = common_context(referrer)
         context.update({
@@ -1332,7 +1409,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(len(email_jobs_to_deliver), 0)
 
     def test_no_invitation_reminder_when_link_expires_quickly(self) -> None:
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         # Check invitation reminder email is scheduled with 4 day link expiry
         with self.settings(INVITATION_LINK_VALIDITY_DAYS=4):
             self.invite('alice@zulip.com', ['Denmark'])
@@ -1387,7 +1464,7 @@ class InvitationsTestCase(InviteUserBase):
         self.assertNotEqual(days_to_activate, "Wrong")
         self.assertNotEqual(active_value, "Wrong")
 
-        self.login(self.example_email("iago"))
+        self.login('iago')
         user_profile = self.example_user("iago")
 
         prereg_user_one = PreregistrationUser(email="TestOne@zulip.com", referred_by=user_profile)
@@ -1419,7 +1496,7 @@ class InvitationsTestCase(InviteUserBase):
         A DELETE call to /json/invites/<ID> should delete the invite and
         any scheduled invitation reminder emails.
         """
-        self.login(self.example_email("iago"))
+        self.login('iago')
 
         invitee = "DeleteMe@zulip.com"
         self.assert_json_success(self.invite(invitee, ['Denmark']))
@@ -1443,7 +1520,7 @@ class InvitationsTestCase(InviteUserBase):
         A DELETE call to /json/invites/multiuse<ID> should delete the
         multiuse_invite.
         """
-        self.login(self.example_email("iago"))
+        self.login('iago')
 
         zulip_realm = get_realm("zulip")
         multiuse_invite = MultiuseInvite.objects.create(referred_by=self.example_user("hamlet"), realm=zulip_realm)
@@ -1467,7 +1544,7 @@ class InvitationsTestCase(InviteUserBase):
         A POST call to /json/invites/<ID>/resend should send an invitation reminder email
         and delete any scheduled invitation reminder email.
         """
-        self.login(self.example_email("iago"))
+        self.login('iago')
         invitee = "resend_me@zulip.com"
 
         self.assert_json_success(self.invite(invitee, ['Denmark']))
@@ -1504,7 +1581,7 @@ class InvitationsTestCase(InviteUserBase):
         inviter = UserProfile.objects.exclude(realm=get_realm('zulip')).first()
         prereg_user = PreregistrationUser.objects.create(
             email='email', referred_by=inviter, realm=inviter.realm)
-        self.login(self.example_email("iago"))
+        self.login('iago')
         error_result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
         self.assert_json_error(error_result, "No such invitation")
         error_result = self.client_delete('/json/invites/' + str(prereg_user.id))
@@ -1639,7 +1716,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.check_user_subscribed_only_to_streams(name2, streams)
 
     def test_create_multiuse_link_api_call(self) -> None:
-        self.login(self.example_email('iago'))
+        self.login('iago')
 
         result = self.client_post('/json/invites/multiuse')
         self.assert_json_success(result)
@@ -1648,7 +1725,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
 
     def test_create_multiuse_link_with_specified_streams_api_call(self) -> None:
-        self.login(self.example_email('iago'))
+        self.login('iago')
         stream_names = ["Rome", "Scotland", "Venice"]
         streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
         stream_ids = [stream.id for stream in streams]
@@ -1662,7 +1739,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.check_user_subscribed_only_to_streams("test", streams)
 
     def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
-        self.login(self.example_email('iago'))
+        self.login('iago')
         # Only admins should be able to create multiuse invites even if
         # invite_by_admins_only is set to False.
         self.realm.invite_by_admins_only = False
@@ -1674,12 +1751,12 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = result.json()["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
 
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         result = self.client_post('/json/invites/multiuse')
         self.assert_json_error(result, "Must be an organization administrator")
 
     def test_create_multiuse_link_invalid_stream_api_call(self) -> None:
-        self.login(self.example_email('iago'))
+        self.login('iago')
         result = self.client_post('/json/invites/multiuse',
                                   {"stream_ids": ujson.dumps([54321])})
         self.assert_json_error(result, "Invalid stream id 54321. No invites were sent.")
@@ -2506,7 +2583,7 @@ class UserSignUpTest(InviteUserBase):
         lear_realm = get_realm("lear")
         zulip_realm = get_realm("zulip")
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         with get_test_image_file('img.png') as image_file:
             self.client_post("/json/users/me/avatar", {'file': image_file})
         hamlet_in_zulip = get_user(self.example_email("hamlet"), zulip_realm)
@@ -2604,8 +2681,8 @@ class UserSignUpTest(InviteUserBase):
 
     def test_failed_signup_due_to_restricted_domain(self) -> None:
         realm = get_realm('zulip')
-        realm.invite_required = False
-        realm.save()
+        do_set_realm_property(realm, 'invite_required', False)
+        do_set_realm_property(realm, 'emails_restricted_to_domains', True)
 
         request = HostRequestMock(host = realm.host)
         request.session = {}  # type: ignore
@@ -3207,7 +3284,7 @@ class UserSignUpTest(InviteUserBase):
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
             # Invite user.
-            self.login(self.example_email('iago'))
+            self.login('iago')
             response = self.invite(invitee_emails='newuser@zulip.com',
                                    stream_names=streams,
                                    invite_as=invite_as)
@@ -3451,27 +3528,26 @@ class UserSignUpTest(InviteUserBase):
 class DeactivateUserTest(ZulipTestCase):
 
     def test_deactivate_user(self) -> None:
-        email = self.example_email("hamlet")
-        self.login(email)
         user = self.example_user('hamlet')
+        email = user.email
+        self.login_user(user)
         self.assertTrue(user.is_active)
         result = self.client_delete('/json/users/me')
         self.assert_json_success(result)
         user = self.example_user('hamlet')
         self.assertFalse(user.is_active)
-        self.login(email, fails=True)
+        password = initial_password(email)
+        self.assert_login_failure(email, password=password)
 
     def test_do_not_deactivate_final_admin(self) -> None:
-        email = self.example_email("iago")
-        self.login(email)
         user = self.example_user('iago')
+        self.login_user(user)
         self.assertTrue(user.is_active)
         result = self.client_delete('/json/users/me')
         self.assert_json_error(result, "Cannot deactivate the only organization administrator.")
         user = self.example_user('iago')
         self.assertTrue(user.is_active)
         self.assertTrue(user.is_realm_admin)
-        email = self.example_email("hamlet")
         user_2 = self.example_user('hamlet')
         do_change_is_admin(user_2, True)
         self.assertTrue(user_2.is_realm_admin)
@@ -3483,8 +3559,8 @@ class DeactivateUserTest(ZulipTestCase):
         realm = get_realm('zulip')
         UserProfile.objects.filter(realm=realm).exclude(
             role=UserProfile.ROLE_REALM_ADMINISTRATOR).update(is_active=False)
-        email = self.example_email("iago")
-        self.login(email)
+        user = self.example_user("iago")
+        self.login_user(user)
         result = self.client_delete('/json/users/me')
         self.assert_json_error(result, "Cannot deactivate the only user.")
 
