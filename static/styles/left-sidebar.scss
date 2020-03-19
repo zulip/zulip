@@ -358,15 +358,19 @@ li.top_left_all_messages {
     }
 }
 
-.top_left_mentions i.fa-at {
-    font-size: 13px;
+.top_left_mentions {
+    i.fa-at {
+        font-size: 13px;
+    }
+    .count {
+        @extend .topic-unread-count;
+    }
 }
 
 /* We are mostly consistent in how we style
    unread counts, except for starred messages.
    This is the common section.
 */
-.top_left_mentions .count,
 .topic-unread-count,
 .private_message_count {
     float: right;
