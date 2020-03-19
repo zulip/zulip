@@ -266,9 +266,29 @@ li.top_left_starred_messages {
 }
 
 .top_left_row,
-.bottom_left_row,
+.bottom_left_row {
+    border-radius: 4px;
+}
+
 .top_left_private_messages {
     border-radius: 4px;
+    i.fa-envelope {
+        position: relative;
+        top: -1px;
+        font-size: 11px;
+    }
+    .count {
+        float: right;
+        padding: 0 4px;
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: normal;
+        letter-spacing: 0.6px;
+        border-radius: 4px;
+        background-color: hsl(105, 2%, 50%);
+        color: hsl(0, 0%, 100%);
+    }
 }
 
 .conversation-partners {
@@ -310,12 +330,6 @@ li.top_left_all_messages {
     }
 }
 
-.top_left_private_messages i.fa-envelope {
-    position: relative;
-    top: -1px;
-    font-size: 11px;
-}
-
 .top_left_mentions i.fa-at,
 .top_left_starred_messages i.fa-star {
     font-size: 13px;
@@ -325,7 +339,6 @@ li.top_left_all_messages {
    unread counts, except for starred messages.
    This is the common section.
 */
-.top_left_private_messages .count,
 .top_left_starred_messages .count,
 .top_left_mentions .count,
 .topic-unread-count,
@@ -351,7 +364,6 @@ li.top_left_all_messages {
 }
 
 /* These are true "unread" counts. */
-.top_left_private_messages .count,
 .top_left_mentions .count,
 .topic-unread-count,
 .private_message_count {
