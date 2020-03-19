@@ -32,6 +32,8 @@ class RateLimitedObject(ABC):
     def __init__(self, backend: Optional['Type[RateLimiterBackend]']=None) -> None:
         if backend is not None:
             self.backend = backend  # type: Type[RateLimiterBackend]
+        elif settings.RUNNING_INSIDE_TORNADO:
+            self.backend = TornadoInMemoryRateLimiterBackend
         else:
             self.backend = RedisRateLimiterBackend
 
@@ -139,6 +141,7 @@ class RateLimiterBackend(ABC):
     @abstractmethod
     def block_access(cls, entity_key: str, seconds: int) -> None:
         "Manually blocks an entity for the desired number of seconds"
+        pass
 
     @classmethod
     @abstractmethod
@@ -162,6 +165,121 @@ class RateLimiterBackend(ABC):
                           max_api_calls: int, max_api_window: int) -> Tuple[bool, float]:
         # Returns (ratelimited, secs_to_freedom)
         pass
+
+class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
+    # reset_times[rule][key] is the time at which the event
+    # request from the rate-limited key will be accepted.
+    reset_times = {}  # type: Dict[Tuple[int, int], Dict[str, float]]
+
+    # last_gc_time is the last time when the garbage was
+    # collected from reset_times for rule (time_window, max_count).
+    last_gc_time = {}  # type: Dict[Tuple[int, int], float]
+
+    # timestamps_blocked_until[key] contains the timestamp
+    # up to which the key has been blocked manually.
+    timestamps_blocked_until = {}  # type: Dict[str, float]
+
+    @classmethod
+    def _garbage_collect_for_rule(cls, now: float, time_window: int, max_count: int) -> None:
+        keys_to_delete = []
+        reset_times_for_rule = cls.reset_times.get((time_window, max_count), None)
+        if reset_times_for_rule is None:
+            return
+
+        keys_to_delete = [entity_key for entity_key in reset_times_for_rule
+                          if reset_times_for_rule[entity_key] < now]
+
+        for entity_key in keys_to_delete:
+            del reset_times_for_rule[entity_key]
+
+        if not reset_times_for_rule:
+            del cls.reset_times[(time_window, max_count)]
+
+    @classmethod
+    def need_to_limit(cls, entity_key: str, time_window: int,
+                      max_count: int) -> Tuple[bool, float]:
+        '''
+        Returns a tuple of `(rate_limited, time_till_free)`.
+        For simplicity, we have loosened the semantics here from
+        - each key may make atmost `count * (t / window)` request within any t
+          time interval.
+        to
+        - each key may make atmost `count * [(t / window) + 1]` request within
+          any t time interval.
+        Thus, we only need to store reset_times for each key which will be less
+        memory-intensive. This also has the advantage that you can only ever
+        lock yourself out completely for `window / count` seconds instead of
+        `window` seconds.
+        '''
+        now = time.time()
+
+        # Remove all timestamps from `reset_times` that are too old.
+        if cls.last_gc_time.get((time_window, max_count), 0) <= now - time_window / max_count:
+            cls.last_gc_time[(time_window, max_count)] = now
+            cls._garbage_collect_for_rule(now, time_window, max_count)
+
+        reset_times_for_rule = cls.reset_times.setdefault((time_window, max_count), {})
+        new_reset = max(reset_times_for_rule.get(entity_key, now), now) \
+            + time_window / max_count
+
+        if new_reset > now + time_window:
+            # Compute for how long the bucket will remain filled.
+            time_till_free = new_reset - time_window - now
+            return True, time_till_free
+
+        reset_times_for_rule[entity_key] = new_reset
+        return False, 0.0
+
+    @classmethod
+    def get_api_calls_left(cls, entity_key: str, range_seconds: int,
+                           max_calls: int) -> Tuple[int, float]:
+        now = time.time()
+        if (range_seconds, max_calls) in cls.reset_times and \
+                entity_key in cls.reset_times[(range_seconds, max_calls)]:
+            reset_time = cls.reset_times[(range_seconds, max_calls)][entity_key]
+        else:
+            return max_calls, 0
+
+        calls_remaining = (now + range_seconds - reset_time) * max_calls // range_seconds
+        return int(calls_remaining), reset_time - now
+
+    @classmethod
+    def block_access(cls, entity_key: str, seconds: int) -> None:
+        now = time.time()
+        cls.timestamps_blocked_until[entity_key] = now + seconds
+
+    @classmethod
+    def unblock_access(cls, entity_key: str) -> None:
+        del cls.timestamps_blocked_until[entity_key]
+
+    @classmethod
+    def clear_history(cls, entity_key: str) -> None:
+        for rule, reset_times_for_rule in cls.reset_times.items():
+            reset_times_for_rule.pop(entity_key, None)
+        cls.timestamps_blocked_until.pop(entity_key, None)
+
+    @classmethod
+    def rate_limit_entity(cls, entity_key: str, rules: List[Tuple[int, int]],
+                          max_api_calls: int, max_api_window: int) -> Tuple[bool, float]:
+        now = time.time()
+        if entity_key in cls.timestamps_blocked_until:
+            # Check whether the key is manually blocked.
+            if now < cls.timestamps_blocked_until[entity_key]:
+                blocking_ttl = cls.timestamps_blocked_until[entity_key] - now
+                return True, blocking_ttl
+            else:
+                del cls.timestamps_blocked_until[entity_key]
+
+        if len(rules) == 0:
+            return False, 0
+        for time_window, max_count in rules:
+            ratelimited, time_till_free = cls.need_to_limit(entity_key, time_window, max_count)
+
+            if ratelimited:
+                statsd.incr("ratelimiter.limited.%s" % (entity_key,))
+                break
+
+        return ratelimited, time_till_free
 
 class RedisRateLimiterBackend(RateLimiterBackend):
     @classmethod
