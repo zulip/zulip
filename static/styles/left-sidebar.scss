@@ -514,8 +514,13 @@ li.expanded_private_message a {
     margin: 1px 0px;
 }
 
-.show-all-streams a {
-    color: hsl(0, 0%, 20%);
+.show-all-streams {
+    a {
+        color: hsl(0, 0%, 20%);
+    }
+    .fa-chevron-left {
+        text-decoration: none;
+    }
 }
 
 .topic-box {
@@ -589,10 +594,6 @@ li.expanded_private_message a {
 
 .zoom-in .zoom-in-hide {
     display: none;
-}
-
-.show-all-streams .fa-chevron-left {
-    text-decoration: none;
 }
 
 li.top_left_private_messages a,
