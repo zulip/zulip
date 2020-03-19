@@ -523,10 +523,10 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
     if settings.BILLING_ENABLED:
         update_license_ledger_if_needed(user_profile.realm, event_time)
 
+    # Note that for bots, the caller will send an additional event
+    # with bot-specific info like services.
     notify_created_user(user_profile)
-    if bot_type:
-        notify_created_bot(user_profile)
-    else:
+    if bot_type is None:
         process_new_human_user(user_profile, prereg_user=prereg_user,
                                newsletter_data=newsletter_data,
                                default_stream_groups=default_stream_groups,
