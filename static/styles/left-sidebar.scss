@@ -252,7 +252,6 @@ li.active-sub-filter {
     border-radius: 4px;
 }
 
-li.top_left_all_messages,
 .private_messages_header,
 li.top_left_mentions,
 li.top_left_starred_messages {
@@ -276,9 +275,39 @@ li.top_left_starred_messages {
     line-height: 1.25;
 }
 
-.top_left_all_messages i.fa-home {
+.top_left_all_messages {
+    i.fa-home {
+        position: relative;
+        font-size: 15px;
+    }
+    .count {
+        float: right;
+        padding: 0 4px;
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: normal;
+        letter-spacing: 0.6px;
+        border-radius: 4px;
+        background-color: hsl(105, 2%, 50%);
+        color: hsl(0, 0%, 100%);
+    }
+}
+
+li.top_left_all_messages {
     position: relative;
-    font-size: 15px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    &:hover {
+        .all-messages-arrow {
+            display: inline;
+            cursor: pointer;
+            color: hsl(0, 0%, 53%);
+        }
+    }
+    a {
+        display: block;
+    }
 }
 
 .top_left_private_messages i.fa-envelope {
@@ -296,7 +325,6 @@ li.top_left_starred_messages {
    unread counts, except for starred messages.
    This is the common section.
 */
-.top_left_all_messages .count,
 .top_left_private_messages .count,
 .top_left_starred_messages .count,
 .top_left_mentions .count,
@@ -323,7 +351,6 @@ li.top_left_starred_messages {
 }
 
 /* These are true "unread" counts. */
-.top_left_all_messages .count,
 .top_left_private_messages .count,
 .top_left_mentions .count,
 .topic-unread-count,
@@ -400,7 +427,6 @@ li.top_left_starred_messages {
     When you hover over list items, we hover
     the relevant chevrons in light gray.
 */
-li.top_left_all_messages:hover .all-messages-arrow,
 li.top_left_starred_messages:hover .starred-messages-sidebar-arrow,
 li.topic-list-item:hover .topic-sidebar-arrow {
     display: inline;
@@ -546,7 +572,6 @@ li.expanded_private_message a {
     text-decoration: none;
 }
 
-li.top_left_all_messages a,
 li.top_left_private_messages a,
 li.top_left_mentions a,
 li.top_left_starred_messages a {
