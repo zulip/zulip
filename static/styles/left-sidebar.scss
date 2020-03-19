@@ -74,27 +74,28 @@ li.show-more-topics {
     }
 }
 
-#streams_inline_cog,
 #streams_filter_icon {
     float: right;
     opacity: 0.50;
     font-size: 13px;
     margin-top: 3px;
     margin-left: 10px;
+    &:hover {
+        opacity: 1;
+        cursor: pointer;
+    }
 }
 
-#streams_inline_cog:hover,
-#streams_filter_icon:hover {
-    opacity: 1;
-    cursor: pointer;
+#streams_inline_cog {
+    @extend #streams_filter_icon;
+    margin-right: 10px;
 }
 
 #streams_header {
     margin-top: 3px;
-}
-
-#streams_inline_cog {
-    margin-right: 10px;
+    margin-right: 0px;
+    padding-left: $far_left_gutter_size;
+    cursor: pointer;
 }
 
 .tooltip {
@@ -196,7 +197,6 @@ li.show-more-topics {
     }
 }
 
-#private-container,
 #stream-filters-container {
     overflow-x: hidden;
     overflow-y: auto;
@@ -206,6 +206,7 @@ li.show-more-topics {
 }
 
 #private-container {
+    @extend #stream-filters-container;
     max-height: 200px;
 }
 
@@ -288,10 +289,6 @@ li.top_left_mentions {
         background-color: hsl(105, 2%, 50%);
         color: hsl(0, 0%, 100%);
     }
-}
-
-.conversation-partners {
-    line-height: 1.25;
 }
 
 .top_left_all_messages {
@@ -385,23 +382,13 @@ li.top_left_all_messages {
     font-weight: normal;
     letter-spacing: 0.6px;
     border-radius: 4px;
-}
-
-/* These are true "unread" counts. */
-.top_left_mentions .count,
-.topic-unread-count,
-.private_message_count {
+    /* These are true "unread" counts. */
     background-color: hsl(105, 2%, 50%);
     color: hsl(0, 0%, 100%);
 }
 
-.topic-box {
-    padding-left: 5px;
-    margin-right: 30px;
-}
-
-.conversation-partners,
-.topic-name {
+.conversation-partners {
+    line-height: 1.25;
     display: block;
     width: calc(100% - 5px);
     white-space: nowrap;
@@ -411,6 +398,12 @@ li.top_left_all_messages {
 }
 
 .topic-name {
+    display: block;
+    width: calc(100% - 5px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 2px;
     /* TODO: We should figure out how to remove this without changing the spacing */
     line-height: 1.1;
 }
@@ -531,8 +524,9 @@ li.expanded_private_message a {
     color: hsl(0, 0%, 20%);
 }
 
-.pm-box,
 .topic-box {
+    padding-left: 5px;
+    margin-right: 30px;
     display: flex;
     justify-content: center;
     padding-top: 1px;
@@ -540,18 +534,21 @@ li.expanded_private_message a {
 }
 
 .pm-box {
+    display: flex;
+    justify-content: center;
+    padding-top: 1px;
+    cursor: pointer;
     margin-right: 20px;
     align-items: center;
-}
-
-.pm-box .user_circle {
-    min-width: 8px;
-    height: 8px;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    margin-left: 2px;
-    position: relative;
-    top: 0px;
+    .user_circle {
+        min-width: 8px;
+        height: 8px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        margin-left: 2px;
+        position: relative;
+        top: 0px;
+    }
 }
 
 .zero-pm-unreads .pm-box,
@@ -581,19 +578,15 @@ li.expanded_private_message a {
     }
 }
 
-#streams_header {
-    margin-right: 0px;
-    padding-left: $far_left_gutter_size;
-    cursor: pointer;
-}
-
 .zero_count {
     visibility: hidden;
 }
 
-.searching-for-more-topics img {
-    height: 16px;
-    margin-left: 6px;
+.searching-for-more-topics {
+    img {
+        height: 16px;
+        margin-left: 6px;
+    }
 }
 
 .zoom-in .show-more-topics {
