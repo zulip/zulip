@@ -188,14 +188,12 @@ li.show-more-topics {
 
 .narrows_panel {
     margin-bottom: 4px;
-}
-
-.narrows_panel li a {
-    margin-top: 1px;
-}
-
-.narrows_panel li a:hover {
-    text-decoration: none;
+    li a {
+        margin-top: 1px;
+        &:hover {
+            text-decoration: none;
+        }
+    }
 }
 
 #private-container,
