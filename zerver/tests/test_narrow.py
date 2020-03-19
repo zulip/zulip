@@ -1645,7 +1645,10 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com">https://<span class="highlight">google.com</span></a></p>')
 
-        meeting_message = [m for m in messages if m[TOPIC_NAME] == 'meetings'][0]
+        (meeting_message,) = [
+            m for m in messages
+            if m[TOPIC_NAME] == 'meetings'
+        ]
         self.assertEqual(
             meeting_message[MATCH_TOPIC],
             'meetings')
@@ -1654,12 +1657,15 @@ class GetOldMessagesTest(ZulipTestCase):
             '<p>discuss <span class="highlight">lunch</span> after ' +
             '<span class="highlight">lunch</span></p>')
 
-        meeting_message = [m for m in messages if m[TOPIC_NAME] == 'lunch plans'][0]
+        (lunch_message,) = [
+            m for m in messages
+            if m[TOPIC_NAME] == 'lunch plans'
+        ]
         self.assertEqual(
-            meeting_message[MATCH_TOPIC],
+            lunch_message[MATCH_TOPIC],
             '<span class="highlight">lunch</span> plans')
         self.assertEqual(
-            meeting_message['match_content'],
+            lunch_message['match_content'],
             '<p>I am hungry!</p>')
 
         # Should not crash when multiple search operands are present
@@ -1689,7 +1695,9 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
-        japanese_message = [m for m in messages if m[TOPIC_NAME] == u'日本'][-1]
+        japanese_message = [
+            m for m in messages
+            if m[TOPIC_NAME] == u'日本'][-1]
         self.assertEqual(
             japanese_message[MATCH_TOPIC],
             u'<span class="highlight">日本</span>')
@@ -1698,7 +1706,10 @@ class GetOldMessagesTest(ZulipTestCase):
             u'<p>昨日、<span class="highlight">日本</span>' +
             u' のお菓子を送りました。</p>')
 
-        english_message = [m for m in messages if m[TOPIC_NAME] == 'english'][0]
+        (english_message,) = [
+            m for m in messages
+            if m[TOPIC_NAME] == 'english'
+        ]
         self.assertEqual(
             english_message[MATCH_TOPIC],
             'english')
@@ -2907,13 +2918,16 @@ WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject IL
         self.assertEqual(len(result['messages']), 1)
         messages = result['messages']
 
-        meeting_message = [m for m in messages if m[TOPIC_NAME] == 'say hello'][0]
+        (hello_message,) = [
+            m for m in messages
+            if m[TOPIC_NAME] == 'say hello'
+        ]
         self.assertEqual(
-            meeting_message[MATCH_TOPIC],
+            hello_message[MATCH_TOPIC],
             'say hello')
         othello = self.example_user('othello')
         self.assertEqual(
-            meeting_message['match_content'],
+            hello_message['match_content'],
             ('<p>How are you doing, <span class="user-mention" data-user-id="%s">' +
              '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>') % (
                  othello.id))
