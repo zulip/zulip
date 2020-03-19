@@ -821,10 +821,10 @@ class ZulipTestCase(TestCase):
             r for r in data
             if r['id'] == db_id][0]
 
-    def findOne(self,
-                lst: List[Any],
-                predicate: Callable[[Any], bool],
-                member_name: str) -> Any:
+    def find_one(self,
+                 lst: List[Any],
+                 predicate: Callable[[Any], bool],
+                 member_name: str) -> Any:
         matches = [
             item for item in lst
             if predicate(item)
@@ -834,22 +834,26 @@ class ZulipTestCase(TestCase):
             # Happy path!
             return matches[0]
 
-        print('\nERROR: findOne fails on this list:\n')
+        if True:  # nocoverage
+            print('\nERROR: findOne fails on this list:\n')
+            print('[')
 
-        for item in lst:
-            print(item)
+            for item in lst:
+                print('   ', item, ',')
 
-        if len(matches) == 0:
+            print(']')
+
+            if len(matches) == 0:
+                raise ValueError(
+                    'No matches: {}'.format(member_name)
+                )
+
             raise ValueError(
-                'No matches: {}'.format(member_name)
+                'Too many matches ({}): {}'.format(
+                    len(matches),
+                    member_name
+                )
             )
-
-        raise ValueError(
-            'Too many matches ({}): {}'.format(
-                len(matches),
-                member_name
-            )
-        )
 
     def init_default_ldap_database(self) -> None:
         """
