@@ -225,15 +225,28 @@ li.show-more-topics {
 ul.filters {
     list-style-type: none;
     margin-left: 0px;
-}
-
-ul.filters a {
-    color: inherit;
-}
-
-ul.filters hr {
-    margin-top: 10px;
-    margin-bottom: 10px;
+    a {
+        color: inherit;
+    }
+    hr {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .li.muted_topic {
+        opacity: 0.25;
+    }
+    .li.out_of_home_view {
+        opacity: 0.25;
+        &:hover {
+            opacity: 0.6;
+        }
+        li.muted_topic {
+            /* If stream is muted, this resets opacity of muted topics in muted
+               stream to 1; since opacity is multiplied down through child
+               elements, this avoids an unreadable opacity of 0.25^2. */
+            opacity: 1;
+        }
+    }
 }
 
 li.active-filter,
@@ -466,22 +479,6 @@ li.topic-list-item:hover .topic-sidebar-arrow {
     display: inline;
     cursor: pointer;
     color: hsl(0, 0%, 53%);
-}
-
-ul.filters li.muted_topic,
-ul.filters li.out_of_home_view {
-    opacity: 0.25;
-}
-
-ul.filters li.out_of_home_view:hover {
-    opacity: 0.6;
-}
-
-ul.filters li.out_of_home_view li.muted_topic {
-    /* If stream is muted, this resets opacity of muted topics in muted
-       stream to 1; since opacity is multiplied down through child
-       elements, this avoids an unreadable opacity of 0.25^2. */
-    opacity: 1;
 }
 
 ul.topic-list {
