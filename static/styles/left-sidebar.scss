@@ -253,8 +253,7 @@ li.active-sub-filter {
 }
 
 .private_messages_header,
-li.top_left_mentions,
-li.top_left_starred_messages {
+li.top_left_mentions {
     position: relative;
     padding-top: 1px;
     padding-bottom: 1px;
@@ -330,8 +329,44 @@ li.top_left_all_messages {
     }
 }
 
-.top_left_mentions i.fa-at,
-.top_left_starred_messages i.fa-star {
+.top_left_starred_messages {
+    i.fa-star {
+        font-size: 13px;
+    }
+    .count {
+        float: right;
+        padding: 0 4px;
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: normal;
+        letter-spacing: 0.6px;
+        border-radius: 4px;
+        /* Starred messaged counts aren't really unread
+        counts, so we style them differently.
+        */
+        background-color: transparent;
+        color: inherit;
+        padding: 2px 1px 0px 3px;
+        border-color: hsl(105, 2%, 50%);
+    }
+}
+
+li.top_left_all_messages {
+    position: relative;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    &:hover {
+        display: inline;
+        cursor: pointer;
+        color: hsl(0, 0%, 53%);
+    }
+    a {
+        display: block;
+    }
+}
+
+.top_left_mentions i.fa-at {
     font-size: 13px;
 }
 
@@ -339,7 +374,6 @@ li.top_left_all_messages {
    unread counts, except for starred messages.
    This is the common section.
 */
-.top_left_starred_messages .count,
 .top_left_mentions .count,
 .topic-unread-count,
 .private_message_count {
@@ -351,16 +385,6 @@ li.top_left_all_messages {
     font-weight: normal;
     letter-spacing: 0.6px;
     border-radius: 4px;
-}
-
-/* Starred messaged counts aren't really unread
-   counts, so we style them differently.
-*/
-.top_left_starred_messages .count {
-    background-color: transparent;
-    color: inherit;
-    padding: 2px 1px 0px 3px;
-    border-color: hsl(105, 2%, 50%);
 }
 
 /* These are true "unread" counts. */
@@ -439,7 +463,7 @@ li.top_left_all_messages {
     When you hover over list items, we hover
     the relevant chevrons in light gray.
 */
-li.top_left_starred_messages:hover .starred-messages-sidebar-arrow,
+.starred-messages-sidebar-arrow,
 li.topic-list-item:hover .topic-sidebar-arrow {
     display: inline;
     cursor: pointer;
@@ -585,7 +609,6 @@ li.expanded_private_message a {
 }
 
 li.top_left_private_messages a,
-li.top_left_mentions a,
-li.top_left_starred_messages a {
+li.top_left_mentions a {
     display: block;
 }
