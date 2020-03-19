@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 from email.utils import parseaddr
 from fakeldap import MockLDAP
-from typing import (cast, Any, Dict, Iterable, Iterator, List, Optional,
+from typing import (cast, Any, Callable, Dict, Iterable,
+                    Iterator, List, Optional,
                     Tuple, Union, Set)
 
 from django.apps import apps
@@ -819,6 +820,36 @@ class ZulipTestCase(TestCase):
         return [
             r for r in data
             if r['id'] == db_id][0]
+
+    def findOne(self,
+                lst: List[Any],
+                predicate: Callable[[Any], bool],
+                member_name: str) -> Any:
+        matches = [
+            item for item in lst
+            if predicate(item)
+        ]
+
+        if len(matches) == 1:
+            # Happy path!
+            return matches[0]
+
+        print('\nERROR: findOne fails on this list:\n')
+
+        for item in lst:
+            print(item)
+
+        if len(matches) == 0:
+            raise ValueError(
+                'No matches: {}'.format(member_name)
+            )
+
+        raise ValueError(
+            'Too many matches ({}): {}'.format(
+                len(matches),
+                member_name
+            )
+        )
 
     def init_default_ldap_database(self) -> None:
         """
