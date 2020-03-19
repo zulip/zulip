@@ -159,7 +159,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = 'hambot-bot@zulip.testserver'
         bot = self.get_bot_user(email)
 
-        event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
+        (event,) = [
+            e for e in events
+            if e['event']['type'] == 'realm_bot'
+        ]
+
         self.assertEqual(
             dict(
                 type='realm_bot',
@@ -288,7 +292,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = 'hambot-bot@zulip.testserver'
         bot = self.get_bot_user(email)
 
-        event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
+        (event,) = [
+            e for e in events
+            if e['event']['type'] == 'realm_bot'
+        ]
         self.assertEqual(
             dict(
                 type='realm_bot',
@@ -386,7 +393,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         assert(profile.default_sending_stream is not None)
         self.assertEqual(profile.default_sending_stream.name, 'Denmark')
 
-        event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
+        (event,) = [
+            e for e in events
+            if e['event']['type'] == 'realm_bot'
+        ]
         self.assertEqual(
             dict(
                 type='realm_bot',
@@ -456,7 +466,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         assert(bot_profile.default_events_register_stream is not None)
         self.assertEqual(bot_profile.default_events_register_stream.name, 'Denmark')
 
-        event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
+        (event,) = [
+            e for e in events
+            if e['event']['type'] == 'realm_bot'
+        ]
         self.assertEqual(
             dict(
                 type='realm_bot',

@@ -2098,7 +2098,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ])),
             ])
         action = lambda: self.create_bot('test')
-        events = self.do_test(action, num_events=3)
+        events = self.do_test(action, num_events=2)
         error = get_bot_created_checker(bot_type="GENERIC_BOT")('events[1]', events[1])
         self.assert_on_error(error)
 
@@ -2107,10 +2107,10 @@ class EventsRegisterTest(ZulipTestCase):
                                          payload_url=ujson.dumps('https://foo.bar.com'),
                                          interface_type=Service.GENERIC,
                                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
-        events = self.do_test(action, num_events=3)
+        events = self.do_test(action, num_events=2)
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
-        error = get_bot_created_checker(bot_type="OUTGOING_WEBHOOK_BOT")('events[2]', events[2])
+        error = get_bot_created_checker(bot_type="OUTGOING_WEBHOOK_BOT")('events[2]', events[1])
         self.assert_on_error(error)
 
         action = lambda: self.create_bot('test_embedded',
@@ -2118,8 +2118,8 @@ class EventsRegisterTest(ZulipTestCase):
                                          service_name='helloworld',
                                          config_data=ujson.dumps({'foo': 'bar'}),
                                          bot_type=UserProfile.EMBEDDED_BOT)
-        events = self.do_test(action, num_events=3)
-        error = get_bot_created_checker(bot_type="EMBEDDED_BOT")('events[2]', events[2])
+        events = self.do_test(action, num_events=2)
+        error = get_bot_created_checker(bot_type="EMBEDDED_BOT")('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_change_bot_full_name(self) -> None:
