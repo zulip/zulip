@@ -1960,15 +1960,20 @@ class GoogleAuthBackendTest(SocialAuthBase):
             mock_warn.assert_called_once_with("log_into_subdomain: Invalid token given: %s" % (token,))
         self.assertEqual(result.status_code, 400)
 
-    def test_log_into_subdomain_when_is_signup_is_true(self) -> None:
+    def test_prevent_duplicate_signups(self) -> None:
+        existing_user = self.example_user('hamlet')
+        existing_user.delivery_email = 'existing@zulip.com'
+        existing_user.email = 'whatever@zulip.com'
+        existing_user.save()
+
         data = {'name': 'Full Name',
-                'email': self.example_email("hamlet"),
+                'email': 'existing@zulip.com',
                 'subdomain': 'zulip',
                 'is_signup': True,
                 'next': ''}
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response('hamlet@zulip.com already has an account', result)
+        self.assert_in_response('existing@zulip.com already has an account', result)
 
     def test_log_into_subdomain_when_is_signup_is_true_and_new_user(self) -> None:
         data = {'name': 'New User Name',
