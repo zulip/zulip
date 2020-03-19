@@ -127,6 +127,7 @@
 * [Manage editing of old messages](/help/configure-message-editing-and-deletion)
 * [Hide message content in emails](/help/hide-message-content-in-emails)
 * [Community topic edits](/help/community-topic-edits)
+* [Disable weekly digest emails](/help/disable-digest-emails)
 * [Disable welcome emails](/help/disable-welcome-emails)
 * [Configure notification bot](/help/configure-notification-bot)
 * [Require topics in stream messages](/help/require-topics)
