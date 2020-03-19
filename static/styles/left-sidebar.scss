@@ -213,15 +213,13 @@ li.show-more-topics {
     text-decoration: none;
     margin-left: 10px;
     margin-bottom: 18px;
-}
-
-#add-stream-link i {
-    min-width: 19px;
-    text-align: center;
-}
-
-#add-stream-link i::before {
-    padding-right: 3px;
+    i {
+        min-width: 19px;
+        text-align: center;
+        &::before {
+            padding-right: 3px;
+        }
+    }
 }
 
 ul.filters {
