@@ -417,6 +417,12 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(8, 78%, 43%, 0.15);
     }
 
+    .alert-word {
+        background-color: transparent;
+        color: hsl(160, 100%, 75%);
+        font-weight: bold;
+    }
+
     .rendered_markdown .user-mention,
     .rendered_markdown .user-group-mention {
         background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
