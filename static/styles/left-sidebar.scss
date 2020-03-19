@@ -520,12 +520,13 @@ li.expanded_private_message a {
     margin-left: 6px;
 }
 
-.zoom-in .show-more-topics {
-    display: none;
-}
-
-.zoom-in .zoom-in-hide {
-    display: none;
+.zoom-in {
+    .show-more-topics {
+        display: none;
+    }
+    .zoom-in-hide {
+        display: none;
+    }
 }
 
 .show-all-streams .fa-chevron-left {
