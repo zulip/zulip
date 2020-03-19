@@ -1383,16 +1383,20 @@ class GetProfileTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid message ID")
 
     def test_get_all_profiles_avatar_urls(self) -> None:
-        user_profile = self.example_user('hamlet')
-        result = self.api_get(self.example_user("hamlet"), "/api/v1/users")
+        hamlet = self.example_user('hamlet')
+        result = self.api_get(hamlet, "/api/v1/users")
         self.assert_json_success(result)
 
-        for user in result.json()['members']:
-            if user['email'] == self.example_email("hamlet"):
-                self.assertEqual(
-                    user['avatar_url'],
-                    avatar_url(user_profile),
-                )
+        my_user = self.findOne(
+            result.json()['members'],
+            lambda user: user['email'] == hamlet.email,
+            'member for Hamlet'
+        )
+
+        self.assertEqual(
+            my_user['avatar_url'],
+            avatar_url(hamlet),
+        )
 
 class FakeEmailDomainTest(ZulipTestCase):
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain")
