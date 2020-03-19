@@ -1387,7 +1387,7 @@ class GetProfileTest(ZulipTestCase):
         result = self.api_get(hamlet, "/api/v1/users")
         self.assert_json_success(result)
 
-        my_user = self.findOne(
+        my_user = self.find_one(
             result.json()['members'],
             lambda user: user['email'] == hamlet.email,
             'member for Hamlet'
