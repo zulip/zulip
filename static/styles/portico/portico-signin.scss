@@ -26,6 +26,22 @@ html {
     border-radius: 4px;
 }
 
+.bottom-suggestion {
+    text-align: left;
+    margin: 0px;
+    font-weight: 500;
+    font-size: 1em;
+
+    a {
+        color: hsl(164, 100%, 23%);
+
+        &:hover {
+            text-decoration: none;
+            color: hsl(156, 62%, 61%);
+        }
+    }
+}
+
 .bottom-text {
     text-align: center;
     margin-top: 20px;
