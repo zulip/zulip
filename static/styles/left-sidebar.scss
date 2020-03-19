@@ -474,8 +474,10 @@ li.expanded_private_message a {
     margin-right: 15px;
 }
 
-.zoom-out #topics_header {
-    display: none;
+.zoom-out {
+    #topics_header {
+        display: none;
+    }
 }
 
 #global_filters {
@@ -489,18 +491,16 @@ li.expanded_private_message a {
 #topics_header {
     margin-right: 10px;
     color: hsl(0, 0%, 43%);
-}
-
-#topics_header a {
-    color: inherit;
-    text-decoration: none;
-    text-transform: uppercase;
-}
-
-#topics_header a i {
-    margin: 0 5px 0 10px;
-    position: relative;
-    top: 1px;
+    a {
+        color: inherit;
+        text-decoration: none;
+        text-transform: uppercase;
+        i {
+            margin: 0 5px 0 10px;
+            position: relative;
+            top: 1px;
+        }
+    }
 }
 
 #streams_header {
