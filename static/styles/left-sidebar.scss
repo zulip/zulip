@@ -39,11 +39,10 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
     font-weight: 800;
     min-width: $left_col_size;
     text-align: center;
-}
-
-/* Ideally we'd handle hashtags using an <i> and just have a single rule here. */
-.stream-privacy span.hashtag {
-    padding-right: 3px;
+    /* Ideally we'd handle hashtags using an <i> and just have a single rule here. */
+    span.hashtag {
+        padding-right: 3px;
+    }
 }
 
 .pm_left_col {
