@@ -403,25 +403,26 @@ li.top_left_all_messages {
     line-height: 1.1;
 }
 
-.all-messages-arrow i,
-.stream-sidebar-arrow i,
-.starred-messages-sidebar-arrow i,
-.topic-sidebar-arrow i {
-    padding-right: 0.25em;
-    display: inline-block;
-    width: 13px;
-}
-
-/*
-    All of our left sidebar handlers use absolute
-    positioning.  We should fix that.
-*/
-.all-messages-arrow,
-.stream-sidebar-arrow,
-.starred-messages-sidebar-arrow,
-.topic-sidebar-arrow {
+.arrow {
+    /*
+        All of our left sidebar handlers use absolute
+        positioning.  We should fix that.
+    */
     position: absolute;
     display: none;
+    right: 10px;
+    i {
+        padding-right: 0.25em;
+        display: inline-block;
+        width: 13px;
+    }
+    /*
+        If you hover directly over the chevron itself,
+        show it in black.
+    */
+    &:hover {
+        color: hsl(0, 0%, 0%) !important;
+    }
 }
 
 /*
@@ -429,11 +430,17 @@ li.top_left_all_messages {
     pretty similar.
 */
 .all-messages-arrow,
-.starred-messages-sidebar-arrow,
 .stream-sidebar-arrow {
+    @extend .arrow;
     top: 3px;
-    right: 10px;
     font-size: 0.8em;
+}
+
+.starred-messages-sidebar-arrow {
+    @extend .arrow;
+    display: inline;
+    cursor: pointer;
+    color: hsl(0, 0%, 53%);
 }
 
 /*
@@ -442,8 +449,8 @@ li.top_left_all_messages {
     which also affects it positioning.
 */
 .topic-sidebar-arrow {
+    @extend .arrow;
     top: 1px;
-    right: 10px;
     font-size: 0.7em;
 }
 
@@ -451,22 +458,10 @@ li.top_left_all_messages {
     When you hover over list items, we hover
     the relevant chevrons in light gray.
 */
-.starred-messages-sidebar-arrow,
 li.topic-list-item:hover .topic-sidebar-arrow {
     display: inline;
     cursor: pointer;
     color: hsl(0, 0%, 53%);
-}
-
-/*
-    If you hover directly over the chevron itself,
-    show it in black.
-*/
-.starred-messages-sidebar-arrow:hover,
-.all-messages-arrow:hover,
-.stream-sidebar-arrow:hover,
-.topic-sidebar-arrow:hover {
-    color: hsl(0, 0%, 0%) !important;
 }
 
 ul.filters li.muted_topic,
