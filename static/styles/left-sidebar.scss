@@ -210,12 +210,6 @@ li.show-more-topics {
     max-height: 200px;
 }
 
-.top_left_row:hover,
-.bottom_left_row:hover {
-    background-color: hsl(93, 18%, 82%);
-    border-radius: 4px;
-}
-
 #add-stream-link {
     text-decoration: none;
     margin-left: 10px;
@@ -261,13 +255,17 @@ li.top_left_mentions {
 }
 
 .top_left_row {
+    @extend .bottom_left_row;
     padding-left: $far_left_gutter_size;
     padding-right: 10px;
 }
 
-.top_left_row,
 .bottom_left_row {
     border-radius: 4px;
+    &:hover {
+        background-color: hsl(93, 18%, 82%);
+        border-radius: 4px;
+    }
 }
 
 .top_left_private_messages {
