@@ -257,11 +257,21 @@ li.active-sub-filter {
     border-radius: 4px;
 }
 
-.private_messages_header,
-li.top_left_mentions {
+.private_messages_header {
     position: relative;
     padding-top: 1px;
     padding-bottom: 1px;
+}
+
+li.top_left_private_messages {
+    a {
+        display: block;
+    }
+}
+
+li.top_left_mentions {
+    @extend li.top_left_private_messages;
+    @extend .private_messages_header;
 }
 
 .top_left_row {
@@ -471,16 +481,6 @@ li.top_left_all_messages {
     font-size: 0.7em;
 }
 
-/*
-    When you hover over list items, we hover
-    the relevant chevrons in light gray.
-*/
-li.topic-list-item:hover .topic-sidebar-arrow {
-    display: inline;
-    cursor: pointer;
-    color: hsl(0, 0%, 53%);
-}
-
 ul.topic-list {
     list-style-type: none;
     font-weight: normal;
@@ -499,16 +499,26 @@ ul.expanded_private_messages {
 li.topic-list-item {
     position: relative;
     padding-right: 5px;
+    /*
+        When you hover over list items, we hover
+        the relevant chevrons in light gray.
+    */
+    &:hover {
+        .topic-sidebar-arrow {
+            display: inline;
+            cursor: pointer;
+            color: hsl(0, 0%, 53%);
+        }
+    }
 }
 
 li.expanded_private_message {
     position: relative;
     padding-top: 1px;
     padding-bottom: 1px;
-}
-
-li.expanded_private_message a {
-    margin: 1px 0px;
+    a {
+        margin: 1px 0px;
+    }
 }
 
 .show-all-streams {
@@ -592,9 +602,4 @@ li.expanded_private_message a {
     .zoom-in-hide {
         display: none;
     }
-}
-
-li.top_left_private_messages a,
-li.top_left_mentions a {
-    display: block;
 }
