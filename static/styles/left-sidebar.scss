@@ -8,8 +8,19 @@ $left_col_size: 19px;
    the above (and another 5px of padding not measured here) */
 $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
-#left-sidebar #group-pm-list {
-    display: none;
+#left-sidebar {
+    #group-pm-list {
+        display: none;
+        padding-left: 10px;
+    }
+    .filter-icon {
+        i {
+            padding-right: 3px;
+        }
+    }
+    #user-list {
+        padding-left: 10px;
+    }
 }
 
 .hashtag:empty::after {
@@ -25,8 +36,7 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 }
 
 /* Ideally we'd handle hashtags using an <i> and just have a single rule here. */
-.stream-privacy span.hashtag,
-#left-sidebar .filter-icon i {
+.stream-privacy span.hashtag {
     padding-right: 3px;
 }
 
@@ -42,11 +52,6 @@ li.show-more-topics {
     a {
         font-size: 12px;
     }
-}
-
-#left-sidebar #user-list,
-#left-sidebar #group-pm-list {
-    padding-left: 10px;
 }
 
 #streams_inline_cog,
