@@ -23,9 +23,15 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
     }
 }
 
-.hashtag:empty::after {
-    font-size: 18px;
-    font-weight: 800;
+.hashtag {
+    &:empty {
+        &::after {
+            content: "#";
+            line-height: 0;
+            font-size: 18px;
+            font-weight: 800;
+        }
+    }
 }
 
 .stream-privacy {
@@ -75,11 +81,6 @@ li.show-more-topics {
 
 #streams_inline_cog {
     margin-right: 10px;
-}
-
-.hashtag:empty::after {
-    content: "#";
-    line-height: 0;
 }
 
 .tooltip {
