@@ -357,7 +357,7 @@ class BugdownTest(ZulipTestCase):
     def load_bugdown_tests(self) -> Tuple[Dict[str, Any], List[List[str]]]:
         test_fixtures = {}
         with open(os.path.join(os.path.dirname(__file__), 'fixtures/markdown_test_cases.json'), 'r') as f:
-            data = ujson.loads('\n'.join(f.readlines()))
+            data = ujson.load(f)
         for test in data['regular_tests']:
             test_fixtures[test['name']] = test
 

@@ -115,7 +115,7 @@ def run_production() -> None:
         # remove duplicate contributions count
         # find commits at the time of split and substract from zulip-server
         with open(duplicate_commits_file, 'r') as f:
-            duplicate_commits = json.loads(f.read())
+            duplicate_commits = json.load(f)
             for committer in duplicate_commits:
                 if committer in contribs_list and contribs_list[committer].get('server'):
                     total_commits = contribs_list[committer]['server']

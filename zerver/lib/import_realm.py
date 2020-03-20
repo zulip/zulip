@@ -603,7 +603,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
 
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename) as records_file:
-        records = ujson.loads(records_file.read())  # type: List[Dict[str, Any]]
+        records = ujson.load(records_file)  # type: List[Dict[str, Any]]
     timestamp = datetime_to_timestamp(timezone_now())
 
     re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
