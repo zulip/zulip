@@ -457,7 +457,8 @@ class NarrowLibraryTest(TestCase):
     def test_build_narrow_filter(self) -> None:
         fixtures_path = os.path.join(os.path.dirname(__file__),
                                      'fixtures/narrow.json')
-        scenarios = ujson.loads(open(fixtures_path, 'r').read())
+        with open(fixtures_path, 'r') as f:
+            scenarios = ujson.load(f)
         self.assertTrue(len(scenarios) == 9)
         for scenario in scenarios:
             narrow = scenario['narrow']

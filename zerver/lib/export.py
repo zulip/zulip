@@ -954,7 +954,7 @@ def export_usermessages_batch(input_path: Path, output_path: Path,
     objects. (This is called by the export_usermessage_batch
     management command)."""
     with open(input_path, "r") as input_file:
-        output = ujson.loads(input_file.read())
+        output = ujson.load(input_file)
     message_ids = [item['id'] for item in output['zerver_message']]
     user_profile_ids = set(output['zerver_userprofile_ids'])
     del output['zerver_userprofile_ids']
@@ -1429,8 +1429,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
         for fn in fns:
             f.write(os.path.basename(fn) + '\n')
             with open(fn, 'r') as filename:
-                payload = filename.read()
-            data = ujson.loads(payload)
+                data = ujson.load(filename)
             for k in sorted(data):
                 f.write('%5d %s\n' % (len(data[k]), k))
             f.write('\n')
@@ -1441,8 +1440,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
         for fn in [avatar_file, uploads_file]:
             f.write(fn+'\n')
             with open(fn, 'r') as filename:
-                payload = filename.read()
-            data = ujson.loads(payload)
+                data = ujson.load(filename)
             f.write('%5d records\n' % (len(data),))
             f.write('\n')
 
