@@ -250,9 +250,12 @@ above.
 
 1. Add the markdown file to the index in `templates/zerver/help/include/rest-endpoints.md`.
 
-1. Test your endpoint, pretending to be a new user in a hurry.  You
-   should make sure that copy-pasting the code in your examples works,
-   and post an example of the output in the pull request.
+1. Test your endpoint, pretending to be a new user in a hurry, by
+   visiting it via the links on `http://localhost:9991/api` (the API
+   docs are rendered from the markdown source files on page load, so
+   just reload to see an updated version as you edit).  You should
+   make sure that copy-pasting the code in your examples works, and
+   post an example of the output in the pull request.
 
 [javascript-examples]: https://github.com/zulip/zulip-js/tree/master/examples
 
