@@ -61,13 +61,41 @@ function sort_author_full_name(a, b) {
     return -1;
 }
 
+function is_author_check(a) {
+    return a.author.full_name === page_params.full_name;
+}
+
+function name_sort(a, b) {
+    if (a.name > b.name) {
+        return 1;
+    } else if (a.name === b.name) {
+        return 0;
+    }
+    return -1;
+}
+
+function emoji_name_sort(a, b) {
+    if (is_author_check(a) === is_author_check(b)) {
+        return name_sort(a, b);
+    } else if (is_author_check(a)) {
+        return -1;
+    }
+    return 1;
+}
+
+exports.sort_but_user_emoji_on_top = function (emoji_data) {
+    emoji_data = Object.values(emoji_data);
+    emoji_data.sort(emoji_name_sort);
+    return emoji_data;
+};
+
 exports.populate_emoji = function (emoji_data) {
     if (!meta.loaded) {
         return;
     }
-
+    emoji_data = exports.sort_but_user_emoji_on_top(emoji_data);
     const emoji_table = $('#admin_emoji_table').expectOne();
-    const emoji_list = list_render.create(emoji_table, Object.values(emoji_data), {
+    const emoji_list = list_render.create(emoji_table, emoji_data, {
         name: "emoji_list",
         modifier: function (item) {
             if (item.deactivated !== true) {
@@ -95,7 +123,6 @@ exports.populate_emoji = function (emoji_data) {
         parent_container: $("#emoji-settings").expectOne(),
     }).init();
 
-    emoji_list.sort("alphabetic", "name");
     emoji_list.add_sort_function("author_full_name", sort_author_full_name);
 
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
