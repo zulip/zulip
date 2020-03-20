@@ -104,7 +104,7 @@ Example:
 
         # The block below ensures that the imported email message doesn't have any recipient-like
         # headers that are inconsistent with the recipient we want (the stream address).
-        recipient_headers = ["X-Gm-Original-To", "Delivered-To",
+        recipient_headers = ["X-Gm-Original-To", "Delivered-To", "Envelope-To",
                              "Resent-To", "Resent-CC", "CC"]
         for header in recipient_headers:
             if header in message:
