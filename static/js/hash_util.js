@@ -166,12 +166,13 @@ exports.parse_narrow = function (hash) {
             return;
         }
 
-        const operand  = exports.decode_operand(operator, raw_operand);
         let negated = false;
         if (operator[0] === '-') {
             negated = true;
             operator = operator.slice(1);
         }
+
+        const operand  = exports.decode_operand(operator, raw_operand);
         operators.push({negated: negated, operator: operator, operand: operand});
     }
     return operators;

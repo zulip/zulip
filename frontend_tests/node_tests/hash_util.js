@@ -106,13 +106,25 @@ run_test('test_get_hash_section', () => {
 
 run_test('test_parse_narrow', () => {
     assert.deepEqual(
-        hash_util.parse_narrow(['narrow', 'stream', '11-social']),
-        [{negated: false, operator: 'stream', operand: '11-social'}]
+        hash_util.parse_narrow(['narrow', 'stream', '99-frontend']),
+        [{negated: false, operator: 'stream', operand: 'frontend'}]
+    );
+
+    assert.deepEqual(
+        hash_util.parse_narrow(['narrow', '-stream', '99-frontend']),
+        [{negated: true, operator: 'stream', operand: 'frontend'}]
     );
 
     assert.equal(
         hash_util.parse_narrow(['narrow', 'BOGUS']),
         undefined
+    );
+
+    // For nonexistent streams, we get the full slug.
+    // We possibly should remove the prefix and fix this test.
+    assert.deepEqual(
+        hash_util.parse_narrow(['narrow', 'stream', '42-bogus']),
+        [{negated: false, operator: 'stream', operand: '42-bogus'}]
     );
 });
 
