@@ -89,7 +89,7 @@ function setup_settings_label() {
         dense_mode: i18n.t("Dense mode"),
         fluid_layout_width: i18n.t("Use full width on wide screens"),
         high_contrast_mode: i18n.t("High contrast mode"),
-        left_side_userlist: i18n.t("User list on left sidebar in narrow windows"),
+        left_side_userlist: i18n.t("Show user list on left sidebar in narrow windows"),
         night_mode: i18n.t("Night mode"),
         starred_message_counts: i18n.t("Show counts for starred messages"),
         twenty_four_hour_time: i18n.t("Time format"),
