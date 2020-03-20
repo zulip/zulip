@@ -596,6 +596,15 @@ def get_raw_message(client: Client, message_id: int) -> None:
     validate_against_openapi_schema(result, '/messages/{message_id}', 'get',
                                     '200')
 
+@openapi_test_function("/attachments:get")
+def get_attachments(client: Client) -> None:
+    # {code_example|start}
+    # Get your attachments.
+
+    result = client.get_attachments()
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/attachments', 'get', '200')
+
 @openapi_test_function("/messages:post")
 def send_message(client: Client) -> int:
 
@@ -1132,6 +1141,7 @@ def test_users(client: Client) -> None:
     get_profile(client)
     update_notification_settings(client)
     upload_file(client)
+    get_attachments(client)
     set_typing_status(client)
     update_presence(client)
     get_user_presence(client)
