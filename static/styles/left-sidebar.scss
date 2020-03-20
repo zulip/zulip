@@ -359,6 +359,17 @@ li.top_left_starred_messages {
 }
 
 /*
+    If you hover directly over the chevron itself,
+    show it in black.
+*/
+.starred-messages-sidebar-menu-icon:hover,
+.all-messages-sidebar-menu-icon:hover,
+.stream-sidebar-menu-icon:hover,
+.topic-sidebar-menu-icon:hover {
+    color: hsl(0, 0%, 0%) !important;
+}
+
+/*
     The All Messages and Stream chevrons are
     pretty similar.
 */
@@ -390,17 +401,6 @@ li.topic-list-item:hover .topic-sidebar-menu-icon {
     display: inline;
     cursor: pointer;
     color: hsl(0, 0%, 53%);
-}
-
-/*
-    If you hover directly over the chevron itself,
-    show it in black.
-*/
-.starred-messages-sidebar-menu-icon:hover,
-.all-messages-sidebar-menu-icon:hover,
-.stream-sidebar-menu-icon:hover,
-.topic-sidebar-menu-icon:hover {
-    color: hsl(0, 0%, 0%) !important;
 }
 
 ul.filters li.muted_topic,
