@@ -70,13 +70,13 @@ def get_fixtures(request: HttpResponse,
 
         headers_raw = get_fixture_http_headers(integration_name,
                                                "".join(fixture.split(".")[:-1]))
-        headers = {}
-        for header in headers_raw:
-            if header.startswith("HTTP_"):  # HTTP_ is a prefix intended for Django.
-                headers[header.lstrip("HTTP_")] = headers_raw[header]
-            else:
-                headers[header] = headers_raw[header]
 
+        def fix_name(header: str) -> str:
+            if header.startswith("HTTP_"):  # HTTP_ is a prefix intended for Django.
+                return header[len("HTTP_"):]
+            return header
+
+        headers = {fix_name(k): v for k, v in headers_raw.items()}
         fixtures[fixture] = {"body": body, "headers": headers}
 
     return json_success({"fixtures": fixtures})
