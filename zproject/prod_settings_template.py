@@ -227,7 +227,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
 }
 SOCIAL_AUTH_SAML_ENABLED_IDPS = {
     # The fields are explained in detail here:
-    #     https://python-social-auth-docs.readthedocs.io/en/latest/backends/saml.html
+    #     https://python-social-auth.readthedocs.io/en/latest/backends/saml.html
     "idp_name": {
         # Configure entity_id and url according to information provided to you by your IdP:
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
