@@ -45,7 +45,7 @@ def user_exists(username):
     user_api_url = "https://api.github.com/users/{0}".format(username)
     try:
         response = urllib.request.urlopen(user_api_url)
-        json.loads(response.read().decode())
+        json.load(response)
         print("...user exists!")
         return True
     except urllib.error.HTTPError as err:
@@ -59,7 +59,7 @@ def get_keys(username):
     apiurl_keys = "https://api.github.com/users/{0}/keys".format(username)
     try:
         response = urllib.request.urlopen(apiurl_keys)
-        userkeys = json.loads(response.read().decode())
+        userkeys = json.load(response)
         if not userkeys:
             print("No keys found. Has user {0} added ssh keys to their github account?".format(username))
             sys.exit(1)
@@ -76,7 +76,7 @@ def fork_exists(username):
     apiurl_fork = "https://api.github.com/repos/{0}/zulip".format(username)
     try:
         response = urllib.request.urlopen(apiurl_fork)
-        json.loads(response.read().decode())
+        json.load(response)
         print("...fork found!")
         return True
     except urllib.error.HTTPError as err:

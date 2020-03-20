@@ -460,19 +460,20 @@ def load_event_queues(port: int) -> None:
     global clients
     start = time.time()
 
-    # ujson chokes on bad input pretty easily.  We separate out the actual
-    # file reading from the loading so that we don't silently fail if we get
-    # bad input.
     try:
         with open(persistent_queue_filename(port), "r") as stored_queues:
-            json_data = stored_queues.read()
+            data = ujson.load(stored_queues)
+    except FileNotFoundError:
+        pass
+    except ValueError:
+        logging.exception("Tornado %d could not deserialize event queues" % (port,))
+    else:
         try:
-            clients = dict((qid, ClientDescriptor.from_dict(client))
-                           for (qid, client) in ujson.loads(json_data))
+            clients = {
+                qid: ClientDescriptor.from_dict(client) for (qid, client) in data
+            }
         except Exception:
             logging.exception("Tornado %d could not deserialize event queues" % (port,))
-    except (IOError, EOFError):
-        pass
 
     for client in clients.values():
         # Put code for migrations due to event queue data format changes here

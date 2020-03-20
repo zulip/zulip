@@ -49,7 +49,7 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
 def load_api_fixtures():
     # type: () -> Dict[str, Any]
     with open(FIXTURE_PATH, 'r') as fp:
-        json_dict = json.loads(fp.read())
+        json_dict = json.load(fp)
         return json_dict
 
 FIXTURES = load_api_fixtures()
