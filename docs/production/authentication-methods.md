@@ -74,7 +74,7 @@ it as follows:
    * Fill out `SOCIAL_AUTH_SAML_ENABLED_IDPS` with data provided by
      your identity provider.  You may find [the python-social-auth
      SAML
-     docs](https://python-social-auth-docs.readthedocs.io/en/latest/backends/saml.html)
+     docs](https://python-social-auth.readthedocs.io/en/latest/backends/saml.html)
      helpful.  You'll need to obtain several values from your IdP's
      metadata and enter them on the right-hand side of this
      Python dictionary:
