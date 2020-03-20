@@ -763,6 +763,21 @@ exports.initialize = function () {
                     break;
                 }
             }
+
+            //Adjust the font size of the input so it can always be
+            //on the view without overflowing other context.
+
+            if ($(this).parent().hasClass("stream-name")) {
+              let defaultFontSize = 21;
+              let maxWidthOfTheInput = 270;
+              let averageWidthOfTheInput =150;
+
+              if ($(this).width() >= maxWidthOfTheInput) {
+                  $(this).css("font-size", "-=0.2em")
+              } else if ($(this).width()<=averageWidthOfTheInput && $(this).css("font-size").replace(/[^-\d\.]/g, '') < defaultFontSize) {
+                  $(this).css("font-size", "+=0.2em")
+              }
+            }
         });
 
         $("body").on("click", "[data-make-editable]", function () {
