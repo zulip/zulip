@@ -946,11 +946,23 @@ function pick_empty_narrow_banner() {
     } else if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
         // You are narrowed to a stream which does not exist or is a private stream
         // in which you were never subscribed.
-        const stream_sub = stream_data.get_sub(narrow_state.stream());
-        if (!stream_sub || !stream_sub.should_display_subscription_button) {
-            return $("#nonsubbed_private_nonexistent_stream_narrow_message");
+
+        function should_display_subscription_button() {
+            const stream_name = narrow_state.stream();
+
+            if (!stream_name) {
+                return false;
+            }
+
+            const stream_sub = stream_data.get_sub(first_operand);
+            return stream_sub && stream_sub.should_display_subscription_button;
         }
-        return $("#nonsubbed_stream_narrow_message");
+
+        if (should_display_subscription_button()) {
+            return $("#nonsubbed_stream_narrow_message");
+        }
+
+        return $("#nonsubbed_private_nonexistent_stream_narrow_message");
     } else if (first_operator === "search") {
         // You are narrowed to empty search results.
         show_search_query();
