@@ -206,9 +206,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/users/me/status',
 
         #### These realm administration settings are valuable to document:
-        # List all files uploaded by current user.  May want to add support
-        # for a larger list available to administrators?
-        '/attachments',
         # Delete a file uploaded by current user.
         '/attachments/{attachment_id}',
         # List data exports for organization (GET) or request one (POST)

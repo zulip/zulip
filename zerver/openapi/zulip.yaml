@@ -341,6 +341,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JsonSuccess'
+  /attachments:
+    get:
+      operationId: get_attachments
+      tags: ["users"]
+      description: |
+        Get the attachments belonging to the requesting user.
+
+        `GET {{ api_url }}/v1/attachments`
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    attachments:
+                      type: array
+                      description: |
+                        A list of `attachment` objects, each containing
+                        details about an attachment belonging to the user.
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            description: |
+                              The ID of the attachment.
+                          name:
+                            type: string
+                            description: |
+                              Name of the file.
+                          path_id:
+                            type: string
+                            description: |
+                              A representation of the path of the file. If the path of a file is
+                              `{server_url}/user_uploads/a/b/abc/temp_file.py` then its path_id
+                              will be `a/b/abc/temp_file.py`.
+                          size:
+                            type: integer
+                            description: |
+                              Size of the file.
+                          create_time:
+                            type: integer
+                            description: |
+                              Time when the attachment was uploaded.
+                          messages:
+                            type: array
+                            description: |
+                              Contains the details of the messages where the same uploaded
+                              attachment link has been used, for example, copy-pasted, used
+                              with quote and reply, etc.
+                            items:
+                              type: object
+                    upload_space_used:
+                      type: integer
+                      description: |
+                        Upload space used in bytes.
+                - example:
+                    {
+                        "result": "success",
+                        "msg": "",
+                        "attachments": [
+                            {
+                                "id": 1,
+                                "name": "166050.jpg",
+                                "path_id": "2/ce/DfOkzwdg_IwlrN3myw3KGtiJ/166050.jpg",
+                                "size": 571946,
+                                "create_time": 1588145417000,
+                                "messages": [
+                                    {
+                                        "id": 102,
+                                        "name": 1588145424000
+                                    },
+                                    {
+                                        "id": 103,
+                                        "name": 1588145448000
+                                    }
+                                ]
+                            }
+                        ],
+                        "upload_space_used": 571946
+                    }
   /messages:
     get:
       operationId: get_messages
