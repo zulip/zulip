@@ -454,12 +454,14 @@ li.expanded_private_message a {
     margin: 1px 0px;
 }
 
-.show-all-streams a {
-    color: hsl(0, 0%, 20%);
-}
+.show-all-streams {
+    a {
+        color: hsl(0, 0%, 20%);
+    }
 
-.show-all-streams .fa-chevron-left {
-    text-decoration: none;
+    .fa-chevron-left {
+        text-decoration: none;
+    }
 }
 
 .pm-box,
