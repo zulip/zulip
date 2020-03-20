@@ -221,22 +221,22 @@ li.active-sub-filter {
 
 #global_filters {
     margin-bottom: 16px;
-}
 
-#global_filters .filter-icon {
-    display: inline-block;
-    min-width: $left_col_size;
-    text-align: center;
-}
+    .filter-icon {
+        display: inline-block;
+        min-width: $left_col_size;
+        text-align: center;
+    }
 
-#global_filters .count {
-    margin-right: 20px;
-    margin-top: 2px;
-    display: none;
-}
+    .count {
+        margin-right: 20px;
+        margin-top: 2px;
+        display: none;
+    }
 
-#global_filters i {
-    opacity: 0.7;
+    i {
+        opacity: 0.7;
+    }
 }
 
 li.top_left_all_messages,
