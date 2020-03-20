@@ -107,7 +107,7 @@ class MarkdownDirectoryView(ApiURLView):
             with open(article_path) as article_file:
                 first_line = article_file.readlines()[0]
             # Strip the header and then use the first line to get the article title
-            article_title = first_line.strip().lstrip("# ")
+            article_title = first_line.lstrip("#").strip()
             if context["not_index_page"]:
                 context["OPEN_GRAPH_TITLE"] = "%s (%s)" % (article_title, title_base)
             else:
