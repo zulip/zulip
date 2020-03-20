@@ -12,6 +12,11 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
     display: none;
 }
 
+#left-sidebar #user-list,
+#left-sidebar #group-pm-list {
+    padding-left: 10px;
+}
+
 .hashtag {
     &:empty {
         &::after {
@@ -49,11 +54,6 @@ li.show-more-topics {
     a {
         font-size: 12px;
     }
-}
-
-#left-sidebar #user-list,
-#left-sidebar #group-pm-list {
-    padding-left: 10px;
 }
 
 #streams_inline_cog,
