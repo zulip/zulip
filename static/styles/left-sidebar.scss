@@ -72,10 +72,6 @@ li.show-more-topics {
     }
 }
 
-#streams_header {
-    margin-top: 3px;
-}
-
 #streams_inline_cog {
     margin-right: 10px;
 }
@@ -517,6 +513,7 @@ li.expanded_private_message {
     margin-right: 0px;
     padding-left: $far_left_gutter_size;
     cursor: pointer;
+    margin-top: 3px;
 }
 
 .zero_count {
