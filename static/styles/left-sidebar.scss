@@ -8,13 +8,15 @@ $left_col_size: 19px;
    the above (and another 5px of padding not measured here) */
 $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
-#left-sidebar #group-pm-list {
-    display: none;
-}
+#left-sidebar {
+    #group-pm-list {
+        display: none;
+    }
 
-#left-sidebar #user-list,
-#left-sidebar #group-pm-list {
-    padding-left: 10px;
+    #user-list,
+    #group-pm-list {
+        padding-left: 10px;
+    }
 }
 
 .hashtag {
