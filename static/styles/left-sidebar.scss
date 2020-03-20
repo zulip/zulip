@@ -474,16 +474,16 @@ li.expanded_private_message {
 .pm-box {
     margin-right: 20px;
     align-items: center;
-}
 
-.pm-box .user_circle {
-    min-width: 8px;
-    height: 8px;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    margin-left: 2px;
-    position: relative;
-    top: 0px;
+    .user_circle {
+        min-width: 8px;
+        height: 8px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        margin-left: 2px;
+        position: relative;
+        top: 0px;
+    }
 }
 
 .zero-pm-unreads .pm-box,
