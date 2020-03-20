@@ -237,7 +237,7 @@ class TestSendWebhookFixtureMessage(TestCase):
                                                                ujson_mock: MagicMock,
                                                                client_mock: MagicMock,
                                                                os_path_exists_mock: MagicMock) -> None:
-        ujson_mock.loads.return_value = {}
+        ujson_mock.load.return_value = {}
         ujson_mock.dumps.return_value = "{}"
         os_path_exists_mock.return_value = True
 
@@ -246,7 +246,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         with self.assertRaises(CommandError):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url)
         self.assertTrue(ujson_mock.dumps.called)
-        self.assertTrue(ujson_mock.loads.called)
+        self.assertTrue(ujson_mock.load.called)
         self.assertTrue(open_mock.called)
         client.post.assert_called_once_with(self.url, "{}", content_type="application/json",
                                             HTTP_HOST="zulip.testserver")
