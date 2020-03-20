@@ -336,15 +336,6 @@ li.top_left_starred_messages {
     line-height: 1.1;
 }
 
-.all-messages-sidebar-menu-icon i,
-.stream-sidebar-menu-icon i,
-.starred-messages-sidebar-menu-icon i,
-.topic-sidebar-menu-icon i {
-    padding-right: 0.25em;
-    display: inline-block;
-    width: 13px;
-}
-
 /*
     All of our left sidebar handlers use absolute
     positioning.  We should fix that.
@@ -356,17 +347,21 @@ li.top_left_starred_messages {
     position: absolute;
     display: none;
     right: 10px;
-}
 
-/*
-    If you hover directly over the chevron itself,
-    show it in black.
-*/
-.starred-messages-sidebar-menu-icon:hover,
-.all-messages-sidebar-menu-icon:hover,
-.stream-sidebar-menu-icon:hover,
-.topic-sidebar-menu-icon:hover {
-    color: hsl(0, 0%, 0%) !important;
+    i {
+        padding-right: 0.25em;
+        display: inline-block;
+        width: 13px;
+    }
+
+    /*
+        If you hover directly over the chevron itself,
+        show it in black.
+    */
+
+    &:hover {
+        color: hsl(0, 0%, 0%) !important;
+    }
 }
 
 /*
