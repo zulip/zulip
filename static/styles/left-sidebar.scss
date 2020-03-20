@@ -448,10 +448,10 @@ li.expanded_private_message {
     position: relative;
     padding-top: 1px;
     padding-bottom: 1px;
-}
 
-li.expanded_private_message a {
-    margin: 1px 0px;
+    a {
+        margin: 1px 0px;
+    }
 }
 
 .show-all-streams {
