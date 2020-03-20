@@ -159,7 +159,7 @@ from zerver.lib.types import ProfileFieldData
 from analytics.models import StreamCount
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import update_license_ledger_if_needed
+    from corporate.lib.stripe import update_license_ledger_if_needed, downgrade_for_realm_deactivation
 
 import ujson
 import time
@@ -704,6 +704,9 @@ def do_deactivate_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -
 
     realm.deactivated = True
     realm.save(update_fields=["deactivated"])
+
+    if settings.BILLING_ENABLED:
+        downgrade_for_realm_deactivation(realm)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(

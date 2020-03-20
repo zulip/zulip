@@ -20,7 +20,7 @@ from django.conf import settings
 import stripe
 
 from zerver.lib.actions import do_deactivate_user, do_create_user, \
-    do_activate_user, do_reactivate_user
+    do_activate_user, do_reactivate_user, do_deactivate_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
@@ -977,6 +977,44 @@ class StripeTest(StripeTestCase):
         plan = CustomerPlan.objects.first()
         self.assertIsNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.ENDED)
+
+    @patch("corporate.lib.stripe.billing_logger.info")
+    def test_deactivate_realm(self, mock_: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+
+        plan = CustomerPlan.objects.get()
+        self.assertEqual(plan.next_invoice_date, self.next_month)
+        self.assertEqual(get_realm('zulip').plan_type, Realm.STANDARD)
+        self.assertEqual(plan.status, CustomerPlan.ACTIVE)
+
+        # Add some extra users before the realm is deactivated
+        with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
+            update_license_ledger_if_needed(user.realm, self.now)
+
+        last_ledger_entry = LicenseLedger.objects.order_by('id').last()
+        self.assertEqual(last_ledger_entry.licenses, 20)
+        self.assertEqual(last_ledger_entry.licenses_at_next_renewal, 20)
+
+        do_deactivate_realm(get_realm("zulip"))
+
+        plan.refresh_from_db()
+        self.assertEqual(get_realm('zulip').plan_type, Realm.LIMITED)
+        self.assertEqual(plan.status, CustomerPlan.ENDED)
+        self.assertEqual(plan.invoiced_through, last_ledger_entry)
+        self.assertIsNone(plan.next_invoice_date)
+
+        # The extra users added in the final month are not charged
+        with patch("corporate.lib.stripe.invoice_plan") as mocked:
+            invoice_plans_as_needed(self.next_month)
+        mocked.assert_not_called()
+
+        # The plan is not renewed after an year
+        with patch("corporate.lib.stripe.invoice_plan") as mocked:
+            invoice_plans_as_needed(self.next_year)
+        mocked.assert_not_called()
 
 class RequiresBillingAccessTest(ZulipTestCase):
     def setUp(self) -> None:

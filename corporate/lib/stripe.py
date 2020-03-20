@@ -496,3 +496,15 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
         # TODO: Decimal stuff
         annual_revenue[plan.customer.realm.string_id] = int(renewal_cents / 100)
     return annual_revenue
+
+# During realm deactivation we instantly downgrade the plan to Limited.
+# Extra users added in the final month are not charged.
+def downgrade_for_realm_deactivation(realm: Realm) -> None:
+    customer = Customer.objects.filter(realm=realm).first()
+    if customer is not None:
+        plan = get_current_plan(customer)
+        if plan:
+            process_downgrade(plan)
+            plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by('id').last()
+            plan.next_invoice_date = next_invoice_date(plan)
+            plan.save(update_fields=["invoiced_through", "next_invoice_date"])
