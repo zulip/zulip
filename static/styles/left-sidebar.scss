@@ -90,64 +90,66 @@ li.show-more-topics {
     margin-bottom: 10px;
     padding: 0;
     font-weight: normal;
-}
 
-#stream_filters li a {
-    padding: 1px 0px;
-}
+    li {
+        a {
+            padding: 1px 0px;
+        }
 
-#stream_filters li ul {
-    margin-left: 0px;
-}
+        ul {
+            margin-left: 0px;
 
-#stream_filters li ul.topic-list li {
-    padding-top: 2px;
-    padding-right: 0px;
-    padding-bottom: 2px;
-    padding-left: $topic_indent;
-}
+            &.topic-list li {
+                padding-top: 2px;
+                padding-right: 0px;
+                padding-bottom: 2px;
+                padding-left: $topic_indent;
+            }
+        }
+    }
 
-#stream_filters li.active-sub-filter:hover {
-    background-color: hsl(120, 11%, 82%);
-}
+    li.active-sub-filter:hover {
+        background-color: hsl(120, 11%, 82%);
+    }
 
-#stream_filters .count {
-    margin-right: 15px;
-}
+    .count {
+        margin-right: 15px;
+    }
 
-#stream_filters .subscription_block {
-    padding: 0px;
-    margin-right: 25px;
-    margin-left: $far_left_gutter_size;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
+    .subscription_block {
+        padding: 0px;
+        margin-right: 25px;
+        margin-left: $far_left_gutter_size;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
 
-#stream_filters .subscription_block::after {
-    content: "";
-    display: block;
-    clear: both;
-}
+        &::after {
+            content: "";
+            display: block;
+            clear: both;
+        }
 
-#stream_filters .subscription_block .stream-name {
-    display: inline-block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    position: relative;
-    width: 100%;
-    padding-right: 2px;
-}
+        .stream-name {
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+            width: 100%;
+            padding-right: 2px;
+        }
 
-#stream_filters .subscription_block.stream-with-count {
-    margin-right: 15px;
-}
+        &.stream-with-count {
+            margin-right: 15px;
+        }
+    }
 
-#stream_filters .inactive_stream {
-    opacity: .5;
+    .inactive_stream {
+        opacity: .5;
+    }
 }
 
 .narrows_panel {
