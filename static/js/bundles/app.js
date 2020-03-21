@@ -192,6 +192,7 @@ import "../ui_init.js";
 import "../emoji_picker.js";
 import "../compose_ui.js";
 import "../panels.js";
+import "../recent_topics.js";
 import "../settings_ui.js";
 import "../search_pill.js";
 import "../search_pill_widget.js";
