@@ -216,7 +216,7 @@ function show_subscription_settings(sub_row) {
     }).init();
 
     sub_settings.find('input[name="principal"]').typeahead({
-        source: people.get_realm_persons, // This is a function.
+        source: () => stream_data.potential_subscribers(sub),
         items: 5,
         highlighter: function (item) {
             return typeahead_helper.render_person(item);
@@ -227,10 +227,8 @@ function show_subscription_settings(sub_row) {
                 return false;
             }
             // Case-insensitive.
-            const item_matches = item.email.toLowerCase().includes(query) ||
-                               item.full_name.toLowerCase().includes(query);
-            const is_subscribed = stream_data.is_user_subscribed(sub.name, item.user_id);
-            return item_matches && !is_subscribed;
+            return item.email.toLowerCase().includes(query) ||
+                   item.full_name.toLowerCase().includes(query);
         },
         sorter: function (matches) {
             const current_stream = compose_state.stream_name();

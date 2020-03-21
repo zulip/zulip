@@ -371,6 +371,39 @@ exports.update_subscribers_count = function (sub) {
     sub.subscriber_count = count;
 };
 
+exports.potential_subscribers = function (sub) {
+    /*
+        This is a list of unsubscribed users
+        for the current stream, who the current
+        user could potentially subscribe to the
+        stream.  This may include some bots.
+
+        We currently use it for typeahead in
+        stream_edit.js.
+
+        This may be a superset of the actual
+        subscribers that you can change in some cases
+        (like if you're a guest?); we should refine this
+        going forward, especially if we use it for something
+        other than typeahead.  (The guest use case
+        may be moot now for other reasons.)
+    */
+
+    function is_potential_subscriber(person) {
+        // Use verbose style to force better test
+        // coverage, plus we may add more conditions over
+        // time.
+        if (sub.subscribers.has(person.user_id)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    return people.filter_all_users(is_potential_subscriber);
+
+};
+
 exports.update_stream_email_address = function (sub, email) {
     sub.email_address = email;
 };

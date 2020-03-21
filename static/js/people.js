@@ -675,6 +675,16 @@ exports.filter_all_persons = function (pred) {
     return ret;
 };
 
+exports.filter_all_users = function (pred) {
+    const ret = [];
+    for (const person of active_user_dict.values()) {
+        if (pred(person)) {
+            ret.push(person);
+        }
+    }
+    return ret;
+};
+
 exports.get_realm_persons = function () {
     return Array.from(active_user_dict.values());
 };
