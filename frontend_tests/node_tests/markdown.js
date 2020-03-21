@@ -54,8 +54,6 @@ set_global('document', doc);
 
 set_global('$', global.make_zjquery());
 
-const people = global.people;
-
 const cordelia = {
     full_name: 'Cordelia Lear',
     user_id: 101,

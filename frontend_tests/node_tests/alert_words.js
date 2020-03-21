@@ -7,13 +7,13 @@ zrequire('alert_words');
 
 alert_words.initialize(params);
 
-global.people.add({
+people.add({
     email: 'tester@zulip.com',
     full_name: 'Tester von Tester',
     user_id: 42,
 });
 
-global.people.initialize_current_user(42);
+people.initialize_current_user(42);
 
 
 const regular_message = {

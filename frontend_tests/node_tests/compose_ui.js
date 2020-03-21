@@ -20,8 +20,8 @@ const bob = {
     full_name: 'Bob',
 };
 
-global.people.add(alice);
-global.people.add(bob);
+people.add(alice);
+people.add(bob);
 
 const noop = function () {};
 
