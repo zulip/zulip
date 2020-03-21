@@ -296,7 +296,7 @@ organizations from the command line.
 
 
 [Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: http://handlebarsjs.com/
+[Handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
 [i18next]: https://www.i18next.com
 [official]: https://www.i18next.com/plurals.html

@@ -116,7 +116,7 @@ For more details on the frontend, see our documentation on
 [the static asset pipeline](../subsystems/html-css.html#static-asset-pipeline).
 
 [Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: http://handlebarsjs.com/
+[Handlebars]: https://handlebarsjs.com/
 
 ### nginx
 
