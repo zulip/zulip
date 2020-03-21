@@ -306,6 +306,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('helloworld', ['misc'], display_name='Hello World'),
     WebhookIntegration('heroku', ['deployment'], display_name='Heroku'),
     WebhookIntegration('homeassistant', ['misc'], display_name='Home Assistant'),
+    WebhookIntegration('honeybadger', ['monitoring'], display_name="Honeybadger"),
     WebhookIntegration(
         'ifttt',
         ['meta-integration'],
