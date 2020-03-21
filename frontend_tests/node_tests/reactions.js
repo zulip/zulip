@@ -69,9 +69,9 @@ const cali = {
     user_id: 7,
     full_name: 'Cali',
 };
-people.add_in_realm(alice);
-people.add_in_realm(bob);
-people.add_in_realm(cali);
+people.add(alice);
+people.add(bob);
+people.add(cali);
 
 const message = {
     id: 1001,

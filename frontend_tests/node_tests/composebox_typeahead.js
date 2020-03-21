@@ -240,17 +240,18 @@ const harry = {
     email: 'harry@zulip.com',
 };
 
-global.people.add_in_realm(alice);
-global.people.add_in_realm(hamlet);
-global.people.add_in_realm(othello);
-global.people.add_in_realm(cordelia);
-global.people.add_in_realm(lear);
-global.people.add_in_realm(twin1);
-global.people.add_in_realm(twin2);
-global.people.add_in_realm(gael);
-global.people.add_in_realm(hal);
-global.people.add_in_realm(harry);
+global.people.add(alice);
+global.people.add(hamlet);
+global.people.add(othello);
+global.people.add(cordelia);
+global.people.add(lear);
+global.people.add(twin1);
+global.people.add(twin2);
+global.people.add(gael);
+global.people.add(hal);
+global.people.add(harry);
 global.people.add(deactivated_user);
+global.people.deactivate(deactivated_user);
 
 const hamletcharacters = {
     name: "hamletcharacters",

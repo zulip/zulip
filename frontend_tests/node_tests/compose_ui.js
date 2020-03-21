@@ -20,8 +20,8 @@ const bob = {
     full_name: 'Bob',
 };
 
-global.people.add_in_realm(alice);
-global.people.add_in_realm(bob);
+global.people.add(alice);
+global.people.add(bob);
 
 const noop = function () {};
 

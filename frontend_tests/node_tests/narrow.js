@@ -104,7 +104,7 @@ run_test('show_empty_narrow_message', () => {
     narrow.show_empty_narrow_message();
     assert($('#non_existing_user').visible());
 
-    people.add_in_realm(alice);
+    people.add(alice);
     set_filter([['pm-with', ['alice@example.com', 'Yo']]]);
     narrow.show_empty_narrow_message();
     assert($('#non_existing_users').visible());
@@ -202,8 +202,8 @@ run_test('show_invalid_narrow_message', () => {
     assert($('#empty_search_narrow_message').visible());
     assert.equal(display.text(), 'translated: You are searching for messages that belong to more than one topic, which is not possible.');
 
-    people.add_in_realm(ray);
-    people.add_in_realm(alice);
+    people.add(ray);
+    people.add(alice);
 
     set_filter([['sender', 'alice@example.com'], ['sender', 'ray@example.com']]);
     narrow.show_empty_narrow_message();
@@ -281,9 +281,9 @@ run_test('narrow_to_compose_target', () => {
 
     // --- Tests for PMs ---
     global.compose_state.get_message_type = () => 'private';
-    people.add_in_realm(ray);
-    people.add_in_realm(alice);
-    people.add_in_realm(me);
+    people.add(ray);
+    people.add(alice);
+    people.add(me);
 
     // Test with valid person
     global.compose_state.private_message_recipient = () => 'alice@example.com';

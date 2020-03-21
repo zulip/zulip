@@ -32,8 +32,8 @@ const isaac_item = {
 };
 
 run_test('setup', () => {
-    people.add_in_realm(alice);
-    people.add_in_realm(isaac);
+    people.add(alice);
+    people.add(isaac);
 });
 
 run_test('create_item', () => {
