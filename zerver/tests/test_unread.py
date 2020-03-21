@@ -289,16 +289,17 @@ class UnreadCountTests(ZulipTestCase):
         differences = [key for key in expected if expected[key] != event[key]]
         self.assertTrue(len(differences) == 0)
 
+        hamlet = self.example_user('hamlet')
         um = list(UserMessage.objects.filter(message=message_id))
         for msg in um:
-            if msg.user_profile.email == self.example_email("hamlet"):
+            if msg.user_profile.email == hamlet.email:
                 self.assertTrue(msg.flags.read)
             else:
                 self.assertFalse(msg.flags.read)
 
         unrelated_messages = list(UserMessage.objects.filter(message=unrelated_message_id))
         for msg in unrelated_messages:
-            if msg.user_profile.email == self.example_email("hamlet"):
+            if msg.user_profile.email == hamlet.email:
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_stream_read(self) -> None:
@@ -347,12 +348,12 @@ class UnreadCountTests(ZulipTestCase):
 
         um = list(UserMessage.objects.filter(message=message_id))
         for msg in um:
-            if msg.user_profile.email == self.example_email("hamlet"):
+            if msg.user_profile_id == user_profile.id:
                 self.assertTrue(msg.flags.read)
 
         unrelated_messages = list(UserMessage.objects.filter(message=unrelated_message_id))
         for msg in unrelated_messages:
-            if msg.user_profile.email == self.example_email("hamlet"):
+            if msg.user_profile_id == user_profile.id:
                 self.assertFalse(msg.flags.read)
 
     def test_mark_all_in_invalid_topic_read(self) -> None:

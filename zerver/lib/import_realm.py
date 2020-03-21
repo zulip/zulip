@@ -513,6 +513,10 @@ def remove_denormalized_recipient_column_from_data(data: TableData) -> None:
         if 'recipient' in user_profile_dict:
             del user_profile_dict['recipient']
 
+    for huddle_dict in data['zerver_huddle']:
+        if 'recipient' in huddle_dict:
+            del huddle_dict['recipient']
+
 def get_db_table(model_class: Any) -> str:
     """E.g. (RealmDomain -> 'zerver_realmdomain')"""
     return model_class._meta.db_table
@@ -914,6 +918,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     if 'zerver_huddle' in data:
         process_huddle_hash(data, 'zerver_huddle')
         bulk_import_model(data, Huddle)
+        for huddle in Huddle.objects.filter(recipient_id=None):
+            recipient = Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle.id)
+            huddle.recipient = recipient
+            huddle.save(update_fields=["recipient"])
 
     if 'zerver_userhotspot' in data:
         fix_datetime_fields(data, 'zerver_userhotspot')

@@ -23,7 +23,10 @@ from confirmation.models import create_confirmation_link, Confirmation
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import tornado_redirected_to_list
+from zerver.lib.test_helpers import (
+    reset_emails_in_zulip_realm,
+    tornado_redirected_to_list,
+)
 from zerver.lib.test_runner import slow
 from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_stream, \
     CustomProfileField, Message, UserMessage, Attachment, get_user_profile_by_email, \
@@ -241,7 +244,7 @@ class RealmTest(ZulipTestCase):
         self.assertIn('Reactivate your Zulip organization', outbox[0].subject)
         self.assertIn('Dear former administrators', outbox[0].body)
         admins = realm.get_human_admin_users()
-        confirmation_url = self.get_confirmation_url_from_outbox(admins[0].email)
+        confirmation_url = self.get_confirmation_url_from_outbox(admins[0].delivery_email)
         response = self.client_get(confirmation_url)
         self.assert_in_success_response(['Your organization has been successfully reactivated'], response)
         realm = get_realm('zulip')
@@ -392,8 +395,9 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid email_address_visibility')
 
+        reset_emails_in_zulip_realm()
         realm = get_realm("zulip")
-        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+
         req = dict(email_address_visibility = ujson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)

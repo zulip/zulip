@@ -9,17 +9,20 @@ import sys
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple, cast
 import ujson
 import json
+import responses
 
 from django.core import signing
 from django.urls.resolvers import get_resolver
 from django.http import HttpResponse
 from django.utils.timezone import utc as timezone_utc
+from django.conf import settings
 
 import stripe
 
 from zerver.lib.actions import do_deactivate_user, do_create_user, \
     do_activate_user, do_reactivate_user
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, \
@@ -35,7 +38,6 @@ from corporate.models import Customer, CustomerPlan, LicenseLedger
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
-GENERATE_STRIPE_FIXTURES = False
 STRIPE_FIXTURES_DIR = "corporate/tests/stripe_fixtures"
 
 # TODO: check that this creates a token similar to what is created by our
@@ -77,8 +79,10 @@ def generate_and_save_stripe_fixture(decorated_function_name: str, mocked_functi
         mock = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
         fixture_path = stripe_fixture_path(decorated_function_name, mocked_function_name, mock.call_count)
         try:
-            # Talk to Stripe
-            stripe_object = mocked_function(*args, **kwargs)
+            with responses.RequestsMock() as request_mock:
+                request_mock.add_passthru("https://api.stripe.com")
+                # Talk to Stripe
+                stripe_object = mocked_function(*args, **kwargs)
         except stripe.error.StripeError as e:
             with open(fixture_path, 'w') as f:
                 error_dict = e.__dict__
@@ -183,7 +187,7 @@ def mock_stripe(tested_timestamp_fields: List[str]=[],
     def _mock_stripe(decorated_function: CallableT) -> CallableT:
         generate_fixture = generate
         if generate_fixture is None:
-            generate_fixture = GENERATE_STRIPE_FIXTURES
+            generate_fixture = settings.GENERATE_STRIPE_FIXTURES
         for mocked_function_name in MOCKED_STRIPE_FUNCTION_NAMES:
             mocked_function = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
             if generate_fixture:
@@ -216,6 +220,7 @@ class StripeTestCase(ZulipTestCase):
         super().setUp()
         # This test suite is not robust to users being added in populate_db. The following
         # hack ensures get_latest_seat_count is fixed, even as populate_db changes.
+        reset_emails_in_zulip_realm()
         realm = get_realm('zulip')
         seat_count = get_latest_seat_count(realm)
         assert(seat_count >= 6)

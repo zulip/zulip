@@ -294,7 +294,7 @@ a field called `reply` (in `choices`) as the content
 of the message reply.  Then the bot sees the reply
 and grades the answer using ordinary chat-bot coding.
 
-The beautiful thing is that any thrid party developer
+The beautiful thing is that any third party developer
 can enhance bots that are similar to the **trivia_quiz**
 bot without touching any Zulip code, because **zforms**
 are completely generic.

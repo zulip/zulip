@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 from email.utils import parseaddr
 from fakeldap import MockLDAP
-from typing import (cast, Any, Dict, Iterable, Iterator, List, Optional,
+from typing import (cast, Any, Dict, Iterable,
+                    Iterator, List, Optional,
                     Tuple, Union, Set)
 
 from django.apps import apps
@@ -282,11 +283,11 @@ class ZulipTestCase(TestCase):
 
     def nonreg_user(self, name: str) -> UserProfile:
         email = self.nonreg_user_map[name]
-        return get_user(email, get_realm("zulip"))
+        return get_user_by_delivery_email(email, get_realm("zulip"))
 
     def example_user(self, name: str) -> UserProfile:
         email = self.example_user_map[name]
-        return get_user(email, get_realm('zulip'))
+        return get_user_by_delivery_email(email, get_realm('zulip'))
 
     def mit_user(self, name: str) -> UserProfile:
         email = self.mit_user_map[name]

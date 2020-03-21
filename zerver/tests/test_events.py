@@ -112,13 +112,15 @@ from zerver.lib.events import (
 )
 from zerver.lib.message import (
     aggregate_unread_data,
+    apply_unread_message_event,
     get_raw_unread_data,
     render_markdown,
+    MessageDict,
     UnreadMessagesResult,
 )
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
     get_test_image_file, stub_event_queue_user_events, queries_captured, \
-    create_dummy_file, stdout_suppressed
+    create_dummy_file, stdout_suppressed, reset_emails_in_zulip_realm
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -1039,6 +1041,8 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_invitation_accept_invite_event(self) -> None:
+        reset_emails_in_zulip_realm()
+
         schema_checker = self.check_events_dict([
             ('type', equals('invites_changed')),
         ])
@@ -1256,7 +1260,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = realm_user_add_checker('events[0]', events[0])
         self.assert_on_error(error)
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
-        self.assertEqual(new_user_profile.email, "test1@zulip.com")
+        self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
     def test_register_events_email_address_visibility(self) -> None:
         realm_user_add_checker = self.check_events_dict([
@@ -1810,6 +1814,13 @@ class EventsRegisterTest(ZulipTestCase):
             self.assert_on_error(error)
 
     def test_change_is_admin(self) -> None:
+        reset_emails_in_zulip_realm()
+
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+
         schema_checker = self.check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
@@ -1819,6 +1830,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
             ])),
         ])
+
         do_change_is_admin(self.user_profile, False)
         for is_admin in [True, False]:
             events = self.do_test(lambda: do_change_is_admin(self.user_profile, is_admin))
@@ -2096,7 +2108,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ])),
             ])
         action = lambda: self.create_bot('test')
-        events = self.do_test(action, num_events=3)
+        events = self.do_test(action, num_events=2)
         error = get_bot_created_checker(bot_type="GENERIC_BOT")('events[1]', events[1])
         self.assert_on_error(error)
 
@@ -2105,10 +2117,10 @@ class EventsRegisterTest(ZulipTestCase):
                                          payload_url=ujson.dumps('https://foo.bar.com'),
                                          interface_type=Service.GENERIC,
                                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
-        events = self.do_test(action, num_events=3)
+        events = self.do_test(action, num_events=2)
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
-        error = get_bot_created_checker(bot_type="OUTGOING_WEBHOOK_BOT")('events[2]', events[2])
+        error = get_bot_created_checker(bot_type="OUTGOING_WEBHOOK_BOT")('events[1]', events[1])
         self.assert_on_error(error)
 
         action = lambda: self.create_bot('test_embedded',
@@ -2116,8 +2128,8 @@ class EventsRegisterTest(ZulipTestCase):
                                          service_name='helloworld',
                                          config_data=ujson.dumps({'foo': 'bar'}),
                                          bot_type=UserProfile.EMBEDDED_BOT)
-        events = self.do_test(action, num_events=3)
-        error = get_bot_created_checker(bot_type="EMBEDDED_BOT")('events[2]', events[2])
+        events = self.do_test(action, num_events=2)
+        error = get_bot_created_checker(bot_type="EMBEDDED_BOT")('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_change_bot_full_name(self) -> None:
@@ -3065,16 +3077,116 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(sender_id=cordelia.id),
         )
 
+    def test_raw_unread_personal_from_self(self) -> None:
+        hamlet = self.example_user('hamlet')
+
+        def send_unread_pm(other_user: UserProfile) -> Message:
+            # It is rare to send a message from Hamlet to Othello
+            # (or any other user) and have it be unread for
+            # Hamlet himself, but that is actually normal
+            # behavior for most API clients.
+            message_id = self.send_personal_message(
+                from_user=hamlet,
+                to_user=other_user,
+                sending_client_name='some_api_program',
+            )
+
+            # Check our test setup is correct--the message should
+            # not have looked like it was sent by a human.
+            message = Message.objects.get(id=message_id)
+            self.assertFalse(message.sent_by_human())
+
+            # And since it was not sent by a human, it should not
+            # be read, not even by the sender (Hamlet).
+            um = UserMessage.objects.get(
+                user_profile_id=hamlet.id,
+                message_id=message_id,
+            )
+            self.assertFalse(um.flags.read)
+
+            return message
+
+        othello = self.example_user('othello')
+        othello_msg = send_unread_pm(other_user=othello)
+
+        # And now check the unread data structure...
+        raw_unread_data = get_raw_unread_data(
+            user_profile=hamlet,
+        )
+
+        pm_dict = raw_unread_data['pm_dict']
+
+        self.assertEqual(set(pm_dict.keys()), {othello_msg.id})
+
+        # For legacy reason we call the field `sender_id` here,
+        # but it really refers to the other user id in the conversation,
+        # which is Othello.
+        self.assertEqual(
+            pm_dict[othello_msg.id],
+            dict(sender_id=othello.id),
+        )
+
+        cordelia = self.example_user('cordelia')
+        cordelia_msg = send_unread_pm(other_user=cordelia)
+
+        apply_unread_message_event(
+            user_profile=hamlet,
+            state=raw_unread_data,
+            message=MessageDict.wide_dict(cordelia_msg),
+            flags=[],
+        )
+        self.assertEqual(
+            set(pm_dict.keys()),
+            {othello_msg.id, cordelia_msg.id}
+        )
+
+        # Again, `sender_id` is misnamed here.
+        self.assertEqual(
+            pm_dict[cordelia_msg.id],
+            dict(sender_id=cordelia.id),
+        )
+
+        # Send a message to ourself.
+        hamlet_msg = send_unread_pm(other_user=hamlet)
+        apply_unread_message_event(
+            user_profile=hamlet,
+            state=raw_unread_data,
+            message=MessageDict.wide_dict(hamlet_msg),
+            flags=[],
+        )
+        self.assertEqual(
+            set(pm_dict.keys()),
+            {othello_msg.id, cordelia_msg.id, hamlet_msg.id}
+        )
+
+        # Again, `sender_id` is misnamed here.
+        self.assertEqual(
+            pm_dict[hamlet_msg.id],
+            dict(sender_id=hamlet.id),
+        )
+
+        # Call get_raw_unread_data again.
+        raw_unread_data = get_raw_unread_data(
+            user_profile=hamlet,
+        )
+        pm_dict = raw_unread_data['pm_dict']
+
+        self.assertEqual(
+            set(pm_dict.keys()),
+            {othello_msg.id, cordelia_msg.id, hamlet_msg.id}
+        )
+
+        # Again, `sender_id` is misnamed here.
+        self.assertEqual(
+            pm_dict[hamlet_msg.id],
+            dict(sender_id=hamlet.id),
+        )
+
     def test_unread_msgs(self) -> None:
         sender = self.example_user('cordelia')
         sender_id = sender.id
-        sender_email = sender.email
         user_profile = self.example_user('hamlet')
         othello = self.example_user('othello')
-
-        # our tests rely on order
-        assert(sender_email < user_profile.email)
-        assert(user_profile.email < othello.email)
 
         pm1_message_id = self.send_personal_message(sender, user_profile, "hello1")
         pm2_message_id = self.send_personal_message(sender, user_profile, "hello2")

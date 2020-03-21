@@ -211,7 +211,7 @@ request; the logic is in `zerver/views/events_register.py` and
 * Finally, Django "applies" the events (see the `apply_events`
   function) to the initial state that it fetched.  E.g. for a name
   change event, it finds the user data in the `realm_user` data
-  struture, and updates it to have the new name.
+  structure, and updates it to have the new name.
 
 ### Testing
 

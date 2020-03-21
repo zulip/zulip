@@ -1,65 +1,81 @@
 {
-   "event":"up",
-   "message":"[Zulip Integration] Zulip will now receive uptime alerts.",
-   "project":{
-      "id":54639,
-      "name":"Zulip Integration",
-      "token":"d144e04c",
-      "created_at":"2017-12-29T14:18:50.512753Z",
-      "disable_public_links":false,
-      "pivotal_project_id":null,
-      "asana_workspace_id":null,
-      "github_project":null,
-      "environments":[
-
-      ],
-      "owner":{
-         "id":57245,
-         "email":"madelf1337@gmail.com",
-         "name":"Pranav Kulkarni"
-      },
-      "last_notice_at":null,
-      "earliest_notice_at":"2017-11-29T14:51:11.443833Z",
-      "unresolved_fault_count":0,
-      "fault_count":0,
-      "active":true,
-      "users":[
-         {
-            "id":57245,
-            "email":"madelf1337@gmail.com",
-            "name":"Pranav Kulkarni"
-         }
-      ],
-      "sites":[
-         {
-            "id":"59ad71ac-6d2e-4fd0-a04f-b5c916c8f57e",
-            "active":true,
-            "last_checked_at":null,
-            "name":"Zulip",
-            "state":"up",
-            "url":"https://zulipint.slack.com"
-         }
-      ],
-      "team_id":34534
-   },
-   "site":{
-      "id":"59ad71ac-6d2e-4fd0-a04f-b5c916c8f57e",
-      "name":"Zulip",
-      "url":"https://zulipint.slack.com",
-      "frequency":5,
-      "match_type":"success",
-      "match":"",
-      "state":"pending",
-      "active":true,
-      "last_checked_at":null,
-      "retries":0,
-      "proxy":0
-   },
-   "outage":{
-      "down_at":null,
-      "up_at":null,
-      "status":null,
-      "reason":null,
-      "headers":null
-   }
+    "event": "up",
+    "message": "[My Project] Resume Builder is back up after 1m 1s.",
+    "project": {
+        "id": 69422,
+        "name": "My Project",
+        "token": "5268bd40",
+        "created_at": "2020-03-10T13:45:15.294368Z",
+        "disable_public_links": false,
+        "pivotal_project_id": null,
+        "asana_workspace_id": null,
+        "github_project": null,
+        "environments": [
+            {
+                "id": 97171,
+                "project_id": 69422,
+                "name": "development",
+                "notifications": true,
+                "created_at": "2020-03-10T13:46:32.220499Z",
+                "updated_at": "2020-03-10T13:46:32.220499Z"
+            }
+        ],
+        "owner": {
+            "id": 74968,
+            "email": "500062348@stu.upes.ac.in",
+            "name": "Joerge"
+        },
+        "last_notice_at": "2020-03-14T12:14:37.000000Z",
+        "earliest_notice_at": "2020-01-14T12:25:36.037372Z",
+        "unresolved_fault_count": 0,
+        "fault_count": 1,
+        "active": true,
+        "users": [
+            {
+                "id": 74968,
+                "email": "500062348@stu.upes.ac.in",
+                "name": "Joerge"
+            }
+        ],
+        "sites": [
+            {
+                "id": "ff71a50d-dc88-448b-8a1b-97587d8c0fb9",
+                "active": true,
+                "last_checked_at": "2020-03-14T12:25:36.014762Z",
+                "name": "Resume Builder",
+                "state": "up",
+                "url": "https://resume-builder-v1.herokuapp.com/"
+            }
+        ],
+        "team_id": null
+    },
+    "site": {
+        "id": "ff71a50d-dc88-448b-8a1b-97587d8c0fb9",
+        "name": "Resume Builder",
+        "url": "https://resume-builder-v1.herokuapp.com/",
+        "frequency": 1,
+        "match_type": "success",
+        "match": null,
+        "state": "up",
+        "active": true,
+        "last_checked_at": "2020-03-14T12:25:36.014762Z",
+        "retries": 0,
+        "proxy": 1,
+        "details_url": "https://app.honeybadger.io/projects/69422/sites/ff71a50d-dc88-448b-8a1b-97587d8c0fb9"
+    },
+    "outage": {
+        "down_at": "2020-03-14T12:24:34.153649Z",
+        "up_at": "2020-03-14T12:25:35.993043Z",
+        "status": 503,
+        "reason": "Expected 2xx status code -- got 503",
+        "headers": {
+            "date": "Sat, 14 Mar 2020 12:24:33 GMT",
+            "server": "Cowboy",
+            "connection": "close",
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "no-cache, no-store",
+            "content-length": "511"
+        },
+        "details_url": "https://app.honeybadger.io/projects/69422/sites/ff71a50d-dc88-448b-8a1b-97587d8c0fb9"
+    }
 }

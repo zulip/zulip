@@ -93,7 +93,7 @@ Other notes:
 Zulip's email templates live under `templates/zerver/emails`.  Email
 templates are a messy problem, because on the one hand, you want nice,
 readable markup and styling, but on the other, email clients have very
-limited CSS support and generaly require us to inject any CSS we're
+limited CSS support and generally require us to inject any CSS we're
 using in the emails into the email as inline styles.  And then you
 also need both plain-text and HTML emails.  We solve these problems
 using a combination of the

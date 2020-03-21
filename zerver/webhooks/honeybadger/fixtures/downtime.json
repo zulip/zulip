@@ -1,0 +1,81 @@
+{
+    "event": "down",
+    "message": "[My Project] Resume Builder is down.",
+    "project": {
+        "id": 69422,
+        "name": "My Project",
+        "token": "5268bd40",
+        "created_at": "2020-03-10T13:45:15.294368Z",
+        "disable_public_links": false,
+        "pivotal_project_id": null,
+        "asana_workspace_id": null,
+        "github_project": null,
+        "environments": [
+            {
+                "id": 97171,
+                "project_id": 69422,
+                "name": "development",
+                "notifications": true,
+                "created_at": "2020-03-10T13:46:32.220499Z",
+                "updated_at": "2020-03-10T13:46:32.220499Z"
+            }
+        ],
+        "owner": {
+            "id": 74968,
+            "email": "500062348@stu.upes.ac.in",
+            "name": "Joerge"
+        },
+        "last_notice_at": "2020-03-14T12:14:37.000000Z",
+        "earliest_notice_at": "2020-01-14T12:24:34.262799Z",
+        "unresolved_fault_count": 0,
+        "fault_count": 1,
+        "active": true,
+        "users": [
+            {
+                "id": 74968,
+                "email": "500062348@stu.upes.ac.in",
+                "name": "Joerge"
+            }
+        ],
+        "sites": [
+            {
+                "id": "ff71a50d-dc88-448b-8a1b-97587d8c0fb9",
+                "active": true,
+                "last_checked_at": "2020-03-14T12:24:34.170301Z",
+                "name": "Resume Builder",
+                "state": "down",
+                "url": "https://resume-builder-v1.herokuapp.com/"
+            }
+        ],
+        "team_id": null
+    },
+    "site": {
+        "id": "ff71a50d-dc88-448b-8a1b-97587d8c0fb9",
+        "name": "Resume Builder",
+        "url": "https://resume-builder-v1.herokuapp.com/",
+        "frequency": 1,
+        "match_type": "success",
+        "match": null,
+        "state": "down",
+        "active": true,
+        "last_checked_at": "2020-03-14T12:24:34.170301Z",
+        "retries": 3,
+        "proxy": 0,
+        "details_url": "https://app.honeybadger.io/projects/69422/sites/ff71a50d-dc88-448b-8a1b-97587d8c0fb9"
+    },
+    "outage": {
+        "down_at": "2020-03-14T12:24:34.153649Z",
+        "up_at": null,
+        "status": 503,
+        "reason": "Expected 2xx status code -- got 503",
+        "headers": {
+            "date": "Sat, 14 Mar 2020 12:24:33 GMT",
+            "server": "Cowboy",
+            "connection": "close",
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "no-cache, no-store",
+            "content-length": "511"
+        },
+        "details_url": "https://app.honeybadger.io/projects/69422/sites/ff71a50d-dc88-448b-8a1b-97587d8c0fb9"
+    }
+}

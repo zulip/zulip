@@ -471,7 +471,7 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 3)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
-        exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
+        exported_user_emails = self.get_set(data['zerver_userprofile'], 'delivery_email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn('default-bot@zulip.com', exported_user_emails)
 
@@ -514,13 +514,13 @@ class ImportExportTest(ZulipTestCase):
 
         data = full_data['realm']
 
-        exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
+        exported_user_emails = self.get_set(data['zerver_userprofile'], 'delivery_email')
         self.assertIn(self.example_email('iago'), exported_user_emails)
         self.assertIn(self.example_email('hamlet'), exported_user_emails)
         self.assertNotIn('default-bot@zulip.com', exported_user_emails)
         self.assertNotIn(self.example_email('cordelia'), exported_user_emails)
 
-        dummy_user_emails = self.get_set(data['zerver_userprofile_mirrordummy'], 'email')
+        dummy_user_emails = self.get_set(data['zerver_userprofile_mirrordummy'], 'delivery_email')
         self.assertIn(self.example_email('cordelia'), dummy_user_emails)
         self.assertIn(self.example_email('othello'), dummy_user_emails)
         self.assertIn('default-bot@zulip.com', dummy_user_emails)
@@ -595,7 +595,7 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 3)
         self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
-        exported_user_emails = self.get_set(data['zerver_userprofile'], 'email')
+        exported_user_emails = self.get_set(data['zerver_userprofile'], 'delivery_email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)
         self.assertIn(self.example_email('hamlet'), exported_user_emails)
         self.assertIn(self.example_email('iago'), exported_user_emails)
@@ -986,8 +986,7 @@ class ImportExportTest(ZulipTestCase):
         # affect how the browser displays the rendered_content so we
         # are okay with using bs4 for this.  lxml package also has
         # similar behavior.
-        orig_polonius_user = UserProfile.objects.get(email=self.example_email("polonius"),
-                                                     realm=original_realm)
+        orig_polonius_user = self.example_user('polonius')
         original_msg = Message.objects.get(content=special_characters_message, sender__realm=original_realm)
         self.assertEqual(
             original_msg.rendered_content,
@@ -995,7 +994,7 @@ class ImportExportTest(ZulipTestCase):
              '<p><span class="user-mention" data-user-id="%s">@Polonius</span></p>' %
              (orig_polonius_user.id,))
         )
-        imported_polonius_user = UserProfile.objects.get(email=self.example_email("polonius"),
+        imported_polonius_user = UserProfile.objects.get(delivery_email=self.example_email("polonius"),
                                                          realm=imported_realm)
         imported_msg = Message.objects.get(content=special_characters_message, sender__realm=imported_realm)
         self.assertEqual(
@@ -1010,7 +1009,13 @@ class ImportExportTest(ZulipTestCase):
             self.assertEqual(user_profile.recipient_id, Recipient.objects.get(type=Recipient.PERSONAL,
                                                                               type_id=user_profile.id).id)
         for stream in Stream.objects.filter(realm=imported_realm):
-            self.assertEqual(stream.recipient_id, stream.recipient.id)
+            self.assertEqual(stream.recipient_id, Recipient.objects.get(type=Recipient.STREAM,
+                                                                        type_id=stream.id).id)
+
+        for huddle_object in Huddle.objects.all():
+            # Huddles don't have a realm column, so we just test all Huddles for simplicity.
+            self.assertEqual(huddle_object.recipient_id, Recipient.objects.get(type=Recipient.HUDDLE,
+                                                                               type_id=huddle_object.id).id)
 
     def test_import_files_from_local(self) -> None:
 

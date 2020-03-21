@@ -12,9 +12,15 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
     display: none;
 }
 
-.hashtag:empty::after {
-    font-size: 18px;
-    font-weight: 800;
+.hashtag {
+    &:empty {
+        &::after {
+            content: "#";
+            line-height: 0;
+            font-size: 18px;
+            font-weight: 800;
+        }
+    }
 }
 
 .stream-privacy {
@@ -73,11 +79,6 @@ li.show-more-topics {
     margin-right: 10px;
 }
 
-.hashtag:empty::after {
-    content: "#";
-    line-height: 0;
-}
-
 .tooltip {
     max-width: 18em;
 }
@@ -93,14 +94,12 @@ li.show-more-topics {
 
 .narrows_panel {
     margin-bottom: 4px;
-}
-
-.narrows_panel li a {
-    margin-top: 1px;
-}
-
-.narrows_panel li a:hover {
-    text-decoration: none;
+    li a {
+        margin-top: 1px;
+        &:hover {
+            text-decoration: none;
+        }
+    }
 }
 
 #stream_filters li a {
@@ -146,15 +145,13 @@ li.show-more-topics {
     text-decoration: none;
     margin-left: 10px;
     margin-bottom: 18px;
-}
-
-#add-stream-link i {
-    min-width: 19px;
-    text-align: center;
-}
-
-#add-stream-link i::before {
-    padding-right: 3px;
+    i {
+        min-width: 19px;
+        text-align: center;
+        &::before {
+            padding-right: 3px;
+        }
+    }
 }
 
 ul.filters {
@@ -475,8 +472,10 @@ li.expanded_private_message a {
     margin-right: 15px;
 }
 
-.zoom-out #topics_header {
-    display: none;
+.zoom-out {
+    #topics_header {
+        display: none;
+    }
 }
 
 #global_filters {
@@ -490,18 +489,16 @@ li.expanded_private_message a {
 #topics_header {
     margin-right: 10px;
     color: hsl(0, 0%, 43%);
-}
-
-#topics_header a {
-    color: inherit;
-    text-decoration: none;
-    text-transform: uppercase;
-}
-
-#topics_header a i {
-    margin: 0 5px 0 10px;
-    position: relative;
-    top: 1px;
+    a {
+        color: inherit;
+        text-decoration: none;
+        text-transform: uppercase;
+        i {
+            margin: 0 5px 0 10px;
+            position: relative;
+            top: 1px;
+        }
+    }
 }
 
 #streams_header {
@@ -523,12 +520,13 @@ li.expanded_private_message a {
     margin-left: 6px;
 }
 
-.zoom-in .show-more-topics {
-    display: none;
-}
-
-.zoom-in .zoom-in-hide {
-    display: none;
+.zoom-in {
+    .show-more-topics {
+        display: none;
+    }
+    .zoom-in-hide {
+        display: none;
+    }
 }
 
 .show-all-streams .fa-chevron-left {

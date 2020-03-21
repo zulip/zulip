@@ -34,13 +34,18 @@ class SendLoginEmailTest(ZulipTestCase):
             user.twenty_four_hour_time = False
             user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
             user.save()
-            password = initial_password(user.email)
+            password = initial_password(user.delivery_email)
+            login_info = dict(
+                username=user.delivery_email,
+                password=password,
+            )
             firefox_windows = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
             user_tz = get_timezone(user.timezone)
             mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
             reference_time = mock_time.astimezone(user_tz).strftime('%A, %B %d, %Y at %I:%M%p %Z')
             with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
-                self.client_post("/accounts/login/", info={"username": user.email, "password": password},
+                self.client_post("/accounts/login/",
+                                 info=login_info,
                                  HTTP_USER_AGENT=firefox_windows)
 
             # email is sent and correct subject
@@ -55,7 +60,8 @@ class SendLoginEmailTest(ZulipTestCase):
             user.twenty_four_hour_time = True
             user.save()
             with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
-                self.client_post("/accounts/login/", info={"username": user.email, "password": password},
+                self.client_post("/accounts/login/",
+                                 info=login_info,
                                  HTTP_USER_AGENT=firefox_windows)
 
             reference_time = mock_time.astimezone(user_tz).strftime('%A, %B %d, %Y at %H:%M %Z')

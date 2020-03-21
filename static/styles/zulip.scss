@@ -1362,6 +1362,11 @@ div.focused_table {
     white-space: nowrap;
 }
 
+.top-navbar-border {
+    border-right: 1px solid hsl(0, 0%, 88%);
+    border-left: 1px solid hsl(0, 0%, 88%);
+}
+
 #tab_bar {
     z-index: 2;
     padding-top: 0px;
@@ -1656,8 +1661,6 @@ nav a .no-style {
     display: flex;
     width: 100%;
     height: 40px;
-    border-left: 1px solid hsl(0, 0%, 88%);
-    border-right: 1px solid hsl(0, 0%, 88%);
 
     .navbar-search {
         margin-top: 0px;

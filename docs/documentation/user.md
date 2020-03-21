@@ -96,7 +96,7 @@ allows .." rather than "we also allow ..". `You` is ok and used liberally.
 ## Features
 
 Zulip's Markdown processor allows you to include several special features in
-your documentation to help improve its readibility:
+your documentation to help improve its readability:
 
 * Since raw HTML is supported in Markdown, you can include arbitrary
 HTML/CSS in your documentation as needed.

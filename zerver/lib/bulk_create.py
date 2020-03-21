@@ -5,7 +5,8 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 from zerver.lib.initial_password import initial_password
 from zerver.models import Realm, Stream, UserProfile, \
     Subscription, Recipient, RealmAuditLog
-from zerver.lib.create_user import create_user_profile
+from zerver.lib.create_user import create_user_profile, \
+    get_display_email_address
 
 def bulk_create_users(realm: Realm,
                       users_raw: Set[Tuple[str, str, str, bool]],
@@ -21,10 +22,6 @@ def bulk_create_users(realm: Realm,
         realm=realm).values_list('email', flat=True))
     users = sorted([user_raw for user_raw in users_raw if user_raw[0] not in existing_users])
 
-    # If we have a different email_address_visibility mode, the code
-    # below doesn't have the logic to set user_profile.email properly.
-    assert realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-
     # Now create user_profiles
     profiles_to_create = []  # type: List[UserProfile]
     for (email, full_name, short_name, active) in users:
@@ -34,36 +31,45 @@ def bulk_create_users(realm: Realm,
                                       timezone, tutorial_status=UserProfile.TUTORIAL_FINISHED,
                                       enter_sends=True)
         profiles_to_create.append(profile)
-    UserProfile.objects.bulk_create(profiles_to_create)
+
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        UserProfile.objects.bulk_create(profiles_to_create)
+    else:
+        for user_profile in profiles_to_create:
+            user_profile.email = user_profile.delivery_email
+
+        UserProfile.objects.bulk_create(profiles_to_create)
+
+        for user_profile in profiles_to_create:
+            user_profile.email = get_display_email_address(user_profile, realm)
+        UserProfile.objects.bulk_update(profiles_to_create, ['email'])
+
+    user_ids = {user.id for user in profiles_to_create}
 
     RealmAuditLog.objects.bulk_create(
         [RealmAuditLog(realm=realm, modified_user=profile_,
                        event_type=RealmAuditLog.USER_CREATED, event_time=profile_.date_joined)
          for profile_ in profiles_to_create])
 
-    profiles_by_email = {}  # type: Dict[str, UserProfile]
-    profiles_by_id = {}  # type: Dict[int, UserProfile]
-    for profile in UserProfile.objects.select_related().filter(realm=realm):
-        profiles_by_email[profile.email] = profile
-        profiles_by_id[profile.id] = profile
-
     recipients_to_create = []  # type: List[Recipient]
-    for (email, full_name, short_name, active) in users:
-        recipients_to_create.append(Recipient(type_id=profiles_by_email[email].id,
-                                              type=Recipient.PERSONAL))
+    for user_id in user_ids:
+        recipient = Recipient(type_id=user_id, type=Recipient.PERSONAL)
+        recipients_to_create.append(recipient)
+
     Recipient.objects.bulk_create(recipients_to_create)
 
     bulk_set_users_or_streams_recipient_fields(UserProfile, profiles_to_create, recipients_to_create)
 
-    recipients_by_email = {}  # type: Dict[str, Recipient]
+    recipients_by_user_id = {}  # type: Dict[int, Recipient]
     for recipient in recipients_to_create:
-        recipients_by_email[profiles_by_id[recipient.type_id].email] = recipient
+        recipients_by_user_id[recipient.type_id] = recipient
 
     subscriptions_to_create = []  # type: List[Subscription]
-    for (email, full_name, short_name, active) in users:
-        subscriptions_to_create.append(
-            Subscription(user_profile_id=profiles_by_email[email].id,
-                         recipient=recipients_by_email[email]))
+    for user_id in user_ids:
+        recipient = recipients_by_user_id[user_id]
+        subscription = Subscription(user_profile_id=user_id, recipient=recipient)
+        subscriptions_to_create.append(subscription)
+
     Subscription.objects.bulk_create(subscriptions_to_create)
 
 def bulk_set_users_or_streams_recipient_fields(model: Model,
