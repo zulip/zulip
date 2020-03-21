@@ -50,11 +50,11 @@ const bot_test = {
     is_admin: false,
     is_bot: true,
 };
-global.people.add(alice);
-global.people.add(bob);
-global.people.add(me);
-global.people.add(bot_test);
-global.people.initialize_current_user(me.user_id);
+people.add(alice);
+people.add(bob);
+people.add(me);
+people.add(bot_test);
+people.initialize_current_user(me.user_id);
 
 run_test('close', () => {
     let collapsed;

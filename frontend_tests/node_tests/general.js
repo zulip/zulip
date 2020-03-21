@@ -26,7 +26,7 @@ assert(!people.is_known_user_id(isaac.user_id));
 people.add(isaac);
 assert(people.is_known_user_id(isaac.user_id));
 
-// The global.people object is a very fundamental object in the
+// The `people`object is a very fundamental object in the
 // Zulip app.  You can learn a lot more about it by reading
 // the tests in people.js in the same directory as this file.
 // Let's create the current user, which some future tests will

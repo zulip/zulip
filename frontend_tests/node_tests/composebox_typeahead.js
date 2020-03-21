@@ -240,18 +240,18 @@ const harry = {
     email: 'harry@zulip.com',
 };
 
-global.people.add(alice);
-global.people.add(hamlet);
-global.people.add(othello);
-global.people.add(cordelia);
-global.people.add(lear);
-global.people.add(twin1);
-global.people.add(twin2);
-global.people.add(gael);
-global.people.add(hal);
-global.people.add(harry);
-global.people.add(deactivated_user);
-global.people.deactivate(deactivated_user);
+people.add(alice);
+people.add(hamlet);
+people.add(othello);
+people.add(cordelia);
+people.add(lear);
+people.add(twin1);
+people.add(twin2);
+people.add(gael);
+people.add(hal);
+people.add(harry);
+people.add(deactivated_user);
+people.deactivate(deactivated_user);
 
 const hamletcharacters = {
     name: "hamletcharacters",
