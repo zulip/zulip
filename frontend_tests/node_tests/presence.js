@@ -184,10 +184,10 @@ run_test('set_presence_info', () => {
     assert(!presence.presence_info.has(bot.user_id));
 
     // Make it seem like realm has a lot of people
-    const get_realm_count = people.get_realm_count;
-    people.get_realm_count = function () { return 1000; };
+    const get_active_human_count = people.get_active_human_count;
+    people.get_active_human_count = function () { return 1000; };
     assert.equal(presence.set_info(presences, base_time), undefined);
-    people.get_realm_count = get_realm_count;
+    people.get_active_human_count = get_active_human_count;
 });
 
 run_test('last_active_date', () => {

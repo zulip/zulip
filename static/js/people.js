@@ -67,12 +67,6 @@ exports.get_by_email = function (email) {
     return person;
 };
 
-exports.get_realm_count = function () {
-    // This returns the number of active people in our realm.  It should
-    // exclude bots and deactivated users.
-    return active_user_dict.size;
-};
-
 exports.id_matches_email_operand = function (user_id, email) {
     const person = exports.get_by_email(email);
 
@@ -690,6 +684,16 @@ exports.get_active_human_persons = function () {
         return !person.is_bot;
     });
     return human_persons;
+};
+
+exports.get_active_human_count = function () {
+    let count = 0;
+    for (const person of active_user_dict.values()) {
+        if (!person.is_bot) {
+            count += 1;
+        }
+    }
+    return count;
 };
 
 exports.get_active_user_ids = function () {
