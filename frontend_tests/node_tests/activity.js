@@ -121,8 +121,6 @@ const zoe = {
     full_name: 'Zoe Yang',
 };
 
-const people = global.people;
-
 people.add(alice);
 people.add(fred);
 people.add(jill);
