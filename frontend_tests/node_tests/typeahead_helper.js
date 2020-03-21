@@ -202,7 +202,7 @@ const matches = [
 ];
 
 for (const person of matches) {
-    global.people.add_in_realm(person);
+    global.people.add(person);
 }
 
 function get_typeahead_result(query, current_stream, current_topic) {

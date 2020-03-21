@@ -247,7 +247,7 @@ run_test('validate', () => {
 
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient', {}));
 
-    people.add_in_realm(bob);
+    people.add(bob);
     compose_state.private_message_recipient('bob@example.com');
     assert(compose.validate());
 

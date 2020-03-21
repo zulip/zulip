@@ -42,11 +42,11 @@ const bot = {
     is_bot: true,
 };
 
-people.add_in_realm(me);
-people.add_in_realm(alice);
-people.add_in_realm(fred);
-people.add_in_realm(zoe);
-people.add_in_realm(bot);
+people.add(me);
+people.add(alice);
+people.add(fred);
+people.add(zoe);
+people.add(bot);
 people.initialize_current_user(me.user_id);
 
 run_test('my user', () => {

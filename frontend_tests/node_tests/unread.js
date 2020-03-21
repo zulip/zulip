@@ -398,7 +398,7 @@ run_test('private_messages', () => {
         user_id: 999,
         full_name: 'Any Body',
     };
-    people.add_in_realm(anybody);
+    people.add(anybody);
 
     const message = {
         id: 15,
@@ -429,14 +429,14 @@ run_test('private_messages', () => {
         user_id: 101,
         full_name: 'Alice',
     };
-    people.add_in_realm(alice);
+    people.add(alice);
 
     const bob = {
         email: 'bob@example.com',
         user_id: 102,
         full_name: 'Bob',
     };
-    people.add_in_realm(bob);
+    people.add(bob);
 
     assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 0);
     assert.equal(unread.num_unread_for_person(bob.user_id.toString()), 0);

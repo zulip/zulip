@@ -250,7 +250,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'realm_user':
         if (event.op === 'add') {
-            people.add_in_realm(event.person);
+            people.add(event.person);
         } else if (event.op === 'remove') {
             people.deactivate(event.person);
             stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);

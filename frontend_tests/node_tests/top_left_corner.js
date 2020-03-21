@@ -35,8 +35,8 @@ run_test('narrowing', () => {
         full_name: 'Bob Patel',
     };
 
-    people.add_in_realm(alice);
-    people.add_in_realm(bob);
+    people.add(alice);
+    people.add(bob);
 
     pm_expanded = false;
     filter = new Filter([
