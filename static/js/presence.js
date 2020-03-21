@@ -147,7 +147,7 @@ exports.update_info_for_small_realm = function () {
 
     // For small realms, we create presence info for users
     // that the server didn't include in its presence update.
-    const persons = people.get_realm_persons();
+    const persons = people.get_realm_users();
 
     for (const person of persons) {
         const user_id = person.user_id;

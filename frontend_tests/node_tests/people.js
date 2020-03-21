@@ -50,13 +50,15 @@ function get_all_persons() {
 run_test('basics', () => {
     const persons = get_all_persons();
 
+    assert.deepEqual(people.get_realm_users(), [me]);
+
     assert.equal(persons.length, 1);
     assert.equal(persons[0].full_name, 'Me Myself');
 
-    let realm_persons = people.get_realm_persons();
+    let realm_persons = people.get_realm_users();
     assert.equal(realm_persons[0].full_name, 'Me Myself');
 
-    realm_persons = people.get_realm_persons();
+    realm_persons = people.get_realm_users();
     assert.equal(realm_persons.length, 1);
     assert.equal(people.get_active_human_count(), 1);
 
@@ -89,7 +91,7 @@ run_test('basics', () => {
     person = people.get_active_user_for_email(email);
     assert.equal(person.email, email);
 
-    realm_persons = people.get_realm_persons();
+    realm_persons = people.get_realm_users();
     assert.equal(realm_persons.length, 2);
 
     const active_user_ids = people.get_active_user_ids().sort();
@@ -113,6 +115,16 @@ run_test('basics', () => {
     };
     people.add_in_realm(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
+
+    // get_realm_users() will include our active bot,
+    // but will exclude isaac (who is deactivated)
+    assert.deepEqual(
+        people.get_realm_users().map((u) => u.user_id).sort(),
+        [
+            me.user_id,
+            bot_botson.user_id,
+        ]
+    );
 
     // The bot doesn't add to our human count.
     assert.equal(people.get_active_human_count(), 1);

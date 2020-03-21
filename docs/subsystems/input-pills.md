@@ -50,7 +50,7 @@ And then in `user_pill.js`...
 
 ```js
 exports.typeahead_source = function (pill_widget) {
-    const persons = people.get_realm_persons();
+    const persons = people.get_realm_users();
     return exports.filter_taken_users(persons, pill_widget);
 };
 
