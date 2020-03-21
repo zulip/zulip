@@ -690,10 +690,15 @@ exports.get_realm_persons = function () {
 };
 
 exports.get_active_human_persons = function () {
-    const human_persons = exports.get_realm_persons().filter(function (person)  {
-        return !person.is_bot;
-    });
-    return human_persons;
+    const humans = [];
+
+    for (const user of active_user_dict.values()) {
+        if (!user.is_bot) {
+            humans.push(user);
+        }
+    }
+
+    return humans;
 };
 
 exports.get_active_human_count = function () {
