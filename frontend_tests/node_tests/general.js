@@ -51,9 +51,6 @@ const denmark_stream = {
     subscribed: false,
 };
 
-// We often use IIFEs (immediately invoked function expressions)
-// to make our tests more self-containted.
-
 // Some quick housekeeping:  Let's clear page_params, which is a data
 // structure that the server sends down to us when the app starts.  We
 // prefer to test with a clean slate.
@@ -230,7 +227,6 @@ run_test('narrow_state', () => {
 
         zrequire - bring in real code
         set_global - create stubs
-        IIFE - enclose tests in their own scope
         assert.equal - verify results
 
     ------
