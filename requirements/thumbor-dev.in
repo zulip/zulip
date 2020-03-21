@@ -1,3 +1,2 @@
 -r pip.in
 -r thumbor.in
-pip-tools
