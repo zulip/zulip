@@ -470,7 +470,7 @@ exports.get_person_suggestions = function (query, opts) {
         filtered_persons = filtered_message_persons;
     } else {
         filtered_persons = filter_persons(
-            people.get_realm_persons()
+            people.get_realm_users()
         );
     }
 

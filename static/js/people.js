@@ -685,7 +685,8 @@ exports.filter_all_users = function (pred) {
     return ret;
 };
 
-exports.get_realm_persons = function () {
+exports.get_realm_users = function () {
+    // includes humans and bots from your realm
     return Array.from(active_user_dict.values());
 };
 
@@ -921,7 +922,7 @@ exports.get_people_for_stream_create = function () {
     /*
         If you are thinking of reusing this function,
         a better option in most cases is to just
-        call `exports.get_realm_persons()` and then
+        call `exports.get_realm_users()` and then
         filter out the "me" user yourself as part of
         any other filtering that you are doing.
 

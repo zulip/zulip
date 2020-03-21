@@ -112,7 +112,7 @@ run_test('populate_user_groups', () => {
         full_name: 'Bob',
     };
 
-    people.get_realm_persons = function () {
+    people.get_realm_users = function () {
         return [iago, alice, bob];
     };
 
@@ -344,7 +344,7 @@ run_test('with_external_user', () => {
     };
 
     // We return noop because these are already tested, so we skip them
-    people.get_realm_persons = function () {
+    people.get_realm_users = function () {
         return noop;
     };
 

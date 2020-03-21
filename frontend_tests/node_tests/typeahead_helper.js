@@ -207,7 +207,7 @@ for (const person of matches) {
 
 function get_typeahead_result(query, current_stream, current_topic) {
     const result = th.sort_recipients(
-        global.people.get_realm_persons(),
+        global.people.get_realm_users(),
         query,
         current_stream,
         current_topic
