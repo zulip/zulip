@@ -175,13 +175,17 @@ exports.build_emoji_upload_widget = function () {
     const input_error = $('#emoji_file_input_error');
     const clear_button = $('#emoji_image_clear_button');
     const upload_button = $('#emoji_upload_button');
+    const preview_text = $('#emoji_preview_text');
+    const preview_image = $('#emoji_preview_image');
 
     return upload_widget.build_widget(
         get_file_input,
         file_name_field,
         input_error,
         clear_button,
-        upload_button
+        upload_button,
+        preview_text,
+        preview_image
     );
 };
 

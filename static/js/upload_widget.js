@@ -21,6 +21,8 @@ exports.build_widget = function (
     input_error, // jQuery object for error text
     clear_button, // jQuery button to clear last upload choice
     upload_button, // jQuery button to open file dialog
+    preview_text = null,
+    preview_image = null,
     max_file_upload_size
 ) {
     // default value of max upladed file size
@@ -31,6 +33,11 @@ exports.build_widget = function (
         input_error.hide();
         clear_button.show();
         upload_button.hide();
+        if (preview_text !== null) {
+            const image_blob = URL.createObjectURL(file);
+            preview_image.attr('src', image_blob);
+            preview_text.show();
+        }
     }
 
     function clear() {
@@ -39,7 +46,12 @@ exports.build_widget = function (
         file_name_field.text('');
         clear_button.hide();
         upload_button.show();
+        if (preview_text !== null) {
+            preview_text.hide();
+        }
     }
+
+
 
     clear_button.on('click', function (e) {
         clear();

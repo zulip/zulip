@@ -774,6 +774,11 @@ input[type=checkbox].inline-block {
     vertical-align: middle;
 }
 
+#emoji_preview_image {
+    width: auto;
+    height: 20px;
+}
+
 .add-new-emoji-box #emoji-file-name {
     color: hsl(0, 0%, 67%);
 }
