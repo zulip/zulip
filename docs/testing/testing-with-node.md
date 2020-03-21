@@ -39,6 +39,9 @@ see if there are corresponding test in `frontend_tests/node_tests`.  If
 there are, you should strive to follow the patterns of the existing tests
 and add your own tests.
 
+A good first test to read is
+[general.js](https://github.com/zulip/zulip/blob/master/frontend_tests/node_tests/general.js).
+
 ## How the node tests work
 
 Unlike the [casper unit tests](../testing/testing-with-casper.md),
