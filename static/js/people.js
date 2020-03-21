@@ -981,7 +981,12 @@ exports.get_mention_syntax = function (full_name, user_id, silent) {
     return mention;
 };
 
-exports.add = function add(person) {
+exports._add_user = function add(person) {
+    /*
+        This is common code to add any user, even
+        users who may be deactivated or outside
+        our realm (like cross-realm bots).
+    */
     if (person.user_id) {
         people_by_user_id_dict.set(person.user_id, person);
     } else {
@@ -999,9 +1004,9 @@ exports.add = function add(person) {
     people_by_name_dict.set(person.full_name, person);
 };
 
-exports.add_in_realm = function (person) {
+exports.add = function (person) {
     active_user_dict.set(person.user_id, person);
-    exports.add(person);
+    exports._add_user(person);
 };
 
 exports.deactivate = function (person) {
@@ -1056,7 +1061,7 @@ exports.extract_people_from_message = function (message) {
 
         exports.report_late_add(user_id, person.email);
 
-        exports.add({
+        exports._add_user({
             email: person.email,
             user_id: user_id,
             full_name: person.full_name,
@@ -1190,16 +1195,16 @@ exports.is_my_user_id = function (user_id) {
 
 exports.initialize = function (my_user_id, params) {
     for (const person of params.realm_users) {
-        exports.add_in_realm(person);
+        exports.add(person);
     }
 
     for (const person of params.realm_non_active_users) {
-        exports.add(person);
+        exports._add_user(person);
     }
 
     for (const person of params.cross_realm_bots) {
         if (!people_dict.has(person.email)) {
-            exports.add(person);
+            exports._add_user(person);
         }
         cross_realm_dict.set(person.user_id, person);
     }

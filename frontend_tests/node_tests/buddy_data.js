@@ -57,14 +57,14 @@ function make_people() {
             full_name: `Human ${i}`,
             email: `person${i}@example.com`,
         };
-        people.add_in_realm(person);
+        people.add(person);
     }
 
-    people.add_in_realm(bot);
-    people.add_in_realm(bot_with_owner);
-    people.add_in_realm(selma);
-    people.add_in_realm(me);
-    people.add_in_realm(old_user);
+    people.add(bot);
+    people.add(bot_with_owner);
+    people.add(selma);
+    people.add(me);
+    people.add(old_user);
 
     people.initialize_current_user(me.user_id);
 }

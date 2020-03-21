@@ -150,7 +150,7 @@ run_test('set_compose_defaults', () => {
         full_name: 'John Doe',
     };
     people.add(john);
-    people.add_in_realm(john);
+    people.add(john);
 
     set_filter([['pm-with', 'john@doe.com']]);
     pm_test = narrow_state.set_compose_defaults();

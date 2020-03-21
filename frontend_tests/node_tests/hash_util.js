@@ -15,7 +15,7 @@ const hamlet = {
     full_name: 'Hamlet',
 };
 
-people.add_in_realm(hamlet);
+people.add(hamlet);
 
 const frontend = {
     stream_id: 99,

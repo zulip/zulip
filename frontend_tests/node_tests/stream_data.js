@@ -28,7 +28,7 @@ const settings_config = zrequire("settings_config");
 const me = {
     email: 'me@zulip.com',
     full_name: 'Current User',
-    user_id: 81,
+    user_id: 100,
 };
 
 // set up user data
@@ -182,9 +182,9 @@ run_test('subscribers', () => {
         full_name: 'George',
         user_id: 103,
     };
-    people.add_in_realm(fred);
-    people.add_in_realm(not_fred);
-    people.add_in_realm(george);
+    people.add(fred);
+    people.add(not_fred);
+    people.add(george);
 
     function potential_subscriber_ids() {
         const users = stream_data.potential_subscribers(sub);
@@ -194,14 +194,16 @@ run_test('subscribers', () => {
     assert.deepEqual(
         potential_subscriber_ids(),
         [
+            me.user_id,
             fred.user_id,
             not_fred.user_id,
             george.user_id,
         ]
     );
 
-    stream_data.set_subscribers(sub, [fred.user_id, george.user_id]);
+    stream_data.set_subscribers(sub, [me.user_id, fred.user_id, george.user_id]);
     stream_data.update_calculated_fields(sub);
+    assert(stream_data.is_user_subscribed('Rome', me.user_id));
     assert(stream_data.is_user_subscribed('Rome', fred.user_id));
     assert(stream_data.is_user_subscribed('Rome', george.user_id));
     assert(!stream_data.is_user_subscribed('Rome', not_fred.user_id));

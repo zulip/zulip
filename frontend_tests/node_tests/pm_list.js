@@ -50,10 +50,10 @@ const bot_test = {
     is_admin: false,
     is_bot: true,
 };
-global.people.add_in_realm(alice);
-global.people.add_in_realm(bob);
-global.people.add_in_realm(me);
-global.people.add_in_realm(bot_test);
+global.people.add(alice);
+global.people.add(bob);
+global.people.add(me);
+global.people.add(bot_test);
 global.people.initialize_current_user(me.user_id);
 
 run_test('close', () => {

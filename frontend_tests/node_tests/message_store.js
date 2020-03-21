@@ -58,11 +58,11 @@ const denise  = {
     full_name: 'Denise ',
 };
 
-people.add_in_realm(me);
-people.add_in_realm(alice);
-people.add_in_realm(bob);
-people.add_in_realm(cindy);
-people.add_in_realm(denise);
+people.add(me);
+people.add(alice);
+people.add(bob);
+people.add(cindy);
+people.add(denise);
 
 global.people.initialize_current_user(me.user_id);
 

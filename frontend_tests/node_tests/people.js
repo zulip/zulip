@@ -37,7 +37,7 @@ const isaac = {
 
 function initialize() {
     people.init();
-    people.add_in_realm(me);
+    people.add(me);
     people.initialize_current_user(me.user_id);
 }
 
@@ -78,16 +78,16 @@ run_test('basics', () => {
 
     assert(people.is_valid_full_name_and_user_id(full_name, 32));
     assert(people.is_known_user_id(32));
-    assert.equal(people.get_active_human_count(), 1);
+    assert.equal(people.get_active_human_count(), 2);
 
     assert.equal(people.get_user_id_from_name(full_name), 32);
 
     let person = people.get_by_email(email);
     assert.equal(person.full_name, full_name);
-    person = people.get_active_user_for_email(email);
+
+    person = people.get_active_user_for_email('nobody@example.com');
     assert(!person);
-    people.add_in_realm(isaac);
-    assert.equal(people.get_active_human_count(), 2);
+
     person = people.get_active_user_for_email(email);
     assert.equal(person.email, email);
 
@@ -113,7 +113,7 @@ run_test('basics', () => {
         full_name: 'Bot Botson',
         is_bot: true,
     };
-    people.add_in_realm(bot_botson);
+    people.add(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
 
     // get_realm_users() will include our active bot,
@@ -153,7 +153,7 @@ run_test('basics', () => {
     assert.equal(people.is_my_user_id(undefined), false);
 
     // Reactivating issac
-    people.add_in_realm(isaac);
+    people.add(isaac);
     const active_humans = people.get_active_humans();
     assert.equal(active_humans.length, 2);
     assert.deepEqual(
@@ -194,7 +194,7 @@ run_test('bot_custom_profile_data', () => {
         full_name: 'Bot',
         is_bot: true,
     };
-    people.add_in_realm(bot);
+    people.add(bot);
     assert.equal(people.get_custom_profile_data(31, 3), null);
 });
 
@@ -320,9 +320,9 @@ run_test('get_people_for_stream_create', () => {
         user_id: 204,
         full_name: 'Bob van Roberts',
     };
-    people.add_in_realm(alice1);
-    people.add_in_realm(bob);
-    people.add_in_realm(alice2);
+    people.add(alice1);
+    people.add(bob);
+    people.add(alice2);
     assert.equal(people.get_active_human_count(), 4);
 
     const others = people.get_people_for_stream_create();
@@ -379,12 +379,12 @@ run_test('filtered_users', () => {
         full_name: 'Nooaah Emerson',
     };
 
-    people.add_in_realm(charles);
-    people.add_in_realm(maria);
-    people.add_in_realm(ashton);
-    people.add_in_realm(linus);
-    people.add_in_realm(noah);
-    people.add_in_realm(plain_noah);
+    people.add(charles);
+    people.add(maria);
+    people.add(ashton);
+    people.add(linus);
+    people.add(noah);
+    people.add(plain_noah);
 
     const search_term = 'a';
     const users = people.get_people_for_stream_create();
@@ -445,8 +445,8 @@ run_test('multi_user_methods', () => {
         full_name: 'whatever 402',
     };
 
-    people.add_in_realm(emp401);
-    people.add_in_realm(emp402);
+    people.add(emp401);
+    people.add(emp402);
 
     let emails_string = people.user_ids_string_to_emails_string('402,401');
     assert.equal(emails_string, 'emp401@example.com,emp402@example.com');
@@ -653,7 +653,7 @@ run_test('maybe_incr_recipient_count', () => {
     const maria_recip = {
         id: maria.user_id,
     };
-    people.add_in_realm(maria);
+    people.add(maria);
 
     let message = {
         type: 'private',
@@ -724,7 +724,7 @@ run_test('get_people_for_search_bar', () => {
             full_name: 'James Jones',
             user_id: 1000 + i,
         };
-        people.add_in_realm(person);
+        people.add(person);
     }
 
     const big_results = people.get_people_for_search_bar('James');
@@ -755,7 +755,7 @@ run_test('updates', () => {
         user_id: user_id,
         full_name: 'Foo Barson',
     };
-    people.add_in_realm(person);
+    people.add(person);
 
     // Do sanity checks on our data.
     assert.equal(people.get_by_email(old_email).user_id, user_id);
