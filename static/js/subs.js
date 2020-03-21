@@ -456,7 +456,7 @@ exports.filter_table = function (query) {
 let subscribed_only = true;
 
 exports.get_search_params = function () {
-    const search_box = $("#add_new_subscription input[type='text']");
+    const search_box = $("#stream_filter input[type='text']");
     const input = search_box.expectOne().val().trim();
     const params = {
         input: input,
@@ -563,8 +563,13 @@ exports.setup_page = function (callback) {
         exports.actually_filter_streams();
         stream_create.set_up_handlers();
 
-        $("#add_new_subscription input[type='text']").on("input", function () {
+        $("#stream_filter input[type='text']").on("input", function () {
             // Debounce filtering in case a user is typing quickly
+            filter_streams();
+        });
+
+        $("#clear_search_stream_name").on("click", function () {
+            $("#stream_filter input[type='text']").val("");
             filter_streams();
         });
 
