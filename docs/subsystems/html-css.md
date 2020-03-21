@@ -265,11 +265,10 @@ Read more about these module systems here:
 * [CommonJS](https://nodejs.org/api/modules.html#modules_modules)
 
 [Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: http://handlebarsjs.com/
+[Handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
 [i18next]: https://www.i18next.com
 [official]: https://www.i18next.com/plurals.html
-[helpers]: http://handlebarsjs.com/block_helpers.html
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
-[hconditionals]: http://handlebarsjs.com/block_helpers.html
+[hconditionals]: https://handlebarsjs.com/guide/#block_helpers.html
 [translation]: ../translating/translating.md
