@@ -197,7 +197,7 @@ option of puppet.
 Zulip uses two HTML templating systems:
 
 - [Django templates](https://docs.djangoproject.com/en/1.10/topics/templates/)
-- [handlebars](http://handlebarsjs.com/)
+- [handlebars](https://handlebarsjs.com/)
 
 Zulip has an internal tool that validates both types of templates for
 correct indentation and matching tags.  You can find the code here:
