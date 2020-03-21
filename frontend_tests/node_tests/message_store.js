@@ -4,7 +4,6 @@ zrequire('people');
 zrequire('message_store');
 
 const noop = function () {};
-const people = global.people;
 
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
@@ -64,7 +63,7 @@ people.add(bob);
 people.add(cindy);
 people.add(denise);
 
-global.people.initialize_current_user(me.user_id);
+people.initialize_current_user(me.user_id);
 
 function convert_recipients(people) {
     // Display_recipient uses `id` for user_ids.
