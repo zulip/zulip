@@ -153,7 +153,7 @@ casper.then(function () {
     // 4 users from Scotland are added.
     // 1 user, Cordelia, is added. Othello (subscribed to Scotland) is not added twice.
     casper.test.assertSelectorHasText('.subscriber-count-text', '5');
-    casper.fill('form#add_new_subscription', {stream_name: 'WASeemio'});
+    casper.sendKeys('#search_stream_name', 'WASeemio', { reset: true });
     casper.click('#add_new_subscription .create_stream_button');
 });
 casper.then(function () {
@@ -165,7 +165,7 @@ casper.then(function () {
     common.wait_for_text('#stream_name_error', 'A stream needs to have a name', function () {
         casper.test.assertTextExists('A stream needs to have a name', "Can't create a stream with an empty name");
         casper.click('form#stream_creation_form button.button.white');
-        casper.fill('form#add_new_subscription', {stream_name: '  '});
+        casper.sendKeys('#search_stream_name', '   ', { reset: true });
         casper.click('#add_new_subscription .create_stream_button');
         casper.fill('form#stream_creation_form', {stream_name: 'Waseemio'});
         casper.click('form#stream_creation_form button.button.sea-green');
@@ -185,16 +185,14 @@ casper.then(function () {
     });
 });
 casper.then(function () {
-    casper.fill('form#add_new_subscription', {stream_name: 'was'});
-    casper.evaluate(function () {
-        $('#add_new_subscription input[type="text"]').expectOne()
-            .trigger($.Event('input'));
-    });
+    casper.sendKeys('#search_stream_name', 'was', { reset: true });
 });
-casper.waitForSelectorTextChange('form#add_new_subscription', function () {
-    casper.test.assertSelectorHasText('.stream-row.notdisplayed .stream-name', 'Verona', 'Verona stream not shown after filtering');
-    casper.test.assertSelectorHasText('.stream-row .stream-name', 'Waseemio', 'Waseemio stream exists after filtering');
-    casper.test.assertSelectorDoesntHaveText('.stream-row.notdisplayed .stream-name', 'Waseemio', 'Waseemio stream shown after filtering');
+casper.then(function () {
+    casper.wait('4000', function () {
+        casper.test.assertSelectorHasText('.stream-row.notdisplayed .stream-name', 'Verona', 'Verona stream not shown after filtering');
+        casper.test.assertSelectorHasText('.stream-row .stream-name', 'Waseemio', 'Waseemio stream exists after filtering');
+        casper.test.assertSelectorDoesntHaveText('.stream-row.notdisplayed .stream-name', 'Waseemio', 'Waseemio stream shown after filtering');
+    });
 });
 
 common.then_log_out();
