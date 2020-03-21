@@ -17,7 +17,7 @@ THUMBOR_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "thumbor-dev.txt")
 
 def main() -> None:
     setup_virtualenv("/srv/zulip-thumbor-venv", THUMBOR_REQS_FILE,
-                     patch_activate_script=True, python2=True)
+                     patch_activate_script=True)
     cached_venv_path = setup_virtualenv(
         VENV_PATH, DEV_REQS_FILE, patch_activate_script=True)
     overwrite_symlink(cached_venv_path, os.path.join(ZULIP_PATH, "zulip-py3-venv"))

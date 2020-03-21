@@ -31,5 +31,4 @@ else:
 venv_name = "zulip-thumbor-venv"
 cached_venv_path = setup_virtualenv(
     os.path.join(args.deploy_path, venv_name),
-    os.path.join(ZULIP_PATH, "requirements", "thumbor.txt"),
-    python2=True)
+    os.path.join(ZULIP_PATH, "requirements", "thumbor.txt"))

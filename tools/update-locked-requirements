@@ -9,14 +9,9 @@ fi
 compile_requirements () {
     source="$1"
     output="$2"
-    python_version="$3"
 
     echo "Compiling $output"
-    if [ "$python_version" == "py2" ]; then
-        /srv/zulip-thumbor-venv/bin/pip-compile --quiet --allow-unsafe --generate-hashes --no-header --output-file "$output" "$source"
-    else
-        /srv/zulip-py3-venv/bin/pip-compile --quiet --allow-unsafe --generate-hashes --no-header --output-file "$output" "$source"
-    fi
+    /srv/zulip-py3-venv/bin/pip-compile --quiet --allow-unsafe --generate-hashes --no-header --output-file "$output" "$source"
 
     cat - "$output" <<EOF | sponge "$output"
 #
@@ -60,8 +55,6 @@ for name in pip prod mypy docs; do
     compile_requirements "requirements/$name.in" "$OUTPUT_BASE_DIR/$name.txt"
 done
 
-compile_requirements requirements/thumbor-dev.in "$OUTPUT_BASE_DIR/thumbor-dev.txt" py2
-for name in pip2 thumbor; do
-    cp "$OUTPUT_BASE_DIR/thumbor-dev.txt" "$OUTPUT_BASE_DIR/$name.txt"
-    compile_requirements "requirements/$name.in" "$OUTPUT_BASE_DIR/$name.txt" py2
-done
+compile_requirements requirements/thumbor-dev.in "$OUTPUT_BASE_DIR/thumbor-dev.txt"
+cp "$OUTPUT_BASE_DIR/thumbor-dev.txt" "$OUTPUT_BASE_DIR/thumbor.txt"
+compile_requirements "requirements/thumbor.in" "$OUTPUT_BASE_DIR/thumbor.txt"

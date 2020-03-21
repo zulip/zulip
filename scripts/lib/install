@@ -273,15 +273,9 @@ if [ -z "$NO_DIST_UPGRADE" ]; then
 fi
 
 if [ "$package_system" = apt ]; then
-    if [ "$os_id" = ubuntu ] && [ "$os_version_id" = 20.04 ]; then
-        PYTHON2="python2"
-    else
-        PYTHON2="python"
-    fi
-
     if ! apt-get install -y \
          puppet git curl wget jq \
-         "$PYTHON2" python3 python-six python3-six crudini \
+         python3 python3-six crudini \
          "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2
@@ -293,7 +287,7 @@ if [ "$package_system" = apt ]; then
 elif [ "$package_system" = yum ]; then
     if ! yum install -y \
          puppet git curl wget jq \
-         python python3 python-six python3-six crudini \
+         python3 python3-six crudini \
          "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2
