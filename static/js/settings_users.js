@@ -306,7 +306,7 @@ function open_user_info_form_modal(person) {
     if (person.is_bot) {
         // Dynamically add the owner select control in order to
         // avoid performance issues in case of large number of users.
-        const users_list = people.get_active_human_persons();
+        const users_list = people.get_active_humans();
         const owner_select = $(render_bot_owner_select({users_list: users_list}));
         owner_select.val(bot_data.get(person.user_id).owner || "");
         modal_container.find(".edit_bot_owner_container").append(owner_select);
