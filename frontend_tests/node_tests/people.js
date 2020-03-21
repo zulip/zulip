@@ -58,7 +58,7 @@ run_test('basics', () => {
 
     realm_persons = people.get_realm_persons();
     assert.equal(realm_persons.length, 1);
-    assert.equal(people.get_realm_count(), 1);
+    assert.equal(people.get_active_human_count(), 1);
 
     const full_name = 'Isaac Newton';
     const email = 'isaac@example.com';
@@ -76,7 +76,7 @@ run_test('basics', () => {
 
     assert(people.is_valid_full_name_and_user_id(full_name, 32));
     assert(people.is_known_user_id(32));
-    assert.equal(people.get_realm_count(), 1);
+    assert.equal(people.get_active_human_count(), 1);
 
     assert.equal(people.get_user_id_from_name(full_name), 32);
 
@@ -85,7 +85,7 @@ run_test('basics', () => {
     person = people.get_active_user_for_email(email);
     assert(!person);
     people.add_in_realm(isaac);
-    assert.equal(people.get_realm_count(), 2);
+    assert.equal(people.get_active_human_count(), 2);
     person = people.get_active_user_for_email(email);
     assert.equal(person.email, email);
 
@@ -101,7 +101,7 @@ run_test('basics', () => {
     people.deactivate(isaac);
     person = people.get_active_user_for_email(email);
     assert(!person);
-    assert.equal(people.get_realm_count(), 1);
+    assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), false);
 
@@ -113,6 +113,9 @@ run_test('basics', () => {
     };
     people.add_in_realm(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
+
+    // The bot doesn't add to our human count.
+    assert.equal(people.get_active_human_count(), 1);
 
     // Invalid user ID returns false and warns.
     blueslip.set_test_data('warn', 'Unexpectedly invalid user_id in user popover query: 123412');
@@ -308,7 +311,7 @@ run_test('get_people_for_stream_create', () => {
     people.add_in_realm(alice1);
     people.add_in_realm(bob);
     people.add_in_realm(alice2);
-    assert.equal(people.get_realm_count(), 4);
+    assert.equal(people.get_active_human_count(), 4);
 
     const others = people.get_people_for_stream_create();
     const expected = [
