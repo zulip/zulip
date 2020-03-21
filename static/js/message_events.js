@@ -99,6 +99,7 @@ exports.insert_new_messages = function insert_new_messages(messages, sent_by_thi
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
+    recent_topics.process_messages(messages);
 };
 
 exports.update_messages = function update_messages(events) {

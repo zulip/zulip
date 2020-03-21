@@ -99,6 +99,7 @@ declare let reactions: any;
 declare let realm_icon: any;
 declare let realm_logo: any;
 declare let recent_senders: any;
+declare let recent_topics: any;
 declare let reload: any;
 declare let reload_state: any;
 declare let reminder: any;

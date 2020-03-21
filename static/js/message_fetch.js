@@ -49,6 +49,7 @@ function process_result(data, opts) {
     activity.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
+    recent_topics.process_messages(messages);
 
     if (opts.pre_scroll_cont !== undefined) {
         opts.pre_scroll_cont(data);

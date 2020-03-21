@@ -11,6 +11,7 @@ zrequire('FetchStatus', 'js/fetch_status');
 zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('message_list');
+zrequire('recent_topics');
 zrequire('people');
 
 set_global('page_params', {
