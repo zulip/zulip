@@ -11,14 +11,19 @@
             <div class="left">
                 <div class="search-container">
                     <form id="add_new_subscription" class="form-inline" action="">
-                        <input type="text" name="stream_name" id="search_stream_name"
-                          placeholder="{{t 'Filter streams' }}" value="" autocomplete="off" />
                         {{#if can_create_streams}}
                         <input type="submit" class="create_stream_button"
                           value="+" title="{{t 'Create new stream' }} (n)"/>
                         {{/if}}
                         <div class="float-clear"></div>
                     </form>
+                </div>
+                <div class="input-append stream_name_search_section" id="stream_filter">
+                    <input type="text" name="stream_name" id="search_stream_name" autocomplete="off"
+                      placeholder="{{t 'Filter streams' }}" value="" form="add_new_subscription" />
+                    <button type="button" class="btn clear_search_button" id="clear_search_stream_name">
+                        <i class="fa fa-remove" aria-hidden="true"></i>
+                    </button>
                 </div>
                 <div class="streams-list" data-simplebar>
                 </div>
