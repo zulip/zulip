@@ -689,7 +689,7 @@ exports.get_realm_persons = function () {
     return Array.from(active_user_dict.values());
 };
 
-exports.get_active_human_persons = function () {
+exports.get_active_humans = function () {
     const humans = [];
 
     for (const user of active_user_dict.values()) {

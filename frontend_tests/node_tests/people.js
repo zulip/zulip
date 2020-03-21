@@ -142,10 +142,10 @@ run_test('basics', () => {
 
     // Reactivating issac
     people.add_in_realm(isaac);
-    const active_human_persons = people.get_active_human_persons();
-    assert.equal(active_human_persons.length, 2);
+    const active_humans = people.get_active_humans();
+    assert.equal(active_humans.length, 2);
     assert.deepEqual(
-        active_human_persons.sort((p) => p.user_id),
+        active_humans.sort((p) => p.user_id),
         [me, isaac]);
 });
 
