@@ -324,6 +324,7 @@
                 "realm_logo": false,
                 "realm_night_logo": false,
                 "recent_senders": false,
+                "recent_topics": false,
                 "reload": false,
                 "reload_state": false,
                 "reminder": false,
