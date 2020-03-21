@@ -139,7 +139,7 @@ exports.set_info = function (presences, server_timestamp) {
 };
 
 exports.update_info_for_small_realm = function () {
-    if (people.get_realm_count() >= BIG_REALM_COUNT) {
+    if (people.get_active_human_count() >= BIG_REALM_COUNT) {
         // For big realms, we don't want to bloat our buddy
         // lists with lots of long-time-inactive users.
         return;
