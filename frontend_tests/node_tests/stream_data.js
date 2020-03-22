@@ -916,35 +916,6 @@ run_test('is_subscriber_subset', () => {
     }
 });
 
-run_test('invite_streams', () => {
-    // add default stream
-    const orie = {
-        stream_id: 320,
-        name: 'Orie',
-        subscribed: true,
-    };
-
-    // clear all the data form stream_data, and people
-    stream_data.clear_subscriptions();
-    people.init();
-
-    stream_data.add_sub(orie);
-    stream_data.set_realm_default_streams([orie]);
-
-    const expected_list = ['Orie'];
-    assert.deepEqual(stream_data.invite_streams(), expected_list);
-
-    const inviter = {
-        stream_id: 25,
-        name: 'Inviter',
-        subscribed: true,
-    };
-    stream_data.add_sub(inviter);
-
-    expected_list.push('Inviter');
-    assert.deepEqual(stream_data.invite_streams(), expected_list);
-});
-
 run_test('edge_cases', () => {
     const bad_stream_ids = [555555, 99999];
 
