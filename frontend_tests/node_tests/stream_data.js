@@ -558,11 +558,17 @@ run_test('default_stream_names', () => {
     stream_data.add_sub(private_stream);
     stream_data.add_sub(general);
 
-    let names = stream_data.get_non_default_stream_names();
-    assert.deepEqual(names, ['public', 'private']);
+    const names = stream_data.get_non_default_stream_names();
+    assert.deepEqual(names.sort(), ['private', 'public']);
 
-    names = stream_data.get_default_stream_names();
-    assert.deepEqual(names, ['announce', 'general']);
+    const default_stream_ids = stream_data.get_default_stream_ids();
+    assert.deepEqual(
+        default_stream_ids.sort(),
+        [
+            announce.stream_id,
+            general.stream_id,
+        ]
+    );
 });
 
 run_test('delete_sub', () => {
