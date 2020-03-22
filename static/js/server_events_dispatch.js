@@ -289,7 +289,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (was_subscribed) {
                     stream_list.remove_sidebar_row(stream.stream_id);
                 }
-                settings_streams.remove_default_stream(stream.stream_id);
+                settings_streams.update_default_streams_table();
                 stream_data.remove_default_stream(stream.stream_id);
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {
                     page_params.realm_notifications_stream_id = -1;
