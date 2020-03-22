@@ -420,6 +420,7 @@ function select_from_suggestions(item) {
             });
             tah.select();
         }, {item: item});
+        casper.click(".default-stream-form #do_submit_stream");
     });
 }
 
