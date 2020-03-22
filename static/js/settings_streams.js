@@ -119,9 +119,6 @@ exports.build_page = function () {
         highlighter: function (item) {
             return typeahead_helper.render_typeahead_item({ primary: item });
         },
-        updater: function (stream_name) {
-            make_stream_default(stream_name);
-        },
     });
 
     $(".default-stream-form").on("click", "#do_submit_stream", function (e) {
