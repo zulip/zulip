@@ -333,26 +333,30 @@ exports.subscribed_streams = function () {
 };
 
 exports.get_invite_stream_data = function () {
-    const filter_stream_data = function (sub) {
+    function get_data(sub) {
         return {
             name: sub.name,
             stream_id: sub.stream_id,
             invite_only: sub.invite_only,
             default_stream: default_stream_ids.has(sub.stream_id),
         };
-    };
-    const invite_stream_data = exports.subscribed_subs().map(filter_stream_data);
-    const default_stream_data = page_params.realm_default_streams.map(filter_stream_data);
+    }
 
-    // Since, union doesn't work on array of objects we are using filter
-    const is_included = new Set();
-    const streams = default_stream_data.concat(invite_stream_data).filter(sub => {
-        if (is_included.has(sub.name)) {
-            return false;
+    const streams = [];
+
+    // Invite users to all default streams...
+    for (const stream_id of default_stream_ids) {
+        const sub = subs_by_stream_id.get(stream_id);
+        streams.push(get_data(sub));
+    }
+
+    // ...plus all your subscribed streams (avoiding repeats).
+    for (const sub of exports.subscribed_subs()) {
+        if (!default_stream_ids.has(sub.stream_id)) {
+            streams.push(get_data(sub));
         }
-        is_included.add(sub.name);
-        return true;
-    });
+    }
+
     return streams;
 };
 
