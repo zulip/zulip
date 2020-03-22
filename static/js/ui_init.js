@@ -410,7 +410,8 @@ exports.initialize_everything = function () {
     const stream_data_params = pop_fields(
         'subscriptions',
         'unsubscribed',
-        'never_subscribed'
+        'never_subscribed',
+        'realm_default_streams'
     );
 
     const user_groups_params = pop_fields(

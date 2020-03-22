@@ -584,7 +584,6 @@ exports.all_topics_in_cache = function (sub) {
 };
 
 exports.set_realm_default_streams = function (realm_default_streams) {
-    page_params.realm_default_streams = realm_default_streams;
     default_stream_ids.clear();
 
     realm_default_streams.forEach(function (stream) {
@@ -818,17 +817,14 @@ exports.initialize = function (params) {
     const subscriptions = params.subscriptions;
     const unsubscribed = params.unsubscribed;
     const never_subscribed = params.never_subscribed;
+    const realm_default_streams = params.realm_default_streams;
 
     /*
         We also consume some data directly from `page_params`.
         This data can be accessed by any other module,
         and we consider the authoritative source to be
         `page_params`.  Some of this data should eventually
-        be fully handled by stream_data.  In particular,
-        the way we handle `page_params.realm_default_streams`
-        is kinda janky, because we maintain our own data
-        structure, but then some legacy modules still
-        refer directly to `page_params`.  We should fix that.
+        be fully handled by stream_data.
     */
 
     color_data.claim_colors(subscriptions);
@@ -843,7 +839,7 @@ exports.initialize = function (params) {
         });
     }
 
-    exports.set_realm_default_streams(page_params.realm_default_streams);
+    exports.set_realm_default_streams(realm_default_streams);
 
     populate_subscriptions(subscriptions, true, true);
     populate_subscriptions(unsubscribed, false, true);
@@ -869,9 +865,6 @@ exports.initialize = function (params) {
 };
 
 exports.remove_default_stream = function (stream_id) {
-    page_params.realm_default_streams = page_params.realm_default_streams.filter(
-        stream => stream.stream_id !== stream_id
-    );
     default_stream_ids.delete(stream_id);
 };
 
