@@ -12,8 +12,7 @@
               setting_name=this
               is_checked=(lookup ../page_params this)
               label=(lookup ../settings_label this)
-              realm_push_notifications_enabled=(lookup ../page_params "realm_push_notifications_enabled")
-              push_notifications_tooltip=(lookup ../push_notification_tooltip this)}}
+              show_push_notifications_tooltip=(lookup ../show_push_notifications_tooltip this)}}
             {{/each}}
 
             <p class="notification-settings-note">
@@ -30,8 +29,7 @@
               setting_name=this
               is_checked=(lookup ../page_params this)
               label=(lookup ../settings_label this)
-              realm_push_notifications_enabled=(lookup ../page_params "realm_push_notifications_enabled")
-              push_notifications_tooltip=(lookup ../push_notification_tooltip this)}}
+              show_push_notifications_tooltip=(lookup ../show_push_notifications_tooltip this)}}
             {{/each}}
         </div>
 
@@ -81,8 +79,7 @@
               setting_name=this
               is_checked=(lookup ../page_params this)
               label=(lookup ../settings_label this)
-              realm_push_notifications_enabled=(lookup ../page_params "realm_push_notifications_enabled")
-              push_notifications_tooltip=(lookup ../push_notification_tooltip this)}}
+              show_push_notifications_tooltip=(lookup ../show_push_notifications_tooltip this)}}
             {{/each}}
 
             <h5>{{t "Email" }}</h5>

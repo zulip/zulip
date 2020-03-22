@@ -114,8 +114,8 @@ exports.build_page = function () {
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         notification_settings: settings_notifications.all_notifications.settings,
         desktop_icon_count_display_values: settings_notifications.desktop_icon_count_display_values,
-        push_notification_tooltip:
-            settings_notifications.all_notifications.push_notification_tooltip,
+        show_push_notifications_tooltip:
+            settings_notifications.all_notifications.show_push_notifications_tooltip,
         display_settings: settings_config.get_all_display_settings(),
         user_can_change_name: settings_account.user_can_change_name(),
         user_can_change_avatar: settings_account.user_can_change_avatar(),

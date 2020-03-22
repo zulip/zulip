@@ -3,10 +3,14 @@ zrequire('muting');
 zrequire('people');
 zrequire('stream_data');
 zrequire('unread');
+
+set_global('page_params', {
+    realm_push_notifications_enabled: false,
+});
 zrequire('settings_notifications');
+
 const FoldDict = zrequire('fold_dict').FoldDict;
 
-set_global('page_params', {});
 set_global('blueslip', {});
 set_global('narrow_state', {});
 set_global('current_msg_list', {});
