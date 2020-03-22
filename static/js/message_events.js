@@ -229,7 +229,7 @@ exports.update_messages = function update_messages(events) {
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we call set_message_topic.
-                topic_data.remove_message({
+                stream_topic_history.remove_message({
                     stream_id: msg.stream_id,
                     topic_name: msg.topic,
                 });
@@ -251,7 +251,7 @@ exports.update_messages = function update_messages(events) {
                 }
 
                 // Add the recent topics entry for the new stream/topics.
-                topic_data.add_message({
+                stream_topic_history.add_message({
                     stream_id: msg.stream_id,
                     topic_name: msg.topic,
                     message_id: msg.id,

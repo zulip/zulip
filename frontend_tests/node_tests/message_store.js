@@ -12,7 +12,7 @@ set_global('alert_words', {
     process_message: noop,
 });
 
-set_global('topic_data', {
+set_global('stream_topic_history', {
     add_message: noop,
 });
 

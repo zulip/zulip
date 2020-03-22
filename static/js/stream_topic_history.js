@@ -1,6 +1,6 @@
 const FoldDict = require('./fold_dict').FoldDict;
 
-const stream_dict = new Map(); // stream_id -> topic_history object
+const stream_dict = new Map(); // stream_id -> per_stream_history object
 const fetched_stream_ids = new Set();
 
 exports.is_complete_for_stream_id = (stream_id) => {
@@ -42,12 +42,13 @@ exports.stream_has_topics = function (stream_id) {
     return history.has_topics();
 };
 
-exports.topic_history = function (stream_id) {
+exports.per_stream_history = function (stream_id) {
     /*
         Each stream has a dictionary of topics.
         The main getter of this object is
-        get_recent_names, and we just sort on
-        the fly every time we are called.
+        get_recent_topic_names, and we just
+        sort on the fly every time we are
+        called.
     */
 
     const topics = new FoldDict();
@@ -59,17 +60,17 @@ exports.topic_history = function (stream_id) {
     };
 
     self.add_or_update = function (opts) {
-        const name = opts.name;
+        const topic_name = opts.topic_name;
         let message_id = opts.message_id || 0;
 
         message_id = parseInt(message_id, 10);
 
-        const existing = topics.get(name);
+        const existing = topics.get(topic_name);
 
         if (!existing) {
-            topics.set(opts.name, {
+            topics.set(opts.topic_name, {
                 message_id: message_id,
-                pretty_name: name,
+                pretty_name: topic_name,
                 historical: false,
                 count: 1,
             });
@@ -82,7 +83,7 @@ exports.topic_history = function (stream_id) {
 
         if (message_id > existing.message_id) {
             existing.message_id = message_id;
-            existing.pretty_name = name;
+            existing.pretty_name = topic_name;
         }
     };
 
@@ -114,10 +115,10 @@ exports.topic_history = function (stream_id) {
         // client can maintain for newer topics.
 
         for (const obj of server_history) {
-            const name = obj.name;
+            const topic_name = obj.topic_name;
             const message_id = obj.max_id;
 
-            const existing = topics.get(name);
+            const existing = topics.get(topic_name);
 
             if (existing) {
                 if (!existing.historical) {
@@ -131,15 +132,15 @@ exports.topic_history = function (stream_id) {
             // the topic for the first time, or we are getting
             // more current data for it.
 
-            topics.set(name, {
+            topics.set(topic_name, {
                 message_id: message_id,
-                pretty_name: name,
+                pretty_name: topic_name,
                 historical: true,
             });
         }
     };
 
-    self.get_recent_names = function () {
+    self.get_recent_topic_names = function () {
         const my_recents = Array.from(topics.values());
 
         const missing_topics = unread.get_missing_topics({
@@ -163,7 +164,7 @@ exports.topic_history = function (stream_id) {
 
 exports.remove_message = function (opts) {
     const stream_id = opts.stream_id;
-    const name = opts.topic_name;
+    const topic_name = opts.topic_name;
     const history = stream_dict.get(stream_id);
 
     // This is the special case of "removing" a message from
@@ -174,14 +175,14 @@ exports.remove_message = function (opts) {
     }
 
     // This is the normal case of an incoming message.
-    history.maybe_remove(name);
+    history.maybe_remove(topic_name);
 };
 
 exports.find_or_create = function (stream_id) {
     let history = stream_dict.get(stream_id);
 
     if (!history) {
-        history = exports.topic_history(stream_id);
+        history = exports.per_stream_history(stream_id);
         stream_dict.set(stream_id, history);
     }
 
@@ -191,12 +192,12 @@ exports.find_or_create = function (stream_id) {
 exports.add_message = function (opts) {
     const stream_id = opts.stream_id;
     const message_id = opts.message_id;
-    const name = opts.topic_name;
+    const topic_name = opts.topic_name;
 
     const history = exports.find_or_create(stream_id);
 
     history.add_or_update({
-        name: name,
+        topic_name: topic_name,
         message_id: message_id,
     });
 };
@@ -226,10 +227,10 @@ exports.get_server_history = function (stream_id, on_success) {
     });
 };
 
-exports.get_recent_names = function (stream_id) {
+exports.get_recent_topic_names = function (stream_id) {
     const history = exports.find_or_create(stream_id);
 
-    return history.get_recent_names();
+    return history.get_recent_topic_names();
 };
 
 exports.reset = function () {
@@ -238,4 +239,4 @@ exports.reset = function () {
     fetched_stream_ids.clear();
 };
 
-window.topic_data = exports;
+window.stream_topic_history = exports;

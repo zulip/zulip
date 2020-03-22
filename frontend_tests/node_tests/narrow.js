@@ -213,7 +213,7 @@ run_test('show_invalid_narrow_message', () => {
 
 run_test('narrow_to_compose_target', () => {
     set_global('compose_state', {});
-    set_global('topic_data', {});
+    set_global('stream_topic_history', {});
     const args = {called: false};
     const activate_backup = narrow.activate;
     narrow.activate = function (operators, opts) {
@@ -239,7 +239,7 @@ run_test('narrow_to_compose_target', () => {
     global.compose_state.get_message_type = () => 'stream';
     stream_data.add_sub({name: 'ROME', stream_id: 99});
     global.compose_state.stream_name = () => 'ROME';
-    global.topic_data.get_recent_names = () => ['one', 'two', 'three'];
+    global.stream_topic_history.get_recent_topic_names = () => ['one', 'two', 'three'];
 
     // Test with existing topic
     global.compose_state.topic = () => 'one';

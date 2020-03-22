@@ -4,7 +4,7 @@ zrequire('muting');
 zrequire('people');
 zrequire('recent_senders');
 zrequire('stream_data');
-zrequire('topic_data');
+zrequire('stream_topic_history');
 zrequire('unread');
 
 set_global('alert_words', {});
@@ -75,7 +75,7 @@ run_test('update_messages', () => {
     assert.equal(original_message.unread, true);
 
     assert.deepEqual(
-        topic_data.get_recent_names(denmark.stream_id),
+        stream_topic_history.get_recent_topic_names(denmark.stream_id),
         ['lunch']
     );
 

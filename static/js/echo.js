@@ -192,14 +192,14 @@ exports.edit_locally = function (message, request) {
 
     if (request.new_topic !== undefined) {
         const new_topic = request.new_topic;
-        topic_data.remove_message({
+        stream_topic_history.remove_message({
             stream_id: message.stream_id,
             topic_name: message.topic,
         });
 
         message.topic = new_topic;
 
-        topic_data.add_message({
+        stream_topic_history.add_message({
             stream_id: message.stream_id,
             topic_name: message.topic,
             message_id: message.id,

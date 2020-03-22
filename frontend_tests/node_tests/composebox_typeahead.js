@@ -21,7 +21,7 @@ set_global('md5', function (s) {
 stream_data.update_calculated_fields = () => {};
 stream_data.set_filter_out_inactives = () => false;
 
-set_global('topic_data', {
+set_global('stream_topic_history', {
 });
 
 set_global('message_store', {
@@ -281,7 +281,7 @@ const make_emoji = function (emoji_dict) {
 };
 
 run_test('topics_seen_for', () => {
-    topic_data.get_recent_names = (stream_id) => {
+    stream_topic_history.get_recent_topic_names = (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
         return ['With Twisted Metal', 'acceptance', 'civil fears'];
     };
@@ -560,7 +560,7 @@ run_test('initialize', () => {
     let subject_typeahead_called = false;
     $('#stream_message_recipient_topic').typeahead = function (options) {
         const topics = ['<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice'];
-        topic_data.get_recent_names = (stream_id) => {
+        stream_topic_history.get_recent_topic_names = (stream_id) => {
             assert.equal(stream_id, sweden_stream.stream_id);
             return topics;
         };
@@ -1282,7 +1282,8 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("#**Sweden>some topic** >", false); // Already completed a topic.
 
     // topic_list
-    const sweden_topics_to_show = topic_data.get_recent_names(1); //includes "more ice"
+    // includes "more ice"
+    const sweden_topics_to_show = stream_topic_history.get_recent_topic_names(1);
     assert_typeahead_equals("#**Sweden>more ice", sweden_topics_to_show);
     sweden_topics_to_show.push('totally new topic');
     assert_typeahead_equals("#**Sweden>totally new topic", sweden_topics_to_show);

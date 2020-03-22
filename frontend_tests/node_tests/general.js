@@ -98,7 +98,7 @@ alert_words.process_message = noop;
 // We can also bring in real code:
 zrequire('recent_senders');
 zrequire('unread');
-zrequire('topic_data');
+zrequire('stream_topic_history');
 
 // And finally require the module that we will test directly:
 zrequire('message_store');
@@ -118,7 +118,7 @@ run_test('message_store', () => {
     assert.equal(message, in_message);
 
     // There are more side effects.
-    const topic_names = topic_data.get_recent_names(denmark_stream.stream_id);
+    const topic_names = stream_topic_history.get_recent_topic_names(denmark_stream.stream_id);
     assert.deepEqual(topic_names, ['copenhagen']);
 });
 

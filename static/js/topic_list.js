@@ -129,7 +129,7 @@ exports.widget = function (parent_elem, my_stream_id) {
 
         const is_showing_all_possible_topics =
             list_info.items.length === num_possible_topics &&
-            topic_data.is_complete_for_stream_id(my_stream_id);
+            stream_topic_history.is_complete_for_stream_id(my_stream_id);
 
         const attrs = [
             ['class', 'topic-list'],
@@ -256,7 +256,7 @@ exports.zoom_in = function () {
     const spinner = true;
     active_widget.build(spinner);
 
-    topic_data.get_server_history(stream_id, on_success);
+    stream_topic_history.get_server_history(stream_id, on_success);
 };
 
 exports.initialize = function () {

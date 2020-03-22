@@ -90,7 +90,7 @@ import "../upload.js";
 import "../color_data.js";
 import "../stream_color.js";
 import "../stream_data.js";
-import "../topic_data.js";
+import "../stream_topic_history.js";
 import "../stream_muting.js";
 import "../stream_events.js";
 import "../stream_create.js";

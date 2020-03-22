@@ -337,7 +337,7 @@ function get_topic_suggestions(last, operators) {
         return [];
     }
 
-    let topics = topic_data.get_recent_names(stream_id);
+    let topics = stream_topic_history.get_recent_topic_names(stream_id);
 
     if (!topics || !topics.length) {
         return [];

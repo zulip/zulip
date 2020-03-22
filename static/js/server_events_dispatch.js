@@ -28,7 +28,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         // So double marking something as read would not occur
         unread_ops.process_read_messages_event([msg_id]);
         if (event.message_type === 'stream') {
-            topic_data.remove_message({
+            stream_topic_history.remove_message({
                 stream_id: event.stream_id,
                 topic_name: event.topic,
             });
