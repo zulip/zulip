@@ -106,6 +106,9 @@ casper.then(function () {
     casper.waitUntilVisible(".message_edit_notice", function () {
         common.keypress(37);
     });
+});
+
+casper.then(function () {
     casper.waitUntilVisible(".message_edit_content", function () {
         var fieldVal = common.get_form_field_value('.message_edit_content');
         casper.test.assertEquals(fieldVal, "test edited pm", "Opened editing last own message");
