@@ -101,9 +101,9 @@ run_test('basics', () => {
     assert.equal(stream_data.maybe_get_stream_name(42), undefined);
 
     stream_data.set_realm_default_streams([denmark]);
-    assert(stream_data.get_default_status('Denmark'));
-    assert(!stream_data.get_default_status('social'));
-    assert(!stream_data.get_default_status('UNKNOWN'));
+    assert(stream_data.is_default_stream_id(denmark.stream_id));
+    assert(!stream_data.is_default_stream_id(social.stream_id));
+    assert(!stream_data.is_default_stream_id(999999));
 });
 
 run_test('renames', () => {
@@ -745,7 +745,7 @@ run_test('remove_default_stream', () => {
     stream_data.add_sub(remove_me);
     stream_data.set_realm_default_streams([remove_me]);
     stream_data.remove_default_stream(remove_me.stream_id);
-    assert(!stream_data.get_default_status('remove_me'));
+    assert(!stream_data.is_default_stream_id(remove_me.stream_id));
     assert.equal(page_params.realm_default_streams.length, 0);
 });
 
