@@ -8,20 +8,26 @@
     white-space: nowrap;
 }
 
-.table-striped tr.recently_active td {
-    background-color: hsl(120, 97%, 83%);
-}
+.table-striped {
+    tr.recently_active {
+        td {
+            background-color: hsl(120, 97%, 83%);
+        }
 
-.table-striped tr.recently_active:nth-child(odd) td {
-    background-color: hsl(120, 70%, 76%);
-}
+        &:nth-child(odd) td {
+            background-color: hsl(120, 70%, 76%);
+        }
+    }
 
-.table-striped tr.long_inactive td {
-    background-color: hsl(0, 97%, 83%);
-}
+    tr.long_inactive {
+        td {
+            background-color: hsl(0, 97%, 83%);
+        }
 
-.table-striped tr.long_inactive:nth-child(odd) td {
-    background-color: hsl(0, 70%, 76%);
+        &:nth-child(odd) td {
+            background-color: hsl(0, 70%, 76%);
+        }
+    }
 }
 
 td.number {
