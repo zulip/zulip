@@ -17,10 +17,13 @@ exports.maybe_disable_widgets = function () {
         .find("input:not(.search), button, select").attr("disabled", true);
 };
 
-exports.build_default_stream_table = function (streams_data) {
+exports.build_default_stream_table = function () {
     const table = $("#admin_default_streams_table").expectOne();
 
-    const streams_list = list_render.create(table, streams_data, {
+    const stream_ids = stream_data.get_default_stream_ids();
+    const subs = stream_ids.map(stream_data.get_sub_by_id);
+
+    const streams_list = list_render.create(table, subs, {
         name: "default_streams_list",
         modifier: function (item) {
             const row = $(render_admin_default_streams_list({
@@ -50,8 +53,7 @@ exports.update_default_streams_table = function () {
     if (/#*organization/.test(window.location.hash) ||
         /#*settings/.test(window.location.hash)) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
-        exports.build_default_stream_table(
-            page_params.realm_default_streams);
+        exports.build_default_stream_table();
     }
 };
 
