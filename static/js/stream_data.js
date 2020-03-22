@@ -594,10 +594,8 @@ exports.set_realm_default_streams = function (realm_default_streams) {
     });
 };
 
-exports.get_default_stream_names = function () {
-    const streams = Array.from(default_stream_ids).map(exports.get_sub_by_id);
-    const default_stream_names = streams.map(stream => stream.name);
-    return default_stream_names;
+exports.get_default_stream_ids = function () {
+    return Array.from(default_stream_ids);
 };
 
 exports.get_default_status = function (stream_name) {
