@@ -34,8 +34,8 @@ exports.build_default_stream_table = function () {
         },
         filter: {
             element: table.closest(".settings-section").find(".search"),
-            predicate: function (item, value) {
-                return item.name.toLowerCase().includes(value);
+            predicate: function (item, query) {
+                return item.name.toLowerCase().includes(query.toLowerCase());
             },
             onupdate: function () {
                 ui.reset_scrollbar(table);
