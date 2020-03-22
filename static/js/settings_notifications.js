@@ -54,10 +54,10 @@ exports.all_notifications = {
         mobile_notification_settings: mobile_notification_settings,
         email_notification_settings: email_notification_settings,
     },
-    push_notification_tooltip: {
-        enable_stream_push_notifications: true,
-        enable_offline_push_notifications: true,
-        enable_online_push_notifications: true,
+    show_push_notifications_tooltip: {
+        enable_stream_push_notifications: !page_params.realm_push_notifications_enabled,
+        enable_offline_push_notifications: !page_params.realm_push_notifications_enabled,
+        enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
     },
 };
 
