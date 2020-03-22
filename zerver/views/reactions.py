@@ -26,7 +26,7 @@ def create_historical_message(user_profile: UserProfile, message: Message) -> No
 def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: int,
                  emoji_name: str=REQ(),
                  emoji_code: Optional[str]=REQ(default=None),
-                 reaction_type: str=REQ(default="unicode_emoji")) -> HttpResponse:
+                 reaction_type: Optional[str]=REQ(default=None)) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id)
 
     if emoji_code is None:
@@ -36,6 +36,10 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
         # look up the code using the current name->code mapping.
         emoji_code = emoji_name_to_emoji_code(message.sender.realm,
                                               emoji_name)[0]
+
+    if reaction_type is None:
+        reaction_type = emoji_name_to_emoji_code(message.sender.realm,
+                                                 emoji_name)[1]
 
     if Reaction.objects.filter(user_profile=user_profile,
                                message=message,
