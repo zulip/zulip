@@ -2,7 +2,7 @@
     <form class="notification-settings-form">
         <div class="notification-reminder tip">{{#tr this }}Desktop notifications are triggered for messages that are offscreen when they arrive. Mobile and email notifications are triggered once you have been away from Zulip for a few minutes.{{/tr}}</div>
 
-        <div id="stream-notify-settings">
+        <div id="stream-notify-settings" class="subsection-parent">
             <h3 class="inline-block">{{t "Stream messages" }}</h3>
             <div class="alert-notification" id="stream-notify-settings-status"></div>
             <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
@@ -20,7 +20,7 @@
             </p>
         </div>
 
-        <div id="pm-mention-notify-settings">
+        <div id="pm-mention-notify-settings" class="subsection-parent">
             <h3 class="inline-block">{{t "Private messages, @-mentions, and alert words" }}</h3>
             <div class="alert-notification" id="pm-mention-notify-settings-status"></div>
 
@@ -33,7 +33,7 @@
             {{/each}}
         </div>
 
-        <div id="other_notifications" class="m-10 inline-block">
+        <div id="other_notifications" class="m-10 inline-block subsection-parent">
 
             <h3 class="inline-block">{{t "Other notification settings" }}</h3>
             <div class="alert-notification" id="other-notify-settings-status"></div>
