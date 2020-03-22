@@ -746,7 +746,6 @@ run_test('remove_default_stream', () => {
     stream_data.set_realm_default_streams([remove_me]);
     stream_data.remove_default_stream(remove_me.stream_id);
     assert(!stream_data.is_default_stream_id(remove_me.stream_id));
-    assert.equal(page_params.realm_default_streams.length, 0);
 });
 
 run_test('canonicalized_name', () => {
@@ -816,6 +815,9 @@ run_test('initialize', () => {
             stream_id: 2003,
         }];
 
+        params.realm_default_streams = [
+        ];
+
         return params;
     }
 
@@ -857,6 +859,7 @@ run_test('filter inactives', () => {
     params.unsubscribed = [];
     params.never_subscribed = [];
     params.subscriptions = [];
+    params.realm_default_streams = [];
 
     stream_data.initialize(params);
     assert(!stream_data.is_filtering_inactives());
