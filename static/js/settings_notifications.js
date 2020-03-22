@@ -41,7 +41,7 @@ const notification_settings_status = [
     {status_label: "stream-notify-settings-status", settings: stream_notification_settings},
 ];
 
-exports.all_notification_settings_labels = other_notification_settings.concat(
+exports.all_notification_settings = other_notification_settings.concat(
     pm_mention_notification_settings,
     stream_notification_settings
 );
@@ -138,7 +138,7 @@ exports.set_up = function () {
 };
 
 exports.update_page = function () {
-    for (const setting of exports.all_notification_settings_labels) {
+    for (const setting of exports.all_notification_settings) {
         if (setting === 'enable_offline_push_notifications'
             && !page_params.realm_push_notifications_enabled) {
             // If push notifications are disabled at the realm level,
