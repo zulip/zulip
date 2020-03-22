@@ -80,8 +80,7 @@ tr.admin td:first-child {
 }
 
 .scrub-realm-form {
-    position: relative;
-    top: -50px;
+    @extend .support-discount-form;
 }
 
 .support-search-button {
@@ -90,8 +89,7 @@ tr.admin td:first-child {
 }
 
 .support-submit-button {
+    @extend .support-search-button;
     position: relative;
     top: -5px;
-    border-color: hsl(0, 0%, 83%);
-    border-radius: 2px;
 }
