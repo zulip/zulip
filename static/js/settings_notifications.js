@@ -100,17 +100,8 @@ exports.set_up = function () {
     for (const setting of notification_settings_status) {
         for (const sub_setting of setting.settings) {
             $("#" + sub_setting).change(function () {
-                let value;
-
-                // `notification_sound` and `desktop_icon_count_display` are not booleans.
-                if (sub_setting === "notification_sound") {
-                    value = $(this).val();
-                } else if (sub_setting === "desktop_icon_count_display") {
-                    value = parseInt($(this).val(), 10);
-                } else {
-                    value = $(this).prop('checked');
-                }
-                change_notification_setting(sub_setting, value,
+                change_notification_setting(sub_setting,
+                                            settings_org.get_input_element_value(this),
                                             "#" + setting.status_label);
             });
         }
