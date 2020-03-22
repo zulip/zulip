@@ -1,5 +1,5 @@
-// In theory, this group of functions should apply the account-level
-// defaults, however, they are only called after a manual override, so
+// In theory, this function should apply the account-level defaults,
+// however, they are only called after a manual override, so
 // doing so is unnecessary with the current code.  Ideally, we'd do a
 // refactor to address that, however.
 function update_stream_setting(sub, value, setting) {
