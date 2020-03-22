@@ -149,10 +149,10 @@ const funcs = {
             if (!overlays.lightbox_open()) {
                 return;
             }
-            if (e.key === "Z" || e.key === '+') {
+            if (e.key === "Z" || e.key === '+' || e.key === 'ArrowUp') {
                 funcs.setZoom(meta, '+');
                 funcs.displayImage(canvas, context, meta);
-            } else if (e.key === "z" || e.key === '-') {
+            } else if (e.key === "z" || e.key === '-' || e.key === 'ArrowDown') {
                 funcs.setZoom(meta, '-');
                 funcs.displayImage(canvas, context, meta);
             } else if (e.key === 'v') {
