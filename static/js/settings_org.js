@@ -525,6 +525,23 @@ exports.change_save_button_state = function ($element, state) {
     show_hide_element($element, is_show, 800);
 };
 
+exports.get_input_element_value = function (input_elem) {
+    input_elem = $(input_elem);
+    const input_type = input_elem.data("setting-widget-type");
+    if (input_type) {
+        if (input_type === 'bool') {
+            return input_elem.prop('checked');
+        }
+        if (input_type === 'text') {
+            return input_elem.val().trim();
+        }
+        if (input_type === 'integer') {
+            return parseInt(input_elem.val().trim(), 10);
+        }
+    }
+    return null;
+};
+
 exports.set_up = function () {
     exports.build_page();
     exports.maybe_disable_widgets();
@@ -770,20 +787,10 @@ exports.build_page = function () {
         for (let input_elem of properties_elements) {
             input_elem = $(input_elem);
             if (check_property_changed(input_elem)) {
-                const input_type = input_elem.data("setting-widget-type");
-                if (input_type) {
+                const input_value = exports.get_input_element_value(input_elem);
+                if (input_value) {
                     const property_name = input_elem.attr('id').replace("id_realm_", "");
-                    if (input_type === 'bool') {
-                        data[property_name] = JSON.stringify(input_elem.prop('checked'));
-                        continue;
-                    }
-                    if (input_type === 'text') {
-                        data[property_name] = JSON.stringify(input_elem.val().trim());
-                        continue;
-                    }
-                    if (input_type === 'integer') {
-                        data[property_name] = JSON.stringify(parseInt(input_elem.val().trim(), 10));
-                    }
+                    data[property_name] = JSON.stringify(input_value);
                 }
             }
         }
