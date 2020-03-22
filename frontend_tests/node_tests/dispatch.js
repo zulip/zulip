@@ -1181,7 +1181,7 @@ with_overrides(function (override) {
     global.with_stub(function (stub) {
         override('subs.remove_stream', noop);
         override('stream_data.delete_sub', noop);
-        override('settings_streams.remove_default_stream', noop);
+        override('settings_streams.update_default_streams_table', noop);
         override('stream_data.remove_default_stream', noop);
 
         override('stream_data.get_sub_by_id', function (id) {

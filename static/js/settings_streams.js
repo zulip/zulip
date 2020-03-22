@@ -18,10 +18,6 @@ exports.maybe_disable_widgets = function () {
 };
 
 exports.build_default_stream_table = function (streams_data) {
-    const self = {};
-
-    self.row_dict = new Map();
-
     const table = $("#admin_default_streams_table").expectOne();
 
     const streams_list = list_render.create(table, streams_data, {
@@ -31,7 +27,6 @@ exports.build_default_stream_table = function (streams_data) {
                 stream: item,
                 can_modify: page_params.is_admin,
             }));
-            self.row_dict.set(item.stream_id, row);
             return row;
         },
         filter: {
@@ -49,30 +44,13 @@ exports.build_default_stream_table = function (streams_data) {
     streams_list.sort("alphabetic", "name");
 
     loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
-
-    self.remove = function (stream_id) {
-        if (self.row_dict.has(stream_id)) {
-            const row = self.row_dict.get(stream_id);
-            row.remove();
-        }
-    };
-
-    return self;
-};
-
-let default_stream_table;
-
-exports.remove_default_stream = function (stream_id) {
-    if (default_stream_table) {
-        default_stream_table.remove(stream_id);
-    }
 };
 
 exports.update_default_streams_table = function () {
     if (/#*organization/.test(window.location.hash) ||
         /#*settings/.test(window.location.hash)) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
-        default_stream_table = exports.build_default_stream_table(
+        exports.build_default_stream_table(
             page_params.realm_default_streams);
     }
 };
