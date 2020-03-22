@@ -78,9 +78,9 @@ function make_stream_default(stream_name) {
     });
 }
 
-exports.delete_default_stream = function (stream_name, default_stream_row, alert_element) {
+exports.delete_default_stream = function (stream_id, default_stream_row, alert_element) {
     channel.del({
-        url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
+        url: "/json/default_streams" + "?" + $.param({ stream_id: stream_id }),
         error: function (xhr) {
             ui_report.generic_row_button_error(xhr, alert_element);
         },
@@ -135,8 +135,8 @@ exports.build_page = function () {
 
     $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
         const row = $(this).closest(".default_stream_row");
-        const stream_name = row.attr("id");
-        exports.delete_default_stream(stream_name, row, $(e.target));
+        const stream_id = parseInt(row.attr("data-stream-id"), 10);
+        exports.delete_default_stream(stream_id, row, $(e.target));
     });
 };
 
