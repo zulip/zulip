@@ -1208,7 +1208,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.login_user(user_profile)
 
         stream_name = 'stream ADDED via api'
-        ensure_stream(user_profile.realm, stream_name)
+        stream = ensure_stream(user_profile.realm, stream_name)
         result = self.client_post('/json/default_streams', dict(stream_name=stream_name))
         self.assert_json_success(result)
         self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
@@ -1237,13 +1237,13 @@ class DefaultStreamTest(ZulipTestCase):
         self.assertTrue(len(other_streams) > 0)
 
         # and remove it
-        result = self.client_delete('/json/default_streams', dict(stream_name=stream_name))
+        result = self.client_delete('/json/default_streams', dict(stream_id=stream.id))
         self.assert_json_success(result)
         self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
 
         # Test admin can't add unsubscribed private stream
         stream_name = "private_stream"
-        self.make_stream(stream_name, invite_only=True)
+        stream = self.make_stream(stream_name, invite_only=True)
         self.subscribe(self.example_user('iago'), stream_name)
         result = self.client_post('/json/default_streams', dict(stream_name=stream_name))
         self.assert_json_error(result, "Invalid stream name '%s'" % (stream_name,))
@@ -1255,7 +1255,7 @@ class DefaultStreamTest(ZulipTestCase):
 
         # Test admin can remove unsubscribed private stream
         self.unsubscribe(user_profile, stream_name)
-        result = self.client_delete('/json/default_streams', dict(stream_name=stream_name))
+        result = self.client_delete('/json/default_streams', dict(stream_id=stream.id))
         self.assert_json_success(result)
         self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
 
