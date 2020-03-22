@@ -60,3 +60,10 @@ pip-tools
 https://github.com/zulip/zulint/archive/aaed679f1ad38b230090eadd3870b7682500f60c.zip#egg=zulint==0.0.1
 
 -r mypy.in
+
+# These modules are built in later versions of python and will generate difference in locked files
+# if executed with python version > 3.6 so despite being dependent packages they have to be added separately.
+# built-in python > 3.7 needed by jsonschema
+importlib-metadata
+# built-in python > 3.6 needed by cfn-lint
+importlib-resources
