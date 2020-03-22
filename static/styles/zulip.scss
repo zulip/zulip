@@ -392,12 +392,30 @@ li,
     display: block;
 }
 
+.copy_messages_markdown,
+.copy_messages_markdown:focus {
+    background-color: hsl(0, 0%, 100%);
+    height: 20px;
+    width: 15px;
+    padding: 5px 10px;
+    border: none;
+    position: relative;
+    top: 28px;
+    left: -5px;
+    margin-top: -24px;
+    display: block;
+}
+
 #clipboard_image {
     margin-top: -5px;
     margin-left: -8px;
 }
 
 .copy_message:hover svg path {
+    fill: hsl(0, 0%, 0%);
+}
+
+.copy_messages_markdown:hover svg path {
     fill: hsl(0, 0%, 0%);
 }
 
@@ -617,6 +635,17 @@ td.pointer {
     display: none;
 }
 
+.alert-grp {
+    position: relative;
+    font-size: 14px;
+    color: hsl(170, 48%, 54%);
+    z-index: 999;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-weight: 400;
+    display: none;
+}
+
 .private-message .alert-msg {
     background-color: hsl(192, 20%, 95%);
 }
@@ -644,6 +673,15 @@ td.pointer {
     }
 
     > .reaction_button {
+        display: inline-block;
+        position: relative;
+        color: hsl(0, 0%, 73%);
+        &:hover {
+            color: hsl(200, 100%, 40%);
+        }
+    }
+
+    > .selection_button {
         display: inline-block;
         position: relative;
         color: hsl(0, 0%, 73%);
@@ -1004,6 +1042,29 @@ td.pointer {
         1px 1px 0px 0px hsl(215, 47%, 50%),
         -1px 1px 0px 0px hsl(215, 47%, 50%),
         1px -1px 0px 0px hsl(215, 47%, 50%);
+}
+
+.copy_selected_message .messagebox-content {
+    box-shadow:
+        inset 0px 0px 0px 2px hsl(0, 47%, 50%),
+        -1px -1px 0px 0px hsl(0, 47%, 50%),
+        1px 1px 0px 0px hsl(0, 47%, 50%),
+        -1px 1px 0px 0px hsl(0, 47%, 50%),
+        1px -1px 0px 0px hsl(0, 47%, 50%);
+}
+
+.messages_markdown {
+    border-left: 1px;
+    border-right: 1px;
+    position: relative;
+    display: none;
+}
+
+.messages_markdown .messages_markdown_content {
+    padding: 4px 115px 1px 10px;
+}
+.messages_markdown .messages_markdown_content .messages_markdown_show {
+    margin-top: 5px; margin-left: 47px; display:block; position:relative
 }
 
 .message_sender {

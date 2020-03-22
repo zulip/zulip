@@ -195,6 +195,7 @@ import "../settings_ui.js";
 import "../search_pill.js";
 import "../search_pill_widget.js";
 import "../stream_ui_updates.js";
+import "../message_copy.js";
 
 // Import Styles
 

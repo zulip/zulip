@@ -19,7 +19,7 @@ from zerver.lib.actions import recipient_for_user_profiles, do_update_message_fl
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_private_recipients, truncate_body, render_incoming_message, do_delete_messages, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, extract_stream_indicator, \
-    get_user_info_for_message_updates, check_schedule_message
+    get_user_info_for_message_updates, check_schedule_message, get_markdown_messages
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.message import (
@@ -1642,6 +1642,13 @@ def json_fetch_raw_message(request: HttpRequest, user_profile: UserProfile,
                                                path_only=True)) -> HttpResponse:
     (message, user_message) = access_message(user_profile, message_id)
     return json_success({"raw_content": message.content})
+
+@has_request_variables
+def json_fetch_raw_list_messages(request: HttpRequest, user_profile: UserProfile,
+                                messages: List[int]=REQ(validator=check_list(check_int))
+                                ) -> HttpResponse:
+    messages = get_markdown_messages(user_profile, messages)
+    return json_success({"raw_content": messages})
 
 @has_request_variables
 def render_message_backend(request: HttpRequest, user_profile: UserProfile,

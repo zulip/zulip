@@ -153,6 +153,10 @@ exports.initialize = function () {
             e.stopPropagation();
             popovers.hide_all();
         }
+
+        if (e.shiftKey) {
+            message_copy.select_message(this);
+        } 
     };
 
     // if on normal non-mobile experience, a `click` event should run the message
@@ -387,6 +391,13 @@ exports.initialize = function () {
         $_("#preview_message_area").hide();
         $_("#preview_content").empty();
         $_("#markdown_preview").show();
+    });
+
+    // COPY AND PASTE
+
+    $('body').on('click', '.copy_selected_messages', function (e) {
+        const group_id = $(e.target).attr("group");
+        message_copy.copy_selected_messages(group_id);
     });
 
     // MUTING
