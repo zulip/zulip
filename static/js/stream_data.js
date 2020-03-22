@@ -338,7 +338,7 @@ exports.get_invite_stream_data = function () {
             name: sub.name,
             stream_id: sub.stream_id,
             invite_only: sub.invite_only,
-            default_stream: exports.get_default_status(sub.name),
+            default_stream: default_stream_ids.has(sub.stream_id),
         };
     };
     const invite_stream_data = exports.subscribed_subs().map(filter_stream_data);
@@ -596,16 +596,6 @@ exports.set_realm_default_streams = function (realm_default_streams) {
 
 exports.get_default_stream_ids = function () {
     return Array.from(default_stream_ids);
-};
-
-exports.get_default_status = function (stream_name) {
-    const stream_id = exports.get_stream_id(stream_name);
-
-    if (!stream_id) {
-        return false;
-    }
-
-    return default_stream_ids.has(stream_id);
 };
 
 exports.is_default_stream_id = function (stream_id) {
