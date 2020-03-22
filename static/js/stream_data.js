@@ -356,12 +356,6 @@ exports.get_invite_stream_data = function () {
     return streams;
 };
 
-exports.invite_streams = function () {
-    const invite_list = exports.subscribed_streams();
-    const default_list = page_params.realm_default_streams.map(stream => stream.name);
-    return _.union(invite_list, default_list);
-};
-
 exports.get_colors = function () {
     return exports.subscribed_subs().map(sub => sub.color);
 };
