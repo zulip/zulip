@@ -827,9 +827,6 @@ run_test('initialize', () => {
     assert(stream_names.includes('subscriptions'));
     assert(stream_names.includes('unsubscribed'));
     assert(stream_names.includes('never_subscribed'));
-    assert(!page_params.subscriptions);
-    assert(!page_params.unsubscribed);
-    assert(!page_params.never_subscribed);
     assert.equal(page_params.notifications_stream, "");
 
     // Simulate a private stream the user isn't subscribed to
@@ -857,10 +854,6 @@ run_test('filter inactives', () => {
 
     stream_data.initialize(params);
     assert(!stream_data.is_filtering_inactives());
-
-    page_params.unsubscribed = [];
-    page_params.never_subscribed = [];
-    page_params.subscriptions = [];
 
     _.times(30, function (i) {
         const name = 'random' + i.toString();
