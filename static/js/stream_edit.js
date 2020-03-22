@@ -351,12 +351,6 @@ function stream_setting_clicked(e) {
         }
     }
     exports.set_stream_property(sub, setting, !sub[setting]);
-
-    // A hack.  Don't change the state of the checkbox if we
-    // clicked on the checkbox itself.
-    if (checkbox[0] !== e.target) {
-        checkbox.prop("checked", !checkbox.prop("checked"));
-    }
 }
 
 exports.bulk_set_stream_property = function (sub_data) {
