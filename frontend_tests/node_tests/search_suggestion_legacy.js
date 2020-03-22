@@ -14,7 +14,7 @@ set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');
 zrequire('narrow_state');
 zrequire('stream_data');
-zrequire('topic_data');
+zrequire('stream_topic_history');
 zrequire('people');
 zrequire('unread');
 zrequire('common');
@@ -39,7 +39,7 @@ set_global('narrow', {});
 
 page_params.is_admin = true;
 
-topic_data.reset();
+stream_topic_history.reset();
 
 run_test('basic_get_suggestions', () => {
     const query = 'fred';
@@ -801,20 +801,20 @@ run_test('topic_suggestions', () => {
         }
     };
 
-    topic_data.reset();
+    stream_topic_history.reset();
     suggestions = search.get_suggestions_legacy('te');
     expected = [
         "te",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    topic_data.add_message({
+    stream_topic_history.add_message({
         stream_id: devel_id,
         topic_name: 'REXX',
     });
 
     for (const topic_name of ['team', 'ignore', 'test']) {
-        topic_data.add_message({
+        stream_topic_history.add_message({
             stream_id: office_id,
             topic_name: topic_name,
         });
@@ -903,7 +903,7 @@ run_test('whitespace_glitch', () => {
         return;
     };
 
-    topic_data.reset();
+    stream_topic_history.reset();
 
     const suggestions = search.get_suggestions_legacy(query);
 
@@ -923,7 +923,7 @@ run_test('stream_completion', () => {
         return;
     };
 
-    topic_data.reset();
+    stream_topic_history.reset();
 
     let query = 'stream:of';
     let suggestions = search.get_suggestions_legacy(query);
@@ -982,7 +982,8 @@ run_test('people_suggestions', () => {
     people.add(bob);
     people.add(alice);
 
-    topic_data.reset();
+
+    stream_topic_history.reset();
 
     let suggestions = search.get_suggestions_legacy(query);
 
@@ -1099,7 +1100,7 @@ run_test('queries_with_spaces', () => {
         return;
     };
 
-    topic_data.reset();
+    stream_topic_history.reset();
 
     // test allowing spaces with quotes surrounding operand
     let query = 'stream:"dev he"';

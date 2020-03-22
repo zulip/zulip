@@ -6,7 +6,7 @@ set_global('message_list', {});
 zrequire('hash_util');
 zrequire('stream_data');
 zrequire('unread');
-zrequire('topic_data');
+zrequire('stream_topic_history');
 const topic_list_data = zrequire('topic_list_data');
 
 const general = {
@@ -18,7 +18,7 @@ stream_data.add_sub(general);
 
 function clear() {
     narrow_state.topic = () => undefined;
-    topic_data.reset();
+    stream_topic_history.reset();
     muting.is_topic_muted = () => false;
 }
 
@@ -28,7 +28,7 @@ function get_list_info(zoomed) {
         stream_id, zoomed);
 }
 
-run_test('get_list_info w/real topic_data', () => {
+run_test('get_list_info w/real stream_topic_history', () => {
     clear();
 
     let list_info;
@@ -42,7 +42,7 @@ run_test('get_list_info w/real topic_data', () => {
 
     for (const i of _.range(7)) {
         const topic_name = 'topic ' + i;
-        topic_data.add_message({
+        stream_topic_history.add_message({
             stream_id: general.stream_id,
             topic_name: topic_name,
             message_id: 1000 + i,
@@ -78,9 +78,9 @@ run_test('get_list_info unreads', () => {
 
     let list_info;
 
-    // Going forward, we just stub get_recent_names
+    // Going forward, we just stub get_recent_topic_names
     // for simpler test setup.
-    topic_data.get_recent_names = () => {
+    stream_topic_history.get_recent_topic_names = () => {
         return _.range(15).map(i => 'topic ' + i);
     };
 

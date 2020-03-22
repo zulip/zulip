@@ -5,7 +5,7 @@ set_global('pm_conversations', {
 zrequire('muting');
 zrequire('unread');
 zrequire('stream_data');
-zrequire('topic_data');
+zrequire('stream_topic_history');
 zrequire('stream_sort');
 const tg = zrequire('topic_generator');
 
@@ -264,7 +264,7 @@ run_test('topics', () => {
         devel: devel_stream_id,
     };
 
-    topic_data.get_recent_names = function (stream_id) {
+    stream_topic_history.get_recent_topic_names = function (stream_id) {
         switch (stream_id) {
         case muted_stream_id:
             return ['ms-topic1', 'ms-topic2'];

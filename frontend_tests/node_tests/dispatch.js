@@ -92,7 +92,7 @@ set_global('overlays', {
 // For data-oriented modules, just use them, don't stub them.
 zrequire('alert_words');
 zrequire('unread');
-zrequire('topic_data');
+zrequire('stream_topic_history');
 zrequire('stream_list');
 zrequire('message_flags');
 zrequire('message_store');
@@ -1540,7 +1540,7 @@ with_overrides(function (override) {
         assert_same(args.message_ids, [1337]);
     });
     global.with_stub(function (stub) {
-        override('topic_data.remove_message', stub.f);
+        override('stream_topic_history.remove_message', stub.f);
         dispatch(event);
         const args = stub.get_args('opts');
         assert_same(args.opts.stream_id, 99);

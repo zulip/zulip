@@ -11,7 +11,7 @@ exports.get_list_info = function (stream_id, zoomed) {
         active_topic = active_topic.toLowerCase();
     }
 
-    const topic_names = topic_data.get_recent_names(stream_id);
+    const topic_names = stream_topic_history.get_recent_topic_names(stream_id);
 
     const items = [];
 

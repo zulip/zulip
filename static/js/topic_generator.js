@@ -207,7 +207,7 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
 
     function get_unmuted_topics(stream_name) {
         const stream_id = stream_data.get_stream_id(stream_name);
-        let topics = topic_data.get_recent_names(stream_id);
+        let topics = stream_topic_history.get_recent_topic_names(stream_id);
         topics = topics.filter(topic => !muting.is_topic_muted(stream_id, topic));
         return topics;
     }

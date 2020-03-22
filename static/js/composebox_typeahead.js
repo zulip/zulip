@@ -44,7 +44,7 @@ exports.topics_seen_for = function (stream_name) {
     if (!stream_id) {
         return [];
     }
-    const topic_names = topic_data.get_recent_names(stream_id);
+    const topic_names = stream_topic_history.get_recent_topic_names(stream_id);
     return topic_names;
 };
 

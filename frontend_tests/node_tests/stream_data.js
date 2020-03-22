@@ -12,7 +12,7 @@ global.stub_out_jquery();
 
 zrequire('color_data');
 zrequire('hash_util');
-zrequire('topic_data');
+zrequire('stream_topic_history');
 zrequire('people');
 zrequire('stream_color');
 zrequire('stream_data');
@@ -347,7 +347,7 @@ run_test('is_active', () => {
         message_id: 108,
         topic_name: 'topic2',
     };
-    topic_data.add_message(opts);
+    stream_topic_history.add_message(opts);
 
     assert(stream_data.is_active(sub));
 
@@ -375,7 +375,7 @@ run_test('is_active', () => {
 
     assert(stream_data.is_active(sub));
 
-    topic_data.add_message(opts);
+    stream_topic_history.add_message(opts);
 
     assert(stream_data.is_active(sub));
 
@@ -397,7 +397,7 @@ run_test('is_active', () => {
     sub.pin_to_top = true;
     assert(stream_data.is_active(sub));
 
-    topic_data.add_message(opts);
+    stream_topic_history.add_message(opts);
 
     assert(stream_data.is_active(sub));
 });

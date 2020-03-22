@@ -3,7 +3,6 @@ set_global('$', global.make_zjquery());
 
 zrequire('unread_ui');
 zrequire('Filter', 'js/filter');
-zrequire('topic_data');
 zrequire('stream_sort');
 zrequire('colorspace');
 zrequire('stream_color');

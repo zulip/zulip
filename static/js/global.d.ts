@@ -153,7 +153,7 @@ declare let templates: any;
 declare let tictactoe_widget: any;
 declare let timerender: any;
 declare let todo_widget: any;
-declare let topic_data: any;
+declare let stream_topic_history: any;
 declare let topic_generator: any;
 declare let topic_list: any;
 declare let topic_zoom: any;

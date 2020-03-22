@@ -142,7 +142,7 @@ exports.is_active = function (sub) {
         // to set_filter_out_inactives.
         return true;
     }
-    return topic_data.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
+    return stream_topic_history.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
 };
 
 exports.rename_sub = function (sub, new_name) {
