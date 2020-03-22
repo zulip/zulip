@@ -1,11 +1,11 @@
 {{#unless (eq render_only false)}}
-<div class="input-group {{#if is_nested}}disableable{{/if}} {{#if (and push_notifications_tooltip (not realm_push_notifications_enabled))}}control-label-disabled{{/if}}">
+<div class="input-group {{#if is_nested}}disableable{{/if}} {{#if show_push_notifications_tooltip}}control-label-disabled{{/if}}">
     <label class="checkbox">
         <input type="checkbox" class="inline-block setting-widget prop-element" name="{{setting_name}}" data-setting-widget-type="bool"
           id="{{prefix}}{{setting_name}}"
-          {{#if (and push_notifications_tooltip (not realm_push_notifications_enabled))}}disabled="disabled"{{/if}}
+          {{#if show_push_notifications_tooltip}}disabled="disabled"{{/if}}
           {{#if is_checked}}
-          {{#unless (and push_notifications_tooltip (not realm_push_notifications_enabled))}}
+          {{#unless show_push_notifications_tooltip}}
           checked="checked"
           {{/unless}}
           {{/if}} />
@@ -14,8 +14,8 @@
     <label for="{{prefix}}{{setting_name}}" class="inline-block" id="{{prefix}}{{setting_name}}_label">
         {{{label}}}
     </label>
-    {{#if push_notifications_tooltip}}
-    <i class="fa fa-question-circle settings-info-icon" {{#if realm_push_notifications_enabled}}style="display:none"{{/if}}  data-toggle="tooltip"
+    {{#if show_push_notifications_tooltip}}
+    <i class="fa fa-question-circle settings-info-icon" data-toggle="tooltip"
       title="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
     {{/if}}
 </div>
