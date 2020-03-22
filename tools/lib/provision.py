@@ -16,9 +16,8 @@ from scripts.lib.zulip_tools import run_as_root, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL, os_families, parse_os_release, \
     overwrite_symlink
 from scripts.lib.setup_venv import (
-    get_venv_dependencies, REDHAT_VENV_DEPENDENCIES,
-    THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES,
-    FEDORA_VENV_DEPENDENCIES
+    get_venv_dependencies, THUMBOR_VENV_DEPENDENCIES,
+    YUM_THUMBOR_VENV_DEPENDENCIES,
 )
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 from tools.setup import setup_venvs
@@ -145,7 +144,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "netcat",               # Used for flushing memcached
     "libfontconfig1",       # Required by phantomjs
     "default-jre-headless",  # Required by vnu-jar
-] + VENV_DEPENDENCIES + THUMBOR_VENV_DEPENDENCIES
+] + THUMBOR_VENV_DEPENDENCIES
 
 COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "redis",
@@ -172,14 +171,14 @@ if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version 
             "libgroonga-dev",
             "libmsgpack-dev",
         ]
-    ]
+    ] + VENV_DEPENDENCIES
 elif "debian" in os_families():
     SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql-{0}",
             "postgresql-{0}-pgroonga",
         ]
-    ]
+    ] + VENV_DEPENDENCIES
 elif "rhel" in os_families():
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
@@ -188,7 +187,7 @@ elif "rhel" in os_families():
             "postgresql{0}-devel",
             "postgresql{0}-pgroonga",
         ]
-    ] + REDHAT_VENV_DEPENDENCIES
+    ] + VENV_DEPENDENCIES
 elif "fedora" in os_families():
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
@@ -199,7 +198,7 @@ elif "fedora" in os_families():
             "groonga-devel",
             "msgpack-devel",
         ]
-    ] + FEDORA_VENV_DEPENDENCIES
+    ] + VENV_DEPENDENCIES
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():

@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 import subprocess
-from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING
+from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING, os_families
 from scripts.lib.hash_reqs import expand_reqs
 
 from typing import List, Optional, Tuple, Set
@@ -106,8 +106,14 @@ def get_venv_dependencies(vendor, os_version):
     # type: (str, str) -> List[str]
     if vendor == 'ubuntu' and os_version == '20.04':
         return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format("2"), ]
-    else:
+    elif "debian" in os_families():
         return VENV_DEPENDENCIES + [PYTHON_DEV_DEPENDENCY.format(""), ]
+    elif "rhel" in os_families():
+        return REDHAT_VENV_DEPENDENCIES
+    elif "fedora" in os_families():
+        return FEDORA_VENV_DEPENDENCIES
+    else:
+        raise AssertionError("Invalid vendor")
 
 def install_venv_deps(pip, requirements_file, python2):
     # type: (str, str, bool) -> None
