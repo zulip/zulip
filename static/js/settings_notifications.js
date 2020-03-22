@@ -35,12 +35,6 @@ const other_notification_settings = desktop_notification_settings.concat(
     ["notification_sound"]
 );
 
-const notification_settings_status = [
-    {status_label: "pm-mention-notify-settings-status", settings: pm_mention_notification_settings},
-    {status_label: "other-notify-settings-status", settings: other_notification_settings},
-    {status_label: "stream-notify-settings-status", settings: stream_notification_settings},
-];
-
 exports.all_notification_settings = other_notification_settings.concat(
     pm_mention_notification_settings,
     stream_notification_settings
@@ -97,15 +91,15 @@ exports.set_enable_digest_emails_visibility = function () {
 };
 
 exports.set_up = function () {
-    for (const setting of notification_settings_status) {
-        for (const sub_setting of setting.settings) {
-            $("#" + sub_setting).change(function () {
-                change_notification_setting(sub_setting,
-                                            settings_org.get_input_element_value(this),
-                                            "#" + setting.status_label);
-            });
-        }
-    }
+    $('#notification-settings').on('change', 'input, select', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const input_elem = $(e.currentTarget);
+        const setting_name = input_elem.attr("name");
+        change_notification_setting(setting_name,
+                                    settings_org.get_input_element_value(this),
+                                    input_elem.closest('.subsection-parent').find('.alert-notification'));
+    });
 
     update_desktop_icon_count_display();
 
