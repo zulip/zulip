@@ -650,8 +650,8 @@ python-ldap==3.2.0 \
 python-magic==0.4.15 \
     --hash=sha256:f2674dcfad52ae6c49d4803fa027809540b130db1dec928cfbb9240316831375 \
     --hash=sha256:f3765c0f582d2dfc72c15f3b5a82aecfae9498bd29ca840d72f37d7bd38bfcd5
-python-slugify==4.0.0 \
-    --hash=sha256:a8fc3433821140e8f409a9831d13ae5deccd0b033d4744d94b31fea141bdd84c \
+python-slugify==1.2.6 \
+    --hash=sha256:7723daf30996db26573176bddcdf5fcb98f66dc70df05c9cb29f2c79b8193245 \
     # via transifex-client
 python-twitter==3.5 \
     --hash=sha256:45855742f1095aa0c8c57b2983eee3b6b7f527462b50a2fa8437a8b398544d90 \
@@ -824,10 +824,6 @@ https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.
 tblib==1.6.0 \
     --hash=sha256:229bee3754cb5d98b4837dd5c4405e80cfab57cb9f93220410ad367f8b352344 \
     --hash=sha256:e222f44485d45ed13fada73b57775e2ff9bd8af62160120bbb6679f5ad80315b
-text-unidecode==1.3 \
-    --hash=sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8 \
-    --hash=sha256:bad6603bb14d279193107714b288be206cac565dfa49aa5b105294dd5c4aab93 \
-    # via python-slugify
 tornado==4.5.3 \
     --hash=sha256:5ef073ac6180038ccf99411fe05ae9aafb675952a2c8db60592d5daf8401f803 \
     --hash=sha256:6d14e47eab0e15799cf3cdcc86b0b98279da68522caace2bd7ce644287685f0a \
@@ -838,8 +834,8 @@ traitlets==4.3.3 \
     --hash=sha256:70b4c6a1d9019d7b4f6846832288f86998aa3b9207c6821f3578a6a6a467fe44 \
     --hash=sha256:d023ee369ddd2763310e4c3eae1ff649689440d4ae59d7485eb4cfbbe3e359f7 \
     # via ipython
-transifex-client==0.13.4 \
-    --hash=sha256:e1bc9640f94a9003fe85fcbf746de3875a966b4f1dd0963d9fb7d2809616c37d
+transifex-client==0.13.8 \
+    --hash=sha256:8c2cc75d6a330c062b8f95c8764dccc9ee4fcabc9ad926fd9f9335c02c7606b3
 twilio==6.35.3 \
     --hash=sha256:4474fa87fde5ea5526e296be782d1b06fc6722f9e4698a503c47b5c2f8b70ea9
 twisted==19.10.0 \
@@ -894,7 +890,7 @@ https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab
 unidecode==1.1.1 \
     --hash=sha256:1d7a042116536098d05d599ef2b8616759f02985c85b4fef50c78a5aaf10822a \
     --hash=sha256:2b6aab710c2a1647e928e36d69c21e76b453cd455f4e2621000e54b2a9b8cce8 \
-    # via social-auth-core
+    # via python-slugify, social-auth-core
 urllib3==1.25.8 \
     --hash=sha256:2f3db8b19923a873b3e5256dc9c2dedfa883e33d87c690d9c7913e1f40673cdc \
     --hash=sha256:87716c2d2a7121198ebcb7ce7cccf6ce5e9ba539041cfbaeecfb641dc0bf6acc \
