@@ -69,6 +69,12 @@ class ReactionEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
 
+        reaction_info['emoji_name'] = 'green_tick'
+        result = self.api_post(sender, '/api/v1/messages/1/reactions',
+                               reaction_info)
+        self.assert_json_success(result)
+        self.assertEqual(200, result.status_code)
+
     def test_zulip_emoji(self) -> None:
         """
         Reacting with zulip emoji succeeds
@@ -80,6 +86,12 @@ class ReactionEmojiTest(ZulipTestCase):
         }
 
         result = self.api_post(sender, '/api/v1/messages/1/reactions',
+                               reaction_info)
+        self.assert_json_success(result)
+        self.assertEqual(200, result.status_code)
+
+        reaction_info.pop('reaction_type')
+        result = self.api_post(sender, '/api/v1/messages/2/reactions',
                                reaction_info)
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
