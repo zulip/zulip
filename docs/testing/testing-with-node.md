@@ -138,7 +138,7 @@ rabbit hole of trying to improve that. The pattern here is this:
 ## Creating new test modules
 
 The test runner (`index.js`) automatically runs all .js files in the
-`frontend_tests/node directory`, so you can simply start editing a file
+`frontend_tests/node_tests` directory, so you can simply start editing a file
 in that directory to create a new test.
 
 The nodes tests rely on JS files that use the module pattern. For example, to
