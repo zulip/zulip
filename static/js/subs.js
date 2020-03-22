@@ -103,16 +103,6 @@ exports.toggle_pin_to_top_stream = function (sub) {
     stream_edit.set_stream_property(sub, 'pin_to_top', !sub.pin_to_top);
 };
 
-exports.maybe_update_realm_default_stream_name  = function (stream_id, new_name) {
-    const idx = page_params.realm_default_streams.findIndex(
-        stream => stream.stream_id === stream_id
-    );
-    if (idx === -1) {
-        return;
-    }
-    page_params.realm_default_streams[idx].name = new_name;
-};
-
 exports.is_subscribed_stream_tab_active = function () {
     // Returns true if "Subscribed" tab in stream settings is open
     // otherwise false.
@@ -131,9 +121,6 @@ exports.update_stream_name = function (sub, new_name) {
 
     // Update the left sidebar.
     stream_list.rename_stream(sub, new_name);
-
-    // Update the default streams page in organization settings.
-    exports.maybe_update_realm_default_stream_name(stream_id, new_name);
 
     // Update the stream settings
     stream_edit.update_stream_name(sub, new_name);
