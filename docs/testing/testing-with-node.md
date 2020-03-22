@@ -141,17 +141,6 @@ The test runner (`index.js`) automatically runs all .js files in the
 `frontend_tests/node_tests` directory, so you can simply start editing a file
 in that directory to create a new test.
 
-The nodes tests rely on JS files that use the module pattern. For example, to
-test the `foobar.js` file, you would first ensure that code like below
-is at the bottom of `foobar.js`:
-
->     if (typeof module !== 'undefined') {
->         module.exports = foobar;
->     }
-
-This means `foobar.js` follow the CommonJS module pattern, so it can be
-required in Node.js, which runs our tests.
-
 ## Coverage reports
 
 You can automatically generate coverage reports for the JavaScript unit
