@@ -752,6 +752,19 @@ If this is already enabled in your BIOS, double-check that you are running a
 For further information about troubleshooting vagrant timeout errors [see
 this post](http://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
 
+#### Network related issues with vagrant
+
+If you are facing network issues inside vagrant machine even after having
+a stable network connection, you can add these lines in `$provision_script`
+variable:
+
+```
+# Set up connection inside container
+IP=$(/sbin/ip route | awk '/defualt/ { print $3}')
+ip route add default via $IP
+```
+in the VagrantFile present in your cloned directory.
+
 #### Vagrant was unable to communicate with the guest machine
 
 If you see the following error when you run `vagrant up`:
