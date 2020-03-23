@@ -753,11 +753,7 @@ exports.handle_global_notification_updates = function (notification_name, settin
         page_params[notification_name] = setting;
     }
 
-    if (
-        settings_notifications.all_notifications.settings.stream_notification_settings.includes(
-            notification_name
-        )
-    ) {
+    if (settings_notifications.stream_notification_settings.includes(notification_name)) {
         notification_name = notification_name.replace("enable_stream_", "");
         stream_ui_updates.update_notification_setting_checkbox(notification_name);
     }
