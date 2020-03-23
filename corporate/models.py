@@ -16,6 +16,9 @@ class Customer(models.Model):
     def __str__(self) -> str:
         return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
 
+def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
+    return Customer.objects.filter(realm=realm).first()
+
 class CustomerPlan(models.Model):
     customer = models.ForeignKey(Customer, on_delete=CASCADE)  # type: Customer
     automanage_licenses = models.BooleanField(default=False)  # type: bool
