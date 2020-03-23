@@ -234,8 +234,14 @@ def install_system_deps():
 
 def install_apt_deps(deps_to_install):
     # type: (List[str]) -> None
-    # setup-apt-repo does an `apt-get update`
+    # setup-apt-repo does an `apt-get update` if the sources.list files changed.
     run_as_root(["./scripts/lib/setup-apt-repo"])
+
+    # But we still need to do our own to make sure we have up-to-date
+    # data before installing new packages, as the system might not have
+    # done an apt update in weeks otherwise, which could result in 404s
+    # trying to download old versions that were already removed from mirrors.
+    run_as_root(["apt-get", "update"])
     run_as_root(
         [
             "env", "DEBIAN_FRONTEND=noninteractive",
