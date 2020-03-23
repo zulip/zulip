@@ -684,11 +684,12 @@ def apply_event(state: Dict[str, Any],
         if 'raw_unread_msgs' in state and event['flag'] == 'read' and event['operation'] == 'add':
             for remove_id in event['messages']:
                 remove_message_id_from_unread_mgs(state['raw_unread_msgs'], remove_id)
-        if event['flag'] == 'starred' and event['operation'] == 'add':
-            state['starred_messages'] += event['messages']
-        if event['flag'] == 'starred' and event['operation'] == 'remove':
-            state['starred_messages'] = [message for message in state['starred_messages']
-                                         if not (message in event['messages'])]
+        if event['flag'] == 'starred' and 'starred_messages' in state:
+            if event['operation'] == 'add':
+                state['starred_messages'] += event['messages']
+            if event['operation'] == 'remove':
+                state['starred_messages'] = [message for message in state['starred_messages']
+                                             if not (message in event['messages'])]
     elif event['type'] == "realm_domains":
         if event['op'] == 'add':
             state['realm_domains'].append(event['realm_domain'])
