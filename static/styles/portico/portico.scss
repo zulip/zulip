@@ -7,6 +7,10 @@ body {
     font-size: 17px;
 }
 
+html {
+    height: 100%;
+}
+
 .noscroll {
     overflow: hidden;
     position: fixed;
@@ -74,10 +78,6 @@ body {
 
 .breakpoint {
     display: inline-block;
-}
-
-html {
-    height: 100%;
 }
 
 /* The API tabbed content tends to have a lot of code blocks,
