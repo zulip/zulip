@@ -84,13 +84,17 @@ html {
 
 /* The API tabbed content tends to have a lot of code blocks,
    which look nicer against a different background */
-.api-center .code-section .blocks {
-    background-color: hsl(0, 0%, 98%);
-}
+.api-center .code-section {
+    .blocks {
+        background-color: hsl(0, 0%, 98%);
+    }
 
-.api-center .code-section ul.nav li.active {
-    background-color: hsl(0, 0%, 98%);
-    border-bottom: 1px solid hsl(0, 0%, 98%);
+    ul.nav {
+        li.active {
+            background-color: hsl(0, 0%, 98%);
+            border-bottom: 1px solid hsl(0, 0%, 98%);
+        }
+    }
 }
 
 /* The Help Center tabbed content tends to be a lot short sentences.
