@@ -63,23 +63,9 @@ $("body").ready(function () {
 function setup_settings_label() {
     exports.settings_label = {
         // settings_notification
-        // stream_notification_settings
-        enable_stream_desktop_notifications: i18n.t("Visual desktop notifications"),
-        enable_stream_audible_notifications: i18n.t("Audible desktop notifications"),
-        enable_stream_push_notifications: i18n.t("Mobile notifications"),
-        enable_stream_email_notifications: i18n.t("Email notifications"),
-        wildcard_mentions_notify: i18n.t("Notifications for @all/@everyone mentions"),
-
-        // pm_mention_notification_settings
-        enable_desktop_notifications: i18n.t("Visual desktop notifications"),
-        enable_offline_email_notifications: i18n.t("Email notifications"),
-        enable_offline_push_notifications: i18n.t("Mobile notifications"),
         enable_online_push_notifications: i18n.t("Send mobile notifications even if I'm online (useful for testing)"),
-        enable_sounds: i18n.t("Audible desktop notifications"),
         pm_content_in_desktop_notifications: i18n.t("Include content of private messages in desktop notifications"),
         desktop_icon_count_display: i18n.t("Unread count summary (appears in desktop sidebar and browser tab)"),
-
-        // other_notification_settings
         enable_digest_emails: i18n.t("Send digest emails when I'm away"),
         enable_login_emails: i18n.t("Send email notifications for new logins to my account"),
         message_content_in_email_notifications: i18n.t("Include message content in missed message emails"),
@@ -112,6 +98,7 @@ exports.build_page = function () {
         settings_label: exports.settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
+        general_settings: settings_notifications.all_notifications.general_settings,
         notification_settings: settings_notifications.all_notifications.settings,
         desktop_icon_count_display_values: settings_notifications.desktop_icon_count_display_values,
         show_push_notifications_tooltip:
