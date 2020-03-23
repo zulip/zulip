@@ -713,21 +713,12 @@ exports.build_page = function () {
             data.message_retention_days = new_message_retention_days !== "" ?
                 JSON.stringify(parseInt(new_message_retention_days, 10)) : null;
         } else if (subsection === 'other_permissions') {
-            const waiting_period_threshold = $("#id_realm_waiting_period_setting").val();
             const add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
 
             if (add_emoji_permission === "by_admins_only") {
                 data.add_emoji_by_admins_only = true;
             } else if (add_emoji_permission === "by_anyone") {
                 data.add_emoji_by_admins_only = false;
-            }
-
-            if (waiting_period_threshold === "none") {
-                data.waiting_period_threshold = 0;
-            } else if (waiting_period_threshold === "three_days") {
-                data.waiting_period_threshold = 3;
-            } else if (waiting_period_threshold === "custom_days") {
-                data.waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
             }
         } else if (subsection === 'org_join') {
             const org_join_restrictions = $('#id_realm_org_join_restrictions').val();
@@ -752,6 +743,15 @@ exports.build_page = function () {
             } else {
                 data.invite_required = true;
                 data.invite_by_admins_only = false;
+            }
+
+            const waiting_period_threshold = $("#id_realm_waiting_period_setting").val();
+            if (waiting_period_threshold === "none") {
+                data.waiting_period_threshold = 0;
+            } else if (waiting_period_threshold === "three_days") {
+                data.waiting_period_threshold = 3;
+            } else if (waiting_period_threshold === "custom_days") {
+                data.waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
             }
         } else if (subsection === 'auth_settings') {
             data = {};
