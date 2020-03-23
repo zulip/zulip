@@ -4679,7 +4679,15 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         else:
             event['recipient_id'] = message.recipient_id
 
-        events_and_users_to_notify.append((event, message_id_to_notifiable_users[message.id]))
+        # In theory, it's possible for message_id_to_notifiable_users
+        # to not have a key for the message ID in some weird corner
+        # case where we've deleted the last user subscribed to the
+        # target stream before a bot sent a message to it, and thus
+        # there are no UserMessage objects associated with the
+        # message.
+        events_and_users_to_notify.append(
+            (event, message_id_to_notifiable_users.get(message.id, []))
+        )
 
     move_messages_to_archive(message_ids)
     for event, users_to_notify in events_and_users_to_notify:
