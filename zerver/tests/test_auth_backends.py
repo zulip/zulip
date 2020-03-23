@@ -684,7 +684,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                       subdomain: Optional[str]=None,
                                       mobile_flow_otp: Optional[str]=None,
                                       desktop_flow_otp: Optional[str]=None,
-                                      is_signup: Optional[str]=None,
+                                      is_signup: bool=False,
                                       next: str='',
                                       multiuse_object_key: str='',
                                       alternative_start_url: Optional[str]=None
@@ -702,7 +702,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             headers['HTTP_USER_AGENT'] = "ZulipAndroid"
         if desktop_flow_otp is not None:
             params['desktop_flow_otp'] = desktop_flow_otp
-        if is_signup is not None:
+        if is_signup:
             url = self.SIGNUP_URL
         params['next'] = next
         params['multiuse_object_key'] = multiuse_object_key
@@ -715,7 +715,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                          *, subdomain: Optional[str]=None,
                          mobile_flow_otp: Optional[str]=None,
                          desktop_flow_otp: Optional[str]=None,
-                         is_signup: Optional[str]=None,
+                         is_signup: bool=False,
                          next: str='',
                          multiuse_object_key: str='',
                          expect_choose_email_screen: bool=False,
@@ -1010,7 +1010,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(account_data_dict,
                                        expect_choose_email_screen=True,
-                                       subdomain='zulip', is_signup='1')
+                                       subdomain='zulip', is_signup=True)
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
         self.assertEqual(data['name'], 'Full Name')
@@ -1110,7 +1110,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(account_data_dict,
                                        expect_choose_email_screen=True,
-                                       subdomain=subdomain, is_signup='1')
+                                       subdomain=subdomain, is_signup=True)
         self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                        self.BACKEND_CLASS.full_name_validated)
 
@@ -1125,7 +1125,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
         result = self.social_auth_test(account_data_dict, subdomain='zulip',
                                        expect_choose_email_screen=True,
-                                       is_signup='1',
+                                       is_signup=True,
                                        mobile_flow_otp=mobile_flow_otp)
         self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                        self.BACKEND_CLASS.full_name_validated,
@@ -1142,7 +1142,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
         result = self.social_auth_test(account_data_dict, subdomain='zulip',
                                        expect_choose_email_screen=True,
-                                       is_signup='1',
+                                       is_signup=True,
                                        desktop_flow_otp=desktop_flow_otp)
         self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                        self.BACKEND_CLASS.full_name_validated,
@@ -1165,7 +1165,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(account_data_dict,
                                        expect_choose_email_screen=True,
-                                       subdomain=subdomain, is_signup='1')
+                                       subdomain=subdomain, is_signup=True)
         self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                        self.BACKEND_CLASS.full_name_validated)
 
@@ -1196,13 +1196,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         # First, try to signup for closed realm without using an invitation
         result = self.social_auth_test(account_data_dict,
                                        expect_choose_email_screen=True,
-                                       subdomain=subdomain, is_signup='1')
+                                       subdomain=subdomain, is_signup=True)
         result = self.client_get(result.url)
         # Verify that we're unable to signup, since this is a closed realm
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["Sign up"], result)
 
-        result = self.social_auth_test(account_data_dict, subdomain=subdomain, is_signup='1',
+        result = self.social_auth_test(account_data_dict, subdomain=subdomain, is_signup=True,
                                        expect_choose_email_screen=True,
                                        multiuse_object_key=multiuse_object_key)
         self.stage_two_of_registration(result, realm, subdomain, email, name, name,
@@ -1280,7 +1280,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         ):
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
-                                           subdomain=subdomain, is_signup='1')
+                                           subdomain=subdomain, is_signup=True)
             # Full name should get populated from ldap:
             self.stage_two_of_registration(result, realm, subdomain, email, name, "New LDAP fullname",
                                            skip_registration_form=True)
@@ -1291,7 +1291,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             account_data_dict = self.get_account_data_dict(email=email, name=name)
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
-                                           subdomain=subdomain, is_signup='1')
+                                           subdomain=subdomain, is_signup=True)
             # Full name should get populated as provided by the social backend, because
             # this user isn't in the ldap dictionary:
             self.stage_two_of_registration(result, realm, subdomain, email, name, name,
@@ -1323,7 +1323,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             account_data_dict = self.get_account_data_dict(email=email, name=name)
             result = self.social_auth_test(account_data_dict,
                                            expect_choose_email_screen=True,
-                                           subdomain=subdomain, is_signup='1')
+                                           subdomain=subdomain, is_signup=True)
             # Full name should get populated as provided by the social backend, because
             # this user isn't in the ldap dictionary:
             self.stage_two_of_registration(result, realm, subdomain, email, name, name,
@@ -1360,7 +1360,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                          *, subdomain: Optional[str]=None,
                          mobile_flow_otp: Optional[str]=None,
                          desktop_flow_otp: Optional[str]=None,
-                         is_signup: Optional[str]=None,
+                         is_signup: bool=False,
                          next: str='',
                          multiuse_object_key: str='',
                          **extra_data: Any) -> HttpResponse:
@@ -1393,7 +1393,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         if next:
             self.assertEqual(data['next'], next)
         if is_signup:
-            self.assertEqual(data['is_signup'], is_signup)
+            self.assertEqual(data['is_signup'], '1')
 
         saml_response = self.generate_saml_response(**account_data_dict)
         post_params = {"SAMLResponse": saml_response, "RelayState": relay_state}
@@ -1443,7 +1443,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.url, self.CONFIG_ERROR_URL)
 
             # Test the signup path too:
-            result = self.social_auth_test(account_data_dict, is_signup='1',
+            result = self.social_auth_test(account_data_dict, is_signup=True,
                                            subdomain='zulip', next='/user_uploads/image')
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, self.CONFIG_ERROR_URL)
@@ -1890,7 +1890,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         ]
         result = self.social_auth_test(account_data_dict,
                                        email_data=email_data,
-                                       is_signup='1',
+                                       is_signup=True,
                                        expect_choose_email_screen=True,
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
@@ -1926,7 +1926,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         result = self.social_auth_test(account_data_dict,
                                        email_data = email_data,
                                        expect_choose_email_screen=True,
-                                       subdomain=subdomain, is_signup='1')
+                                       subdomain=subdomain, is_signup=True)
         self.stage_two_of_registration(result, realm, subdomain, email, name, name,
                                        self.BACKEND_CLASS.full_name_validated)
 
