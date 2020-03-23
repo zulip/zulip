@@ -63,13 +63,15 @@ html {
     z-index: 100;
 }
 
-.navbar.footer .nav > li {
-    line-height: 56px;
-}
+.navbar.footer .nav {
+    > li {
+        line-height: 56px;
 
-.navbar.footer .nav > li > a {
-    padding-top: 0;
-    padding-bottom: 0;
+        > a {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
 }
 
 .push {
