@@ -132,8 +132,8 @@ python-magic
 # these tightly, including fetching content not included in the normal
 # release tarballs (which is a bug).  So we need to pin it makes sense
 # to pin a version from Git rather than a release.
-https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip==0.6.1_git&subdirectory=zulip
-https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
+https://github.com/zulip/python-zulip-api/archive/0.6.3.zip/#egg=zulip==0.6.3_git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/0.6.3.zip/#egg=zulip_bots==0.6.3+git&subdirectory=zulip_bots
 
 # Used for Hesiod lookups, etc.
 py3dns
