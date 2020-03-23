@@ -446,8 +446,15 @@ function validate_stream_message_mentions(stream_name) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
-            show_all_everyone_warnings();
 
+            if (!page_params.is_admin && stream_count > 20) {
+                // give error if user isn't admin & mentions > 20 users
+                const err_text = i18n.t("Only organization administrators can mention __count__ people.", { count: stream_count });
+                compose_error(err_text);
+                return false;
+            }
+
+            show_all_everyone_warnings();
             $("#compose-send-button").prop('disabled', false);
             $("#sending-indicator").hide();
             return false;
