@@ -28,7 +28,7 @@ performs well.
 Zulip also supports a wide range of ways to install the Zulip
 development environment:
 
-* On **Ubuntu** 18.04 Bionic and 16.04 Xenial and **Debian** 9
+* On **Ubuntu** 20.04 Focal, 18.04 Bionic, 16.04 Xenial, **Debian** 9
   Stretch and 10 Buster, you can easily
   **[install without using Vagrant][install-direct]**.
 * On **other Linux/UNIX** distributions, you'll need to follow slightly different
