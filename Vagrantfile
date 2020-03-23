@@ -135,6 +135,10 @@ set -o pipefail
 # something that we don't want to happen when running provision in a
 # development environment not using Vagrant.
 
+# Set up connection inside container
+IP=$(/sbin/ip route | awk '/defualt/ { print $3}')
+ip route add default via $IP
+
 # Set the Ubuntu mirror
 [ ! '#{ubuntu_mirror}' ] || sudo sed -i 's|http://\\(\\w*\\.\\)*archive\\.ubuntu\\.com/ubuntu/\\? |#{ubuntu_mirror} |' /etc/apt/sources.list
 
