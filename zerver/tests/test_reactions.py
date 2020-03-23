@@ -64,16 +64,21 @@ class ReactionEmojiTest(ZulipTestCase):
             'emoji_name': 'smile'
         }
 
+        base_query = Reaction.objects.filter(user_profile=sender,
+                                             message=Message.objects.get(id=1),
+                                             )
         result = self.api_post(sender, '/api/v1/messages/1/reactions',
                                reaction_info)
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
+        self.assertTrue(base_query.filter(emoji_name=reaction_info['emoji_name']).exists())
 
         reaction_info['emoji_name'] = 'green_tick'
         result = self.api_post(sender, '/api/v1/messages/1/reactions',
                                reaction_info)
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
+        self.assertTrue(base_query.filter(emoji_name=reaction_info['emoji_name']).exists())
 
     def test_zulip_emoji(self) -> None:
         """
@@ -84,17 +89,21 @@ class ReactionEmojiTest(ZulipTestCase):
             'emoji_name': 'zulip',
             'reaction_type': 'zulip_extra_emoji'
         }
+        base_query = Reaction.objects.filter(user_profile=sender,
+                                             emoji_name=reaction_info['emoji_name'])
 
         result = self.api_post(sender, '/api/v1/messages/1/reactions',
                                reaction_info)
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
+        self.assertTrue(base_query.filter(message=Message.objects.get(id=1)).exists())
 
         reaction_info.pop('reaction_type')
         result = self.api_post(sender, '/api/v1/messages/2/reactions',
                                reaction_info)
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
+        self.assertTrue(base_query.filter(message=Message.objects.get(id=2)).exists())
 
     def test_valid_emoji_react_historical(self) -> None:
         """
