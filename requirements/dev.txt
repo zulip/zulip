@@ -236,6 +236,9 @@ defusedxml==0.6.0 \
 disposable-email-domains==0.0.57 \
     --hash=sha256:0f443152526d33e017e429cc9c7ed59b2feb8d1331f1feecb339fa4a3f43c99a \
     --hash=sha256:beb3eada4902a5105fffeb534b62724365d6cc7010f4bc698a532aa0378b3466
+distro==1.4.0 \
+    --hash=sha256:362dde65d846d23baee4b5c058c8586f219b5a54be1cf5fc6ff55c4578392f57 \
+    --hash=sha256:eedf82a470ebe7d010f1872c17237c79ab04097948800029994fa458e52fb4b4
 https://github.com/zulip/django-auth-ldap/archive/e26d0ef2a7ff77ab3fdd7b6578a76081f780778c.zip#egg=django-auth-ldap==2.0.0zulip1 \
     --hash=sha256:1a104fdb5085ef9340996ae82d4b302f99c39c5d9d60d4ae55bcc7c1f58cb65e
 django-bitfield==2.0.1 \
@@ -972,10 +975,10 @@ zope.interface==4.7.1 \
     # via scrapy, twisted
 https://github.com/zulip/zulint/archive/aaed679f1ad38b230090eadd3870b7682500f60c.zip#egg=zulint==0.0.1 \
     --hash=sha256:9779afff26553119756e7be59d8a4adccda6758bf26483cc18a33cffe2efac60
-https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip==0.6.1_git&subdirectory=zulip \
-    --hash=sha256:270cebf4554a3a2fb1c95190168c952ef97081541ed2be0a83f00fb48e29928a
-https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots \
-    --hash=sha256:270cebf4554a3a2fb1c95190168c952ef97081541ed2be0a83f00fb48e29928a
+https://github.com/zulip/python-zulip-api/archive/0.6.3.zip/#egg=zulip==0.6.3_git&subdirectory=zulip \
+    --hash=sha256:78a09c5e9f4177cab6f062dcb16c645b5814c07907fefaa6d0c196f28b9f6d95
+https://github.com/zulip/python-zulip-api/archive/0.6.3.zip/#egg=zulip_bots==0.6.3+git&subdirectory=zulip_bots \
+    --hash=sha256:78a09c5e9f4177cab6f062dcb16c645b5814c07907fefaa6d0c196f28b9f6d95
 zxcvbn==4.4.28 \
     --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1
 
