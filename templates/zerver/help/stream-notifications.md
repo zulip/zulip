@@ -26,7 +26,7 @@ These settings will override any default stream notification settings.
 
 {settings_tab|notifications}
 
-1. Toggle the notification settings under **Stream messages**.
+1. Configure notifications in the "Notification triggers" table.
 
 {end_tabs}
 
