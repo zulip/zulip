@@ -92,7 +92,7 @@ RUN apt-get update \
     memcached rabbitmq-server redis-server \
     hunspell-en-us supervisor libssl-dev puppet \
     gettext libffi-dev libfreetype6-dev zlib1g-dev libjpeg-dev \
-    libldap2-dev libmemcached-dev python-dev python-pip \
+    libldap2-dev libmemcached-dev python-pip \
     python-six libxml2-dev libxslt1-dev libpq-dev \
     {extra_packages}
 
