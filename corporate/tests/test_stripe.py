@@ -34,7 +34,8 @@ from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, 
     process_initial_upgrade, make_end_of_cycle_updates_if_needed, \
     update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan, \
     invoice_plan, invoice_plans_as_needed, get_discount_for_realm
-from corporate.models import Customer, CustomerPlan, LicenseLedger
+from corporate.models import Customer, CustomerPlan, LicenseLedger, \
+    get_customer_by_realm
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
@@ -1146,6 +1147,14 @@ class BillingHelpersTest(ZulipTestCase):
             customer = update_or_create_stripe_customer(self.example_user('hamlet'), None)
         mocked3.assert_not_called()
         self.assertTrue(isinstance(customer, Customer))
+
+    def test_get_customer_by_realm(self) -> None:
+        realm = get_realm('zulip')
+
+        self.assertEqual(get_customer_by_realm(realm), None)
+
+        customer = Customer.objects.create(realm=realm, stripe_customer_id='cus_12345')
+        self.assertEqual(get_customer_by_realm(realm), customer)
 
 class LicenseLedgerTest(StripeTestCase):
     def test_add_plan_renewal_if_needed(self) -> None:
