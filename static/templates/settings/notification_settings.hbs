@@ -1,36 +1,47 @@
 <div id="notification-settings" class="settings-section" data-name="notifications">
     <form class="notification-settings-form">
-        <div class="notification-reminder tip">{{#tr this }}Desktop notifications are triggered for messages that are offscreen when they arrive. Mobile and email notifications are triggered once you have been away from Zulip for a few minutes.{{/tr}}</div>
-
-        <div id="stream-notify-settings" class="subsection-parent">
-            <h3 class="inline-block">{{t "Stream messages" }}</h3>
-            <div class="alert-notification" id="stream-notify-settings-status"></div>
-            <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
-
-            {{#each notification_settings.stream_notification_settings}}
-            {{> settings_checkbox
-              setting_name=this
-              is_checked=(lookup ../page_params this)
-              label=(lookup ../settings_label this)
-              show_push_notifications_tooltip=(lookup ../show_push_notifications_tooltip this)}}
-            {{/each}}
-
-            <p class="notification-settings-note">
-                {{#tr this}}Change notification settings for individual streams on your <a href="/#streams">Streams page</a>.{{/tr}}
-            </p>
-        </div>
-
-        <div id="pm-mention-notify-settings" class="subsection-parent">
-            <h3 class="inline-block">{{t "Private messages, @-mentions, and alert words" }}</h3>
-            <div class="alert-notification" id="pm-mention-notify-settings-status"></div>
-
-            {{#each notification_settings.pm_mention_notification_settings}}
-            {{> settings_checkbox
-              setting_name=this
-              is_checked=(lookup ../page_params this)
-              label=(lookup ../settings_label this)
-              show_push_notifications_tooltip=(lookup ../show_push_notifications_tooltip this)}}
-            {{/each}}
+        <div id="general_notifications" class="subsection-parent">
+            <h3 class="inline-block">{{t "Notification triggers" }}</h3>
+            <p>{{t "Configure how Zulip notifies you about new messages." }}</p>
+            <div class="alert-notification" id="general-notify-settings-status"></div>
+            <table id="notification-table" class="table table-condensed table-bordered wrapped-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" width="30%"></th>
+                        <th colspan="2" width="28%">{{t "Desktop"}}</th>
+                        <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip}}control-label-disabled{{/if}}">
+                            {{t "Mobile"}}
+                            {{#if (not page_params.realm_push_notifications_enabled) }}
+                            <i class="fa fa-question-circle settings-info-icon" data-toggle="tooltip"
+                              title="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
+                            {{/if}}
+                        </th>
+                        <th rowspan="2" width="14%">{{t "Email"}}</th>
+                        <th rowspan="2" width="14%">@all
+                            <i class="fa fa-question-circle settings-info-icon" data-toggle="tooltip"
+                              title="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>{{t "Visual"}}</th>
+                        <th>{{t "Audio"}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each general_settings}}
+                    <tr>
+                        <td>{{ this.label }}</td>
+                        {{#each this.notification_settings}}
+                        {{> notification_settings_checkboxes
+                          setting_name=this.setting_name
+                          is_checked=this.is_checked
+                          is_disabled=this.is_disabled}}
+                        {{/each}}
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            <p>{{t "You can also override these settings for individual streams." }}</p>
         </div>
 
         <div id="other_notifications" class="m-10 inline-block subsection-parent">

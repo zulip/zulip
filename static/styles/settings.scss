@@ -667,8 +667,22 @@ input[type=checkbox].inline-block {
     margin-top: 4px;
 }
 
-#notification-settings .notification-reminder {
-    text-align: left;
+#notification-settings {
+    .notification-reminder {
+        text-align: left;
+    }
+
+    #notification-table {
+        th,
+        td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        td:first-child {
+            font-weight: bold;
+        }
+    }
 }
 
 #account-settings .custom-profile-fields-form .custom_user_field label {
