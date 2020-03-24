@@ -4586,15 +4586,15 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         event[TOPIC_LINKS] = bugdown.topic_links(message.sender.realm_id, topic_name)
         edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
 
-        if propagate_mode in ["change_later", "change_all"]:
-            messages_list = update_messages_for_topic_edit(
-                message=message,
-                propagate_mode=propagate_mode,
-                orig_topic_name=orig_topic_name,
-                topic_name=topic_name,
-            )
-
-            changed_messages += messages_list
+    if propagate_mode in ["change_later", "change_all"]:
+        assert topic_name is not None
+        messages_list = update_messages_for_topic_edit(
+            message=message,
+            propagate_mode=propagate_mode,
+            orig_topic_name=orig_topic_name,
+            topic_name=topic_name,
+        )
+        changed_messages += messages_list
 
     if message.edit_history is not None:
         edit_history = ujson.loads(message.edit_history)

@@ -3204,6 +3204,25 @@ class EditMessageTest(ZulipTestCase):
         self.check_message(id5, topic_name="edited")
         self.check_message(id6, topic_name="topic3")
 
+    def test_propagate_invalid(self) -> None:
+        self.login('hamlet')
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland",
+                                       topic_name="topic1")
+
+        result = self.client_patch("/json/messages/" + str(id1), {
+            'topic': 'edited',
+            'propagate_mode': 'invalid',
+        })
+        self.assert_json_error(result, 'Invalid propagate_mode')
+        self.check_message(id1, topic_name="topic1")
+
+        result = self.client_patch("/json/messages/" + str(id1), {
+            'content': 'edited',
+            'propagate_mode': 'change_all',
+        })
+        self.assert_json_error(result, 'Invalid propagate_mode without topic edit')
+        self.check_message(id1, topic_name="topic1")
+
 class MirroredMessageUsersTest(ZulipTestCase):
     def test_invalid_sender(self) -> None:
         user = self.example_user('hamlet')
