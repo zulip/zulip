@@ -183,6 +183,7 @@ def send_response_message(bot_id: str, message_info: Dict[str, Any], response_da
         message_content=content,
         widget_content=widget_content,
         realm=realm,
+        bot_reply=True,
     )
 
 def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:

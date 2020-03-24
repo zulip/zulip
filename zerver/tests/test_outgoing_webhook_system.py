@@ -249,3 +249,21 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.topic_name(), "bar")
         display_recipient = get_display_recipient(last_message.recipient)
         self.assertEqual(display_recipient, "Denmark")
+
+        # We will create a new private stream and add Hamlet, the sender to the stream so that
+        # she can call for the bot, which is not subscribed to the stream
+        stream_name = 'private_stream'
+        self.make_stream(stream_name, invite_only=True)
+        user = self.example_user("hamlet")
+        self.subscribe(user, stream_name)
+
+        self.send_stream_message(user, "private_stream",
+                                 content="@**{}** foo".format(bot.full_name),
+                                 topic_name="bar", bot_reply=True)
+
+        last_message = self.get_last_message()
+        self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
+        self.assertEqual(last_message.sender_id, bot.id)
+        self.assertEqual(last_message.topic_name(), "bar")
+        display_recipient = get_display_recipient(last_message.recipient)
+        self.assertEqual(display_recipient, "private_stream")

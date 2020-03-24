@@ -2012,9 +2012,10 @@ def get_validated_emails(emails: Iterable[str]) -> List[str]:
     return list(filter(bool, {email.strip() for email in emails}))
 
 def check_send_stream_message(sender: UserProfile, client: Client, stream_name: str,
-                              topic: str, body: str, realm: Optional[Realm]=None) -> int:
+                              topic: str, body: str, realm: Optional[Realm]=None,
+                              bot_reply: bool=False) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic)
-    message = check_message(sender, client, addressee, body, realm)
+    message = check_message(sender, client, addressee, body, realm, bot_reply)
 
     return do_send_messages([message])[0]
 
@@ -2035,7 +2036,7 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: s
                        forwarder_user_profile: Optional[UserProfile]=None,
                        local_id: Optional[str]=None,
                        sender_queue_id: Optional[str]=None,
-                       widget_content: Optional[str]=None) -> int:
+                       widget_content: Optional[str]=None, bot_reply: bool=False) -> int:
 
     addressee = Addressee.legacy_build(
         sender,
@@ -2046,7 +2047,7 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: s
     message = check_message(sender, client, addressee,
                             message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id,
-                            widget_content)
+                            widget_content, bot_reply)
     return do_send_messages([message])[0]
 
 def check_schedule_message(sender: UserProfile, client: Client,
@@ -2201,7 +2202,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
                   forwarder_user_profile: Optional[UserProfile]=None,
                   local_id: Optional[str]=None,
                   sender_queue_id: Optional[str]=None,
-                  widget_content: Optional[str]=None) -> Dict[str, Any]:
+                  widget_content: Optional[str]=None, bot_reply: bool=False) -> Dict[str, Any]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
@@ -2237,8 +2238,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         recipient = stream.recipient
 
         # This will raise JsonableError if there are problems.
-
-        if sender.bot_type != sender.OUTGOING_WEBHOOK_BOT:
+        if sender.bot_type != sender.OUTGOING_WEBHOOK_BOT and not bot_reply:
             access_stream_for_send_message(
                 sender=sender,
                 stream=stream,

@@ -550,7 +550,7 @@ class ZulipTestCase(TestCase):
     def send_stream_message(self, sender: UserProfile, stream_name: str, content: str="test content",
                             topic_name: str="test",
                             recipient_realm: Optional[Realm]=None,
-                            sending_client_name: str="test suite") -> int:
+                            sending_client_name: str="test suite", bot_reply: bool=False) -> int:
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
         return check_send_stream_message(
@@ -560,6 +560,7 @@ class ZulipTestCase(TestCase):
             topic=topic_name,
             body=content,
             realm=recipient_realm,
+            bot_reply=bot_reply,
         )
 
     def get_messages_response(self, anchor: Union[int, str]=1,
