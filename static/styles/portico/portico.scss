@@ -134,6 +134,10 @@ html {
     color: hsl(0, 0%, 27%);
 }
 
+.app.help .hamburger {
+    display: none;
+}
+
 /* Markdown processor generates lots of spurious <p></p> */
 .help p:empty {
     margin: 0px;
@@ -255,10 +259,6 @@ html {
 .help .sidebar a:focus,
 .help .sidebar a:visited {
     outline: none;
-}
-
-.app.help .hamburger {
-    display: none;
 }
 
 .help-center ol,
