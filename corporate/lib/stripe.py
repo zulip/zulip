@@ -19,7 +19,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import Realm, UserProfile, RealmAuditLog
 from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_current_plan, get_customer_by_realm
+    get_current_plan_by_customer, get_customer_by_realm
 from zproject.config import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -279,7 +279,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
                             billing_schedule: int, stripe_token: Optional[str]) -> None:
     realm = user.realm
     customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
-    if get_current_plan(customer) is not None:
+    if get_current_plan_by_customer(customer) is not None:
         # Unlikely race condition from two people upgrading (clicking "Make payment")
         # at exactly the same time. Doesn't fully resolve the race condition, but having
         # a check here reduces the likelihood.
@@ -384,7 +384,7 @@ def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
     customer = get_customer_by_realm(realm)
     if customer is None:
         return
-    plan = get_current_plan(customer)
+    plan = get_current_plan_by_customer(customer)
     if plan is None:
         return
     if not plan.automanage_licenses:
@@ -505,7 +505,7 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
 def downgrade_for_realm_deactivation(realm: Realm) -> None:
     customer = get_customer_by_realm(realm)
     if customer is not None:
-        plan = get_current_plan(customer)
+        plan = get_current_plan_by_customer(customer)
         if plan:
             process_downgrade(plan)
             plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by('id').last()
