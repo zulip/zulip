@@ -47,7 +47,7 @@ def run():
     linter_config = LinterConfig(args)
 
     by_lang = linter_config.list_files(groups={
-        'backend': ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst'],
+        'backend': ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst', 'yml'],
         'frontend': ['js', 'ts', 'css', 'scss', 'hbs', 'html', 'lock'],
     }, exclude=EXCLUDED_FILES)
 
