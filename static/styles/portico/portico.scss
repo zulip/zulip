@@ -318,11 +318,11 @@ html {
 
 a.title {
     color: hsl(0, 0%, 0%);
-}
 
-a.title:hover {
-    color: hsl(0, 0%, 50%);
-    text-decoration: none;
+    &:hover {
+        color: hsl(0, 0%, 50%);
+        text-decoration: none;
+    }
 }
 
 .fakecontrol {
