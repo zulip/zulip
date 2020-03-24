@@ -358,13 +358,13 @@ img.screenshot {
 
 .show-integral {
     position: relative;
-}
 
-.show-integral:hover::after {
-    content: "dx";
-    font-weight: normal;
-    font-style: italic;
-    font-size: 70%;
+    &:hover::after {
+        content: "dx";
+        font-weight: normal;
+        font-style: italic;
+        font-size: 70%;
+    }
 }
 
 .integration {
