@@ -298,10 +298,12 @@ run_test("clean_user_content_links", () => {
         util.clean_user_content_links(
             '<a href="http://example.com">good</a> ' +
             '<a href="http://localhost:NNNN">invalid</a> ' +
+            '<a href="javascript:alert(1)">unsafe</a> ' +
             '<a href="/#fragment" target="_blank">fragment</a>'
         ),
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer">good</a> ' +
         '<a>invalid</a> ' +
+        '<a>unsafe</a> ' +
         '<a href="/#fragment">fragment</a>'
     );
 });
