@@ -48,7 +48,7 @@ from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool, \
-    check_string_or_int_list, check_string_or_int
+    check_string_or_int_list, check_string_or_int, check_string_in
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, \
@@ -1498,15 +1498,20 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
     fill_edit_history_entries(message_edit_history, message)
     return json_success({"message_history": reversed(message_edit_history)})
 
+PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            message_id: int=REQ(converter=to_non_negative_int, path_only=True),
                            topic_name: Optional[str]=REQ_topic(),
-                           propagate_mode: Optional[str]=REQ(default="change_one"),
+                           propagate_mode: Optional[str]=REQ(
+                               default="change_one",
+                               str_validator=check_string_in(PROPAGATE_MODE_VALUES)),
                            content: Optional[str]=REQ(default=None)) -> HttpResponse:
-
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
+
+    if propagate_mode != "change_one" and topic_name is None:
+        return json_error(_("Invalid propagate_mode without topic edit"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
     is_no_topic_msg = (message.topic_name() == "(no topic)")
