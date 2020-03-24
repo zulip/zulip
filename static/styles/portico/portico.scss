@@ -482,10 +482,10 @@ input.text-error {
 
 .portico-container {
     position: relative;
-}
 
-.portico-container .if-zulip-electron {
-    display: none;
+    .if-zulip-electron {
+        display: none;
+    }
 }
 
 /* detect if the platform is `ZulipDesktop` and if so, hide this tag! */
