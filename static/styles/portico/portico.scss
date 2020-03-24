@@ -629,35 +629,31 @@ input.text-error {
     margin: 0;
     padding: 3px 10px;
     text-align: left;
-
     opacity: 1;
-
     cursor: pointer;
-}
 
-.portico-header .dropdown ul li:hover {
-    background-color: hsl(190, 10%, 90%);
-    transition: none;
-}
+    &:hover {
+        background-color: hsl(190, 10%, 90%);
+        transition: none;
+    }
 
-.portico-header .dropdown ul li a {
-    display: block;
-    margin: 2px 0px;
-    padding: 0px;
+    a {
+        display: block;
+        margin: 2px 0px;
+        padding: 0px;
+        transition: none;
+        font-size: 0.9em;
+        font-weight: 400;
+        color: hsl(0, 0%, 27%);
+    }
 
-    transition: none;
-    font-size: 0.9em;
-    font-weight: 400;
+    &:hover a {
+        background-color: transparent;
+    }
 
-    color: hsl(0, 0%, 27%);
-}
-
-.portico-header .dropdown ul li:hover a {
-    background-color: transparent;
-}
-
-.portico-header .dropdown ul li a i {
-    margin-right: 5px;
+    a i {
+        margin-right: 5px;
+    }
 }
 
 .portico-header .dropdown-pill {
