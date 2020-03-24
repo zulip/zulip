@@ -301,10 +301,10 @@ html {
     border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
     background-color: hsl(0, 0%, 98%);
-}
 
-.help-box .blob {
-    margin-top: 0px;
+    .blob {
+        margin-top: 0px;
+    }
 }
 
 .help-inline {
