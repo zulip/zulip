@@ -206,7 +206,11 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
 
     if db_data:
         realm_uri_prefix = db_data['realm_uri'] + "/"
-        if link.startswith(realm_uri_prefix):
+        if (
+            link.startswith(realm_uri_prefix)
+            and urllib.parse.urljoin(realm_uri_prefix, link[len(realm_uri_prefix):])
+            == link
+        ):
             return link[len(realm_uri_prefix):]
 
     return link
