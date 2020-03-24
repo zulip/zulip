@@ -292,7 +292,7 @@ class LogRequests(MiddlewareMixin):
             if hasattr(request, 'user') and hasattr(request.user, 'format_requestor_for_logs'):
                 requestor_for_logs = request.user.format_requestor_for_logs()
             else:
-                requestor_for_logs = "%s/unauth" % (get_subdomain(request) or 'root',)
+                requestor_for_logs = "unauth@%s" % (get_subdomain(request) or 'root',)
         try:
             client = request.client.name
         except Exception:

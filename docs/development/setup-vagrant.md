@@ -380,11 +380,11 @@ When you navigate to Zulip in your browser, check your terminal and you
 should see something like:
 
 ```
-2016-05-04 18:21:57,547 INFO     127.0.0.1       GET     302 582ms (+start: 417ms) / (zulip/unauth via ?)
+2016-05-04 18:21:57,547 INFO     127.0.0.1       GET     302 582ms (+start: 417ms) / (unauth@zulip via ?)
 [04/May/2016 18:21:57]"GET / HTTP/1.0" 302 0
-2016-05-04 18:21:57,568 INFO     127.0.0.1       GET     301   4ms /login (zulip/unauth via ?)
+2016-05-04 18:21:57,568 INFO     127.0.0.1       GET     301   4ms /login (unauth@zulip via ?)
 [04/May/2016 18:21:57]"GET /login HTTP/1.0" 301 0
-2016-05-04 18:21:57,819 INFO     127.0.0.1       GET     200 209ms (db: 7ms/2q) /login/ (zulip/unauth via ?)
+2016-05-04 18:21:57,819 INFO     127.0.0.1       GET     200 209ms (db: 7ms/2q) /login/ (unauth@zulip via ?)
 ```
 
 Now you're ready for [Step 4: Developing.](#step-4-developing)
@@ -479,7 +479,7 @@ can halt vagrant from another Terminal/Git BASH window.
 From the window where run-dev.py is running:
 
 ```
-2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (zulip/unauth via ?)
+2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth@zulip via ?)
 ^C
 KeyboardInterrupt
 (zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$ exit
