@@ -771,11 +771,11 @@ a.bottom-signup-button {
     flex: 0 auto;
     width: 200px;
     margin: 10px;
-}
 
-.team .bdfl .profile-picture > img {
-    height: auto;
-    border-radius: 5px;
+    > img {
+        height: auto;
+        border-radius: 5px;
+    }
 }
 
 .team .bdfl .profile-information {
