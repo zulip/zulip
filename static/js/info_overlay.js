@@ -14,7 +14,7 @@ exports.set_up_toggler = function () {
         callback: function (name, key) {
             $(".overlay-modal").hide();
             $("#" + key).show();
-            $("#" + key).find(".modal-body").focus();
+            ui.get_scroll_element($("#" + key).find(".modal-body")).focus();
         },
     };
 
@@ -29,6 +29,7 @@ exports.set_up_toggler = function () {
     });
 
     for (const modal of modals) {
+        ui.get_scroll_element(modal).prop("tabindex", 0);
         keydown_util.handle({
             elem: modal,
             handlers: {
