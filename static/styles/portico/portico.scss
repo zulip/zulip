@@ -310,10 +310,10 @@ html {
 .help-inline {
     font-weight: 400;
     font-size: 0.9rem;
-}
 
-.help-inline.text-error {
-    color: hsl(1, 54%, 61%);
+    &.text-error {
+        color: hsl(1, 54%, 61%);
+    }
 }
 
 a.title {
