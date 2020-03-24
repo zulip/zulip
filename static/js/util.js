@@ -367,9 +367,17 @@ exports.clean_user_content_links = function (html) {
             continue;
         }
 
-        // We detect URLs that are just fragments by comparing the URL
-        // against a new URL generated using only the hash.
-        if (url.hash === "" || url.href !== new URL(url.hash, window.location.href).href) {
+        if (
+            // eslint-disable-next-line no-script-url
+            ["data:", "javascript:", "vbscript:"].indexOf(url.protocol) !== -1
+        ) {
+            // Remove unsafe links completely.
+            elt.removeAttribute("href");
+        } else if (
+            // We detect URLs that are just fragments by comparing the URL
+            // against a new URL generated using only the hash.
+            url.hash === "" || url.href !== new URL(url.hash, window.location.href).href
+        ) {
             elt.setAttribute("target", "_blank");
             elt.setAttribute("rel", "noopener noreferrer");
         } else {
