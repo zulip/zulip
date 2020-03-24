@@ -1400,17 +1400,18 @@ input.new-organization-button {
         pointer-events: initial;
         transform: translateX(calc(100% - 50px));
         overflow: auto;
+
         .content {
             visibility: visible;
         }
-    }
 
-    .app.help .sidebar.show + .hamburger {
-        transform: translateX(calc(100vw - 50px));
-    }
+        + .hamburger {
+            transform: translateX(calc(100vw - 50px));
+        }
 
-    .app.help .sidebar.show ~ .markdown {
-        filter: brightness(0.7);
+        ~ .markdown {
+            filter: brightness(0.7);
+        }
     }
 
     .app-main,
