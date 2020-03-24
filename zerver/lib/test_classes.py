@@ -28,12 +28,14 @@ from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 
 from zerver.lib.actions import (
-    check_send_message, create_stream_if_needed, bulk_add_subscriptions,
+    check_send_message, bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_send_stream_message, gather_subscriptions,
-    get_default_value_for_history_public_to_subscribers,
 )
-
+from zerver.lib.streams import (
+    create_stream_if_needed,
+    get_default_value_for_history_public_to_subscribers
+)
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
 )

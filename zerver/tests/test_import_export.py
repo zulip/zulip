@@ -52,13 +52,12 @@ from zerver.lib.bot_config import (
 from zerver.lib.actions import (
     do_create_user,
     do_add_reaction,
-    create_stream_if_needed,
     do_change_icon_source,
     do_change_logo_source,
     do_update_user_presence,
     do_change_plan_type,
 )
-
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_runner import slow
 
 from zerver.models import (

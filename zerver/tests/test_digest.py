@@ -7,9 +7,10 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import one_click_unsubscribe_link
-from zerver.lib.actions import create_stream_if_needed, do_create_user
+from zerver.lib.actions import do_create_user
 from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails, \
     exclude_subscription_modified_streams
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.models import get_client, get_realm, flush_per_request_caches, \

@@ -13,7 +13,6 @@ from zerver.models import (
 from zerver.lib.actions import (
     do_set_realm_property,
     do_deactivate_user,
-    create_streams_if_needed
 )
 from zerver.lib.message import (
     MessageDict,
@@ -47,6 +46,7 @@ from zerver.views.messages import (
     find_first_unread_anchor,
     LARGER_THAN_MAX_MESSAGE_ID,
 )
+from zerver.lib.streams import create_streams_if_needed
 
 from typing import Dict, Mapping, List, Sequence, Tuple, Union, Any, Optional
 import mock

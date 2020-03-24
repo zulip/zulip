@@ -17,7 +17,6 @@ from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
 from zerver.lib.bugdown import (
     version as bugdown_version,
     url_embed_preview_enabled,
-    convert as bugdown_convert,
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.bot_config import (
@@ -155,6 +154,9 @@ from zerver.lib.upload import claim_attachment, delete_message_image, \
 from zerver.lib.video_calls import request_zoom_video_call_url
 from zerver.tornado.event_queue import send_event
 from zerver.lib.types import ProfileFieldData
+from zerver.lib.streams import access_stream_for_send_message, subscribed_to_stream, check_stream_name, \
+    create_stream_if_needed, get_default_value_for_history_public_to_subscribers, \
+    render_stream_description, send_stream_creation_event
 
 from analytics.models import StreamCount
 
@@ -1810,73 +1812,6 @@ def check_send_typing_notification(sender: UserProfile, notification_to: Union[S
         operator=operator,
     )
 
-def send_stream_creation_event(stream: Stream, user_ids: List[int]) -> None:
-    event = dict(type="stream", op="create",
-                 streams=[stream.to_dict()])
-    send_event(stream.realm, event, user_ids)
-
-def get_default_value_for_history_public_to_subscribers(
-        realm: Realm,
-        invite_only: bool,
-        history_public_to_subscribers: Optional[bool]
-) -> bool:
-    if invite_only:
-        if history_public_to_subscribers is None:
-            # A private stream's history is non-public by default
-            history_public_to_subscribers = False
-    else:
-        # If we later decide to support public streams without
-        # history, we can remove this code path.
-        history_public_to_subscribers = True
-
-    if realm.is_zephyr_mirror_realm:
-        # In the Zephyr mirroring model, history is unconditionally
-        # not public to subscribers, even for public streams.
-        history_public_to_subscribers = False
-
-    return history_public_to_subscribers
-
-def render_stream_description(text: str) -> str:
-    return bugdown_convert(text, no_previews=True)
-
-def create_stream_if_needed(realm: Realm,
-                            stream_name: str,
-                            *,
-                            invite_only: bool=False,
-                            stream_post_policy: int=Stream.STREAM_POST_POLICY_EVERYONE,
-                            history_public_to_subscribers: Optional[bool]=None,
-                            stream_description: str="") -> Tuple[Stream, bool]:
-
-    history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
-        realm, invite_only, history_public_to_subscribers)
-
-    (stream, created) = Stream.objects.get_or_create(
-        realm=realm,
-        name__iexact=stream_name,
-        defaults = dict(
-            name=stream_name,
-            description=stream_description,
-            invite_only=invite_only,
-            stream_post_policy=stream_post_policy,
-            history_public_to_subscribers=history_public_to_subscribers,
-            is_in_zephyr_realm=realm.is_zephyr_mirror_realm
-        )
-    )
-
-    if created:
-        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
-
-        stream.recipient = recipient
-        stream.rendered_description = render_stream_description(stream_description)
-        stream.save(update_fields=["recipient", "rendered_description"])
-
-        if stream.is_public():
-            send_stream_creation_event(stream, active_non_guest_user_ids(stream.realm_id))
-        else:
-            realm_admin_ids = [user.id for user in
-                               stream.realm.get_admin_users_and_bots()]
-            send_stream_creation_event(stream, realm_admin_ids)
-    return stream, created
 
 def ensure_stream(realm: Realm,
                   stream_name: str,
@@ -1885,30 +1820,6 @@ def ensure_stream(realm: Realm,
     return create_stream_if_needed(realm, stream_name,
                                    invite_only=invite_only,
                                    stream_description=stream_description)[0]
-
-def create_streams_if_needed(realm: Realm,
-                             stream_dicts: List[Mapping[str, Any]]) -> Tuple[List[Stream], List[Stream]]:
-    """Note that stream_dict["name"] is assumed to already be stripped of
-    whitespace"""
-    added_streams = []  # type: List[Stream]
-    existing_streams = []  # type: List[Stream]
-    for stream_dict in stream_dicts:
-        stream, created = create_stream_if_needed(
-            realm,
-            stream_dict["name"],
-            invite_only=stream_dict.get("invite_only", False),
-            stream_post_policy=stream_dict.get("stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE),
-            history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
-            stream_description=stream_dict.get("description", "")
-        )
-
-        if created:
-            added_streams.append(stream)
-        else:
-            existing_streams.append(stream)
-
-    return added_streams, existing_streams
-
 
 def get_recipient_from_user_profiles(recipient_profiles: Sequence[UserProfile],
                                      forwarded_mirror_message: bool,
@@ -2163,14 +2074,6 @@ def check_schedule_message(sender: UserProfile, client: Client,
 
     return do_schedule_messages([message])[0]
 
-def check_stream_name(stream_name: str) -> None:
-    if stream_name.strip() == "":
-        raise JsonableError(_("Invalid stream name '%s'") % (stream_name,))
-    if len(stream_name) > Stream.MAX_NAME_LENGTH:
-        raise JsonableError(_("Stream name too long (limit: %s characters).") % (Stream.MAX_NAME_LENGTH,))
-    for i in stream_name:
-        if ord(i) == 0:
-            raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters.") % (stream_name,))
 
 def check_default_stream_group_name(group_name: str) -> None:
     if group_name.strip() == "":
@@ -2251,56 +2154,6 @@ def send_pm_if_empty_stream(stream: Optional[Stream],
                     "does not have any subscribers.") % arg_dict
 
     send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
-
-def validate_sender_can_write_to_stream(sender: UserProfile,
-                                        stream: Stream,
-                                        forwarder_user_profile: Optional[UserProfile]) -> None:
-    # Our caller is responsible for making sure that `stream` actually
-    # matches the realm of the sender.
-
-    # Organization admins can send to any stream, irrespective of the stream_post_policy value.
-    if sender.is_realm_admin or is_cross_realm_bot_email(sender.delivery_email):
-        pass
-    elif sender.is_bot and (sender.bot_owner is not None and
-                            sender.bot_owner.is_realm_admin):
-        pass
-    elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS:
-        raise JsonableError(_("Only organization administrators can send to this stream."))
-    elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS:
-        if sender.is_bot and (sender.bot_owner is not None and
-                              sender.bot_owner.is_new_member):
-            raise JsonableError(_("New members cannot send to this stream."))
-        elif sender.is_new_member:
-            raise JsonableError(_("New members cannot send to this stream."))
-
-    if not (stream.invite_only or sender.is_guest):
-        # This is a public stream and sender is not a guest user
-        return
-
-    if subscribed_to_stream(sender, stream.id):
-        # It is private, but your are subscribed
-        return
-
-    if sender.is_api_super_user:
-        return
-
-    if (forwarder_user_profile is not None and forwarder_user_profile.is_api_super_user):
-        return
-
-    if sender.is_bot and (sender.bot_owner is not None and
-                          subscribed_to_stream(sender.bot_owner, stream.id)):
-        # Bots can send to any stream their owner can.
-        return
-
-    if sender.delivery_email == settings.WELCOME_BOT:
-        # The welcome bot welcomes folks to the stream.
-        return
-
-    if sender.delivery_email == settings.NOTIFICATION_BOT:
-        return
-
-    # All other cases are an error.
-    raise JsonableError(_("Not authorized to send to stream '%s'") % (stream.name,))
 
 def validate_stream_name_with_pm_notification(stream_name: str, realm: Realm,
                                               sender: UserProfile) -> Stream:
@@ -2394,11 +2247,12 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         recipient = stream.recipient
 
         # This will raise JsonableError if there are problems.
-        validate_sender_can_write_to_stream(
-            sender=sender,
-            stream=stream,
-            forwarder_user_profile=forwarder_user_profile
-        )
+
+        if sender.bot_type != sender.OUTGOING_WEBHOOK_BOT:
+            access_stream_for_send_message(
+                sender=sender,
+                stream=stream,
+                forwarder_user_profile=forwarder_user_profile)
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
@@ -4356,12 +4210,6 @@ def do_update_message_flags(user_profile: UserProfile,
     statsd.incr("flags.%s.%s" % (flag, operation), count)
     return count
 
-def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
-    return Subscription.objects.filter(
-        user_profile=user_profile,
-        active=True,
-        recipient__type=Recipient.STREAM,
-        recipient__type_id=stream_id).exists()
 
 def truncate_content(content: str, max_length: int, truncation_message: str) -> str:
     if len(content) > max_length:

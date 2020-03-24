@@ -24,7 +24,7 @@ from zerver.lib.export import DATE_FIELDS, \
     Record, TableData, TableName, Field, Path
 from zerver.lib.message import do_render_markdown
 from zerver.lib.bugdown import version as bugdown_version
-from zerver.lib.actions import render_stream_description
+from zerver.lib.streams import render_stream_description
 from zerver.lib.upload import random_name, sanitize_name, \
     guess_type, BadImageError
 from zerver.lib.utils import generate_api_key, process_list_in_batches
