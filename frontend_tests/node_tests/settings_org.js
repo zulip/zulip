@@ -279,7 +279,6 @@ function test_submit_settings_form(submit_form) {
         email_address_visibility: '1',
         add_emoji_by_admins_only: false,
         create_stream_policy: '2',
-        waiting_period_threshold: 10,
     };
     assert.deepEqual(data, expected_value);
 
