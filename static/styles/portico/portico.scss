@@ -120,11 +120,6 @@ html {
     border-radius: 5px;
 }
 
-.help .app-main {
-    padding: 0;
-    margin-top: 59px;
-}
-
 .app.help {
     display: inline-flex;
 
@@ -136,6 +131,11 @@ html {
     .hamburger {
         display: none;
     }
+}
+
+.help .app-main {
+    padding: 0;
+    margin-top: 59px;
 }
 
 /* Markdown processor generates lots of spurious <p></p> */
@@ -1502,10 +1502,6 @@ input.new-organization-button {
 }
 
 @media (max-width: 500px) {
-    .help .app-main {
-        margin-top: 39px;
-    }
-
     .app.help {
         .sidebar {
             top: 39px;
@@ -1515,6 +1511,10 @@ input.new-organization-button {
         .hamburger {
             top: 50px;
         }
+    }
+
+    .help .app-main {
+        margin-top: 39px;
     }
 
     .help .markdown {
