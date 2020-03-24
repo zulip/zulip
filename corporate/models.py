@@ -65,6 +65,12 @@ def get_current_plan_by_customer(customer: Customer) -> Optional[CustomerPlan]:
     return CustomerPlan.objects.filter(
         customer=customer, status__lt=CustomerPlan.LIVE_STATUS_THRESHOLD).first()
 
+def get_current_plan_by_realm(realm: Realm) -> Optional[CustomerPlan]:
+    customer = get_customer_by_realm(realm)
+    if customer is None:
+        return None
+    return get_current_plan_by_customer(customer)
+
 class LicenseLedger(models.Model):
     plan = models.ForeignKey(CustomerPlan, on_delete=CASCADE)  # type: CustomerPlan
     # Also True for the initial upgrade.
