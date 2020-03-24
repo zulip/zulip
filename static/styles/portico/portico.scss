@@ -520,24 +520,21 @@ input.text-error {
     vertical-align: top;
 
     text-align: left;
-}
 
-.footer section h3 {
-    text-transform: uppercase;
-    font-size: 1em;
-    font-weight: 600;
-    line-height: 1.2;
+    h3 {
+        text-transform: uppercase;
+        font-size: 1em;
+        font-weight: 600;
+        line-height: 1.2;
+        margin-bottom: 5px;
+    }
 
-    margin-bottom: 5px;
-}
-
-.footer section ul {
-    color: hsl(0, 0%, 67%);
-
-    list-style-type: none;
-    margin-left: 0;
-
-    font-weight: 400;
+    ul {
+        color: hsl(0, 0%, 67%);
+        list-style-type: none;
+        margin-left: 0;
+        font-weight: 400;
+    }
 }
 
 /* -- end new footer -- */
