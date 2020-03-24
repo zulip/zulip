@@ -218,12 +218,13 @@ exports.get_title_data = function (user_ids_string, is_group) {
     const person = people.get_by_user_id(user_id);
 
     if (person.is_bot) {
-        // Bot has an owner.
-        if (person.bot_owner_id !== null) {
-            person.bot_owner_full_name = people.get_by_user_id(
-                person.bot_owner_id).full_name;
+        const bot_owner = people.get_bot_owner_user(person);
 
-            const bot_owner_name = i18n.t('Owner: __name__', {name: person.bot_owner_full_name});
+        if (bot_owner) {
+            const bot_owner_name = i18n.t(
+                'Owner: __name__',
+                {name: bot_owner.full_name}
+            );
 
             return {
                 first_line: person.full_name,
