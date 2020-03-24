@@ -104,11 +104,11 @@ class Command(BaseCommand):
                                                     no_keep_alive=no_keep_alive)
                 http_server.listen(int(port), address=addr)
 
+                from zerver.tornado.ioloop_logging import logging_data
+                logging_data['port'] = port
                 setup_event_queue(int(port))
                 add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()
-                from zerver.tornado.ioloop_logging import logging_data
-                logging_data['port'] = port
 
                 instance = ioloop.IOLoop.instance()
 
