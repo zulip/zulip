@@ -1362,11 +1362,11 @@ input.new-organization-button {
 @media (max-width: 800px) {
     .app.help .markdown {
         width: 100vw;
-    }
 
-    .app.help .markdown .content {
-        max-width: none;
-        margin-left: 50px;
+        .content {
+            max-width: none;
+            margin-left: 50px;
+        }
     }
 
     .app.help .hamburger {
