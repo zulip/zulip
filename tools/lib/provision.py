@@ -170,6 +170,8 @@ if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version 
             "postgresql-server-dev-{0}",
             "libgroonga-dev",
             "libmsgpack-dev",
+            "clang-9",
+            "llvm-9-dev"
         ]
     ] + VENV_DEPENDENCIES
 elif "debian" in os_families():
