@@ -1177,7 +1177,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             return -1
 
     def format_requestor_for_logs(self) -> str:
-        return "{}/{}".format(self.realm.string_id, self.id)
+        return "{}/{}".format(self.realm.string_id or 'root', self.id)
 
     def set_password(self, password: Optional[str]) -> None:
         if password is None:
