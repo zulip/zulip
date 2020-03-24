@@ -838,7 +838,7 @@ help_markdown_rules = RuleList(
 )
 
 txt_rules = RuleList(
-    langs=['txt', 'text', 'yaml', 'rst'],
+    langs=['txt', 'text', 'yaml', 'rst', 'yml'],
     rules=whitespace_rules,
 )
 non_py_rules = [
