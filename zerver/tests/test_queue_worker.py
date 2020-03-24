@@ -9,13 +9,13 @@ from django.test import override_settings
 from mock import patch, MagicMock
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
-from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import FromAddress
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, UserActivity, PreregistrationUser, \
