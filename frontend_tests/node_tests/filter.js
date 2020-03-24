@@ -404,7 +404,7 @@ run_test('show_first_unread', () => {
     assert(filter.allow_use_first_unread_when_narrowing());
 
 });
-run_test('topic_stuff', () => {
+run_test('filter_with_new_params_topic', () => {
     const operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'topic', operand: 'old topic'},
@@ -422,6 +422,26 @@ run_test('topic_stuff', () => {
 
     assert.deepEqual(new_filter.operands('stream'), ['foo']);
     assert.deepEqual(new_filter.operands('topic'), ['new topic']);
+});
+
+run_test('filter_with_new_params_stream', () => {
+    const operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'old topic'},
+    ];
+    const filter = new Filter(operators);
+
+    assert(filter.has_topic('foo', 'old topic'));
+    assert(!filter.has_topic('wrong', 'old topic'));
+    assert(!filter.has_topic('foo', 'wrong'));
+
+    const new_filter = filter.filter_with_new_params({
+        operator: 'stream',
+        operand: 'new stream',
+    });
+
+    assert.deepEqual(new_filter.operands('stream'), ['new stream']);
+    assert.deepEqual(new_filter.operands('topic'), ['old topic']);
 });
 
 run_test('new_style_operators', () => {
