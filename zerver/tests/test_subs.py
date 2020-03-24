@@ -27,7 +27,7 @@ from zerver.lib.response import (
 
 from zerver.lib.streams import (
     access_stream_by_id, access_stream_by_name, filter_stream_authorization,
-    list_to_streams,
+    list_to_streams, create_streams_if_needed
 )
 
 from zerver.lib.stream_subscription import (
@@ -52,7 +52,7 @@ from zerver.lib.actions import (
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_stream,
     do_get_streams, do_change_is_guest,
-    create_stream_if_needed, create_streams_if_needed,
+    create_stream_if_needed,
     ensure_stream,
     do_deactivate_stream,
     do_deactivate_user,

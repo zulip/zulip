@@ -35,7 +35,6 @@ from zerver.models import (
     Stream, Subscription, flush_per_request_caches, get_system_bot,
 )
 from zerver.lib.actions import (
-    create_stream_if_needed,
     do_change_is_admin,
     get_stream,
     do_create_default_stream_group,
@@ -59,6 +58,7 @@ from zerver.lib.email_notifications import enqueue_welcome_emails, \
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
     HostRequestMock, load_subdomain_token
 from zerver.lib.test_classes import (

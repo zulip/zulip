@@ -14,7 +14,6 @@ from zerver.lib.actions import (
     do_deactivate_stream,
     do_create_realm,
     do_scrub_realm,
-    create_stream_if_needed,
     do_change_plan_type,
     do_send_realm_reactivation_email
 )
@@ -22,6 +21,7 @@ from zerver.lib.actions import (
 from confirmation.models import create_confirmation_link, Confirmation
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,

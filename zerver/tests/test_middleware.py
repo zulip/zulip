@@ -5,8 +5,8 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.test import override_settings
 from unittest.mock import Mock, patch
-from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.realm_icon import get_realm_icon_url
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.middleware import is_slow_query, write_log_line
 from zerver.models import get_realm, get_system_bot
