@@ -493,22 +493,18 @@ input.text-error {
     display: block;
 }
 
+/* -- new footer -- */
 .footer {
     margin: 20px;
     z-index: 100;
     width: calc(100% - 40px);
-
     text-align: center;
+    font-size: 0.9em;
 }
 
 .footer .footer-navigation {
     margin-left: 0px;
     margin-right: 0px;
-}
-
-/* -- new footer -- */
-.footer {
-    font-size: 0.9em;
 }
 
 .footer a {
