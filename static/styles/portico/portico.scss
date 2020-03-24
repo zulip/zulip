@@ -1396,10 +1396,6 @@ input.new-organization-button {
         transition: all 0.3s ease;
     }
 
-    .help .sidebar .content:not(.show) {
-        visibility: hidden;
-    }
-
     .app.help .sidebar.show {
         pointer-events: initial;
         transform: translateX(calc(100% - 50px));
@@ -1424,6 +1420,10 @@ input.new-organization-button {
 
     .app-main {
         padding: 0;
+    }
+
+    .help .sidebar .content:not(.show) {
+        visibility: hidden;
     }
 
     .help .sidebar:not(.show) a.highlighted {
