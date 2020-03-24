@@ -16,6 +16,7 @@ from django.urls.resolvers import get_resolver
 from django.http import HttpResponse
 from django.utils.timezone import utc as timezone_utc
 from django.conf import settings
+from django.utils.timezone import now as timezone_now
 
 import stripe
 
@@ -35,7 +36,7 @@ from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, 
     update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan, \
     invoice_plan, invoice_plans_as_needed, get_discount_for_realm
 from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_customer_by_realm
+    get_customer_by_realm, get_current_plan_by_customer
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
@@ -1155,6 +1156,30 @@ class BillingHelpersTest(ZulipTestCase):
 
         customer = Customer.objects.create(realm=realm, stripe_customer_id='cus_12345')
         self.assertEqual(get_customer_by_realm(realm), customer)
+
+    def test_get_current_plan_by_customer(self) -> None:
+        realm = get_realm("zulip")
+        customer = Customer.objects.create(realm=realm, stripe_customer_id='cus_12345')
+
+        self.assertEqual(get_current_plan_by_customer(customer), None)
+
+        plan = CustomerPlan.objects.create(customer=customer, status=CustomerPlan.ACTIVE,
+                                           billing_cycle_anchor=timezone_now(),
+                                           billing_schedule=CustomerPlan.ANNUAL,
+                                           tier=CustomerPlan.STANDARD)
+        self.assertEqual(get_current_plan_by_customer(customer), plan)
+
+        plan.status = CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+        plan.save(update_fields=["status"])
+        self.assertEqual(get_current_plan_by_customer(customer), plan)
+
+        plan.status = CustomerPlan.ENDED
+        plan.save(update_fields=["status"])
+        self.assertEqual(get_current_plan_by_customer(customer), None)
+
+        plan.status = CustomerPlan.NEVER_STARTED
+        plan.save(update_fields=["status"])
+        self.assertEqual(get_current_plan_by_customer(customer), None)
 
 class LicenseLedgerTest(StripeTestCase):
     def test_add_plan_renewal_if_needed(self) -> None:

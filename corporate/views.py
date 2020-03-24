@@ -23,7 +23,8 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
     start_of_next_billing_cycle, renewal_amount, \
     make_end_of_cycle_updates_if_needed
-from corporate.models import CustomerPlan, get_current_plan, get_customer_by_realm
+from corporate.models import CustomerPlan, get_current_plan_by_customer, \
+    get_customer_by_realm
 
 billing_logger = logging.getLogger('corporate.stripe')
 
@@ -118,7 +119,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
 
     user = request.user
     customer = get_customer_by_realm(user.realm)
-    if customer is not None and get_current_plan(customer) is not None:
+    if customer is not None and get_current_plan_by_customer(customer) is not None:
         return HttpResponseRedirect(reverse('corporate.views.billing_home'))
 
     percent_off = Decimal(0)
@@ -168,7 +169,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     charge_automatically = False
 
     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-    plan = get_current_plan(customer)
+    plan = get_current_plan_by_customer(customer)
     if plan is not None:
         plan_name = {
             CustomerPlan.STANDARD: 'Zulip Standard',
@@ -209,7 +210,7 @@ def change_plan_at_end_of_cycle(request: HttpRequest, user: UserProfile,
     customer = get_customer_by_realm(user.realm)
     assert(customer is not None)  # for mypy
 
-    plan = get_current_plan(customer)
+    plan = get_current_plan_by_customer(customer)
     assert(plan is not None)  # for mypy
     do_change_plan_status(plan, status)
     return json_success()
