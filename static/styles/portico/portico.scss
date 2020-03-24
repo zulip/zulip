@@ -500,40 +500,38 @@ input.text-error {
     width: calc(100% - 40px);
     text-align: center;
     font-size: 0.9em;
-}
 
-.footer .footer-navigation {
-    margin-left: 0px;
-    margin-right: 0px;
-}
-
-.footer a {
-    color: inherit !important;
-}
-
-.footer section {
-    width: calc(25% - 40px);
-    margin: 0px 20px;
-    max-width: 150px;
-
-    display: inline-block;
-    vertical-align: top;
-
-    text-align: left;
-
-    h3 {
-        text-transform: uppercase;
-        font-size: 1em;
-        font-weight: 600;
-        line-height: 1.2;
-        margin-bottom: 5px;
+    .footer-navigation {
+        margin-left: 0px;
+        margin-right: 0px;
     }
 
-    ul {
-        color: hsl(0, 0%, 67%);
-        list-style-type: none;
-        margin-left: 0;
-        font-weight: 400;
+    a {
+        color: inherit !important;
+    }
+
+    section {
+        width: calc(25% - 40px);
+        margin: 0px 20px;
+        max-width: 150px;
+        display: inline-block;
+        vertical-align: top;
+        text-align: left;
+
+        h3 {
+            text-transform: uppercase;
+            font-size: 1em;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        ul {
+            color: hsl(0, 0%, 67%);
+            list-style-type: none;
+            margin-left: 0;
+            font-weight: 400;
+        }
     }
 }
 
@@ -1428,10 +1426,10 @@ input.new-organization-button {
         width: 450px;
         margin-left: auto;
         margin-right: auto;
-    }
 
-    .footer section {
-        width: calc(50% - 40px);
+        section {
+            width: calc(50% - 40px);
+        }
     }
 }
 
@@ -1549,19 +1547,21 @@ input.new-organization-button {
 @media (max-width: 475px) {
     .footer {
         width: auto;
-    }
 
-    .footer section {
-        margin: 0px 3px;
-        width: calc(50% - 8px);
+        section {
+            margin: 0px 3px;
+            width: calc(50% - 8px);
+        }
     }
 }
 
 @media (max-width: 400px) {
-    .footer section {
-        width: calc(100% - 40px);
-        max-width: none;
-        text-align: center;
+    .footer {
+        section {
+            width: calc(100% - 40px);
+            max-width: none;
+            text-align: center;
+        }
     }
 }
 
