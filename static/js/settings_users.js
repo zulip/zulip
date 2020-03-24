@@ -135,13 +135,15 @@ function populate_users(realm_people_data) {
             // Convert bot type id to string for viewing to the users.
             user.bot_type = settings_bots.type_id_to_string(user.bot_type);
 
-            if (user.bot_owner_id !== null) {
-                user.bot_owner_full_name = people.get_by_user_id(
-                    user.bot_owner_id).full_name;
+            const bot_owner = people.get_bot_owner_user(user);
+
+            if (bot_owner) {
+                user.bot_owner_full_name = bot_owner.full_name;
             } else {
                 user.no_owner = true;
                 user.bot_owner_full_name = i18n.t("No owner");
             }
+
             bots.push(user);
         } else if (user.is_active) {
             user.last_active = get_last_active(user);
