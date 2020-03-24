@@ -748,15 +748,17 @@ a.bottom-signup-button {
     margin-bottom: 3px;
 }
 
-.team .profile .profile-name {
-    font-weight: 600;
-}
+.team .profile {
+    .profile-name {
+        font-weight: 600;
+    }
 
-.team .profile .profile-role {
-    opacity: 0.5;
-    text-transform: uppercase;
-    font-size: 0.8em;
-    font-weight: 400;
+    .profile-role {
+        opacity: 0.5;
+        text-transform: uppercase;
+        font-size: 0.8em;
+        font-weight: 400;
+    }
 }
 
 .team .bdfl {
