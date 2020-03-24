@@ -24,7 +24,7 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     start_of_next_billing_cycle, renewal_amount, \
     make_end_of_cycle_updates_if_needed
 from corporate.models import CustomerPlan, get_current_plan_by_customer, \
-    get_customer_by_realm
+    get_customer_by_realm, get_current_plan_by_realm
 
 billing_logger = logging.getLogger('corporate.stripe')
 
@@ -207,10 +207,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 def change_plan_at_end_of_cycle(request: HttpRequest, user: UserProfile,
                                 status: int=REQ("status", validator=check_int)) -> HttpResponse:
     assert(status in [CustomerPlan.ACTIVE, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE])
-    customer = get_customer_by_realm(user.realm)
-    assert(customer is not None)  # for mypy
-
-    plan = get_current_plan_by_customer(customer)
+    plan = get_current_plan_by_realm(user.realm)
     assert(plan is not None)  # for mypy
     do_change_plan_status(plan, status)
     return json_success()

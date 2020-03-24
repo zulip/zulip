@@ -19,7 +19,8 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import Realm, UserProfile, RealmAuditLog
 from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_current_plan_by_customer, get_customer_by_realm
+    get_current_plan_by_customer, get_customer_by_realm, \
+    get_current_plan_by_realm
 from zproject.config import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -381,10 +382,7 @@ def update_license_ledger_for_automanaged_plan(realm: Realm, plan: CustomerPlan,
         licenses_at_next_renewal=licenses_at_next_renewal)
 
 def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
-    customer = get_customer_by_realm(realm)
-    if customer is None:
-        return
-    plan = get_current_plan_by_customer(customer)
+    plan = get_current_plan_by_realm(realm)
     if plan is None:
         return
     if not plan.automanage_licenses:
@@ -503,11 +501,11 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
 # During realm deactivation we instantly downgrade the plan to Limited.
 # Extra users added in the final month are not charged.
 def downgrade_for_realm_deactivation(realm: Realm) -> None:
-    customer = get_customer_by_realm(realm)
-    if customer is not None:
-        plan = get_current_plan_by_customer(customer)
-        if plan:
-            process_downgrade(plan)
-            plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by('id').last()
-            plan.next_invoice_date = next_invoice_date(plan)
-            plan.save(update_fields=["invoiced_through", "next_invoice_date"])
+    plan = get_current_plan_by_realm(realm)
+    if plan is None:
+        return
+
+    process_downgrade(plan)
+    plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by('id').last()
+    plan.next_invoice_date = next_invoice_date(plan)
+    plan.save(update_fields=["invoiced_through", "next_invoice_date"])

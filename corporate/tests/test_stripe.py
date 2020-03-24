@@ -36,7 +36,8 @@ from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, 
     update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan, \
     invoice_plan, invoice_plans_as_needed, get_discount_for_realm
 from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_customer_by_realm, get_current_plan_by_customer
+    get_customer_by_realm, get_current_plan_by_customer, \
+    get_current_plan_by_realm
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
@@ -1180,6 +1181,20 @@ class BillingHelpersTest(ZulipTestCase):
         plan.status = CustomerPlan.NEVER_STARTED
         plan.save(update_fields=["status"])
         self.assertEqual(get_current_plan_by_customer(customer), None)
+
+    def test_get_current_plan_by_realm(self) -> None:
+        realm = get_realm("zulip")
+
+        self.assertEqual(get_current_plan_by_realm(realm), None)
+
+        customer = Customer.objects.create(realm=realm, stripe_customer_id='cus_12345')
+        self.assertEqual(get_current_plan_by_realm(realm), None)
+
+        plan = CustomerPlan.objects.create(customer=customer, status=CustomerPlan.ACTIVE,
+                                           billing_cycle_anchor=timezone_now(),
+                                           billing_schedule=CustomerPlan.ANNUAL,
+                                           tier=CustomerPlan.STANDARD)
+        self.assertEqual(get_current_plan_by_realm(realm), plan)
 
 class LicenseLedgerTest(StripeTestCase):
     def test_add_plan_renewal_if_needed(self) -> None:
