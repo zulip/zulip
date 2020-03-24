@@ -18,6 +18,14 @@ function set_email_visibility(code) {
 
 set_email_visibility(admins_only);
 
+const welcome_bot = {
+    email: 'welcome-bot@example.com',
+    user_id: 4,
+    full_name: 'Welcome Bot',
+    is_bot: true,
+    // cross realm bots have no owner
+};
+
 const me = {
     email: 'me@example.com',
     user_id: 30,
@@ -112,9 +120,25 @@ run_test('basics', () => {
         user_id: 35,
         full_name: 'Bot Botson',
         is_bot: true,
+        bot_owner_id: isaac.user_id,
     };
     people.add(bot_botson);
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
+
+    assert.equal(
+        people.get_bot_owner_user(bot_botson).full_name,
+        'Isaac Newton'
+    );
+
+    // Add our cross-realm bot.  It won't add to our human
+    // count, and it has no owner.
+    people._add_user(welcome_bot);
+    assert.equal(people.get_bot_owner_user(welcome_bot), undefined);
+    assert.equal(people.get_active_human_count(), 1);
+    assert.equal(
+        people.get_by_email(welcome_bot.email).full_name,
+        'Welcome Bot'
+    );
 
     // get_realm_users() will include our active bot,
     // but will exclude isaac (who is deactivated)

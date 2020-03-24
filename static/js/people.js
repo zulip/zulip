@@ -42,6 +42,7 @@ function split_to_ints(lst) {
     return lst.split(',').map(s => parseInt(s, 10));
 }
 
+
 exports.get_by_user_id = function (user_id, ignore_missing) {
     if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
         blueslip.error('Unknown user_id in get_by_user_id: ' + user_id);
@@ -65,6 +66,17 @@ exports.get_by_email = function (email) {
     }
 
     return person;
+};
+
+exports.get_bot_owner_user = function (user) {
+    const owner_id = user.bot_owner_id;
+
+    if (owner_id === undefined || owner_id === null) {
+        // This is probably a cross-realm bot.
+        return;
+    }
+
+    return exports.get_by_user_id(owner_id);
 };
 
 exports.id_matches_email_operand = function (user_id, email) {
