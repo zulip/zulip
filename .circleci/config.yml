@@ -109,7 +109,7 @@ jobs:
           path: ./var/casper/
           destination: casper
 
-      - store_artifacts:    
+      - store_artifacts:
           path: ../../../tmp/zulip-test-event-log/
           destination: test-reports
 
