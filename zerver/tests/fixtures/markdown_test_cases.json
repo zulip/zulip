@@ -408,6 +408,17 @@
       "expected_output": "<p><a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">https://github.com</a></p>"
     },
     {
+      "name": "fragment_link",
+      "input": "[foo](http://zulip.testserver/#narrow/stream/1-Denmark)",
+      "expected_output": "<p><a href=\"#narrow/stream/1-Denmark\" title=\"#narrow/stream/1-Denmark\">foo</a></p>",
+      "marked_expected_output": "<p><a href=\"http://zulip.testserver/#narrow/stream/1-Denmark\" target=\"_blank\" title=\"http://zulip.testserver/#narrow/stream/1-Denmark\">foo</a></p>"
+    },
+    {
+      "name": "not_fragment_link",
+      "input": "[foo](http://zulip.testserver/https://example.com)",
+      "expected_output": "<p><a href=\"http://zulip.testserver/https://example.com\" target=\"_blank\" title=\"http://zulip.testserver/https://example.com\">foo</a></p>"
+    },
+    {
       "name": "nl2br",
       "input": "test\nbar",
       "expected_output": "<p>test<br>\nbar</p>",
@@ -1036,6 +1047,16 @@
       "[foo](javascript:<i>\"foo&bar\"</i>)",
       "<p>[foo](javascript:&lt;i&gt;\"foo&amp;bar\"&lt;/i&gt;)</p>",
       ""
+    ],
+    [
+      "http://zulip.testserver/#narrow/stream/1-Denmark",
+      "<p><a href=\"#narrow/stream/1-Denmark\" title=\"#narrow/stream/1-Denmark\">http://zulip.testserver/#narrow/stream/1-Denmark</a></p>",
+      ""
+    ],
+    [
+      "http://zulip.testserver/https://example.com",
+      "<p>%s</p>",
+      "http://zulip.testserver/https://example.com"
     ],
     [
       "a@b.com",
