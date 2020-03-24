@@ -143,9 +143,44 @@ jobs:
       - *save_cache_requirements
       - *run_backend_tests
 
+  "focal-backend-frontend-python3.8":
+      docker:
+        # This is built from tools/circleci/images/focal/Dockerfile.
+        # Focal ships with Python 3.8.2.
+        - image: arpit551/circleci:focal-test
+
+      working_directory: ~/zulip
+
+      steps:
+        - checkout
+
+        - *create_cache_directories
+        - *restore_cache_package_json
+        - *restore_cache_requirements
+        - *install_dependencies
+        - *save_cache_package_json
+        - *save_cache_requirements
+        - *run_backend_tests
+        - *run_frontend_tests
+        # We only need to upload coverage reports on whichever platform
+        # runs the frontend tests.
+        - *upload_coverage_report
+
+        - store_artifacts:
+            path: ./var/casper/
+            destination: casper
+
+        - store_artifacts:
+            path: ../../../tmp/zulip-test-event-log/
+            destination: test-reports
+
+        - store_test_results:
+              path: ./var/xunit-test-results/casper/
+
 workflows:
   version: 2
   build:
     jobs:
       - "xenial-backend-frontend-python3.5"
       - "bionic-backend-python3.6"
+      - "focal-backend-frontend-python3.8"
