@@ -132,10 +132,10 @@ html {
     overflow: auto;
 
     color: hsl(0, 0%, 27%);
-}
 
-.app.help .hamburger {
-    display: none;
+    .hamburger {
+        display: none;
+    }
 }
 
 /* Markdown processor generates lots of spurious <p></p> */
@@ -1360,57 +1360,56 @@ input.new-organization-button {
 }
 
 @media (max-width: 800px) {
-    .app.help .markdown {
-        width: 100vw;
+    .app.help {
+        .markdown {
+            width: 100vw;
 
-        .content {
-            max-width: none;
-            margin-left: 50px;
-        }
-    }
-
-    .app.help .hamburger {
-        display: block;
-        position: fixed;
-        top: 70px;
-        left: 9px;
-        fill: hsl(0, 0%, 100%);
-        z-index: 2;
-
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .app.help .sidebar {
-        position: fixed;
-        top: 59px;
-        right: calc(100vw - 50px);
-
-        width: 100%;
-        min-width: unset;
-        height: calc(100vh - 59px);
-
-        pointer-events: none;
-        overflow: hidden;
-        transform: translateX(0);
-        transition: all 0.3s ease;
-    }
-
-    .app.help .sidebar.show {
-        pointer-events: initial;
-        transform: translateX(calc(100% - 50px));
-        overflow: auto;
-
-        .content {
-            visibility: visible;
+            .content {
+                max-width: none;
+                margin-left: 50px;
+            }
         }
 
-        + .hamburger {
-            transform: translateX(calc(100vw - 50px));
+        .hamburger {
+            display: block;
+            position: fixed;
+            top: 70px;
+            left: 9px;
+            fill: hsl(0, 0%, 100%);
+            z-index: 2;
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
 
-        ~ .markdown {
-            filter: brightness(0.7);
+        .sidebar {
+            position: fixed;
+            top: 59px;
+            right: calc(100vw - 50px);
+            width: 100%;
+            min-width: unset;
+            height: calc(100vh - 59px);
+            pointer-events: none;
+            overflow: hidden;
+            transform: translateX(0);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.show {
+            pointer-events: initial;
+            transform: translateX(calc(100% - 50px));
+            overflow: auto;
+
+            .content {
+                visibility: visible;
+            }
+
+            + .hamburger {
+                transform: translateX(calc(100vw - 50px));
+            }
+
+            ~ .markdown {
+                filter: brightness(0.7);
+            }
         }
     }
 
@@ -1507,13 +1506,15 @@ input.new-organization-button {
         margin-top: 39px;
     }
 
-    .app.help .sidebar {
-        top: 39px;
-        height: calc(100vh - 39px);
-    }
+    .app.help {
+        .sidebar {
+            top: 39px;
+            height: calc(100vh - 39px);
+        }
 
-    .app.help .hamburger {
-        top: 50px;
+        .hamburger {
+            top: 50px;
+        }
     }
 
     .help .markdown {
