@@ -179,6 +179,21 @@ html {
     border-bottom: none;
 }
 
+
+.help .sidebar h1.home-link {
+    font-size: 1em;
+    margin-bottom: 17px;
+}
+
+.help .sidebar h1.home-link a::before {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+
+    content: "\f0d9";
+    margin-right: 10px;
+}
+
 .help .sidebar h2 {
     font-weight: 400;
     font-size: 1.2em;
@@ -200,20 +215,6 @@ html {
     float: right;
 
     opacity: 0.5;
-}
-
-.help .sidebar h1.home-link {
-    font-size: 1em;
-    margin-bottom: 17px;
-}
-
-.help .sidebar h1.home-link a::before {
-    display: inline-block;
-    font: normal normal normal 14px/1 FontAwesome;
-    font-size: inherit;
-
-    content: "\f0d9";
-    margin-right: 10px;
 }
 
 .help .sidebar ul {
