@@ -6,10 +6,30 @@ function star_count() {
     });
 }
 
-function toggle_last_star() {
-    casper.evaluate(function () {
-        $("#zhome .star").last().click();
+function toggle_test_star_message() {
+    var error = casper.evaluate(function () {
+        var msg = $('.message_content:contains("test star"):visible').last();
+
+        if (msg.length !== 1) {
+            return 'cannot find test star message';
+        }
+
+        var star_icon = msg
+            .closest('.messagebox')
+            .find('.star');
+
+        if (star_icon.length !== 1) {
+            return 'cannot find star icon';
+        }
+
+        star_icon.click();
     });
+
+    if (error) {
+        casper.test.info('\n\nERROR: ' + error);
+    }
+
+    casper.test.assert(!error);
 }
 
 common.start_and_log_in();
@@ -36,7 +56,7 @@ casper.then(function () {
                              "Got expected empty star count.");
 
     // Clicking on a message star stars it.
-    toggle_last_star();
+    toggle_test_star_message();
 });
 
 casper.then(function () {
@@ -56,7 +76,7 @@ casper.waitUntilVisible('#zfilt', function () {
 
 casper.then(function () {
     // Clicking on a starred message unstars it.
-    toggle_last_star();
+    toggle_test_star_message();
     casper.test.assertEquals(star_count(), 0,
                              "Got expected re-empty star count.");
 });
