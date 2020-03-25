@@ -471,34 +471,36 @@ on a dark background, and don't change the dark labels dark either. */
         border: 1px solid hsl(0, 75%, 65%);
     }
 
-    .alert-box .alert.alert-error::before {
-        color: 1px solid hsl(0, 75%, 65%);
-    }
-
-    .alert-box .stacktrace {
-        color: hsl(314, 22%, 85%);
-
-        .expand {
-            color: hsl(318, 14%, 36%);
+    .alert-box {
+        .alert.alert-error::before {
+            color: 1px solid hsl(0, 75%, 65%);
         }
 
-        .subtle {
-            color: hsl(314, 19%, 63%);
-        }
+        .stacktrace {
+            color: hsl(314, 22%, 85%);
 
-        .code-context {
-            color: hsl(314, 27%, 82%);
-            background-color: hsl(312, 7%, 14%);
-            box-shadow:
-                inset 0px 11px 10px -10px hsl(0, 0%, 6%),
-                inset 0px -11px 10px -10px hsl(0, 0%, 6%);
-
-            .line-number {
-                color: hsl(318, 14%, 44%);
+            .expand {
+                color: hsl(318, 14%, 36%);
             }
 
-            .focus-line {
-                background-color: hsl(307, 9%, 19%);
+            .subtle {
+                color: hsl(314, 19%, 63%);
+            }
+
+            .code-context {
+                color: hsl(314, 27%, 82%);
+                background-color: hsl(312, 7%, 14%);
+                box-shadow:
+                    inset 0px 11px 10px -10px hsl(0, 0%, 6%),
+                    inset 0px -11px 10px -10px hsl(0, 0%, 6%);
+
+                .line-number {
+                    color: hsl(318, 14%, 44%);
+                }
+
+                .focus-line {
+                    background-color: hsl(307, 9%, 19%);
+                }
             }
         }
     }
