@@ -37,7 +37,10 @@ function sort_bot_owner(a, b) {
 }
 
 function sort_last_active(a, b) {
-    return compare_a_b(b.last_active, a.last_active);
+    return compare_a_b(
+        presence.last_active_date(a.id) || 0,
+        presence.last_active_date(b.id) || 0
+    );
 }
 
 function get_user_info_row(user_id) {
@@ -131,20 +134,6 @@ function failed_listing_users(xhr) {
     ui_report.error(i18n.t("Error listing users or bots"), xhr, status);
 }
 
-const LAST_ACTIVE_NEVER = -1;
-const LAST_ACTIVE_UNKNOWN = -2;
-
-function get_last_active(user) {
-    const presence_info = presence.presence_info.get(user.user_id);
-    if (!presence_info) {
-        return LAST_ACTIVE_UNKNOWN;
-    }
-    if (!isNaN(presence_info.last_active)) {
-        return presence_info.last_active;
-    }
-    return LAST_ACTIVE_NEVER;
-}
-
 function populate_users(realm_people_data) {
     let active_users = [];
     let deactivated_users = [];
@@ -166,7 +155,6 @@ function populate_users(realm_people_data) {
 
             bots.push(user);
         } else if (user.is_active) {
-            user.last_active = get_last_active(user);
             active_users.push(user);
         } else {
             deactivated_users.push(user);
@@ -209,16 +197,14 @@ function populate_users(realm_people_data) {
         },
     });
 
-    function get_rendered_last_activity(item) {
-        const today = new XDate();
-        if (item.last_active === LAST_ACTIVE_UNKNOWN) {
+    function get_rendered_last_activity(user) {
+        const last_active_date = presence.last_active_date(user.user_id);
+
+        if (!last_active_date) {
             return $("<span></span>").text(i18n.t("Unknown"));
         }
-        if (item.last_active === LAST_ACTIVE_NEVER) {
-            return $("<span></span>").text(i18n.t("Never"));
-        }
-        return timerender.render_date(
-            new XDate(item.last_active * 1000), undefined, today);
+        const today = new XDate();
+        return timerender.render_date(last_active_date, undefined, today);
     }
 
     const $users_table = $("#admin_users_table");
