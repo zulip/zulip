@@ -268,6 +268,7 @@ html {
 
     .new-organization-button {
         margin-top: 25px;
+        margin-left: 0px;
     }
 }
 
@@ -324,7 +325,7 @@ html {
     button {
         display: inline-block;
         vertical-align: top;
-        padding: 13px 22px 13px 22px;
+        padding: 15px 22px 15px 22px;
 
         font-family: "Source Sans Pro";
 
@@ -443,7 +444,7 @@ html {
             input[type=text]:invalid + label,
             input[type=email]:invalid + label,
             input[type=password]:invalid + label {
-                transform: translateY(35px) translateX(14px);
+                transform: translateY(39px) translateX(14px);
                 font-size: 1.2rem;
                 font-weight: 400;
                 color: hsl(0, 0%, 67%);
