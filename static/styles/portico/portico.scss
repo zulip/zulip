@@ -975,13 +975,6 @@ input#terminal:checked ~ #tab-terminal {
     }
 }
 
-.login-form {
-    margin: auto;
-    /* plus input padding. */
-    width: calc(300px + 28px);
-    margin-bottom: 10px;
-}
-
 .register-form {
     display: inline-block;
     text-align: center;
@@ -999,6 +992,13 @@ input.new-organization-button {
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+
+.login-form {
+    margin: auto;
+    /* plus input padding. */
+    width: calc(300px - -28px);
+    margin-bottom: 10px;
 }
 
 .login-form .control-label,
