@@ -1130,21 +1130,21 @@ input.new-organization-button {
 
 .top-links {
     text-align: right;
-}
 
-.top-links a {
-    display: inline-block;
-    color: hsl(0, 0%, 100%);
-    padding: 2px 7px 1px 8px;
-    font-weight: 600;
-    font-size: 16px;
-    transition: all 0.2s ease-in;
-    border-radius: 4px;
+    a {
+        display: inline-block;
+        color: hsl(0, 0%, 100%);
+        padding: 2px 7px 1px 8px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.2s ease-in;
+        border-radius: 4px;
 
-    &:hover {
-        text-decoration: none;
-        background-color: hsla(0, 0%, 100%, 1.0);
-        color: hsl(170, 50%, 40%);
+        &:hover {
+            text-decoration: none;
+            background-color: hsla(0, 0%, 100%, 1.0);
+            color: hsl(170, 50%, 40%);
+        }
     }
 }
 
