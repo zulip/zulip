@@ -1236,6 +1236,11 @@ input.new-organization-button {
 .input-group label {
     margin: 0;
     padding: 5px 0px;
+
+    &.inline-block {
+        /* eyeballing off-centered aesth. */
+        margin-top: 1px;
+    }
 }
 
 .input-group.radio {
@@ -1249,11 +1254,6 @@ input.new-organization-button {
 .input-group.grid {
     padding: 10px 0px;
     border-bottom: 1px solid hsl(0, 0%, 87%);
-}
-
-.input-group label.inline-block {
-    /* eyeballing off-centered aesth. */
-    margin-top: 1px;
 }
 
 .center-container {
