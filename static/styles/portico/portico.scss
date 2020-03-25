@@ -799,6 +799,12 @@ a.bottom-signup-button {
 
 .team input {
     display: none;
+
+    &:checked + label {
+        border: 1px solid hsl(0, 0%, 93%);
+        border-top: 2px solid hsl(80, 61%, 50%);
+        border-bottom-color: hsl(0, 0%, 100%);
+    }
 }
 
 .team label {
@@ -811,12 +817,6 @@ a.bottom-signup-button {
     &:hover {
         cursor: pointer;
     }
-}
-
-.team input:checked + label {
-    border: 1px solid hsl(0, 0%, 93%);
-    border-top: 2px solid hsl(80, 61%, 50%);
-    border-bottom-color: hsl(0, 0%, 100%);
 }
 
 .contributors-list {
