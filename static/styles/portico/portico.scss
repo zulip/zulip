@@ -748,74 +748,76 @@ a.bottom-signup-button {
     margin-bottom: 3px;
 }
 
-.team .profile {
-    .profile-name {
-        font-weight: 600;
-    }
+.team {
+    .profile {
+        .profile-name {
+            font-weight: 600;
+        }
 
-    .profile-role {
-        opacity: 0.5;
-        text-transform: uppercase;
-        font-size: 0.8em;
-        font-weight: 400;
-    }
-}
-
-.team .bdfl {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    .profile-picture {
-        flex: 0 auto;
-        width: 200px;
-        margin: 10px;
-
-        > img {
-            height: auto;
-            border-radius: 5px;
+        .profile-role {
+            opacity: 0.5;
+            text-transform: uppercase;
+            font-size: 0.8em;
+            font-weight: 400;
         }
     }
 
-    .profile-information {
-        flex: 1;
-        /* Wrap when screen is small to prevent very short line */
-        min-width: 300px;
-        font-size: 1.4em;
-        margin: 10px 10px 0 10px;
-    }
+    .bdfl {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
 
-    .profile-description {
-        margin-top: 5px;
-        font-weight: 400;
-        font-size: 0.8em;
-        opacity: 0.8;
-        p {
-            /* Avoid double-applying the 1.2em font-size here */
-            font-size: 1em;
+        .profile-picture {
+            flex: 0 auto;
+            width: 200px;
+            margin: 10px;
+
+            > img {
+                height: auto;
+                border-radius: 5px;
+            }
+        }
+
+        .profile-information {
+            flex: 1;
+            /* Wrap when screen is small to prevent very short line */
+            min-width: 300px;
+            font-size: 1.4em;
+            margin: 10px 10px 0 10px;
+        }
+
+        .profile-description {
+            margin-top: 5px;
+            font-weight: 400;
+            font-size: 0.8em;
+            opacity: 0.8;
+            p {
+                /* Avoid double-applying the 1.2em font-size here */
+                font-size: 1em;
+            }
         }
     }
-}
 
-.team input {
-    display: none;
+    input {
+        display: none;
 
-    &:checked + label {
-        border: 1px solid hsl(0, 0%, 93%);
-        border-top: 2px solid hsl(80, 61%, 50%);
-        border-bottom-color: hsl(0, 0%, 100%);
+        &:checked + label {
+            border: 1px solid hsl(0, 0%, 93%);
+            border-top: 2px solid hsl(80, 61%, 50%);
+            border-bottom-color: hsl(0, 0%, 100%);
+        }
     }
-}
 
-.team label {
-    font-size: initial;
-    display: inline-block;
-    padding: 10px;
-    border: 1px solid transparent;
-    margin: 0 0 -1px 0;
+    label {
+        font-size: initial;
+        display: inline-block;
+        padding: 10px;
+        border: 1px solid transparent;
+        margin: 0 0 -1px 0;
 
-    &:hover {
-        cursor: pointer;
+        &:hover {
+            cursor: pointer;
+        }
     }
 }
 
@@ -1472,10 +1474,12 @@ input.new-organization-button {
 }
 
 @media (max-width: 558px) {
-    .team .bdfl {
-        .profile-name,
-        .profile-role {
-            text-align: center;
+    .team {
+        .bdfl {
+            .profile-name,
+            .profile-role {
+                text-align: center;
+            }
         }
     }
 }
