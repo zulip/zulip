@@ -1001,19 +1001,20 @@ input.new-organization-button {
     margin-bottom: 10px;
 }
 
-.login-form .control-label,
-.register-form .control-label {
-    margin-bottom: 2px;
+.login-form,
+.register-form {
+    .control-label {
+        margin-bottom: 2px;
+    }
+
+    .control-group {
+        margin-right: 10px;
+    }
 }
 
 .login-form .direct-label {
     margin-top: 50px;
     margin-bottom: 6px;
-}
-
-.login-form .control-group,
-.register-form .control-group {
-    margin-right: 10px;
 }
 
 .login-forgot-password {
