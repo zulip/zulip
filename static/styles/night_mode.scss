@@ -444,6 +444,10 @@ on a dark background, and don't change the dark labels dark either. */
 
     .alert {
         text-shadow: none;
+
+        .close {
+            color: inherit;
+        }
     }
 
     .alert.alert-success {
@@ -457,10 +461,6 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsl(318, 12%, 21%);
         color: inherit;
         border: 1px solid hsl(0, 75%, 65%);
-    }
-
-    .alert .close {
-        color: inherit;
     }
 
     .alert-box .alert,
