@@ -1185,16 +1185,6 @@ input.new-organization-button {
     width: auto;
 }
 
-.input-group.margin {
-    margin: 10px 0px;
-}
-
-.input-group .progress {
-    margin: 0;
-    margin-top: 5px;
-    display: inline-block;
-}
-
 .password-reset .input-group {
     margin: 15px 0px;
 }
@@ -1223,6 +1213,16 @@ input.new-organization-button {
 
 .password-reset .input-group.m-t-30 {
     margin-top: 30px;
+}
+
+.input-group.margin {
+    margin: 10px 0px;
+}
+
+.input-group .progress {
+    margin: 0;
+    margin-top: 5px;
+    display: inline-block;
 }
 
 .center-container {
