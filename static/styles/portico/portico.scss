@@ -1062,18 +1062,18 @@ input.new-organization-button {
     text-align: center;
     color: hsl(0, 0%, 0%);
     font-weight: 300;
-}
 
-.main-headline-text .tagline {
-    font-size: 40px;
-    line-height: 42px;
-}
+    .tagline {
+        font-size: 40px;
+        line-height: 42px;
+    }
 
-.main-headline-text .footnote {
-    display: block;
-    font-size: 18px;
-    color: hsl(0, 0%, 0%);
-    margin-top: 15px;
+    .footnote {
+        display: block;
+        font-size: 18px;
+        color: hsl(0, 0%, 0%);
+        margin-top: 15px;
+    }
 }
 
 .main-signup-button {
@@ -1527,9 +1527,11 @@ input.new-organization-button {
         padding: 0 10px;
     }
 
-    .main-headline-text .tagline {
-        font-size: 32px;
-        line-height: 34px;
+    .main-headline-text {
+        .tagline {
+            font-size: 32px;
+            line-height: 34px;
+        }
     }
 
     #apps-tabs li a {
