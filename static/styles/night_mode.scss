@@ -417,15 +417,17 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(8, 78%, 43%, 0.15);
     }
 
-    .rendered_markdown .user-mention,
-    .rendered_markdown .user-group-mention {
-        background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
-        box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
-    }
+    .rendered_markdown {
+        .user-mention,
+        .user-group-mention {
+            background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+            box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
+        }
 
-    .rendered_markdown .user-mention-me :not(.silent) {
-        background-color: hsla(355, 37%, 31%, 1);
-        box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
+        .user-mention-me :not(.silent) {
+            background-color: hsla(355, 37%, 31%, 1);
+            box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
+        }
     }
 
     .tip {
