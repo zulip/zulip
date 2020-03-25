@@ -10,20 +10,9 @@ const send_change_event = _.debounce(function () {
     settings_bots.render_bots();
 }, 50);
 
-const set_can_admin = function (bot) {
-    if (page_params.is_admin) {
-        bot.can_admin = true;
-    } else if (bot.owner !== undefined && people.is_current_user(bot.owner)) {
-        bot.can_admin = true;
-    } else {
-        bot.can_admin = false;
-    }
-};
-
 exports.add = function (bot) {
     const clean_bot = _.pick(bot, bot_fields);
     bots.set(bot.user_id, clean_bot);
-    set_can_admin(clean_bot);
     const clean_services = bot.services.map(service => _.pick(service, services_fields));
     services.set(bot.user_id, clean_services);
 
@@ -44,7 +33,6 @@ exports.del = function (bot_id) {
 exports.update = function (bot_id, bot_update) {
     const bot = bots.get(bot_id);
     Object.assign(bot, _.pick(bot_update, bot_fields));
-    set_can_admin(bot);
 
     // We currently only support one service per bot.
     const service = services.get(bot_id)[0];
