@@ -515,36 +515,38 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* Arrows: */
-    .hotspot.overlay .hotspot-popover.arrow-right::before {
-        border-left-color: hsla(0, 0%, 0%, 0.2);
-    }
+    .hotspot.overlay {
+        .hotspot-popover.arrow-right::before {
+            border-left-color: hsla(0, 0%, 0%, 0.2);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-right::after {
-        border-left-color: hsl(212, 28%, 18%);
-    }
+        .hotspot-popover.arrow-right::after {
+            border-left-color: hsl(212, 28%, 18%);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-bottom::before {
-        border-top-color: hsla(0, 0%, 0%, 0.2);
-    }
+        .hotspot-popover.arrow-bottom::before {
+            border-top-color: hsla(0, 0%, 0%, 0.2);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-bottom::after {
-        border-top-color: hsl(212, 28%, 18%);
-    }
+        .hotspot-popover.arrow-bottom::after {
+            border-top-color: hsl(212, 28%, 18%);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-left::before {
-        border-right-color: hsla(0, 0%, 0%, 0.2);
-    }
+        .hotspot-popover.arrow-left::before {
+            border-right-color: hsla(0, 0%, 0%, 0.2);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-left::after {
-        border-right-color: hsl(212, 28%, 18%);
-    }
+        .hotspot-popover.arrow-left::after {
+            border-right-color: hsl(212, 28%, 18%);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-top::before {
-        border-bottom-color: hsla(0, 0%, 0%, 0.2);
-    }
+        .hotspot-popover.arrow-top::before {
+            border-bottom-color: hsla(0, 0%, 0%, 0.2);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-top::after {
-        border-bottom-color: hsl(212, 28%, 18%);
+        .hotspot-popover.arrow-top::after {
+            border-bottom-color: hsl(212, 28%, 18%);
+        }
     }
 
     /* Content: */
