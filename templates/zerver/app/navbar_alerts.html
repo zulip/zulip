@@ -29,11 +29,12 @@
     <div data-process="insecure-desktop-app" class="alert alert-info red">
         <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
         <div data-step="1">
-            You are using an old, insecure version of the Zulip
-            desktop app that cannot auto-update.
+            {% trans %}
+            You are using an old version of the Zulip desktop app with known security bugs.
             <a class="alert-link" href="https://zulipchat.com/apps" target="_blank">
                 Download the latest version.
             </a>
+            {% endtrans %}
         </div>
     </div>
 </div>

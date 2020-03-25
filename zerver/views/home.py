@@ -93,6 +93,18 @@ def home(request: HttpRequest) -> HttpResponse:
 
 @zulip_login_required
 def home_real(request: HttpRequest) -> HttpResponse:
+    # Before we do any real work, check if the app is banned.
+    (insecure_desktop_app, banned_desktop_app, auto_update_broken) = is_outdated_desktop_app(
+        request.META.get("HTTP_USER_AGENT", ""))
+    if banned_desktop_app:
+        return render(
+            request,
+            'zerver/insecure_desktop_app.html',
+            context={
+                "auto_update_broken": auto_update_broken,
+            }
+        )
+
     # We need to modify the session object every two weeks or it will expire.
     # This line makes reloading the page a sufficient action to keep the
     # session alive.
@@ -183,7 +195,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
-        insecure_desktop_app  = is_outdated_desktop_app(request.META.get("HTTP_USER_AGENT", "")),
+        insecure_desktop_app  = insecure_desktop_app,
         login_page            = settings.HOME_NOT_LOGGED_IN,
         root_domain_uri       = settings.ROOT_DOMAIN_URI,
         max_file_upload_size  = settings.MAX_FILE_UPLOAD_SIZE,

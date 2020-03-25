@@ -1303,10 +1303,14 @@ input.new-organization-button {
 }
 
 .error_page {
-    padding: 20px 0px;
     min-height: calc(100vh - 290px);
+    height: 100%;
     background-color: hsl(163, 42%, 85%);
     font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+}
+
+.error_page .container {
+    padding: 20px 0px;
 }
 
 .error_page .row-fluid {

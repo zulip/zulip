@@ -391,6 +391,15 @@ class HomeTest(ZulipTestCase):
             html = result.content.decode('utf-8')
             self.assertIn('Accept the new Terms of Service', html)
 
+    def test_banned_desktop_app_versions(self) -> None:
+        user = self.example_user('hamlet')
+        self.login_user(user)
+
+        result = self.client_get('/',
+                                 HTTP_USER_AGENT="ZulipElectron/2.3.82")
+        html = result.content.decode('utf-8')
+        self.assertIn('You are using old version of the Zulip desktop', html)
+
     def test_terms_of_service_first_time_template(self) -> None:
         user = self.example_user('hamlet')
         email = user.email

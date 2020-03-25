@@ -88,16 +88,25 @@ def check_global_compatibility(request: HttpRequest) -> HttpResponse:
             return json_error(legacy_compatibility_error_message)
     return json_success()
 
-def is_outdated_desktop_app(user_agent_str: str) -> bool:
+def is_outdated_desktop_app(user_agent_str: str) -> Tuple[bool, bool, bool]:
+    # Returns (insecure, banned, auto_update_broken
     user_agent = parse_user_agent(user_agent_str)
     if user_agent['name'] == 'ZulipDesktop':
         # The deprecated QT/webkit based desktop app, last updated in ~2016.
-        return True
+        return (True, True, True)
 
-    if user_agent['name'] == 'ZulipElectron' and version_lt(user_agent['version'], '4.0.0'):
-        # Versions of the modern Electron-based Zulip desktop app with
-        # known security issues.  Versions before 2.3.82 won't
-        # auto-update; we may want a special notice to distinguish
-        # those from modern releases.
-        return True
-    return False
+    if user_agent['name'] != 'ZulipElectron':
+        return (False, False, False)
+
+    if version_lt(user_agent['version'], '4.0.0'):
+        # Version 2.3.82 and older (aka <4.0.0) of the modern
+        # Electron-based Zulip desktop app with known security issues.
+        # won't auto-update; we may want a special notice to
+        # distinguish those from modern releases.
+        return (True, True, True)
+
+    if version_lt(user_agent['version'], '4.0.3'):
+        # Other insecure versions should just warn.
+        return (True, False, False)
+
+    return (False, False, False)
