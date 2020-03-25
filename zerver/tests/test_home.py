@@ -393,7 +393,7 @@ class HomeTest(ZulipTestCase):
 
     def test_banned_desktop_app_versions(self) -> None:
         user = self.example_user('hamlet')
-        self.login_user(user)
+        self.login(user.email)
 
         result = self.client_get('/',
                                  HTTP_USER_AGENT="ZulipElectron/2.3.82")
