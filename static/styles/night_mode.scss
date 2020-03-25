@@ -428,6 +428,16 @@ on a dark background, and don't change the dark labels dark either. */
             background-color: hsla(355, 37%, 31%, 1);
             box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
         }
+
+        .highlight_text_inserted {
+            color: hsl(122, 100%, 81%);
+            background-color: hsla(120, 64%, 95%, 0.3);
+        }
+
+        .highlight_text_deleted {
+            text-decoration: line-through;
+            background-color: hsla(7, 54%, 62%, 0.38);
+        }
     }
 
     .tip {
@@ -584,18 +594,6 @@ on a dark background, and don't change the dark labels dark either. */
     /* Search highlight used in both topics and rendered_markdown */
     .highlight {
         background-color: hsla(51, 100%, 64%, 0.42);
-    }
-
-    .rendered_markdown {
-        .highlight_text_inserted {
-            color: hsl(122, 100%, 81%);
-            background-color: hsla(120, 64%, 95%, 0.3);
-        }
-
-        .highlight_text_deleted {
-            text-decoration: line-through;
-            background-color: hsla(7, 54%, 62%, 0.38);
-        }
     }
 
     .sub-unsub-message span::before,
