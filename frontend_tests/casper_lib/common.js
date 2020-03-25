@@ -338,7 +338,7 @@ exports.get_rendered_messages = function (table) {
                 var $clone = $(elem).clone(true);
                 $clone.find(".recipient_row_date").remove();
 
-                return $clone.text();
+                return $clone.text().trim().replace(/\s+/g, ' ');
             }),
 
             bodies: $.map(tbl.find('.message_content'), function (elem) {
@@ -430,7 +430,7 @@ exports.expected_messages = function (table, headings, bodies) {
     var msg = exports.get_rendered_messages(table);
 
     casper.test.assertEquals(
-        msg.headings.slice(-headings.length).map(exports.normalize_spaces).map(exports.trim),
+        msg.headings.slice(-headings.length),
         headings.map(exports.trim),
         'Got expected message headings');
 
