@@ -828,6 +828,37 @@ a.bottom-signup-button {
 
 .contributors {
     display: none;
+
+    .person {
+        box-sizing: border-box;
+        padding: 10px;
+        border: 1px solid hsl(0, 0%, 93%);
+        border-radius: 4px;
+        transition: all 0.3s ease;
+
+        a {
+            color: inherit;
+        }
+
+        &:hover {
+            border: 1px solid hsl(0, 0%, 73%);
+        }
+
+        .avatar {
+            width: 60px;
+            text-align: center;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .info {
+            width: 50%;
+            text-align: left;
+            display: inline-block;
+            vertical-align: top;
+            margin-left: 10px;
+        }
+    }
 }
 
 /* Activated .contributors */
@@ -844,37 +875,6 @@ input#terminal:checked ~ #tab-terminal {
     display: grid;
     grid-gap: 5px;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
-
-.contributors .person {
-    box-sizing: border-box;
-    padding: 10px;
-    border: 1px solid hsl(0, 0%, 93%);
-    border-radius: 4px;
-    transition: all 0.3s ease;
-
-    a {
-        color: inherit;
-    }
-
-    &:hover {
-        border: 1px solid hsl(0, 0%, 73%);
-    }
-
-    .avatar {
-        width: 60px;
-        text-align: center;
-        display: inline-block;
-        vertical-align: top;
-    }
-
-    .info {
-        width: 50%;
-        text-align: left;
-        display: inline-block;
-        vertical-align: top;
-        margin-left: 10px;
-    }
 }
 
 .avatar_img {
