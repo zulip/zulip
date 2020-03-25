@@ -999,6 +999,11 @@ input.new-organization-button {
     /* plus input padding. */
     width: calc(300px - -28px);
     margin-bottom: 10px;
+
+    .direct-label {
+        margin-top: 50px;
+        margin-bottom: 6px;
+    }
 }
 
 .login-form,
@@ -1010,11 +1015,6 @@ input.new-organization-button {
     .control-group {
         margin-right: 10px;
     }
-}
-
-.login-form .direct-label {
-    margin-top: 50px;
-    margin-bottom: 6px;
 }
 
 .login-forgot-password {
