@@ -109,45 +109,20 @@ run_test('test_basics', () => {
         assert.equal(bot, undefined);
     }());
 
-    (function test_owner_can_admin() {
-        let bot;
-
-        bot_data.add({owner: 'owner@zulip.com', ...test_bot});
-
-        bot = bot_data.get(43);
-        assert(bot.can_admin);
-
-        bot_data.add({owner: 'notowner@zulip.com', ...test_bot});
-
-        bot = bot_data.get(43);
-        assert.equal(false, bot.can_admin);
-    }());
-
-    (function test_admin_can_admin() {
-        page_params.is_admin = true;
-
-        bot_data.add(test_bot);
-
-        const bot = bot_data.get(43);
-        assert(bot.can_admin);
-
-        page_params.is_admin = false;
-    }());
-
     (function test_get_editable() {
-        let can_admin;
+        let editable_bots;
 
         bot_data.add({...test_bot, user_id: 44, owner: 'owner@zulip.com', is_active: true});
         bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: 'owner@zulip.com', is_active: true});
         bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: 'not_owner@zulip.com', is_active: true});
 
-        can_admin = bot_data.get_editable().map(bot => bot.email);
-        assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], can_admin);
+        editable_bots = bot_data.get_editable().map(bot => bot.email);
+        assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], editable_bots);
 
         page_params.is_admin = true;
 
-        can_admin = bot_data.get_editable().map(bot => bot.email);
-        assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], can_admin);
+        editable_bots = bot_data.get_editable().map(bot => bot.email);
+        assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], editable_bots);
     }());
 
     (function test_get_all_bots_for_current_user() {
@@ -161,6 +136,7 @@ run_test('test_basics', () => {
     (function test_get_bot_owner_email() {
         let bot_owner_email = bot_data.get_bot_owner_email(test_embedded_bot.user_id);
         assert.equal('cordelia@zulip.com', bot_owner_email);
+        bot_data.add(test_bot);
         bot_owner_email = bot_data.get_bot_owner_email(test_bot.user_id);
         assert.equal(undefined, bot_owner_email);
     }());
