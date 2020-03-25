@@ -807,10 +807,10 @@ a.bottom-signup-button {
     padding: 10px;
     border: 1px solid transparent;
     margin: 0 0 -1px 0;
-}
 
-.team label:hover {
-    cursor: pointer;
+    &:hover {
+        cursor: pointer;
+    }
 }
 
 .team input:checked + label {
