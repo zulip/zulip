@@ -163,6 +163,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 
     plan_name = "Zulip Free"
     licenses = 0
+    licenses_used = 0
     renewal_date = ''
     renewal_cents = 0
     payment_method = ''
