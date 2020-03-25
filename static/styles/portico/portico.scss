@@ -1140,12 +1140,12 @@ input.new-organization-button {
     font-size: 16px;
     transition: all 0.2s ease-in;
     border-radius: 4px;
-}
 
-.top-links a:hover {
-    text-decoration: none;
-    background-color: hsla(0, 0%, 100%, 1.0);
-    color: hsl(170, 50%, 40%);
+    &:hover {
+        text-decoration: none;
+        background-color: hsla(0, 0%, 100%, 1.0);
+        color: hsl(170, 50%, 40%);
+    }
 }
 
 .centered-button {
