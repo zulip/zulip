@@ -897,12 +897,12 @@ input#terminal:checked ~ #tab-terminal {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-}
 
-.history .sponsors .sponsor-picture img {
-    height: 170px;
-    margin: 0 20px 0 20px;
-    pointer-events: none;
+    .sponsor-picture img {
+        height: 170px;
+        margin: 0 20px 0 20px;
+        pointer-events: none;
+    }
 }
 
 .login-page-header {
