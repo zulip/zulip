@@ -965,14 +965,14 @@ input#terminal:checked ~ #tab-terminal {
 
 .login-page {
     text-align: center;
-}
 
-.login-page .alert {
-    width: 320px;
-    margin: auto;
-    margin-top: -30px;
-    margin-bottom: 15px;
-    text-align: center;
+    .alert {
+        width: 320px;
+        margin: auto;
+        margin-top: -30px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
 }
 
 .login-form {
