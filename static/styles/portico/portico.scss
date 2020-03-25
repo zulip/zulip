@@ -1187,6 +1187,19 @@ input.new-organization-button {
 
 .password-reset .input-group {
     margin: 15px 0px;
+
+    input[type=text],
+    input[type=password] {
+        width: calc(100% - 14px);
+    }
+
+    #pw_strength {
+        width: 100%;
+    }
+
+    &.m-t-30 {
+        margin-top: 30px;
+    }
 }
 
 .password-reset p {
@@ -1200,19 +1213,6 @@ input.new-organization-button {
 .password-reset #email-section .fakecontrol {
     display: inline-block;
     margin: 0;
-}
-
-.password-reset .input-group input[type=text],
-.password-reset .input-group input[type=password] {
-    width: calc(100% - 14px);
-}
-
-.password-reset .input-group #pw_strength {
-    width: 100%;
-}
-
-.password-reset .input-group.m-t-30 {
-    margin-top: 30px;
 }
 
 .input-group.margin {
