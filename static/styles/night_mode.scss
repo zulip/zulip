@@ -556,14 +556,16 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsl(212, 28%, 18%);
     }
 
-    .top-messages-logo svg path {
-        fill: hsl(214, 27%, 18%);
-        stroke: hsl(214, 27%, 18%);
-    }
+    .top-messages-logo {
+        svg path {
+            fill: hsl(214, 27%, 18%);
+            stroke: hsl(214, 27%, 18%);
+        }
 
-    .top-messages-logo svg circle {
-        fill: hsl(0, 0%, 100%);
-        stroke: hsl(0, 0%, 100%);
+        svg circle {
+            fill: hsl(0, 0%, 100%);
+            stroke: hsl(0, 0%, 100%);
+        }
     }
 
     .history-limited-box,
