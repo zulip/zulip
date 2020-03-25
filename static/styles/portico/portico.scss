@@ -1104,22 +1104,23 @@ input.new-organization-button {
 .footer-navigation {
     list-style: none;
     padding-top: 16px;
+
+    li,
+    li a {
+        display: inline-block;
+        vertical-align: middle;
+        color: hsl(0, 0%, 47%);
+        font-size: 0.9em;
+        font-weight: 400;
+        cursor: pointer;
+    }
+
+    li:hover a {
+        color: hsl(0, 0%, 27%);
+        text-decoration: none;
+    }
 }
 
-.footer-navigation li,
-.footer-navigation li a {
-    display: inline-block;
-    vertical-align: middle;
-    color: hsl(0, 0%, 47%);
-    font-size: 0.9em;
-    font-weight: 400;
-    cursor: pointer;
-}
-
-.footer-navigation li:hover a {
-    color: hsl(0, 0%, 27%);
-    text-decoration: none;
-}
 
 .little-bullet {
     display: inline-block;
