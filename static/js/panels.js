@@ -38,6 +38,22 @@ function should_show_notifications(ls) {
     );
 }
 
+exports.check_profile_incomplete = function () {
+    if (!page_params.is_admin) {
+        return;
+    }
+
+    // Eventually, we might also check page_params.realm_icon_source,
+    // but it feels too aggressive to ask users to do change that
+    // since their organization might not have a logo yet.
+    if (page_params.realm_description === '' ||
+        page_params.realm_description.startsWith("Organization imported from")) {
+        $("[data-process='profile-incomplete']").show();
+    } else {
+        $("[data-process='profile-incomplete']").hide();
+    }
+};
+
 exports.initialize = function () {
     const ls = localstorage();
     if (page_params.insecure_desktop_app) {
@@ -48,6 +64,10 @@ exports.initialize = function () {
         exports.open($("[data-process='email-server']"));
     } else if (should_show_notifications(ls)) {
         exports.open($("[data-process='notifications']"));
+    } else {
+        // TODO: This should be restructured with separate check and
+        // show calls.
+        exports.check_profile_incomplete();
     }
 
     // Configure click handlers.

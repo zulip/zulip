@@ -185,6 +185,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             window.location.href = "/accounts/deactivated/";
         }
 
+        if (page_params.is_admin) {
+            // Update the UI notice about the user's profile being
+            // incomplete, as we might have filled in the missing field(s).
+            panels.check_profile_incomplete();
+        }
         break;
     }
 
