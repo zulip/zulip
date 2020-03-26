@@ -72,6 +72,7 @@ run ./tools/test-js-with-node
 run ./manage.py makemessages --locale en
 run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+run ./tools/test-js-with-puppeteer $FORCEARG
 run ./tools/test-js-with-casper $FORCEARG
 
 printf '\n\e[32mAll OK!\e[0m\n'

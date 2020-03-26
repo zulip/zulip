@@ -79,6 +79,12 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
             ret = 1
             ret = run_tests()
     if ret != 0:
+        print("""
+The Puppeteer frontend tests failed! For any help feel free to ask in czo""", file=sys.stderr)
+        if os.environ.get("CIRCLECI"):
+            print("", file=sys.stderr)
+            print("In CircleCI, the Artifacts tab contains screenshots of the failure.", file=sys.stderr)
+            print("", file=sys.stderr)
         sys.exit(ret)
 
 external_host = "zulipdev.com:9981"
