@@ -11,3 +11,4 @@ Development Environment
    Using the development environment <using>
    Developing remotely <remote>
    Authentication in the development environment <authentication>
+   Debugging using VS Code <vscode>
