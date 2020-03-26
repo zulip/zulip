@@ -360,6 +360,7 @@ li.top_left_starred_messages {
 .topic-sidebar-menu-icon {
     position: absolute;
     display: none;
+    right: 10px;
 }
 
 /*
@@ -370,7 +371,6 @@ li.top_left_starred_messages {
 .starred-messages-sidebar-menu-icon,
 .stream-sidebar-menu-icon {
     top: 3px;
-    right: 10px;
     font-size: 0.8em;
 }
 
@@ -381,7 +381,6 @@ li.top_left_starred_messages {
 */
 .topic-sidebar-menu-icon {
     top: 1px;
-    right: 10px;
     font-size: 0.7em;
 }
 
