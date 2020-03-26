@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-if ! git diff-index --quiet HEAD; then
-    echo "There are uncommitted changes:"
-    git status --short
-    echo "Doing nothing to avoid losing your work."
-    exit 1
-fi
+this_file=$(readlink -f "${BASH_SOURCE[0]}")
+# shellcheck source=lib/git-tools.bash
+. "${this_file%/*}"/lib/git-tools.bash
+
+require_clean_work_tree 'check out PR as branch'
 
 request_id="$1"
 remote=${2:-"upstream"}
