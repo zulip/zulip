@@ -58,7 +58,11 @@ set_global('settings_exports', {
 });
 
 // page_params is highly coupled to dispatching now
-set_global('page_params', {test_suite: false});
+set_global('page_params', {
+    test_suite: false,
+    is_admin: true,
+    realm_description: 'already set description',
+});
 const page_params = global.page_params;
 
 // We access various msg_list object to rerender them
