@@ -169,7 +169,6 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     payment_method = ''
     charge_automatically = False
 
-    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
     plan = get_current_plan_by_customer(customer)
     if plan is not None:
         now = timezone_now()
@@ -185,6 +184,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=start_of_next_billing_cycle(plan, now))
             renewal_cents = renewal_amount(plan, now)
             charge_automatically = plan.charge_automatically
+            stripe_customer = stripe_get_customer(customer.stripe_customer_id)
             if charge_automatically:
                 payment_method = payment_method_string(stripe_customer)
             else:
