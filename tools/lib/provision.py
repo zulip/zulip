@@ -120,6 +120,7 @@ COMMON_DEPENDENCIES = [
     "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
     "puppet",               # Used by lint (`puppet parser validate`)
     "gettext",              # Used by makemessages i18n
+    "transifex-client",     # Needed to sync translations from transifex
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "moreutils",            # Used for sponge command
     "unzip",                # Needed for Slack import
