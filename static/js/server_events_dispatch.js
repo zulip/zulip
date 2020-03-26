@@ -129,17 +129,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             realm_settings[event.property]();
             settings_org.sync_realm_settings(event.property);
             if (event.property === 'create_stream_policy') {
-                if (!page_params.is_admin) {
-                    // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_create_streams =
-                        page_params.realm_create_stream_policy === 1;
-                }
+                // TODO: Add waiting_period_threshold logic here.
+                page_params.can_create_streams = page_params.is_admin ||
+                    page_params.realm_create_stream_policy === 1;
             } else if (event.property === 'invite_to_stream_policy') {
-                if (!page_params.is_admin) {
-                    // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_invite_to_stream =
-                        page_params.realm_invite_to_stream_policy === 1;
-                }
+                // TODO: Add waiting_period_threshold logic here.
+                page_params.can_invite_to_stream = page_params.is_admin ||
+                    page_params.realm_invite_to_stream_policy === 1;
             } else if (event.property === 'notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(
                     page_params.realm_notifications_stream_id, 'notifications');
