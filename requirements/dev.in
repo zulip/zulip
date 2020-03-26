@@ -47,9 +47,6 @@ gitlint
 # Needed for visualising cprofile reports
 snakeviz
 
-# Needed to sync translations from transifex
-transifex-client
-
 # Needed for creating digital ocean droplets
 python-digitalocean
 
