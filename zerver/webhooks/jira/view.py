@@ -18,6 +18,7 @@ IGNORED_EVENTS = [
     'attachment_created',
     'issuelink_deleted',
     'sprint_started',
+    'sprint_closed',
 ]
 
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[UserProfile]:
@@ -280,18 +281,20 @@ def handle_comment_created_event(payload: Dict[str, Any], user_profile: UserProf
     )
 
 def handle_comment_updated_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+    title = get_issue_title(payload)
     return "{author} updated their comment on issue: *\"{title}\"\
 *\n``` quote\n{comment}\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
-        title = payload["issue"]["fields"]["summary"],
+        title = title,
         comment = normalize_comment(payload["comment"]["body"])
     )
 
 def handle_comment_deleted_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+    title = get_issue_title(payload)
     return "{author} deleted their comment on issue: *\"{title}\"\
 *\n``` quote\n~~{comment}~~\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
-        title = payload["issue"]["fields"]["summary"],
+        title = title,
         comment = normalize_comment(payload["comment"]["body"])
     )
 
