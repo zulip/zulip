@@ -198,6 +198,11 @@ aren't receiving emails from Zulip:
   should be in `/var/log/zulip/errors.log`, along with any other
   exceptions Zulip encounters.
 
+* If your SMTP provider uses SSL on port 465 (and not TLS on port
+  587), you need to set `EMAIL_PORT = 465` as well as replacing
+  `EMAIL_USE_TLS = True` with `EMAIL_USE_SSL = True`; otherwise, Zulip
+  will try to use the TLS protocol on port 465, which won't work.
+
 * Zulip's email sending configuration is based on the standard Django
   [SMTP backend](https://docs.djangoproject.com/en/2.0/topics/email/#smtp-backend)
   configuration.  So if you're having trouble getting your email
