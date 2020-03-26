@@ -596,7 +596,8 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (event_name === 'left_arrow') {
-        if (overlays.lightbox_open()) {
+        // Disables left_arrow key when 'Pan and zoom' is enabled
+        if (overlays.lightbox_open() && !$(".enabled")[0]) {
             lightbox.prev();
             return true;
         } else if (overlays.streams_open()) {
@@ -608,7 +609,8 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     }
 
-    if (event_name === 'right_arrow') {
+    if (event_name === 'right_arrow' && !$(".enabled")[0]) {
+        // Disables right_arrow key when 'Pan and zoom' is enabled
         if (overlays.lightbox_open()) {
             lightbox.next();
             return true;

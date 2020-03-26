@@ -402,11 +402,6 @@ run_test('motion_keys', () => {
     assert_mapping('down_arrow', 'subs.switch_rows');
     overlays.streams_open = return_false;
 
-    overlays.lightbox_open = return_true;
-    assert_mapping('left_arrow', 'lightbox.prev');
-    assert_mapping('right_arrow', 'lightbox.next');
-    overlays.lightbox_open = return_false;
-
     hotkey.in_content_editable_widget = return_true;
     assert_unmapped('down_arrow');
     assert_unmapped('up_arrow');

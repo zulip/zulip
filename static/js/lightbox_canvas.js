@@ -41,6 +41,19 @@ const funcs = {
         meta.zoom = Math.min(Math.max(zoom, 1), meta.maxZoom);
     },
 
+    moveImage: function (meta, movementDirection) {
+        // condition to image movement by movementDirection hotkeys
+        if (movementDirection === "up") {
+            meta.coords.y = meta.coords.y + 0.05;
+        } else if (movementDirection === "down") {
+            meta.coords.y = meta.coords.y - 0.05;
+        } else if (movementDirection === "left") {
+            meta.coords.x = meta.coords.x + 0.05;
+        } else if (movementDirection === "right") {
+            meta.coords.x = meta.coords.x - 0.05;
+        }
+    },
+
     // this is a function given a canvas that attaches all of the events
     // required to pan and zoom.
     attachEvents: function (canvas, context, meta) {
@@ -157,6 +170,33 @@ const funcs = {
                 funcs.displayImage(canvas, context, meta);
             } else if (e.key === 'v') {
                 overlays.close_overlay('lightbox');
+            }
+            // these hotkeys adds the functionality to move image with arrow keys in pan
+            // and zoom mode
+            if (e.key === "ArrowUp") {
+                funcs.moveImage(meta, 'up');
+                funcs.displayImage(canvas, context, meta);
+            } else if (e.key === "ArrowDown") {
+                funcs.moveImage(meta, 'down');
+                funcs.displayImage(canvas, context, meta);
+            } else if (e.key === "ArrowLeft") {
+                // Check that panning does not do anything. If it does not do anything, then
+                // it switches the images.
+                if (overlays.lightbox_open() && meta.zoom === 1) {
+                    lightbox.prev();
+                } else {
+                    funcs.moveImage(meta, 'left');
+                    funcs.displayImage(canvas, context, meta);
+                }
+            } else if (e.key === "ArrowRight") {
+                // Check that panning does not do anything. If it does not do anything, then
+                // it switches the images.
+                if (overlays.lightbox_open() && meta.zoom === 1) {
+                    lightbox.next();
+                } else {
+                    funcs.moveImage(meta, 'right');
+                    funcs.displayImage(canvas, context, meta);
+                }
             }
             e.preventDefault();
             e.stopPropagation();
