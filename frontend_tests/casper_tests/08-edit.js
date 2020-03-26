@@ -26,12 +26,6 @@ common.then_send_message('stream', {
     content: 'test editing',
 });
 
-casper.then(function () {
-    casper.waitForSelectorText("#zhome .message_row", "test editing");
-});
-
-common.wait_for_message_actually_sent();
-
 then_edit_last_message();
 
 casper.then(function () {
@@ -53,12 +47,6 @@ common.then_send_message('stream', {
     content: '/me test editing one line with me',
 });
 
-casper.then(function () {
-    casper.waitForSelectorText("#zhome .message_row", "test editing one line with me");
-});
-
-common.wait_for_message_actually_sent();
-
 then_edit_last_message();
 
 casper.then(function () {
@@ -79,10 +67,6 @@ common.then_send_message('private', {
     content: "test editing pm",
 });
 
-casper.then(function () {
-    casper.waitForSelectorText("#zhome .message_row", "test editing pm");
-});
-common.wait_for_message_actually_sent();
 then_edit_last_message();
 
 casper.then(function () {
