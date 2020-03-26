@@ -2492,7 +2492,7 @@ class EditMessageTest(ZulipTestCase):
                       content: Optional[str]=None) -> Message:
         msg = Message.objects.get(id=msg_id)
         cached = MessageDict.wide_dict(msg)
-        MessageDict.finalize_payload(cached, apply_markdown=False, client_gravatar=False)
+        cached = MessageDict.finalize_payload(cached, apply_markdown=False, client_gravatar=False)
 
         uncached = MessageDict.to_dict_uncached_helper(msg)
         MessageDict.post_process_dicts([uncached], apply_markdown=False, client_gravatar=False)

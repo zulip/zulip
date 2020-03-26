@@ -2,6 +2,7 @@ import datetime
 import ujson
 import zlib
 import ahocorasick
+import copy
 
 from django.utils.translation import ugettext as _
 from django.utils.timezone import now as timezone_now
@@ -194,13 +195,20 @@ class MessageDict:
         MessageDict.bulk_hydrate_recipient_info(objs)
 
         for obj in objs:
-            MessageDict.finalize_payload(obj, apply_markdown, client_gravatar)
+            MessageDict._finalize_payload(obj, apply_markdown, client_gravatar)
 
     @staticmethod
     def finalize_payload(obj: Dict[str, Any],
                          apply_markdown: bool,
                          client_gravatar: bool,
-                         keep_rendered_content: bool=False) -> None:
+                         keep_rendered_content: bool=False) -> Dict[str, Any]:
+        new_obj = copy.copy(obj)
+        MessageDict._finalize_payload(new_obj, apply_markdown, client_gravatar, keep_rendered_content)
+        return new_obj
+
+    @staticmethod
+    def _finalize_payload(obj: Dict[str, Any], apply_markdown: bool, client_gravatar: bool,
+                          keep_rendered_content: bool=False) -> None:
         MessageDict.set_sender_avatar(obj, client_gravatar)
         if apply_markdown:
             obj['content_type'] = 'text/html'

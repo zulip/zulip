@@ -841,7 +841,7 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         if 'sender_delivery_email' not in dct:  # nocoverage
             dct['sender_delivery_email'] = dct['sender_email']
 
-        MessageDict.finalize_payload(dct, apply_markdown, client_gravatar)
+        dct = MessageDict.finalize_payload(dct, apply_markdown, client_gravatar)
         return dct
 
     # Extra user-specific data to include

@@ -32,8 +32,8 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         # outgoing webhook to indicate whether it wants the raw
         # Markdown or the rendered HTML, we leave both the content and
         # rendered_content fields in the message payload.
-        MessageDict.finalize_payload(event['message'], False, False,
-                                     keep_rendered_content=True)
+        event['message'] = MessageDict.finalize_payload(event['message'], False, False,
+                                                        keep_rendered_content=True)
 
         request_data = {"data": event['command'],
                         "message": event['message'],

@@ -2416,7 +2416,7 @@ class GetOldMessagesTest(ZulipTestCase):
         m.rendered_content = m.rendered_content_version = None
         m.content = 'test content'
         d = MessageDict.wide_dict(m)
-        MessageDict.finalize_payload(d, apply_markdown=True, client_gravatar=False)
+        d = MessageDict.finalize_payload(d, apply_markdown=True, client_gravatar=False)
         self.assertEqual(d['content'], '<p>test content</p>')
 
     def common_check_get_messages_query(self, query_params: Dict[str, object], expected: str) -> None:
