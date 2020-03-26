@@ -6,7 +6,7 @@
 # this function has only needed one edit since then, adding localization
 # with gettext, which we can omit.
 require_clean_work_tree () {
-    local action="$1" message="${2-}"
+    local action="$1"
 
     git rev-parse --verify HEAD >/dev/null || exit 1
     git update-index -q --ignore-submodules --refresh
@@ -27,7 +27,8 @@ require_clean_work_tree () {
     fi
 
     if [ $err = 1 ]; then
-        [ -n "$message" ] && echo >&2 "$message"
+        git status --short
+        echo >&2 "Doing nothing to avoid losing your work."
         exit 1
     fi
 }
