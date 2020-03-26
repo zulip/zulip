@@ -7,7 +7,7 @@ zrequire('templates');
 set_global('page_params', {
     translation_data: {
         "Quote and reply": "French translation",
-        "Desktop notifications are triggered for messages that are offscreen when they arrive. Mobile and email notifications are triggered once you have been away from Zulip for a few minutes.": "Some French text",
+        "Notification triggers": "Some French text",
     },
 });
 
