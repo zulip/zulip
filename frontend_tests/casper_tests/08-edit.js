@@ -99,63 +99,6 @@ casper.then(function () {
     });
 });
 
-// test editing last own message
-// 37 is left arrow key code
-casper.then(function () {
-    casper.test.assertNotVisible('form.message_edit_form', 'Message edit box not visible');
-    casper.waitUntilVisible(".message_edit_notice", function () {
-        common.keypress(37);
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible(".message_edit_content", function () {
-        var fieldVal = common.get_form_field_value('.message_edit_content');
-        casper.test.assertEquals(fieldVal, "test edited pm", "Opened editing last own message");
-        casper.click('.message_edit_cancel');
-    });
-});
-
-casper.then(function () {
-    casper.waitWhileVisible('.message_edit', function () {
-        casper.click('body');
-        casper.page.sendEvent('keypress', "c");
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('#compose', function () {
-        casper.evaluate(function () {
-            $('#compose-textarea').expectOne().focus();
-            $('#compose-textarea').trigger($.Event('keydown', { which: 37 }));
-        });
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible(".message_edit_form", function () {
-        casper.echo("Opened editing last own message");
-        casper.click('.message_edit_cancel');
-    });
-});
-
-casper.then(function () {
-    casper.waitWhileVisible('.message_edit', function () {
-        casper.click('body');
-        casper.page.sendEvent('keypress', "c");
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('#compose', function () {
-        casper.evaluate(function () {
-            $('#compose-textarea').expectOne().focus().val('test');
-            $('#compose-textarea').trigger($.Event('keydown', { which: 37 }));
-        });
-        casper.test.assertNotVisible('form.message_edit_form', "Last own message edit doesn't open if the compose box not empty");
-    });
-});
-
 casper.run(function () {
     casper.test.done();
 });
