@@ -582,10 +582,10 @@ xmlsec==1.3.3 \
 yamole==2.1.6 \
     --hash=sha256:e9b9af803cd856517a5e0ce2a44820c49b7626c83117118a064622829aa8c5a7 \
     --hash=sha256:ea094cc8acee25316c41ab515921253b8dff965e04ac68e922e11bf86aa1cee4
-https://github.com/zulip/python-zulip-api/archive/0.6.3.zip/#egg=zulip==0.6.3_git&subdirectory=zulip \
-    --hash=sha256:78a09c5e9f4177cab6f062dcb16c645b5814c07907fefaa6d0c196f28b9f6d95
-https://github.com/zulip/python-zulip-api/archive/0.6.3.zip/#egg=zulip_bots==0.6.3+git&subdirectory=zulip_bots \
-    --hash=sha256:78a09c5e9f4177cab6f062dcb16c645b5814c07907fefaa6d0c196f28b9f6d95
+https://github.com/zulip/python-zulip-api/archive/0.6.4.zip/#egg=zulip==0.6.4_git&subdirectory=zulip \
+    --hash=sha256:d1d46d435a147ea3f3ef63e0f0b5ce8356694d341502d1600eabb2db751adb9f
+https://github.com/zulip/python-zulip-api/archive/0.6.4.zip/#egg=zulip_bots==0.6.4+git&subdirectory=zulip_bots \
+    --hash=sha256:d1d46d435a147ea3f3ef63e0f0b5ce8356694d341502d1600eabb2db751adb9f
 zxcvbn==4.4.28 \
     --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1
 
