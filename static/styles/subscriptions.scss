@@ -818,7 +818,7 @@ form#add_new_subscription {
 
         .deactivate,
         .subscribe-button {
-            float: right;
+            display: inline-block;
             margin-top: -5px;
             margin-right: 5px;
         }
@@ -854,7 +854,7 @@ form#add_new_subscription {
     }
 
     #preview-stream-button {
-        float: right;
+        display: inline-block;
         margin-top: -5px;
         margin-right: 5px;
         text-decoration: none;
