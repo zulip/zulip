@@ -181,11 +181,58 @@ exports.check_form = function (form_selector, expected, test_name) {
     }
 };
 
-exports.wait_for_message_actually_sent = function () {
+exports.wait_for_message_fully_processed = function (content) {
     casper.waitFor(function () {
-        return casper.evaluate(function () {
-            return !current_msg_list.last().locally_echoed;
-        });
+        return casper.evaluate(function (content) {
+            /*
+                The tricky part about making sure that
+                a message has actually been fully processed
+                is that we'll "locally echo" the message
+                first on the client.  Until the server
+                actually acks the message, the message will
+                have a temporary id and will not have all
+                the normal message controls.
+
+                For the Casper tests, we want to avoid all
+                the edge cases with locally echoed messages.
+
+                In order to make sure a message is processed,
+                we use internals to determine the following:
+                    - has message_list even been updated with
+                      the message with out content?
+                    - has the locally_echoed flag been cleared?
+
+                But for the final steps we look at the
+                actual DOM (via JQuery):
+                    - is it visible?
+                    - does it look to have been
+                      re-rendered based on server info?
+            */
+            const last_msg = current_msg_list.last();
+
+            if (last_msg.raw_content !== content) {
+                return false;
+            }
+
+            if (last_msg.locally_echoed) {
+                return false;
+            }
+
+            var row = rows.last_visible();
+
+            if (rows.id(row) !== last_msg.id) {
+                return false;
+            }
+
+            /*
+                Make sure the message is completely
+                re-rendered from its original "local echo"
+                version by looking for the star icon.  We
+                don't add the star icon until the server
+                responds.
+            */
+            return row.find('.star').length === 1;
+        }, { content: content});
     });
 };
 
@@ -220,6 +267,11 @@ exports.pm_recipient = {
 
 // Wait for any previous send to finish, then send a message.
 exports.then_send_message = function (type, params) {
+    // If a message is outside the view, we will skip
+    // validation later.
+    var outside_view = params.outside_view;
+    delete params.outside_view;
+
     casper.then(function () {
         casper.waitForSelector('#compose-send-button:enabled');
         casper.waitForSelector('#compose-textarea');
@@ -260,7 +312,9 @@ exports.then_send_message = function (type, params) {
         casper.waitFor(function emptyComposeBox() {
             return casper.getFormValues('form[action^="/json/messages"]').content === '';
         });
-        exports.wait_for_message_actually_sent();
+        if (!outside_view) {
+            exports.wait_for_message_fully_processed(params.content);
+        }
         casper.evaluate(function () {
             compose_actions.cancel();
         });
@@ -329,7 +383,6 @@ exports.keypress = function (code) {
     });
 };
 
-// Send a whole list of messages using then_send_message.
 exports.then_send_many = function (msgs) {
     msgs.forEach(function (msg) {
         exports.then_send_message(
