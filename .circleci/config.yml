@@ -184,3 +184,7 @@ workflows:
       - "xenial-backend-frontend-python3.5"
       - "bionic-backend-python3.6"
       # - "focal-backend-frontend-python3.8"
+
+notify:
+  webhooks:
+    - url: https://chat.zulip.org/api/v1/external/circleci?api_key=$ZULIP_BOT_KEY&stream=automated%20testing
