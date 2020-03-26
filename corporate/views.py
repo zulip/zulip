@@ -172,13 +172,13 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
     plan = get_current_plan_by_customer(customer)
     if plan is not None:
-        plan_name = {
-            CustomerPlan.STANDARD: 'Zulip Standard',
-            CustomerPlan.PLUS: 'Zulip Plus',
-        }[plan.tier]
         now = timezone_now()
         last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, now)
         if last_ledger_entry is not None:
+            plan_name = {
+                CustomerPlan.STANDARD: 'Zulip Standard',
+                CustomerPlan.PLUS: 'Zulip Plus',
+            }[plan.tier]
             licenses = last_ledger_entry.licenses
             licenses_used = get_latest_seat_count(user.realm)
             # Should do this in javascript, using the user's timezone
