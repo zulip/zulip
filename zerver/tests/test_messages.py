@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import copy
-
 from django.db import IntegrityError
 from django.db.models import Q
 from django.conf import settings
@@ -1302,12 +1300,8 @@ class MessageDictTest(ZulipTestCase):
             msg = reload_message(msg_id)
             wide_dict = MessageDict.wide_dict(msg)
 
-            # TODO: Have finalize_payload make this
-            #       copy for us, rather than mutating
-            #       in place.
-            narrow_dict = copy.copy(wide_dict)
-            MessageDict.finalize_payload(
-                narrow_dict,
+            narrow_dict = MessageDict.finalize_payload(
+                wide_dict,
                 apply_markdown=apply_markdown,
                 client_gravatar=client_gravatar,
             )

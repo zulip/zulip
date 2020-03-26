@@ -37,7 +37,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         info to the clients (so they don't have to compute
         it themselves).
         '''
-        MessageDict.finalize_payload(
+        message_dict = MessageDict.finalize_payload(
             event['message'],
             apply_markdown=False,
             client_gravatar=False,
@@ -45,7 +45,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         )
 
         request_data = {"data": event['command'],
-                        "message": event['message'],
+                        "message": message_dict,
                         "bot_email": self.user_profile.email,
                         "token": self.token,
                         "trigger": event['trigger']}

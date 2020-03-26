@@ -840,10 +840,11 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
 
     @cachify
     def get_client_payload(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
-        dct = copy.deepcopy(wide_dict)
-
-        MessageDict.finalize_payload(dct, apply_markdown, client_gravatar)
-        return dct
+        return MessageDict.finalize_payload(
+            wide_dict,
+            apply_markdown=apply_markdown,
+            client_gravatar=client_gravatar
+        )
 
     # Extra user-specific data to include
     extra_user_data = {}  # type: Dict[int, Any]
