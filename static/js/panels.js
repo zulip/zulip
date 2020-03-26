@@ -27,6 +27,15 @@ exports.initialize = function () {
     } else {
         exports.open($("[data-process='notifications']"));
     }
+    exports.check_profile_incomplete();
+
+};
+exports.check_profile_incomplete = function () {
+    if (page_params.realm_icon_source === "G" || page_params.realm_description === '' && page_params.is_admin) {
+        $("[data-process='profile-incomplete']").show();
+    } else {
+        $("[data-process='profile-incomplete']").hide();
+    }
 };
 
 exports.open = function ($process) {

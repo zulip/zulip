@@ -184,7 +184,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         } else if (event.op === 'deactivated') {
             window.location.href = "/accounts/deactivated/";
         }
-
+        panels.check_profile_incomplete();
         break;
     }
 
