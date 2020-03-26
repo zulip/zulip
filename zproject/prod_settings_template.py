@@ -254,6 +254,9 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         # the left end of the login/register buttons for this IDP.
         # The default of None results in a text-only button.
         # "display_icon": "/path/to/icon.png",
+        
+        # Activate checking entitlements for strict SAML authentication control
+        # "requiredEntitlements": ["urn:oid:1.3.6.1.4.1.5923.1.1.1.9"],
     }
 }
 
