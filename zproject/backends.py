@@ -42,9 +42,9 @@ from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.google import GoogleOAuth2
-from social_core.backends.saml import SAMLAuth
+from social_core.backends.saml import SAMLAuth, OID_EDU_PERSON_ENTITLEMENT
 from social_core.pipeline.partial import partial
-from social_core.exceptions import AuthFailed, SocialAuthBaseException
+from social_core.exceptions import AuthFailed, AuthForbidden, SocialAuthBaseException
 
 from zerver.decorator import client_is_exempt_from_rate_limiting
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
@@ -1423,7 +1423,21 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         relay_state = self.put_data_in_redis(data_to_relay)
 
         return auth.login(return_to=relay_state)
-
+    
+    def _check_entitlements(self, idp, attributes):
+        """
+        Check if we require the presence of any specific eduPersonEntitlement.
+        raise AuthForbidden if the user should not be authenticated, or do nothing
+        to allow the login pipeline to continue.
+        """
+        if "requiredEntitlements" in idp.conf:
+            entitlements = attributes.get(OID_EDU_PERSON_ENTITLEMENT, [])
+            for expected in idp.conf['requiredEntitlements']:
+                if expected not in entitlements:
+                    logging.warn(
+                                 "SAML user from IdP %s rejected due to missing eduPersonEntitlement %s", idp.name, expected)
+                    raise AuthForbidden(self)
+                    
     @classmethod
     def put_data_in_redis(cls, data_to_relay: Dict[str, Any]) -> str:
         return put_dict_in_redis(redis_client, "saml_token_{token}",
