@@ -4,7 +4,7 @@
         "paths": {
             "*": ["static/js/types/*"],
         },
-        "typeRoots": ["static/js/types"],
+        "types": [],
 
         /* Typescript 3.4 added the --incremental flag but its API is not
          * currently public so ts-loader cannot use it yet.
