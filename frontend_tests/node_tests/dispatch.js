@@ -95,6 +95,7 @@ zrequire('subs');
 zrequire('stream_ui_updates');
 
 zrequire('server_events_dispatch');
+zrequire('panels');
 
 function dispatch(ev) {
     server_events_dispatch.dispatch_normal_event(ev);

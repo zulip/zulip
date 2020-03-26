@@ -26,6 +26,17 @@
             </a>
         </div>
     </div>
+    <div data-process="profile-incomplete" class="alert alert-info">
+        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
+        <div data-step="2">
+            {% trans %}
+            Complete the
+            <a class="alert-link" href="#organization/organization-profile">
+                organization profile
+            </a> to brand and explain the purpose of this Zulip organization.
+            {% endtrans %}
+        </div>
+    </div>
     <div data-process="insecure-desktop-app" class="alert alert-info red">
         <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
         <div data-step="1">
