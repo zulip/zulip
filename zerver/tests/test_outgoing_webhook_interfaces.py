@@ -122,6 +122,9 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data['token'], "abcdef")
         self.assertEqual(request_data['message'], expected_message_data)
 
+        # Make sure we didn't accidentally mutate wide_message_dict.
+        self.assertEqual(wide_message_dict['sender_realm_id'], othello.realm_id)
+
     def test_process_success(self) -> None:
         response = dict(response_not_required=True)  # type: Dict[str, Any]
         success_response = self.handler.process_success(response)
