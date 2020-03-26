@@ -39,13 +39,11 @@ if [ -z "$request_id" ]; then
     usage
 fi
 
-if ! git diff-index --quiet HEAD; then
-    set +x
-    echo "There are uncommitted changes:"
-    git status --short
-    echo "Doing nothing to avoid losing your work."
-    exit 1
-fi
+this_file=$(readlink -f "${BASH_SOURCE[0]}")
+# shellcheck source=lib/git-tools.bash
+. "${this_file%/*}"/lib/git-tools.bash
+
+require_clean_work_tree 'reset to PR'
 
 if [ -z "$pseudo_remote" ]; then
     set -x
