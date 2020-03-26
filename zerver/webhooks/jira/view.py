@@ -316,10 +316,10 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
                      payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
 
     event = get_event_type(payload)
-    subject = get_issue_subject(payload)
-
     if event in IGNORED_EVENTS:
         return json_success()
+
+    subject = get_issue_subject(payload)
 
     content_func = get_event_handler(event)
 
