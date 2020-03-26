@@ -47,7 +47,7 @@ consumers = defaultdict(int)  # type: Dict[str, int]
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 queues = {
-    'deferred_work'
+    'deferred_work',
     'digest_emails',
     'email_mirror',
     'embed_links',
@@ -62,7 +62,7 @@ queues = {
     'outgoing_webhooks',
     'signups',
     'slow_queries',
-    'user_activity'
+    'user_activity',
     'user_activity_interval',
     'user_presence',
     # These queues may not be present if settings.TORNADO_PROCESSES > 1
