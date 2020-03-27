@@ -859,6 +859,11 @@ form#add_new_subscription {
         margin-right: 5px;
         text-decoration: none;
     }
+    @media only screen and (max-width: 1920px) {
+        #preview-stream-button {
+            margin-top: -38px;
+        }
+    }
 
     .editable-section {
         position: relative;
