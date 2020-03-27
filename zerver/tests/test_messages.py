@@ -85,6 +85,7 @@ from zerver.lib.topic import (
     LEGACY_PREV_TOPIC,
     DB_TOPIC_NAME,
     TOPIC_LINKS,
+    TOPIC_NAME,
 )
 
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
@@ -102,7 +103,7 @@ from zerver.models import (
     get_stream, get_system_bot, get_user, Reaction,
     flush_per_request_caches, ScheduledMessage, get_huddle_recipient,
     bulk_get_huddle_user_ids, get_huddle_user_ids,
-    get_display_recipient, RealmFilter,
+    get_display_recipient, RealmFilter
 )
 
 
@@ -121,7 +122,7 @@ import mock
 from operator import itemgetter
 import time
 import ujson
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Set, Union
 
 from collections import namedtuple
 
@@ -2615,20 +2616,64 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assert_json_error(result, 'Missing deliver_at in a request for delayed message delivery')
 
 class EditMessageTest(ZulipTestCase):
-    def check_message(self, msg_id: int, topic_name: Optional[str]=None,
-                      content: Optional[str]=None) -> Message:
+    def check_topic(self,
+                    msg_id: int,
+                    topic_name: str) -> None:
         msg = Message.objects.get(id=msg_id)
-        cached = MessageDict.wide_dict(msg)
-        MessageDict.finalize_payload(cached, apply_markdown=False, client_gravatar=False)
+        self.assertEqual(msg.topic_name(), topic_name)
 
-        uncached = MessageDict.to_dict_uncached_helper(msg)
-        MessageDict.post_process_dicts([uncached], apply_markdown=False, client_gravatar=False)
-        self.assertEqual(cached, uncached)
-        if topic_name:
-            self.assertEqual(msg.topic_name(), topic_name)
-        if content:
-            self.assertEqual(msg.content, content)
-        return msg
+    def check_message(self,
+                      msg_id: int,
+                      topic_name: str,
+                      content: str) -> None:
+        # Make sure we saved the message correctly to the DB.
+        msg = Message.objects.get(id=msg_id)
+        self.assertEqual(msg.topic_name(), topic_name)
+        self.assertEqual(msg.content, content)
+
+        '''
+        Next, we will make sure we properly cached the
+        messages.  We still have to do 2 queries to
+        hydrate sender/recipient info, but we won't need
+        to hit the zerver_message table.
+        '''
+
+        with queries_captured() as queries:
+            (fetch_message_dict,) = messages_for_ids(
+                message_ids = [msg.id],
+                user_message_flags={msg_id: []},
+                search_fields=dict(),
+                apply_markdown=False,
+                client_gravatar=False,
+                allow_edit_history=True,
+            )
+
+        for query in queries:
+            print(query['sql'])
+
+        for query in queries:
+            self.assertNotIn('message', query['sql'])
+
+        self.assertEqual(len(queries), 2)
+
+        self.assertEqual(
+            fetch_message_dict[TOPIC_NAME],
+            msg.topic_name()
+        )
+        self.assertEqual(
+            fetch_message_dict['content'],
+            msg.content
+        )
+        self.assertEqual(
+            fetch_message_dict['sender_id'],
+            msg.sender_id
+        )
+
+        if msg.edit_history:
+            self.assertEqual(
+                fetch_message_dict['edit_history'],
+                ujson.loads(msg.edit_history)
+            )
 
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify
@@ -2641,14 +2686,14 @@ class EditMessageTest(ZulipTestCase):
             'content': 'after edit'
         })
         self.assert_json_success(result)
-        self.check_message(msg_id, content="after edit")
+        self.check_message(msg_id, topic_name="editing", content="after edit")
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'topic': 'edited'
         })
         self.assert_json_success(result)
-        self.check_message(msg_id, topic_name="edited")
+        self.check_topic(msg_id, topic_name="edited")
 
     def test_fetch_raw_message(self) -> None:
         self.login('hamlet')
@@ -3045,7 +3090,7 @@ class EditMessageTest(ZulipTestCase):
             result = self.client_patch("/json/messages/" + str(id_), params_dict)
             self.assert_json_success(result)
             if topic_only:
-                self.check_message(id_, topic_name=new_topic)
+                self.check_topic(id_, topic_name=new_topic)
             else:
                 self.check_message(id_, topic_name=new_topic, content=new_content)
 
@@ -3062,7 +3107,10 @@ class EditMessageTest(ZulipTestCase):
             result = self.client_patch("/json/messages/" + str(id_), params_dict)
             message = Message.objects.get(id=id_)
             self.assert_json_error(result, error)
-            self.check_message(id_, topic_name=old_topic, content=old_content)
+
+            msg = Message.objects.get(id=id_)
+            self.assertEqual(msg.topic_name(), old_topic)
+            self.assertEqual(msg.content, old_content)
 
         self.login('iago')
         # send a message in the past
@@ -3112,7 +3160,7 @@ class EditMessageTest(ZulipTestCase):
             params_dict = {'message_id': id_, 'topic': new_topic}
             result = self.client_patch("/json/messages/" + str(id_), params_dict)
             self.assert_json_success(result)
-            self.check_message(id_, topic_name=new_topic)
+            self.check_topic(id_, topic_name=new_topic)
 
         def do_edit_message_assert_error(id_, unique_str, error):
             # type: (int, str, str) -> None
@@ -3124,7 +3172,9 @@ class EditMessageTest(ZulipTestCase):
             result = self.client_patch("/json/messages/" + str(id_), params_dict)
             message = Message.objects.get(id=id_)
             self.assert_json_error(result, error)
-            self.check_message(id_, topic_name=old_topic, content=old_content)
+            msg = Message.objects.get(id=id_)
+            self.assertEqual(msg.topic_name(), old_topic)
+            self.assertEqual(msg.content, old_content)
 
         self.login('iago')
         # send a message in the past
@@ -3296,11 +3346,11 @@ class EditMessageTest(ZulipTestCase):
         })
         self.assert_json_success(result)
 
-        self.check_message(id1, topic_name="edited")
-        self.check_message(id2, topic_name="edited")
-        self.check_message(id3, topic_name="topic1")
-        self.check_message(id4, topic_name="topic2")
-        self.check_message(id5, topic_name="edited")
+        self.check_topic(id1, topic_name="edited")
+        self.check_topic(id2, topic_name="edited")
+        self.check_topic(id3, topic_name="topic1")
+        self.check_topic(id4, topic_name="topic2")
+        self.check_topic(id5, topic_name="edited")
 
     def test_propagate_all_topics(self) -> None:
         self.login('hamlet')
@@ -3324,12 +3374,12 @@ class EditMessageTest(ZulipTestCase):
         })
         self.assert_json_success(result)
 
-        self.check_message(id1, topic_name="edited")
-        self.check_message(id2, topic_name="edited")
-        self.check_message(id3, topic_name="topic1")
-        self.check_message(id4, topic_name="topic2")
-        self.check_message(id5, topic_name="edited")
-        self.check_message(id6, topic_name="topic3")
+        self.check_topic(id1, topic_name="edited")
+        self.check_topic(id2, topic_name="edited")
+        self.check_topic(id3, topic_name="topic1")
+        self.check_topic(id4, topic_name="topic2")
+        self.check_topic(id5, topic_name="edited")
+        self.check_topic(id6, topic_name="topic3")
 
     def test_propagate_invalid(self) -> None:
         self.login('hamlet')
@@ -3341,14 +3391,14 @@ class EditMessageTest(ZulipTestCase):
             'propagate_mode': 'invalid',
         })
         self.assert_json_error(result, 'Invalid propagate_mode')
-        self.check_message(id1, topic_name="topic1")
+        self.check_topic(id1, topic_name="topic1")
 
         result = self.client_patch("/json/messages/" + str(id1), {
             'content': 'edited',
             'propagate_mode': 'change_all',
         })
         self.assert_json_error(result, 'Invalid propagate_mode without topic edit')
-        self.check_message(id1, topic_name="topic1")
+        self.check_topic(id1, topic_name="topic1")
 
 class MirroredMessageUsersTest(ZulipTestCase):
     def test_invalid_sender(self) -> None:
