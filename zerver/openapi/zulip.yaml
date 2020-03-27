@@ -2402,6 +2402,10 @@ paths:
             notification settings were simple booleans.
         schema:
           type: object
+        example:
+          {
+              "notification_settings_null": true
+          }
       - name: fetch_event_types
         in: query
         description: Same as the `event_types` argument except that the values
