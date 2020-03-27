@@ -40,11 +40,11 @@ with many of the WCAG guidelines.  Here are some of the more useful ones:
 * [aXe](https://www.deque.com/products/axe/) An open source Chrome and Firefox
   extension which runs a somewhat different set of checks than Google's Chrome
   extension.
-* [Wave](http://wave.webaim.org/) This web application takes a URL and loads
+* [Wave](https://wave.webaim.org/) This web application takes a URL and loads
   it in a frame, reporting on all the issues it finds with links to more
   information.  Has the advantage of not requiring installation, but requires
   a URL which can be directly accessed by an external site.
-* [Web Developer](http://chrispederick.com/work/web-developer/) This browser
+* [Web Developer](https://chrispederick.com/work/web-developer/) This browser
   extension has many useful features, including a convenient link for opening
   the current URL in Wave to get an accessibility report.
 
@@ -70,16 +70,16 @@ If you want to help make Zulip more accessible, here is a list of the
 For more information about making Zulip accessible to as many users as
 possible, the following resources may be useful.
 
-* [Font Awesome accessibility guide](http://fontawesome.io/accessibility/),
+* [Font Awesome accessibility guide](https://fontawesome.com/how-to-use/on-the-web/other-topics/accessibility),
   which is especially helpful since Zulip uses Font Awesome for its icons.
 * [Web Content Accessibility Guidelines (WCAG) 2.0](https://www.w3.org/TR/WCAG/)
 * [WAI-ARIA](https://www.w3.org/WAI/intro/aria) - Web Accessibility Initiative
   Accessible Rich Internet Application Suite
-* [WebAIM](http://webaim.org/) - Web Accessibility in Mind
+* [WebAIM](https://webaim.org/) - Web Accessibility in Mind
 * The [MDN page on accessibility](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
 * The [Open edX Accessibility Guidelines][openedx-guidelines] for developers
 
 
 [chrome-webstore]: https://chrome.google.com/webstore/detail/accessibility-developer-t/fpkknkljclfencbdbgkenhalefipecmb
-[openedx-guidelines]: http://edx.readthedocs.io/projects/edx-developer-guide/en/latest/conventions/accessibility.html
+[openedx-guidelines]: https://edx.readthedocs.io/projects/edx-developer-guide/en/latest/conventions/accessibility.html
 [accessibility-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22area%3A%20accessibility%22

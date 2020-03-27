@@ -16,7 +16,7 @@ import redis
 import time
 
 # Implement a rate-limiting scheme inspired by the one described here, but heavily modified
-# http://blog.domaintools.com/2013/04/rate-limiting-with-redis/
+# https://www.domaintools.com/resources/blog/rate-limiting-with-redis
 
 client = get_redis_client()
 rules = settings.RATE_LIMITING_RULES  # type: Dict[str, List[Tuple[int, int]]]

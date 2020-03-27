@@ -183,7 +183,7 @@ For users to be able to join to an "invite-only" stream, they must have been
 invited by some user in this stream. This type of stream is equivalent to
 Facebook's "closed" groups, which in turn translates to "geschlossen" in German.
 This translation seems to be appropriate, for example [Linguee](
-http://www.linguee.de/englisch-deutsch/uebersetzung/invite-only.html)
+https://www.linguee.de/englisch-deutsch/uebersetzung/invite-only.html)
 search returns only paraphrases of this term.
 
 *"Geschlossener Stream" (Transifex), "Geschlossene Gruppe" (Facebook),
@@ -227,7 +227,7 @@ This one is tricky, since one might initially think of "Alarmwort" as a proper
 translation. "Alarm", however, has a negative connotation, people link it to
 unpleasant events. "Signal", on the other hand, is neutral, just like
 "alert word". Nevertheless, [Linguee](
-http://www.linguee.de/deutsch-englisch/search?source=auto&query=alert+word)
+https://www.linguee.de/deutsch-englisch/search?source=auto&query=alert+word)
 shows that some websites misuse "Alarm" for the translation.
 
 *"Signalwort" (Transifex), "Wort-Alarm" (Linguee)*

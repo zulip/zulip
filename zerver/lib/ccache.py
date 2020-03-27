@@ -133,7 +133,7 @@ def der_encode_ticket(tkt: Dict[str, Any]) -> bytes:
                       base64.b64decode(tkt["encPart"]["cipher"]))])]))
 
 # Kerberos ccache writing code. Using format documentation from here:
-# http://www.gnu.org/software/shishi/manual/html_node/The-Credential-Cache-Binary-File-Format.html
+# https://www.gnu.org/software/shishi/manual/html_node/The-Credential-Cache-Binary-File-Format.html
 
 def ccache_counted_octet_string(data: bytes) -> bytes:
     if not isinstance(data, bytes):

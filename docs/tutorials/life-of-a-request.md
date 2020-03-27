@@ -7,7 +7,7 @@ Zulip codebase, and dive deep into how each part works.
 We will use as our example the creation of users through the API, but we
 will also highlight how alternative requests are handled.
 
-## A request is sent to the server, and handled by [Nginx](http://nginx.org/en/docs/)
+## A request is sent to the server, and handled by [Nginx](https://nginx.org/en/docs/)
 
 When Zulip is deployed in production, all requests go through nginx.
 For the most part we don't need to know how this works, except for when
@@ -84,7 +84,7 @@ For example, the `/features` page (preview
 
 Note the `zh-hans` prefix--that url pattern gets added by `i18n_patterns`.
 
-## API endpoints use [REST](http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm)
+## API endpoints use [REST](https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm)
 
 Our example is a REST API endpoint. It's a PUT to `/users`.
 
@@ -114,7 +114,7 @@ idempotent, and we like to write API endpoints in an idempotent fashion,
 as much as possible.
 
 This [cookbook](http://restcookbook.com/) and
-[tutorial](http://www.restapitutorial.com/) can be helpful if you are
+[tutorial](https://www.restapitutorial.com/) can be helpful if you are
 new to REST web applications.
 
 ### PUT is only for creating new things

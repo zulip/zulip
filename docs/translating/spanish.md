@@ -24,7 +24,7 @@ Use informal Spanish for translation:
   to decide what wouldn't sound awkward / rude in Spanish.
 
 * Latest RAE rule ("solo" should
-  [**never**](http://www.rae.es/consultas/el-adverbio-solo-y-los-pronombres-demostrativos-sin-tilde)
+  [**never**](https://www.rae.es/consultas/el-adverbio-solo-y-los-pronombres-demostrativos-sin-tilde)
   have accent, even when it can be replaced with "solamente").
 
 Some terms are very tricky to translate, so be sure to communicate
