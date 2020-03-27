@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import copy
+
 from django.db import IntegrityError
 from django.db.models import Q
 from django.conf import settings
@@ -9,8 +11,6 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
-from zerver.lib.cache import get_stream_cache_key, cache_delete
-
 from zerver.lib.addressee import Addressee
 
 from zerver.lib.actions import (
@@ -41,6 +41,13 @@ from zerver.lib.actions import (
     internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
+
+from zerver.lib.cache import (
+    cache_delete,
+    get_stream_cache_key,
+    to_dict_cache_key_id,
+)
+
 
 from zerver.lib.create_user import (
     create_user_profile,
@@ -1236,6 +1243,126 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertEqual(recent_conversation['max_message_id'], message2_id)
 
 class MessageDictTest(ZulipTestCase):
+    def test_both_codepaths(self) -> None:
+        '''
+        We have two different codepaths that
+        extract a particular shape of dictionary
+        for messages to send to clients:
+
+            events:
+
+                These are the events we send to MANY
+                clients when a message is originally
+                sent.
+
+            fetch:
+
+                These are the messages we send to ONE
+                client when they fetch messages via
+                some narrow/search in the UI.
+
+        Different clients have different needs
+        when it comes to things like generating avatar
+        hashes or including both rendered and unrendered
+        markdown, so that explains the different shapes.
+
+        And then the two codepaths have different
+        performance needs.  In the events codepath, we
+        have the Django view generate a single "wide"
+        dictionary that gets put on the event queue,
+        and then we send events to multiple clients,
+        finalizing the payload for each of them depending
+        on the "shape" they want.  (We also avoid
+        doing extra work for any two clients who want
+        the same shape dictionary, but that's out of the
+        scope of this particular test).
+
+        In the fetch scenario, the single client only needs
+        a dictionary of one shape, but we need to re-hydrate
+        the sender information, since the sender details
+        may have changed since the message was originally
+        sent.
+
+        This test simply verifies that the two codepaths
+        ultimately provide the same result.
+        '''
+
+        def reload_message(msg_id: int) -> Message:
+            # Get a clean copy of the message, and
+            # clear the cache.
+            cache_delete(to_dict_cache_key_id(msg_id))
+            msg = Message.objects.get(id=msg_id)
+            return msg
+
+        def get_send_message_payload(
+                msg_id: int,
+                apply_markdown: bool,
+                client_gravatar: bool) -> Dict[str, Any]:
+            msg = reload_message(msg_id)
+            wide_dict = MessageDict.wide_dict(msg)
+
+            # TODO: Have finalize_payload make this
+            #       copy for us, rather than mutating
+            #       in place.
+            narrow_dict = copy.copy(wide_dict)
+            MessageDict.finalize_payload(
+                narrow_dict,
+                apply_markdown=apply_markdown,
+                client_gravatar=client_gravatar,
+            )
+            return narrow_dict
+
+        def get_fetch_payload(
+                msg_id: int,
+                apply_markdown: bool,
+                client_gravatar: bool) -> Dict[str, Any]:
+            msg = reload_message(msg_id)
+            unhydrated_dict = MessageDict.to_dict_uncached_helper(msg)
+            # The next step mutates the dict in place
+            # for performance reasons.
+            MessageDict.post_process_dicts(
+                [unhydrated_dict],
+                apply_markdown=apply_markdown,
+                client_gravatar=client_gravatar,
+            )
+            final_dict = unhydrated_dict
+            return final_dict
+
+        def test_message_id() -> int:
+            hamlet = self.example_user('hamlet')
+            self.login_user(hamlet)
+            msg_id = self.send_stream_message(
+                hamlet,
+                "Scotland",
+                topic_name="editing",
+                content="before edit"
+            )
+            return msg_id
+
+        flag_setups = [
+            [False, False],
+            [False, True],
+            [True, False],
+            [True, True],
+        ]
+
+        msg_id = test_message_id()
+
+        for (apply_markdown, client_gravatar) in flag_setups:
+            send_message_payload = get_send_message_payload(
+                msg_id,
+                apply_markdown=apply_markdown,
+                client_gravatar=client_gravatar,
+            )
+
+            fetch_payload = get_fetch_payload(
+                msg_id,
+                apply_markdown=apply_markdown,
+                client_gravatar=client_gravatar,
+            )
+
+            self.assertEqual(send_message_payload, fetch_payload)
+
     @slow('builds lots of messages')
     def test_bulk_message_fetching(self) -> None:
         sender = self.example_user('othello')
