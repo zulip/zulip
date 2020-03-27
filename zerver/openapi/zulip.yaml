@@ -508,9 +508,12 @@ paths:
         required: true
       - name: to
         in: query
-        description: For stream messages, either the name or integer ID of the stream.
+        description: |
+          For stream messages, either the name or integer ID of the stream.
           For private messages, either a list containing integer user
           IDs or a list containing string email addresses.
+
+          **Changes**: Support using user/stream IDs was added in Zulip 2.0.0.
         schema:
           type: string
         example: [9, 10]
@@ -1044,8 +1047,12 @@ paths:
         example: true
       - name: include_custom_profile_fields
         in: query
-        description: Set to `true` if the client wants custom profile field
-          data to be included in the response.
+        description: |
+          Set to `true` if the client wants custom profile field data
+          to be included in the response.
+
+          **Changes**: New in Zulip 2.1.0.  Previous versions do no offer these
+          data via the API.
         schema:
           type: boolean
           default: false
@@ -1479,7 +1486,10 @@ paths:
                 - properties:
                     avatar_url:
                       type: string
-                      description: "URL for the user's avatar"
+                      description: |
+                        URL for the user's avatar.
+
+                        **Changes**: New in Zulip 2.1.0.
                       example: "x"
                     client_id:
                       type: string
@@ -1665,9 +1675,12 @@ paths:
       parameters:
       - name: include_subscribers
         in: query
-        description: Set to `true` if you would like each stream's info to include a
+        description: |
+          Set to `true` if you would like each stream's info to include a
           list of current subscribers to that stream. (This may be significantly slower
           in organizations with thousands of users.)
+
+          **Changes**: New in Zulip 2.1.0.
         schema:
           type: boolean
           default: false
@@ -1696,7 +1709,7 @@ paths:
                           "description": "A Scandinavian country",
                           "desktop_notifications": true,
                           "email_address": "Denmark+187b4125ed36d6af8b5d03ef4f65c0cf@zulipdev.com:9981",
-                          "in_home_view": true,
+                          "is_muted": false,
                           "invite_only": false,
                           "name": "Denmark",
                           "pin_to_top": false,
@@ -1716,7 +1729,7 @@ paths:
                           "description": "Located in the United Kingdom",
                           "desktop_notifications": true,
                           "email_address": "Scotland+f5786390183e60a1ccb18374f9d05649@zulipdev.com:9981",
-                          "in_home_view": true,
+                          "is_muted": false,
                           "invite_only": false,
                           "name": "Scotland",
                           "pin_to_top": false,
@@ -2373,6 +2386,22 @@ paths:
           type: boolean
           default: false
         example: true
+      - name: client_capabilities
+        in: query
+        description: |
+          Dictionary containing details on features the client
+          supports that are relevant to the format of responses sent
+          by the server.
+
+          * `notification_settings_null`: Boolean for whether the
+            client can handle the current API with null values for
+            stream-level notification settings (which means the stream
+            is not customized and should inherit the user's global
+            notification settings for stream messages).  New in Zulip
+            2.1.0; in earlier Zulip releases, stream-level
+            notification settings were simple booleans.
+        schema:
+          type: object
       - name: fetch_event_types
         in: query
         description: Same as the `event_types` argument except that the values
