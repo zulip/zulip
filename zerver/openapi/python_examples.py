@@ -223,23 +223,14 @@ def get_single_user(client):
     # {code_example|start}
     # Fetch details on a user given a user ID
     user_id = 8
-    url = 'users/' + str(user_id)
-    result = client.call_endpoint(
-        url=url,
-        method='GET'
-    )
+    result = client.get_user_by_id(user_id)
     # {code_example|end}
     validate_against_openapi_schema(result, '/users/{user_id}', 'get', '200')
 
     # {code_example|start}
     # If you'd like data on custom profile fields, you can request them as follows:
-    result = client.call_endpoint(
-        url=url,
-        method='GET',
-        request={'include_custom_profile_fields': True}
-    )
+    result = client.get_user_by_id(user_id, {'include_custom_profile_fields': True})
     # {code_example|end}
-
     validate_against_openapi_schema(result, '/users/{user_id}', 'get', '200')
 
 @openapi_test_function("/users/{user_id}:delete")
