@@ -113,7 +113,7 @@ EMOJI_NAME_MAPS = {
     '1f925': {'canonical_name': 'lying', 'aliases': []},
     # seems like best emoji for nervous/anxious
     '1f62c': {'canonical_name': 'grimacing', 'aliases': ['nervous', 'anxious']},
-    # zip_it from http://mashable.com/2015/10/23/ios-9-1-emoji-guide,
+    # zip_it from https://mashable.com/2015/10/23/ios-9-1-emoji-guide/,
     # lips_sealed from https://emojipedia.org/zipper-mouth-face/, rest seemed
     # like reasonable additions
     '1f910': {'canonical_name': 'silence', 'aliases': ['quiet', 'hush', 'zip_it', 'lips_are_sealed']},
@@ -122,7 +122,7 @@ EMOJI_NAME_MAPS = {
     '1f927': {'canonical_name': 'sneezing', 'aliases': []},
     # cant_talk from https://beebom.com/emoji-meanings/
     '1f637': {'canonical_name': 'cant_talk', 'aliases': ['mask']},
-    # flu from http://mashable.com/2015/10/23/ios-9-1-emoji-guide, sick from
+    # flu from https://mashable.com/2015/10/23/ios-9-1-emoji-guide/, sick from
     # https://emojipedia.org/face-with-thermometer/, face_with_thermometer so
     # it shows up in typeahead (thermometer taken by Objects/82)
     '1f912': {'canonical_name': 'sick', 'aliases': ['flu', 'face_with_thermometer', 'ill', 'fever']},
@@ -205,7 +205,7 @@ EMOJI_NAME_MAPS = {
     # seems like best emoji for high_five, raised_hand_with_fingers_splayed
     # doesn't seem that useful
     '1f590': {'canonical_name': 'high_five', 'aliases': ['palm']},
-    # http://mashable.com/2015/10/23/ios-9-1-emoji-guide
+    # https://mashable.com/2015/10/23/ios-9-1-emoji-guide/
     '1f596': {'canonical_name': 'spock', 'aliases': ['live_long_and_prosper']},
     # People/119 is a better 'hi', but 'hi' will never show up in the typeahead
     # due to 'high_five'
@@ -259,7 +259,7 @@ EMOJI_NAME_MAPS = {
     '1f477': {'canonical_name': 'construction_worker', 'aliases': []},
     '1f482': {'canonical_name': 'guard', 'aliases': []},
     # detective from gemoji, sneaky from
-    # http://mashable.com/2015/10/23/ios-9-1-emoji-guide/, agent seems a
+    # https://mashable.com/2015/10/23/ios-9-1-emoji-guide/, agent seems a
     # reasonable addition
     '1f575': {'canonical_name': 'detective', 'aliases': ['spy', 'sleuth', 'agent', 'sneaky']},
     # mrs_claus from https://emojipedia.org/mother-christmas/
@@ -327,7 +327,7 @@ EMOJI_NAME_MAPS = {
     # king and queen seem like good additions
     '1f451': {'canonical_name': 'crown', 'aliases': ['queen', 'king']},
     # safety and invincibility inspired by
-    # http://mashable.com/2015/10/23/ios-9-1-emoji-guide. hard_hat and
+    # https://mashable.com/2015/10/23/ios-9-1-emoji-guide/. hard_hat and
     # rescue_worker seem like good additions
     '26d1': {'canonical_name': 'helmet', 'aliases': ['hard_hat', 'rescue_worker', 'safety_first', 'invincible']},    # ignorelongline
     # backpack from gemoji, dominates satchel on google trends
@@ -377,7 +377,7 @@ EMOJI_NAME_MAPS = {
     '1f426': {'canonical_name': 'bird', 'aliases': []},
     '1f424': {'canonical_name': 'chick', 'aliases': ['baby_chick']},
     '1f423': {'canonical_name': 'hatching', 'aliases': ['hatching_chick']},
-    # http://www.iemoji.com/view/emoji/668/animals-nature/front-facing-baby-chick
+    # https://www.iemoji.com/view/emoji/668/animals-nature/front-facing-baby-chick
     '1f425': {'canonical_name': 'new_baby', 'aliases': []},
     '1f986': {'canonical_name': 'duck', 'aliases': []},
     '1f985': {'canonical_name': 'eagle', 'aliases': []},
@@ -752,7 +752,7 @@ EMOJI_NAME_MAPS = {
     '1f3c7': {'canonical_name': 'horse_racing', 'aliases': ['horse_riding']},
     # at least in the US: this = cyclist, Activity/53 = mountain biker, and
     # motorcyclist = biker. Mainly from googling around and personal
-    # experience. E.g. http://grammarist.com/usage/cyclist-biker/ for cyclist
+    # experience. E.g. https://grammarist.com/usage/cyclist-biker/ for cyclist
     # and biker,
     # https://www.theguardian.com/lifeandstyle/2010/oct/24/bike-snobs-guide-cycling-tribes
     # for mountain biker (I've never heard the term "mountain cyclist", and
@@ -914,7 +914,7 @@ EMOJI_NAME_MAPS = {
     '1f6a6': {'canonical_name': 'traffic_light', 'aliases': ['vertical_traffic_light']},
     # see Places/57
     '1f6a5': {'canonical_name': 'horizontal_traffic_light', 'aliases': []},
-    # road_trip from http://mashable.com/2015/10/23/ios-9-1-emoji-guide
+    # road_trip from https://mashable.com/2015/10/23/ios-9-1-emoji-guide/
     '1f5fa': {'canonical_name': 'map', 'aliases': ['world_map', 'road_trip']},
     # rock_carving, statue, and tower seem more general and less culturally
     # specific, for Places/60, 61, and 63.
@@ -1019,7 +1019,7 @@ EMOJI_NAME_MAPS = {
     # vise seems like a reasonable addition
     '1f5dc': {'canonical_name': 'compression', 'aliases': ['vise']},
     # gold record seems more useful, idea came from
-    # http://www.11points.com/Web-Tech/11_Emoji_With_Different_Meanings_Than_You_Think
+    # https://11points.com/11-emoji-different-meanings-think/
     '1f4bd': {'canonical_name': 'gold_record', 'aliases': ['minidisc']},
     '1f4be': {'canonical_name': 'floppy_disk', 'aliases': []},
     '1f4bf': {'canonical_name': 'cd', 'aliases': []},
@@ -1065,7 +1065,7 @@ EMOJI_NAME_MAPS = {
     '1f56f': {'canonical_name': 'candle', 'aliases': []},
     # seems like a reasonable addition
     '1f5d1': {'canonical_name': 'wastebasket', 'aliases': ['trash_can']},
-    # http://www.iemoji.com/view/emoji/1173/objects/oil-drum
+    # https://www.iemoji.com/view/emoji/1173/objects/oil-drum
     '1f6e2': {'canonical_name': 'oil_drum', 'aliases': ['commodities']},
     # losing money from https://emojipedia.org/money-with-wings/,
     # easy_come_easy_go seems like a reasonable addition
@@ -1095,10 +1095,10 @@ EMOJI_NAME_MAPS = {
     '26d3': {'canonical_name': 'chains', 'aliases': []},
     '1f52b': {'canonical_name': 'gun', 'aliases': []},
     '1f4a3': {'canonical_name': 'bomb', 'aliases': []},
-    # betrayed from http://www.iemoji.com/view/emoji/786/objects/kitchen-knife
+    # betrayed from https://www.iemoji.com/view/emoji/786/objects/kitchen-knife
     '1f52a': {'canonical_name': 'knife', 'aliases': ['hocho', 'betrayed']},
     # rated_for_violence from
-    # http://www.iemoji.com/view/emoji/1085/objects/dagger. hate (also
+    # https://www.iemoji.com/view/emoji/1085/objects/dagger. hate (also
     # suggested there) seems too strong, as does just "violence".
     '1f5e1': {'canonical_name': 'dagger', 'aliases': ['rated_for_violence']},
     '2694': {'canonical_name': 'duel', 'aliases': ['swords']},
@@ -1115,7 +1115,7 @@ EMOJI_NAME_MAPS = {
     '2697': {'canonical_name': 'alchemy', 'aliases': ['alembic']},
     '1f52d': {'canonical_name': 'telescope', 'aliases': []},
     # science seems useful to have. scientist inspired by
-    # http://www.iemoji.com/view/emoji/787/objects/microscope
+    # https://www.iemoji.com/view/emoji/787/objects/microscope
     '1f52c': {'canonical_name': 'science', 'aliases': ['microscope', 'scientist']},
     '1f573': {'canonical_name': 'hole', 'aliases': []},
     '1f48a': {'canonical_name': 'medicine', 'aliases': ['pill']},
@@ -1127,11 +1127,11 @@ EMOJI_NAME_MAPS = {
     '1f6c1': {'canonical_name': 'bathtub', 'aliases': []},
     '1f6c0': {'canonical_name': 'bath', 'aliases': []},
     # reception and services from
-    # http://www.iemoji.com/view/emoji/1169/objects/bellhop-bell
+    # https://www.iemoji.com/view/emoji/1169/objects/bellhop-bell
     '1f6ce': {'canonical_name': 'bellhop_bell', 'aliases': ['reception', 'services', 'ding']},
     '1f511': {'canonical_name': 'key', 'aliases': []},
-    # encrypted from http://www.iemoji.com/view/emoji/1081/objects/old-key,
-    # secret from http://mashable.com/2015/10/23/ios-9-1-emoji-guide
+    # encrypted from https://www.iemoji.com/view/emoji/1081/objects/old-key,
+    # secret from https://mashable.com/2015/10/23/ios-9-1-emoji-guide/
     '1f5dd': {'canonical_name': 'secret', 'aliases': ['dungeon', 'old_key', 'encrypted', 'clue', 'hint']},
     '1f6aa': {'canonical_name': 'door', 'aliases': []},
     '1f6cb': {'canonical_name': 'living_room', 'aliases': ['furniture', 'couch_and_lamp', 'lifestyles']},
@@ -1210,7 +1210,7 @@ EMOJI_NAME_MAPS = {
     '1f516': {'canonical_name': 'bookmark', 'aliases': []},
     '1f517': {'canonical_name': 'link', 'aliases': []},
     '1f4ce': {'canonical_name': 'paperclip', 'aliases': ['attachment']},
-    # office_supplies from http://mashable.com/2015/10/23/ios-9-1-emoji-guide
+    # office_supplies from https://mashable.com/2015/10/23/ios-9-1-emoji-guide/
     '1f587': {'canonical_name': 'office_supplies', 'aliases': ['paperclip_chain', 'linked']},
     '1f4d0': {'canonical_name': 'carpenter_square', 'aliases': ['triangular_ruler']},
     '1f4cf': {'canonical_name': 'ruler', 'aliases': ['straightedge']},

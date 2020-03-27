@@ -257,7 +257,7 @@ def list_of_tlds() -> List[str]:
     # HACK we manually blacklist a few domains
     blacklist = ['PY\n', "MD\n"]
 
-    # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+    # tlds-alpha-by-domain.txt comes from https://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
     tlds = [tld.lower().strip() for tld in open(tlds_file, 'r')
             if tld not in blacklist and not tld[0].startswith('#')]
@@ -664,7 +664,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if parsed_url.netloc == 'pasteboard.co':
             return False
 
-        # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
+        # List from https://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
             if parsed_url.path.lower().endswith(ext):
                 return True
@@ -735,7 +735,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def youtube_id(self, url: str) -> Optional[str]:
         if not self.markdown.image_preview_enabled:
             return None
-        # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
+        # Youtube video id extraction regular expression from https://pastebin.com/KyKAFv1s
         # Slightly modified to support URLs of the forms
         #   - youtu.be/<id>
         #   - youtube.com/playlist?v=<id>&list=<list-id>

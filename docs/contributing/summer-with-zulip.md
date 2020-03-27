@@ -54,7 +54,7 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     need help learning, and time-saving tricks.
 
   - If you need feedback from the community / decisions made, ask in the
-    appropriate public stream on [chat.zulip.org](http://chat.zulip.org). Often
+    appropriate public stream on [chat.zulip.org](https://chat.zulip.org). Often
     someone can provide important context that you need to succeed in your
     project.
 

@@ -5,7 +5,7 @@ exports.change_tab_to = function (tabname) {
     $('#gear-menu a[href="' + tabname + '"]').tab('show');
 };
 
-// http://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
+// https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
 exports.place_caret_at_end = function (el) {
     el.focus();
 

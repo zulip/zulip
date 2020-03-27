@@ -4,7 +4,7 @@ At present, there are a few alpha-quality implementations of a terminal
 client for Zulip:
 
 * [Zulip Terminal](https://github.com/zulip/zulip-terminal) provides a
-terminal interface for Zulip using [Urwid](https://urwid.org). It is
+terminal interface for Zulip using [Urwid](http://urwid.org). It is
 written in python and is being very actively developed; feedback and
 bug reports are very welcome!
 

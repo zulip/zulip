@@ -43,7 +43,7 @@ ZULIP_RESERVED_SUBDOMAINS = frozenset([
 
 # Most of this list was curated from the following sources:
 # http://wiki.dwscoalition.org/notes/List_of_reserved_subdomains (license: CC-BY-SA 3.0)
-# http://stackoverflow.com/questions/11868191/which-saas-subdomains-to-block (license: CC-BY-SA 2.5)
+# https://stackoverflow.com/questions/11868191/which-saas-subdomains-to-block (license: CC-BY-SA 2.5)
 GENERIC_RESERVED_SUBDOMAINS = frozenset([
     'about', 'abuse', 'account', 'ad', 'admanager', 'admin', 'admindashboard',
     'administrator', 'adsense', 'adword', 'affiliate', 'alpha', 'anonymous',

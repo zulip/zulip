@@ -101,5 +101,5 @@ This Code of Conduct is adapted from the
 [Citizen Code of Conduct](http://citizencodeofconduct.org/) and the
 [Django Code of Conduct](https://www.djangoproject.com/conduct/), and is
 under a
-[Creative Commons BY-SA](http://creativecommons.org/licenses/by-sa/4.0/)
+[Creative Commons BY-SA](https://creativecommons.org/licenses/by-sa/4.0/)
 license.

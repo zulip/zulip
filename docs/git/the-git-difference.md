@@ -61,4 +61,4 @@ Here are the top things to know:
   current branch with `git commit`.
 
 [gitbook-basics]: https://git-scm.com/book/en/v2/Getting-Started-Git-Basics
-[understanding-git]: http://web.mit.edu/nelhage/Public/git-slides-2009.pdf
+[understanding-git]: https://web.mit.edu/nelhage/Public/git-slides-2009.pdf

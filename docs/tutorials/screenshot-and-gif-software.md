@@ -45,7 +45,7 @@ to checkout your branch.
 - [Gyazo GIF](https://gyazo.com/en)
 
 ### Windows
-- [ScreenToGif](http://www.screentogif.com)
+- [ScreenToGif](https://www.screentogif.com)
 - [Gyazo GIF](https://gyazo.com/en)
 - [Monosnap](https://www.monosnap.com/welcome)
 

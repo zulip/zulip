@@ -3,7 +3,7 @@
 Zulip supports full-text search, which can be combined arbitrarily
 with Zulip's full suite of narrowing operators.  By default, it only
 supports English text, but there is an experimental
-[PGroonga](http://pgroonga.github.io/) integration that provides
+[PGroonga](https://pgroonga.github.io/) integration that provides
 full-text search for all languages.
 
 The user interface and feature set for Zulip's full-text search is
@@ -13,7 +13,7 @@ app's gear menu.
 ## The default full-text search implementation
 
 Zulip's uses [PostgreSQL's built-in full-text search
-feature](http://www.postgresql.org/docs/current/static/textsearch.html),
+feature](https://www.postgresql.org/docs/current/textsearch.html),
 with a custom set of English stop words to improve the quality of the
 search results.
 
@@ -27,7 +27,7 @@ application server instead.
 
 ## An optional full-text search implementation
 
-Zulip now supports using [PGroonga](http://pgroonga.github.io/) for
+Zulip now supports using [PGroonga](https://pgroonga.github.io/) for
 full-text search. PGroonga is a PostgreSQL extension that provides
 full-text search feature. PostgreSQL's built-in full-text search
 feature supports only one language at a time (in Zulip's case,

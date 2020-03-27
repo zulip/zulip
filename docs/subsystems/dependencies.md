@@ -330,4 +330,4 @@ usually one needs to think about making changes in 3 places:
 [yarn]: https://yarnpkg.com/
 [npm]: https://npmjs.com/
 [iamcal]: https://github.com/iamcal/emoji-data
-[pygments]: http://pygments.org/
+[pygments]: https://pygments.org/

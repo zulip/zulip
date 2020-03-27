@@ -69,7 +69,7 @@ You might be interested in:
   programs](https://zulip.readthedocs.io/en/latest/overview/contributing.html#outreach-programs)**
   like Google Summer of Code.
 
-You may also be interested in reading our [blog](http://blog.zulip.org/) or
+You may also be interested in reading our [blog](https://blog.zulip.org/) or
 following us on [twitter](https://twitter.com/zulip).
 Zulip is distributed under the
 [Apache 2.0](https://github.com/zulip/zulip/blob/master/LICENSE) license.

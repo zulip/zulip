@@ -52,7 +52,7 @@ using the `Send custom service notification` command in the
 `Service Commands` section of any individual service’s page
 on your Nagios instance.
 
-[1]: http://nagios.sourceforge.net/docs/3_0/extcommands.html
+[1]: https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/3/en/extcommands.html
 
 **Troubleshooting**
 
