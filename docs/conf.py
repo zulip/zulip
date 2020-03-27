@@ -330,7 +330,7 @@ def setup(app: Any) -> None:
     }, True)
 
     # Enable `eval_rst`, and any other features enabled in recommonmark_config.
-    # Docs: http://recommonmark.readthedocs.io/en/latest/auto_structify.html
+    # Docs: https://recommonmark.readthedocs.io/en/latest/auto_structify.html
     # (But NB those docs are for master, not latest release.)
     app.add_transform(AutoStructify)
 

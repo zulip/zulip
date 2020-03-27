@@ -35,7 +35,7 @@ exports.initialize_casper = function () {
     // casper.start has been called.
 
     // Fail if we get a JavaScript error in the page's context.
-    // Based on the example at http://phantomjs.org/release-1.5.html
+    // Based on the example at https://phantomjs.org/release-1.5.html
     //
     // casper.on('error') doesn't work (it never gets called) so we
     // set this at the PhantomJS level.

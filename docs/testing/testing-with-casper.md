@@ -38,7 +38,7 @@ trying to use the Casper debugging tools are:
 ### Print debugging
 
 If you need to use print debugging in casper, you can do using
-`casper.log`; see <https://web.archive.org/web/20200108115113if_/http://docs.casperjs.org/en/latest/logging.html> for
+`casper.log`; see <https://web.archive.org/web/20200108115113if_/https://docs.casperjs.org/en/latest/logging.html> for
 details.
 
 You can also enable casper's verbose logging mode using the `--verbose` flag. This
@@ -111,9 +111,9 @@ for writing Casper tests in addition to the debugging notes below:
     will ensure that the UI has finished updating from the previous
     step before Casper attempts to next step. The various wait
     functions supported in Casper are documented in the Casper here:
-    <https://web.archive.org/web/20200108100925if_/http://docs.casperjs.org/en/latest/modules/casper.html#waitforselector>
+    <https://web.archive.org/web/20200108100925if_/https://docs.casperjs.org/en/latest/modules/casper.html#waitforselector>
     and the various assert statements available are documented here:
-    <https://web.archive.org/web/20190814204845if_/http://docs.casperjs.org/en/latest/modules/tester.html#the-tester-prototype>
+    <https://web.archive.org/web/20190814204845if_/https://docs.casperjs.org/en/latest/modules/tester.html#the-tester-prototype>
 
 -   The `casper.wait` style functions (`waitWhileVisible`,
     `waitUntilVisible`, etc.) cannot be chained together in certain
@@ -183,4 +183,4 @@ for writing Casper tests in addition to the debugging notes below:
     which can lead to confusing failures where the new code you write in
     between two `casper.then` blocks actually runs before either of
     them. See this for more details about how Casper works:
-    <https://web.archive.org/web/20200107035425if_/http://docs.casperjs.org/en/latest/faq.html#how-does-then-and-the-step-stack-work>
+    <https://web.archive.org/web/20200107035425if_/https://docs.casperjs.org/en/latest/faq.html#how-does-then-and-the-step-stack-work>

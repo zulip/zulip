@@ -22,8 +22,8 @@ The Vagrant setup process runs this for you.
 
 `lint` runs many lint checks in parallel, including
 
--   JavaScript ([ESLint](http://eslint.org/))
--   Python ([Pyflakes](http://pypi.python.org/pypi/pyflakes))
+-   JavaScript ([ESLint](https://eslint.org/))
+-   Python ([Pyflakes](https://pypi.python.org/pypi/pyflakes))
 -   templates
 -   Puppet configuration
 -   custom checks (e.g. trailing whitespace and spaces-not-tabs)
@@ -154,9 +154,9 @@ Always declare JavaScript variables using `const` or `let` rather than
 ### JavaScript and TypeScript `for (i in myArray)`
 
 Don't use it:
-[[1]](http://stackoverflow.com/questions/500504/javascript-for-in-with-arrays),
+[[1]](https://stackoverflow.com/questions/500504/javascript-for-in-with-arrays),
 [[2]](https://google.github.io/styleguide/javascriptguide.xml#for-in_loop),
-[[3]](http://www.jslint.com/help.html#forin)
+[[3]](https://www.jslint.com/help.html#forin)
 
 ### Translation tags
 
@@ -187,7 +187,7 @@ syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operat
 and so on. Our Babel configuration automatically transpiles and
 polyfills these using [`core-js`](https://github.com/zloirock/core-js)
 when necessary. We used to use the
-[Underscore](http://underscorejs.org/) library, but that should be
+[Underscore](https://underscorejs.org/) library, but that should be
 avoided in new code.
 
 ## More arbitrary style things

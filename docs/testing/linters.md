@@ -17,7 +17,7 @@ prevent common coding errors.
 We borrow some open source tools for much of our linting, and the links
 below will direct you to the official documentation for these projects.
 
-- [eslint](http://eslint.org)
+- [eslint](https://eslint.org)
 - [mypy](http://mypy-lang.org/)
 - [puppet](https://puppet.com/) (puppet provides its own mechanism for
   validating manifests)

@@ -34,7 +34,7 @@ creating that file.
     at a different time. See [Capistrano's Before/After Hooks page][1]
     for more information!
 
-[1]: http://capistranorb.com/documentation/getting-started/before-after/
+[1]: https://capistranorb.com/documentation/getting-started/before-after/
 
 {!congrats.md!}
 

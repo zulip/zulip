@@ -750,7 +750,7 @@ If this is already enabled in your BIOS, double-check that you are running a
 64-bit operating system.
 
 For further information about troubleshooting vagrant timeout errors [see
-this post](http://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
+this post](https://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
 
 #### Vagrant was unable to communicate with the guest machine
 
@@ -1016,10 +1016,10 @@ If at any time you wish to revert back to the default settings, simply
 remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 `~/.zulip-vagrant-config`.
 
-[cygwin-dl]: http://cygwin.com/
+[cygwin-dl]: https://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
-[vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
+[vmware-fusion-dl]: https://www.vmware.com/products/fusion.html
 [vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
 [install-advanced]: ../development/setup-advanced.md
 [rtd-git-guide]: ../git/index.md

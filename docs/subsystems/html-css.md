@@ -3,7 +3,7 @@
 ## Zulip CSS organization
 
 The Zulip application's CSS can be found in the `static/styles/`
-directory.  Zulip uses [Bootstrap](http://getbootstrap.com/) as its
+directory.  Zulip uses [Bootstrap](https://getbootstrap.com/) as its
 main third-party CSS library.
 
 Zulip uses SCSS for its CSS files.  There are two high-level sections
