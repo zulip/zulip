@@ -62,8 +62,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         response = requests.request('POST', base_url, data=request_data, headers=headers)
         return response
 
-    def process_success(self, response_json: Dict[str, Any],
-                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "response_not_required" in response_json and response_json['response_not_required']:
             return None
 
@@ -111,8 +110,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         response = requests.request('POST', base_url, data=request_data)
         return response
 
-    def process_success(self, response_json: Dict[str, Any],
-                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "text" in response_json:
             content = response_json['text']
             success_data = dict(content=content)
@@ -260,7 +258,7 @@ def process_success_response(event: Dict[str, Any],
         fail_with_message(event, "Invalid JSON in response")
         return
 
-    success_data = service_handler.process_success(response_json, event)
+    success_data = service_handler.process_success(response_json)
 
     if success_data is None:
         return
