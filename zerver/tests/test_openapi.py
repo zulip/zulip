@@ -873,12 +873,12 @@ class TestCurlExampleGeneration(ZulipTestCase):
             'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             "    -d 'anchor=42' \\",
-            "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",
             '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
             "    -d 'client_gravatar=true' \\",
-            "    -d 'apply_markdown=false'",
+            "    -d 'apply_markdown=false' \\",
+            "    -d 'use_first_unread_anchor=true'",
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
@@ -941,10 +941,10 @@ class TestCurlExampleGeneration(ZulipTestCase):
             'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             "    -d 'anchor=42' \\",
-            "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",
-            '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\'',
+            '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
+            "    -d 'use_first_unread_anchor=true'",
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
