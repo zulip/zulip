@@ -1473,194 +1473,6 @@ div.focused_table {
     }
 }
 
-#tab_bar_underpadding {
-    position: absolute;
-    width: 100%;
-    top: 40px;
-    height: 10px;
-    z-index: 99;
-}
-
-#navbar-buttons {
-    white-space: nowrap;
-    margin-left: 15px;
-    margin-top: 7px;
-    display: inline-block;
-    float: right;
-}
-
-#navbar-buttons ul.nav {
-    margin: 0px;
-}
-
-#streamlist-toggle {
-    display: none;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    text-align: center;
-    vertical-align: middle;
-    border-right: 2px solid hsl(204, 20%, 74%);
-}
-
-#streamlist-toggle-button {
-    text-decoration: none;
-    color: hsl(0, 0%, 52%);
-    display: block;
-    position: relative;
-    background-color: hsl(0, 0%, 89%);
-    width: 40px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
-}
-
-#streamlist-toggle-unreadcount,
-#userlist-toggle-unreadcount {
-    position: absolute;
-    display: none;
-    height: 12px;
-    min-width: 12px;
-    line-height: 12px;
-    background-color: hsl(0, 100%, 20%);
-    top: 4px;
-    right: 4px;
-    border: 1px solid hsl(0, 0%, 93%);
-    box-shadow: 0px 0px 1px hsla(0, 0%, 0%, 0.2);
-    border-radius: 12px;
-    padding: 1px 1px 1px 1px;
-    font-size: 9px;
-    z-index: 15;
-    font-weight: normal;
-    color: hsl(0, 0%, 100%);
-}
-
-.nav .dropdown-menu {
-    left: auto;
-    right: 0px;
-    top: 30px;
-    min-width: 180px;
-    box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
-}
-
-.nav .dropdown-menu a,
-.typeahead.dropdown-menu a {
-    color: inherit;
-}
-
-.typeahead.dropdown-menu .active {
-    color: hsl(0, 0%, 100%);
-}
-
-.typeahead.dropdown-menu .unsubscribed_icon {
-    display: none;
-}
-
-.typeahead.dropdown-menu .active .unsubscribed_icon {
-    display: block;
-    float: right;
-    margin-top: 5px;
-    margin-right: -12px;
-    font-size: 0.8em;
-    color: hsl(96, 7%, 73%);
-}
-
-.typeahead-image {
-    display: inline-block;
-    height: 21px;
-    width: 21px;
-    position: relative;
-    margin-top: -7px;
-    vertical-align: middle;
-    top: 2px;
-    right: 8px;
-    border-radius: 4px;
-
-    /* For FontAwesome icons used in place of images for some users. */
-    font-size: 19px;
-    text-align: center;
-}
-
-.nav .dropdown-menu::after {
-    position: absolute;
-    width: 0px;
-    height: 0px;
-    top: -7px;
-    right: 10px;
-    display: inline-block;
-    border-right: 7px solid transparent;
-    border-bottom: 7px solid hsl(0, 0%, 67%);
-    border-left: 7px solid transparent;
-    content: '';
-    z-index: 10;
-}
-
-#navbar-buttons ul.nav {
-    .dropdown-toggle,
-    li.active .dropdown-toggle {
-        font-size: 20px;
-        color: inherit;
-        opacity: 0.5;
-        text-shadow: none;
-        padding-left: 0px !important;
-        background-color: inherit;
-        box-shadow: inherit;
-        display: block;
-        position: absolute;
-        right: 0px;
-        top: 3px;
-    }
-
-    .dropdown-toggle,
-    li.active .dropdown-toggle:hover {
-        opacity: 1;
-    }
-
-    li.dropdown.open .dropdown-toggle {
-        background: none;
-        opacity: 1;
-        text-shadow: none;
-    }
-}
-
-nav .column-left {
-    text-align: center;
-}
-
-nav a.no-style:hover {
-    text-decoration: none;
-    cursor: pointer;
-}
-
-nav .column-left .nav-logo {
-    display: inline-block;
-    vertical-align: top;
-    margin-top: 8px;
-    height: 25px;
-    max-width: 200px;
-}
-
-nav .column-left .company-name {
-    display: inline-block;
-    vertical-align: top;
-    text-transform: uppercase;
-    margin-top: 12px;
-    margin-left: 8px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: hsl(170, 48%, 54%);
-    letter-spacing: 0.1em;
-    cursor: pointer;
-}
-
-nav a .no-style {
-    text-decoration: none;
-}
-
-.modal-bg {
-    background-color: hsl(0, 0%, 98%);
-}
-
 #searchbox {
     display: flex;
     width: 100%;
@@ -1860,6 +1672,194 @@ nav a .no-style {
        but Opera needs this to avoid smushed letters in the search box. */
         letter-spacing: normal;
     }
+}
+
+#tab_bar_underpadding {
+    position: absolute;
+    width: 100%;
+    top: 40px;
+    height: 10px;
+    z-index: 99;
+}
+
+#navbar-buttons {
+    white-space: nowrap;
+    margin-left: 15px;
+    margin-top: 7px;
+    display: inline-block;
+    float: right;
+}
+
+#navbar-buttons ul.nav {
+    margin: 0px;
+}
+
+#streamlist-toggle {
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    text-align: center;
+    vertical-align: middle;
+    border-right: 2px solid hsl(204, 20%, 74%);
+}
+
+#streamlist-toggle-button {
+    text-decoration: none;
+    color: hsl(0, 0%, 52%);
+    display: block;
+    position: relative;
+    background-color: hsl(0, 0%, 89%);
+    width: 40px;
+    height: 19px;
+    padding-top: 12px;
+    padding-bottom: 9px;
+}
+
+#streamlist-toggle-unreadcount,
+#userlist-toggle-unreadcount {
+    position: absolute;
+    display: none;
+    height: 12px;
+    min-width: 12px;
+    line-height: 12px;
+    background-color: hsl(0, 100%, 20%);
+    top: 4px;
+    right: 4px;
+    border: 1px solid hsl(0, 0%, 93%);
+    box-shadow: 0px 0px 1px hsla(0, 0%, 0%, 0.2);
+    border-radius: 12px;
+    padding: 1px 1px 1px 1px;
+    font-size: 9px;
+    z-index: 15;
+    font-weight: normal;
+    color: hsl(0, 0%, 100%);
+}
+
+.nav .dropdown-menu {
+    left: auto;
+    right: 0px;
+    top: 30px;
+    min-width: 180px;
+    box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+}
+
+.nav .dropdown-menu a,
+.typeahead.dropdown-menu a {
+    color: inherit;
+}
+
+.typeahead.dropdown-menu .active {
+    color: hsl(0, 0%, 100%);
+}
+
+.typeahead.dropdown-menu .unsubscribed_icon {
+    display: none;
+}
+
+.typeahead.dropdown-menu .active .unsubscribed_icon {
+    display: block;
+    float: right;
+    margin-top: 5px;
+    margin-right: -12px;
+    font-size: 0.8em;
+    color: hsl(96, 7%, 73%);
+}
+
+.typeahead-image {
+    display: inline-block;
+    height: 21px;
+    width: 21px;
+    position: relative;
+    margin-top: -7px;
+    vertical-align: middle;
+    top: 2px;
+    right: 8px;
+    border-radius: 4px;
+
+    /* For FontAwesome icons used in place of images for some users. */
+    font-size: 19px;
+    text-align: center;
+}
+
+.nav .dropdown-menu::after {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    top: -7px;
+    right: 10px;
+    display: inline-block;
+    border-right: 7px solid transparent;
+    border-bottom: 7px solid hsl(0, 0%, 67%);
+    border-left: 7px solid transparent;
+    content: '';
+    z-index: 10;
+}
+
+#navbar-buttons ul.nav {
+    .dropdown-toggle,
+    li.active .dropdown-toggle {
+        font-size: 20px;
+        color: inherit;
+        opacity: 0.5;
+        text-shadow: none;
+        padding-left: 0px !important;
+        background-color: inherit;
+        box-shadow: inherit;
+        display: block;
+        position: absolute;
+        right: 0px;
+        top: 3px;
+    }
+
+    .dropdown-toggle,
+    li.active .dropdown-toggle:hover {
+        opacity: 1;
+    }
+
+    li.dropdown.open .dropdown-toggle {
+        background: none;
+        opacity: 1;
+        text-shadow: none;
+    }
+}
+
+nav .column-left {
+    text-align: center;
+}
+
+nav a.no-style:hover {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+nav .column-left .nav-logo {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 8px;
+    height: 25px;
+    max-width: 200px;
+}
+
+nav .column-left .company-name {
+    display: inline-block;
+    vertical-align: top;
+    text-transform: uppercase;
+    margin-top: 12px;
+    margin-left: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: hsl(170, 48%, 54%);
+    letter-spacing: 0.1em;
+    cursor: pointer;
+}
+
+nav a .no-style {
+    text-decoration: none;
+}
+
+.modal-bg {
+    background-color: hsl(0, 0%, 98%);
 }
 
 div.floating_recipient {
