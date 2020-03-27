@@ -80,11 +80,11 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
     def test_process_success(self) -> None:
         response = dict(response_not_required=True)  # type: Dict[str, Any]
-        success_response = self.handler.process_success(response, self.event)
+        success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 
         response = dict(response_string='test_content')
-        success_response = self.handler.process_success(response, self.event)
+        success_response = self.handler.process_success(response)
         self.assertEqual(success_response, dict(content='test_content'))
 
         response = dict(
@@ -92,7 +92,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             widget_content='test_widget_content',
             red_herring='whatever',
         )
-        success_response = self.handler.process_success(response, self.event)
+        success_response = self.handler.process_success(response)
         expected_response = dict(
             content='test_content',
             widget_content='test_widget_content',
@@ -100,7 +100,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(success_response, expected_response)
 
         response = dict()
-        success_response = self.handler.process_success(response, self.event)
+        success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 
 class TestSlackOutgoingWebhookService(ZulipTestCase):
@@ -172,9 +172,9 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
 
     def test_process_success(self) -> None:
         response = dict(response_not_required=True)  # type: Dict[str, Any]
-        success_response = self.handler.process_success(response, self.stream_message_event)
+        success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 
         response = dict(text='test_content')
-        success_response = self.handler.process_success(response, self.stream_message_event)
+        success_response = self.handler.process_success(response)
         self.assertEqual(success_response, dict(content='test_content'))
