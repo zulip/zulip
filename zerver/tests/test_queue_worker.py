@@ -105,8 +105,8 @@ class WorkerTest(ZulipTestCase):
                     user_profile = user.id,
                     client = get_client('ios')
                 )
-                self.assertTrue(len(activity_records), 1)
-                self.assertTrue(activity_records[0].count, 1)
+                self.assertEqual(len(activity_records), 1)
+                self.assertEqual(activity_records[0].count, 1)
 
         # Now process the event a second time and confirm count goes
         # up to 2.  Ideally, we'd use an event with a slightly never
@@ -124,8 +124,8 @@ class WorkerTest(ZulipTestCase):
                     user_profile = user.id,
                     client = get_client('ios')
                 )
-                self.assertTrue(len(activity_records), 1)
-                self.assertTrue(activity_records[0].count, 2)
+                self.assertEqual(len(activity_records), 1)
+                self.assertEqual(activity_records[0].count, 2)
 
     def test_missed_message_worker(self) -> None:
         cordelia = self.example_user('cordelia')
