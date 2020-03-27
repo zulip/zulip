@@ -1,6 +1,6 @@
 import re
 import os
-import ujson
+import json
 
 from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
@@ -67,7 +67,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                             raise e
                 else:
                     with open(filename, 'r') as fp:
-                        json_obj = ujson.load(fp)
+                        json_obj = json.load(fp)
                         arguments = json_obj[doc_name]
 
                 if arguments:
@@ -89,29 +89,17 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         return lines
 
     def render_table(self, arguments: List[Dict[str, Any]]) -> List[str]:
+        # TODO: Fix naming now that this no longer renders a table.
         table = []
-        beginning = """
-<table class="table">
-  <thead>
-    <tr>
-      <th>Argument</th>
-      <th>Example</th>
-      <th>Required</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-<tbody>
-"""
-        tr = """
-<tr>
-  <td><code>{argument}</code></td>
-  <td class="json-api-example"><code>{example}</code></td>
-  <td>{required}</td>
-  <td>{description}</td>
-</tr>
-"""
-
-        table.append(beginning)
+        argument_template = """
+<div class="api-argument">
+    <p class="api-argument-name"><strong>{argument}</strong> {required}</p>
+    <div class="api-example">
+        <span class="api-argument-example-label">Example</span>: <code>{example}</code>
+    </div>
+    <div class="api-description">{description}</div>
+    <hr />
+</div>"""
 
         md_engine = markdown.Markdown(extensions=[])
 
@@ -125,22 +113,19 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
             default = argument.get('schema', {}).get('default')
             if default is not None:
-                description += '\nDefaults to `{}`.'.format(ujson.dumps(default))
+                description += '\nDefaults to `{}`.'.format(json.dumps(default))
 
-            # TODO: Swagger allows indicating where the argument goes
-            # (path, querystring, form data...). A column in the table should
-            # be added for this.
-            table.append(tr.format(
+            # TODO: OpenAPI allows indicating where the argument goes
+            # (path, querystring, form data...).  We should document this detail.
+            table.append(argument_template.format(
                 argument=argument.get('argument') or argument.get('name'),
                 # Show this as JSON to avoid changing the quoting style, which
                 # may cause problems with JSON encoding.
-                example=escape_html(ujson.dumps(argument['example'])),
-                required='Yes' if argument.get('required') else 'No',
+                example=escape_html(json.dumps(argument['example'])),
+                required='<span class="api-argument-required">required</span>' if argument.get('required')
+                else '<span class="api-argument-optional">optional</span>',
                 description=md_engine.convert(description),
             ))
-
-        table.append("</tbody>")
-        table.append("</table>")
 
         return table
 
