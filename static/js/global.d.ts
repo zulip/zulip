@@ -67,6 +67,7 @@ declare let loading: any;
 declare let local_message: any;
 declare let localstorage: any;
 declare let markdown: any;
+declare let message_copy: any;
 declare let message_edit: any;
 declare let message_events: any;
 declare let message_fetch: any;
