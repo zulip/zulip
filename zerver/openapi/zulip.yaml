@@ -288,24 +288,32 @@ paths:
       parameters:
       - name: anchor
         in: query
-        description: The message ID to fetch messages near.
-          Required unless `use_first_unread_anchor` is set to true.
+        description: |
+          Integer message ID to anchor fetching of new messages.
+          Supports special string values for when the client wants the
+          server to compute the anchor to use:
+
+          * `newest`: The most recent message.
+          * `oldest`: The oldest message.
+          * `first_unread`: The oldest unread message matching the
+            query, if any; otherwise, the most recent message.
 
           The special values of `'newest'` and `'oldest'` are also supported
           for anchoring the query at the most recent or oldest messages.
+
+          **Changes**: String values are new in Zulip 2.2.  The
+            `first_unread` functionality was supported in Zulip 2.1.x
+            and older by not sending anchor and using use_first_unread_anchor.
+
+            In Zulip 2.1.x and older, `oldest` can be emulated with
+            `anchor=0`, and `newest` with `anchor=10000000000000000`
+            (that specific large value works around a bug in Zulip
+            2.1.x and older in the `found_newest` return value).
         schema:
           oneOf:
             - type: string
             - type: integer
         example: 42
-      - name: use_first_unread_anchor
-        in: query
-        description: Whether to use the (computed by the server) first unread message
-          matching the narrow as the `anchor`.  Mutually exclusive with `anchor`.
-        schema:
-          type: boolean
-          default: false
-        example: true
       - name: num_before
         in: query
         description: The number of messages with IDs less than the anchor to retrieve.
@@ -350,6 +358,20 @@ paths:
           type: boolean
           default: true
         example: false
+      - name: use_first_unread_anchor
+        in: query
+        description: |
+          Legacy way to specify `anchor="first_unread"` in Zulip 2.1.x and older.
+
+          Whether to use the (computed by the server) first unread message
+          matching the narrow as the `anchor`.  Mutually exclusive with `anchor`.
+
+          **Changes**: Deprecated in Zulip 2.2, replaced by
+          `anchor="first_unread"` instead.
+        schema:
+          type: boolean
+          default: false
+        example: true
       responses:
         '200':
           description: Success.
@@ -1770,7 +1792,15 @@ paths:
         example: false
       - name: stream_post_policy
         in: query
-        description: Indicates which users can post messages to the stream.
+        description: |
+          Policy for which users can post messages to the stream.
+
+          * 1 => Any user can post.
+          * 2 => Only administrators can post.
+          * 3 => Only new members can post.
+
+          **Changes**: New in Zulip 2.2, replacing the previous is_announcement_only
+          boolean.
         schema:
           type: integer
           default: 1
@@ -2300,8 +2330,11 @@ paths:
         example: true
       - name: slim_presence
         in: query
-        description: Setting this to `true` will make presence dictionaries be
+        description: |
+          Setting this to `true` will make presence dictionaries be
           keyed by user_id instead of email.
+
+          **Changes**: New in Zulip 2.2.
         schema:
           type: boolean
           default: false
@@ -2882,14 +2915,25 @@ paths:
         required: false
       - name: is_announcement_only
         in: query
-        description: The new state for the announcements.
+        description: |
+          Whether the stream is limited to announcements.
+
+          **Changes**: Deprecated in Zulip 2.2, use stream_post_policy instead.
         schema:
           type: boolean
         example: true
         required: false
       - name: stream_post_policy
         in: query
-        description: Indicates which users can post messages to the stream.
+        description: |
+          Policy for which users can post messages to the stream.
+
+          * 1 => Any user can post.
+          * 2 => Only administrators can post.
+          * 3 => Only new members can post.
+
+          **Changes**: New in Zulip 2.2, replacing the previous is_announcement_only
+          boolean.
         schema:
           type: integer
         example: 2
