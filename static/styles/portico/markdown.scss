@@ -291,6 +291,16 @@
         }
     }
 
+    code {
+        /* Copied from rendered_markdown.scss */
+        font-size: 0.857em;
+        unicode-bidi: embed;
+        direction: ltr;
+        white-space: pre-wrap;
+        padding: 0px 4px;
+        background-color: hsl(0, 0%, 100%);
+    }
+
     .code-section {
         ol {
             margin-left: 15px;

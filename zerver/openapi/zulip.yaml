@@ -1328,39 +1328,13 @@ paths:
 
         example: [
                     {
-                        "id":1,
-                        "value":"short text data"
+                        "id": 4,
+                        "value": "vim"
                     },
                     {
-                        "id":2,
-                        "value":"long text data"
+                        "id": 5,
+                        "value": "1909-04-05"
                     },
-                    {
-                        "id":3,
-                        "value":"short text data"
-                    },
-                    {
-                        "id":4,
-                        "value":"vim"
-                    },
-                    {
-                        "id":5,
-                        "value":"1909-3-5"
-                    },
-                    {
-                        "id":6,
-                        "value":"https:\/\/zulipchat.com"
-                    },
-                    {
-                        "id":7,
-                        "value":[
-                          12
-                        ]
-                    },
-                    {
-                        "id":8,
-                        "value":"cordelia"
-                    }
                   ]
         required: false
 
@@ -2419,8 +2393,9 @@ paths:
         example: ['message']
       - name: narrow
         in: query
-        description: A JSON-encoded array of length 2 indicating the narrow
-          for which you'd like to receive events for. For instance, to
+        description: |
+          A JSON-encoded array of length 2 indicating the narrow
+          for which you'd like to receive events. For instance, to
           receive events for the stream `Denmark`, you would specify
           `narrow=['stream', 'Denmark']`. Another example is
           `narrow=['is', 'private']` for private messages.
@@ -2951,7 +2926,7 @@ paths:
         description: |
           Whether the stream is limited to announcements.
 
-          **Changes**: Deprecated in Zulip 2.2, use stream_post_policy instead.
+          **Changes**: Deprecated in Zulip 2.2, use `stream_post_policy` instead.
         schema:
           type: boolean
         example: true
@@ -2965,7 +2940,7 @@ paths:
           * 2 => Only administrators can post.
           * 3 => Only new members can post.
 
-          **Changes**: New in Zulip 2.2, replacing the previous is_announcement_only
+          **Changes**: New in Zulip 2.2, replacing the previous `is_announcement_only`
           boolean.
         schema:
           type: integer
@@ -2973,7 +2948,9 @@ paths:
         required: false
       - name: history_public_to_subscribers
         in: query
-        description: The new state for the history_public_to_subscribers.
+        description: |
+          Whether subscribers have access to full stream history, even before they joined
+          the stream.
         schema:
           type: boolean
         example: true

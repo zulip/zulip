@@ -1717,14 +1717,27 @@ input.new-organization-button {
     padding-right: 10px;
 }
 
-.table .json-api-example {
-    width: fit-content;
-    max-width: 300px;
-    word-wrap: break-word;
-}
+.api-argument {
+    .api-argument-name {
+        font-family: monospace;
+    }
 
-.table .json-api-example code {
-    white-space: pre-wrap;
+    .api-argument-example-label {
+        font-style: italic;
+    }
+
+    .api-argument-required {
+        text-transform: uppercase;
+        font-weight: 600;
+        font-size: 12px;
+        color: hsl(14, 75%, 60%);
+    }
+    .api-argument-optional {
+        text-transform: uppercase;
+        font-weight: 400;
+        font-size: 12px;
+        color: hsl(0, 0%, 47%);
+    }
 }
 
 .desktop-redirect-box {
