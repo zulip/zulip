@@ -19,6 +19,8 @@ IGNORED_EVENTS = [
     'issuelink_deleted',
     'sprint_started',
     'sprint_closed',
+    'worklog_created',
+    'worklog_updated',
 ]
 
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[UserProfile]:
@@ -322,13 +324,12 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
     if event in IGNORED_EVENTS:
         return json_success()
 
-    subject = get_issue_subject(payload)
-
     content_func = get_event_handler(event)
 
     if content_func is None:
         raise UnexpectedWebhookEventType('Jira', event)
 
+    subject = get_issue_subject(payload)
     content = content_func(payload, user_profile)  # type: str
 
     check_send_webhook_message(request, user_profile,
