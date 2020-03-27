@@ -28,12 +28,21 @@ class OutgoingWebhookServiceInterface:
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
     def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
-        # Because we don't have a place for the recipient of an
-        # outgoing webhook to indicate whether it wants the raw
-        # Markdown or the rendered HTML, we leave both the content and
-        # rendered_content fields in the message payload.
-        MessageDict.finalize_payload(event['message'], False, False,
-                                     keep_rendered_content=True)
+        '''
+        We send a simple version of the message to outgoing
+        webhooks, since most of them really only need
+        `content` and a few other fields.  We may eventually
+        allow certain bots to get more information, but
+        that's not a high priority.  We do send the gravatar
+        info to the clients (so they don't have to compute
+        it themselves).
+        '''
+        MessageDict.finalize_payload(
+            event['message'],
+            apply_markdown=False,
+            client_gravatar=False,
+            keep_rendered_content=True
+        )
 
         request_data = {"data": event['command'],
                         "message": event['message'],
