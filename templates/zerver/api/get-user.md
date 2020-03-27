@@ -6,6 +6,8 @@ Fetch details for a single user in the organization.
 
 You can also fetch details on [all users in the organization](/api/get-all-users).
 
+*This endpoint is new in Zulip Server 2.2.*
+
 ## Usage examples
 
 {start_tabs}
