@@ -89,7 +89,7 @@ def update_user_activity(request: HttpRequest, user_profile: UserProfile,
     event = {'query': query,
              'user_profile_id': user_profile.id,
              'time': datetime_to_timestamp(timezone_now()),
-             'client': request.client.name}
+             'client_id': request.client.id}
     queue_json_publish("user_activity", event, lambda event: None)
 
 # Based on django.views.decorators.http.require_http_methods
