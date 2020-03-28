@@ -438,7 +438,7 @@ class SlackImporter(ZulipTestCase):
         self.assertDictEqual(test_dm_members, dm_members)
 
         # We can't do an assertDictEqual since during the construction of Personal
-        # recipients, slack_user_id_to_zulip_user_id are iterated in diffrent order in Python 3.5 and 3.6.
+        # recipients, slack_user_id_to_zulip_user_id are iterated in different order in Python 3.5 and 3.6.
         self.assertEqual(set(slack_recipient_name_to_zulip_recipient_id.keys()), slack_recipient_names)
         self.assertEqual(set(slack_recipient_name_to_zulip_recipient_id.values()), set(i for i in range(11)))
 

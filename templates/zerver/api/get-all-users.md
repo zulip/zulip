@@ -59,7 +59,7 @@ You may pass the `client_gravatar` query parameter as follows:
     * `email`: The email address of the user or bot.
     * `is_bot`: A boolean specifying whether the user is a bot or not.
     * `avatar_url`: URL to the user's gravatar. `None` if the `client_gravatar`
-      query paramater was set to `True`.
+      query parameter was set to `True`.
     * `full_name`: Full name of the user or bot.
     * `is_admin`: A boolean specifying whether the user is an admin or not.
     * `bot_type`: `None` if the user isn't a bot. `1` for a `Generic` bot.

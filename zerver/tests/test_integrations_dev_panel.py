@@ -233,7 +233,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             # We have to use this roundabout manner since the order may vary each time. This is not
             # an issue. Basically, we're trying to compare 2 lists and since we're not resorting to
             # using sets or a sorted order, we're sticking with O(n*m) time complexity for this
-            # comparision (where n and m are the lengths of the two lists respectively). But since
+            # comparison (where n and m are the lengths of the two lists respectively). But since
             # this is just a unit test and more importantly n = m = some-low-number we don't really
             # care about the time complexity being what it is.
             self.assertTrue(r in expected_responses)

@@ -142,7 +142,7 @@ for device in macs.values():
              ip, '-j', 'MARK', '--set-mark', str(device_number)])
 
     for throwaway in range(2):
-        # Don't freak out if this doens't work.
+        # Don't freak out if this doesn't work.
         subprocess.call(
             ['/sbin/ip', 'route', 'del', '10.0.0.0/8'])
 

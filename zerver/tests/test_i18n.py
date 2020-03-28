@@ -56,7 +56,7 @@ class EmailTranslationTestCase(ZulipTestCase):
 
 class TranslationTestCase(ZulipTestCase):
     """
-    Tranlations strings should change with locale. URLs should be locale
+    Translations strings should change with locale. URLs should be locale
     aware.
     """
 

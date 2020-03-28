@@ -103,7 +103,7 @@ Get a peek at new features before they're released!
 
 Start by finding the latest version marked "Pre-release" on the
 [release list page][release-list].  There may or may not be a "Pre-release"
-later than the latest release. If there is, download the approriate Zulip
+later than the latest release. If there is, download the appropriate Zulip
 installer or app from there, and follow the instructions for your operating
 system above.
 

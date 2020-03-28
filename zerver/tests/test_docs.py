@@ -365,7 +365,7 @@ class PlansPageTest(ZulipTestCase):
         # Test root domain
         result = self.client_get("/plans/", subdomain="")
         self.assert_in_success_response(["Sign up now"], result)
-        # Test non-existant domain
+        # Test non-existent domain
         result = self.client_get("/plans/", subdomain="moo")
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("does not exist", result)

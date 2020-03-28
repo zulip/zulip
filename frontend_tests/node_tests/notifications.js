@@ -78,7 +78,7 @@ run_test('message_is_notifiable', () => {
     // Not notifiable because it was sent by the current user
     assert.equal(notifications.message_is_notifiable(message), false);
 
-    // Case 2: If the user has already been sent a notificaton about this message,
+    // Case 2: If the user has already been sent a notification about this message,
     //  DO NOT notify the user
     // In this test, all other circumstances should trigger notification
     // EXCEPT notification_sent, which should trump them
