@@ -714,6 +714,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     def social_auth_test_finish(self, result: HttpResponse,
                                 account_data_dict: Dict[str, str],
                                 expect_choose_email_screen: bool,
+                                email_data: List[Dict[str, str]],
                                 **headers: Any) -> HttpResponse:
         parsed_url = urllib.parse.urlparse(result.url)
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
@@ -777,8 +778,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             )
             self.register_extra_endpoints(requests_mock, account_data_dict, **extra_data)
 
+            if "email_data" in extra_data:
+                email_data = extra_data["email_data"]
+            else:
+                email_data = [account_data_dict]
             result = self.social_auth_test_finish(result, account_data_dict,
                                                   expect_choose_email_screen,
+                                                  email_data,
                                                   **headers)
         return result
 
@@ -1615,6 +1621,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     def social_auth_test_finish(self, result: HttpResponse,
                                 account_data_dict: Dict[str, str],
                                 expect_choose_email_screen: bool,
+                                email_data: List[Dict[str, str]],
                                 **headers: Any) -> HttpResponse:
         parsed_url = urllib.parse.urlparse(result.url)
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
@@ -1631,6 +1638,14 @@ class GitHubAuthBackendTest(SocialAuthBase):
             # authentication backends when a new authentacation backend
             # that requires "choose email" screen;
             self.assert_in_success_response(["Select account"], result)
+            # Verify that all the emails returned by GitHub auth
+            # are in the "choose email" screen.
+            for email_data_dict in email_data:
+                email = email_data_dict["email"]
+                if not email.endswith("noreply.github.com"):
+                    self.assert_in_success_response([email], result)
+                else:
+                    self.assert_not_in_success_response([email], result)
             result = self.client_get(self.AUTH_FINISH_URL,
                                      dict(state=csrf_state, email=account_data_dict['email']), **headers)
 
