@@ -824,6 +824,15 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
     presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
     wide_dict = event_template['message_dict']  # type: Dict[str, Any]
 
+    # Temporary transitional code: Zulip servers that have message
+    # events in their event queues and upgrade to the new version
+    # that expects sender_delivery_email in these events will
+    # throw errors processing events.  We can remove this block
+    # once we don't expect anyone to be directly upgrading from
+    # 2.0.x to the latest Zulip.
+    if 'sender_delivery_email' not in wide_dict:  # nocoverage
+        wide_dict['sender_delivery_email'] = wide_dict['sender_email']
+
     sender_id = wide_dict['sender_id']  # type: int
     message_id = wide_dict['id']  # type: int
     message_type = wide_dict['type']  # type: str
@@ -832,15 +841,6 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
     @cachify
     def get_client_payload(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
         dct = copy.deepcopy(wide_dict)
-
-        # Temporary transitional code: Zulip servers that have message
-        # events in their event queues and upgrade to the new version
-        # that expects sender_delivery_email in these events will
-        # throw errors processing events.  We can remove this block
-        # once we don't expect anyone to be directly upgrading from
-        # 2.0.x to the latest Zulip.
-        if 'sender_delivery_email' not in dct:  # nocoverage
-            dct['sender_delivery_email'] = dct['sender_email']
 
         MessageDict.finalize_payload(dct, apply_markdown, client_gravatar)
         return dct
