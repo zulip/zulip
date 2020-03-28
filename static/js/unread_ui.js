@@ -1,5 +1,3 @@
-const render_bankruptcy_modal = require('../templates/bankruptcy_modal.hbs');
-
 let last_mention_count = 0;
 
 function do_new_messages_animation(li) {
@@ -66,7 +64,7 @@ exports.enable = function enable() {
     exports.update_unread_counts();
 };
 
-function consider_bankruptcy() {
+exports.should_display_bankruptcy_banner = function () {
     // Until we've handled possibly declaring bankruptcy, don't show
     // unread counts since they only consider messages that are loaded
     // client side and may be different from the numbers reported by
@@ -80,32 +78,16 @@ function consider_bankruptcy() {
 
     const now = new XDate(true).getTime() / 1000;
     if (page_params.unread_msgs.count > 500 &&
-            now - page_params.furthest_read_time > 60 * 60 * 24 * 2) { // 2 days.
-        const rendered_modal = render_bankruptcy_modal({
-            unread_count: page_params.unread_msgs.count});
-        $('#bankruptcy-unread-count').html(rendered_modal);
-        $('#bankruptcy').modal('show');
-    } else {
-        exports.enable();
+        now - page_params.furthest_read_time > 60 * 60 * 24 * 2) { // 2 days.
+        return true;
     }
-}
+
+    exports.enable();
+
+};
 
 exports.initialize = function () {
-    // No matter how the bankruptcy modal is closed, show unread counts after.
-    $("#bankruptcy").on("hide", function () {
-        exports.enable();
-    });
-
-    $('#yes-bankrupt').click(function () {
-        pointer.fast_forward_pointer();
-        $("#yes-bankrupt").hide();
-        $("#no-bankrupt").hide();
-        $('#bankruptcy-loader').css('margin', '0 auto');
-        loading.make_indicator($('#bankruptcy-loader'),
-                               {text: i18n.t('Marking all messages as read…')});
-    });
-
-    consider_bankruptcy();
+    exports.enable();
 };
 
 window.unread_ui = exports;

@@ -64,6 +64,8 @@ exports.initialize = function () {
         exports.open($("[data-process='email-server']"));
     } else if (should_show_notifications(ls)) {
         exports.open($("[data-process='notifications']"));
+    } else if (unread_ui.should_display_bankruptcy_banner()) {
+        exports.open($("[data-process='bankruptcy']"));
     } else {
         // TODO: This should be restructured with separate check and
         // show calls.
@@ -82,6 +84,18 @@ exports.initialize = function () {
         $(this).closest(".alert").hide();
         ls.set("dontAskForNotifications", true);
         resize_app();
+    });
+
+    $(".accept-bankruptcy").on("click", function (e) {
+        e.preventDefault();
+        $(this).closest(".alert").hide();
+        $('.bankruptcy-loader').show();
+        setTimeout(pointer.fast_forward_pointer, 1000);
+        resize_app();
+    });
+
+    $("#bankruptcy").on("hide", function () {
+        unread_ui.enable();
     });
 
     $("#panels").on("click", ".alert .close, .alert .exit", function (e) {
