@@ -4,6 +4,7 @@
         <input type="file" name="realm-logo-file-input"
           class="realm-logo-file-input notvisible" value="{{t 'Upload logo' }}"/>
     </div>
+    {{#if is_admin}}
     <div class="inline-block avatar-controls">
         <div class="realm-logo-file-input-error alert text-error"></div>
         {{#if plan_includes_wide_organization_logo}}
@@ -16,4 +17,5 @@
         </button>
         {{/if}}
     </div>
+    {{/if}}
 </div>
