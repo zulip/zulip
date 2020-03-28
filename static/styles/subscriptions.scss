@@ -958,6 +958,16 @@ form#add_new_subscription {
             display: block;
         }
     }
+
+    .alert-notification:not(:empty) {
+        margin-top: -5px;
+        margin-left: unset;
+    }
+
+    .loading_indicator_text {
+        font-weight: 400;
+        line-height: 20px;
+    }
 }
 
 ul.grey-box {

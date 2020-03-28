@@ -337,9 +337,11 @@ exports.stream_setting_clicked = function (e) {
     }
 
     let checkbox = $(e.currentTarget).find('.sub_setting_control');
+    let status_element;
     // sub data is being changed from the notification settings page.
     if (checkbox.length === 0) {
         checkbox = $(e.currentTarget);
+        status_element = checkbox.closest('.subsection-parent').find('.alert-notification');
     }
     const sub = get_sub_for_target(e.target);
     const setting = checkbox.attr('name');
@@ -357,20 +359,23 @@ exports.stream_setting_clicked = function (e) {
             sub[setting] = page_params["enable_stream_" + setting];
         }
     }
-    exports.set_stream_property(sub, setting, !sub[setting]);
+    exports.set_stream_property(sub, setting, !sub[setting], status_element);
 };
 
-exports.bulk_set_stream_property = function (sub_data) {
-    return channel.post({
-        url: '/json/users/me/subscriptions/properties',
-        data: {subscription_data: JSON.stringify(sub_data)},
-        timeout: 10 * 1000,
-    });
+exports.bulk_set_stream_property = function (sub_data, status_element) {
+    const stream_id = sub_data[0].stream_id;
+    const url = '/json/users/me/subscriptions/properties';
+    const data = {subscription_data: JSON.stringify(sub_data)};
+    if (!status_element) {
+        status_element = "#stream_change_property_status" + stream_id;
+    }
+
+    settings_ui.do_settings_change(channel.post, url, data, status_element);
 };
 
-exports.set_stream_property = function (sub, property, value) {
+exports.set_stream_property = function (sub, property, value, status_element) {
     const sub_data = {stream_id: sub.stream_id, property: property, value: value};
-    exports.bulk_set_stream_property([sub_data]);
+    exports.bulk_set_stream_property([sub_data], status_element);
 };
 
 function change_stream_privacy(e) {

@@ -13,6 +13,7 @@
                 <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
                 {{/if}}
             </div>
+            <div id="stream_change_property_status{{stream_id}}" class="alert-notification"></div>
             <div class="button-group">
                 {{#if is_admin}}
                 <button class="button small rounded btn-danger deactivate" type="button" name="delete_button" title="{{t 'Delete stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
