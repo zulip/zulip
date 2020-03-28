@@ -15,7 +15,13 @@ from zerver.lib.outgoing_webhook import (
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
-from zerver.models import get_realm, get_user, UserProfile, get_display_recipient
+from zerver.models import (
+    get_display_recipient,
+    get_realm,
+    get_user,
+    Recipient,
+    UserProfile,
+)
 
 from version import ZULIP_VERSION
 
@@ -152,18 +158,21 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
     def test_pm_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
         bot_owner = self.example_user("othello")
         bot = self.create_outgoing_bot(bot_owner)
+        sender = self.example_user("hamlet")
 
-        self.send_personal_message(bot_owner, bot,
+        self.send_personal_message(sender, bot,
                                    content="foo")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
         self.assertEqual(last_message.sender_id, bot.id)
-        display_recipient = get_display_recipient(last_message.recipient)
-        # The next two lines error on mypy because the display_recipient is of type Union[str, List[Dict[str, Any]]].
-        # In this case, we know that display_recipient will be of type List[Dict[str, Any]].
-        # Otherwise this test will error, which is wanted behavior anyway.
-        self.assert_length(display_recipient, 1)  # type: ignore
-        self.assertEqual(display_recipient[0]['email'], bot_owner.email)   # type: ignore
+        self.assertEqual(
+            last_message.recipient.type_id,
+            sender.id
+        )
+        self.assertEqual(
+            last_message.recipient.type,
+            Recipient.PERSONAL
+        )
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
     def test_stream_message_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
