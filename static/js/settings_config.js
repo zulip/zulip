@@ -155,3 +155,88 @@ const time_limit_dropdown_values = new Map([
 ]);
 exports.msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;
+
+
+// NOTIFICATIONS
+
+exports.general_notifications_table_columns = [
+    /* An array of notification settings of any category like
+    * `stream_notification_settings` which makes a single row of
+    * "Notification triggers" table should follow this order
+    */
+    "visual", "audio", "mobile", "email", "all_mentions",
+];
+
+exports.stream_specific_notification_settings = [
+    "desktop_notifications",
+    "audible_notifications",
+    "push_notifications",
+    "email_notifications",
+    "wildcard_mentions_notify",
+];
+
+exports.stream_notification_settings = [
+    "enable_stream_desktop_notifications",
+    "enable_stream_audible_notifications",
+    "enable_stream_push_notifications",
+    "enable_stream_email_notifications",
+    "wildcard_mentions_notify",
+];
+
+const pm_mention_notification_settings = [
+    "enable_desktop_notifications",
+    "enable_sounds",
+    "enable_offline_push_notifications",
+    "enable_offline_email_notifications",
+];
+
+const desktop_notification_settings = [
+    "pm_content_in_desktop_notifications",
+];
+
+const mobile_notification_settings = [
+    "enable_online_push_notifications",
+];
+
+const email_notification_settings = [
+    "enable_digest_emails",
+    "enable_login_emails",
+    "message_content_in_email_notifications",
+    "realm_name_in_notifications",
+];
+
+const other_notification_settings = desktop_notification_settings.concat(
+    ["desktop_icon_count_display"],
+    mobile_notification_settings,
+    email_notification_settings,
+    ["notification_sound"]
+);
+
+exports.all_notification_settings = other_notification_settings.concat(
+    pm_mention_notification_settings,
+    exports.stream_notification_settings
+);
+
+exports.all_notifications = () => ({
+    general_settings: [
+        {
+            label: i18n.t("Streams"),
+            notification_settings: settings_notifications.get_notifications_table_row_data(
+                exports.stream_notification_settings),
+        },
+        {
+            label: i18n.t("PMs, mentions, and alerts"),
+            notification_settings: settings_notifications.get_notifications_table_row_data(
+                pm_mention_notification_settings),
+        },
+    ],
+    settings: {
+        desktop_notification_settings: desktop_notification_settings,
+        mobile_notification_settings: mobile_notification_settings,
+        email_notification_settings: email_notification_settings,
+    },
+    show_push_notifications_tooltip: {
+        push_notifications: !page_params.realm_push_notifications_enabled,
+        enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
+    },
+});
