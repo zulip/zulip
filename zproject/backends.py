@@ -1363,7 +1363,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     sort_order = 100
     display_icon = "/static/images/landing-page/logos/github-icon.png"
 
-    def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
+    def get_all_associated_email_objects(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
         access_token = kwargs["response"]["access_token"]
         try:
             emails = self._user_data(access_token, '/emails')
@@ -1372,7 +1372,10 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             # path, since the outcome will be the same as any other
             # case without any verified emails
             emails = []
+        return emails
 
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
+        emails = self.get_all_associated_email_objects(*args, **kwargs)
         verified_emails: List[str] = []
         for email_obj in self.filter_usable_emails(emails):
             # social_associate_user_helper assumes that the first email in
