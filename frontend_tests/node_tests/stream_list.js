@@ -529,7 +529,7 @@ run_test('separators_only_pinned_and_dormant', () => {
         subscribed: true,
     };
     add_row(RomeSub);
-    // dorment stream
+    // dormant stream
     const DenmarkSub = {
         name: 'Denmark',
         stream_id: 3000,

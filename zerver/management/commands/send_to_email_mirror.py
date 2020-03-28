@@ -23,7 +23,7 @@ from zerver.models import Realm, get_realm, get_stream
 # See zerver/tests/fixtures/email/1.txt for a very simple example,
 # but anything that the message_from_binary_file function
 # from the email library can parse should work.
-# Value of the TO: header doesn't matter, as it is overriden
+# Value of the TO: header doesn't matter, as it is overridden
 # by the command in order for the email to be sent to the correct stream.
 
 class Command(ZulipBaseCommand):

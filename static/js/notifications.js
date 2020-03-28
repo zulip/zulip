@@ -267,7 +267,7 @@ exports.notify_above_composebox = function (note, link_class, link_msg_id, link_
 
 if (window.electron_bridge !== undefined) {
     // The code below is for sending a message received from notification reply which
-    // is often refered to as inline reply feature. This is done so desktop app doesn't
+    // is often referred to as inline reply feature. This is done so desktop app doesn't
     // have to depend on channel.post for setting crsf_token and narrow.by_topic
     // to narrow to the message being sent.
     window.electron_bridge.send_notification_reply_message_supported = true;

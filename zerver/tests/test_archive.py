@@ -8,7 +8,7 @@ from zerver.models import get_realm
 
 class GlobalPublicStreamTest(ZulipTestCase):
     def test_non_existant_stream_id(self) -> None:
-        # Here we use a relatively big number as stream id assumming such an id
+        # Here we use a relatively big number as stream id assuming such an id
         # won't exist in the test DB.
         result = self.client_get("/archive/streams/100000000/topics/TopicGlobal")
         self.assert_in_success_response(["This stream does not exist."], result)

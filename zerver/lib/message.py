@@ -170,7 +170,7 @@ class MessageDict:
     @staticmethod
     def wide_dict(message: Message) -> Dict[str, Any]:
         '''
-        The next two lines get the cachable field related
+        The next two lines get the cacheable field related
         to our message object, with the side effect of
         populating the cache.
         '''

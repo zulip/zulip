@@ -685,10 +685,10 @@ exports.handle_keydown = function (event, textarea) {
             const position = textarea.caret();
             const txt = document.getElementById(textarea[0].id);
 
-            // Include selected text in between [] parantheses and insert '(url)'
+            // Include selected text in between [] parentheses and insert '(url)'
             // where "url" should be automatically selected.
             // Position of cursor depends on whether browser supports exec
-            // command or not. So set cursor position accrodingly.
+            // command or not. So set cursor position accordingly.
             if (range.length > 0) {
                 if (document.queryCommandEnabled('insertText')) {
                     txt.selectionStart = position - 4;
@@ -1039,7 +1039,7 @@ exports.initialize = function () {
         e.preventDefault();
 
         let target_textarea;
-        // The data-message-id atribute is only present in the video
+        // The data-message-id attribute is only present in the video
         // call icon present in the message edit form.  If present,
         // the request is for the edit UI; otherwise, it's for the
         // compose box.

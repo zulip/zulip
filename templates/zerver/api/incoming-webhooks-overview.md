@@ -90,7 +90,7 @@ below are for a webhook named `MyWebHook`.
   platform/server/product you are integrating. Used on the documentation
   pages as well as the sender's avatar for messages sent by the integration.
 * `static/images/integrations/mywebbook/001.svg`: A screenshot of a message
-  sent by the integration, used on the documenation page.
+  sent by the integration, used on the documentation page.
 
 ### Files that need to be updated
 

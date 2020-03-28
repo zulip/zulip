@@ -777,7 +777,7 @@ exports.content_typeahead_selected = function (item, event) {
             beginning = beginning.substring(0, backticks) + item;
         }
     } else if (this.completing === 'topic_jump') {
-        // Put the cursor at the end of immediately preceeding stream mention syntax,
+        // Put the cursor at the end of immediately preceding stream mention syntax,
         // just before where the `**` at the end of the syntax.  This will delete that
         // final ** and set things up for the topic_list typeahead.
         const index = beginning.lastIndexOf('**');
