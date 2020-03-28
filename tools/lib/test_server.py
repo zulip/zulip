@@ -83,7 +83,7 @@ def test_server_running(force: bool=False, external_host: str='testserver',
             if dots:
                 sys.stdout.write('.')
                 sys.stdout.flush()
-            time.sleep(0.1)
+            time.sleep(0.4)
         sys.stdout.write('\n\n--- SERVER IS UP! ---\n\n')
 
         # DO OUR ACTUAL TESTING HERE!!!
