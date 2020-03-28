@@ -1,66 +1,8 @@
 const render_stream_specific_notification_row = require('../templates/settings/stream_specific_notification_row.hbs');
+const settings_config = require("./settings_config");
 
-const general_notifications_table_columns = [
-    /* An array of notification settings of any category like
-    * `stream_notification_settings` which makes a single row of
-    * "Notification triggers" table should follow this order
-    */
-    "visual", "audio", "mobile", "email", "all_mentions",
-];
-
-exports.stream_notification_settings = [
-    "enable_stream_desktop_notifications",
-    "enable_stream_audible_notifications",
-    "enable_stream_push_notifications",
-    "enable_stream_email_notifications",
-    "wildcard_mentions_notify",
-];
-
-const stream_specific_notification_settings = [
-    "desktop_notifications",
-    "audible_notifications",
-    "push_notifications",
-    "email_notifications",
-    "wildcard_mentions_notify",
-];
-
-const pm_mention_notification_settings = [
-    "enable_desktop_notifications",
-    "enable_sounds",
-    "enable_offline_push_notifications",
-    "enable_offline_email_notifications",
-];
-
-const desktop_notification_settings = [
-    "pm_content_in_desktop_notifications",
-];
-
-const mobile_notification_settings = [
-    "enable_online_push_notifications",
-];
-
-const email_notification_settings = [
-    "enable_digest_emails",
-    "enable_login_emails",
-    "message_content_in_email_notifications",
-    "realm_name_in_notifications",
-];
-
-const other_notification_settings = desktop_notification_settings.concat(
-    ["desktop_icon_count_display"],
-    mobile_notification_settings,
-    email_notification_settings,
-    ["notification_sound"]
-);
-
-exports.all_notification_settings = other_notification_settings.concat(
-    pm_mention_notification_settings,
-    exports.stream_notification_settings
-);
-
-
-function get_notifications_table_row_data(notify_settings) {
-    return general_notifications_table_columns.map((column, index) => {
+exports.get_notifications_table_row_data = function (notify_settings) {
+    return settings_config.general_notifications_table_columns.map((column, index) => {
         const setting_name = notify_settings[index];
         if (setting_name === undefined) {
             return {
@@ -79,30 +21,6 @@ function get_notifications_table_row_data(notify_settings) {
         checkbox.is_checked = page_params[setting_name];
         return checkbox;
     });
-}
-
-exports.all_notifications = {
-    general_settings: [
-        {
-            label: i18n.t("Streams"),
-            notification_settings: get_notifications_table_row_data(
-                exports.stream_notification_settings),
-        },
-        {
-            label: i18n.t("PMs, mentions, and alerts"),
-            notification_settings: get_notifications_table_row_data(
-                pm_mention_notification_settings),
-        },
-    ],
-    settings: {
-        desktop_notification_settings: desktop_notification_settings,
-        mobile_notification_settings: mobile_notification_settings,
-        email_notification_settings: email_notification_settings,
-    },
-    show_push_notifications_tooltip: {
-        push_notifications: !page_params.realm_push_notifications_enabled,
-        enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
-    },
 };
 
 exports.desktop_icon_count_display_values = {
@@ -134,8 +52,9 @@ function rerender_ui() {
         modifier: function (unmatched_streams) {
             return render_stream_specific_notification_row({
                 stream: unmatched_streams,
-                stream_specific_notification_settings: stream_specific_notification_settings,
-                is_disabled: exports.all_notifications.show_push_notifications_tooltip,
+                stream_specific_notification_settings:
+                settings_config.stream_specific_notification_settings,
+                is_disabled: settings_config.all_notifications().show_push_notifications_tooltip,
             });
         },
     }).init();
@@ -205,7 +124,7 @@ exports.set_up = function () {
 };
 
 exports.update_page = function () {
-    for (const setting of exports.all_notification_settings) {
+    for (const setting of settings_config.all_notification_settings) {
         if (setting === 'enable_offline_push_notifications'
             && !page_params.realm_push_notifications_enabled) {
             // If push notifications are disabled at the realm level,
