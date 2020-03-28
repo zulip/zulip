@@ -1,13 +1,23 @@
 from django.conf import settings
+from django.db.models import Count
 
 from zerver.lib.actions import \
     internal_prep_stream_message_by_name, internal_send_private_message, \
     do_send_messages, \
-    do_add_reaction, create_users, missing_any_realm_internal_bots
+    do_add_reaction, create_users
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.models import Message, Realm, UserProfile, get_system_bot
 
 from typing import Dict, List
+
+def missing_any_realm_internal_bots() -> bool:
+    bot_emails = [bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,)
+                  for bot in settings.REALM_INTERNAL_BOTS]
+    bot_counts = dict(UserProfile.objects.filter(email__in=bot_emails)
+                                         .values_list('email')
+                                         .annotate(Count('id')))
+    realm_count = Realm.objects.count()
+    return any(bot_counts.get(email, 0) < realm_count for email in bot_emails)
 
 def setup_realm_internal_bots(realm: Realm) -> None:
     """Create this realm's internal bots.
