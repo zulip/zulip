@@ -441,14 +441,6 @@ exports.receives_notifications = function (stream_name, notification_name) {
     return page_params["enable_stream_" + notification_name];
 };
 
-const stream_notification_settings = [
-    "desktop_notifications",
-    "audible_notifications",
-    "push_notifications",
-    "email_notifications",
-    "wildcard_mentions_notify",
-];
-
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
     // Admin can change any stream's name & description either stream is public or
@@ -475,7 +467,7 @@ exports.update_calculated_fields = function (sub) {
     exports.update_subscribers_count(sub);
 
     // Apply the defaults for our notification settings for rendering.
-    for (const setting of stream_notification_settings) {
+    for (const setting of settings_config.stream_specific_notification_settings) {
         sub[setting + "_display"] = exports.receives_notifications(sub.name, setting);
     }
 };
@@ -754,7 +746,7 @@ exports.get_unmatched_streams_for_notification_settings = function () {
     for (const row of subscribed_rows) {
         const settings_values = {};
         let make_table_row = false;
-        for (const notification_name of stream_notification_settings) {
+        for (const notification_name of settings_config.stream_specific_notification_settings) {
             const prepend = notification_name === 'wildcard_mentions_notify' ? "" : "enable_stream_";
             const default_setting = page_params[prepend + notification_name];
             const stream_setting = exports.receives_notifications(row.name, notification_name);
