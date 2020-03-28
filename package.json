@@ -38,6 +38,7 @@
     "jquery": "^3.4.1",
     "jquery-caret-plugin": "^1.5.2",
     "jquery-validation": "^1.19.0",
+    "js-yaml": "^3.13.1",
     "katex": "^0.11.1",
     "mini-css-extract-plugin": "^0.9.0",
     "moment": "^2.24.0",
