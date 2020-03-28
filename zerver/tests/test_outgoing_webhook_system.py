@@ -139,36 +139,43 @@ I'm a generic exception :(
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
 class TestOutgoingWebhookMessaging(ZulipTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.user_profile = self.example_user("othello")
-        self.bot_profile = self.create_test_bot('outgoing-webhook', self.user_profile,
-                                                full_name='Outgoing Webhook bot',
-                                                bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-                                                service_name='foo-service')
+    def create_outgoing_bot(self, bot_owner: UserProfile) -> UserProfile:
+        return self.create_test_bot(
+            'outgoing-webhook',
+            bot_owner,
+            full_name='Outgoing Webhook bot',
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            service_name='foo-service'
+        )
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
     def test_pm_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
-        self.send_personal_message(self.user_profile, self.bot_profile,
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        self.send_personal_message(bot_owner, bot,
                                    content="foo")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
-        self.assertEqual(last_message.sender_id, self.bot_profile.id)
+        self.assertEqual(last_message.sender_id, bot.id)
         display_recipient = get_display_recipient(last_message.recipient)
         # The next two lines error on mypy because the display_recipient is of type Union[str, List[Dict[str, Any]]].
         # In this case, we know that display_recipient will be of type List[Dict[str, Any]].
         # Otherwise this test will error, which is wanted behavior anyway.
         self.assert_length(display_recipient, 1)  # type: ignore
-        self.assertEqual(display_recipient[0]['email'], self.user_profile.email)   # type: ignore
+        self.assertEqual(display_recipient[0]['email'], bot_owner.email)   # type: ignore
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
     def test_stream_message_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
-        self.send_stream_message(self.user_profile, "Denmark",
-                                 content="@**{}** foo".format(self.bot_profile.full_name),
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        self.send_stream_message(bot_owner, "Denmark",
+                                 content="@**{}** foo".format(bot.full_name),
                                  topic_name="bar")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
-        self.assertEqual(last_message.sender_id, self.bot_profile.id)
+        self.assertEqual(last_message.sender_id, bot.id)
         self.assertEqual(last_message.topic_name(), "bar")
         display_recipient = get_display_recipient(last_message.recipient)
         self.assertEqual(display_recipient, "Denmark")
