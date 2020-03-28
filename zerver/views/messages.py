@@ -17,7 +17,7 @@ from zerver.lib.zcommand import process_zcommands
 from zerver.lib.actions import recipient_for_user_profiles, do_update_message_flags, \
     compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_private_recipients, truncate_body, render_incoming_message, do_delete_messages, \
+    extract_private_recipients, render_incoming_message, do_delete_messages, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, extract_stream_indicator, \
     get_user_info_for_message_updates, check_schedule_message
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
@@ -27,6 +27,7 @@ from zerver.lib.message import (
     messages_for_ids,
     render_markdown,
     get_first_visible_message_id,
+    truncate_body,
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection

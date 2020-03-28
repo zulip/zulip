@@ -51,6 +51,8 @@ from zerver.models import (
     UserMessage,
     Reaction,
     get_usermessage_by_message_id,
+    MAX_MESSAGE_LENGTH,
+    MAX_TOPIC_NAME_LENGTH
 )
 
 from typing import Any, Dict, List, Optional, Set, Tuple, Sequence
@@ -80,6 +82,17 @@ UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
 # client-side code mostly doesn't need to think about the case that a
 # user has more older unread messages that were cut off.
 MAX_UNREAD_MESSAGES = 50000
+
+def truncate_content(content: str, max_length: int, truncation_message: str) -> str:
+    if len(content) > max_length:
+        content = content[:max_length - len(truncation_message)] + truncation_message
+    return content
+
+def truncate_body(body: str) -> str:
+    return truncate_content(body, MAX_MESSAGE_LENGTH, "\n[message truncated]")
+
+def truncate_topic(topic: str) -> str:
+    return truncate_content(topic, MAX_TOPIC_NAME_LENGTH, "...")
 
 def messages_for_ids(message_ids: List[int],
                      user_message_flags: Dict[int, List[str]],
