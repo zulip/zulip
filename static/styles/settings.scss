@@ -619,48 +619,50 @@ input[type=checkbox].inline-block {
     }
 }
 
-#settings_page .alert-notification:not(:empty) {
-    display: inline-block !important;
-    vertical-align: top;
-    height: auto !important;
-    width: auto !important;
+.alert-notification {
+    &:not(:empty) {
+        display: inline-block !important;
+        vertical-align: top;
+        height: auto !important;
+        width: auto !important;
 
-    background-color: transparent;
-    border-radius: 4px;
-    margin-top: 14px;
-    margin-left: 10px;
-    border: 1px solid hsl(156, 30%, 50%);
-    color: hsl(156, 30%, 50%);
-    padding: 3px 10px;
-    font-size: 15px;
-}
+        background-color: transparent;
+        border-radius: 4px;
+        margin-top: 14px;
+        margin-left: 10px;
+        border: 1px solid hsl(156, 30%, 50%);
+        color: hsl(156, 30%, 50%);
+        padding: 3px 10px;
+        font-size: 15px;
+    }
 
-#settings_page .alert-notification.alert-error {
-    color: hsl(2, 46%, 68%);
-    border-color: hsl(2, 46%, 68%);
-}
+    .alert-error {
+        color: hsl(2, 46%, 68%);
+        border-color: hsl(2, 46%, 68%);
+    }
 
-#settings_page .alert-notification .loading_indicator_spinner {
-    width: 13px;
-    height: 20px;
-    margin: 0;
-}
+    .loading_indicator_spinner {
+        width: 13px;
+        height: 20px;
+        margin: 0;
+    }
 
-/* make the spinner green like the text and box. */
-#settings_page .alert-notification .loading_indicator_spinner svg path {
-    fill: hsl(178, 100%, 40%);
-}
+    /* make the spinner green like the text and box. */
+    .loading_indicator_spinner svg path {
+        fill: hsl(178, 100%, 40%);
+    }
 
-#settings_page .alert-notification .loading_indicator_text {
-    margin-top: 0px;
-    font-size: inherit;
-    vertical-align: top;
-}
+    .loading_indicator_text {
+        margin-top: 0px;
+        font-size: inherit;
+        vertical-align: top;
+    }
 
-#settings_page .alert-notification img {
-    margin-right: 6px;
-    vertical-align: middle;
-    margin-top: -2px;
+    img {
+        margin-right: 6px;
+        vertical-align: middle;
+        margin-top: -2px;
+    }
 }
 
 #profile-field-settings #admin-add-profile-field-status {
