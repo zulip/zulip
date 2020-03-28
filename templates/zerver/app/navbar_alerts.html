@@ -48,4 +48,22 @@
             {% endtrans %}
         </div>
     </div>
+    <div data-process="bankruptcy" class="alert alert-info brankruptcy">
+        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
+        <div data-step="1">
+            {% trans count=page_params.unread_msgs.count %}
+            Welcome back!  You have <span class="bankruptcy_unread_count">{{ count }}</span> unread messages.  Do you want to mark them all as read?
+            <span class="buttons">
+                <a class="alert-link accept-bankruptcy">Yes, please!</a>
+                &bull;
+                <a class="alert-link exit">No, I'll catch up.</a>
+            </span>
+            {% endtrans %}
+        </div>
+    </div>
+    <div class="alert alert-info bankruptcy-loader" style="display: none;">
+        {% trans %}
+        Marking all messages as read…
+        {% endtrans %}
+    </div>
 </div>
