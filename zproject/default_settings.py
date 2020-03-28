@@ -50,7 +50,7 @@ FAKE_LDAP_NUM_USERS = 8
 SOCIAL_AUTH_GITHUB_KEY = get_secret('social_auth_github_key', development_only=True)
 SOCIAL_AUTH_GITHUB_ORG_NAME = None  # type: Optional[str]
 SOCIAL_AUTH_GITHUB_TEAM_ID = None  # type: Optional[str]
-SOCIAL_AUTH_GITLAB_KEY = get_secret('social_auth_gitlab_key')
+SOCIAL_AUTH_GITLAB_KEY = get_secret('social_auth_gitlab_key', development_only=True)
 SOCIAL_AUTH_SUBDOMAIN = None  # type: Optional[str]
 SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret('azure_oauth2_secret')
 SOCIAL_AUTH_GOOGLE_KEY = get_secret('social_auth_google_key', development_only=True)
@@ -335,6 +335,10 @@ CUSTOM_LOGO_URL = None  # type: Optional[str]
 # Random salt used when deterministically generating passwords in
 # development.
 INITIAL_PASSWORD_SALT = None  # type: Optional[str]
+
+# Settings configuring the special instrumention of the send_event
+# code path used in generating API documentation for /events.
+LOG_API_EVENT_TYPES = False
 
 # Used to control whether certain management commands are run on
 # the server.

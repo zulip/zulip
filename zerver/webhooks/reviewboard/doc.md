@@ -8,7 +8,7 @@ Get ReviewBoard notifications in Zulip!
    corner, and click **Team administration**. Select **WebHooks** on the
    left sidebar, and click **+ Create a WebHook**.
 
-1. Make sure the **Enabled** option is checked. Set **URL** to the URL constucted
+1. Make sure the **Enabled** option is checked. Set **URL** to the URL constructed
    above, and select the events you'd like to be notified about. Set **Encoding**
    to **JSON**, and click **Create WebHook**.
 

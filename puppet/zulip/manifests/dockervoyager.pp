@@ -1,6 +1,6 @@
 # This class includes all the modules you need to install/run a Zulip installation
 # in a single container (without the database, memcached, redis services).
-# The database, memcached, redis services need to be run in seperate containers.
+# The database, memcached, redis services need to be run in separate containers.
 # Through this split of services, it is easier to scale the services to the needs.
 class zulip::dockervoyager {
   include zulip::base

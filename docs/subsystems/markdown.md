@@ -236,14 +236,14 @@ be non-standard.
   things like `t.co/foo`.
 
 * Force links to be absolute. `[foo](google.com)` will go to
-  `http://google.com`, and not `http://zulip.com/google.com` which
+  `http://google.com`, and not `https://zulip.com/google.com` which
   is the default behavior.
 
 * Set `target="_blank"` and `title=`(the url) on every link tag so
   clicking always opens a new window.
 
 * Disable link-by-reference syntax,
-  `[foo][bar]` ... `[bar]: http://google.com`.
+  `[foo][bar]` ... `[bar]: https://google.com`.
 
 * Enable linking to other streams using `#**streamName**`.
 

@@ -1,4 +1,3 @@
-set_global('i18n', global.stub_i18n);
 
 zrequire('people');
 zrequire('Filter', 'js/filter');
@@ -60,6 +59,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
     assert.equal(narrow_state.stream_id(), undefined);
+    assert(!narrow_state.narrowed_to_starred());
 
     set_filter([['stream', 'Foo']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -69,6 +69,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(narrow_state.narrowed_by_stream_reply());
+    assert(!narrow_state.narrowed_to_starred());
 
     set_filter([['pm-with', 'steve@zulip.com']]);
     assert(narrow_state.narrowed_to_pms());
@@ -78,6 +79,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(!narrow_state.narrowed_to_starred());
 
     set_filter([['stream', 'Foo'], ['topic', 'bar']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -87,6 +89,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_search());
     assert(narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(!narrow_state.narrowed_to_starred());
 
     set_filter([['search', 'grail']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -96,6 +99,17 @@ run_test('narrowed', () => {
     assert(narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(!narrow_state.narrowed_to_starred());
+
+    set_filter([['is', 'starred']]);
+    assert(!narrow_state.narrowed_to_pms());
+    assert(!narrow_state.narrowed_by_reply());
+    assert(!narrow_state.narrowed_by_pm_reply());
+    assert(!narrow_state.narrowed_by_topic_reply());
+    assert(!narrow_state.narrowed_to_search());
+    assert(!narrow_state.narrowed_to_topic());
+    assert(!narrow_state.narrowed_by_stream_reply());
+    assert(narrow_state.narrowed_to_starred());
 });
 
 run_test('operators', () => {
@@ -132,6 +146,8 @@ run_test('muting_enabled', () => {
     set_filter([['is', 'private']]);
     assert(!narrow_state.muting_enabled());
 
+    set_filter([['is', 'starred']]);
+    assert(!narrow_state.muting_enabled());
 });
 
 run_test('set_compose_defaults', () => {
@@ -151,7 +167,7 @@ run_test('set_compose_defaults', () => {
         full_name: 'John Doe',
     };
     people.add(john);
-    people.add_in_realm(john);
+    people.add(john);
 
     set_filter([['pm-with', 'john@doe.com']]);
     pm_test = narrow_state.set_compose_defaults();

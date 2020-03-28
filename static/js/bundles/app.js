@@ -18,7 +18,7 @@ import "flatpickr/dist/plugins/confirmDate/confirmDate.js";
 import "sortablejs/Sortable.js";
 
 // Import App JS
-import "../translations.js";
+import "../i18n.js";
 import "../feature_flags.js";
 import "../loading.js";
 import "../schema.js";

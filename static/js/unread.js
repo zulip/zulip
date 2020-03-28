@@ -159,7 +159,9 @@ exports.unread_pm_counter = (function () {
         const ids = [];
 
         for (const id_set of bucketer.values()) {
-            ids.push(...Array.from(id_set));
+            for (const id of id_set) {
+                ids.push(id);
+            }
         }
 
         return util.sorted_ids(ids);
@@ -331,9 +333,11 @@ exports.unread_topic_counter = (function () {
 
         const ids = [];
         const sub = stream_data.get_sub_by_id(stream_id);
-        for (const [topic, msgs] of per_stream_bucketer) {
+        for (const [topic, id_set] of per_stream_bucketer) {
             if (sub && !muting.is_topic_muted(stream_id, topic)) {
-                ids.push(...Array.from(msgs));
+                for (const id of id_set) {
+                    ids.push(id);
+                }
             }
         }
 

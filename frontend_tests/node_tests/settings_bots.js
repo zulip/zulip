@@ -19,7 +19,6 @@ const bot_data_params = {
 set_global("avatar", {});
 
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 
 zrequire('bot_data');
 zrequire('settings_bots');

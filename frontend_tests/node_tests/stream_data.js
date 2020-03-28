@@ -9,7 +9,6 @@ set_global('$', function () {
 
 set_global('blueslip', global.make_zblueslip());
 set_global('document', null);
-set_global('i18n', global.stub_i18n);
 global.stub_out_jquery();
 
 zrequire('color_data');
@@ -29,7 +28,7 @@ const settings_config = zrequire("settings_config");
 const me = {
     email: 'me@zulip.com',
     full_name: 'Current User',
-    user_id: 81,
+    user_id: 100,
 };
 
 // set up user data
@@ -102,9 +101,9 @@ run_test('basics', () => {
     assert.equal(stream_data.maybe_get_stream_name(42), undefined);
 
     stream_data.set_realm_default_streams([denmark]);
-    assert(stream_data.get_default_status('Denmark'));
-    assert(!stream_data.get_default_status('social'));
-    assert(!stream_data.get_default_status('UNKNOWN'));
+    assert(stream_data.is_default_stream_id(denmark.stream_id));
+    assert(!stream_data.is_default_stream_id(social.stream_id));
+    assert(!stream_data.is_default_stream_id(999999));
 });
 
 run_test('renames', () => {
@@ -187,11 +186,34 @@ run_test('subscribers', () => {
     people.add(not_fred);
     people.add(george);
 
-    stream_data.set_subscribers(sub, [fred.user_id, george.user_id]);
+    function potential_subscriber_ids() {
+        const users = stream_data.potential_subscribers(sub);
+        return users.map((u) => u.user_id).sort();
+    }
+
+    assert.deepEqual(
+        potential_subscriber_ids(),
+        [
+            me.user_id,
+            fred.user_id,
+            not_fred.user_id,
+            george.user_id,
+        ]
+    );
+
+    stream_data.set_subscribers(sub, [me.user_id, fred.user_id, george.user_id]);
     stream_data.update_calculated_fields(sub);
+    assert(stream_data.is_user_subscribed('Rome', me.user_id));
     assert(stream_data.is_user_subscribed('Rome', fred.user_id));
     assert(stream_data.is_user_subscribed('Rome', george.user_id));
     assert(!stream_data.is_user_subscribed('Rome', not_fred.user_id));
+
+    assert.deepEqual(
+        potential_subscriber_ids(),
+        [
+            not_fred.user_id,
+        ]
+    );
 
     stream_data.set_subscribers(sub, []);
 
@@ -536,11 +558,17 @@ run_test('default_stream_names', () => {
     stream_data.add_sub(private_stream);
     stream_data.add_sub(general);
 
-    let names = stream_data.get_non_default_stream_names();
-    assert.deepEqual(names, ['public', 'private']);
+    const names = stream_data.get_non_default_stream_names();
+    assert.deepEqual(names.sort(), ['private', 'public']);
 
-    names = stream_data.get_default_stream_names();
-    assert.deepEqual(names, ['announce', 'general']);
+    const default_stream_ids = stream_data.get_default_stream_ids();
+    assert.deepEqual(
+        default_stream_ids.sort(),
+        [
+            announce.stream_id,
+            general.stream_id,
+        ]
+    );
 });
 
 run_test('delete_sub', () => {
@@ -717,8 +745,7 @@ run_test('remove_default_stream', () => {
     stream_data.add_sub(remove_me);
     stream_data.set_realm_default_streams([remove_me]);
     stream_data.remove_default_stream(remove_me.stream_id);
-    assert(!stream_data.get_default_status('remove_me'));
-    assert.equal(page_params.realm_default_streams.length, 0);
+    assert(!stream_data.is_default_stream_id(remove_me.stream_id));
 });
 
 run_test('canonicalized_name', () => {
@@ -788,6 +815,9 @@ run_test('initialize', () => {
             stream_id: 2003,
         }];
 
+        params.realm_default_streams = [
+        ];
+
         return params;
     }
 
@@ -805,9 +835,6 @@ run_test('initialize', () => {
     assert(stream_names.includes('subscriptions'));
     assert(stream_names.includes('unsubscribed'));
     assert(stream_names.includes('never_subscribed'));
-    assert(!page_params.subscriptions);
-    assert(!page_params.unsubscribed);
-    assert(!page_params.never_subscribed);
     assert.equal(page_params.notifications_stream, "");
 
     // Simulate a private stream the user isn't subscribed to
@@ -832,13 +859,10 @@ run_test('filter inactives', () => {
     params.unsubscribed = [];
     params.never_subscribed = [];
     params.subscriptions = [];
+    params.realm_default_streams = [];
 
     stream_data.initialize(params);
     assert(!stream_data.is_filtering_inactives());
-
-    page_params.unsubscribed = [];
-    page_params.never_subscribed = [];
-    page_params.subscriptions = [];
 
     _.times(30, function (i) {
         const name = 'random' + i.toString();
@@ -893,35 +917,6 @@ run_test('is_subscriber_subset', () => {
             row[2]
         );
     }
-});
-
-run_test('invite_streams', () => {
-    // add default stream
-    const orie = {
-        stream_id: 320,
-        name: 'Orie',
-        subscribed: true,
-    };
-
-    // clear all the data form stream_data, and people
-    stream_data.clear_subscriptions();
-    people.init();
-
-    stream_data.add_sub(orie);
-    stream_data.set_realm_default_streams([orie]);
-
-    const expected_list = ['Orie'];
-    assert.deepEqual(stream_data.invite_streams(), expected_list);
-
-    const inviter = {
-        stream_id: 25,
-        name: 'Inviter',
-        subscribed: true,
-    };
-    stream_data.add_sub(inviter);
-
-    expected_list.push('Inviter');
-    assert.deepEqual(stream_data.invite_streams(), expected_list);
 });
 
 run_test('edge_cases', () => {

@@ -54,7 +54,7 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     need help learning, and time-saving tricks.
 
   - If you need feedback from the community / decisions made, ask in the
-    appropriate public stream on [chat.zulip.org](http://chat.zulip.org). Often
+    appropriate public stream on [chat.zulip.org](https://chat.zulip.org). Often
     someone can provide important context that you need to succeed in your
     project.
 
@@ -199,7 +199,7 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     necessary to test a feature.
 
   - Make a plan for how to create a series of small (<100LOC) commits that are
-    each safely mergable and move you towards your goal. Often this ends up
+    each safely mergeable and move you towards your goal. Often this ends up
     happening through first doing a hacky attempt to hooking together the
     feature, with reading and print statements as part of the effort, to
     identify any refactoring needed or tests you want to write to help make sure

@@ -25,6 +25,25 @@ exports.zrequire = function (name, fn) {
     return require(fn);
 };
 
+exports.clear_zulip_refs = function () {
+    /*
+        This is a big hammer to make sure
+        we are not "borrowing" a transitively
+        required module from a previous test.
+        This kind of leak can make it seems
+        like we've written the second test
+        correctly, but it will fail if we
+        run it standalone.
+    */
+    _.each(require.cache, (_, fn) => {
+        if (fn.indexOf('static/') >= 0) {
+            if (fn.indexOf('static/templates') < 0) {
+                delete require.cache[fn];
+            }
+        }
+    });
+};
+
 exports.restore = function () {
     requires.forEach(function (fn) {
         delete require.cache[require.resolve(fn)];

@@ -35,7 +35,7 @@ run_test('pills', () => {
         full_name: 'Hamlet',
     };
 
-    people.get_realm_persons = function () {
+    people.get_realm_users = function () {
         return [iago, othello, hamlet];
     };
 

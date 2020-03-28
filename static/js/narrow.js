@@ -541,27 +541,6 @@ exports.update_selection = function (opts) {
     unread_ops.process_visible();
 };
 
-exports.stream_topic = function () {
-    // This function returns the stream/topic that we most
-    // specifically care about, according (mostly) to the
-    // currently selected message.
-    const msg = current_msg_list.selected_message();
-
-    if (msg) {
-        return {
-            stream: msg.stream || undefined,
-            topic: msg.topic || undefined,
-        };
-    }
-
-    // We may be in an empty narrow.  In that case we use
-    // our narrow parameters to return the stream/topic.
-    return {
-        stream: narrow_state.stream(),
-        topic: narrow_state.topic(),
-    };
-};
-
 exports.activate_stream_for_cycle_hotkey = function (stream_name) {
     // This is the common code for A/D hotkeys.
     const filter_expr = [
@@ -604,11 +583,10 @@ exports.stream_cycle_forward = function () {
 };
 
 exports.narrow_to_next_topic = function () {
-    const curr_info = exports.stream_topic();
-
-    if (!curr_info) {
-        return;
-    }
+    const curr_info = {
+        stream: narrow_state.stream(),
+        topic: narrow_state.topic(),
+    };
 
     const next_narrow = topic_generator.get_next_topic(
         curr_info.stream,
@@ -894,7 +872,7 @@ function show_search_query() {
 
         // if query contains stop words, it is enclosed by a <del> tag
         if (page_params.stop_words.includes(query_word)) {
-            // stop_words do not need sanitization so this is unnecesary but it is fail-safe.
+            // stop_words do not need sanitization so this is unnecessary but it is fail-safe.
             search_string_display.append($('<del>').text(query_word));
             query_contains_stop_words = true;
         } else {
@@ -968,11 +946,23 @@ function pick_empty_narrow_banner() {
     } else if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
         // You are narrowed to a stream which does not exist or is a private stream
         // in which you were never subscribed.
-        const stream_sub = stream_data.get_sub(narrow_state.stream());
-        if (!stream_sub || !stream_sub.should_display_subscription_button) {
-            return $("#nonsubbed_private_nonexistent_stream_narrow_message");
+
+        function should_display_subscription_button() {
+            const stream_name = narrow_state.stream();
+
+            if (!stream_name) {
+                return false;
+            }
+
+            const stream_sub = stream_data.get_sub(first_operand);
+            return stream_sub && stream_sub.should_display_subscription_button;
         }
-        return $("#nonsubbed_stream_narrow_message");
+
+        if (should_display_subscription_button()) {
+            return $("#nonsubbed_stream_narrow_message");
+        }
+
+        return $("#nonsubbed_private_nonexistent_stream_narrow_message");
     } else if (first_operator === "search") {
         // You are narrowed to empty search results.
         show_search_query();

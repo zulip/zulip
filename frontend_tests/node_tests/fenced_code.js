@@ -11,7 +11,7 @@ run_test('get_unused_fence', () => {
     // ```
     // ````
     // `````
-    // ... upto N chars
+    // ... up to N chars
     // We insert a N + 1 character fence.
     for (let i = 3; i <= 20; i += 1) {
         large_testcase += '`'.repeat(i) + '\n';

@@ -42,11 +42,11 @@ const bot = {
     is_bot: true,
 };
 
-people.add_in_realm(me);
-people.add_in_realm(alice);
-people.add_in_realm(fred);
-people.add_in_realm(zoe);
-people.add_in_realm(bot);
+people.add(me);
+people.add(alice);
+people.add(fred);
+people.add(zoe);
+people.add(bot);
 people.initialize_current_user(me.user_id);
 
 run_test('my user', () => {
@@ -184,10 +184,10 @@ run_test('set_presence_info', () => {
     assert(!presence.presence_info.has(bot.user_id));
 
     // Make it seem like realm has a lot of people
-    const get_realm_count = people.get_realm_count;
-    people.get_realm_count = function () { return 1000; };
+    const get_active_human_count = people.get_active_human_count;
+    people.get_active_human_count = function () { return 1000; };
     assert.equal(presence.set_info(presences, base_time), undefined);
-    people.get_realm_count = get_realm_count;
+    people.get_active_human_count = get_active_human_count;
 });
 
 run_test('last_active_date', () => {

@@ -21,6 +21,27 @@ exports.filter = (value, list, opts) => {
     });
 };
 
+exports.validate_filter = (opts) => {
+    if (!opts.filter) {
+        return;
+    }
+    if (opts.filter.predicate) {
+        if (typeof opts.filter.predicate !== 'function') {
+            blueslip.error('Filter predicate function is missing.');
+            return;
+        }
+        if (opts.filter.filterer) {
+            blueslip.error('Filterer and predicate are mutually exclusive.');
+            return;
+        }
+    } else {
+        if (typeof opts.filter.filterer !== 'function') {
+            blueslip.error('Filter filterer function is missing.');
+            return;
+        }
+    }
+};
+
 // @params
 // container: jQuery object to append to.
 // list: The list of items to progressively append.
@@ -60,27 +81,12 @@ exports.create = function ($container, list, opts) {
     if (!opts) {
         return;
     }
-
-    if (opts.filter.predicate) {
-        if (typeof opts.filter.predicate !== 'function') {
-            blueslip.error('Filter predicate function is missing.');
-            return;
-        }
-        if (opts.filter.filterer) {
-            blueslip.error('Filterer and predicate are mutually exclusive.');
-            return;
-        }
-    } else {
-        if (typeof opts.filter.filterer !== 'function') {
-            blueslip.error('Filter filterer function is missing.');
-            return;
-        }
-    }
+    exports.validate_filter(opts);
 
     const prototype = {
         // Reads the provided list (in the scope directly above)
         // and renders the next block of messages automatically
-        // into the specified contianer.
+        // into the specified container.
         render: function (load_count) {
             load_count = load_count || opts.load_count || DEFAULTS.LOAD_COUNT;
 
@@ -155,6 +161,7 @@ exports.create = function ($container, list, opts) {
 
             if (Array.isArray(data)) {
                 meta.list = data;
+                meta.filtered_list = data;
 
                 if (opts.filter && opts.filter.element) {
                     const value = $(opts.filter.element).val().toLocaleLowerCase();
@@ -239,7 +246,7 @@ exports.create = function ($container, list, opts) {
                 // of items.
                 prototype.init();
 
-                if (opts.filter.onupdate) {
+                if (opts.filter && opts.filter.onupdate) {
                     opts.filter.onupdate();
                 }
             }
@@ -284,7 +291,11 @@ exports.create = function ($container, list, opts) {
                 }
             });
 
-            if (opts.filter.element) {
+            if (opts.parent_container) {
+                opts.parent_container.on("click", "[data-sort]", exports.handle_sort);
+            }
+
+            if (opts.filter && opts.filter.element) {
                 opts.filter.element.on(opts.filter.event || "input", function () {
                     const self = this;
                     const value = self.value.toLocaleLowerCase();
@@ -346,11 +357,6 @@ exports.create = function ($container, list, opts) {
     // Save the instance for potential future retrieval if a name is provided.
     if (opts.name) {
         DEFAULTS.instances.set(opts.name, prototype);
-    }
-
-    // Attach click handler to column heads for sorting rows accordingly
-    if (opts.parent_container) {
-        opts.parent_container.on("click", "[data-sort]", exports.handle_sort);
     }
 
     return prototype;

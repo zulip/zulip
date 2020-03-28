@@ -26,7 +26,7 @@ assert(!people.is_known_user_id(isaac.user_id));
 people.add(isaac);
 assert(people.is_known_user_id(isaac.user_id));
 
-// The global.people object is a very fundamental object in the
+// The `people`object is a very fundamental object in the
 // Zulip app.  You can learn a lot more about it by reading
 // the tests in people.js in the same directory as this file.
 // Let's create the current user, which some future tests will
@@ -51,18 +51,13 @@ const denmark_stream = {
     subscribed: false,
 };
 
-// We often use IIFEs (immediately invoked function expressions)
-// to make our tests more self-containted.
-
 // Some quick housekeeping:  Let's clear page_params, which is a data
 // structure that the server sends down to us when the app starts.  We
 // prefer to test with a clean slate.
 
 set_global('page_params', {});
-set_global('i18n', global.stub_i18n);
 
 zrequire('stream_data');
-set_global('i18n', global.stub_i18n);
 
 run_test('stream_data', () => {
     assert.equal(stream_data.get_sub_by_name('Denmark'), undefined);
@@ -232,7 +227,6 @@ run_test('narrow_state', () => {
 
         zrequire - bring in real code
         set_global - create stubs
-        IIFE - enclose tests in their own scope
         assert.equal - verify results
 
     ------

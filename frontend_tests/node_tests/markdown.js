@@ -1,7 +1,6 @@
 zrequire('hash_util');
 set_global('katex', zrequire('katex', 'katex/dist/katex.min.js'));
 set_global('marked', zrequire('marked', 'third/marked/lib/marked'));
-set_global('i18n', global.stub_i18n);
 
 zrequire('fenced_code');
 zrequire('stream_data');
@@ -54,8 +53,6 @@ const doc = "";
 set_global('document', doc);
 
 set_global('$', global.make_zjquery());
-
-const people = global.people;
 
 const cordelia = {
     full_name: 'Cordelia Lear',

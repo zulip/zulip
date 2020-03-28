@@ -49,6 +49,7 @@
     {% include "zerver/app/settings_overlay.html" %}
 </div>
 
+{% include "zerver/app/navbar_alerts.html" %}
 {% include "zerver/app/navbar.html" %}
 
 <div class="fixed-app">
@@ -117,12 +118,6 @@
                     </div>
                     {% include "zerver/app/home.html" %}
                 </div>
-
-                {% if show_debug %}
-                <div class="tab-pane" id="debug">
-                    {% include "zerver/app/debug.html" %}
-                </div>
-                {% endif %}
             </div><!--/tab-content-->
         </div>
         <div class="column-right">

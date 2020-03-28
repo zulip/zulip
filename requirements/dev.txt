@@ -245,6 +245,9 @@ defusedxml==0.6.0 \
 disposable-email-domains==0.0.57 \
     --hash=sha256:0f443152526d33e017e429cc9c7ed59b2feb8d1331f1feecb339fa4a3f43c99a \
     --hash=sha256:beb3eada4902a5105fffeb534b62724365d6cc7010f4bc698a532aa0378b3466
+distro==1.4.0 \
+    --hash=sha256:362dde65d846d23baee4b5c058c8586f219b5a54be1cf5fc6ff55c4578392f57 \
+    --hash=sha256:eedf82a470ebe7d010f1872c17237c79ab04097948800029994fa458e52fb4b4
 https://github.com/zulip/django-auth-ldap/archive/e26d0ef2a7ff77ab3fdd7b6578a76081f780778c.zip#egg=django-auth-ldap==2.0.0zulip1 \
     --hash=sha256:1a104fdb5085ef9340996ae82d4b302f99c39c5d9d60d4ae55bcc7c1f58cb65e
 django-bitfield==2.0.1 \
@@ -442,12 +445,10 @@ imagesize==1.2.0 \
     # via sphinx
 importlib-metadata==1.5.0 \
     --hash=sha256:06f5b3a99029c7134207dd882428a66992a9de2bef7c2b699b5641f9886c3302 \
-    --hash=sha256:b97607a1a18a5100839aec1dc26a1ea17ee0d93b20b0f008d80a5a050afb200b \
-    # via jsonschema
+    --hash=sha256:b97607a1a18a5100839aec1dc26a1ea17ee0d93b20b0f008d80a5a050afb200b
 importlib-resources==1.0.2 \
     --hash=sha256:6e2783b2538bd5a14678284a3962b0660c715e5a0f10243fd5e00a4b5974f50b \
-    --hash=sha256:d3279fd0f6f847cced9f7acc19bd3e5df54d34f93a2e7bb5f238f81545787078 \
-    # via cfn-lint
+    --hash=sha256:d3279fd0f6f847cced9f7acc19bd3e5df54d34f93a2e7bb5f238f81545787078
 incremental==17.5.0 \
     --hash=sha256:717e12246dddf231a349175f48d74d93e2897244939173b01974ab6661406b9f \
     --hash=sha256:7b751696aaf36eebfab537e458929e194460051ccad279c72b755a167eebd4b3 \
@@ -772,9 +773,6 @@ python-ldap==3.2.0 \
 python-magic==0.4.15 \
     --hash=sha256:f2674dcfad52ae6c49d4803fa027809540b130db1dec928cfbb9240316831375 \
     --hash=sha256:f3765c0f582d2dfc72c15f3b5a82aecfae9498bd29ca840d72f37d7bd38bfcd5
-python-slugify==4.0.0 \
-    --hash=sha256:a8fc3433821140e8f409a9831d13ae5deccd0b033d4744d94b31fea141bdd84c \
-    # via transifex-client
 python-twitter==3.5 \
     --hash=sha256:45855742f1095aa0c8c57b2983eee3b6b7f527462b50a2fa8437a8b398544d90 \
     --hash=sha256:4a420a6cb6ee9d0c8da457c8a8573f709c2ff2e1a7542e2d38807ebbfe8ebd1d
@@ -846,7 +844,7 @@ requests-oauthlib==1.3.0 \
 requests[security]==2.22.0 \
     --hash=sha256:11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4 \
     --hash=sha256:9cf5292fcd0f598c671cfc1e0d7d1a7f13bb8085e9a590f48c010551dc6c4b31 \
-    # via docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, transifex-client, twilio
+    # via docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
 responses==0.10.9 \
     --hash=sha256:515fd7c024097e5da76e9c4cf719083d181f1c3ddc09c2e0e49284ce863dd263 \
     --hash=sha256:8ce8cb4e7e1ad89336f8865af152e0563d2e7f0e0b86d2cf75f015f819409243
@@ -883,10 +881,10 @@ social-auth-app-django==3.1.0 \
     --hash=sha256:6d0dd18c2d9e71ca545097d57b44d26f59e624a12833078e8e52f91baf849778 \
     --hash=sha256:9237e3d7b6f6f59494c3b02e0cce6efc69c9d33ad9d1a064e3b2318bcbe89ae3 \
     --hash=sha256:f151396e5b16e2eee12cd2e211004257826ece24fc4ae97a147df386c1cd7082
-social-auth-core[azuread,saml]==3.2.0 \
-    --hash=sha256:47cd2458c8fefd02466b0c514643e02ad8b61d8b4b69f7573e80882e3a97b0f0 \
-    --hash=sha256:8320666548a532eb158968eda542bbe1863682357c432d8c4e28034a7f1e3b58 \
-    --hash=sha256:d81ed681e3c0722300b61a0792c5db5d21206793f95ca810f010c1cc931c8d89
+social-auth-core[azuread,saml]==3.3.2 \
+    --hash=sha256:1ce0f672827465df416b7170536cf6ac2415158fe993acc227aec1ead5d429ee \
+    --hash=sha256:3d04148d3f01d163cbf893d35250abe86e3e759203bd6f3036fdb85f89f85109 \
+    --hash=sha256:6320ff4644eece77dd8cec7939361918e26a877fc282974071f9a8892fd6df7e
 soupsieve==1.9.5 \
     --hash=sha256:bdb0d917b03a1369ce964056fc195cfdff8819c40de04695a80bc813c3cfa1f5 \
     --hash=sha256:e2c1c5dee4a1c36bcb790e0fabd5492d874b8ebd4617622c4f6a731701060dda \
@@ -946,10 +944,6 @@ https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.
 tblib==1.6.0 \
     --hash=sha256:229bee3754cb5d98b4837dd5c4405e80cfab57cb9f93220410ad367f8b352344 \
     --hash=sha256:e222f44485d45ed13fada73b57775e2ff9bd8af62160120bbb6679f5ad80315b
-text-unidecode==1.3 \
-    --hash=sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8 \
-    --hash=sha256:bad6603bb14d279193107714b288be206cac565dfa49aa5b105294dd5c4aab93 \
-    # via python-slugify
 tornado==4.5.3 \
     --hash=sha256:5ef073ac6180038ccf99411fe05ae9aafb675952a2c8db60592d5daf8401f803 \
     --hash=sha256:6d14e47eab0e15799cf3cdcc86b0b98279da68522caace2bd7ce644287685f0a \
@@ -960,8 +954,6 @@ traitlets==4.3.3 \
     --hash=sha256:70b4c6a1d9019d7b4f6846832288f86998aa3b9207c6821f3578a6a6a467fe44 \
     --hash=sha256:d023ee369ddd2763310e4c3eae1ff649689440d4ae59d7485eb4cfbbe3e359f7 \
     # via ipython
-transifex-client==0.13.4 \
-    --hash=sha256:e1bc9640f94a9003fe85fcbf746de3875a966b4f1dd0963d9fb7d2809616c37d
 twilio==6.35.3 \
     --hash=sha256:4474fa87fde5ea5526e296be782d1b06fc6722f9e4698a503c47b5c2f8b70ea9
 twisted==19.10.0 \
@@ -1016,7 +1008,7 @@ https://github.com/zulip/ultrajson/archive/70ac02becc3e11174cd5072650f885b30daab
 urllib3==1.25.8 \
     --hash=sha256:2f3db8b19923a873b3e5256dc9c2dedfa883e33d87c690d9c7913e1f40673cdc \
     --hash=sha256:87716c2d2a7121198ebcb7ce7cccf6ce5e9ba539041cfbaeecfb641dc0bf6acc \
-    # via botocore, requests, transifex-client
+    # via botocore, requests
 virtualenv-clone==0.5.3 \
     --hash=sha256:532f789a5c88adf339506e3ca03326f20ee82fd08ee5586b44dc859b5b4468c5 \
     --hash=sha256:c88ae171a11b087ea2513f260cdac9232461d8e9369bcd1dc143fc399d220557
@@ -1096,10 +1088,10 @@ zope.interface==4.7.1 \
     # via scrapy, twisted
 https://github.com/zulip/zulint/archive/aaed679f1ad38b230090eadd3870b7682500f60c.zip#egg=zulint==0.0.1 \
     --hash=sha256:9779afff26553119756e7be59d8a4adccda6758bf26483cc18a33cffe2efac60
-https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip==0.6.1_git&subdirectory=zulip \
-    --hash=sha256:270cebf4554a3a2fb1c95190168c952ef97081541ed2be0a83f00fb48e29928a
-https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots \
-    --hash=sha256:270cebf4554a3a2fb1c95190168c952ef97081541ed2be0a83f00fb48e29928a
+https://github.com/zulip/python-zulip-api/archive/0.6.4.zip/#egg=zulip==0.6.4_git&subdirectory=zulip \
+    --hash=sha256:d1d46d435a147ea3f3ef63e0f0b5ce8356694d341502d1600eabb2db751adb9f
+https://github.com/zulip/python-zulip-api/archive/0.6.4.zip/#egg=zulip_bots==0.6.4+git&subdirectory=zulip_bots \
+    --hash=sha256:d1d46d435a147ea3f3ef63e0f0b5ce8356694d341502d1600eabb2db751adb9f
 zxcvbn==4.4.28 \
     --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1
 

@@ -1,4 +1,3 @@
-set_global('i18n', global.stub_i18n);
 
 zrequire('unread');
 zrequire('stream_data');
@@ -358,6 +357,25 @@ run_test('can_mark_messages_read', () => {
     assert(!filter.can_mark_messages_read());
     filter = new Filter(in_random_negated);
     assert(!filter.can_mark_messages_read());
+
+    // test caching of term types
+    // init and stub
+    filter = new Filter(pm_with);
+    filter.stub = filter.calc_can_mark_messages_read;
+    filter.calc_can_mark_messages_read = function () {
+        this.calc_can_mark_messages_read_called = true;
+        return this.stub();
+    };
+
+    // uncached trial
+    filter.calc_can_mark_messages_read_called = false;
+    assert(filter.can_mark_messages_read());
+    assert(filter.calc_can_mark_messages_read_called);
+
+    // cached trial
+    filter.calc_can_mark_messages_read_called = false;
+    assert(filter.can_mark_messages_read());
+    assert(!filter.calc_can_mark_messages_read_called);
 });
 
 run_test('show_first_unread', () => {
@@ -386,7 +404,7 @@ run_test('show_first_unread', () => {
     assert(filter.allow_use_first_unread_when_narrowing());
 
 });
-run_test('topic_stuff', () => {
+run_test('filter_with_new_params_topic', () => {
     const operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'topic', operand: 'old topic'},
@@ -397,10 +415,33 @@ run_test('topic_stuff', () => {
     assert(!filter.has_topic('wrong', 'old topic'));
     assert(!filter.has_topic('foo', 'wrong'));
 
-    const new_filter = filter.filter_with_new_topic('new topic');
+    const new_filter = filter.filter_with_new_params({
+        operator: 'topic',
+        operand: 'new topic',
+    });
 
     assert.deepEqual(new_filter.operands('stream'), ['foo']);
     assert.deepEqual(new_filter.operands('topic'), ['new topic']);
+});
+
+run_test('filter_with_new_params_stream', () => {
+    const operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'topic', operand: 'old topic'},
+    ];
+    const filter = new Filter(operators);
+
+    assert(filter.has_topic('foo', 'old topic'));
+    assert(!filter.has_topic('wrong', 'old topic'));
+    assert(!filter.has_topic('foo', 'wrong'));
+
+    const new_filter = filter.filter_with_new_params({
+        operator: 'stream',
+        operand: 'new stream',
+    });
+
+    assert.deepEqual(new_filter.operands('stream'), ['new stream']);
+    assert.deepEqual(new_filter.operands('topic'), ['old topic']);
 });
 
 run_test('new_style_operators', () => {
@@ -1177,10 +1218,31 @@ run_test('term_type', () => {
         {operator: 'sender', operand: 'steve@foo.com'},
         {operator: 'stream', operand: 'Verona'},
     ];
-    const filter = new Filter(terms);
+    let filter = new Filter(terms);
     const term_types = filter.sorted_term_types();
 
     assert.deepEqual(term_types, ['stream', 'topic', 'sender']);
+
+    // test caching of term types
+    // init and stub
+    filter = new Filter(terms);
+    filter.stub = filter._build_sorted_term_types;
+    filter._build_sorted_term_types = function () {
+        this._build_sorted_term_types_called = true;
+        return this.stub();
+    };
+
+    // uncached trial
+    filter._build_sorted_term_types_called = false;
+    const built_terms = filter.sorted_term_types();
+    assert.deepEqual(built_terms, ['stream', 'topic', 'sender']);
+    assert(filter._build_sorted_term_types_called);
+
+    // cached trial
+    filter._build_sorted_term_types_called = false;
+    const cached_terms = filter.sorted_term_types();
+    assert.deepEqual(cached_terms, ['stream', 'topic', 'sender']);
+    assert(!filter._build_sorted_term_types_called);
 });
 
 run_test('first_valid_id_from', () => {

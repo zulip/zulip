@@ -543,7 +543,7 @@ css_rules = RuleList(
          'description': "Missing whitespace before '{' in CSS.",
          'good_lines': ["input {", "body {"],
          'bad_lines': ["input{", "body{"]},
-        {'pattern': 'https://',
+        {'pattern': r'^(?:(?!/\*).)*https?://',
          'description': "Zulip CSS should have no dependencies on external resources",
          'good_lines': ['background: url(/static/images/landing-page/pycon.jpg);'],
          'bad_lines': ['background: url(https://example.com/image.png);']},
@@ -838,7 +838,7 @@ help_markdown_rules = RuleList(
 )
 
 txt_rules = RuleList(
-    langs=['txt', 'text', 'yaml', 'rst'],
+    langs=['txt', 'text', 'yaml', 'rst', 'yml'],
     rules=whitespace_rules,
 )
 non_py_rules = [

@@ -218,7 +218,7 @@ on a dark background, and don't change the dark labels dark either. */
         border-color: hsla(0, 0%, 0%, 0.2);
     }
 
-    #searchbox_legacy {
+    .top-navbar-border {
         border-color: hsla(0, 0%, 0%, 0.6);
     }
 
@@ -378,7 +378,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     #invite_user_form .modal-footer {
-        // no transperancy prevents overlap issues
+        // no transparency prevents overlap issues
         background-color: hsl(211, 28%, 14%);
     }
 
@@ -417,15 +417,27 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(8, 78%, 43%, 0.15);
     }
 
-    .rendered_markdown .user-mention,
-    .rendered_markdown .user-group-mention {
-        background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
-        box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
-    }
+    .rendered_markdown {
+        .user-mention,
+        .user-group-mention {
+            background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+            box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
+        }
 
-    .rendered_markdown .user-mention-me :not(.silent) {
-        background-color: hsla(355, 37%, 31%, 1);
-        box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
+        .user-mention-me :not(.silent) {
+            background-color: hsla(355, 37%, 31%, 1);
+            box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
+        }
+
+        .highlight_text_inserted {
+            color: hsl(122, 100%, 81%);
+            background-color: hsla(120, 64%, 95%, 0.3);
+        }
+
+        .highlight_text_deleted {
+            text-decoration: line-through;
+            background-color: hsla(7, 54%, 62%, 0.38);
+        }
     }
 
     .tip {
@@ -442,6 +454,10 @@ on a dark background, and don't change the dark labels dark either. */
 
     .alert {
         text-shadow: none;
+
+        .close {
+            color: inherit;
+        }
     }
 
     .alert.alert-success {
@@ -457,10 +473,6 @@ on a dark background, and don't change the dark labels dark either. */
         border: 1px solid hsl(0, 75%, 65%);
     }
 
-    .alert .close {
-        color: inherit;
-    }
-
     .alert-box .alert,
     .alert-box .stacktrace,
     .alert.alert-error {
@@ -469,34 +481,36 @@ on a dark background, and don't change the dark labels dark either. */
         border: 1px solid hsl(0, 75%, 65%);
     }
 
-    .alert-box .alert.alert-error::before {
-        color: 1px solid hsl(0, 75%, 65%);
-    }
-
-    .alert-box .stacktrace {
-        color: hsl(314, 22%, 85%);
-
-        .expand {
-            color: hsl(318, 14%, 36%);
+    .alert-box {
+        .alert.alert-error::before {
+            color: 1px solid hsl(0, 75%, 65%);
         }
 
-        .subtle {
-            color: hsl(314, 19%, 63%);
-        }
+        .stacktrace {
+            color: hsl(314, 22%, 85%);
 
-        .code-context {
-            color: hsl(314, 27%, 82%);
-            background-color: hsl(312, 7%, 14%);
-            box-shadow:
-                inset 0px 11px 10px -10px hsl(0, 0%, 6%),
-                inset 0px -11px 10px -10px hsl(0, 0%, 6%);
-
-            .line-number {
-                color: hsl(318, 14%, 44%);
+            .expand {
+                color: hsl(318, 14%, 36%);
             }
 
-            .focus-line {
-                background-color: hsl(307, 9%, 19%);
+            .subtle {
+                color: hsl(314, 19%, 63%);
+            }
+
+            .code-context {
+                color: hsl(314, 27%, 82%);
+                background-color: hsl(312, 7%, 14%);
+                box-shadow:
+                    inset 0px 11px 10px -10px hsl(0, 0%, 6%),
+                    inset 0px -11px 10px -10px hsl(0, 0%, 6%);
+
+                .line-number {
+                    color: hsl(318, 14%, 44%);
+                }
+
+                .focus-line {
+                    background-color: hsl(307, 9%, 19%);
+                }
             }
         }
     }
@@ -511,36 +525,38 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* Arrows: */
-    .hotspot.overlay .hotspot-popover.arrow-right::before {
-        border-left-color: hsla(0, 0%, 0%, 0.2);
-    }
+    .hotspot.overlay {
+        .hotspot-popover.arrow-right::before {
+            border-left-color: hsla(0, 0%, 0%, 0.2);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-right::after {
-        border-left-color: hsl(212, 28%, 18%);
-    }
+        .hotspot-popover.arrow-right::after {
+            border-left-color: hsl(212, 28%, 18%);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-bottom::before {
-        border-top-color: hsla(0, 0%, 0%, 0.2);
-    }
+        .hotspot-popover.arrow-bottom::before {
+            border-top-color: hsla(0, 0%, 0%, 0.2);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-bottom::after {
-        border-top-color: hsl(212, 28%, 18%);
-    }
+        .hotspot-popover.arrow-bottom::after {
+            border-top-color: hsl(212, 28%, 18%);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-left::before {
-        border-right-color: hsla(0, 0%, 0%, 0.2);
-    }
+        .hotspot-popover.arrow-left::before {
+            border-right-color: hsla(0, 0%, 0%, 0.2);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-left::after {
-        border-right-color: hsl(212, 28%, 18%);
-    }
+        .hotspot-popover.arrow-left::after {
+            border-right-color: hsl(212, 28%, 18%);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-top::before {
-        border-bottom-color: hsla(0, 0%, 0%, 0.2);
-    }
+        .hotspot-popover.arrow-top::before {
+            border-bottom-color: hsla(0, 0%, 0%, 0.2);
+        }
 
-    .hotspot.overlay .hotspot-popover.arrow-top::after {
-        border-bottom-color: hsl(212, 28%, 18%);
+        .hotspot-popover.arrow-top::after {
+            border-bottom-color: hsl(212, 28%, 18%);
+        }
     }
 
     /* Content: */
@@ -550,14 +566,16 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsl(212, 28%, 18%);
     }
 
-    .top-messages-logo svg path {
-        fill: hsl(214, 27%, 18%);
-        stroke: hsl(214, 27%, 18%);
-    }
+    .top-messages-logo {
+        svg path {
+            fill: hsl(214, 27%, 18%);
+            stroke: hsl(214, 27%, 18%);
+        }
 
-    .top-messages-logo svg circle {
-        fill: hsl(0, 0%, 100%);
-        stroke: hsl(0, 0%, 100%);
+        svg circle {
+            fill: hsl(0, 0%, 100%);
+            stroke: hsl(0, 0%, 100%);
+        }
     }
 
     .history-limited-box,
@@ -566,8 +584,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     #feedback_container,
-    .rendered_markdown code,
-    .feedback_content code,
+    code,
     .typeahead.dropdown-menu {
         background-color: hsl(212, 25%, 15%);
         border-color: hsla(0, 0%, 0%, 0.5);
@@ -577,18 +594,6 @@ on a dark background, and don't change the dark labels dark either. */
     /* Search highlight used in both topics and rendered_markdown */
     .highlight {
         background-color: hsla(51, 100%, 64%, 0.42);
-    }
-
-    .rendered_markdown {
-        .highlight_text_inserted {
-            color: hsl(122, 100%, 81%);
-            background-color: hsla(120, 64%, 95%, 0.3);
-        }
-
-        .highlight_text_deleted {
-            text-decoration: line-through;
-            background-color: hsla(7, 54%, 62%, 0.38);
-        }
     }
 
     .sub-unsub-message span::before,

@@ -104,7 +104,7 @@ def save_message_for_edit_use_case(message: Message) -> None:
     message.save(update_fields=[TOPIC_NAME, "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history", "has_attachment", "has_image",
-                                "has_link"])
+                                "has_link", "recipient_id"])
 
 
 def user_message_exists_for_topic(user_profile: UserProfile,

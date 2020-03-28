@@ -221,7 +221,7 @@ exports.initialize_kitchen_sink_stuff = function () {
                     render_end: event.msg_list.view._render_win_end,
                     selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
-                        _.pluck(messages, 'id'),
+                        messages.map(message => message.id),
                         _.chain(current_msg_list.all_messages()).pluck('id').clone().value().sort()
                     ),
                     found_in_dom: row_from_dom.length,
@@ -384,6 +384,10 @@ exports.initialize_everything = function () {
         return result;
     }
 
+    const alert_words_params = pop_fields(
+        'alert_words'
+    );
+
     const bot_params = pop_fields(
         'realm_bots'
     );
@@ -394,6 +398,10 @@ exports.initialize_everything = function () {
         'cross_realm_bots'
     );
 
+    const pm_conversations_params = pop_fields(
+        'recent_private_conversations'
+    );
+
     const presence_params = pop_fields(
         'presences',
         'initial_servertime'
@@ -402,7 +410,8 @@ exports.initialize_everything = function () {
     const stream_data_params = pop_fields(
         'subscriptions',
         'unsubscribed',
-        'never_subscribed'
+        'never_subscribed',
+        'realm_default_streams'
     );
 
     const user_groups_params = pop_fields(
@@ -413,6 +422,7 @@ exports.initialize_everything = function () {
         'user_status'
     );
 
+    alert_words.initialize(alert_words_params);
     emojisets.initialize();
     people.initialize(page_params.user_id, people_params);
     scroll_bar.initialize();
@@ -422,7 +432,7 @@ exports.initialize_everything = function () {
     stream_color.initialize();
     stream_edit.initialize();
     stream_data.initialize(stream_data_params);
-    pm_conversations.recent.initialize();
+    pm_conversations.recent.initialize(pm_conversations_params);
     muting.initialize();
     subs.initialize();
     stream_list.initialize();

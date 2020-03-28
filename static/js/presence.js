@@ -139,7 +139,7 @@ exports.set_info = function (presences, server_timestamp) {
 };
 
 exports.update_info_for_small_realm = function () {
-    if (people.get_realm_count() >= BIG_REALM_COUNT) {
+    if (people.get_active_human_count() >= BIG_REALM_COUNT) {
         // For big realms, we don't want to bloat our buddy
         // lists with lots of long-time-inactive users.
         return;
@@ -147,7 +147,7 @@ exports.update_info_for_small_realm = function () {
 
     // For small realms, we create presence info for users
     // that the server didn't include in its presence update.
-    const persons = people.get_realm_persons();
+    const persons = people.get_realm_users();
 
     for (const person of persons) {
         const user_id = person.user_id;

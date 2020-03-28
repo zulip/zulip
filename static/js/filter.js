@@ -387,7 +387,7 @@ Filter.prototype = {
         return this.has_operator('search');
     },
 
-    can_mark_messages_read: function () {
+    calc_can_mark_messages_read: function () {
         const term_types = this.sorted_term_types();
 
         if (_.isEqual(term_types, ['stream', 'topic'])) {
@@ -424,6 +424,13 @@ Filter.prototype = {
         }
 
         return false;
+    },
+
+    can_mark_messages_read: function () {
+        if (this._can_mark_messages_read === undefined) {
+            this._can_mark_messages_read = this.calc_can_mark_messages_read();
+        }
+        return this._can_mark_messages_read;
     },
 
     allow_use_first_unread_when_narrowing: function () {
@@ -486,11 +493,11 @@ Filter.prototype = {
         return operators_mixed_case.map(tuple => Filter.canonicalize_term(tuple));
     },
 
-    filter_with_new_topic: function (new_topic) {
+    filter_with_new_params: function (params) {
         const terms = this._operators.map(term => {
             const new_term = { ...term };
-            if (new_term.operator === 'topic' && !new_term.negated) {
-                new_term.operand = new_topic;
+            if (new_term.operator === params.operator && !new_term.negated) {
+                new_term.operand = params.operand;
             }
             return new_term;
         });
@@ -502,6 +509,13 @@ Filter.prototype = {
     },
 
     sorted_term_types: function () {
+        if (this._sorted_term_types === undefined) {
+            this._sorted_term_types = this._build_sorted_term_types();
+        }
+        return this._sorted_term_types;
+    },
+
+    _build_sorted_term_types: function () {
         const terms = this._operators;
         const term_types = terms.map(Filter.term_type);
         const sorted_terms = Filter.sorted_term_types(term_types);

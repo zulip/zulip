@@ -5,7 +5,6 @@ import logging
 import argparse
 import platform
 import subprocess
-import glob
 import hashlib
 
 os.environ["PYTHONUNBUFFERED"] = "y"
@@ -17,9 +16,8 @@ from scripts.lib.zulip_tools import run_as_root, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL, os_families, parse_os_release, \
     overwrite_symlink
 from scripts.lib.setup_venv import (
-    VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
-    THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES,
-    FEDORA_VENV_DEPENDENCIES
+    get_venv_dependencies, THUMBOR_VENV_DEPENDENCIES,
+    YUM_THUMBOR_VENV_DEPENDENCIES,
 )
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 from tools.setup import setup_venvs
@@ -93,6 +91,8 @@ elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
     POSTGRES_VERSION = "10"
 elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
     POSTGRES_VERSION = "11"
+elif vendor == "ubuntu" and os_version == "20.04":  # focal
+    POSTGRES_VERSION = "12"
 elif vendor == "fedora" and os_version == "29":
     POSTGRES_VERSION = "10"
 elif vendor == "rhel" and os_version.startswith("7."):
@@ -109,6 +109,8 @@ else:
             print("See: https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html")
     sys.exit(1)
 
+VENV_DEPENDENCIES = get_venv_dependencies(vendor, os_version)
+
 COMMON_DEPENDENCIES = [
     "memcached",
     "rabbitmq-server",
@@ -118,9 +120,22 @@ COMMON_DEPENDENCIES = [
     "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
     "puppet",               # Used by lint (`puppet parser validate`)
     "gettext",              # Used by makemessages i18n
+    "transifex-client",     # Needed to sync translations from transifex
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "moreutils",            # Used for sponge command
     "unzip",                # Needed for Slack import
+
+    # Puppeteer dependencies from here
+    "gconf-service",
+    "libgconf-2-4",
+    "libgtk-3-0",
+    "libatk-bridge2.0-0",
+    "libx11-xcb1",
+    "libxss1",
+    "fonts-liberation",
+    "libappindicator1",
+    "xdg-utils"
+    # Puppeteer dependencies end here.
 ]
 
 UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
@@ -130,7 +145,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "netcat",               # Used for flushing memcached
     "libfontconfig1",       # Required by phantomjs
     "default-jre-headless",  # Required by vnu-jar
-] + VENV_DEPENDENCIES + THUMBOR_VENV_DEPENDENCIES
+] + THUMBOR_VENV_DEPENDENCIES
 
 COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "redis",
@@ -145,7 +160,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == 'debian' and os_version in []:
+if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in ['20.04']:
     # For platforms without a pgroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
@@ -156,15 +171,17 @@ if vendor == 'debian' and os_version in []:
             "postgresql-server-dev-{0}",
             "libgroonga-dev",
             "libmsgpack-dev",
+            "clang-9",
+            "llvm-9-dev"
         ]
-    ]
+    ] + VENV_DEPENDENCIES
 elif "debian" in os_families():
     SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql-{0}",
             "postgresql-{0}-pgroonga",
         ]
-    ]
+    ] + VENV_DEPENDENCIES
 elif "rhel" in os_families():
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
@@ -173,7 +190,7 @@ elif "rhel" in os_families():
             "postgresql{0}-devel",
             "postgresql{0}-pgroonga",
         ]
-    ] + REDHAT_VENV_DEPENDENCIES
+    ] + VENV_DEPENDENCIES
 elif "fedora" in os_families():
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
@@ -184,7 +201,7 @@ elif "fedora" in os_families():
             "groonga-devel",
             "msgpack-devel",
         ]
-    ] + FEDORA_VENV_DEPENDENCIES
+    ] + VENV_DEPENDENCIES
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():
@@ -220,8 +237,14 @@ def install_system_deps():
 
 def install_apt_deps(deps_to_install):
     # type: (List[str]) -> None
-    # setup-apt-repo does an `apt-get update`
+    # setup-apt-repo does an `apt-get update` if the sources.list files changed.
     run_as_root(["./scripts/lib/setup-apt-repo"])
+
+    # But we still need to do our own to make sure we have up-to-date
+    # data before installing new packages, as the system might not have
+    # done an apt update in weeks otherwise, which could result in 404s
+    # trying to download old versions that were already removed from mirrors.
+    run_as_root(["apt-get", "update"])
     run_as_root(
         [
             "env", "DEBIAN_FRONTEND=noninteractive",
@@ -306,11 +329,12 @@ def main(options):
     if "debian" in os_families():
         sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
     else:
-        # hash the content of setup-yum-repo and build-*
+        # hash the content of setup-yum-repo*
         sha_sum.update(open('scripts/lib/setup-yum-repo', 'rb').read())
-        build_paths = glob.glob("scripts/lib/build-")
-        for bp in build_paths:
-            sha_sum.update(open(bp, 'rb').read())
+
+    # hash the content of build-pgroonga if pgroonga is built from source
+    if BUILD_PGROONGA_FROM_SOURCE:
+        sha_sum.update(open('scripts/lib/build-pgroonga', 'rb').read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None

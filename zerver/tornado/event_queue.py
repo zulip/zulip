@@ -460,19 +460,20 @@ def load_event_queues(port: int) -> None:
     global clients
     start = time.time()
 
-    # ujson chokes on bad input pretty easily.  We separate out the actual
-    # file reading from the loading so that we don't silently fail if we get
-    # bad input.
     try:
         with open(persistent_queue_filename(port), "r") as stored_queues:
-            json_data = stored_queues.read()
+            data = ujson.load(stored_queues)
+    except FileNotFoundError:
+        pass
+    except ValueError:
+        logging.exception("Tornado %d could not deserialize event queues" % (port,))
+    else:
         try:
-            clients = dict((qid, ClientDescriptor.from_dict(client))
-                           for (qid, client) in ujson.loads(json_data))
+            clients = {
+                qid: ClientDescriptor.from_dict(client) for (qid, client) in data
+            }
         except Exception:
             logging.exception("Tornado %d could not deserialize event queues" % (port,))
-    except (IOError, EOFError):
-        pass
 
     for client in clients.values():
         # Put code for migrations due to event queue data format changes here
@@ -916,6 +917,12 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         client.add_event(user_event)
 
 def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    if 'user_id' not in event:
+        # We only recently added `user_id` to presence data.
+        # Any old events in our queue can just be dropped,
+        # since presence events are pretty ephemeral in nature.
+        logging.warning('Dropping some obsolete presence events after upgrade.')
+
     slim_event = dict(
         type='presence',
         user_id=event['user_id'],
@@ -944,18 +951,6 @@ def process_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):
                 client.add_event(event)
-
-def process_userdata_event(event_template: Mapping[str, Any], users: Iterable[Mapping[str, Any]]) -> None:
-    for user_data in users:
-        user_profile_id = user_data['id']
-        user_event = dict(event_template)  # shallow copy, but deep enough for our needs
-        for key in user_data.keys():
-            if key != "id":
-                user_event[key] = user_data[key]
-
-        for client in get_client_descriptors_for_user(user_profile_id):
-            if client.accepts_event(user_event):
-                client.add_event(user_event)
 
 def process_message_update_event(event_template: Mapping[str, Any],
                                  users: Iterable[Mapping[str, Any]]) -> None:
@@ -1074,8 +1069,13 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
     elif event['type'] == "update_message":
         process_message_update_event(event, cast(Iterable[Mapping[str, Any]], users))
-    elif event['type'] == "delete_message":
-        process_userdata_event(event, cast(Iterable[Mapping[str, Any]], users))
+    elif event['type'] == "delete_message" and isinstance(users[0], dict):
+        # do_delete_messages used to send events with users in dict format {"id": <int>}
+        # This block is here for compatibility with events in that format still in the queue
+        # at the time of upgrade.
+        # TODO: Remove this block in release >= 2.3.
+        user_ids = [user['id'] for user in cast(Iterable[Mapping[str, int]], users)]
+        process_event(event, user_ids)
     elif event['type'] == "presence":
         process_presence_event(event, cast(Iterable[int], users))
     else:

@@ -1,4 +1,12 @@
-const stream_notification_settings = [
+const general_notifications_table_columns = [
+    /* An array of notification settings of any category like
+    * `stream_notification_settings` which makes a single row of
+    * "Notification triggers" table should follow this order
+    */
+    "visual", "audio", "mobile", "email", "all_mentions",
+];
+
+exports.stream_notification_settings = [
     "enable_stream_desktop_notifications",
     "enable_stream_audible_notifications",
     "enable_stream_push_notifications",
@@ -35,29 +43,54 @@ const other_notification_settings = desktop_notification_settings.concat(
     ["notification_sound"]
 );
 
-const notification_settings_status = [
-    {status_label: "pm-mention-notify-settings-status", settings: pm_mention_notification_settings},
-    {status_label: "other-notify-settings-status", settings: other_notification_settings},
-    {status_label: "stream-notify-settings-status", settings: stream_notification_settings},
-];
-
-exports.all_notification_settings_labels = other_notification_settings.concat(
+exports.all_notification_settings = other_notification_settings.concat(
     pm_mention_notification_settings,
-    stream_notification_settings
+    exports.stream_notification_settings
 );
 
+
+function get_notifications_table_row_data(notify_settings) {
+    return general_notifications_table_columns.map((column, index) => {
+        const setting_name = notify_settings[index];
+        if (setting_name === undefined) {
+            return {
+                setting_name: "",
+                is_disabled: true,
+                is_checked: false,
+            };
+        }
+        const checkbox = {
+            setting_name: setting_name,
+            is_disabled: false,
+        };
+        if (column === "mobile") {
+            checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
+        }
+        checkbox.is_checked = page_params[setting_name];
+        return checkbox;
+    });
+}
+
 exports.all_notifications = {
+    general_settings: [
+        {
+            label: i18n.t("Streams"),
+            notification_settings: get_notifications_table_row_data(
+                exports.stream_notification_settings),
+        },
+        {
+            label: i18n.t("PMs, mentions, and alerts"),
+            notification_settings: get_notifications_table_row_data(
+                pm_mention_notification_settings),
+        },
+    ],
     settings: {
-        stream_notification_settings: stream_notification_settings,
-        pm_mention_notification_settings: pm_mention_notification_settings,
         desktop_notification_settings: desktop_notification_settings,
         mobile_notification_settings: mobile_notification_settings,
         email_notification_settings: email_notification_settings,
     },
-    push_notification_tooltip: {
-        enable_stream_push_notifications: true,
-        enable_offline_push_notifications: true,
-        enable_online_push_notifications: true,
+    show_push_notifications_tooltip: {
+        enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
     },
 };
 
@@ -97,24 +130,15 @@ exports.set_enable_digest_emails_visibility = function () {
 };
 
 exports.set_up = function () {
-    for (const setting of notification_settings_status) {
-        for (const sub_setting of setting.settings) {
-            $("#" + sub_setting).change(function () {
-                let value;
-
-                // `notification_sound` and `desktop_icon_count_display` are not booleans.
-                if (sub_setting === "notification_sound") {
-                    value = $(this).val();
-                } else if (sub_setting === "desktop_icon_count_display") {
-                    value = parseInt($(this).val(), 10);
-                } else {
-                    value = $(this).prop('checked');
-                }
-                change_notification_setting(sub_setting, value,
-                                            "#" + setting.status_label);
-            });
-        }
-    }
+    $('#notification-settings').on('change', 'input, select', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const input_elem = $(e.currentTarget);
+        const setting_name = input_elem.attr("name");
+        change_notification_setting(setting_name,
+                                    settings_org.get_input_element_value(this),
+                                    input_elem.closest('.subsection-parent').find('.alert-notification'));
+    });
 
     update_desktop_icon_count_display();
 
@@ -138,7 +162,7 @@ exports.set_up = function () {
 };
 
 exports.update_page = function () {
-    for (const setting of exports.all_notification_settings_labels) {
+    for (const setting of exports.all_notification_settings) {
         if (setting === 'enable_offline_push_notifications'
             && !page_params.realm_push_notifications_enabled) {
             // If push notifications are disabled at the realm level,

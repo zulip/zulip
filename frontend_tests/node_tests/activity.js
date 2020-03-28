@@ -54,7 +54,6 @@ const _resize = {
     resize_page_components: () => {},
 };
 
-set_global('i18n', global.stub_i18n);
 set_global('padded_widget', {
     update_padding: () => {},
 });
@@ -122,15 +121,13 @@ const zoe = {
     full_name: 'Zoe Yang',
 };
 
-const people = global.people;
-
-people.add_in_realm(alice);
-people.add_in_realm(fred);
-people.add_in_realm(jill);
-people.add_in_realm(mark);
-people.add_in_realm(norbert);
-people.add_in_realm(zoe);
-people.add_in_realm(me);
+people.add(alice);
+people.add(fred);
+people.add(jill);
+people.add(mark);
+people.add(norbert);
+people.add(zoe);
+people.add(me);
 people.initialize_current_user(me.user_id);
 
 const real_update_huddles = activity.update_huddles;

@@ -57,7 +57,7 @@ in bursts.
 - Migrated settings for notifications streams to our standard UX model.
 - Extracted the typeahead and markdown libraries for reuse in the
   mobile apps.
-- Removed the legacy websockets-based for sending messages.  This
+- Removed the legacy websockets-based system for sending messages.  This
   system was always a hack, was only ever used for one endpoint, and
   did not provide a measureable latency benefit over HTTP/2.
 
@@ -277,7 +277,7 @@ lose the setting and need to re-enable it.
 - Replaced title attributes with nice tooltips in the message feed and
   buddy list.
 - Fixed incorrect caching settings for the Zulip API, which could result
-  in browers appearing to display old content or remark messages unread.
+  in browsers appearing to display old content or remark messages unread.
 - Fixed a bug that prevented sending mobile push notifications when the
   user was recently online via the mobile app.
 - Fixed buggy handling of LaTeX in quote-and-reply.
@@ -618,7 +618,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Fixed confusing intermediate states of group PMs online indicators.
 - Fixed several subtle unread count corner case bugs.
 - Fixed several installer issues to make it easier to Dockerize Zulip.
-- Fixed several subtle issues with both the LDAP/Active Direcotry
+- Fixed several subtle issues with both the LDAP/Active Directory
   integration and its documentation, making it much easier to setup.
 - Fixed several minor bugs and otherwise optimized search typeahead.
 - Fixed a bad nginx configuration interaction with servers that have

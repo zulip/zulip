@@ -21,7 +21,6 @@ const rewiremock = require("rewiremock/node");
 
 */
 const util = zrequire('util');
-set_global('i18n', global.stub_i18n);
 set_global('document', {
     location: {
         protocol: 'http',
@@ -74,6 +73,7 @@ util.is_mobile = () => false;
 global.stub_templates(() => 'some-html');
 ui.get_scroll_element = element => element;
 
+zrequire('alert_words');
 zrequire('hash_util');
 zrequire('echo');
 zrequire('colorspace');

@@ -800,9 +800,20 @@ form#add_new_subscription {
             margin-left: -3px;
             padding-bottom: 5px;
             white-space: nowrap;
-            width: 270px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            max-width: 260px;
+
+            .stream-name-editable {
+                display: block;
+                max-width: 20ch;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                float: left;
+            }
+
+            .stream-name-edit-box {
+                text-overflow: clip;
+                border-style: groove;
+            }
         }
 
         .deactivate,

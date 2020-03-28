@@ -1,5 +1,4 @@
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 set_global('blueslip', global.make_zblueslip());
 
 const noop = () => {};
@@ -280,7 +279,6 @@ function test_submit_settings_form(submit_form) {
         email_address_visibility: '1',
         add_emoji_by_admins_only: false,
         create_stream_policy: '2',
-        waiting_period_threshold: 10,
     };
     assert.deepEqual(data, expected_value);
 
@@ -796,7 +794,7 @@ run_test('set_up', () => {
     const stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
     settings_org.render_notifications_stream_ui = noop;
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
-    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limti parent>'));
+    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limit parent>'));
     $("#message_content_in_email_notifications_label").set_parent($.create('<stub in-content setting checkbox>'));
     $("#enable_digest_emails_label").set_parent($.create('<stub digest setting checkbox>'));
     $("#id_realm_digest_weekday").set_parent($.create('<stub digest weekday setting dropdown>'));

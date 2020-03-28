@@ -52,7 +52,7 @@ notifications:
     web_url = "http://hg.example.com:8000/"
     site = {{ api_url }}
 
-[1]: http://mercurial.selenic.com/wiki/QuickStart#Network_support
+[1]: https://www.mercurial-scm.org/wiki/QuickStart#Network_support
 
 #### Branch whitelists and blacklists
 

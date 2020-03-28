@@ -200,6 +200,9 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # section of the same page.
         '/users/me/subscriptions/{stream_id}',
 
+        # Real-time-events endpoint
+        '/real-time',
+
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for fetching API keys
         '/fetch_api_key',
@@ -420,6 +423,17 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         AssertionError. """
         openapi_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, object]]]]
         for element in openapi_parameters:
+            if function.__name__ == 'send_notification_backend':
+                if element['name'] == 'to':
+                    '''
+                    We want users to send ints here, but the mypy
+                    types for send_notification_backend are still
+                    str, because we need backward compatible
+                    support for old versions of mobile that still
+                    send emails for typing requests.
+                    '''
+                    continue
+
             name = element["name"]  # type: str
             schema = element["schema"]
             if 'oneOf' in schema:
@@ -862,12 +876,12 @@ class TestCurlExampleGeneration(ZulipTestCase):
             'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             "    -d 'anchor=42' \\",
-            "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",
             '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
             "    -d 'client_gravatar=true' \\",
-            "    -d 'apply_markdown=false'",
+            "    -d 'apply_markdown=false' \\",
+            "    -d 'use_first_unread_anchor=true'",
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
@@ -930,10 +944,10 @@ class TestCurlExampleGeneration(ZulipTestCase):
             'curl -sSX GET -G http://localhost:9991/api/v1/messages \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             "    -d 'anchor=42' \\",
-            "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",
-            '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\'',
+            '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
+            "    -d 'use_first_unread_anchor=true'",
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)

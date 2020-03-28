@@ -48,7 +48,7 @@ realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
 # that map old ids to new ids.  We use this in
 # re_map_foreign_keys and other places.
 #
-# We explicity initialize ID_MAP with the tables that support
+# We explicitly initialize ID_MAP with the tables that support
 # id re-mapping.
 #
 # Code reviewers: give these tables extra scrutiny, as we need to
@@ -513,6 +513,10 @@ def remove_denormalized_recipient_column_from_data(data: TableData) -> None:
         if 'recipient' in user_profile_dict:
             del user_profile_dict['recipient']
 
+    for huddle_dict in data['zerver_huddle']:
+        if 'recipient' in huddle_dict:
+            del huddle_dict['recipient']
+
 def get_db_table(model_class: Any) -> str:
     """E.g. (RealmDomain -> 'zerver_realmdomain')"""
     return model_class._meta.db_table
@@ -599,7 +603,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
 
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename) as records_file:
-        records = ujson.loads(records_file.read())  # type: List[Dict[str, Any]]
+        records = ujson.load(records_file)  # type: List[Dict[str, Any]]
     timestamp = datetime_to_timestamp(timezone_now())
 
     re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
@@ -914,6 +918,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     if 'zerver_huddle' in data:
         process_huddle_hash(data, 'zerver_huddle')
         bulk_import_model(data, Huddle)
+        for huddle in Huddle.objects.filter(recipient_id=None):
+            recipient = Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle.id)
+            huddle.recipient = recipient
+            huddle.save(update_fields=["recipient"])
 
     if 'zerver_userhotspot' in data:
         fix_datetime_fields(data, 'zerver_userhotspot')

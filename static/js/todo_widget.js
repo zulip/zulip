@@ -28,11 +28,12 @@ exports.task_data_holder = function () {
 
     self.handle = {
         new_task: {
-            outbound: function (task) {
+            outbound: function (task, desc) {
                 const event = {
                     type: 'new_task',
                     key: my_idx,
                     task: task,
+                    desc: desc,
                     completed: false,
                 };
                 my_idx += 1;
@@ -46,10 +47,12 @@ exports.task_data_holder = function () {
             inbound: function (sender_id, data) {
                 const idx = data.key;
                 const task = data.task;
+                const desc = data.desc;
                 const completed = data.completed;
 
                 const task_data = {
                     task: task,
+                    desc: desc,
                     user_id: sender_id,
                     key: idx,
                     completed: completed,
@@ -126,12 +129,14 @@ exports.activate = function (opts) {
             e.stopPropagation();
             elem.find(".widget-error").text('');
             const task = elem.find("input.add-task").val().trim();
+            const desc = elem.find("input.add-desc").val().trim();
 
             if (task === '') {
                 return;
             }
 
             elem.find(".add-task").val('').focus();
+            elem.find(".add-desc").val('').focus();
 
             const task_exists = task_data.check_task.task_exists(task);
             if (task_exists) {
@@ -139,7 +144,7 @@ exports.activate = function (opts) {
                 return;
             }
 
-            const data = task_data.handle.new_task.outbound(task);
+            const data = task_data.handle.new_task.outbound(task, desc);
             callback(data);
         });
     }

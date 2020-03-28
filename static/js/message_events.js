@@ -166,7 +166,10 @@ exports.update_messages = function update_messages(events) {
                 if (selection_changed_topic) {
                     if (current_filter && stream_name) {
                         if (current_filter.has_topic(stream_name, orig_topic)) {
-                            const new_filter = current_filter.filter_with_new_topic(new_topic);
+                            const new_filter = current_filter.filter_with_new_params({
+                                operator: 'topic',
+                                operand: new_topic,
+                            });
                             const operators = new_filter.operators();
                             const opts = {
                                 trigger: 'topic change',

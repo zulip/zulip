@@ -3,8 +3,8 @@
 {!admin-only.md!}
 
 By default, any user can find and view the email address of any other
-user. Organization administrators can restrict access so that only admins
-can view other users' email addresses.
+user.  Organization administrators can restrict access so that only
+admins (or nobody) can view other users' email addresses.
 
 ### Restrict visibility of email addresses
 

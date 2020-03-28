@@ -48,18 +48,20 @@ from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
 from zerver.decorator import client_is_exempt_from_rate_limiting
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
-    do_update_user_custom_profile_data_if_changed, validate_email_for_realm
+    do_update_user_custom_profile_data_if_changed
 from zerver.lib.avatar import is_avatar_new, avatar_url
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
+from zerver.lib.email_validation import email_allowed_for_realm, \
+    validate_email_not_already_in_realm
 from zerver.lib.mobile_auth_otp import is_valid_otp
-from zerver.lib.rate_limiter import clear_history, rate_limit_request_by_entity, RateLimitedObject
+from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
 from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
-    email_allowed_for_realm, get_user_profile_by_id, remote_user_to_email, \
+    get_user_profile_by_id, remote_user_to_email, \
     email_to_username, get_realm, get_user_by_delivery_email, supported_auth_backends
 
 redis_client = get_redis_client()
@@ -178,19 +180,16 @@ rate_limiting_rules = settings.RATE_LIMITING_RULES['authenticate_by_username']
 class RateLimitedAuthenticationByUsername(RateLimitedObject):
     def __init__(self, username: str) -> None:
         self.username = username
+        super().__init__()
 
-    def __str__(self) -> str:
-        return "Username: {}".format(self.username)
-
-    def key_fragment(self) -> str:
-        return "{}:{}".format(type(self), self.username)
+    def key(self) -> str:
+        return "{}:{}".format(type(self).__name__, self.username)
 
     def rules(self) -> List[Tuple[int, int]]:
         return rate_limiting_rules
 
 def rate_limit_authentication_by_username(request: HttpRequest, username: str) -> None:
-    entity = RateLimitedAuthenticationByUsername(username)
-    rate_limit_request_by_entity(request, entity)
+    RateLimitedAuthenticationByUsername(username).rate_limit_request(request)
 
 def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
     return hasattr(request, '_ratelimit') and 'RateLimitedAuthenticationByUsername' in request._ratelimit
@@ -222,7 +221,7 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
     result = auth_func(*args, **kwargs)
     if result is not None:
         # Authentication succeeded, clear the rate-limiting record.
-        clear_history(RateLimitedAuthenticationByUsername(username))
+        RateLimitedAuthenticationByUsername(username).clear_history()
 
     return result
 
@@ -672,11 +671,11 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         # Makes sure that email domain hasn't be restricted for this
         # realm.  The main thing here is email_allowed_for_realm; but
-        # we also call validate_email_for_realm just for consistency,
+        # we also call validate_email_not_already_in_realm just for consistency,
         # even though its checks were already done above.
         try:
             email_allowed_for_realm(username, self._realm)
-            validate_email_for_realm(self._realm, username)
+            validate_email_not_already_in_realm(self._realm, username)
         except DomainNotAllowedForRealmError:
             raise ZulipLDAPException("This email domain isn't allowed in this organization.")
         except (DisposableEmailError, EmailContainsPlusError):
@@ -944,7 +943,7 @@ def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
     return HttpResponseRedirect(redirect_url)
 
 def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
-                                 *args: Any, **kwargs: Any) -> Optional[UserProfile]:
+                                 *args: Any, **kwargs: Any) -> Union[HttpResponse, Optional[UserProfile]]:
     """Responsible for doing the Zulip-account lookup and validation parts
     of the Zulip Social auth pipeline (similar to the authenticate()
     methods in most other auth backends in this file).
@@ -990,17 +989,21 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
 
         if not chosen_email:
             avatars = {}  # Dict[str, str]
+            existing_account_emails = []
             for email in verified_emails:
                 existing_account = common_get_active_user(email, realm, {})
                 if existing_account is not None:
+                    existing_account_emails.append(email)
                     avatars[email] = avatar_url(existing_account)
-
-            return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
-                'primary_email': verified_emails[0],
-                'verified_non_primary_emails': verified_emails[1:],
-                'backend': 'github',
-                'avatar_urls': avatars,
-            })
+            if (len(existing_account_emails) != 1 or backend.strategy.session_get('is_signup') == '1'):
+                return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
+                    'primary_email': verified_emails[0],
+                    'verified_non_primary_emails': verified_emails[1:],
+                    'backend': 'github',
+                    'avatar_urls': avatars,
+                })
+            else:
+                chosen_email = existing_account_emails[0]
 
         try:
             validate_email(chosen_email)
@@ -1087,7 +1090,7 @@ def social_auth_finish(backend: Any,
                        details: Dict[str, Any],
                        response: HttpResponse,
                        *args: Any,
-                       **kwargs: Any) -> Optional[UserProfile]:
+                       **kwargs: Any) -> Optional[HttpResponse]:
     """Given the determination in social_auth_associate_user for whether
     the user should be authenticated, this takes care of actually
     logging in the user (if appropriate) and redirecting the browser
@@ -1111,8 +1114,11 @@ def social_auth_finish(backend: Any,
     email_not_associated = return_data.get("email_not_associated")
 
     if invalid_realm:
-        from zerver.views.auth import redirect_to_subdomain_login_url
-        return redirect_to_subdomain_login_url()
+        # User has passed an invalid subdomain param - this shouldn't happen in the normal flow,
+        # unless the user manually edits the param. In any case, it's most appropriate to just take
+        # them to find_account, as there isn't even an appropriate subdomain to take them to the login
+        # form on.
+        return HttpResponseRedirect(reverse('zerver.views.registration.find_account'))
 
     if inactive_user:
         return redirect_deactivated_user_to_login()
@@ -1485,7 +1491,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                     # If an attacker managed to eavesdrop on the RelayState token,
                     # they may pass it here to the endpoint with an invalid SAMLResponse.
                     # We remove these potentially sensitive parameters that we have set in the session
-                    # ealier, to avoid leaking their values.
+                    # earlier, to avoid leaking their values.
                     self.strategy.session_set(param, None)
 
         return result

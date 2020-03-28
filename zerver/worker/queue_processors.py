@@ -16,7 +16,7 @@ from django.db import connection
 from zerver.models import \
     get_client, get_system_bot, PreregistrationUser, \
     get_user_profile_by_id, Message, Realm, UserMessage, UserProfile, \
-    Client
+    Client, flush_per_request_caches
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.queue import SimpleQueueClient, retry_event
@@ -125,13 +125,19 @@ class QueueProcessingWorker(ABC):
     def consume(self, data: Dict[str, Any]) -> None:
         pass
 
-    def consume_wrapper(self, data: Dict[str, Any]) -> None:
+    def do_consume(self, consume_func: Callable[[List[Dict[str, Any]]], None],
+                   events: List[Dict[str, Any]]) -> None:
         try:
-            self.consume(data)
+            consume_func(events)
         except Exception:
-            self._handle_consume_exception([data])
+            self._handle_consume_exception(events)
         finally:
+            flush_per_request_caches()
             reset_queries()
+
+    def consume_wrapper(self, data: Dict[str, Any]) -> None:
+        consume_func = lambda events: self.consume(events[0])
+        self.do_consume(consume_func, [data])
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]]) -> None:
         self._log_problem()
@@ -166,13 +172,7 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
     def start(self) -> None:  # nocoverage
         while True:
             events = self.q.drain_queue(self.queue_name, json=True)
-            try:
-                self.consume_batch(events)
-            except Exception:
-                self._handle_consume_exception(events)
-            finally:
-                reset_queries()
-
+            self.do_consume(self.consume_batch, events)
             # To avoid spinning the CPU, we go to sleep if there's
             # nothing in the queue, or for certain queues with
             # sleep_only_if_empty=False, unconditionally.
@@ -241,7 +241,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 "zerver/emails/invitation_reminder",
                 referrer.realm,
                 to_emails=[invitee.email],
-                from_address=FromAddress.tokenized_no_reply_address(),
+                from_address=FromAddress.tokenized_no_reply_placeholder,
                 language=referrer.realm.default_language,
                 context=context,
                 delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2))

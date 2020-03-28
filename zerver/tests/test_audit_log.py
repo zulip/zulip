@@ -78,15 +78,15 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_email(self) -> None:
         now = timezone_now()
         user = self.example_user('hamlet')
-        email = 'test@example.com'
-        do_change_user_delivery_email(user, email)
+        new_email = 'test@example.com'
+        do_change_user_delivery_email(user, new_email)
         self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_EMAIL_CHANGED,
                                                       event_time__gte=now).count(), 1)
-        self.assertEqual(email, user.email)
+        self.assertEqual(new_email, user.delivery_email)
 
         # Test the RealmAuditLog stringification
         audit_entry = RealmAuditLog.objects.get(event_type=RealmAuditLog.USER_EMAIL_CHANGED, event_time__gte=now)
-        self.assertTrue(str(audit_entry).startswith("<RealmAuditLog: <UserProfile: test@example.com %s> %s " % (user.realm, RealmAuditLog.USER_EMAIL_CHANGED)))
+        self.assertTrue(str(audit_entry).startswith("<RealmAuditLog: <UserProfile: %s %s> %s " % (user.email, user.realm, RealmAuditLog.USER_EMAIL_CHANGED)))
 
     def test_change_avatar_source(self) -> None:
         now = timezone_now()
@@ -100,7 +100,7 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_full_name(self) -> None:
         start = timezone_now()
         new_name = 'George Hamletovich'
-        self.login(self.example_email("iago"))
+        self.login('iago')
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/{}'.format(self.example_user("hamlet").id), req)
         self.assertTrue(result.status_code == 200)

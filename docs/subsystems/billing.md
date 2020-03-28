@@ -17,8 +17,7 @@ Stripe makes pretty regular updates to their API. The process for upgrading
 our code is:
 * Go to <https://dashboard.stripe.com/developers> in your Stripe account.
 * Upgrade the API version.
-* Set `GENERATE_STRIPE_FIXTURES = True` in `test_stripe.py`.
-* Run `tools/test-backend corporate/tests/test_stripe.py`
+* Run `tools/test-backend --generate-stripe-fixtures`
 * Fix any failing tests, and manually look through `git diff` to understand
   the changes.
 * If there are no material changes, commit the diff, and open a PR.

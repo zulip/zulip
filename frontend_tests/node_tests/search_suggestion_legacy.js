@@ -5,7 +5,10 @@ set_global('message_store', {
     user_ids: () => [],
 });
 
-set_global('i18n', global.stub_i18n);
+
+const settings_config = zrequire('settings_config');
+page_params.realm_email_address_visibility =
+    settings_config.email_address_visibility_values.admins_only.code;
 
 zrequire('typeahead_helper');
 set_global('Handlebars', global.make_handlebars());
@@ -35,9 +38,8 @@ function init() {
 init();
 
 set_global('narrow', {});
-set_global('settings_org', {
-    show_email: () => true,
-});
+
+page_params.is_admin = true;
 
 topic_data.reset();
 
