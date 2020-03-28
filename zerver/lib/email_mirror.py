@@ -11,8 +11,7 @@ from django.conf import settings
 from django.utils.timezone import timedelta, now as timezone_now
 
 from zerver.lib.actions import internal_send_private_message, \
-    internal_send_stream_message, internal_send_huddle_message, \
-    truncate_body, truncate_topic
+    internal_send_stream_message, internal_send_huddle_message
 from zerver.lib.email_mirror_helpers import decode_email_address, \
     get_email_gateway_message_string_from_address, ZulipEmailForwardError
 from zerver.lib.email_notifications import convert_html_to_markdown
@@ -22,6 +21,7 @@ from zerver.lib.upload import upload_message_file
 from zerver.lib.send_email import FromAddress
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.exceptions import RateLimited
+from zerver.lib.message import truncate_body, truncate_topic
 from zerver.models import Stream, Recipient, MissedMessageEmailAddress, \
     get_display_recipient, \
     Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm

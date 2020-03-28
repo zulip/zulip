@@ -45,6 +45,8 @@ from zerver.lib.message import (
     MessageDict,
     render_markdown,
     update_first_visible_message_id,
+    truncate_body,
+    truncate_topic,
 )
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_data
@@ -95,7 +97,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, MultiuseInvite, ScheduledMessage, UserStatus, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, \
-    ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
+    ScheduledEmail, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, \
     get_user_profile_by_id, PreregistrationUser, \
     email_to_username, \
@@ -4209,18 +4211,6 @@ def do_update_message_flags(user_profile: UserProfile,
 
     statsd.incr("flags.%s.%s" % (flag, operation), count)
     return count
-
-
-def truncate_content(content: str, max_length: int, truncation_message: str) -> str:
-    if len(content) > max_length:
-        content = content[:max_length - len(truncation_message)] + truncation_message
-    return content
-
-def truncate_body(body: str) -> str:
-    return truncate_content(body, MAX_MESSAGE_LENGTH, "\n[message truncated]")
-
-def truncate_topic(topic: str) -> str:
-    return truncate_content(topic, MAX_TOPIC_NAME_LENGTH, "...")
 
 MessageUpdateUserInfoResult = TypedDict('MessageUpdateUserInfoResult', {
     'message_user_ids': Set[int],
