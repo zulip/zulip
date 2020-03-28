@@ -620,20 +620,21 @@ input[type=checkbox].inline-block {
 }
 
 .alert-notification {
-    &:not(:empty) {
-        display: inline-block !important;
-        vertical-align: top;
-        height: auto !important;
-        width: auto !important;
+    display: inline-block !important;
+    vertical-align: top;
+    height: auto !important;
+    width: auto !important;
 
-        background-color: transparent;
-        border-radius: 4px;
-        margin-top: 14px;
-        margin-left: 10px;
+    background-color: transparent;
+    border-radius: 4px;
+    margin-top: 14px;
+    margin-left: 10px;
+    color: hsl(156, 30%, 50%);
+    padding: 3px 10px;
+    font-size: 15px;
+
+    &:not(:empty) {
         border: 1px solid hsl(156, 30%, 50%);
-        color: hsl(156, 30%, 50%);
-        padding: 3px 10px;
-        font-size: 15px;
     }
 
     .alert-error {
