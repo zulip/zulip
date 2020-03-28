@@ -38,6 +38,10 @@ $alert-error-red: hsl(0, 80%, 40%);
     &.stream_create_info {
         margin: 10px 10px 0px 10px;
     }
+
+    .bankruptcy_unread_count {
+        font-weight: 600;
+    }
 }
 
 /* alert box component changes */
