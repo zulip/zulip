@@ -1,3 +1,4 @@
+const util = require("./util");
 const render_compose_all_everyone = require("../templates/compose_all_everyone.hbs");
 const render_compose_announce = require("../templates/compose_announce.hbs");
 const render_compose_invite_users = require("../templates/compose_invite_users.hbs");
@@ -16,6 +17,8 @@ const render_compose_private_stream_alert = require("../templates/compose_privat
 
 let user_acknowledged_all_everyone;
 let user_acknowledged_announce;
+let wildcard_mention;
+let uppy;
 
 exports.all_everyone_warn_threshold = 15;
 exports.announce_warn_threshold = 60;
@@ -32,7 +35,8 @@ function make_uploads_relative(content) {
 function show_all_everyone_warnings() {
     const stream_count = stream_data.get_subscriber_count(compose_state.stream_name()) || 0;
 
-    const all_everyone_template = render_compose_all_everyone({count: stream_count});
+    const all_everyone_template = render_compose_all_everyone({count: stream_count,
+                                                               mention: wildcard_mention});
     const error_area_all_everyone = $("#compose-all-everyone");
 
     // only show one error for any number of @all or @everyone mentions
@@ -144,11 +148,7 @@ function update_fade() {
 
 exports.abort_xhr = function () {
     $("#compose-send-button").prop("disabled", false);
-    const xhr = $("#compose").data("filedrop_xhr");
-    if (xhr !== undefined) {
-        xhr.abort();
-        $("#compose").removeData("filedrop_xhr");
-    }
+    uppy.cancelAll();
 };
 
 exports.empty_topic_placeholder = function () {
@@ -172,7 +172,7 @@ function create_message_object() {
         queue_id: page_params.queue_id,
         stream: '',
     };
-    util.set_message_topic(message, '');
+    message.topic = '';
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
@@ -193,13 +193,21 @@ function create_message_object() {
 
     } else {
         const stream_name = compose_state.stream_name();
-        message.to = stream_name;
         message.stream = stream_name;
         const sub = stream_data.get_sub(stream_name);
         if (sub) {
             message.stream_id = sub.stream_id;
+            message.to = sub.stream_id;
+        } else {
+            // We should be validating streams in calling code.  We'll
+            // try to fall back to stream_name here just in case the
+            // user started composing to the old stream name and
+            // manually entered the stream name, and it got past
+            // validation. We should try to kill this code off eventually.
+            blueslip.error('Trying to send message with bad stream name: ' + stream_name);
+            message.to = stream_name;
         }
-        util.set_message_topic(message, topic);
+        message.topic = topic;
     }
     return message;
 }
@@ -386,7 +394,9 @@ exports.update_email = function (user_id, new_email) {
 exports.get_invalid_recipient_emails = function () {
     const private_recipients = util.extract_pm_recipients(
         compose_state.private_message_recipient());
-    const invalid_recipients = _.reject(private_recipients, people.is_valid_email_for_compose);
+    const invalid_recipients = private_recipients.filter(
+        email => !people.is_valid_email_for_compose(email)
+    );
 
     return invalid_recipients;
 };
@@ -429,10 +439,10 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
 
 function validate_stream_message_mentions(stream_name) {
     const stream_count = stream_data.get_subscriber_count(stream_name) || 0;
+    wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
 
-    // check if @all or @everyone is in the message
-    if (util.is_all_or_everyone_mentioned(compose_state.message_content()) &&
-        stream_count > exports.all_everyone_warn_threshold) {
+    // check if wildcard_mention has any mention and henceforth execute the warning message.
+    if (wildcard_mention !== null && stream_count > exports.all_everyone_warn_threshold) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
@@ -475,11 +485,28 @@ function validate_stream_message_announce(stream_name) {
     return true;
 }
 
-function validate_stream_message_announcement_only(stream_name) {
-    // Only allow realm admins to post to announcement_only streams.
-    const is_announcement_only = stream_data.get_announcement_only(stream_name);
-    if (is_announcement_only && !page_params.is_admin) {
+function validate_stream_message_post_policy(stream_name) {
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    const stream_post_permission_type = stream_data.stream_post_policy_values;
+    const stream_post_policy = stream_data.get_stream_post_policy(stream_name);
+
+    if (stream_post_policy === stream_post_permission_type.admins.code) {
         compose_error(i18n.t("Only organization admins are allowed to post to this stream."));
+        return false;
+    }
+
+    const person = people.get_by_user_id(page_params.user_id);
+    const current_datetime = new Date(Date.now());
+    const person_date_joined = new Date(person.date_joined);
+    const days = new Date(current_datetime - person_date_joined).getDate();
+    let error_text;
+    if (stream_post_policy === stream_post_permission_type.non_new_members.code &&
+        days < page_params.realm_waiting_period_threshold) {
+        error_text = i18n.t("New members are not allowed to post to this stream.<br>Permission will be granted in __days__ days.", {days: days});
+        compose_error(error_text);
         return false;
     }
     return true;
@@ -535,14 +562,13 @@ function validate_stream_message() {
         }
     }
 
-    if (!validate_stream_message_announcement_only(stream_name)) {
+    if (!validate_stream_message_post_policy(stream_name)) {
         return false;
     }
 
     // If both `@all` is mentioned and it's in `#announce`, just validate
     // for `@all`. Users shouldn't have to hit "yes" more than once.
-    if (util.is_all_or_everyone_mentioned(compose_state.message_content()) &&
-        stream_name === "announce") {
+    if (wildcard_mention !== null && stream_name === "announce") {
         if (!exports.validate_stream_message_address_info(stream_name) ||
             !validate_stream_message_mentions(stream_name)) {
             return false;
@@ -565,7 +591,7 @@ function validate_private_message() {
     if (page_params.realm_private_message_policy === 2) {
         // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED
         const user_ids = compose_pm_pill.get_user_ids();
-        if (user_ids.length !== 1 || !people.get_person_from_user_id(user_ids[0]).is_bot) {
+        if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
             // Unless we're composing to a bot
             compose_error(i18n.t("Private messages are disabled in this organization."),
                           $("#private_message_recipient"));
@@ -659,10 +685,10 @@ exports.handle_keydown = function (event, textarea) {
             const position = textarea.caret();
             const txt = document.getElementById(textarea[0].id);
 
-            // Include selected text in between [] parantheses and insert '(url)'
+            // Include selected text in between [] parentheses and insert '(url)'
             // where "url" should be automatically selected.
             // Position of cursor depends on whether browser supports exec
-            // command or not. So set cursor position accrodingly.
+            // command or not. So set cursor position accordingly.
             if (range.length > 0) {
                 if (document.queryCommandEnabled('insertText')) {
                     txt.selectionStart = position - 4;
@@ -861,11 +887,11 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
         const error_area = $("#compose_invite_users");
         const existing_invites_area = $('#compose_invite_users .compose_invite_user');
 
-        const existing_invites = _.map($(existing_invites_area), function (user_row) {
+        const existing_invites = Array.from($(existing_invites_area), user_row => {
             return $(user_row).data('useremail');
         });
 
-        if (existing_invites.indexOf(email) === -1) {
+        if (!existing_invites.includes(email)) {
             const context = {
                 email: email,
                 name: mentioned.full_name,
@@ -1013,7 +1039,7 @@ exports.initialize = function () {
         e.preventDefault();
 
         let target_textarea;
-        // The data-message-id atribute is only present in the video
+        // The data-message-id attribute is only present in the video
         // call icon present in the message edit form.  If present,
         // the request is for the edit UI; otherwise, it's for the
         // compose box.
@@ -1062,11 +1088,9 @@ exports.initialize = function () {
         exports.clear_preview_area();
     });
 
-    $("#compose").filedrop(
-        upload.options({
-            mode: 'compose',
-        })
-    );
+    uppy = upload.setup_upload({
+        mode: "compose",
+    });
 
     $("#compose-textarea").focus(function () {
         const opts = {

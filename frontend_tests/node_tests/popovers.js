@@ -1,5 +1,4 @@
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 
 zrequire('hash_util');
 zrequire('narrow');
@@ -8,10 +7,8 @@ zrequire('people');
 zrequire('presence');
 zrequire('buddy_data');
 zrequire('user_status');
-zrequire('settings_org');
 zrequire('feature_flags');
 zrequire('message_edit');
-zrequire('util');
 
 const noop =  function () {};
 $.fn.popover = noop; // this will get wrapped by our code
@@ -78,8 +75,8 @@ const e = {
 
 function initialize_people() {
     people.init();
-    people.add_in_realm(me);
-    people.add_in_realm(alice);
+    people.add(me);
+    people.add(alice);
     people.initialize_current_user(me.user_id);
 }
 

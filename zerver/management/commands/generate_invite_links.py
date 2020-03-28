@@ -5,8 +5,8 @@ from django.core.management.base import CommandError
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import DomainNotAllowedForRealmError, PreregistrationUser, \
-    email_allowed_for_realm
+from zerver.models import DomainNotAllowedForRealmError, PreregistrationUser
+from zerver.lib.email_validation import email_allowed_for_realm
 
 
 class Command(ZulipBaseCommand):

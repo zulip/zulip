@@ -68,6 +68,7 @@ class ClientDescriptor:
                  client_type_name: str,
                  apply_markdown: bool=True,
                  client_gravatar: bool=True,
+                 slim_presence: bool=False,
                  all_public_streams: bool=False,
                  lifespan_secs: int=0,
                  narrow: Iterable[Sequence[str]]=[]) -> None:
@@ -84,6 +85,7 @@ class ClientDescriptor:
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
         self.client_gravatar = client_gravatar
+        self.slim_presence = slim_presence
         self.all_public_streams = all_public_streams
         self.client_type_name = client_type_name
         self._timeout_handle = None  # type: Any # TODO: should be return type of ioloop.call_later
@@ -108,6 +110,7 @@ class ClientDescriptor:
                     last_connection_time=self.last_connection_time,
                     apply_markdown=self.apply_markdown,
                     client_gravatar=self.client_gravatar,
+                    slim_presence=self.slim_presence,
                     all_public_streams=self.all_public_streams,
                     narrow=self.narrow,
                     client_type_name=self.client_type_name)
@@ -124,6 +127,9 @@ class ClientDescriptor:
             # Temporary migration for the addition of the client_gravatar field
             d['client_gravatar'] = False
 
+        if 'slim_presence' not in d:
+            d['slim_presence'] = False
+
         ret = cls(
             d['user_profile_id'],
             d['realm_id'],
@@ -132,6 +138,7 @@ class ClientDescriptor:
             d['client_type_name'],
             d['apply_markdown'],
             d['client_gravatar'],
+            d['slim_presence'],
             d['all_public_streams'],
             d['queue_timeout'],
             d.get('narrow', [])
@@ -143,12 +150,7 @@ class ClientDescriptor:
         self.current_handler_id = None
         self._timeout_handle = None
 
-    def add_event(self, event: Dict[str, Any]) -> None:
-        # Any dictionary passed into this function must be a unique
-        # dictionary (potentially a shallow copy of a shared data
-        # structure), since the event_queue data structures will
-        # mutate it to add the queue-specific unique `id` of that
-        # event to the outer event dictionary.
+    def add_event(self, event: Mapping[str, Any]) -> None:
         if self.current_handler_id is not None:
             handler = get_handler_by_id(self.current_handler_id)
             async_request_timer_restart(handler._request)
@@ -267,7 +269,14 @@ class EventQueue:
         ret.virtual_events = d.get("virtual_events", {})
         return ret
 
-    def push(self, event: Dict[str, Any]) -> None:
+    def push(self, orig_event: Mapping[str, Any]) -> None:
+        # By default, we make a shallow copy of the event dictionary
+        # to push into the target event queue; this allows the calling
+        # code to send the same "event" object to multiple queues.
+        # This behavior is important because the event_queue system is
+        # about to mutate the event dictionary, minimally to add the
+        # event_id attribute.
+        event = dict(orig_event)
         event['id'] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
@@ -451,19 +460,20 @@ def load_event_queues(port: int) -> None:
     global clients
     start = time.time()
 
-    # ujson chokes on bad input pretty easily.  We separate out the actual
-    # file reading from the loading so that we don't silently fail if we get
-    # bad input.
     try:
         with open(persistent_queue_filename(port), "r") as stored_queues:
-            json_data = stored_queues.read()
+            data = ujson.load(stored_queues)
+    except FileNotFoundError:
+        pass
+    except ValueError:
+        logging.exception("Tornado %d could not deserialize event queues" % (port,))
+    else:
         try:
-            clients = dict((qid, ClientDescriptor.from_dict(client))
-                           for (qid, client) in ujson.loads(json_data))
+            clients = {
+                qid: ClientDescriptor.from_dict(client) for (qid, client) in data
+            }
         except Exception:
             logging.exception("Tornado %d could not deserialize event queues" % (port,))
-    except (IOError, EOFError):
-        pass
 
     for client in clients.values():
         # Put code for migrations due to event queue data format changes here
@@ -479,7 +489,7 @@ def send_restart_events(immediate: bool=False) -> None:
         event['immediate'] = True
     for client in clients.values():
         if client.accepts_event(event):
-            client.add_event(event.copy())
+            client.add_event(event)
 
 def setup_event_queue(port: int) -> None:
     if not settings.TEST_SUITE:
@@ -570,7 +580,7 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
 # The following functions are called from Django
 
 def request_event_queue(user_profile: UserProfile, user_client: Client, apply_markdown: bool,
-                        client_gravatar: bool, queue_lifespan_secs: int,
+                        client_gravatar: bool, slim_presence: bool, queue_lifespan_secs: int,
                         event_types: Optional[Iterable[str]]=None,
                         all_public_streams: bool=False,
                         narrow: Iterable[Sequence[str]]=[]) -> Optional[str]:
@@ -579,6 +589,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
         req = {'dont_block': 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
                'client_gravatar': ujson.dumps(client_gravatar),
+               'slim_presence': ujson.dumps(slim_presence),
                'all_public_streams': ujson.dumps(all_public_streams),
                'client': 'internal',
                'user_profile_id': user_profile.id,
@@ -903,29 +914,43 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
                 sending_client.lower() == client.client_type_name.lower()):
             continue
 
-        # We don't need to create a new dict here, since the
-        # `user_event` was already constructed from scratch above.
         client.add_event(user_event)
+
+def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    if 'user_id' not in event:
+        # We only recently added `user_id` to presence data.
+        # Any old events in our queue can just be dropped,
+        # since presence events are pretty ephemeral in nature.
+        logging.warning('Dropping some obsolete presence events after upgrade.')
+
+    slim_event = dict(
+        type='presence',
+        user_id=event['user_id'],
+        server_timestamp=event['server_timestamp'],
+        presence=event['presence'],
+    )
+
+    legacy_event = dict(
+        type='presence',
+        user_id=event['user_id'],
+        email=event['email'],
+        server_timestamp=event['server_timestamp'],
+        presence=event['presence'],
+    )
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(event):
+                if client.slim_presence:
+                    client.add_event(slim_event)
+                else:
+                    client.add_event(legacy_event)
 
 def process_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
     for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):
-                client.add_event(dict(event))
-
-def process_userdata_event(event_template: Mapping[str, Any], users: Iterable[Mapping[str, Any]]) -> None:
-    for user_data in users:
-        user_profile_id = user_data['id']
-        user_event = dict(event_template)  # shallow copy, but deep enough for our needs
-        for key in user_data.keys():
-            if key != "id":
-                user_event[key] = user_data[key]
-
-        for client in get_client_descriptors_for_user(user_profile_id):
-            if client.accepts_event(user_event):
-                # We need to do another shallow copy, or we risk
-                # sending the same event to multiple clients.
-                client.add_event(dict(user_event))
+                client.add_event(event)
 
 def process_message_update_event(event_template: Mapping[str, Any],
                                  users: Iterable[Mapping[str, Any]]) -> None:
@@ -967,7 +992,7 @@ def process_message_update_event(event_template: Mapping[str, Any],
             if client.accepts_event(user_event):
                 # We need to do another shallow copy, or we risk
                 # sending the same event to multiple clients.
-                client.add_event(dict(user_event))
+                client.add_event(user_event)
 
 def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
                                                    message_id: int,
@@ -1039,12 +1064,20 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     event = notice['event']  # type: Mapping[str, Any]
     users = notice['users']  # type: Union[List[int], List[Mapping[str, Any]]]
     start_time = time.time()
+
     if event['type'] == "message":
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
     elif event['type'] == "update_message":
         process_message_update_event(event, cast(Iterable[Mapping[str, Any]], users))
-    elif event['type'] == "delete_message":
-        process_userdata_event(event, cast(Iterable[Mapping[str, Any]], users))
+    elif event['type'] == "delete_message" and isinstance(users[0], dict):
+        # do_delete_messages used to send events with users in dict format {"id": <int>}
+        # This block is here for compatibility with events in that format still in the queue
+        # at the time of upgrade.
+        # TODO: Remove this block in release >= 2.3.
+        user_ids = [user['id'] for user in cast(Iterable[Mapping[str, int]], users)]
+        process_event(event, user_ids)
+    elif event['type'] == "presence":
+        process_presence_event(event, cast(Iterable[int], users))
     else:
         process_event(event, cast(Iterable[int], users))
     logging.debug("Tornado: Event %s for %s users took %sms" % (

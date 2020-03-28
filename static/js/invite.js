@@ -123,20 +123,20 @@ function generate_multiuse_invite() {
 }
 
 exports.get_invite_streams = function () {
-    const streams = _.filter(stream_data.get_invite_stream_data(), function (stream) {
-        const is_notifications_stream = stream.name === page_params.notifications_stream;
-        // You can't actually elect to invite someone to the
-        // notifications stream. We won't even show it as a choice unless
-        // it's the only stream you have, or if you've made it private.
-        return stream_data.subscribed_streams().length === 1 ||
-            !is_notifications_stream ||
-            is_notifications_stream && stream.is_invite_only;
-    });
+    const streams = stream_data.get_invite_stream_data();
+
+    function compare_streams(a, b) {
+        return a.name.localeCompare(b.name);
+    }
+    streams.sort(compare_streams);
     return streams;
 };
 
 function update_subscription_checkboxes() {
-    const data = {streams: exports.get_invite_streams()};
+    const data = {
+        streams: exports.get_invite_streams(),
+        notifications_stream: page_params.notifications_stream,
+    };
     const html = render_invite_subscription(data);
     $('#streams_to_add').html(html);
 }

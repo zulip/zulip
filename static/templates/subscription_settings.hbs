@@ -15,7 +15,7 @@
             <div class="large-icon hash" style="color: {{color}}"></div>
             {{/if}}
             <div class="stream-name">
-                <span class="stream-name-editable editable-section">{{name}}</span>
+                <span title="{{name}}" class="stream-name-editable editable-section" >{{name}}</span>
                 {{#if can_change_name_description}}
                 <span class="editable" data-make-editable=".stream-name-editable"></span>
                 <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
@@ -41,7 +41,8 @@
         </div>
         <div class="subscription-type">
             <div class="subscription-type-text">
-                {{> subscription_type}}
+                {{> subscription_type
+                  stream_post_policy_values=../stream_post_policy_values}}
             </div>
             <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>
@@ -53,13 +54,12 @@
                     <li>
                         {{> stream_settings_checkbox
                           setting_name=name
-                          prefix="sub_"
-                          suffix="_setting"
-                          is_checked=value
+                          is_checked=is_checked
                           is_muted=(lookup ../sub "is_muted")
                           stream_id=(lookup ../sub "stream_id")
                           notification_setting=is_notification_setting
-                          realm_setting_disabled=(lookup ../realm_settings name)
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
                           label=label}}
                     </li>
                     {{/each}}

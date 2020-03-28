@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
@@ -50,6 +50,7 @@ FAKE_LDAP_NUM_USERS = 8
 SOCIAL_AUTH_GITHUB_KEY = get_secret('social_auth_github_key', development_only=True)
 SOCIAL_AUTH_GITHUB_ORG_NAME = None  # type: Optional[str]
 SOCIAL_AUTH_GITHUB_TEAM_ID = None  # type: Optional[str]
+SOCIAL_AUTH_GITLAB_KEY = get_secret('social_auth_gitlab_key', development_only=True)
 SOCIAL_AUTH_SUBDOMAIN = None  # type: Optional[str]
 SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret('azure_oauth2_secret')
 SOCIAL_AUTH_GOOGLE_KEY = get_secret('social_auth_google_key', development_only=True)
@@ -61,6 +62,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = None  # type: Optional[Dict[str, Dict[str, str]]]
 SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = None  # type: Optional[Dict[str, str]]
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT = None  # type: Optional[Dict[str, str]]
 SOCIAL_AUTH_SAML_ENABLED_IDPS = {}  # type: Dict[str, Dict[str, str]]
+SOCIAL_AUTH_SAML_SECURITY_CONFIG = {}  # type: Dict[str, Any]
 # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
 GOOGLE_OAUTH2_CLIENT_ID = None  # type: Optional[str]
 
@@ -94,10 +96,6 @@ MAX_FILE_UPLOAD_SIZE = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL = 'https://meet.jit.si/'
-
-# Feedback bot settings
-ENABLE_FEEDBACK = PRODUCTION
-FEEDBACK_EMAIL = None  # type: Optional[str]
 
 # Max state storage per user
 # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
@@ -138,6 +136,7 @@ PUSH_NOTIFICATION_BOUNCER_URL = None  # type: Optional[str]
 PUSH_NOTIFICATION_REDACT_CONTENT = False
 SUBMIT_USAGE_STATISTICS = True
 RATE_LIMITING = True
+RATE_LIMITING_AUTHENTICATE = True
 SEND_LOGIN_EMAILS = True
 EMBEDDED_BOTS_ENABLED = False
 
@@ -177,12 +176,6 @@ ERROR_BOT = None  # type: Optional[str]
 # sending tests.
 NAGIOS_STAGING_SEND_BOT = None  # type: Optional[str]
 NAGIOS_STAGING_RECEIVE_BOT = None  # type: Optional[str]
-# Feedback bot, messages sent to it are by default emailed to
-# FEEDBACK_EMAIL (see above), but can be sent to a stream,
-# depending on configuration.
-FEEDBACK_BOT = 'feedback@zulip.com'
-FEEDBACK_BOT_NAME = 'Zulip Feedback Bot'
-FEEDBACK_STREAM = None  # type: Optional[str]
 # SYSTEM_BOT_REALM would be a constant always set to 'zulip',
 # except that it isn't that on zulipchat.com.  We will likely do a
 # migration and eliminate this parameter in the future.
@@ -320,7 +313,7 @@ STATSD_HOST = ''
 # Configuration for JWT auth.
 JWT_AUTH_KEYS = {}  # type: Dict[str, str]
 
-# https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL
+# https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.
 SERVER_EMAIL = ZULIP_ADMINISTRATOR
 # Django setting for who receives error emails.
@@ -342,6 +335,10 @@ CUSTOM_LOGO_URL = None  # type: Optional[str]
 # Random salt used when deterministically generating passwords in
 # development.
 INITIAL_PASSWORD_SALT = None  # type: Optional[str]
+
+# Settings configuring the special instrumention of the send_event
+# code path used in generating API documentation for /events.
+LOG_API_EVENT_TYPES = False
 
 # Used to control whether certain management commands are run on
 # the server.

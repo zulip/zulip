@@ -14,28 +14,16 @@ function failed_listing_invites(xhr) {
     ui_report.error(i18n.t("Error listing invites"), xhr, $("#invites-field-status"));
 }
 
-exports.invited_as_values = {
-    member: {
-        value: 1,
-        description: i18n.t("Member"),
-    },
-    admin_user: {
-        value: 2,
-        description: i18n.t("Organization administrator"),
-    },
-    guest_user: {
-        value: 3,
-        description: i18n.t("Guest"),
-    },
-};
+exports.invited_as_values = new Map([
+    [1, i18n.t("Member")],
+    [2, i18n.t("Organization administrator")],
+    [3, i18n.t("Guest")],
+]);
 
 function add_invited_as_text(invites) {
-    invites.forEach(function (data) {
-        const invited_as_type = _.findKey(exports.invited_as_values, function (elem) {
-            return elem.value === data.invited_as;
-        });
-        data.invited_as_text = exports.invited_as_values[invited_as_type].description;
-    });
+    for (const data of invites) {
+        data.invited_as_text = exports.invited_as_values.get(data.invited_as);
+    }
 }
 
 
@@ -64,11 +52,11 @@ function populate_invites(invites_data) {
             filter: {
                 element: invites_table.closest(".settings-section").find(".search"),
                 predicate: function (item, value) {
-                    const referrer_email_matched = item.ref.toLowerCase().indexOf(value) >= 0;
+                    const referrer_email_matched = item.ref.toLowerCase().includes(value);
                     if (item.is_multiuse) {
                         return referrer_email_matched;
                     }
-                    const invitee_email_matched = item.email.toLowerCase().indexOf(value) >= 0;
+                    const invitee_email_matched = item.email.toLowerCase().includes(value);
                     return referrer_email_matched || invitee_email_matched;
                 },
             },

@@ -3,8 +3,7 @@ import logging
 import time
 import traceback
 from typing import Any, AnyStr, Dict, \
-    Iterable, List, MutableMapping, Optional, \
-    Union
+    Iterable, List, MutableMapping, Optional
 
 from django.conf import settings
 from django.contrib.sessions.backends.base import UpdateError
@@ -12,10 +11,11 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.exceptions import DisallowedHost, SuspiciousOperation
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
+from django.middleware.common import CommonMiddleware
 from django.shortcuts import render
 from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.http import cookie_date
+from django.utils.http import http_date
 from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 
@@ -26,6 +26,7 @@ from zerver.lib.db import reset_queries
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.response import json_error, json_response_from_error
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd
@@ -104,8 +105,9 @@ statsd_blacklisted_requests = [
     'upload_file', 'realm_activity', 'user_activity'
 ]
 
-def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str, email: str,
-                   client_name: str, status_code: int=200, error_content: Optional[AnyStr]=None,
+def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str,
+                   requestor_for_logs: str, client_name: str, status_code: int=200,
+                   error_content: Optional[AnyStr]=None,
                    error_content_iter: Optional[Iterable[AnyStr]]=None) -> None:
     assert error_content is None or error_content_iter is None
     if error_content is not None:
@@ -198,7 +200,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         extra_request_data = " %s" % (log_data['extra'],)
     else:
         extra_request_data = ""
-    logger_client = "(%s via %s)" % (email, client_name)
+    logger_client = "(%s via %s)" % (requestor_for_logs, client_name)
     logger_timing = ('%5s%s%s%s%s%s %s' %
                      (format_timedelta(time_delta), optional_orig_delta,
                       remote_cache_output, bugdown_output,
@@ -213,7 +215,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
 
     if (is_slow_query(time_delta, path)):
         queue_json_publish("slow_queries", dict(
-            query="%s (%s)" % (logger_line, email)))
+            query="%s (%s)" % (logger_line, requestor_for_logs)))
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
@@ -232,7 +234,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
             error_data = repr(b''.join(error_content_list))
         if len(error_data) > 200:
             error_data = u"[content more than 200 characters]"
-        logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, email))
+        logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, requestor_for_logs))
 
 class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
@@ -240,11 +242,27 @@ class LogRequests(MiddlewareMixin):
     # method here too
     def process_request(self, request: HttpRequest) -> None:
         maybe_tracemalloc_listen()
+
+        if hasattr(request, "_log_data"):
+            # Sanity check to ensure this is being called from the
+            # Tornado code path that returns responses asynchronously.
+            assert getattr(request, "saved_response", False)
+
+            # Avoid re-initializing request._log_data if it's already there.
+            return
+
         request._log_data = dict()
         record_request_start_data(request._log_data)
 
     def process_view(self, request: HttpRequest, view_func: ViewFuncT,
                      args: List[str], kwargs: Dict[str, Any]) -> None:
+        if hasattr(request, "saved_response"):
+            # The below logging adjustments are unnecessary (because
+            # we've already imported everything) and incorrect
+            # (because they'll overwrite data from pre-long-poll
+            # request processing) when returning a saved response.
+            return
+
         # process_request was already run; we save the initialization
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
@@ -256,16 +274,25 @@ class LogRequests(MiddlewareMixin):
 
     def process_response(self, request: HttpRequest,
                          response: StreamingHttpResponse) -> StreamingHttpResponse:
+        if getattr(response, "asynchronous", False):
+            # This special Tornado "asynchronous" response is
+            # discarded after going through this code path as Tornado
+            # intends to block, so we stop here to avoid unnecessary work.
+            return response
+
         # The reverse proxy might have sent us the real external IP
         remote_ip = request.META.get('HTTP_X_REAL_IP')
         if remote_ip is None:
             remote_ip = request.META['REMOTE_ADDR']
 
-        # Get the requestor's email address and client, if available.
+        # Get the requestor's identifier and client, if available.
         try:
-            email = request._email
+            requestor_for_logs = request._requestor_for_logs
         except Exception:
-            email = "unauth"
+            if hasattr(request, 'user') and hasattr(request.user, 'format_requestor_for_logs'):
+                requestor_for_logs = request.user.format_requestor_for_logs()
+            else:
+                requestor_for_logs = "unauth@%s" % (get_subdomain(request) or 'root',)
         try:
             client = request.client.name
         except Exception:
@@ -279,7 +306,7 @@ class LogRequests(MiddlewareMixin):
             content_iter = None
 
         write_log_line(request._log_data, request.path, request.method,
-                       remote_ip, email, client, status_code=response.status_code,
+                       remote_ip, requestor_for_logs, client, status_code=response.status_code,
                        error_content=content, error_content_iter=content_iter)
         return response
 
@@ -322,36 +349,43 @@ def csrf_failure(request: HttpRequest, reason: str="") -> HttpResponse:
         return html_csrf_failure(request, reason)
 
 class RateLimitMiddleware(MiddlewareMixin):
+    def set_response_headers(self, response: HttpResponse,
+                             rate_limit_results: List[RateLimitResult]) -> None:
+        # The limit on the action that was requested is the minimum of the limits that get applied:
+        limit = min([result.entity.max_api_calls() for result in rate_limit_results])
+        response['X-RateLimit-Limit'] = str(limit)
+        # Same principle applies to remaining api calls:
+        if all(result.remaining for result in rate_limit_results):
+            remaining_api_calls = min([result.remaining for result in rate_limit_results])
+            response['X-RateLimit-Remaining'] = str(remaining_api_calls)
+        else:
+            response['X-RateLimit-Remaining'] = str(0)
+
+        # The full reset time is the maximum of the reset times for the limits that get applied:
+        reset_time = time.time() + max([result.secs_to_freedom for result in rate_limit_results])
+        response['X-RateLimit-Reset'] = str(int(reset_time))
+
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         if not settings.RATE_LIMITING:
             return response
 
-        from zerver.lib.rate_limiter import max_api_calls, RateLimitedUser
         # Add X-RateLimit-*** headers
         if hasattr(request, '_ratelimit'):
-            # Right now, the only kind of limiting requests is user-based.
-            ratelimit_user_results = request._ratelimit['RateLimitedUser']
-            entity = RateLimitedUser(request.user)
-            response['X-RateLimit-Limit'] = str(max_api_calls(entity))
-            response['X-RateLimit-Reset'] = str(int(time.time() + ratelimit_user_results['secs_to_freedom']))
-            if 'remaining' in ratelimit_user_results:
-                response['X-RateLimit-Remaining'] = str(ratelimit_user_results['remaining'])
+            rate_limit_results = list(request._ratelimit.values())
+            self.set_response_headers(response, rate_limit_results)
+
         return response
 
-    # TODO: When we have Django stubs, we should be able to fix the
-    # type of exception back to just Exception; the problem is without
-    # stubs, mypy doesn't know that RateLimited's superclass
-    # PermissionDenied inherits from Exception.
     def process_exception(self, request: HttpRequest,
-                          exception: Union[Exception, RateLimited]) -> Optional[HttpResponse]:
+                          exception: Exception) -> Optional[HttpResponse]:
         if isinstance(exception, RateLimited):
             entity_type = str(exception)  # entity type is passed to RateLimited when raising
             resp = json_error(
                 _("API usage exceeded rate limit"),
-                data={'retry-after': request._ratelimit[entity_type]['secs_to_freedom']},
+                data={'retry-after': request._ratelimit[entity_type].secs_to_freedom},
                 status=429
             )
-            resp['Retry-After'] = request._ratelimit[entity_type]['secs_to_freedom']
+            resp['Retry-After'] = request._ratelimit[entity_type].secs_to_freedom
             return resp
         return None
 
@@ -364,6 +398,12 @@ class FlushDisplayRecipientCache(MiddlewareMixin):
 
 class SessionHostDomainMiddleware(SessionMiddleware):
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+        if getattr(response, "asynchronous", False):
+            # This special Tornado "asynchronous" response is
+            # discarded after going through this code path as Tornado
+            # intends to block, so we stop here to avoid unnecessary work.
+            return response
+
         try:
             request.get_host()
         except DisallowedHost:
@@ -412,7 +452,7 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                     else:
                         max_age = request.session.get_expiry_age()
                         expires_time = time.time() + max_age
-                        expires = cookie_date(expires_time)
+                        expires = http_date(expires_time)
                     # Save the session data and refresh the client cookie.
                     # Skip session save for 500 responses, refs #3881.
                     if response.status_code != 500:
@@ -439,6 +479,7 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                             path=settings.SESSION_COOKIE_PATH,
                             secure=settings.SESSION_COOKIE_SECURE or None,
                             httponly=settings.SESSION_COOKIE_HTTPONLY or None,
+                            samesite=settings.SESSION_COOKIE_SAMESITE,
                         )
         return response
 
@@ -475,3 +516,23 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
             assert not response.streaming
             response.content = alter_content(request, response.content)
         return response
+
+class ZulipCommonMiddleware(CommonMiddleware):
+    """
+    Patched version of CommonMiddleware to disable the APPEND_SLASH
+    redirect behavior inside Tornado.
+
+    While this has some correctness benefit in encouraging clients
+    to implement the API correctly, this also saves about 600us in
+    the runtime of every GET /events query, as the APPEND_SLASH
+    route resolution logic is surprisingly expensive.
+
+    TODO: We should probably extend this behavior to apply to all of
+    our API routes.  The APPEND_SLASH behavior is really only useful
+    for non-API endpoints things like /login.  But doing that
+    transition will require more careful testing.
+    """
+    def should_redirect_with_slash(self, request: HttpRequest) -> bool:
+        if settings.RUNNING_INSIDE_TORNADO:
+            return False
+        return super().should_redirect_with_slash(request)

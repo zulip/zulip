@@ -2,6 +2,7 @@ import { basename, resolve } from 'path';
 import { cacheLoader, getExposeLoaders } from './webpack-helpers';
 import BundleTracker from 'webpack4-bundle-tracker';
 import CleanCss from 'clean-css';
+import DebugRequirePlugin from './debug-require-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
@@ -120,7 +121,7 @@ export default (env?: string): webpack.Configuration[] => {
                     use: [{
                         loader: 'file-loader',
                         options: {
-                            name: production ? '[name].[hash].[ext]' : '[name].[ext]',
+                            name: production ? '[name].[hash].[ext]' : '[path][name].[ext]',
                             outputPath: 'files/',
                         },
                     }],
@@ -187,6 +188,7 @@ export default (env?: string): webpack.Configuration[] => {
             },
         },
         plugins: [
+            new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
                     ? 'webpack-stats-production.json'
@@ -217,12 +219,11 @@ export default (env?: string): webpack.Configuration[] => {
     // Use the unminified versions of jquery and underscore so that
     // Good error messages show up in production and development in the source maps
     const exposeOptions = [
+        { path: "./debug-require.js", name: "require" },
         { path: "blueimp-md5/js/md5.js" },
         { path: "clipboard/dist/clipboard.js", name: "ClipboardJS" },
         { path: "xdate/src/xdate.js", name: "XDate" },
         { path: "../static/third/marked/lib/marked.js" },
-        { path: "../static/generated/emoji/emoji_codes.js" },
-        { path: "../static/generated/pygments_data.js" },
         { path: "../static/js/debug.js" },
         { path: "../static/js/blueslip.js" },
         { path: "../static/js/common.js" },

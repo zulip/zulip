@@ -9,8 +9,8 @@
 
 <div id="stream-checkboxes">
     {{#each streams}}
-    <label class="checkbox add-user-label" data-stream-id="{{this.stream_id}}" data-stream-name="{{this.name}}">
-        <input type="checkbox" name="stream" value="{{this.name}}" />
+    <label class="checkbox add-user-label" data-stream-id="{{this.stream_id}}">
+        <input type="checkbox" name="stream" />
         <span></span>
         {{this.name}} ( <i class="fa fa-user" aria-hidden="true"></i> {{this.subscriber_count}})
     </label>
@@ -29,8 +29,8 @@
 
 <div id="user-checkboxes">
     {{#each users}}
-    <label class="checkbox add-user-label" data-user-id="{{this.user_id}}" data-email="{{this.email}}">
-        <input type="checkbox" name="user" value="{{this.email}}" {{#if @first}}checked="checked"{{#unless is_admin}} disabled="disabled"{{/unless}}{{/if}}/>
+    <label class="checkbox add-user-label" data-user-id="{{this.user_id}}">
+        <input type="checkbox" name="user" {{#if @first}}checked="checked"{{#unless is_admin}} disabled="disabled"{{/unless}}{{/if}}/>
         <span></span>
         {{this.full_name}} ({{this.email}})
     </label>

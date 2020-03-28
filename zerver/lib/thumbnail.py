@@ -21,7 +21,7 @@ def is_thumbor_enabled() -> bool:
     return settings.THUMBOR_URL != ''
 
 def user_uploads_or_external(url: str) -> bool:
-    return not is_safe_url(url) or url.startswith("/user_uploads/")
+    return not is_safe_url(url, allowed_hosts=None) or url.startswith("/user_uploads/")
 
 def get_source_type(url: str) -> str:
     if not url.startswith('/user_uploads/'):
@@ -38,11 +38,11 @@ def generate_thumbnail_url(path: str,
     path = urljoin("/", path)
 
     if not is_thumbor_enabled():
-        if is_safe_url(path):
+        if is_safe_url(path, allowed_hosts=None):
             return path
         return get_camo_url(path)
 
-    if is_safe_url(path) and not path.startswith("/user_uploads/"):
+    if is_safe_url(path, allowed_hosts=None) and not path.startswith("/user_uploads/"):
         return path
 
     source_type = get_source_type(path)

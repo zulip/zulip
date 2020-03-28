@@ -1,3 +1,4 @@
+const util = require("./util");
 const resize_app = function () {
     const panels_height = $("#panels").height();
     $("body > .app").height("calc(100% - " + panels_height + "px)");
@@ -16,22 +17,16 @@ const get_step = function ($process) {
     return $process.find("[data-step]").filter(":visible").data("step");
 };
 
-exports.initialize = function () {
-    // if email has not been set up and the user is the admin, display a warning
-    // to tell them to set up an email server.
-    if (page_params.warn_no_email === true && page_params.is_admin) {
-        exports.open($("[data-process='email-server']"));
-    } else {
-        exports.open($("[data-process='notifications']"));
+function should_show_notifications(ls) {
+    // if the user said to never show banner on this computer again, it will
+    // be stored as `true` so we want to negate that.
+    if (localstorage.supported()) {
+        if (ls.get("dontAskForNotifications") === true) {
+            return false;
+        }
     }
-};
 
-exports.open = function ($process) {
-    const ls = localstorage();
-
-    $("[data-process]").hide();
-
-    let should_show_notifications =
+    return (
         // notifications *basically* don't work on any mobile platforms, so don't
         // event show the banners. This prevents trying to access things that
         // don't exist like `Notification.permission`.
@@ -40,26 +35,42 @@ exports.open = function ($process) {
         !notifications.granted_desktop_notifications_permission() &&
         // if permission is allowed to be requested (e.g. not in "denied" state).
         notifications.permission_state() !== "denied"
-    ;
+    );
+}
 
-    if (localstorage.supported()) {
-        // if the user said to never show banner on this computer again, it will
-        // be stored as `true` so we want to negate that.
-        should_show_notifications = should_show_notifications && !ls.get("dontAskForNotifications");
+exports.check_profile_incomplete = function () {
+    if (!page_params.is_admin) {
+        return;
     }
 
-    if (should_show_notifications) {
-        $process.show();
-        resize_app();
+    // Eventually, we might also check page_params.realm_icon_source,
+    // but it feels too aggressive to ask users to do change that
+    // since their organization might not have a logo yet.
+    if (page_params.realm_description === '' ||
+        page_params.realm_description.startsWith("Organization imported from")) {
+        $("[data-process='profile-incomplete']").show();
+    } else {
+        $("[data-process='profile-incomplete']").hide();
+    }
+};
+
+exports.initialize = function () {
+    const ls = localstorage();
+    if (page_params.insecure_desktop_app) {
+        exports.open($("[data-process='insecure-desktop-app']"));
+    } else if (page_params.warn_no_email === true && page_params.is_admin) {
+        // if email has not been set up and the user is the admin,
+        // display a warning to tell them to set up an email server.
+        exports.open($("[data-process='email-server']"));
+    } else if (should_show_notifications(ls)) {
+        exports.open($("[data-process='notifications']"));
+    } else {
+        // TODO: This should be restructured with separate check and
+        // show calls.
+        exports.check_profile_incomplete();
     }
 
-    // if it is not the notifications prompt, show the error if it has been
-    // initialized here.
-    if ($process.is(":not([data-process='notifications'])")) {
-        $process.show();
-        resize_app();
-    }
-
+    // Configure click handlers.
     $(".request-desktop-notifications").on("click", function (e) {
         e.preventDefault();
         $(this).closest(".alert").hide();
@@ -75,6 +86,7 @@ exports.open = function ($process) {
 
     $("#panels").on("click", ".alert .close, .alert .exit", function (e) {
         e.stopPropagation();
+        const $process = $(e.target).closest("[data-process]");
         if (get_step($process) === 1 && $process.data("process") === "notifications") {
             show_step($process, 2);
         } else {
@@ -82,6 +94,12 @@ exports.open = function ($process) {
         }
         resize_app();
     });
+};
+
+exports.open = function ($process) {
+    $("[data-process]").hide();
+    $process.show();
+    resize_app();
 };
 
 window.panels = exports;

@@ -63,7 +63,7 @@ function scrollToHash(simplebar) {
     }
 }
 
-const html_map = {};
+const html_map = new Map();
 const loading = {
     name: null,
 };
@@ -80,15 +80,15 @@ const fetch_page = function (path, callback) {
 };
 
 const update_page = function (html_map, path) {
-    if (html_map[path]) {
-        $(".markdown .content").html(html_map[path]);
+    if (html_map.has(path)) {
+        $(".markdown .content").html(html_map.get(path));
         render_code_sections();
         scrollToHash(markdownSB);
     } else {
         loading.name = path;
         fetch_page(path, function (res) {
-            html_map[path] = res;
-            $(".markdown .content").html(html_map[path]);
+            html_map.set(path, res);
+            $(".markdown .content").html(res);
             loading.name = null;
             scrollToHash(markdownSB);
         });

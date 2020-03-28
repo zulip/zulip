@@ -1,8 +1,11 @@
 # Get all users
 
-Retrieve all users in a realm.
+Retrieve details on all users in the organization.  Optionally
+includes values of [custom profile field](/help/add-custom-profile-fields).
 
 `GET {{ api_url }}/v1/users`
+
+You can also [fetch details on a single user](/api/get-user).
 
 ## Usage examples
 
@@ -51,12 +54,12 @@ You may pass the `client_gravatar` query parameter as follows:
 
 #### Return values
 
-* `members`: A list of dictionaries where each dictionary contains information
-  about a particular user or bot.
-    * `email`: The email address of the user or bot..
+* `members`: A list of dictionaries, each containing the details for
+  one of the users in the organization.
+    * `email`: The email address of the user or bot.
     * `is_bot`: A boolean specifying whether the user is a bot or not.
     * `avatar_url`: URL to the user's gravatar. `None` if the `client_gravatar`
-      query paramater was set to `True`.
+      query parameter was set to `True`.
     * `full_name`: Full name of the user or bot.
     * `is_admin`: A boolean specifying whether the user is an admin or not.
     * `bot_type`: `None` if the user isn't a bot. `1` for a `Generic` bot.

@@ -1,3 +1,4 @@
+const util = require("./util");
 let focused_recipient;
 let normal_display = false;
 
@@ -123,7 +124,7 @@ const user_fade_config = {
 
 function update_user_row_when_fading(li, conf) {
     const user_id = conf.get_user_id(li);
-    const email = people.get_person_from_user_id(user_id).email;
+    const email = people.get_by_user_id(user_id).email;
     const would_receive = exports.would_receive_message(email);
 
     if (would_receive || people.is_my_user_id(user_id)) {
@@ -134,15 +135,15 @@ function update_user_row_when_fading(li, conf) {
 }
 
 function display_users_normally(items, conf) {
-    _.each(items, function (li) {
+    for (const li of items) {
         conf.unfade(li);
-    });
+    }
 }
 
 function fade_users(items, conf) {
-    _.each(items, function (li) {
+    for (const li of items) {
         update_user_row_when_fading(li, conf);
-    });
+    }
 }
 
 function want_normal_display() {
@@ -232,19 +233,16 @@ exports.update_rendered_message_groups = function (message_groups, get_element) 
     // This loop is superficially similar to some code in fade_messages, but an
     // important difference here is that we look at each message individually, whereas
     // the other code takes advantage of blocks beneath recipient bars.
-    _.each(message_groups, function (message_group) {
+    for (const message_group of message_groups) {
         const elt = get_element(message_group);
         const first_message = message_group.message_containers[0].msg;
         const should_fade = exports.should_fade_message(first_message);
         change_fade_state(elt, should_fade);
-    });
+    }
 };
 
 exports.initialize = function () {
-    $(document).on('peer_subscribe.zulip', function () {
-        exports.update_faded_users();
-    });
-    $(document).on('peer_unsubscribe.zulip', function () {
+    $(document).on('peer_subscribe.zulip peer_unsubscribe.zulip', function () {
         exports.update_faded_users();
     });
 };

@@ -44,7 +44,7 @@ button {
     background-color: hsl(0, 0%, 100%);
 }
 
-#top-navbar {
+.top-navbar {
     display: grid;
     grid-template-columns: 1fr 5fr 1fr;
 }

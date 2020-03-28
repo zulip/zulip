@@ -1,14 +1,13 @@
-const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
 
-const partners = new Dict();
+const partners = new Set();
 
 exports.set_partner = function (user_id) {
-    partners.set(user_id, true);
+    partners.add(user_id);
 };
 
 exports.is_partner = function (user_id) {
-    return partners.get(user_id) || false;
+    return partners.has(user_id);
 };
 
 exports.recent = (function () {
@@ -68,14 +67,13 @@ exports.recent = (function () {
     self.get_strings = function () {
         // returns array of structs with user_ids_string and
         // message_id
-        return _.pluck(recent_private_messages, 'user_ids_string');
+        return recent_private_messages.map(conversation => conversation.user_ids_string);
     };
 
-    self.initialize = function () {
-        _.each(page_params.recent_private_conversations, function (conversation) {
+    self.initialize = function (params) {
+        for (const conversation of params.recent_private_conversations) {
             self.insert(conversation.user_ids, conversation.max_message_id);
-        });
-        delete page_params.recent_private_messages;
+        }
     };
 
     return self;

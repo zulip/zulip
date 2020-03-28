@@ -6,7 +6,9 @@ Nagios plugin to check the length of the FTS update log.
 import sys
 sys.path.append('/home/zulip/deployments/current')
 try:
-    import scripts.lib.setup_path_on_import
+    from scripts.lib.setup_path import setup_path
+
+    setup_path()
 except ImportError:
     pass
 

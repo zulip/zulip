@@ -54,7 +54,7 @@ urls = [
     url(r'^errors/404/$', TemplateView.as_view(template_name='404.html')),
     url(r'^errors/5xx/$', TemplateView.as_view(template_name='500.html')),
 
-    # Add a convinient way to generate webhook messages from fixtures.
+    # Add a convenient way to generate webhook messages from fixtures.
     url(r'^devtools/integrations/$', zerver.views.development.integrations.dev_panel),
     url(r'^devtools/integrations/check_send_webhook_fixture_message$',
         zerver.views.development.integrations.check_send_webhook_fixture_message),
@@ -76,8 +76,7 @@ i18n_urls = [
     url(r'^confirmation_key/$', zerver.views.development.registration.confirmation_key),
 ]
 
-# These are used for voyager development. On a real voyager instance,
-# these files would be served by nginx.
+# On a production instance, these files would be served by nginx.
 if settings.LOCAL_UPLOADS_DIR is not None:
     urls += [
         url(r'^user_avatars/(?P<path>.*)$', serve,

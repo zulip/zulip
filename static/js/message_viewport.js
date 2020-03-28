@@ -1,3 +1,4 @@
+const util = require("./util");
 let jwindow;
 const dimensions = {};
 let in_stoppable_autoscroll = false;
@@ -141,16 +142,16 @@ function add_to_visible(candidates, visible,
                         top_of_feed, bottom_of_feed,
                         require_fully_visible,
                         row_to_id) {
-    _.every(candidates, function (row) {
+    for (const row of candidates) {
         const row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
         if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed,
                                 require_fully_visible)) {
             visible.push(row_to_id(row));
-            return true;
+        } else {
+            break;
         }
-        return false;
-    });
+    }
 }
 
 const top_of_feed = new util.CachedValue({
@@ -252,10 +253,10 @@ function make_dimen_wrapper(dimen_name, dimen_func) {
             return dimen_func.call(exports.message_pane);
         },
     });
-    return function viewport_dimension_wrapper() {
-        if (arguments.length !== 0) {
+    return function viewport_dimension_wrapper(...args) {
+        if (args.length !== 0) {
             dimensions[dimen_name].reset();
-            return dimen_func.apply(exports.message_pane, arguments);
+            return dimen_func.apply(exports.message_pane, args);
         }
         return dimensions[dimen_name].get();
     };

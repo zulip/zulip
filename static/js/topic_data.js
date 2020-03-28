@@ -1,7 +1,36 @@
-const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
 
-let stream_dict = new Dict(); // stream_id -> array of objects
+const stream_dict = new Map(); // stream_id -> topic_history object
+const fetched_stream_ids = new Set();
+
+exports.is_complete_for_stream_id = (stream_id) => {
+    if (fetched_stream_ids.has(stream_id)) {
+        return true;
+    }
+
+    /*
+        TODO: We should possibly move all_topics_in_cache
+        from stream_data to here, since the function
+        mostly looks at message_list.all and has little
+        to do with typical stream_data stuff.  (We just
+        need sub.first_message_id.)
+    */
+    const sub = stream_data.get_sub_by_id(stream_id);
+    const in_cache = stream_data.all_topics_in_cache(sub);
+
+    if (in_cache) {
+        /*
+            If the stream is cached, we can add it to
+            fetched_stream_ids.  Note that for the opposite
+            scenario, we don't delete from
+            fetched_stream_ids, because we may just be
+            waiting for the initial message fetch.
+        */
+        fetched_stream_ids.add(stream_id);
+    }
+
+    return in_cache;
+};
 
 exports.stream_has_topics = function (stream_id) {
     if (!stream_dict.has(stream_id)) {
@@ -14,12 +43,19 @@ exports.stream_has_topics = function (stream_id) {
 };
 
 exports.topic_history = function (stream_id) {
+    /*
+        Each stream has a dictionary of topics.
+        The main getter of this object is
+        get_recent_names, and we just sort on
+        the fly every time we are called.
+    */
+
     const topics = new FoldDict();
 
     const self = {};
 
     self.has_topics = function () {
-        return !topics.is_empty();
+        return topics.size !== 0;
     };
 
     self.add_or_update = function (opts) {
@@ -65,7 +101,7 @@ exports.topic_history = function (stream_id) {
         }
 
         if (existing.count <= 1) {
-            topics.del(topic_name);
+            topics.delete(topic_name);
             return;
         }
 
@@ -77,7 +113,7 @@ exports.topic_history = function (stream_id) {
         // server.  We have less data about these than the
         // client can maintain for newer topics.
 
-        _.each(server_history, function (obj) {
+        for (const obj of server_history) {
             const name = obj.name;
             const message_id = obj.max_id;
 
@@ -87,7 +123,7 @@ exports.topic_history = function (stream_id) {
                 if (!existing.historical) {
                     // Trust out local data more, since it
                     // maintains counts.
-                    return;
+                    continue;
                 }
             }
 
@@ -100,11 +136,11 @@ exports.topic_history = function (stream_id) {
                 pretty_name: name,
                 historical: true,
             });
-        });
+        }
     };
 
     self.get_recent_names = function () {
-        const my_recents = topics.values();
+        const my_recents = Array.from(topics.values());
 
         const missing_topics = unread.get_missing_topics({
             stream_id: stream_id,
@@ -117,9 +153,7 @@ exports.topic_history = function (stream_id) {
             return b.message_id - a.message_id;
         });
 
-        const names = _.map(recents, function (obj) {
-            return obj.pretty_name;
-        });
+        const names = recents.map(obj => obj.pretty_name);
 
         return names;
     };
@@ -170,9 +204,15 @@ exports.add_message = function (opts) {
 exports.add_history = function (stream_id, server_history) {
     const history = exports.find_or_create(stream_id);
     history.add_history(server_history);
+    fetched_stream_ids.add(stream_id);
 };
 
 exports.get_server_history = function (stream_id, on_success) {
+    if (fetched_stream_ids.has(stream_id)) {
+        on_success();
+        return;
+    }
+
     const url = '/json/users/me/' + stream_id + '/topics';
 
     channel.get({
@@ -194,7 +234,8 @@ exports.get_recent_names = function (stream_id) {
 
 exports.reset = function () {
     // This is only used by tests.
-    stream_dict = new Dict();
+    stream_dict.clear();
+    fetched_stream_ids.clear();
 };
 
 window.topic_data = exports;

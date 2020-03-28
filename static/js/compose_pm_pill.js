@@ -1,3 +1,4 @@
+const util = require("./util");
 exports.initialize_pill = function () {
     const container = $("#private_message_recipient").parent();
 
@@ -51,7 +52,7 @@ exports.get_emails = function () {
     // return something like "alice@example.com,bob@example.com"
     const user_ids = exports.get_user_ids();
     const emails = user_ids.map(function (id) {
-        return people.get_person_from_user_id(id).email;
+        return people.get_by_user_id(id).email;
     }).join(",");
     return emails;
 };

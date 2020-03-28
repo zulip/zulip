@@ -10,7 +10,6 @@
 {% block customhead %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
-<link id="emoji-spritesheet" href="/static/generated/emoji/{{ emojiset }}-sprite.css" rel="stylesheet" type="text/css">
 <style>
     #app-loading {
     background-color: hsl(0, 0%, 100%);
@@ -50,6 +49,7 @@
     {% include "zerver/app/settings_overlay.html" %}
 </div>
 
+{% include "zerver/app/navbar_alerts.html" %}
 {% include "zerver/app/navbar.html" %}
 
 <div class="fixed-app">
@@ -118,12 +118,6 @@
                     </div>
                     {% include "zerver/app/home.html" %}
                 </div>
-
-                {% if show_debug %}
-                <div class="tab-pane" id="debug">
-                    {% include "zerver/app/debug.html" %}
-                </div>
-                {% endif %}
             </div><!--/tab-content-->
         </div>
         <div class="column-right">

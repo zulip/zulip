@@ -1,5 +1,6 @@
-zrequire('util');
 const rs = zrequire('recent_senders');
+
+let next_id = 0;
 
 run_test('process_message_for_senders', () => {
     const stream1 = 1;
@@ -17,13 +18,13 @@ run_test('process_message_for_senders', () => {
     // New stream
     const message1 = {
         stream_id: stream1,
-        id: _.uniqueId(),
+        id: next_id += 1,
         topic: topic1,
         sender_id: sender1,
     };
     const message2 = {
         stream_id: stream2,
-        id: _.uniqueId(),
+        id: next_id += 1,
         topic: topic1,
         sender_id: sender2,
     };
@@ -46,7 +47,7 @@ run_test('process_message_for_senders', () => {
     // New topic
     const message3 = {
         stream_id: stream1,
-        id: _.uniqueId(),
+        id: next_id += 1,
         topic: topic2,
         sender_id: sender3,
     };
@@ -58,7 +59,7 @@ run_test('process_message_for_senders', () => {
     // New sender
     const message4 = {
         stream_id: stream1,
-        id: _.uniqueId(),
+        id: next_id += 1,
         topic: topic1,
         sender_id: sender2,
     };
@@ -70,7 +71,7 @@ run_test('process_message_for_senders', () => {
     // More recent message
     const message5 = {
         stream_id: stream1,
-        id: _.uniqueId(),
+        id: next_id += 1,
         topic: topic1,
         sender_id: sender1,
     };
@@ -82,19 +83,19 @@ run_test('process_message_for_senders', () => {
     // Same stream, but different topics
     const message6 = {
         stream_id: stream3,
-        id: _.uniqueId(),
+        id: next_id += 1,
         topic: topic1,
         sender_id: sender1,
     };
     const message7 = {
         stream_id: stream3,
-        id: _.uniqueId(),
+        id: next_id += 1,
         topic: topic2,
         sender_id: sender2,
     };
     const message8 = {
         stream_id: stream3,
-        id: _.uniqueId(),
+        id: next_id += 1,
         topic: topic3,
         sender_id: sender3,
     };
@@ -111,5 +112,5 @@ run_test('process_message_for_senders', () => {
         rs.compare_by_recency({user_id: sender2}, {user_id: sender1}, stream3, topic3) < 0,
         true);
 
-    assert.equal(rs.compare_by_recency({}, {}, _.uniqueId(), ''), 0);
+    assert.equal(rs.compare_by_recency({}, {}, next_id += 1, ''), 0);
 });

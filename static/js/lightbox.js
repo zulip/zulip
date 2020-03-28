@@ -1,9 +1,7 @@
 let is_open = false;
 // the asset map is a map of all retrieved images and YouTube videos that are
 // memoized instead of being looked up multiple times.
-const asset_map = {
-
-};
+const asset_map = new Map();
 
 function render_lightbox_list_images(preview_source) {
     if (!is_open) {
@@ -99,14 +97,12 @@ exports.open = function (image, options) {
 
     // check if image is descendent of #preview_content
     const is_compose_preview_image = $image.closest("#preview_content").length === 1;
-    let payload;
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
     const $image_source = $image.attr("data-src-fullsize") || $image.attr("src");
-    if (asset_map[$image_source]) {
-        payload = asset_map[$image_source];
-    // otherwise retrieve the metadata from the DOM and store into the asset_map.
-    } else {
+    let payload = asset_map.get($image_source);
+    if (payload === undefined) {
+        // otherwise retrieve the metadata from the DOM and store into the asset_map.
         const $parent = $image.parent();
         let $type;
         let $source;
@@ -134,11 +130,13 @@ exports.open = function (image, options) {
             sender_full_name = people.my_full_name();
         } else {
             const $message = $parent.closest("[zid]");
-            const message = message_store.get($message.attr("zid"));
+            const zid = rows.id($message);
+            const message = message_store.get(zid);
             if (message === undefined) {
-                blueslip.error("Lightbox for unknown message " + $message.attr("zid"));
+                blueslip.error("Lightbox for unknown message " + zid);
+            } else {
+                sender_full_name = message.sender_full_name;
             }
-            sender_full_name = message.sender_full_name;
         }
         payload = {
             user: sender_full_name,
@@ -149,7 +147,7 @@ exports.open = function (image, options) {
             url: $url,
         };
 
-        asset_map[$source] = payload;
+        asset_map.set($source, payload);
     }
 
     if (payload.type.match("-video")) {

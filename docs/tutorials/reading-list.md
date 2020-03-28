@@ -28,7 +28,7 @@ Some titles have been shortened for organizational purposes.
 
 *Blog* - [Idle Words talks transcripts][]
 
-[Idle Words talks transcripts]: http://idlewords.com/talks
+[Idle Words talks transcripts]: https://idlewords.com/talks
 
 *Tutorial* - [HTTP Can Do That?!, by Sumana Harihareswara (PyCon 2016)][]
 
@@ -60,15 +60,15 @@ Some titles have been shortened for organizational purposes.
 
 *Article* - [Effective Learning Strategies for Programmers][]
 
-[Effective Learning Strategies for Programmers]: http://akaptur.com/blog/2015/10/10/effective-learning-strategies-for-programmers/
+[Effective Learning Strategies for Programmers]: https://akaptur.com/blog/2015/10/10/effective-learning-strategies-for-programmers/
 
 *Article* - [Readme Driven Development][]
 
-[Readme Driven Development]: http://tom.preston-werner.com/2010/08/23/readme-driven-development.html
+[Readme Driven Development]: https://tom.preston-werner.com/2010/08/23/readme-driven-development.html
 
 *Article* - [Systematic Debugging][]
 
-[Systematic Debugging]: http://akaptur.com/blog/2013/07/24/systematic-debugging
+[Systematic Debugging]: https://akaptur.com/blog/2013/07/24/systematic-debugging
 
 *Paper* - [Floating-Point Arithmetic][]
 
@@ -86,11 +86,11 @@ Some titles have been shortened for organizational purposes.
 
 *Video* - [Build & break a Python sandbox, by Jessica McKellar (PyCon 2014)][]
 
-[Build & break a Python sandbox, by Jessica McKellar (PyCon 2014)]: http://pyvideo.org/pycon-us-2014/building-and-breaking-a-python-sandbox.html
+[Build & break a Python sandbox, by Jessica McKellar (PyCon 2014)]: https://pyvideo.org/pycon-us-2014/building-and-breaking-a-python-sandbox.html
 
 *Video* - [Cache me if you can, by Guillaume Ardaud (PyCon 2014)][]
 
-[Cache me if you can, by Guillaume Ardaud (PyCon 2014)]: http://pyvideo.org/pycon-us-2014/cache-me-if-you-can-memcached-caching-patterns.html
+[Cache me if you can, by Guillaume Ardaud (PyCon 2014)]: https://pyvideo.org/pycon-us-2014/cache-me-if-you-can-memcached-caching-patterns.html
 
 *Video* - [Loop like a native, by Ned Batchelder (PyCon 2013)][]
 
@@ -106,15 +106,15 @@ Some titles have been shortened for organizational purposes.
 
 *Video* - [The Mighty Dictionary, by Brandon Rhodes (PyCon 2010)][]
 
-[The Mighty Dictionary, by Brandon Rhodes (PyCon 2010)]: http://pyvideo.org/pycon-us-2010/the-mighty-dictionary-55.html
+[The Mighty Dictionary, by Brandon Rhodes (PyCon 2010)]: https://pyvideo.org/pycon-us-2010/the-mighty-dictionary-55.html
 
 *Article* - [Static types in Python, oh my(py)!][]
 
-[Static types in Python, oh my(py)!]: http://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy
+[Static types in Python, oh my(py)!]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy
 
 *Guide* - [The Hitchhiker’s Guide to Python!][]
 
-[The Hitchhiker’s Guide to Python!]: http://docs.python-guide.org/en/latest
+[The Hitchhiker’s Guide to Python!]: https://docs.python-guide.org/
 
 ## Java/Android
 
@@ -124,7 +124,7 @@ Some titles have been shortened for organizational purposes.
 
 *Blog* - [Java Tutorials for Beginners][]
 
-[Java Tutorials for Beginners]: http://www.geeksforgeeks.org/java/
+[Java Tutorials for Beginners]: https://www.geeksforgeeks.org/java/
 
 ## JavaScript/ECMAScript
 
@@ -138,7 +138,7 @@ Some titles have been shortened for organizational purposes.
 
 *Slides* - [TypeScript vs. CoffeeScript vs. ES6][]
 
-[TypeScript vs. CoffeeScript vs. ES6]: http://www.slideshare.net/NeilGreen1/type-script-vs-coffeescript-vs-es6
+[TypeScript vs. CoffeeScript vs. ES6]: https://www.slideshare.net/NeilGreen1/type-script-vs-coffeescript-vs-es6
 
 ## TypeScript
 
@@ -164,7 +164,7 @@ You may want to take a look first at our [Git and GitHub guide][].
 
 *Blog* - [GeeksforGeeks][]
 
-[GeeksforGeeks]: http://www.geeksforgeeks.org
+[GeeksforGeeks]: https://www.geeksforgeeks.org
 
 *Book* [Introduction to Algorithms][] (*Not free!*)
 
@@ -172,7 +172,7 @@ You may want to take a look first at our [Git and GitHub guide][].
 
 *Blog* - [Setosa data visualization and visual explanations][]
 
-[Setosa data visualization and visual explanations]: http://setosa.io
+[Setosa data visualization and visual explanations]: https://setosa.io
 
 *Course* - [Algorithms, Part I][]
 
@@ -190,7 +190,7 @@ You may want to take a look first at our [Git and GitHub guide][].
 
 *Book* - [Producing Open Source Software][]
 
-[Producing Open Source Software]: http://producingoss.com/en/
+[Producing Open Source Software]: https://producingoss.com/en/
 
 *Article* - [Advice on Starting And Running A New Open Source Project][]
 
@@ -220,7 +220,7 @@ You may want to take a look first at our [Git and GitHub guide][].
 
 [CodeForces][]
 
-[CodeForces]: http://codeforces.com
+[CodeForces]: https://codeforces.com
 
 [Free Code Camp][]
 
@@ -238,7 +238,7 @@ You may want to take a look first at our [Git and GitHub guide][].
 
 [MIT OpenCourseWare][]
 
-[MIT OpenCourseWare]: http://ocw.mit.edu
+[MIT OpenCourseWare]: https://ocw.mit.edu
 
 [Udacity][]
 

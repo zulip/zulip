@@ -64,7 +64,7 @@ exports.initialize = function () {
     // (It's a bit of legacy that we have an object with only one important
     // field.  There's also a "search_string" field on each element that actually
     // just represents the key of the hash, so it's redundant.)
-    let search_object = {};
+    let search_map = new Map();
 
     search_query_box.typeahead({
         source: function (query) {
@@ -76,8 +76,8 @@ exports.initialize = function () {
             } else {
                 suggestions = search_suggestion.get_suggestions_legacy(query);
             }
-            // Update our global search_object hash
-            search_object = suggestions.lookup_table;
+            // Update our global search_map hash
+            search_map = suggestions.lookup_table;
             return suggestions.strings;
         },
         fixed: true,
@@ -85,7 +85,7 @@ exports.initialize = function () {
         helpOnEmptyStrings: true,
         naturalSearch: true,
         highlighter: function (item) {
-            const obj = search_object[item];
+            const obj = search_map.get(item);
             return obj.description;
         },
         matcher: function () {

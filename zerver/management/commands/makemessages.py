@@ -25,7 +25,7 @@ unfortunately isn't extensible, so we can:
 We are currently doing that last thing. It turns out there we are lucky
 for once: It's simply a matter of extending two regular expressions.
 Credit for the approach goes to:
-http://stackoverflow.com/questions/2090717
+https://stackoverflow.com/questions/2090717
 
 """
 import glob

@@ -238,7 +238,7 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
 
     @param streams_raw The list of stream dictionaries to process;
       names should already be stripped of whitespace by the caller.
-    @param user_profile The user for whom we are retreiving the streams
+    @param user_profile The user for whom we are retrieving the streams
     @param autocreate Whether we should create streams if they don't already exist
     """
     # Validate all streams, getting extant ones, then get-or-creating the rest.
@@ -261,8 +261,16 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
-            if stream_dict.get("is_announcement_only", False) and not user_profile.is_realm_admin:
+            # Non admins cannot create STREAM_POST_POLICY_ADMINS streams.
+            if ((stream_dict.get("stream_post_policy", False) ==
+                 Stream.STREAM_POST_POLICY_ADMINS) and not user_profile.is_realm_admin):
                 member_creating_announcement_only_stream = True
+            # New members cannot create STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
+            # unless they are admins who are also new members of the organization.
+            if ((stream_dict.get("stream_post_policy", False) ==
+                 Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS) and user_profile.is_new_member):
+                if not user_profile.is_realm_admin:
+                    member_creating_announcement_only_stream = True
             missing_stream_dicts.append(stream_dict)
         else:
             existing_streams.append(stream)

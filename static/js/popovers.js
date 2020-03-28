@@ -1,3 +1,5 @@
+const util = require("./util");
+const settings_data = require("./settings_data");
 const confirmDatePlugin = require("flatpickr/dist/plugins/confirmDate/confirmDate.js");
 const render_actions_popover_content = require('../templates/actions_popover_content.hbs');
 const render_mobile_message_buttons_popover = require('../templates/mobile_message_buttons_popover.hbs');
@@ -28,9 +30,9 @@ function elem_to_user_id(elem) {
 // ones that no longer have valid parents in the DOM.
 (function (popover) {
 
-    $.fn.popover = function () {
+    $.fn.popover = function (...args) {
         // apply the jQuery object as `this`, and popover function arguments.
-        popover.apply(this, arguments);
+        popover.apply(this, args);
 
         // if there is a valid "popover" key in the jQuery data object then
         // push it to the array.
@@ -180,7 +182,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_uri(user.email),
-        show_email: settings_org.show_email(),
+        show_email: settings_data.show_email(),
         show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
         user_email: get_visible_email(user),
         user_full_name: user.full_name,
@@ -197,7 +199,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         if (is_cross_realm_bot) {
             args.is_cross_realm_bot = is_cross_realm_bot;
         } else if (bot_owner_id) {
-            const bot_owner = people.get_person_from_user_id(bot_owner_id);
+            const bot_owner = people.get_by_user_id(bot_owner_id);
             args.bot_owner = bot_owner;
         }
     }
@@ -311,7 +313,7 @@ exports.show_user_profile = function (user) {
         is_me: people.is_current_user(user.email),
         date_joined: moment(user.date_joined).format(dateFormat),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
-        show_email: settings_org.show_email(),
+        show_email: settings_data.show_email(),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,
@@ -341,7 +343,7 @@ function get_user_info_popover_items() {
 function fetch_group_members(member_ids) {
     return member_ids
         .map(function (m) {
-            return people.get_person_from_user_id(m);
+            return people.get_by_user_id(m);
         })
         .filter(function (m) {
             return m !== undefined;
@@ -387,7 +389,7 @@ function show_user_group_info_popover(element, group, message) {
         const args = {
             group_name: group.name,
             group_description: group.description,
-            members: sort_group_members(fetch_group_members([...group.members])),
+            members: sort_group_members(fetch_group_members(Array.from(group.members))),
         };
         elt.popover({
             placement: calculate_info_popover_placement(popover_size, elt),
@@ -429,7 +431,7 @@ exports.toggle_actions_popover = function (element, id) {
             use_edit_icon = false;
             editability_menu_item = i18n.t("View source");
         }
-        const topic = util.get_message_topic(message);
+        const topic = message.topic;
         const can_mute_topic =
                 message.stream &&
                 topic &&
@@ -439,10 +441,11 @@ exports.toggle_actions_popover = function (element, id) {
                 topic &&
                 muting.is_topic_muted(message.stream_id, topic);
 
-        const should_display_edit_history_option = _.any(message.edit_history, function (entry) {
-            const prev_topic = util.get_edit_event_prev_topic(entry);
-            return entry.prev_content !== undefined || prev_topic !== undefined;
-        }) && page_params.realm_allow_edit_history;
+        const should_display_edit_history_option =
+            message.edit_history &&
+            message.edit_history.some(entry => entry.prev_content !== undefined ||
+            util.get_edit_event_prev_topic(entry) !== undefined) &&
+            page_params.realm_allow_edit_history;
 
         // Disabling this for /me messages is a temporary workaround
         // for the fact that we don't have a styling for how that
@@ -685,7 +688,7 @@ exports.show_sender_info = function () {
     const $sender = $message.find('.sender_info_hover');
 
     const message = current_msg_list.get(rows.id($message));
-    const user = people.get_person_from_user_id(message.sender_id);
+    const user = people.get_by_user_id(message.sender_id);
     show_user_info_popover($sender[0], user, message);
     if (current_message_info_popover_elem) {
         focus_user_info_popover_item();
@@ -714,7 +717,7 @@ exports.register_click_handlers = function () {
         const row = $(this).closest(".message_row");
         e.stopPropagation();
         const message = current_msg_list.get(rows.id(row));
-        const user = people.get_person_from_user_id(message.sender_id);
+        const user = people.get_by_user_id(message.sender_id);
 
         show_user_info_popover(this, user, message);
     });
@@ -733,7 +736,7 @@ exports.register_click_handlers = function () {
         let user;
         if (id_string) {
             const user_id = parseInt(id_string, 10);
-            user = people.get_person_from_user_id(user_id);
+            user = people.get_by_user_id(user_id);
         } else {
             user = people.get_by_email(email);
         }
@@ -757,7 +760,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.info_popover_actions .narrow_to_private_messages', function (e) {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const email = people.get_person_from_user_id(user_id).email;
+        const email = people.get_by_user_id(user_id).email;
         exports.hide_message_info_popover();
         narrow.by('pm-with', email, {trigger: 'user sidebar popover'});
         e.stopPropagation();
@@ -766,7 +769,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.info_popover_actions .narrow_to_messages_sent', function (e) {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const email = people.get_person_from_user_id(user_id).email;
+        const email = people.get_by_user_id(user_id).email;
         exports.hide_message_info_popover();
         narrow.by('sender', email, {trigger: 'user sidebar popover'});
         e.stopPropagation();
@@ -778,7 +781,7 @@ exports.register_click_handlers = function () {
             compose_actions.start('stream', {trigger: 'sidebar user actions'});
         }
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const name = people.get_person_from_user_id(user_id).full_name;
+        const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
         exports.hide_user_sidebar_popover();
@@ -792,7 +795,7 @@ exports.register_click_handlers = function () {
             compose_actions.respond_to_message({trigger: 'user sidebar popover'});
         }
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const name = people.get_person_from_user_id(user_id).full_name;
+        const name = people.get_by_user_id(user_id).full_name;
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
         exports.hide_message_info_popover();
@@ -802,7 +805,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.info_popover_actions .view_user_profile', function (e) {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const user = people.get_person_from_user_id(user_id);
+        const user = people.get_by_user_id(user_id);
         exports.show_user_profile(user);
         e.stopPropagation();
         e.preventDefault();
@@ -821,8 +824,8 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.bot-owner-name', function (e) {
-        const user_id = $(e.target).attr('data-bot-owner-id');
-        const user = people.get_person_from_user_id(user_id);
+        const user_id = parseInt($(e.target).attr('data-bot-owner-id'), 10);
+        const user = people.get_by_user_id(user_id);
         exports.show_user_profile(user);
     });
 
@@ -882,7 +885,7 @@ exports.register_click_handlers = function () {
             stream_popover.show_streamlist_sidebar();
         }
 
-        const user = people.get_person_from_user_id(user_id);
+        const user = people.get_by_user_id(user_id);
         const popover_placement = userlist_placement === "left" ? "right" : "left";
 
         render_user_info_popover(user, target, false, "compose_private_message",
@@ -972,7 +975,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.respond_personal_button, .compose_private_message', function (e) {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
-        const email = people.get_person_from_user_id(user_id).email;
+        const email = people.get_by_user_id(user_id).email;
         compose_actions.start('private', {
             trigger: 'popover send private',
             private_message_recipient: email});

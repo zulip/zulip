@@ -316,14 +316,15 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
             post_var_name = None  # type: Optional[str]
 
-            query_params = request.GET.copy()
-            query_params.update(request.POST)
-
             for req_var in post_var_names:
-                try:
-                    val = query_params[req_var]
-                except KeyError:
-                    continue
+                if req_var in request.POST:
+                    val = request.POST[req_var]
+                elif req_var in request.GET:
+                    val = request.GET[req_var]
+                else:
+                    # This is covered by test_REQ_aliases, but coverage.py
+                    # fails to recognize this for some reason.
+                    continue  # nocoverage
                 if post_var_name is not None:
                     assert req_var is not None
                     raise RequestConfusingParmsError(post_var_name, req_var)

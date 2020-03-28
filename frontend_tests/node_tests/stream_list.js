@@ -2,11 +2,8 @@ set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 set_global('blueslip', global.make_zblueslip());
 
-const Dict = zrequire('dict').Dict;
-const FoldDict = zrequire('fold_dict').FoldDict;
 zrequire('unread_ui');
 zrequire('Filter', 'js/filter');
-zrequire('util');
 zrequire('topic_data');
 zrequire('stream_sort');
 zrequire('colorspace');
@@ -19,12 +16,10 @@ zrequire('list_cursor');
 zrequire('stream_list');
 zrequire('topic_zoom');
 zrequire('ui');
-set_global('i18n', global.stub_i18n);
 set_global('page_params', {
     is_admin: false,
     realm_users: [],
 });
-zrequire('settings_display');
 
 stream_color.initialize();
 
@@ -51,7 +46,7 @@ run_test('create_sidebar_row', () => {
         subscribed: true,
         pin_to_top: true,
     };
-    global.stream_data.add_sub('devel', devel);
+    global.stream_data.add_sub(devel);
 
     const social = {
         name: 'social',
@@ -59,7 +54,7 @@ run_test('create_sidebar_row', () => {
         color: 'green',
         subscribed: true,
     };
-    global.stream_data.add_sub('social', social);
+    global.stream_data.add_sub(social);
 
     global.unread.num_unread_for_stream = function () {
         return 42;
@@ -177,7 +172,7 @@ run_test('pinned_streams_never_inactive', () => {
         subscribed: true,
         pin_to_top: true,
     };
-    global.stream_data.add_sub('devel', devel);
+    global.stream_data.add_sub(devel);
 
     const social = {
         name: 'social',
@@ -185,7 +180,7 @@ run_test('pinned_streams_never_inactive', () => {
         color: 'green',
         subscribed: true,
     };
-    global.stream_data.add_sub('social', social);
+    global.stream_data.add_sub(social);
 
     // we use social and devel created in create_social_sidebar_row() and create_devel_sidebar_row()
 
@@ -222,7 +217,7 @@ run_test('pinned_streams_never_inactive', () => {
 set_global('$', global.make_zjquery());
 
 function add_row(sub) {
-    global.stream_data.add_sub(sub.name, sub);
+    global.stream_data.add_sub(sub);
     const row = {
         update_whether_active: function () {},
         get_li: function () {
@@ -434,7 +429,7 @@ run_test('narrowing', () => {
     };
 
     stream_list.handle_narrow_deactivated();
-    assert.equal(removed_classes, 'active-filter active-sub-filter');
+    assert.equal(removed_classes, 'active-filter');
     assert(topics_closed);
 });
 
@@ -534,7 +529,7 @@ run_test('separators_only_pinned_and_dormant', () => {
         subscribed: true,
     };
     add_row(RomeSub);
-    // dorment stream
+    // dormant stream
     const DenmarkSub = {
         name: 'Denmark',
         stream_id: 3000,
@@ -638,7 +633,7 @@ run_test('update_count_in_dom', () => {
     stream_li.addClass('stream-with-count');
     assert(stream_li.hasClass('stream-with-count'));
 
-    const stream_count = new Dict();
+    const stream_count = new Map();
     const stream_id = 11;
 
     const stream_row = {
@@ -650,7 +645,7 @@ run_test('update_count_in_dom', () => {
     stream_count.set(stream_id, 0);
     const counts = {
         stream_count: stream_count,
-        topic_count: new Dict(),
+        topic_count: new Map(),
     };
 
     stream_list.update_dom_with_unread_counts(counts);
@@ -662,28 +657,6 @@ run_test('update_count_in_dom', () => {
     stream_list.update_dom_with_unread_counts(counts);
     assert.equal($('<stream-value>').text(), '99');
     assert(stream_li.hasClass('stream-with-count'));
-
-    let topic_results;
-
-    topic_list.set_count = function (stream_id, topic, count) {
-        topic_results = {
-            stream_id: stream_id,
-            topic: topic,
-            count: count,
-        };
-    };
-
-    const topic_count = new FoldDict();
-    topic_count.set('lunch', '555');
-    counts.topic_count.set(stream_id, topic_count);
-
-    stream_list.update_dom_with_unread_counts(counts);
-
-    assert.deepEqual(topic_results, {
-        stream_id: stream_id,
-        topic: 'lunch',
-        count: 555,
-    });
 });
 
 narrow_state.active = () => false;
@@ -735,11 +708,12 @@ run_test('refresh_pin', () => {
         pin_to_top: false,
     };
 
-    stream_data.add_sub(sub.name, sub);
+    stream_data.add_sub(sub);
 
-    const pinned_sub = _.extend(sub, {
+    const pinned_sub = {
+        ...sub,
         pin_to_top: true,
-    });
+    };
 
     const li_stub = $.create('li stub');
     li_stub.length = 0;
@@ -764,7 +738,7 @@ run_test('refresh_pin', () => {
 run_test('create_initial_sidebar_rows', () => {
     initialize_stream_data();
 
-    const html_dict = new Dict();
+    const html_dict = new Map();
 
     stream_list.stream_sidebar = {
         has_row_for: return_false,

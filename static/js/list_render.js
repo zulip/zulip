@@ -1,7 +1,7 @@
 const DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
     LOAD_COUNT: 20,
-    instances: {},
+    instances: new Map(),
 };
 
 exports.filter = (value, list, opts) => {
@@ -21,47 +21,10 @@ exports.filter = (value, list, opts) => {
     });
 };
 
-// @params
-// container: jQuery object to append to.
-// list: The list of items to progressively append.
-// opts: An object of random preferences.
-exports.create = function ($container, list, opts) {
-    // this memoizes the results and will return a previously invoked
-    // instance's prototype.
-    if (opts.name && DEFAULTS.instances[opts.name]) {
-        // the false flag here means "don't run `init`". This is because a
-        // user is likely reinitializing and will have put .init() afterwards.
-        // This happens when the same codepath is hit multiple times.
-        return DEFAULTS.instances[opts.name]
-        // sets the container to the new container in this prototype's args.
-            .set_container($container)
-        // sets the input to the new input in the args.
-            .set_opts(opts)
-            .__set_events()
-            .data(list)
-            .init();
-    }
-
-    const meta = {
-        sorting_function: null,
-        prop: null,
-        sorting_functions: {},
-        generic_sorting_functions: {},
-        offset: 0,
-        listRenders: {},
-        list: list,
-        filtered_list: list,
-
-    };
-
-    function filter_list(value) {
-        meta.filtered_list = exports.filter(value, meta.list, opts);
-    }
-
-    if (!opts) {
+exports.validate_filter = (opts) => {
+    if (!opts.filter) {
         return;
     }
-
     if (opts.filter.predicate) {
         if (typeof opts.filter.predicate !== 'function') {
             blueslip.error('Filter predicate function is missing.');
@@ -77,11 +40,53 @@ exports.create = function ($container, list, opts) {
             return;
         }
     }
+};
+
+// @params
+// container: jQuery object to append to.
+// list: The list of items to progressively append.
+// opts: An object of random preferences.
+exports.create = function ($container, list, opts) {
+    // this memoizes the results and will return a previously invoked
+    // instance's prototype.
+    if (opts.name && DEFAULTS.instances.get(opts.name)) {
+        // the false flag here means "don't run `init`". This is because a
+        // user is likely reinitializing and will have put .init() afterwards.
+        // This happens when the same codepath is hit multiple times.
+        return DEFAULTS.instances.get(opts.name)
+        // sets the container to the new container in this prototype's args.
+            .set_container($container)
+        // sets the input to the new input in the args.
+            .set_opts(opts)
+            .__set_events()
+            .data(list)
+            .init();
+    }
+
+    const meta = {
+        sorting_function: null,
+        prop: null,
+        sorting_functions: new Map(),
+        generic_sorting_functions: new Map(),
+        offset: 0,
+        list: list,
+        filtered_list: list,
+
+    };
+
+    function filter_list(value) {
+        meta.filtered_list = exports.filter(value, meta.list, opts);
+    }
+
+    if (!opts) {
+        return;
+    }
+    exports.validate_filter(opts);
 
     const prototype = {
         // Reads the provided list (in the scope directly above)
         // and renders the next block of messages automatically
-        // into the specified contianer.
+        // into the specified container.
         render: function (load_count) {
             load_count = load_count || opts.load_count || DEFAULTS.LOAD_COUNT;
 
@@ -93,7 +98,8 @@ exports.create = function ($container, list, opts) {
             const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
             const finish = blueslip.start_timing('list_render ' + opts.name);
-            const html = _.reduce(slice, function (acc, item) {
+            let html = "";
+            for (const item of slice) {
                 let _item = opts.modifier(item);
 
                 // if valid jQuery selection, attempt to grab all elements within
@@ -116,9 +122,9 @@ exports.create = function ($container, list, opts) {
                     _item = _item.outerHTML;
                 }
 
-                // return the modified HTML or nothing if corrupt (null, undef, etc.).
-                return acc + (_item || "");
-            }, "");
+                // append the HTML or nothing if corrupt (null, undef, etc.).
+                html += _item || "";
+            }
 
             finish();
 
@@ -144,16 +150,18 @@ exports.create = function ($container, list, opts) {
         // reset the data associated with a list. This is so that instead of
         // initializing a new progressive list render instance, you can just
         // update the data of an existing one.
-        data: function (data) {
+        data: function (...args) {
             // if no args are provided then just return the existing data.
             // this interface is similar to how many jQuery functions operate,
             // where a call to the method without data returns the existing data.
-            if (typeof data === "undefined" && arguments.length === 0) {
+            if (args.length === 0) {
                 return meta.list;
             }
+            const [data] = args;
 
             if (Array.isArray(data)) {
                 meta.list = data;
+                meta.filtered_list = data;
 
                 if (opts.filter && opts.filter.element) {
                     const value = $(opts.filter.element).val().toLocaleLowerCase();
@@ -221,9 +229,9 @@ exports.create = function ($container, list, opts) {
             } else if (typeof sorting_function === "string") {
                 if (typeof prop === "string") {
                     /* eslint-disable max-len */
-                    meta.sorting_function = meta.generic_sorting_functions[sorting_function](prop);
+                    meta.sorting_function = meta.generic_sorting_functions.get(sorting_function)(prop);
                 } else {
-                    meta.sorting_function = meta.sorting_functions[sorting_function];
+                    meta.sorting_function = meta.sorting_functions.get(sorting_function);
                 }
             }
 
@@ -238,20 +246,20 @@ exports.create = function ($container, list, opts) {
                 // of items.
                 prototype.init();
 
-                if (opts.filter.onupdate) {
+                if (opts.filter && opts.filter.onupdate) {
                     opts.filter.onupdate();
                 }
             }
         },
 
         add_sort_function: function (name, sorting_function) {
-            meta.sorting_functions[name] = sorting_function;
+            meta.sorting_functions.set(name, sorting_function);
         },
 
         // generic sorting functions are ones that will use a specified prop
         // and perform a sort on it with the given sorting function.
         add_generic_sort_function: function (name, sorting_function) {
-            meta.generic_sorting_functions[name] = sorting_function;
+            meta.generic_sorting_functions.set(name, sorting_function);
         },
 
         remove_sort: function () {
@@ -283,7 +291,11 @@ exports.create = function ($container, list, opts) {
                 }
             });
 
-            if (opts.filter.element) {
+            if (opts.parent_container) {
+                opts.parent_container.on("click", "[data-sort]", exports.handle_sort);
+            }
+
+            if (opts.filter && opts.filter.element) {
                 opts.filter.element.on(opts.filter.event || "input", function () {
                     const self = this;
                     const value = self.value.toLocaleLowerCase();
@@ -344,19 +356,14 @@ exports.create = function ($container, list, opts) {
 
     // Save the instance for potential future retrieval if a name is provided.
     if (opts.name) {
-        DEFAULTS.instances[opts.name] = prototype;
-    }
-
-    // Attach click handler to column heads for sorting rows accordingly
-    if (opts.parent_container) {
-        opts.parent_container.on("click", "[data-sort]", exports.handle_sort);
+        DEFAULTS.instances.set(opts.name, prototype);
     }
 
     return prototype;
 };
 
 exports.get = function (name) {
-    return DEFAULTS.instances[name] || false;
+    return DEFAULTS.instances.get(name) || false;
 };
 
 exports.handle_sort = function () {

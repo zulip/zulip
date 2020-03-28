@@ -1,9 +1,7 @@
-set_global('i18n', global.stub_i18n);
+const typeahead = zrequire('typeahead', 'shared/js/typeahead');
 zrequire('compose_state');
-zrequire('ui_util');
 zrequire('pm_conversations');
 zrequire('emoji');
-zrequire('util');
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 zrequire('typeahead_helper');
@@ -106,7 +104,7 @@ const emoji_headphones = {
     emoji_code: '1f3a7',
 };
 
-const emojis_by_name = {
+const emojis_by_name = new Map(Object.entries({
     tada: emoji_tada,
     moneybag: emoji_moneybag,
     stadium: emoji_stadium,
@@ -117,8 +115,8 @@ const emojis_by_name = {
     thermometer: emoji_thermometer,
     heart: emoji_heart,
     headphones: emoji_headphones,
-};
-const emoji_list = _.map(emojis_by_name, function (emoji_dict) {
+}));
+const emoji_list = Array.from(emojis_by_name.values(), emoji_dict => {
     if (emoji_dict.is_realm_emoji === true) {
         return {
             emoji_name: emoji_dict.name,
@@ -161,9 +159,9 @@ const netherland_stream = {
     subscribed: false,
 };
 
-stream_data.add_sub('Sweden', sweden_stream);
-stream_data.add_sub('Denmark', denmark_stream);
-stream_data.add_sub('The Netherlands', netherland_stream);
+stream_data.add_sub(sweden_stream);
+stream_data.add_sub(denmark_stream);
+stream_data.add_sub(netherland_stream);
 
 set_global('$', global.make_zjquery());
 
@@ -173,13 +171,11 @@ set_global('compose', {
     finish: noop,
 });
 
-emoji.active_realm_emojis = {};
+emoji.active_realm_emojis = new Map();
 emoji.emojis_by_name = emojis_by_name;
 emoji.emojis = emoji_list;
 
-set_global('pygments_data', {langs:
-    {python: 0, javscript: 1, html: 2, css: 3},
-});
+const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 
 const alice = {
     email: 'alice@zulip.com',
@@ -244,17 +240,18 @@ const harry = {
     email: 'harry@zulip.com',
 };
 
-global.people.add_in_realm(alice);
-global.people.add_in_realm(hamlet);
-global.people.add_in_realm(othello);
-global.people.add_in_realm(cordelia);
-global.people.add_in_realm(lear);
-global.people.add_in_realm(twin1);
-global.people.add_in_realm(twin2);
-global.people.add_in_realm(gael);
-global.people.add_in_realm(hal);
-global.people.add_in_realm(harry);
-global.people.add(deactivated_user);
+people.add(alice);
+people.add(hamlet);
+people.add(othello);
+people.add(cordelia);
+people.add(lear);
+people.add(twin1);
+people.add(twin2);
+people.add(gael);
+people.add(hal);
+people.add(harry);
+people.add(deactivated_user);
+people.deactivate(deactivated_user);
 
 const hamletcharacters = {
     name: "hamletcharacters",
@@ -307,11 +304,12 @@ run_test('content_typeahead_selected', () => {
     };
     let caret_called1 = false;
     let caret_called2 = false;
-    fake_this.$element.caret = function (arg1, arg2) {
-        if (arguments.length === 0) {  // .caret() used in split_at_cursor
+    fake_this.$element.caret = function (...args) {
+        if (args.length === 0) {  // .caret() used in split_at_cursor
             caret_called1 = true;
             return fake_this.query.length;
         }
+        const [arg1, arg2] = args;
         // .caret() used in setTimeout
         assert.equal(arg1, arg2);
         caret_called2 = true;
@@ -523,7 +521,7 @@ run_test('content_typeahead_selected', () => {
 });
 
 function sorted_names_from(subs) {
-    return _.pluck(subs, 'name').sort();
+    return subs.map(sub => sub.name).sort();
 }
 
 run_test('initialize', () => {
@@ -662,7 +660,7 @@ run_test('initialize', () => {
         assert.equal(actual_value, expected_value);
 
         function matcher(query, person) {
-            query = ct.clean_query_lowercase(query);
+            query = typeahead.clean_query_lowercase(query);
             return ct.query_matches_person(query, person);
         }
 
@@ -762,7 +760,7 @@ run_test('initialize', () => {
         assert.equal(appended_name, 'Othello, the Moor of Venice');
 
         let appended_names = [];
-        people.get_person_from_user_id = function (user_id) {
+        people.get_by_user_id = function (user_id) {
             const users = {100: hamlet, 104: lear};
             return users[user_id];
         };

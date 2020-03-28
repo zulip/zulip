@@ -1,3 +1,4 @@
+
 zrequire('muting');
 zrequire('stream_data');
 set_global('blueslip', global.make_zblueslip());
@@ -6,9 +7,6 @@ set_global('page_params', {});
 run_test('edge_cases', () => {
     // private messages
     assert(!muting.is_topic_muted(undefined, undefined));
-
-    // defensive
-    assert(!muting.is_topic_muted('nonexistent', undefined));
 });
 
 const design = {
@@ -36,10 +34,10 @@ const unknown = {
     name: 'whatever',
 };
 
-stream_data.add_sub(design.name, design);
-stream_data.add_sub(devel.name, devel);
-stream_data.add_sub(office.name, office);
-stream_data.add_sub(social.name, social);
+stream_data.add_sub(design);
+stream_data.add_sub(devel);
+stream_data.add_sub(office);
+stream_data.add_sub(social);
 
 run_test('basics', () => {
     assert(!muting.is_topic_muted(devel.stream_id, 'java'));

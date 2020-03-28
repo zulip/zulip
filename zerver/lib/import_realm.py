@@ -48,7 +48,7 @@ realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
 # that map old ids to new ids.  We use this in
 # re_map_foreign_keys and other places.
 #
-# We explicity initialize ID_MAP with the tables that support
+# We explicitly initialize ID_MAP with the tables that support
 # id re-mapping.
 #
 # Code reviewers: give these tables extra scrutiny, as we need to
@@ -513,6 +513,10 @@ def remove_denormalized_recipient_column_from_data(data: TableData) -> None:
         if 'recipient' in user_profile_dict:
             del user_profile_dict['recipient']
 
+    for huddle_dict in data['zerver_huddle']:
+        if 'recipient' in huddle_dict:
+            del huddle_dict['recipient']
+
 def get_db_table(model_class: Any) -> str:
     """E.g. (RealmDomain -> 'zerver_realmdomain')"""
     return model_class._meta.db_table
@@ -584,32 +588,34 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
             client = Client.objects.create(name=item['name'])
         update_id_map(table='client', old_id=item['id'], new_id=client.id)
 
-def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=False,
-                   processing_emojis: bool=False) -> None:
+def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_avatars: bool=False,
+                   processing_emojis: bool=False, processing_realm_icons: bool=False) -> None:
     if processing_avatars and processing_emojis:
         raise AssertionError("Cannot import avatars and emojis at the same time!")
     if processing_avatars:
         logging.info("Importing avatars")
     elif processing_emojis:
         logging.info("Importing emojis")
+    elif processing_realm_icons:
+        logging.info("Importing realm icons and logos")
     else:
         logging.info("Importing uploaded files")
 
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename) as records_file:
-        records = ujson.loads(records_file.read())  # type: List[Dict[str, Any]]
+        records = ujson.load(records_file)  # type: List[Dict[str, Any]]
     timestamp = datetime_to_timestamp(timezone_now())
 
     re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
                                  id_field=True)
-    if not processing_emojis:
+    if not processing_emojis and not processing_realm_icons:
         re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
                                      related_table="user_profile", id_field=True)
 
     s3_uploads = settings.LOCAL_UPLOADS_DIR is None
 
     if s3_uploads:
-        if processing_avatars or processing_emojis:
+        if processing_avatars or processing_emojis or processing_realm_icons:
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
@@ -641,6 +647,10 @@ def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=Fa
                 realm_id=record['realm_id'],
                 emoji_file_name=record['file_name'])
             record['last_modified'] = timestamp
+        elif processing_realm_icons:
+            icon_name = os.path.basename(record["path"])
+            relative_path = os.path.join(str(record['realm_id']), "realm", icon_name)
+            record['last_modified'] = timestamp
         else:
             # Should be kept in sync with its equivalent in zerver/lib/uploads in the
             # function 'upload_message_file'
@@ -654,9 +664,15 @@ def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=Fa
         if s3_uploads:
             key = Key(bucket)
             key.key = relative_path
-            # Exported custom emoji from tools like Slack don't have
-            # the data for what user uploaded them in `user_profile_id`.
-            if not processing_emojis:
+            if processing_emojis and "user_profile_id" not in record:
+                # Exported custom emoji from tools like Slack don't have
+                # the data for what user uploaded them in `user_profile_id`.
+                pass
+            elif processing_realm_icons and "user_profile_id" not in record:
+                # Exported realm icons and logos from local export don't have
+                # the value of user_profile_id in the associated record.
+                pass
+            else:
                 user_profile_id = int(record['user_profile_id'])
                 # Support email gateway bot and other cross-realm messages
                 if user_profile_id in ID_MAP["user_profile"]:
@@ -683,7 +699,7 @@ def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=Fa
 
             key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
         else:
-            if processing_avatars or processing_emojis:
+            if processing_avatars or processing_emojis or processing_realm_icons:
                 file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)
             else:
                 file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", relative_path)
@@ -813,10 +829,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
     for item in data['zerver_userprofile_crossrealm']:
-        if item['email'].startswith("emailgateway@"):
-            # The email gateway bot's email is customized to a
-            # different domain on some servers.
-            item['email'] = settings.EMAIL_GATEWAY_BOT
         logging.info("Adding to ID map: %s %s" % (item['id'], get_system_bot(item['email']).id))
         new_user_id = get_system_bot(item['email']).id
         update_id_map(table='user_profile', old_id=item['id'], new_id=new_user_id)
@@ -906,6 +918,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     if 'zerver_huddle' in data:
         process_huddle_hash(data, 'zerver_huddle')
         bulk_import_model(data, Huddle)
+        for huddle in Huddle.objects.filter(recipient_id=None):
+            recipient = Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle.id)
+            huddle.recipient = recipient
+            huddle.save(update_fields=["recipient"])
 
     if 'zerver_userhotspot' in data:
         fix_datetime_fields(data, 'zerver_userhotspot')
@@ -914,6 +930,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         bulk_import_model(data, UserHotspot)
 
     if 'zerver_mutedtopic' in data:
+        fix_datetime_fields(data, 'zerver_mutedtopic')
         re_map_foreign_keys(data, 'zerver_mutedtopic', 'user_profile', related_table='user_profile')
         re_map_foreign_keys(data, 'zerver_mutedtopic', 'stream', related_table='stream')
         re_map_foreign_keys(data, 'zerver_mutedtopic', 'recipient', related_table='recipient')
@@ -953,6 +970,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_userpresence', 'client', related_table='client')
+    re_map_foreign_keys(data, 'zerver_userpresence', 'realm', related_table="realm")
     update_model_ids(UserPresence, data, 'user_presence')
     bulk_import_model(data, UserPresence)
 
@@ -980,14 +998,18 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     bulk_import_model(data, CustomProfileFieldValue)
 
     # Import uploaded files and avatars
-    import_uploads(os.path.join(import_dir, "avatars"), processes, processing_avatars=True)
-    import_uploads(os.path.join(import_dir, "uploads"), processes)
+    import_uploads(realm, os.path.join(import_dir, "avatars"), processes, processing_avatars=True)
+    import_uploads(realm, os.path.join(import_dir, "uploads"), processes)
 
     # We need to have this check as the emoji files are only present in the data
     # importer from slack
     # For Zulip export, this doesn't exist
     if os.path.exists(os.path.join(import_dir, "emoji")):
-        import_uploads(os.path.join(import_dir, "emoji"), processes, processing_emojis=True)
+        import_uploads(realm, os.path.join(import_dir, "emoji"), processes, processing_emojis=True)
+
+    if os.path.exists(os.path.join(import_dir, "realm_icons")):
+        import_uploads(realm, os.path.join(import_dir, "realm_icons"), processes,
+                       processing_realm_icons=True)
 
     sender_map = {
         user['id']: user
@@ -1059,15 +1081,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         do_change_plan_type(realm, Realm.SELF_HOSTED)
     return realm
 
-# create_users and do_import_system_bots differ from their equivalent in
-# zerver/management/commands/initialize_voyager_db.py because here we check if the bots
-# don't already exist and only then create a user for these bots.
+# create_users and do_import_system_bots differ from their equivalent
+# in zerver/lib/server_initialization.py because here we check if the
+# bots don't already exist and only then create a user for these bots.
 def do_import_system_bots(realm: Any) -> None:
     internal_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
                      for bot in settings.INTERNAL_BOTS]
     create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
-    names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
-    create_users(realm, names, bot_type=UserProfile.DEFAULT_BOT)
     print("Finished importing system bots.")
 
 def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],

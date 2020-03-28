@@ -1,4 +1,5 @@
 from django.http import HttpResponse, HttpResponseNotAllowed
+from django.utils.translation import ugettext as _
 import ujson
 
 from typing import Optional, Any, Dict, List
@@ -16,7 +17,10 @@ class HttpResponseUnauthorized(HttpResponse):
         else:
             raise AssertionError("Invalid www_authenticate value!")
 
-def json_unauthorized(message: str, www_authenticate: Optional[str]=None) -> HttpResponse:
+def json_unauthorized(message: Optional[str]=None,
+                      www_authenticate: Optional[str]=None) -> HttpResponse:
+    if message is None:
+        message = _("Not logged in: API authentication or user session required")
     resp = HttpResponseUnauthorized("zulip", www_authenticate=www_authenticate)
     resp.content = (ujson.dumps({"result": "error",
                                  "msg": message}) + "\n").encode()

@@ -40,7 +40,7 @@ about that data structure:
   timestamp) pair.  E.g. a user who last used Zulip 1 week ago will
   have a timestamp of 1 week ago and a status of "active".  Why?
   Because this correctly handles the race conditions.  For example, if
-  the threshhold for displaying a user as "offline" was 5 minutes
+  the threshold for displaying a user as "offline" was 5 minutes
   since the user was last online, the client can at any time
   accurately compute whether that user is offline (even if the last
   data from the server was 45 seconds ago, and the user was last

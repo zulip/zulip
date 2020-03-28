@@ -1,7 +1,5 @@
-const IntDict = require('./int_dict').IntDict;
-
 const away_user_ids = new Set();
-const user_info = new IntDict();
+const user_info = new Map();
 
 exports.server_update = function (opts) {
     channel.post({
@@ -51,15 +49,15 @@ exports.get_status_text = function (user_id) {
 
 exports.set_status_text = function (opts) {
     if (!opts.status_text) {
-        user_info.del(opts.user_id);
+        user_info.delete(opts.user_id);
         return;
     }
 
     user_info.set(opts.user_id, opts.status_text);
 };
 
-exports.initialize = function () {
-    _.each(page_params.user_status, function (dct, str_user_id) {
+exports.initialize = function (params) {
+    for (const [str_user_id, dct] of Object.entries(params.user_status)) {
         // JSON does not allow integer keys, so we
         // convert them here.
         const user_id = parseInt(str_user_id, 10);
@@ -71,9 +69,7 @@ exports.initialize = function () {
         if (dct.status_text) {
             user_info.set(user_id, dct.status_text);
         }
-    });
-
-    delete page_params.user_status;
+    }
 };
 
 window.user_status = exports;

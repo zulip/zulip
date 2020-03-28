@@ -8,7 +8,7 @@ const LazySet = zrequire('lazy_set').LazySet;
 */
 
 run_test('map', () => {
-    const ls = LazySet([1, 2]);
+    const ls = new LazySet([1, 2]);
 
     const triple = (n) => n * 3;
 
@@ -17,7 +17,7 @@ run_test('map', () => {
 
 run_test('conversions', () => {
     blueslip.set_test_data('error', 'not a number');
-    const ls = LazySet([1, 2]);
+    const ls = new LazySet([1, 2]);
     ls.add('3');
     assert(ls.has('3'));
 });

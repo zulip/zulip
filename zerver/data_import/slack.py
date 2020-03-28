@@ -13,7 +13,7 @@ from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple, Set, Iterator
 from zerver.models import Reaction, RealmEmoji, UserProfile, Recipient, \
-    CustomProfileField, CustomProfileFieldValue
+    CustomProfileField, CustomProfileFieldValue, Realm
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
@@ -24,7 +24,8 @@ from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
-from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
+from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.upload import resize_logo
 from urllib.parse import urlencode
 
 SlackToZulipUserIDT = Dict[str, int]
@@ -492,7 +493,7 @@ def process_long_term_idle_users(slack_data_dir: str, users: List[ZerverFieldsT]
     """Algorithmically, we treat users who have sent at least 10 messages
     or have sent a message within the last 60 days as active.
     Everyone else is treated as long-term idle, which means they will
-    have a slighly slower first page load when coming back to
+    have a slightly slower first page load when coming back to
     Zulip.
     """
     all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, dm_members)
@@ -626,15 +627,24 @@ def get_messages_iterator(slack_data_dir: str, added_channels: Dict[str, Any],
         messages_for_one_day = []  # type: List[ZerverFieldsT]
         for dir_path in all_json_names[json_name]:
             message_dir = os.path.join(dir_path, json_name)
-            messages = get_data_file(message_dir)
             dir_name = os.path.basename(dir_path)
-            for message in messages:
+            messages = []
+            for message in get_data_file(message_dir):
+                if message.get('user') == 'U00':
+                    # Skip messages involving the the "U00" user,
+                    # which is apparently used in some channel rename
+                    # messages.  It's likely just the result of some
+                    # bug in Slack's export system.  Arguably we could
+                    # change this to point to slackbot instead, but
+                    # skipping those messages is simpler.
+                    continue
                 if dir_name in added_channels:
                     message['channel_name'] = dir_name
                 elif dir_name in added_mpims:
                     message['mpim_name'] = dir_name
                 elif dir_name in dm_members:
                     message['pm_name'] = dir_name
+                messages.append(message)
             messages_for_one_day += messages
 
         # we sort the messages according to the timestamp to show messages with
@@ -670,10 +680,6 @@ def channel_message_to_zerver_message(realm_id: int,
     uploads_list = []  # type: List[ZerverFieldsT]
     zerver_attachment = []  # type: List[ZerverFieldsT]
     reaction_list = []  # type: List[ZerverFieldsT]
-
-    # For unicode emoji
-    with open(NAME_TO_CODEPOINT_PATH) as fp:
-        name_to_codepoint = ujson.load(fp)
 
     total_user_messages = 0
     total_skipped_user_messages = 0
@@ -726,7 +732,7 @@ def channel_message_to_zerver_message(realm_id: int,
 
         if 'reactions' in message.keys():
             build_reactions(reaction_list, message['reactions'], slack_user_id_to_zulip_user_id,
-                            message_id, name_to_codepoint, zerver_realmemoji)
+                            message_id, zerver_realmemoji)
 
         # Process different subtypes of slack messages
 
@@ -885,7 +891,6 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
 
 def build_reactions(reaction_list: List[ZerverFieldsT], reactions: List[ZerverFieldsT],
                     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT, message_id: int,
-                    name_to_codepoint: ZerverFieldsT,
                     zerver_realmemoji: List[ZerverFieldsT]) -> None:
     realmemoji = {}
     for realm_emoji in zerver_realmemoji:
@@ -978,6 +983,49 @@ def fetch_shared_channel_users(user_list: List[ZerverFieldsT], slack_data_dir: s
         user["is_mirror_dummy"] = True
         user_list.append(user)
 
+def fetch_team_icons(zerver_realm: Dict[str, Any], team_info_dict: Dict[str, Any],
+                     output_dir: str) -> List[Dict[str, Any]]:
+    records = []
+
+    team_icons_dict = team_info_dict["icon"]
+    if "image_default" in team_icons_dict and team_icons_dict["image_default"]:
+        return []
+
+    icon_url = team_icons_dict.get("image_original", None) or team_icons_dict.get("image_230", None) or \
+        team_icons_dict.get("image_132", None) or team_icons_dict.get("image_102", None)
+    if icon_url is None:
+        return []
+
+    response = requests.get(icon_url, stream=True)
+    response_raw = response.raw
+
+    realm_id = zerver_realm["id"]
+    os.makedirs(os.path.join(output_dir, str(realm_id)), exist_ok=True)
+
+    original_icon_output_path = os.path.join(output_dir, str(realm_id), "icon.original")
+    with open(original_icon_output_path, 'wb') as output_file:
+        shutil.copyfileobj(response_raw, output_file)
+    records.append({
+        "realm_id": realm_id,
+        "path": os.path.join(str(realm_id), "icon.original"),
+        "s3_path": os.path.join(str(realm_id), "icon.original"),
+    })
+
+    resized_icon_output_path = os.path.join(output_dir, str(realm_id), "icon.png")
+    with open(resized_icon_output_path, 'wb') as output_file:
+        with open(original_icon_output_path, 'rb') as original_file:
+            resized_data = resize_logo(original_file.read())
+            output_file.write(resized_data)
+    records.append({
+        "realm_id": realm_id,
+        "path": os.path.join(str(realm_id), "icon.png"),
+        "s3_path": os.path.join(str(realm_id), "icon.png"),
+    })
+
+    zerver_realm["icon_source"] = Realm.ICON_UPLOADED
+
+    return records
+
 def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: int=6) -> None:
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
@@ -1029,11 +1077,16 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     uploads_records = process_uploads(uploads_list, uploads_folder, threads)
     attachment = {"zerver_attachment": zerver_attachment}
 
+    team_info_dict = get_slack_api_data("https://slack.com/api/team.info", "team", token=token)
+    realm_icons_folder = os.path.join(output_dir, 'realm_icons')
+    realm_icon_records = fetch_team_icons(realm["zerver_realm"][0], team_info_dict, realm_icons_folder)
+
     create_converted_data_files(realm, output_dir, '/realm.json')
     create_converted_data_files(emoji_records, output_dir, '/emoji/records.json')
     create_converted_data_files(avatar_records, output_dir, '/avatars/records.json')
     create_converted_data_files(uploads_records, output_dir, '/uploads/records.json')
     create_converted_data_files(attachment, output_dir, '/attachment.json')
+    create_converted_data_files(realm_icon_records, output_dir, '/realm_icons/records.json')
 
     rm_tree(slack_data_dir)
     subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])

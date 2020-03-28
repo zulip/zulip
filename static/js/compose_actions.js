@@ -169,19 +169,18 @@ exports.maybe_scroll_up_selected_message = function () {
 };
 
 function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
-    let default_opts = {
+    return {
         message_type: msg_type,
         stream: '',
         topic: '',
         private_message_recipient: '',
         trigger: 'unknown',
-    };
 
-    // Set default parameters based on the current narrowed view.
-    const compose_opts = narrow_state.set_compose_defaults();
-    default_opts = _.extend(default_opts, compose_opts);
-    opts = _.extend(default_opts, opts);
-    return opts;
+        // Set default parameters based on the current narrowed view.
+        ...narrow_state.set_compose_defaults(),
+
+        ...opts,
+    };
 }
 
 function same_recipient_as_before(msg_type, opts) {
@@ -334,14 +333,14 @@ exports.respond_to_message = function (opts) {
     let pm_recipient = '';
     if (msg_type === "stream") {
         stream = message.stream;
-        topic = util.get_message_topic(message);
+        topic = message.topic;
     } else {
         pm_recipient = message.reply_to;
         if (opts.reply_type === "personal") {
             // reply_to for private messages is everyone involved, so for
             // personals replies we need to set the private message
             // recipient to just the sender
-            pm_recipient = people.get_person_from_user_id(message.sender_id).email;
+            pm_recipient = people.get_by_user_id(message.sender_id).email;
         } else {
             pm_recipient = people.pm_reply_to(message);
         }
@@ -434,13 +433,22 @@ exports.quote_and_reply = function (opts) {
 
     compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
 
-    function replace_content(raw_content) {
-        compose_ui.replace_syntax('[Quoting…]', '```quote\n' + raw_content + '\n```', textarea);
+    function replace_content(message) {
+        // Final message looks like:
+        //     @_**Iago|5** [said](link to message):
+        //     ```quote
+        //     message content
+        //     ```
+        let content = `@_**${message.sender_full_name}|${message.sender_id}** `;
+        content += `[said](${hash_util.by_conversation_and_time_uri(message)}):\n`;
+        const fence = fenced_code.get_unused_fence(message.raw_content);
+        content += `${fence}quote\n${message.raw_content}\n${fence}`;
+        compose_ui.replace_syntax('[Quoting…]', content, textarea);
         autosize.update($('#compose-textarea'));
     }
 
     if (message && message.raw_content) {
-        replace_content(message.raw_content);
+        replace_content(message);
         return;
     }
 
@@ -449,7 +457,7 @@ exports.quote_and_reply = function (opts) {
         idempotent: true,
         success: function (data) {
             message.raw_content = data.raw_content;
-            replace_content(message.raw_content);
+            replace_content(message);
         },
     });
 };

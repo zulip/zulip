@@ -1,8 +1,3 @@
-const ELECTRON_APP_VERSION = "4.0.0";
-const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + "-x86_64.AppImage";
-const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
-const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
-
 import { detect_user_os } from './tabbed-instructions.js';
 import render_tabs from './team.js';
 
@@ -25,6 +20,11 @@ const hello_events = function () {
 };
 
 const apps_events = function () {
+    const ELECTRON_APP_VERSION = page_params.electron_app_version;
+    const ELECTRON_APP_URL_LINUX = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + "-x86_64.AppImage";
+    const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-" + ELECTRON_APP_VERSION + ".dmg";
+    const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-desktop/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
+
     const info = {
         windows: {
             image: "/static/images/landing-page/microsoft.png",
@@ -33,6 +33,7 @@ const apps_events = function () {
             link: ELECTRON_APP_URL_WINDOWS,
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
+            app_type: 'desktop',
         },
         mac: {
             image: "/static/images/landing-page/macbook.png",
@@ -41,6 +42,7 @@ const apps_events = function () {
             link: ELECTRON_APP_URL_MAC,
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
+            app_type: "desktop",
         },
         android: {
             image: "/static/images/app-screenshots/zulip-android.png",
@@ -48,6 +50,7 @@ const apps_events = function () {
             description: "Zulip's native Android app makes it easy to keep up while on the go.",
             show_instructions: false,
             link: "https://play.google.com/store/apps/details?id=com.zulipmobile",
+            app_type: "mobile",
         },
         ios: {
             image: "/static/images/app-screenshots/zulip-iphone-rough.png",
@@ -55,6 +58,7 @@ const apps_events = function () {
             description: "Zulip's native iOS app makes it easy to keep up while on the go.",
             show_instructions: false,
             link: "https://itunes.apple.com/us/app/zulip/id1203036395",
+            app_type: "mobile",
         },
         linux: {
             image: "/static/images/landing-page/ubuntu.png",
@@ -63,6 +67,7 @@ const apps_events = function () {
             link: ELECTRON_APP_URL_LINUX,
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
+            app_type: "desktop",
         },
     };
 
@@ -73,7 +78,7 @@ const apps_events = function () {
         const parts = path_parts();
 
         Object.keys(info).forEach(function (version) {
-            if (parts.indexOf(version) !== -1) {
+            if (parts.includes(version)) {
                 result = version;
             }
         });
@@ -95,19 +100,26 @@ const apps_events = function () {
         const $download_instructions = $(".download-instructions");
         const $third_party_apps = $("#third-party-apps");
         const $download_android_apk = $("#download-android-apk");
+        const $download_from_google_play_store = $(".download-from-google-play-store");
+        const $download_from_apple_app_store = $(".download-from-apple-app-store");
+        const $desktop_download_link = $(".desktop-download-link");
         const version_info = info[version];
 
         $(".info .platform").text(version_info.alt);
         $(".info .description").text(version_info.description);
-        $(".info .link").attr("href", version_info.link);
+        $(".info .desktop-download-link").attr("href", version_info.link);
+        $(".download-from-google-play-store").attr("href", version_info.link);
+        $(".download-from-apple-app-store").attr("href", version_info.link);
         $(".image img").attr("src", version_info.image);
         $download_instructions.find("a").attr("href", version_info.install_guide);
 
         $download_instructions.toggle(version_info.show_instructions);
-        $third_party_apps.toggle(version === "mac" ||
-                                 version === "windows" ||
-                                 version === "linux");
+
+        $third_party_apps.toggle(version_info.app_type === "desktop");
+        $desktop_download_link.toggle(version_info.app_type === "desktop");
         $download_android_apk.toggle(version === "android");
+        $download_from_google_play_store.toggle(version === "android");
+        $download_from_apple_app_store.toggle(version === "ios");
     };
 
     $(window).on('popstate', function () {
@@ -160,11 +172,11 @@ const events = function () {
         e.stopPropagation();
     });
 
-    if (path_parts().indexOf("apps") !== -1) {
+    if (path_parts().includes("apps")) {
         apps_events();
     }
 
-    if (path_parts().indexOf('hello') !== -1) {
+    if (path_parts().includes('hello')) {
         hello_events();
     }
 };

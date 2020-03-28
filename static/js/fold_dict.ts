@@ -1,5 +1,3 @@
-import * as _ from 'underscore';
-
 /*
     Use this class to manage keys where you don't care
     about case (i.e. case-insensitive).
@@ -15,61 +13,55 @@ import * as _ from 'underscore';
         - etc.
  */
 type KeyValue<V> = { k: string; v: V };
-type Items<V> = {
-    [key: string]: KeyValue<V>;
-};
 
 export class FoldDict<V> {
-    private _items: Items<V> = {};
+    private _items: Map<string, KeyValue<V>> = new Map();
 
     get(key: string): V | undefined {
-        const mapping = this._items[this._munge(key)];
+        const mapping = this._items.get(this._munge(key));
         if (mapping === undefined) {
             return undefined;
         }
         return mapping.v;
     }
 
-    set(key: string, value: V): V {
-        this._items[this._munge(key)] = {k: key, v: value};
-        return value;
+    set(key: string, value: V): FoldDict<V> {
+        this._items.set(this._munge(key), {k: key, v: value});
+        return this;
     }
 
     has(key: string): boolean {
-        return _.has(this._items, this._munge(key));
+        return this._items.has(this._munge(key));
     }
 
-    del(key: string): void {
-        delete this._items[this._munge(key)];
+    delete(key: string): boolean {
+        return this._items.delete(this._munge(key));
     }
 
-    keys(): string[] {
-        return _.pluck(_.values(this._items), 'k');
+    *keys(): Iterator<string> {
+        for (const {k} of this._items.values()) {
+            yield k;
+        }
     }
 
-    values(): V[] {
-        return _.pluck(_.values(this._items), 'v');
+    *values(): Iterator<V> {
+        for (const {v} of this._items.values()) {
+            yield v;
+        }
     }
 
-    items(): [string, V][] {
-        return _.map(_.values(this._items),
-            (mapping: KeyValue<V>): [string, V] => [mapping.k, mapping.v]);
+    *[Symbol.iterator](): Iterator<[string, V]> {
+        for (const {k, v} of this._items.values()) {
+            yield [k, v];
+        }
     }
 
-    num_items(): number {
-        return _.keys(this._items).length;
-    }
-
-    is_empty(): boolean {
-        return _.isEmpty(this._items);
-    }
-
-    each(f: (v: V, k?: string) => void): void {
-        _.each(this._items, (mapping: KeyValue<V>) => f(mapping.v, mapping.k));
+    get size(): number {
+        return this._items.size;
     }
 
     clear(): void {
-        this._items = {};
+        this._items.clear();
     }
 
     // Handle case-folding of keys and the empty string.
@@ -79,7 +71,6 @@ export class FoldDict<V> {
             return undefined;
         }
 
-        const str_key = ':' + key.toString().toLowerCase();
-        return str_key;
+        return key.toString().toLowerCase();
     }
 }

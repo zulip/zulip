@@ -1,7 +1,7 @@
 const render_compose_notification = require('../templates/compose_notification.hbs');
 const render_notification = require('../templates/notification.hbs');
 
-let notice_memory = {};
+const notice_memory = new Map();
 
 // When you start Zulip, window_has_focus should be true, but it might not be the
 // case after a server-initiated reload.
@@ -66,10 +66,10 @@ exports.initialize = function () {
     $(window).focus(function () {
         window_has_focus = true;
 
-        _.each(notice_memory, function (notice_mem_entry) {
+        for (const notice_mem_entry of notice_memory.values()) {
             cancel_notification_object(notice_mem_entry.obj);
-        });
-        notice_memory = {};
+        }
+        notice_memory.clear();
 
         // Update many places on the DOM to reflect unread
         // counts.
@@ -267,7 +267,7 @@ exports.notify_above_composebox = function (note, link_class, link_msg_id, link_
 
 if (window.electron_bridge !== undefined) {
     // The code below is for sending a message received from notification reply which
-    // is often refered to as inline reply feature. This is done so desktop app doesn't
+    // is often referred to as inline reply feature. This is done so desktop app doesn't
     // have to depend on channel.post for setting crsf_token and narrow.by_topic
     // to narrow to the message being sent.
     window.electron_bridge.send_notification_reply_message_supported = true;
@@ -277,7 +277,7 @@ if (window.electron_bridge !== undefined) {
             type: message.type,
             content: reply,
             to: message.type === 'private' ? message.reply_to : message.stream,
-            topic: util.get_message_topic(message),
+            topic: message.topic,
         };
 
         function success() {
@@ -322,7 +322,7 @@ function process_notification(notification) {
     ui.replace_emoji_with_text(content);
     content = content.text();
 
-    const topic = util.get_message_topic(message);
+    const topic = message.topic;
 
     if (message.is_me_message) {
         content = message.sender_full_name + content.slice(3);
@@ -363,10 +363,10 @@ function process_notification(notification) {
         content += " [...]";
     }
 
-    if (notice_memory[key] !== undefined) {
-        msg_count = notice_memory[key].msg_count + 1;
+    if (notice_memory.has(key)) {
+        msg_count = notice_memory.get(key).msg_count + 1;
         title = msg_count + " messages from " + title;
-        notification_object = notice_memory[key].obj;
+        notification_object = notice_memory.get(key).obj;
         cancel_notification_object(notification_object);
     }
 
@@ -399,21 +399,20 @@ function process_notification(notification) {
     // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
     if (notification.desktop_notify && /webkit/i.test(navigator.userAgent)) {
         const icon_url = people.small_avatar_url(message);
-        notice_memory[key] = {
-            obj: notifications_api.createNotification(icon_url, title, content, message.id),
+        notification_object =
+            notifications_api.createNotification(icon_url, title, content, message.id);
+        notice_memory.set(key, {
+            obj: notification_object,
             msg_count: msg_count,
             message_id: message.id,
-        };
-        notification_object = notice_memory[key].obj;
+        });
         notification_object.onclick = function () {
             notification_object.cancel();
-            if (feature_flags.clicking_notification_causes_narrow) {
-                narrow.by_topic(message.id, {trigger: 'notification'});
-            }
+            narrow.by_topic(message.id, {trigger: 'notification'});
             window.focus();
         };
         notification_object.onclose = function () {
-            delete notice_memory[key];
+            notice_memory.delete(key);
         };
         notification_object.show();
     } else if (notification.desktop_notify && typeof Notification !== "undefined" && /mozilla/i.test(navigator.userAgent)) {
@@ -428,9 +427,7 @@ function process_notification(notification) {
                     // We don't need to bring the browser window into focus explicitly
                     // by calling `window.focus()` as well as don't need to clear the
                     // notification since it is the default behavior in Firefox.
-                    if (feature_flags.clicking_notification_causes_narrow) {
-                        narrow.by_topic(message.id, {trigger: 'notification'});
-                    }
+                    narrow.by_topic(message.id, {trigger: 'notification'});
                 };
             } else {
                 in_browser_notify(message, title, content, raw_operators, opts);
@@ -444,12 +441,12 @@ function process_notification(notification) {
 exports.process_notification = process_notification;
 
 exports.close_notification = function (message) {
-    _.each(Object.keys(notice_memory), function (key) {
-        if (notice_memory[key].message_id === message.id) {
-            cancel_notification_object(notice_memory[key].obj);
-            delete notice_memory[key];
+    for (const [key, notice_mem_entry] of notice_memory) {
+        if (notice_mem_entry.message_id === message.id) {
+            cancel_notification_object(notice_mem_entry.obj);
+            notice_memory.delete(key);
         }
-    });
+    }
 };
 
 exports.message_is_notifiable = function (message) {
@@ -481,7 +478,7 @@ exports.message_is_notifiable = function (message) {
     }
 
     if (message.type === "stream" &&
-        muting.is_topic_muted(message.stream_id, util.get_message_topic(message))) {
+        muting.is_topic_muted(message.stream_id, message.topic)) {
         return false;
     }
 
@@ -577,13 +574,13 @@ exports.request_desktop_notifications_permission = function () {
 };
 
 exports.received_messages = function (messages) {
-    _.each(messages, function (message) {
+    for (const message of messages) {
         if (!exports.message_is_notifiable(message)) {
-            return;
+            continue;
         }
         if (!unread.message_unread(message)) {
             // The message is already read; Zulip is currently in focus.
-            return;
+            continue;
         }
 
         message.notification_sent = true;
@@ -597,12 +594,12 @@ exports.received_messages = function (messages) {
         if (exports.should_send_audible_notification(message) && supports_sound) {
             $("#notifications-area").find("audio")[0].play();
         }
-    });
+    }
 };
 
 function get_message_header(message) {
     if (message.type === "stream") {
-        return message.stream + " > " + util.get_message_topic(message);
+        return message.stream + " > " + message.topic;
     }
     if (message.display_recipient.length > 2) {
         return i18n.t("group private messages with __recipient__",
@@ -623,7 +620,7 @@ exports.get_local_notify_mix_reason = function (message) {
         return;
     }
 
-    if (message.type === "stream" && muting.is_topic_muted(message.stream_id, util.get_message_topic(message))) {
+    if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.topic)) {
         return i18n.t("Sent! Your message was sent to a topic you have muted.");
     }
 
@@ -655,13 +652,13 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
         sent_messages.messages here.
     */
 
-    _.each(messages, function (message) {
+    for (const message of messages) {
         if (!people.is_my_user_id(message.sender_id)) {
             // This can happen if the client is offline for a while
             // around the time this client sends a message; see the
             // caller of message_events.insert_new_messages.
             blueslip.info('Slightly unexpected: A message not sent by us batches with those that were.');
-            return;
+            continue;
         }
 
         let reason = exports.get_local_notify_mix_reason(message);
@@ -677,7 +674,7 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
 
             // This is the HAPPY PATH--for most messages we do nothing
             // other than maybe sending the above message.
-            return;
+            continue;
         }
 
         const link_msg_id = message.id;
@@ -686,15 +683,15 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
                                  {message_recipient: get_message_header(message)});
 
         exports.notify_above_composebox(reason, link_class, link_msg_id, link_text);
-    });
+    }
 };
 
 // for callback when we have to check with the server if a message should be in
 // the current_msg_list (!can_apply_locally; a.k.a. "a search").
 exports.notify_messages_outside_current_search = function (messages) {
-    _.each(messages, function (message) {
+    for (const message of messages) {
         if (!people.is_current_user(message.sender_email)) {
-            return;
+            continue;
         }
         const link_text = i18n.t("Narrow to __- message_recipient__",
                                  {message_recipient: get_message_header(message)});
@@ -702,7 +699,7 @@ exports.notify_messages_outside_current_search = function (messages) {
                                         "compose_notification_narrow_by_topic",
                                         message.id,
                                         link_text);
-    });
+    }
 };
 
 exports.clear_compose_notifications = function () {
@@ -717,14 +714,14 @@ exports.reify_message_id = function (opts) {
 
     // If a message ID that we're currently storing (as a link) has changed,
     // update that link as well
-    _.each($('#out-of-view-notification a'), function (e) {
+    for (const e of $('#out-of-view-notification a')) {
         const elem = $(e);
         const message_id = elem.data('message-id');
 
         if (message_id === old_id) {
             elem.data('message-id', new_id);
         }
-    });
+    }
 };
 
 exports.register_click_handlers = function () {
@@ -752,8 +749,13 @@ exports.handle_global_notification_updates = function (notification_name, settin
     // Update the global settings checked when determining if we should notify
     // for a given message. These settings do not affect whether or not a
     // particular stream should receive notifications.
-    if (settings_notifications.all_notification_settings_labels.indexOf(notification_name) !== -1) {
+    if (settings_notifications.all_notification_settings.includes(notification_name)) {
         page_params[notification_name] = setting;
+    }
+
+    if (settings_notifications.stream_notification_settings.includes(notification_name)) {
+        notification_name = notification_name.replace("enable_stream_", "");
+        stream_ui_updates.update_notification_setting_checkbox(notification_name);
     }
 
     if (notification_name === "notification_sound") {

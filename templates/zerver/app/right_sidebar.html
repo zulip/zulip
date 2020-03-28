@@ -1,12 +1,5 @@
 <div class="right-sidebar" id="right-sidebar" role="navigation">
     <div class="right-sidebar-items">
-        {% if enable_feedback %}
-        <div id="feedback_section" class="new-style">
-            <button type="button" class="button small rounded" id="feedback_button">
-                <i class="fa fa-comment" aria-hidden="true"></i>&nbsp;&nbsp;{{ _('Send feedback') }}
-            </button>
-        </div>
-        {% endif %}
         <div id="user-list">
             <div id="userlist-header">
                 <h4 class='sidebar-title' id='userlist-title' data-toggle="tooltip" title="{{ _('Filter users') }}">{{ _('USERS') }}</h4>

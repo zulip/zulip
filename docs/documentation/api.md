@@ -38,7 +38,7 @@ example; accessible live
 [here](https://zulipchat.com/api/render-message) or in the development
 environment at `http://localhost:9991/api/render-message`).
 
-We highly recommend looking at those resouces while reading this page.
+We highly recommend looking at those resources while reading this page.
 
 If you look at the documentation for existing endpoints, you'll notice
 that a typical endpoint's documentation is divided into four sections:
@@ -250,9 +250,12 @@ above.
 
 1. Add the markdown file to the index in `templates/zerver/help/include/rest-endpoints.md`.
 
-1. Test your endpoint, pretending to be a new user in a hurry.  You
-   should make sure that copy-pasting the code in your examples works,
-   and post an example of the output in the pull request.
+1. Test your endpoint, pretending to be a new user in a hurry, by
+   visiting it via the links on `http://localhost:9991/api` (the API
+   docs are rendered from the markdown source files on page load, so
+   just reload to see an updated version as you edit).  You should
+   make sure that copy-pasting the code in your examples works, and
+   post an example of the output in the pull request.
 
 [javascript-examples]: https://github.com/zulip/zulip-js/tree/master/examples
 

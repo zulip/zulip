@@ -1,6 +1,8 @@
 from django.http import HttpResponse, HttpRequest
 from typing import Optional
+import datetime
 
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import do_mute_topic, do_unmute_topic
 from zerver.lib.request import has_request_variables, REQ
@@ -19,7 +21,8 @@ from zerver.models import UserProfile
 def mute_topic(user_profile: UserProfile,
                stream_id: Optional[int],
                stream_name: Optional[str],
-               topic_name: str) -> HttpResponse:
+               topic_name: str,
+               date_muted: datetime.datetime) -> HttpResponse:
     if stream_name is not None:
         (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
     else:
@@ -29,7 +32,7 @@ def mute_topic(user_profile: UserProfile,
     if topic_is_muted(user_profile, stream.id, topic_name):
         return json_error(_("Topic already muted"))
 
-    do_mute_topic(user_profile, stream, recipient, topic_name)
+    do_mute_topic(user_profile, stream, recipient, topic_name, date_muted)
     return json_success()
 
 def unmute_topic(user_profile: UserProfile,
@@ -66,6 +69,7 @@ def update_muted_topic(request: HttpRequest,
             stream_id=stream_id,
             stream_name=stream,
             topic_name=topic,
+            date_muted=timezone_now(),
         )
     elif op == 'remove':
         return unmute_topic(

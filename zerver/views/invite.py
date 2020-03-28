@@ -37,12 +37,6 @@ def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
-    # We unconditionally sub you to the notifications stream if it
-    # exists and is public.
-    notifications_stream = user_profile.realm.notifications_stream  # type: Optional[Stream]
-    if notifications_stream and not notifications_stream.invite_only:
-        stream_ids.append(notifications_stream.id)
-
     streams = []  # type: List[Stream]
     for stream_id in stream_ids:
         try:

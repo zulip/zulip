@@ -53,8 +53,8 @@ exports.update_property = function (stream_id, property, value, other_values) {
     case 'wildcard_mentions_notify':
         update_stream_setting(sub, value, property);
         break;
-    case 'is_announcement_only':
-        subs.update_stream_announcement_only(sub, value);
+    case 'stream_post_policy':
+        subs.update_stream_post_policy(sub, value);
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
@@ -133,12 +133,12 @@ exports.mark_unsubscribed = function (sub) {
 exports.remove_deactivated_user_from_all_streams = function (user_id) {
     const all_subs = stream_data.get_unsorted_subs();
 
-    _.each(all_subs, function (sub) {
+    for (const sub of all_subs) {
         if (stream_data.is_user_subscribed(sub.name, user_id)) {
             stream_data.remove_subscriber(sub.name, user_id);
             subs.rerender_subscriptions_settings(sub);
         }
-    });
+    }
 };
 
 

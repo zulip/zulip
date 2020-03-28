@@ -93,7 +93,8 @@ exports.operators_to_hash = function (operators) {
 
     if (operators !== undefined) {
         hash = '#narrow';
-        _.each(operators, function (elem) {
+
+        for (const elem of operators) {
             // Support legacy tuples.
             const operator = elem.operator;
             const operand = elem.operand;
@@ -101,7 +102,7 @@ exports.operators_to_hash = function (operators) {
             const sign = elem.negated ? '-' : '';
             hash += '/' + sign + exports.encodeHashComponent(operator)
                   + '/' + exports.encode_operand(operator, operand);
-        });
+        }
     }
 
     return hash;
@@ -135,7 +136,7 @@ exports.by_conversation_and_time_uri = function (message) {
 
     if (message.type === "stream") {
         return absolute_url +
-            exports.by_stream_topic_uri(message.stream_id, util.get_message_topic(message)) +
+            exports.by_stream_topic_uri(message.stream_id, message.topic) +
             suffix;
     }
 
@@ -165,12 +166,13 @@ exports.parse_narrow = function (hash) {
             return;
         }
 
-        const operand  = exports.decode_operand(operator, raw_operand);
         let negated = false;
         if (operator[0] === '-') {
             negated = true;
             operator = operator.slice(1);
         }
+
+        const operand  = exports.decode_operand(operator, raw_operand);
         operators.push({negated: negated, operator: operator, operand: operand});
     }
     return operators;

@@ -407,22 +407,6 @@ def generic_bulk_cached_fetch(
     return dict((object_id, cached_objects[cache_keys[object_id]]) for object_id in object_ids
                 if cache_keys[object_id] in cached_objects)
 
-def cache(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
-    """Decorator which applies Django caching to a function.
-
-       Uses a key based on the function's name, filename, and
-       the repr() of its arguments."""
-
-    func_uniqifier = '%s-%s' % (func.__code__.co_filename, func.__name__)
-
-    @wraps(func)
-    def keyfunc(*args: Any, **kwargs: Any) -> str:
-        # Django complains about spaces because memcached rejects them
-        key = func_uniqifier + repr((args, kwargs))
-        return key.replace('-', '--').replace(' ', '-s')
-
-    return cache_with_key(keyfunc)(func)
-
 def preview_url_cache_key(url: str) -> str:
     return "preview_url:%s" % (make_safe_digest(url),)
 
@@ -672,7 +656,7 @@ def ignore_unhashable_lru_cache(maxsize: int=128, typed: bool=False) -> DECORATO
                 pass
 
             # Deliberately calling this function from outside of exception
-            # handler to get a more descriptive traceback. Otherise traceback
+            # handler to get a more descriptive traceback. Otherwise traceback
             # can include the exception from cached_enabled_user_function as
             # well.
             return user_function(*args, **kwargs)

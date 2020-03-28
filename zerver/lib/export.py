@@ -247,6 +247,7 @@ ANALYTICS_TABLES = {
 DATE_FIELDS = {
     'zerver_attachment': ['create_time'],
     'zerver_message': ['last_edit_time', 'date_sent'],
+    'zerver_mutedtopic': ['date_muted'],
     'zerver_realm': ['date_created'],
     'zerver_stream': ['date_created'],
     'zerver_useractivity': ['last_visit'],
@@ -831,18 +832,28 @@ def fetch_user_profile_cross_realm(response: TableData, config: Config, context:
     realm = context['realm']
     response['zerver_userprofile_crossrealm'] = []
 
+    bot_name_to_default_email = {
+        "NOTIFICATION_BOT": "notification-bot@zulip.com",
+        "EMAIL_GATEWAY_BOT": "emailgateway@zulip.com",
+        "WELCOME_BOT": "welcome-bot@zulip.com",
+    }
+
     if realm.string_id == settings.SYSTEM_BOT_REALM:
         return
 
-    for bot_user in [
-            get_system_bot(settings.NOTIFICATION_BOT),
-            get_system_bot(settings.EMAIL_GATEWAY_BOT),
-            get_system_bot(settings.WELCOME_BOT),
-    ]:
-        recipient_id = Recipient.objects.get(type_id=bot_user.id, type=Recipient.PERSONAL).id
+    for bot in settings.INTERNAL_BOTS:
+        bot_name = bot["var_name"]
+        if bot_name not in bot_name_to_default_email:
+            continue
+
+        bot_email = bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,)
+        bot_default_email = bot_name_to_default_email[bot_name]
+        bot_user_id = get_system_bot(bot_email).id
+
+        recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
         response['zerver_userprofile_crossrealm'].append(dict(
-            email=bot_user.email,
-            id=bot_user.id,
+            email=bot_default_email,
+            id=bot_user_id,
             recipient_id=recipient_id,
         ))
 
@@ -943,7 +954,7 @@ def export_usermessages_batch(input_path: Path, output_path: Path,
     objects. (This is called by the export_usermessage_batch
     management command)."""
     with open(input_path, "r") as input_file:
-        output = ujson.loads(input_file.read())
+        output = ujson.load(input_file)
     message_ids = [item['id'] for item in output['zerver_message']]
     user_profile_ids = set(output['zerver_userprofile_ids'])
     del output['zerver_userprofile_ids']
@@ -1120,11 +1131,12 @@ def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_
 def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
     uploads_output_dir = os.path.join(output_dir, 'uploads')
     avatars_output_dir = os.path.join(output_dir, 'avatars')
+    realm_icons_output_dir = os.path.join(output_dir, 'realm_icons')
     emoji_output_dir = os.path.join(output_dir, 'emoji')
 
-    for output_dir in (uploads_output_dir, avatars_output_dir, emoji_output_dir):
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+    for dir_path in (uploads_output_dir, avatars_output_dir, realm_icons_output_dir, emoji_output_dir):
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
 
     if settings.LOCAL_UPLOADS_DIR:
         # Small installations and developers will usually just store files locally.
@@ -1137,6 +1149,9 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         export_emoji_from_local(realm,
                                 local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
                                 output_dir=emoji_output_dir)
+        export_realm_icons(realm,
+                           local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR),
+                           output_dir=realm_icons_output_dir)
     else:
         # Some bigger installations will have their data stored on S3.
         export_files_from_s3(realm,
@@ -1150,6 +1165,10 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
                              settings.S3_AVATAR_BUCKET,
                              output_dir=emoji_output_dir,
                              processing_emoji=True)
+        export_files_from_s3(realm,
+                             settings.S3_AVATAR_BUCKET,
+                             output_dir=realm_icons_output_dir,
+                             processing_realm_icon_and_logo=True)
 
 def _check_key_metadata(email_gateway_bot: Optional[UserProfile],
                         key: Key, processing_avatars: bool,
@@ -1171,7 +1190,6 @@ def _check_key_metadata(email_gateway_bot: Optional[UserProfile],
 def _get_exported_s3_record(
         bucket_name: str,
         key: Key,
-        processing_avatars: bool,
         processing_emoji: bool) -> Dict[str, Union[str, int]]:
     # Helper function for export_files_from_s3
     record = dict(s3_path=key.name, bucket=bucket_name,
@@ -1182,26 +1200,34 @@ def _get_exported_s3_record(
     if processing_emoji:
         record['file_name'] = os.path.basename(key.name)
 
-    # A few early avatars don't have 'realm_id' on the object; fix their metadata
-    user_profile = get_user_profile_by_id(record['user_profile_id'])
-    if 'realm_id' not in record:
-        record['realm_id'] = user_profile.realm_id
-    record['user_profile_email'] = user_profile.email
+    if "user_profile_id" in record:
+        user_profile = get_user_profile_by_id(record['user_profile_id'])
+        record['user_profile_email'] = user_profile.email
 
-    # Fix the record ids
-    record['user_profile_id'] = int(record['user_profile_id'])
-    record['realm_id'] = int(record['realm_id'])
+        # Fix the record ids
+        record['user_profile_id'] = int(record['user_profile_id'])
+
+        # A few early avatars don't have 'realm_id' on the object; fix their metadata
+        if 'realm_id' not in record:
+            record['realm_id'] = user_profile.realm_id
+    else:
+        # There are some rare cases in which 'user_profile_id' may not be present
+        # in S3 metadata. Eg: Exporting an organization which was created
+        # initially from a local export won't have the "user_profile_id" metadata
+        # set for realm_icons and realm_logos.
+        pass
+
+    if 'realm_id' in record:
+        record['realm_id'] = int(record['realm_id'])
+    else:
+        raise Exception("Missing realm_id")
 
     return record
 
-def _save_s3_object_to_file(
-        key: Key,
-        output_dir: str,
-        processing_avatars: bool,
-        processing_emoji: bool) -> None:
-
+def _save_s3_object_to_file(key: Key, output_dir: str, processing_avatars: bool,
+                            processing_emoji: bool, processing_realm_icon_and_logo: bool) -> None:
     # Helper function for export_files_from_s3
-    if processing_avatars or processing_emoji:
+    if processing_avatars or processing_emoji or processing_realm_icon_and_logo:
         filename = os.path.join(output_dir, key.name)
     else:
         fields = key.name.split('/')
@@ -1209,14 +1235,17 @@ def _save_s3_object_to_file(
             raise AssertionError("Suspicious key with invalid format %s" % (key.name,))
         filename = os.path.join(output_dir, key.name)
 
+    if "../" in filename:
+        raise AssertionError("Suspicious file with invalid format %s" % (filename,))
+
     dirname = os.path.dirname(filename)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
     key.get_contents_to_filename(filename)
 
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
-                         processing_avatars: bool=False,
-                         processing_emoji: bool=False) -> None:
+                         processing_avatars: bool=False, processing_emoji: bool=False,
+                         processing_realm_icon_and_logo: bool=False) -> None:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
     records = []
@@ -1232,7 +1261,10 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
             user_ids.add(user_profile.id)
-    if processing_emoji:
+
+    if processing_realm_icon_and_logo:
+        bucket_list = bucket.list(prefix="%s/realm/" % (realm.id,))
+    elif processing_emoji:
         bucket_list = bucket.list(prefix="%s/emoji/images/" % (realm.id,))
     else:
         bucket_list = bucket.list(prefix="%s/" % (realm.id,))
@@ -1250,10 +1282,11 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
 
         # This can happen if an email address has moved realms
         _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
-        record = _get_exported_s3_record(bucket_name, key, processing_avatars, processing_emoji)
+        record = _get_exported_s3_record(bucket_name, key, processing_emoji)
 
         record['path'] = key.name
-        _save_s3_object_to_file(key, output_dir, processing_avatars, processing_emoji)
+        _save_s3_object_to_file(key, output_dir, processing_avatars, processing_emoji,
+                                processing_realm_icon_and_logo)
 
         records.append(record)
         count += 1
@@ -1335,6 +1368,24 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
+def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+    records = []
+    dir_relative_path = zerver.lib.upload.upload_backend.realm_avatar_and_logo_path(realm)
+    icons_wildcard = os.path.join(local_dir, dir_relative_path, '*')
+    for icon_absolute_path in glob.glob(icons_wildcard):
+        icon_file_name = os.path.basename(icon_absolute_path)
+        icon_relative_path = os.path.join(str(realm.id), icon_file_name)
+        output_path = os.path.join(output_dir, icon_relative_path)
+        os.makedirs(str(os.path.dirname(output_path)), exist_ok=True)
+        shutil.copy2(str(icon_absolute_path), str(output_path))
+        record = dict(realm_id=realm.id,
+                      path=icon_relative_path,
+                      s3_path=icon_relative_path)
+        records.append(record)
+
+    with open(os.path.join(output_dir, "records.json"), "w") as records_file:
+        ujson.dump(records, records_file, indent=4)
+
 def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
 
     count = 0
@@ -1381,8 +1432,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
         for fn in fns:
             f.write(os.path.basename(fn) + '\n')
             with open(fn, 'r') as filename:
-                payload = filename.read()
-            data = ujson.loads(payload)
+                data = ujson.load(filename)
             for k in sorted(data):
                 f.write('%5d %s\n' % (len(data[k]), k))
             f.write('\n')
@@ -1393,8 +1443,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
         for fn in [avatar_file, uploads_file]:
             f.write(fn+'\n')
             with open(fn, 'r') as filename:
-                payload = filename.read()
-            data = ujson.loads(payload)
+                data = ujson.load(filename)
             f.write('%5d records\n' % (len(data),))
             f.write('\n')
 

@@ -82,7 +82,7 @@ exports.reply_message = function (opts) {
         reply.type = 'stream';
         reply.to  = stream;
         reply.content = content;
-        util.set_message_topic(reply, util.get_message_topic(message));
+        reply.topic = message.topic;
 
         exports.send_message(reply, success, error);
         return;

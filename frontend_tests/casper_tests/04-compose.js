@@ -143,8 +143,14 @@ casper.then(function () {
 casper.then(function () {
     casper.click('*[title="Narrow to your private messages with Cordelia Lear"]');
 });
-casper.waitUntilVisible('li[data-user-ids-string="9"].expanded_private_message.active-sub-filter', function () {
-    casper.page.sendEvent('keypress', 'c');
+
+casper.then(function () {
+    var cordelia_user_id = common.get_user_id('cordelia@zulip.com');
+    var pm_li = 'li[data-user-ids-string="' + cordelia_user_id + '"].expanded_private_message.active-sub-filter';
+
+    casper.waitUntilVisible(pm_li, function () {
+        casper.page.sendEvent('keypress', 'c');
+    });
 });
 
 casper.then(function () {
@@ -161,9 +167,12 @@ casper.then(function () {
     common.keypress(27);  // escape to dismiss compose box
 });
 casper.waitWhileVisible('.message_comp');
-common.then_send_many([
-    { recipient: recipients.join(','),
-      content: 'A huddle to check spaces' }]);
+common.then_send_message('private', {
+    recipient: recipients.join(','),
+    outside_view: true,
+    content: 'A huddle to check spaces',
+});
+
 
 casper.then(function () {
     common.keypress(27);  // escape to dismiss compose box

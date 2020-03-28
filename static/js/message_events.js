@@ -1,8 +1,10 @@
+const util = require("./util");
 function maybe_add_narrowed_messages(messages, msg_list) {
     const ids = [];
-    _.each(messages, function (elem) {
+
+    for (const elem of messages) {
         ids.push(elem.id);
-    });
+    }
 
     channel.get({
         url: '/json/messages/matches_narrow',
@@ -17,14 +19,15 @@ function maybe_add_narrowed_messages(messages, msg_list) {
 
             let new_messages = [];
             const elsewhere_messages = [];
-            _.each(messages, function (elem) {
+
+            for (const elem of messages) {
                 if (data.messages.hasOwnProperty(elem.id)) {
                     util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
                 } else {
                     elsewhere_messages.push(elem);
                 }
-            });
+            }
 
             // This second call to add_message_metadata in the
             // insert_new_messages code path helps in very rare race
@@ -32,7 +35,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
             // edited in between when they sent the message and when
             // we hear back from the server and can echo the new
             // message.  Arguably, it's counterproductive complexity.
-            new_messages = _.map(new_messages, message_store.add_message_metadata);
+            new_messages = new_messages.map(message_store.add_message_metadata);
 
             message_util.add_new_messages(new_messages, msg_list);
             unread_ops.process_visible();
@@ -52,7 +55,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
 
 
 exports.insert_new_messages = function insert_new_messages(messages, sent_by_this_client) {
-    messages = _.map(messages, message_store.add_message_metadata);
+    messages = messages.map(message_store.add_message_metadata);
 
     unread.process_loaded_messages(messages);
 
@@ -105,10 +108,10 @@ exports.update_messages = function update_messages(events) {
     let changed_compose = false;
     let message_content_edited = false;
 
-    _.each(events, function (event) {
+    for (const event of events) {
         const msg = message_store.get(event.message_id);
         if (msg === undefined) {
-            return;
+            continue;
         }
 
         delete msg.local_edit_timestamp;
@@ -140,7 +143,7 @@ exports.update_messages = function update_messages(events) {
             // where the user initiated the edit.
             topic_edited = true;
 
-            const going_forward_change = _.indexOf(['change_later', 'change_all'], event.propagate_mode) >= 0;
+            const going_forward_change = ['change_later', 'change_all'].includes(event.propagate_mode);
 
             const stream_name = stream_data.get_sub_by_id(event.stream_id).name;
             const compose_stream_name = compose_state.stream_name();
@@ -159,11 +162,14 @@ exports.update_messages = function update_messages(events) {
             const current_filter = narrow_state.filter();
             if (going_forward_change) {
                 const current_id = current_msg_list.selected_id();
-                const selection_changed_topic = _.indexOf(event.message_ids, current_id) >= 0;
+                const selection_changed_topic = event.message_ids.includes(current_id);
                 if (selection_changed_topic) {
                     if (current_filter && stream_name) {
                         if (current_filter.has_topic(stream_name, orig_topic)) {
-                            const new_filter = current_filter.filter_with_new_topic(new_topic);
+                            const new_filter = current_filter.filter_with_new_params({
+                                operator: 'topic',
+                                operand: new_topic,
+                            });
                             const operators = new_filter.operators();
                             const opts = {
                                 trigger: 'topic change',
@@ -176,31 +182,31 @@ exports.update_messages = function update_messages(events) {
                 }
             }
 
-            _.each(event.message_ids, function (id) {
+            for (const id of event.message_ids) {
                 const msg = message_store.get(id);
                 if (msg === undefined) {
-                    return;
+                    continue;
                 }
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we call set_message_topic.
                 topic_data.remove_message({
                     stream_id: msg.stream_id,
-                    topic_name: util.get_message_topic(msg),
+                    topic_name: msg.topic,
                 });
 
                 // Update the unread counts; again, this must be called
                 // before we call set_message_topic.
                 unread.update_unread_topics(msg, event);
 
-                util.set_message_topic(msg, new_topic);
-                util.set_topic_links(msg, util.get_topic_links(event));
+                msg.topic = new_topic;
+                msg.topic_links = event.topic_links;
 
                 // Add the recent topics entry for the new topics; must
                 // be called after we call set_message_topic.
                 topic_data.add_message({
                     stream_id: msg.stream_id,
-                    topic_name: util.get_message_topic(msg),
+                    topic_name: msg.topic,
                     message_id: msg.id,
                 });
 
@@ -215,7 +221,7 @@ exports.update_messages = function update_messages(events) {
                         current_msg_list.remove_and_rerender([{id: id}]);
                     }
                 }
-            });
+            }
         }
 
         if (event.orig_content !== undefined) {
@@ -249,7 +255,7 @@ exports.update_messages = function update_messages(events) {
 
         notifications.received_messages([msg]);
         alert_words.process_message(msg);
-    });
+    }
 
     // If a topic was edited, we re-render the whole view to get any
     // propagated edits to be updated (since the topic edits can have

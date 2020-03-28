@@ -84,7 +84,6 @@ not_yet_fully_covered = {path for target in [
     'zerver/lib/digest.py',
     'zerver/lib/error_notify.py',
     'zerver/lib/export.py',
-    'zerver/lib/feedback.py',
     'zerver/lib/fix_unreads.py',
     'zerver/lib/html_diff.py',
     'zerver/lib/import_realm.py',
@@ -107,6 +106,7 @@ not_yet_fully_covered = {path for target in [
     # Low priority for coverage
     'zerver/lib/ccache.py',
     'zerver/lib/generate_test_data.py',
+    'zerver/lib/server_initialization.py',
     'zerver/lib/test_fixtures.py',
     'zerver/lib/test_runner.py',
     'zerver/openapi/python_examples.py',
@@ -259,6 +259,10 @@ def main() -> None:
                         action="store_true",
                         default=False,
                         help=("Include webhook tests.  By default, they are skipped for performance."))
+    parser.add_argument('--generate-stripe-fixtures', dest="generate_stripe_fixtures",
+                        action="store_true",
+                        default=False,
+                        help=("Generate Stripe test fixtures by making requests to Stripe test network"))
     parser.add_argument('args', nargs='*')
 
     options = parser.parse_args()
@@ -344,11 +348,21 @@ def main() -> None:
     if full_suite and include_webhooks:
         suites.append("zerver.webhooks")
 
+    if options.generate_stripe_fixtures:
+        if full_suite:
+            suites = [
+                "corporate.tests.test_stripe",
+            ]
+            full_suite = False
+        os.environ["GENERATE_STRIPE_FIXTURES"] = "1"
+
     assert_provisioning_status_ok(options.force)
 
     if options.coverage:
+        import atexit
         import coverage
         cov = coverage.Coverage(config_file="tools/coveragerc", concurrency='multiprocessing')
+        atexit.register(lambda: cov.erase())  # Ensure the data file gets cleaned up at the end.
         cov.start()
     if options.profile:
         import cProfile

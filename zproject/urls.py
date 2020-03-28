@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.conf.urls import url, include
 from django.conf.urls.i18n import i18n_patterns
-from django.http import HttpResponseBadRequest, HttpRequest, HttpResponse
 from django.views.generic import TemplateView, RedirectView
 from django.utils.module_loading import import_string
 import os
@@ -12,8 +11,8 @@ from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
 
-from django.contrib.auth.views import (login, password_reset_done,
-                                       password_reset_confirm, password_reset_complete)
+from django.contrib.auth.views import (LoginView, PasswordResetDoneView,
+                                       PasswordResetConfirmView, PasswordResetCompleteView)
 
 import zerver.tornado.views
 import zerver.views
@@ -24,6 +23,7 @@ import zerver.views.compatibility
 import zerver.views.home
 import zerver.views.email_mirror
 import zerver.views.registration
+import zerver.views.portico
 import zerver.views.zephyr
 import zerver.views.users
 import zerver.views.unsubscribe
@@ -145,7 +145,8 @@ v1_api_and_json_patterns = [
     url(r'^users/(?!me/)(?P<email>[^/]*)/presence$', rest_dispatch,
         {'GET': 'zerver.views.presence.get_presence_backend'}),
     url(r'^users/(?P<user_id>[0-9]+)$', rest_dispatch,
-        {'PATCH': 'zerver.views.users.update_user_backend',
+        {'GET': 'zerver.views.users.get_members_backend',
+         'PATCH': 'zerver.views.users.update_user_backend',
          'DELETE': 'zerver.views.users.deactivate_user_backend'}),
     url(r'^bots$', rest_dispatch,
         {'GET': 'zerver.views.users.get_bots_backend',
@@ -444,7 +445,7 @@ i18n_urls = [
     # return `/accounts/login/`.
     url(r'^accounts/login/$', zerver.views.auth.login_page,
         {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
-    url(r'^accounts/login/$', login, {'template_name': 'zerver/login.html'},
+    url(r'^accounts/login/$', LoginView.as_view(template_name='zerver/login.html'),
         name='django.contrib.auth.views.login'),
     url(r'^accounts/logout/$', zerver.views.auth.logout_then_login,
         name='zerver.views.auth.logout_then_login'),
@@ -455,16 +456,15 @@ i18n_urls = [
 
     url(r'^accounts/password/reset/$', zerver.views.auth.password_reset,
         name='zerver.views.auth.password_reset'),
-    url(r'^accounts/password/reset/done/$', password_reset_done,
-        {'template_name': 'zerver/reset_emailed.html'}),
+    url(r'^accounts/password/reset/done/$',
+        PasswordResetDoneView.as_view(template_name='zerver/reset_emailed.html')),
     url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$',
-        password_reset_confirm,
-        {'post_reset_redirect': '/accounts/password/done/',
-         'template_name': 'zerver/reset_confirm.html',
-         'set_password_form': zerver.forms.LoggingSetPasswordForm},
+        PasswordResetConfirmView.as_view(success_url='/accounts/password/done/',
+                                         template_name='zerver/reset_confirm.html',
+                                         form_class=zerver.forms.LoggingSetPasswordForm),
         name='django.contrib.auth.views.password_reset_confirm'),
-    url(r'^accounts/password/done/$', password_reset_complete,
-        {'template_name': 'zerver/reset_done.html'}),
+    url(r'^accounts/password/done/$',
+        PasswordResetCompleteView.as_view(template_name='zerver/reset_done.html')),
     url(r'^accounts/deactivated/$',
         zerver.views.auth.show_deactivation_notice,
         name='zerver.views.auth.show_deactivation_notice'),
@@ -541,10 +541,6 @@ i18n_urls = [
         zerver.views.documentation.integration_doc,
         name="zerver.views.documentation.integration_doc"),
     url(r'^integrations/(.*)$', IntegrationView.as_view()),
-    url(r'^team/$', zerver.views.users.team_view),
-    url(r'^history/$', TemplateView.as_view(template_name='zerver/history.html')),
-    url(r'^apps/(.*)$', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
-    url(r'^plans/$', zerver.views.home.plans_view, name='plans'),
 
     # Landing page, features pages, signup form, etc.
     url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html',
@@ -552,6 +548,10 @@ i18n_urls = [
         name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
+    url(r'^plans/$', zerver.views.portico.plans_view, name='plans'),
+    url(r'^apps/(.*)$', zerver.views.portico.apps_view, name='zerver.views.home.apps_view'),
+    url(r'^team/$', zerver.views.portico.team_view),
+    url(r'^history/$', TemplateView.as_view(template_name='zerver/history.html')),
     url(r'^why-zulip/$', TemplateView.as_view(template_name='zerver/why-zulip.html')),
     url(r'^for/open-source/$', TemplateView.as_view(template_name='zerver/for-open-source.html')),
     url(r'^for/companies/$', TemplateView.as_view(template_name='zerver/for-companies.html')),
@@ -562,35 +562,12 @@ i18n_urls = [
     url(r'^atlassian/$', TemplateView.as_view(template_name='zerver/atlassian.html')),
 
     # Terms of Service and privacy pages.
-    url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
-    url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html'), name='privacy'),
+    url(r'^terms/$', zerver.views.portico.terms_view, name='terms'),
+    url(r'^privacy/$', zerver.views.portico.privacy_view, name='privacy'),
+    url(r'^config-error/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view,
+        name='config_error'),
+    url(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view)
 
-    url(r'^config-error/google$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'google_error': True},),
-    url(r'^config-error/github$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'github_error': True},),
-    url(r'^config-error/smtp$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'smtp_error': True},),
-    url(r'^config-error/ldap$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'ldap_error_realm_is_none': True},
-        name='ldap_error_realm_is_none'),
-    url(r'^config-error/dev$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'dev_not_supported_error': True},
-        name='dev_not_supported'),
-    url(r'^config-error/saml$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'saml_error': True},),
-    url(r'^config-error/remoteuser/backend_disabled$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'remoteuser_error_backend_disabled': True},),
-    url(r'^config-error/remoteuser/remote_user_header_missing$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'remoteuser_error_remote_user_header_missing': True},),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -631,7 +608,7 @@ urls += [
                  {'override_api_url_scheme'})}),
 ]
 
-# This url serves as a way to recieve CSP violation reports from the users.
+# This url serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
 urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
             name='zerver.views.report.report_csp_violations'),
@@ -710,11 +687,15 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
 # Tornado views
 urls += [
     # Used internally for communication between Django and Tornado processes
+    #
+    # Since these views don't use rest_dispatch, they cannot have
+    # asynchronous Tornado behavior.
     url(r'^notify_tornado$', zerver.tornado.views.notify, name='zerver.tornado.views.notify'),
     url(r'^api/v1/events/internal$', zerver.tornado.views.get_events_internal),
 ]
 
 # Python Social Auth
+
 urls += [url(r'^', include('social_django.urls', namespace='social'))]
 urls += [url(r'^saml/metadata.xml$', zerver.views.auth.saml_sp_metadata)]
 
@@ -739,22 +720,3 @@ if settings.DEVELOPMENT:
 # reverse url mapping points to i18n urls which causes the frontend
 # tests to fail
 urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
-
-def handler400(request: HttpRequest, exception: Exception) -> HttpResponse:
-    # (This workaround should become obsolete with Django 2.1; the
-    #  issue was fixed upstream in commit 7ec0fdf62 on 2018-02-14.)
-    #
-    # This behaves exactly like the default Django implementation in
-    # the case where you haven't made a template "400.html", which we
-    # haven't -- except that it doesn't call `@requires_csrf_token` to
-    # attempt to set a `csrf_token` variable that the template could
-    # use if there were a template.  We skip @requires_csrf_token
-    # because that codepath can raise an error on a bad request, which
-    # is exactly the case we're trying to handle when we get here.
-    # Bug filed upstream: https://code.djangoproject.com/ticket/28693
-    #
-    # This function is used just because it has this special name in
-    # the root urls.py file; for more details, see:
-    # https://docs.djangoproject.com/en/1.11/topics/http/views/#customizing-error-views
-    return HttpResponseBadRequest(
-        '<h1>Bad Request (400)</h1>', content_type='text/html')

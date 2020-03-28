@@ -6,7 +6,7 @@ import sys
 from functools import wraps
 
 from zerver.lib import mdiff
-from zerver.lib.openapi import validate_against_openapi_schema
+from zerver.openapi.openapi import validate_against_openapi_schema
 
 from zerver.models import get_realm, get_user
 
@@ -49,7 +49,7 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
 def load_api_fixtures():
     # type: () -> Dict[str, Any]
     with open(FIXTURE_PATH, 'r') as fp:
-        json_dict = json.loads(fp.read())
+        json_dict = json.load(fp)
         return json_dict
 
 FIXTURES = load_api_fixtures()
@@ -216,6 +216,68 @@ def get_members(client):
         else:
             assert member.get('profile_data', None) is not None
 
+@openapi_test_function("/users/{user_id}:get")
+def get_single_user(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Fetch details on a user given a user ID
+    user_id = 8
+    result = client.get_user_by_id(user_id)
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{user_id}', 'get', '200')
+
+    # {code_example|start}
+    # If you'd like data on custom profile fields, you can request them as follows:
+    result = client.get_user_by_id(user_id, {'include_custom_profile_fields': True})
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{user_id}', 'get', '200')
+
+@openapi_test_function("/users/{user_id}:delete")
+def deactivate_user(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Deactivate a user
+    user_id = 8
+    url = 'users/' + str(user_id)
+    result = client.call_endpoint(
+        url=url,
+        method='DELETE',
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{user_id}', 'delete', '200')
+
+@openapi_test_function("/users/{user_id}:patch")
+def update_user(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Change a user's full name.
+    user_id = 10
+    full_name = "New Name"
+    url = 'users/' + str(user_id)
+    result = client.call_endpoint(
+        url=url,
+        method='PATCH',
+        request={'full_name': json.dumps(full_name)}
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{user_id}', 'patch', '200')
+
+    # {code_example|start}
+    # Change value of the custom profile field with ID 9.
+    user_id = 8
+    profile_data = [{'id': 9, 'value': 'some data'}]
+    url = 'users/' + str(user_id)
+    result = client.call_endpoint(
+        url=url,
+        method='PATCH',
+        request={'profile_data': json.dumps(profile_data)}
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/users/{user_id}', 'patch', '400')
+
 @openapi_test_function("/realm/filters:get")
 def get_realm_filters(client):
     # type: (Client) -> None
@@ -328,7 +390,7 @@ def update_stream(client, stream_id):
     # Update the stream by a given ID
     request = {
         'stream_id': stream_id,
-        'is_announcement_only': True,
+        'stream_post_policy': 2,
         'is_private': True,
     }
 
@@ -543,15 +605,13 @@ def get_messages(client):
     # type: (Client) -> None
 
     # {code_example|start}
-    # Get the 3 last messages sent by "iago@zulip.com" to the stream "Verona"
+    # Get the 100 last messages sent by "iago@zulip.com" to the stream "Verona"
     request = {
-        'use_first_unread_anchor': True,
-        'num_before': 3,
+        'anchor': 'newest',
+        'num_before': 100,
         'num_after': 0,
         'narrow': [{'operator': 'sender', 'operand': 'iago@zulip.com'},
                    {'operator': 'stream', 'operand': 'Verona'}],
-        'client_gravatar': True,
-        'apply_markdown': True
     }  # type: Dict[str, Any]
     result = client.get_messages(request)
     # {code_example|end}
@@ -577,6 +637,8 @@ def get_raw_message(client, message_id):
 def send_message(client):
     # type: (Client) -> int
 
+    request = {}  # type: Dict[str, Any]
+
     # {code_example|start}
     # Send a stream message
     request = {
@@ -600,11 +662,14 @@ def send_message(client):
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
 
+    ensure_users([9], ['hamlet'])
+
     # {code_example|start}
     # Send a private message
+    user_id = 9
     request = {
         "type": "private",
-        "to": "iago@zulip.com",
+        "to": [user_id],
         "content": "With mirth and laughter let old wrinkles come."
     }
     result = client.send_message(request)
@@ -624,31 +689,33 @@ def send_message(client):
 
     return message_id
 
+@openapi_test_function("/messages/{message_id}/reactions:post")
 def add_reaction(client, message_id):
     # type: (Client, int) -> None
+    # {code_example|start}
+    # Add an emoji reaction
     request = {
         'message_id': str(message_id),
-        'emoji_name': 'joy',
-        'emoji_code': '1f602',
-        'emoji_type': 'unicode_emoji'
+        'emoji_name': 'octopus',
     }
-    result = client.add_reaction(request)
 
-    assert result['result'] == 'success'
+    result = client.add_reaction(request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/messages/{message_id}/reactions', 'post', '200')
 
 @openapi_test_function("/messages/{message_id}/reactions:delete")
 def remove_reaction(client, message_id):
     # type: (Client, int) -> None
+    # {code_example|start}
+    # Remove an emoji reaction
     request = {
         'message_id': str(message_id),
-        'emoji_name': 'joy',
-        'emoji_code': '1f602',
-        'reaction_type': 'unicode_emoji'
+        'emoji_name': 'octopus',
     }
 
     result = client.remove_reaction(request)
-
-    assert result['result'] == 'success'
+    # {code_example|end}
+    validate_against_openapi_schema(result, '/messages/{message_id}/reactions', 'delete', '200')
 
 def test_nonexistent_stream_error(client):
     # type: (Client) -> None
@@ -720,8 +787,7 @@ def test_update_message_edit_permission_error(client, nonadmin_client):
     }
     result = nonadmin_client.update_message(request)
 
-    fixture = FIXTURES['update-message-edit-permission-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'patch', '400')
 
 @openapi_test_function("/messages/{message_id}:delete")
 def delete_message(client, message_id):
@@ -907,12 +973,16 @@ def get_stream_topics(client, stream_id):
 @openapi_test_function("/typing:post")
 def set_typing_status(client):
     # type: (Client) -> None
+    ensure_users([9, 10], ['hamlet', 'iago'])
 
     # {code_example|start}
     # The user has started to type in the group PM with Iago and Polonius
+    user_id1 = 9
+    user_id2 = 10
+
     request = {
         'op': 'start',
-        'to': ['iago@zulip.com', 'polonius@zulip.com']
+        'to': [user_id1, user_id2],
     }
     result = client.set_typing_status(request)
     # {code_example|end}
@@ -921,9 +991,12 @@ def set_typing_status(client):
 
     # {code_example|start}
     # The user has finished typing in the group PM with Iago and Polonius
+    user_id1 = 9
+    user_id2 = 10
+
     request = {
         'op': 'stop',
-        'to': ['iago@zulip.com', 'polonius@zulip.com']
+        'to': [user_id1, user_id2],
     }
     result = client.set_typing_status(request)
     # {code_example|end}
@@ -978,13 +1051,13 @@ def remove_alert_words(client):
 @openapi_test_function("/user_groups/create:post")
 def create_user_group(client):
     # type: (Client) -> None
-    ensure_users([7, 8, 9, 10], ['aaron', 'zoe', 'cordelia', 'hamlet'])
+    ensure_users([6, 7, 8, 9], ['aaron', 'zoe', 'cordelia', 'hamlet'])
 
     # {code_example|start}
     request = {
         'name': 'marketing',
         'description': 'The marketing team.',
-        'members': [7, 8, 9, 10],
+        'members': [6, 7, 8, 9],
     }
 
     result = client.create_user_group(request)
@@ -1020,12 +1093,12 @@ def remove_user_group(client, group_id):
 @openapi_test_function("/user_groups/{group_id}/members:post")
 def update_user_group_members(client, group_id):
     # type: (Client, int) -> None
-    ensure_users([9, 10, 11], ['cordelia', 'hamlet', 'iago'])
+    ensure_users([8, 9, 10], ['cordelia', 'hamlet', 'iago'])
 
     request = {
         'group_id': group_id,
-        'delete': [9, 10],
-        'add': [11]
+        'delete': [8, 9],
+        'add': [10]
     }
 
     result = client.update_user_group_members(request)
@@ -1125,6 +1198,9 @@ def test_users(client):
 
     create_user(client)
     get_members(client)
+    get_single_user(client)
+    deactivate_user(client)
+    update_user(client)
     get_profile(client)
     update_notification_settings(client)
     upload_file(client)

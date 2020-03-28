@@ -301,7 +301,7 @@ def do_catch_up_soft_deactivated_users(users: List[UserProfile]) -> List[UserPro
         if user_profile.long_term_idle:
             add_missing_messages(user_profile)
             users_caught_up.append(user_profile)
-    logging.info("Caught up %d soft-deactivated users" % (len(users_caught_up),))
+    logger.info("Caught up %d soft-deactivated users" % (len(users_caught_up),))
     return users_caught_up
 
 def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> List[UserProfile]:

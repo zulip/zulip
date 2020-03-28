@@ -101,7 +101,7 @@ export LANGUAGE="en_US.UTF-8"
 # Check for a supported OS release.
 if [ -f /etc/os-release ]; then
     os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$ID_LIKE" "$VERSION_ID" "$VERSION_CODENAME")"
-    { read -r os_id; read -r os_id_like; read -r os_version_id; read -r os_version_codename; } <<< "$os_info"
+    { read -r os_id; read -r os_id_like; read -r os_version_id; read -r os_version_codename || true; } <<< "$os_info"
 fi
 
 case "$os_id$os_version_id" in
@@ -141,11 +141,13 @@ EOF
     exit 1
 fi
 
-# Check for at least ~1.9GB of RAM before starting installation;
+# Check for at least ~1.86GB of RAM before starting installation;
 # otherwise users will find out about insufficient RAM via weird
 # errors like a segfault running `pip install`.
+# Additionally, some AWS images that are advertised to be 2 GB
+# are actually 1880000B in size.
 mem_kb=$(head -n1 /proc/meminfo | awk '{print $2}')
-if [ "$mem_kb" -lt 1900000 ]; then
+if [ "$mem_kb" -lt 1860000 ]; then
     set +x
     echo -e '\033[0;31m' >&2
     echo "Insufficient RAM.  Zulip requires at least 2GB of RAM." >&2
@@ -309,10 +311,18 @@ esac
 
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
+case " $os_id $os_id_like " in
+    *' debian '*)
+        SUPERVISOR_CONF_DIR="/etc/supervisor/conf.d"
+        ;;
+    *' rhel '*)
+        SUPERVISOR_CONF_DIR="/etc/supervisord.d/conf.d"
+        ;;
+esac
 # Detect which features were selected for the below
 set +e
 [ -e "/etc/init.d/nginx" ]; has_nginx=$?
-[ -e "/etc/supervisor/conf.d/zulip.conf" ]; has_appserver=$?
+[ -e "$SUPERVISOR_CONF_DIR/zulip.conf" ]; has_appserver=$?
 [ -e "/etc/cron.d/rabbitmq-numconsumers" ]; has_rabbit=$?
 [ -e "/etc/init.d/postgresql" ]; has_postgres=$?
 set -e

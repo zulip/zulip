@@ -1,4 +1,7 @@
-exports.get_list_info = function (stream_id, max_topics, zoomed) {
+const max_topics = 5;
+const max_topics_with_unread = 8;
+
+exports.get_list_info = function (stream_id, zoomed) {
     let topics_selected = 0;
     let more_topics_unreads = 0;
 
@@ -8,18 +11,17 @@ exports.get_list_info = function (stream_id, max_topics, zoomed) {
         active_topic = active_topic.toLowerCase();
     }
 
-    const max_topics_with_unread = 8;
     const topic_names = topic_data.get_recent_names(stream_id);
 
     const items = [];
 
-    _.each(topic_names, function (topic_name, idx) {
+    for (const [idx, topic_name] of topic_names.entries()) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = active_topic === topic_name.toLowerCase();
         const is_topic_muted = muting.is_topic_muted(stream_id, topic_name);
 
         if (!zoomed) {
-            function should_show_topic() {
+            function should_show_topic(topics_selected) {
                 // This function exists just for readability, to
                 // avoid long chained conditionals to determine
                 // which topics to include.
@@ -60,7 +62,7 @@ exports.get_list_info = function (stream_id, max_topics, zoomed) {
                 return false;
             }
 
-            const show_topic = should_show_topic();
+            const show_topic = should_show_topic(topics_selected);
             if (!show_topic) {
                 if (!is_topic_muted) {
                     // The "more topics" unread count, like
@@ -68,7 +70,7 @@ exports.get_list_info = function (stream_id, max_topics, zoomed) {
                     // on unmuted topics.
                     more_topics_unreads += num_unread;
                 }
-                return;
+                continue;
             }
             topics_selected += 1;
             // We fall through to rendering the topic, using the
@@ -85,7 +87,7 @@ exports.get_list_info = function (stream_id, max_topics, zoomed) {
         };
 
         items.push(topic_info);
-    });
+    }
 
     return {
         items: items,

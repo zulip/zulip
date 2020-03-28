@@ -1,4 +1,4 @@
-exports.messages = {};
+exports.messages = new Map();
 
 exports.reset_id_state = function () {
     exports.next_local_id = 0;
@@ -36,14 +36,14 @@ exports.start_tracking_message = function (opts) {
         return;
     }
 
-    if (exports.messages[local_id] !== undefined) {
+    if (exports.messages.has(local_id)) {
         blueslip.error('We are re-using a local_id');
         return;
     }
 
     const state = exports.message_state(opts);
 
-    exports.messages[local_id] = state;
+    exports.messages.set(local_id, state);
 };
 
 exports.message_state = function (opts) {
@@ -123,7 +123,7 @@ exports.message_state = function (opts) {
 };
 
 exports.get_message_state = function (local_id) {
-    const state = exports.messages[local_id];
+    const state = exports.messages.get(local_id);
 
     if (!state) {
         blueslip.warn('Unknown local_id: ' + local_id);

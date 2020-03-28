@@ -16,10 +16,9 @@ from django.db import connection
 from zerver.models import \
     get_client, get_system_bot, PreregistrationUser, \
     get_user_profile_by_id, Message, Realm, UserMessage, UserProfile, \
-    Client
+    Client, flush_per_request_caches
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
-from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.email_notifications import handle_missedmessage_emails
@@ -27,7 +26,7 @@ from zerver.lib.push_notifications import handle_push_notification, handle_remov
     initialize_push_notifications, clear_push_device_tokens
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message, internal_send_private_message, notify_realm_export, \
+    internal_send_stream_message, internal_send_private_message, notify_realm_export, \
     render_incoming_message, do_update_embedded_data, do_mark_stream_messages_as_read
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
@@ -39,7 +38,7 @@ from zerver.lib.streams import access_stream_by_id
 from zerver.lib.db import reset_queries
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
-from zerver.models import get_bot_services, RealmAuditLog
+from zerver.models import get_bot_services, get_stream, RealmAuditLog
 from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 from zerver.lib.exceptions import RateLimited
@@ -126,13 +125,19 @@ class QueueProcessingWorker(ABC):
     def consume(self, data: Dict[str, Any]) -> None:
         pass
 
-    def consume_wrapper(self, data: Dict[str, Any]) -> None:
+    def do_consume(self, consume_func: Callable[[List[Dict[str, Any]]], None],
+                   events: List[Dict[str, Any]]) -> None:
         try:
-            self.consume(data)
+            consume_func(events)
         except Exception:
-            self._handle_consume_exception([data])
+            self._handle_consume_exception(events)
         finally:
+            flush_per_request_caches()
             reset_queries()
+
+    def consume_wrapper(self, data: Dict[str, Any]) -> None:
+        consume_func = lambda events: self.consume(events[0])
+        self.do_consume(consume_func, [data])
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]]) -> None:
         self._log_problem()
@@ -167,13 +172,7 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
     def start(self) -> None:  # nocoverage
         while True:
             events = self.q.drain_queue(self.queue_name, json=True)
-            try:
-                self.consume_batch(events)
-            except Exception:
-                self._handle_consume_exception(events)
-            finally:
-                reset_queries()
-
+            self.do_consume(self.consume_batch, events)
             # To avoid spinning the CPU, we go to sleep if there's
             # nothing in the queue, or for certain queues with
             # sleep_only_if_empty=False, unconditionally.
@@ -242,7 +241,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 "zerver/emails/invitation_reminder",
                 referrer.realm,
                 to_emails=[invitee.email],
-                from_address=FromAddress.tokenized_no_reply_address(),
+                from_address=FromAddress.tokenized_no_reply_placeholder,
                 language=referrer.realm.default_language,
                 context=context,
                 delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2))
@@ -398,19 +397,6 @@ class EmailSendingWorker(QueueProcessingWorker):
         handle_send_email_format_changes(copied_event)
         send_email_from_dict(copied_event)
 
-@assign_queue('missedmessage_email_senders')
-class MissedMessageSendingWorker(EmailSendingWorker):  # nocoverage
-    """
-    Note: Class decorators are not inherited.
-
-    The `missedmessage_email_senders` queue was used up through 1.7.1, so we
-    keep consuming from it in case we've just upgraded from an old version.
-    After the 1.8 release, we can delete it and tell admins to upgrade to 1.8
-    first.
-    """
-    # TODO: zulip-1.8: Delete code related to missedmessage_email_senders queue.
-    pass
-
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
     def start(self) -> None:
@@ -435,13 +421,6 @@ class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
                     "Maximum retries exceeded for trigger:%s event:push_notification" % (
                         event['user_profile_id'],))
             retry_event(self.queue_name, event, failure_processor)
-
-# We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
-@assign_queue('feedback_messages')
-class FeedbackBot(QueueProcessingWorker):
-    def consume(self, event: Mapping[str, Any]) -> None:
-        logging.info("Received feedback from %s" % (event["sender_email"],))
-        handle_feedback(event)
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):
@@ -474,9 +453,19 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
             for event in slow_query_events:
                 content += "    %s\n" % (event["query"],)
 
-            error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
-            internal_send_message(error_bot_realm, settings.ERROR_BOT,
-                                  "stream", settings.SLOW_QUERY_LOGS_STREAM, topic, content)
+            error_bot = get_system_bot(settings.ERROR_BOT)
+            realm = error_bot.realm
+            errors_stream = get_stream(
+                settings.SLOW_QUERY_LOGS_STREAM,
+                realm
+            )
+            internal_send_stream_message(
+                realm,
+                error_bot,
+                errors_stream,
+                topic,
+                content
+            )
 
 @assign_queue('digest_emails')
 class DigestWorker(QueueProcessingWorker):  # nocoverage

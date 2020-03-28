@@ -21,20 +21,19 @@ exports.task_data_holder = function () {
 
     self.check_task = {
         task_exists: function (task) {
-            const task_exists = _.any(all_tasks, function (item) {
-                return item.task === task;
-            });
+            const task_exists = all_tasks.some(item => item.task === task);
             return task_exists;
         },
     };
 
     self.handle = {
         new_task: {
-            outbound: function (task) {
+            outbound: function (task, desc) {
                 const event = {
                     type: 'new_task',
                     key: my_idx,
                     task: task,
+                    desc: desc,
                     completed: false,
                 };
                 my_idx += 1;
@@ -48,10 +47,12 @@ exports.task_data_holder = function () {
             inbound: function (sender_id, data) {
                 const idx = data.key;
                 const task = data.task;
+                const desc = data.desc;
                 const completed = data.completed;
 
                 const task_data = {
                     task: task,
+                    desc: desc,
                     user_id: sender_id,
                     key: idx,
                     completed: completed,
@@ -128,12 +129,14 @@ exports.activate = function (opts) {
             e.stopPropagation();
             elem.find(".widget-error").text('');
             const task = elem.find("input.add-task").val().trim();
+            const desc = elem.find("input.add-desc").val().trim();
 
             if (task === '') {
                 return;
             }
 
             elem.find(".add-task").val('').focus();
+            elem.find(".add-desc").val('').focus();
 
             const task_exists = task_data.check_task.task_exists(task);
             if (task_exists) {
@@ -141,7 +144,7 @@ exports.activate = function (opts) {
                 return;
             }
 
-            const data = task_data.handle.new_task.outbound(task);
+            const data = task_data.handle.new_task.outbound(task, desc);
             callback(data);
         });
     }
@@ -162,9 +165,10 @@ exports.activate = function (opts) {
     }
 
     elem.handle_events = function (events) {
-        _.each(events, function (event) {
+        for (const event of events) {
             task_data.handle_event(event.sender_id, event.data);
-        });
+        }
+
         render_results();
     };
 

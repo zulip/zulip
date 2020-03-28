@@ -1,8 +1,8 @@
+
 zrequire('Filter', 'js/filter');
 zrequire('people');
 zrequire('stream_data');
 zrequire('unread');
-zrequire('util');
 set_global('blueslip', global.make_zblueslip());
 
 set_global('message_store', {});
@@ -66,7 +66,7 @@ run_test('get_unread_ids', () => {
         ],
     };
 
-    stream_data.add_sub(sub.name, sub);
+    stream_data.add_sub(sub);
 
     unread_ids = candidate_ids();
     assert.equal(unread_ids, undefined);

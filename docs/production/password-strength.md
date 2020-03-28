@@ -54,6 +54,6 @@ zxcvbn rarely underestimates the strength of a password too severely,
 and only about 10% of users do worse than this without prompting.
 
 [zxcvbn]: https://github.com/dropbox/zxcvbn
-[BHOS15]: http://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
+[BHOS15]: https://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
 [zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
-[Bon12]: http://ieeexplore.ieee.org/document/6234435/
+[Bon12]: https://ieeexplore.ieee.org/document/6234435

@@ -3,13 +3,6 @@ const return_true = function () { return true; };
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
 
-set_global('colorspace', {
-    sRGB_to_linear: noop,
-    luminance_to_lightness: function () {
-        return 1;
-    },
-});
-
 zrequire('people');
 zrequire('stream_data');
 zrequire('stream_events');
@@ -31,7 +24,7 @@ const frontend = {
     invite_only: false,
 };
 
-stream_data.add_sub(frontend.name, frontend);
+stream_data.add_sub(frontend);
 
 run_test('update_property', () => {
     // Invoke error for non-existent stream/property
@@ -150,14 +143,14 @@ run_test('update_property', () => {
         });
     });
 
-    // Test stream is_announcement_only change event
+    // Test stream stream_post_policy change event
     with_overrides(function (override) {
         global.with_stub(function (stub) {
-            override('subs.update_stream_announcement_only', stub.f);
-            stream_events.update_property(1, 'is_announcement_only', true);
+            override('subs.update_stream_post_policy', stub.f);
+            stream_events.update_property(1, 'stream_post_policy', stream_data.stream_post_policy_values.admins.code);
             const args = stub.get_args('sub', 'val');
             assert.equal(args.sub.stream_id, 1);
-            assert.equal(args.val, true);
+            assert.equal(args.val, stream_data.stream_post_policy_values.admins.code);
         });
     });
 });
@@ -373,7 +366,7 @@ const dev_help = {
     is_muted: true,
     invite_only: false,
 };
-stream_data.add_sub(dev_help.name, dev_help);
+stream_data.add_sub(dev_help);
 
 run_test('remove_deactivated_user_from_all_streams', () => {
     subs.rerender_subscriptions_settings = () => {};

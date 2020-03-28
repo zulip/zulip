@@ -1,3 +1,4 @@
+const util = require("./util");
 const render_draft_table_body = require('../templates/draft_table_body.hbs');
 
 const draft_model = (function () {
@@ -189,11 +190,11 @@ const DRAFT_LIFETIME = 30;
 exports.remove_old_drafts = function () {
     const old_date  = new Date().setDate(new Date().getDate() - DRAFT_LIFETIME);
     const drafts = draft_model.get();
-    _.each(drafts, function (draft, id) {
+    for (const [id, draft] of Object.entries(drafts)) {
         if (draft.updatedAt < old_date) {
             draft_model.deleteDraft(id);
         }
-    });
+    }
 };
 
 exports.format_draft = function (draft) {
@@ -228,7 +229,7 @@ exports.format_draft = function (draft) {
         };
     } else {
         const emails = util.extract_pm_recipients(draft.private_message_recipient);
-        const recipients = _.map(emails, function (email) {
+        const recipients = emails.map(email => {
             email = email.trim();
             const person = people.get_by_email(email);
             if (person !== undefined) {
@@ -295,17 +296,17 @@ function remove_draft(draft_row) {
 
 exports.launch = function () {
     function format_drafts(data) {
-        _.each(data, function (draft, id) {
+        for (const [id, draft] of Object.entries(data)) {
             draft.id = id;
-        });
+        }
 
-        const unsorted_raw_drafts = _.values(data);
+        const unsorted_raw_drafts = Object.values(data);
 
         const sorted_raw_drafts = unsorted_raw_drafts.sort(function (draft_a, draft_b) {
             return draft_b.updatedAt - draft_a.updatedAt;
         });
 
-        const sorted_formatted_drafts = _.filter(_.map(sorted_raw_drafts, exports.format_draft));
+        const sorted_formatted_drafts = sorted_raw_drafts.map(exports.format_draft).filter(Boolean);
 
         return sorted_formatted_drafts;
     }

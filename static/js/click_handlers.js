@@ -1,3 +1,4 @@
+const util = require("./util");
 // You won't find every click handler here, but it's a good place to start!
 
 const render_buddy_list_tooltip = require('../templates/buddy_list_tooltip.hbs');
@@ -679,27 +680,6 @@ exports.initialize = function () {
         stream_list.toggle_filter_displayed(e);
     });
 
-
-    // FEEDBACK
-
-    // Keep these 2 feedback bot triggers separate because they have to
-    // propagate the event differently.
-    $('.feedback').click(function () {
-        compose_actions.start('private', {
-            private_message_recipient: 'feedback@zulip.com',
-            trigger: 'feedback menu item'});
-
-    });
-    $('#feedback_button').click(function (e) {
-        e.stopPropagation();
-        popovers.hide_all();
-        compose_actions.start('private', {
-            private_message_recipient: 'feedback@zulip.com',
-            trigger: 'feedback button'});
-
-    });
-
-
     // WEBATHENA
 
     $('body').on('click', '.webathena_login', function (e) {
@@ -788,6 +768,7 @@ exports.initialize = function () {
         $("body").on("click", "[data-make-editable]", function () {
             const selector = $(this).attr("data-make-editable");
             const edit_area = $(this).parent().find(selector);
+            $(selector).removeClass("stream-name-edit-box");
             if (edit_area.attr("contenteditable") === "true") {
                 $("[data-finish-editing='" + selector + "']").hide();
                 edit_area.attr("contenteditable", false);
@@ -796,6 +777,7 @@ exports.initialize = function () {
             } else {
                 $("[data-finish-editing='" + selector + "']").show();
 
+                $(selector).addClass("stream-name-edit-box");
                 edit_area.attr("data-prev-text", edit_area.text().trim())
                     .attr("contenteditable", true);
 
@@ -811,6 +793,7 @@ exports.initialize = function () {
 
         $("body").on("click", "[data-finish-editing]", function (e) {
             const selector = $(this).attr("data-finish-editing");
+            $(selector).removeClass("stream-name-edit-box");
             if (map[selector].on_save) {
                 map[selector].on_save(e);
                 $(this).hide();

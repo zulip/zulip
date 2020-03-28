@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional, List, Tuple
 import markdown
 
 import zerver.openapi.python_examples
-from zerver.lib.openapi import get_openapi_fixture, openapi_spec
+from zerver.openapi.openapi import get_openapi_fixture, openapi_spec
 
 MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
 CODE_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
@@ -124,7 +124,14 @@ def curl_method_arguments(endpoint: str, method: str,
 
 def get_openapi_param_example_value_as_string(endpoint: str, method: str, param: Dict[str, Any],
                                               curl_argument: bool=False) -> str:
-    param_type = param["schema"]["type"]
+    if "type" in param["schema"]:
+        param_type = param["schema"]["type"]
+    else:
+        # Hack: Ideally, we'd extract a common function for handling
+        # oneOf values in types and do something with the resulting
+        # union type.  But for this logic's purpose, it's good enough
+        # to just check the first parameter.
+        param_type = param["schema"]["oneOf"][0]["type"]
     param_name = param["name"]
     if param_type in ["object", "array"]:
         example_value = param.get("example", None)
@@ -139,7 +146,7 @@ cURL example.""".format(endpoint, method, param_name)
             return "    --data-urlencode {}='{}'".format(param_name, ordered_ex_val_str)
         return ordered_ex_val_str  # nocoverage
     else:
-        example_value = param.get("example", DEFAULT_EXAMPLE[param["schema"]["type"]])
+        example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
         if type(example_value) == bool:
             example_value = str(example_value).lower()
         if param["schema"].get("format", "") == "json":
@@ -330,7 +337,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
         fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True,
                                   separators=(',', ': '))
 
-        fixture.append('```')
+        fixture.append('``` json')
         fixture.extend(fixture_json.splitlines())
         fixture.append('```')
 

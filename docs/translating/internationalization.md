@@ -296,12 +296,12 @@ organizations from the command line.
 
 
 [Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: http://handlebarsjs.com/
+[Handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
 [i18next]: https://www.i18next.com
 [official]: https://www.i18next.com/plurals.html
 [unescape]: https://www.i18next.com/interpolation.html#unescape
-[helpers]: http://handlebarsjs.com/block_helpers.html
+[helpers]: https://handlebarsjs.com/guide/block-helpers.html
 [resource]: https://www.i18next.com/add-or-load-translations.html
 [Transifex]: https://transifex.com
 [transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc

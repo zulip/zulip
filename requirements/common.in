@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django==1.11.*  # https://github.com/zulip/zulip/issues/10835
+Django==2.2.*
 
 # needed for Deque (in Python < 3.5.4) and TypedDict
 typing-extensions
@@ -129,29 +129,27 @@ pyoembed
 python-magic
 
 # The Zulip API bindings, from its own repository.  We integrate with
-# these tightly, including fetching content not included in the normal
-# release tarballs (which is a bug).  So we need to pin it makes sense
-# to pin a version from Git rather than a release.
-https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip==0.6.1_git&subdirectory=zulip
-https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots
+# these tightly, including fetching content not included in the official
+# PyPI release tarballs, such as logos, assets and documentation files
+# that we render on our /integrations page. Therefore, we need to pin
+# the version from Git rather than a PyPI release. Keeping everything in
+# one repository simplifies the process of implementing and documenting
+# new bots for new contributors.
+https://github.com/zulip/python-zulip-api/archive/0.6.4.zip/#egg=zulip==0.6.4_git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/0.6.4.zip/#egg=zulip_bots==0.6.4+git&subdirectory=zulip_bots
 
 # Used for Hesiod lookups, etc.
 py3dns
 
 # Install Python Social Auth
 social-auth-app-django
+social-auth-core[azuread,saml]
 
 # Needed for messages' rendered content parsing in push notifications.
 lxml
 
 # Needed for 2-factor authentication
-django-two-factor-auth
-
-# Required by django-phonenumber-field which is a dependency of django-two-factor-auth.
-# Developers can install either phonenumberslite or phonenumbers. Developers of
-# django-two-factor-auth has not specified which package to install so we are going
-# with phonenumberslite since it has less memory footprint.
-phonenumberslite
+django-two-factor-auth[phonenumberslite]
 
 twilio
 
@@ -178,9 +176,6 @@ pyahocorasick
 # Needed for function decorators that don't break introspection.
 # Used for rate limiting authentication.
 decorator
-
-# Needed for SAML authentication.
-python3-saml
 
 # Use SameSite cookies in legacy Django (remove with Django 2.1)
 django-cookies-samesite

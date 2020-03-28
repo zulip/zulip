@@ -15,9 +15,9 @@ exports.insert_message = function (message) {
     message_events.insert_new_messages([message], true);
 };
 
-exports.get_next_id = (function () {
+exports.get_next_id_float = (function () {
 
-    const already_used = {};
+    const already_used = new Set();
 
     return function () {
         const local_id_increment = 0.01;
@@ -26,30 +26,30 @@ exports.get_next_id = (function () {
             latest = message_list.all.last().id;
         }
         latest = Math.max(0, latest);
-        const next_local_id = truncate_precision(latest + local_id_increment);
+        const local_id_float = truncate_precision(latest + local_id_increment);
 
-        if (already_used[next_local_id]) {
+        if (already_used.has(local_id_float)) {
             // If our id is already used, it is probably an edge case like we had
             // to abort a very recent message.
             blueslip.warn("We don't reuse ids for local echo.");
             return;
         }
 
-        if (next_local_id % 1 > local_id_increment * 5) {
+        if (local_id_float % 1 > local_id_increment * 5) {
             blueslip.warn("Turning off local echo for this message to let host catch up");
             return;
         }
 
-        if (next_local_id % 1 === 0) {
+        if (local_id_float % 1 === 0) {
             // The logic to stop at 0.05 should prevent us from ever wrapping around
             // to the next integer.
             blueslip.error("Programming error");
             return;
         }
 
-        already_used[next_local_id] = true;
+        already_used.add(local_id_float);
 
-        return next_local_id;
+        return local_id_float;
     };
 }());
 

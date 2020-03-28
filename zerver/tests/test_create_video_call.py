@@ -3,11 +3,11 @@ import mock
 from zerver.lib.test_classes import ZulipTestCase
 from typing import Dict
 
-class TestFeedbackBot(ZulipTestCase):
+class TestVideoCall(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         user_profile = self.example_user('hamlet')
-        self.login(user_profile.email, realm=user_profile.realm)
+        self.login_user(user_profile)
 
     def test_create_video_call_success(self) -> None:
         with mock.patch('zerver.lib.actions.request_zoom_video_call_url', return_value={'join_url': 'example.com'}):

@@ -59,5 +59,6 @@ compile_requirements requirements/prod.in "$OUTPUT_BASE_DIR/prod.txt"
 compile_requirements requirements/dev.in "$OUTPUT_BASE_DIR/dev.txt"
 compile_requirements requirements/mypy.in "$OUTPUT_BASE_DIR/mypy.txt"
 compile_requirements requirements/docs.in "$OUTPUT_BASE_DIR/docs.txt"
+compile_requirements requirements/pip.in "$OUTPUT_BASE_DIR/pip2.txt" py2
 compile_requirements requirements/thumbor.in "$OUTPUT_BASE_DIR/thumbor.txt" py2
 compile_requirements requirements/thumbor-dev.in "$OUTPUT_BASE_DIR/thumbor-dev.txt" py2

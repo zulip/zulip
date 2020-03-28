@@ -109,9 +109,11 @@ function remove_div(div, ranges, selection) {
     window.setTimeout(function () {
         selection = window.getSelection();
         selection.removeAllRanges();
-        _.each(ranges, function (range) {
+
+        for (const range of ranges) {
             selection.addRange(range);
-        });
+        }
+
         $('#copytempdiv').remove();
     }, 0);
 }
@@ -314,8 +316,7 @@ exports.paste_handler = function (event) {
             const mdImageRegex = /^!\[.*\]\(.*\)$/;
             if (text.match(mdImageRegex)) {
                 // This block catches cases where we are pasting an
-                // image into Zulip, which should be handled by the
-                // jQuery filedrop library, not this code path.
+                // image into Zulip, which is handled by upload.js.
                 return;
             }
             event.preventDefault();

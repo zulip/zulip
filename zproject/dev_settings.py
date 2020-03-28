@@ -47,6 +47,7 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.GoogleAuthBackend',
     'zproject.backends.SAMLAuthBackend',
     # 'zproject.backends.AzureADAuthBackend',
+    'zproject.backends.GitLabAuthBackend',
 )
 
 EXTERNAL_URI_SCHEME = "http://"
@@ -88,7 +89,7 @@ TWO_FACTOR_CALL_GATEWAY = 'two_factor.gateways.fake.Fake'
 TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
 
 # Make sendfile use django to serve files in development
-SENDFILE_BACKEND = 'sendfile.backends.development'
+SENDFILE_BACKEND = 'django_sendfile.backends.development'
 
 # Set this True to send all hotspots in development
 ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool

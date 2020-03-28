@@ -11,14 +11,15 @@ from django.core.exceptions import ValidationError
 from django.core import validators
 from zerver.context_processors import get_realm_from_request, login_context
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
-    name_changes_disabled, email_to_username, email_allowed_for_realm, \
+    name_changes_disabled, email_to_username, \
     get_realm, get_user_by_delivery_email, get_default_stream_groups, DisposableEmailError, \
     DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError, \
     PreregistrationUser
+from zerver.lib.email_validation import email_allowed_for_realm, \
+    validate_email_not_already_in_realm
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.actions import do_change_password, do_change_full_name, \
     do_activate_user, do_create_user, do_create_realm, \
-    validate_email_for_realm, \
     do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     FindMyTeamForm, RealmRedirectForm
@@ -26,12 +27,14 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, \
     do_login
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
+from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
+from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.views.auth import create_preregistration_user, redirect_and_log_into_subdomain, \
-    redirect_to_deactivation_notice, get_safe_redirect_to
+    redirect_to_deactivation_notice, get_safe_redirect_to, finish_desktop_flow, finish_mobile_flow
 
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, \
     ZulipLDAPExceptionNoMatchingLDAPUser, email_auth_enabled, ZulipLDAPAuthBackend, \
@@ -109,10 +112,11 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             return redirect_to_deactivation_notice()
 
         try:
-            validate_email_for_realm(realm, email)
+            validate_email_not_already_in_realm(realm, email)
         except ValidationError:
-            return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
-                                        urllib.parse.quote_plus(email))
+            view_url = reverse('django.contrib.auth.views.login')
+            redirect_url = add_query_to_redirect_url(view_url, 'email=' + urllib.parse.quote_plus(email))
+            return HttpResponseRedirect(redirect_url)
 
     name_validated = False
     full_name = None
@@ -273,7 +277,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # pregeg_user.realm_creation carries the information about whether
             # we're in realm creation mode, and the ldap flow will handle
             # that and create the user with the appropriate parameters.
-            user_profile = authenticate(request,
+            user_profile = authenticate(request=request,
                                         username=email,
                                         password=password,
                                         realm=realm,
@@ -300,8 +304,10 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                     # user-friendly error message, but it doesn't
                     # particularly matter, because the registration form
                     # is hidden for most users.
-                    return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
-                                                urllib.parse.quote_plus(email))
+                    view_url = reverse('django.contrib.auth.views.login')
+                    query = 'email=' + urllib.parse.quote_plus(email)
+                    redirect_url = add_query_to_redirect_url(view_url, query)
+                    return HttpResponseRedirect(redirect_url)
             elif not realm_creation:
                 # Since we'll have created a user, we now just log them in.
                 return login_and_go_to_home(request, user_profile)
@@ -380,6 +386,15 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     )
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    mobile_flow_otp = get_expirable_session_var(request.session, 'registration_mobile_flow_otp',
+                                                delete=True)
+    desktop_flow_otp = get_expirable_session_var(request.session, 'registration_desktop_flow_otp',
+                                                 delete=True)
+    if mobile_flow_otp is not None:
+        return finish_mobile_flow(request, user_profile, mobile_flow_otp)
+    elif desktop_flow_otp is not None:
+        return finish_desktop_flow(request, user_profile, desktop_flow_otp)
+
     do_login(request, user_profile)
     return HttpResponseRedirect(user_profile.realm.uri + reverse('zerver.views.home.home'))
 
@@ -498,7 +513,7 @@ def accounts_home(request: HttpRequest, multiuse_object_key: Optional[str]="",
 
         email = request.POST['email']
         try:
-            validate_email_for_realm(realm, email)
+            validate_email_not_already_in_realm(realm, email)
         except ValidationError:
             return redirect_to_email_login_url(email)
     else:
@@ -547,7 +562,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
             # feature can be used to ascertain which email addresses
             # are associated with Zulip.
             data = urllib.parse.urlencode({'emails': ','.join(emails)})
-            return redirect(url + "?" + data)
+            return redirect(add_query_to_redirect_url(url, data))
     else:
         form = FindMyTeamForm()
         result = request.GET.get('emails')

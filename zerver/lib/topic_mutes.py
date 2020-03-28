@@ -1,10 +1,10 @@
 from typing import Any, Callable, Dict, List, Optional
+import datetime
 
 from zerver.lib.topic import (
     topic_match_sa,
 )
 from zerver.models import (
-    get_stream_recipient,
     get_stream,
     MutedTopic,
     UserProfile
@@ -16,6 +16,8 @@ from sqlalchemy.sql import (
     or_,
     Selectable
 )
+
+from django.utils.timezone import now as timezone_now
 
 def get_topic_mutes(user_profile: UserProfile) -> List[List[str]]:
     rows = MutedTopic.objects.filter(
@@ -29,7 +31,8 @@ def get_topic_mutes(user_profile: UserProfile) -> List[List[str]]:
         for row in rows
     ]
 
-def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[str]]) -> None:
+def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[str]],
+                    date_muted: Optional[datetime.datetime]=None) -> None:
 
     '''
     This is only used in tests.
@@ -39,23 +42,30 @@ def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[str]]) ->
         user_profile=user_profile,
     ).delete()
 
+    if date_muted is None:
+        date_muted = timezone_now()
     for stream_name, topic_name in muted_topics:
         stream = get_stream(stream_name, user_profile.realm)
-        recipient = get_stream_recipient(stream.id)
+        recipient_id = stream.recipient_id
 
         add_topic_mute(
             user_profile=user_profile,
             stream_id=stream.id,
-            recipient_id=recipient.id,
+            recipient_id=recipient_id,
             topic_name=topic_name,
+            date_muted=date_muted,
         )
 
-def add_topic_mute(user_profile: UserProfile, stream_id: int, recipient_id: int, topic_name: str) -> None:
+def add_topic_mute(user_profile: UserProfile, stream_id: int, recipient_id: int, topic_name: str,
+                   date_muted: Optional[datetime.datetime]=None) -> None:
+    if date_muted is None:
+        date_muted = timezone_now()
     MutedTopic.objects.create(
         user_profile=user_profile,
         stream_id=stream_id,
         recipient_id=recipient_id,
         topic_name=topic_name,
+        date_muted=date_muted,
     )
 
 def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str) -> None:

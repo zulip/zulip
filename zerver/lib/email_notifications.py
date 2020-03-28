@@ -4,6 +4,8 @@ from zerver.lib.types import DisplayRecipientT
 from confirmation.models import one_click_unsubscribe_link
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import override as override_language
+from django.utils.translation import ugettext as _
 from django.contrib.auth import get_backends
 
 from zerver.decorator import statsd_increment
@@ -323,7 +325,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'message_count': message_count,
         'unsubscribe_link': unsubscribe_link,
         'realm_name_in_notifications': user_profile.realm_name_in_notifications,
-        'show_message_content': message_content_allowed_in_missedmessage_emails(user_profile)
     })
 
     triggers = list(message['trigger'] for message in missed_messages)
@@ -396,21 +397,27 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
 
     # If message content is disabled, then flush all information we pass to email.
     if not message_content_allowed_in_missedmessage_emails(user_profile):
+        realm = user_profile.realm
         context.update({
             'reply_to_zulip': False,
             'messages': [],
             'sender_str': "",
-            'realm_str': user_profile.realm.name,
+            'realm_str': realm.name,
             'huddle_display_name': "",
+            'show_message_content': False,
+            'message_content_disabled_by_user': not user_profile.message_content_in_email_notifications,
+            'message_content_disabled_by_realm': not realm.message_content_allowed_in_email_notifications,
         })
     else:
         context.update({
             'messages': build_message_list(user_profile, list(m['message'] for m in missed_messages)),
             'sender_str': ", ".join(sender.full_name for sender in senders),
             'realm_str': user_profile.realm.name,
+            'show_message_content': True,
         })
 
-    from_name = "Zulip missed messages"  # type: str
+    with override_language(user_profile.default_language):
+        from_name = _("Zulip missed messages")  # type: str
     from_address = FromAddress.NOREPLY
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
@@ -539,7 +546,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         from_address = settings.WELCOME_EMAIL_SENDER['email']
     else:
         from_name = None
-        from_address = FromAddress.SUPPORT
+        from_address = FromAddress.support_placeholder
 
     other_account_count = UserProfile.objects.filter(
         delivery_email__iexact=user.delivery_email).exclude(id=user.id).count()

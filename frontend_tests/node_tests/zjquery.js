@@ -167,7 +167,7 @@ run_test('events', () => {
         stopPropagation: function () {},
     };
 
-    // Now call the hander.
+    // Now call the handler.
     red_handler_func(stub_event);
 
     // And verify it did what it was supposed to do.
@@ -214,44 +214,4 @@ run_test('extensions', () => {
 
     // But we also have area available from general extension.
     assert.equal(rect.area(), 35);
-});
-
-run_test('closest', () => {
-    const widget = $('#my-widget');
-    let parent;
-    let parentSelector;
-    let closest;
-
-    parentSelector = '#my-parent';
-    parent = $(parentSelector);
-    widget.set_parent(parent);
-    closest = widget.closest('#my-parent');
-    assert.equal(closest.selector, parentSelector);
-    assert.equal(closest.length, 1);
-
-    parentSelector = '<div id="my-parent"></div>';
-    parent = $(parentSelector);
-    widget.set_parent(parent);
-    closest = widget.closest('#my-parent');
-    assert.equal(closest.selector, parentSelector);
-    assert.equal(closest.length, 1);
-
-    parentSelector = '<div class="parent-class"></div>';
-    parent = $(parentSelector);
-    widget.set_parent(parent);
-    closest = widget.closest('.parent-class');
-    assert.equal(closest.selector, parentSelector);
-    assert.equal(closest.length, 1);
-
-    parentSelector = '#my-parent';
-    parent = $(parentSelector);
-    widget.set_parents_result(parentSelector, parent);
-    closest = widget.closest('#my-parent');
-    assert.equal(closest.selector, parentSelector);
-    assert.equal(closest.length, 1);
-
-    closest = widget.closest('#bogus-parent-class');
-    assert.equal(closest.selector, undefined);
-    assert.equal(closest.length, 0);
-
 });

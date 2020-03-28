@@ -114,8 +114,9 @@ function submit_permissions_change() {
 casper.then(function () {
     casper.test.info("Test setting create streams policy to 'admins only'.");
     casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
+        // by_admins_only
         casper.evaluate(function () {
-            $("#id_realm_create_stream_policy").val("by_admins_only").change();
+            $("#id_realm_create_stream_policy").val(2).change();
         });
         submit_permissions_change();
     });
@@ -133,8 +134,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting create streams policy to 'members and admins'.");
     casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
+        // by_members
         casper.evaluate(function () {
-            $("#id_realm_create_stream_policy").val("by_members").change();
+            $("#id_realm_create_stream_policy").val(1).change();
         });
         submit_permissions_change();
     });
@@ -152,8 +154,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting create streams policy to 'waiting period.");
     casper.waitUntilVisible("#id_realm_create_stream_policy", function () {
+        // by_full_members
         casper.evaluate(function () {
-            $("#id_realm_create_stream_policy").val("by_full_members").change();
+            $("#id_realm_create_stream_policy").val(3).change();
         });
         submit_permissions_change();
     });
@@ -171,8 +174,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting invite to streams policy to 'admins only'.");
     casper.waitUntilVisible("#id_realm_invite_to_stream_policy", function () {
+        // by_admins_only
         casper.evaluate(function () {
-            $("#id_realm_invite_to_stream_policy").val("by_admins_only").change();
+            $("#id_realm_invite_to_stream_policy").val(2).change();
         });
         submit_permissions_change();
     });
@@ -190,8 +194,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting invite to streams policy to 'members and admins'.");
     casper.waitUntilVisible("#id_realm_invite_to_stream_policy", function () {
+        // by_members
         casper.evaluate(function () {
-            $("#id_realm_invite_to_stream_policy").val("by_members").change();
+            $("#id_realm_invite_to_stream_policy").val(1).change();
         });
         submit_permissions_change();
     });
@@ -209,8 +214,9 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info("Test setting invite to streams policy to 'waiting period'.");
     casper.waitUntilVisible("#id_realm_invite_to_stream_policy", function () {
+        // by_full_members
         casper.evaluate(function () {
-            $("#id_realm_invite_to_stream_policy").val("by_full_members").change();
+            $("#id_realm_invite_to_stream_policy").val(3).change();
         });
         submit_permissions_change();
     });
@@ -414,6 +420,7 @@ function select_from_suggestions(item) {
             });
             tah.select();
         }, {item: item});
+        casper.click(".default-stream-form #do_submit_stream");
     });
 }
 
@@ -431,24 +438,16 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.default_stream_row[id=' + stream_name + ']', function () {
-        casper.test.assertSelectorHasText('.default_stream_row[id=' + stream_name + '] .default_stream_name', stream_name);
+    var stream_id = common.get_stream_id(stream_name);
+    var row = ".default_stream_row[data-stream-id='" + stream_id + "']";
+    casper.waitUntilVisible(row, function () {
+        casper.test.assertSelectorHasText(row + ' .default_stream_name', stream_name);
+        casper.click(row + ' button.remove-default-stream');
+        casper.waitWhileVisible(row, function () {
+            casper.test.assertDoesntExist(row);
+        });
     });
 });
-
-casper.then(function () {
-    casper.waitUntilVisible('.default_stream_row[id=' + stream_name + ']', function () {
-        casper.test.assertSelectorHasText('.default_stream_row[id=' + stream_name + '] .default_stream_name', stream_name);
-        casper.click('.default_stream_row[id=' + stream_name + '] button.remove-default-stream');
-    });
-});
-
-casper.then(function () {
-    casper.waitWhileVisible('.default_stream_row[id=' + stream_name + ']', function () {
-        casper.test.assertDoesntExist('.default_stream_row[id=' + stream_name + ']');
-    });
-});
-
 
 // TODO: Test stream deletion
 

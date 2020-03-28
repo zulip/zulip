@@ -13,12 +13,16 @@ set_global('$', global.make_zjquery());
 set_global('compose_pm_pill', {
 });
 
+
+set_global('hash_util', {
+});
+
 zrequire('people');
 zrequire('compose_ui');
 zrequire('compose');
-zrequire('util');
 zrequire('compose_state');
 zrequire('compose_actions');
+zrequire('fenced_code');
 zrequire('stream_data');
 
 set_global('document', 'document-stub');
@@ -143,7 +147,7 @@ run_test('start', () => {
         name: 'Denmark',
         stream_id: 1,
     };
-    stream_data.add_sub('Denmark', denmark);
+    stream_data.add_sub(denmark);
 
     global.narrow_state.set_compose_defaults = function () {
         const opts = {};
@@ -173,7 +177,7 @@ run_test('start', () => {
         name: 'social',
         stream_id: 2,
     };
-    stream_data.add_sub('social', social);
+    stream_data.add_sub(social);
 
     // More than 1 subscription, do not autofill
     opts = {};
@@ -206,13 +210,18 @@ run_test('start', () => {
 
     // Cancel compose.
     let pill_cleared;
-
     compose_pm_pill.clear = function () {
         pill_cleared = true;
     };
 
+    let abort_xhr_called = false;
+    compose.abort_xhr = () => {
+        abort_xhr_called = true;
+    };
+
     assert_hidden('#compose_controls');
     cancel();
+    assert(abort_xhr_called);
     assert(pill_cleared);
     assert_visible('#compose_controls');
     assert_hidden('#private-message');
@@ -226,7 +235,7 @@ run_test('respond_to_message', () => {
         email: 'alice@example.com',
         full_name: 'Alice',
     };
-    people.add_in_realm(person);
+    people.add(person);
 
     let msg = {
         type: 'private',
@@ -287,13 +296,13 @@ run_test('reply_with_mention', () => {
         email: 'bob1@example.com',
         full_name: 'Bob Roberts',
     };
-    people.add_in_realm(bob_1);
+    people.add(bob_1);
     const bob_2 = {
         user_id: 40,
         email: 'bob2@example.com',
         full_name: 'Bob Roberts',
     };
-    people.add_in_realm(bob_2);
+    people.add(bob_2);
 
     reply_with_mention(opts);
     assert.equal($('#stream_message_recipient_stream').val(), 'devel');
@@ -310,8 +319,11 @@ run_test('quote_and_reply', () => {
         sender_full_name: 'Bob Roberts',
         sender_id: 40,
     };
+    hash_util.by_conversation_and_time_uri = () => 'link_to_message';
     stub_selected_message(msg);
-    stub_channel_get({ raw_content: 'Testing.' });
+    stub_channel_get({
+        raw_content: 'Testing.',
+    });
 
     current_msg_list.selected_id = function () {
         return 100;
@@ -323,7 +335,7 @@ run_test('quote_and_reply', () => {
 
     compose_ui.replace_syntax = function (syntax, replacement) {
         assert.equal(syntax, '[Quoting…]');
-        assert.equal(replacement, '```quote\nTesting.\n```');
+        assert.equal(replacement, '@_**Bob Roberts|40** [said](link_to_message):\n```quote\nTesting.\n```');
     };
 
     const opts = {
@@ -342,7 +354,7 @@ run_test('quote_and_reply', () => {
             stream: 'devel',
             topic: 'test',
             reply_to: 'bob',
-            sender_full_name: 'Bob',
+            sender_full_name: 'Bob Roberts',
             sender_id: 40,
             raw_content: 'Testing.',
         };
@@ -352,6 +364,23 @@ run_test('quote_and_reply', () => {
         assert.fail('channel.get should not be used if raw_content is present');
     };
 
+    quote_and_reply(opts);
+
+    current_msg_list.selected_message = function () {
+        return {
+            type: 'stream',
+            stream: 'devel',
+            topic: 'test',
+            reply_to: 'bob',
+            sender_full_name: 'Bob Roberts',
+            sender_id: 40,
+            raw_content: '```\nmultiline code block\nshoudln\'t mess with quotes\n```',
+        };
+    };
+    compose_ui.replace_syntax = function (syntax, replacement) {
+        assert.equal(syntax, '[Quoting…]');
+        assert.equal(replacement, '@_**Bob Roberts|40** [said](link_to_message):\n````quote\n```\nmultiline code block\nshoudln\'t mess with quotes\n```\n````');
+    };
     quote_and_reply(opts);
 });
 

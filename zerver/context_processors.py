@@ -88,7 +88,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
 
     user_is_authenticated = False
     if hasattr(request, 'user') and hasattr(request.user, 'is_authenticated'):
-        user_is_authenticated = request.user.is_authenticated.value
+        user_is_authenticated = request.user.is_authenticated
 
     if settings.DEVELOPMENT:
         secrets_path = "zproject/dev-secrets.conf"
@@ -102,7 +102,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     # We can't use request.client here because we might not be using
     # an auth decorator that sets it, but we can call its helper to
     # get the same result.
-    platform = get_client_name(request, True)
+    platform = get_client_name(request)
 
     context = {
         'root_domain_landing_page': settings.ROOT_DOMAIN_LANDING_PAGE,
@@ -177,6 +177,15 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
 
     context['external_authentication_methods'] = get_external_method_dicts(realm)
     context['no_auth_enabled'] = no_auth_enabled
+
+    # Include another copy of external_authentication_methods in page_params for use
+    # by the desktop client. We expand it with IDs of the <button> elements corresponding
+    # to the authentication methods.
+    context['page_params'] = dict(
+        external_authentication_methods = get_external_method_dicts(realm)
+    )
+    for auth_dict in context['page_params']['external_authentication_methods']:
+        auth_dict['button_id_suffix'] = "auth_button_%s" % (auth_dict['name'],)
 
     return context
 

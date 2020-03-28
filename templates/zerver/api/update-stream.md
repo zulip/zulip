@@ -7,7 +7,7 @@ including:
 * Stream [name](/help/rename-a-stream) and [description](/help/change-the-stream-description)
 * Stream [permissions](/help/stream-permissions), including
   [privacy](/help/change-the-privacy-of-a-stream) and [who can
-  send](/help/announcement-only-streams).
+  send](/help/stream-sending-policy).
 
 `PATCH {{ api_url }}/v1/streams/{stream_id}`
 

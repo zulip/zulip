@@ -170,9 +170,9 @@ run_test('basic_chars', () => {
     }
 
     function assert_unmapped(s) {
-        _.each(s, function (c) {
+        for (const c of s) {
             assert.equal(process(c), false);
-        });
+        }
     }
 
     // Unmapped keys should immediately return false, without
@@ -182,7 +182,7 @@ run_test('basic_chars', () => {
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
-    hotkey.is_editing_stream_name = return_false;
+    hotkey.in_content_editable_widget = return_false;
     overlays.settings_open = return_false;
 
     set_global('popovers', {
@@ -192,12 +192,10 @@ run_test('basic_chars', () => {
     set_global('emoji_picker', {
         reactions_popped: return_false,
     });
-    set_global('emoji_codes', {
-        codepoint_to_name: {
-            '1f44d': 'thumbs_up',
-        },
-    });
     set_global('hotspots', {
+        is_open: return_false,
+    });
+    set_global('gear_menu', {
         is_open: return_false,
     });
 
@@ -212,18 +210,18 @@ run_test('basic_chars', () => {
         assert_unmapped('~!@#$%^*()_+{}:"<>');
     }
 
-    _.each([return_true, return_false], function (settings_open) {
-        _.each([return_true, return_false], function (is_active) {
-            _.each([return_true, return_false], function (info_overlay_open) {
+    for (const settings_open of [return_true, return_false]) {
+        for (const is_active of [return_true, return_false]) {
+            for (const info_overlay_open of [return_true, return_false]) {
                 set_global('overlays', {
                     is_active: is_active,
                     settings_open: settings_open,
                     info_overlay_open: info_overlay_open,
                 });
                 test_normal_typing();
-            });
-        });
-    });
+            }
+        }
+    }
 
     // Ok, now test keys that work when we're viewing messages.
     hotkey.processing_text = return_false;
@@ -409,10 +407,10 @@ run_test('motion_keys', () => {
     assert_mapping('right_arrow', 'lightbox.next');
     overlays.lightbox_open = return_false;
 
-    hotkey.is_editing_stream_name = return_true;
+    hotkey.in_content_editable_widget = return_true;
     assert_unmapped('down_arrow');
     assert_unmapped('up_arrow');
-    hotkey.is_editing_stream_name = return_false;
+    hotkey.in_content_editable_widget = return_false;
 
     overlays.settings_open = return_true;
     assert_unmapped('end');

@@ -1,5 +1,6 @@
 import $ from "jquery";
 import ErrorStackParser from "error-stack-parser";
+import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
 import render_blueslip_stacktrace from "../templates/blueslip_stacktrace.hbs";
 
@@ -48,12 +49,12 @@ export function clean_function_name(
     };
 }
 
-const sourceCache: { [source: string]: string } = {};
+const sourceCache: { [source: string]: string | Promise<string> } = {};
 
 const stack_trace_gps = new StackTraceGPS({ sourceCache });
 
-function get_context(location: StackFrame.StackFrame): NumberedLine[] | undefined {
-    const sourceContent = sourceCache[location.getFileName()];
+async function get_context(location: StackFrame): Promise<NumberedLine[] | undefined> {
+    const sourceContent = await sourceCache[location.getFileName()];
     if (sourceContent === undefined) {
         return undefined;
     }
@@ -77,14 +78,14 @@ export async function display_stacktrace(error: string, stack: string): Promise<
             const location = await stack_trace_gps.getMappedLocation(
                 // Work around mistake in ErrorStackParser.StackFrame definition
                 // https://github.com/stacktracejs/error-stack-parser/pull/49
-                (stack_frame as unknown) as StackFrame.StackFrame
+                (stack_frame as unknown) as StackFrame
             );
             return {
                 full_path: location.getFileName(),
                 show_path: clean_path(location.getFileName()),
                 line_number: location.getLineNumber(),
                 function_name: clean_function_name(location.getFunctionName()),
-                context: get_context(location),
+                context: await get_context(location),
             };
         })
     );

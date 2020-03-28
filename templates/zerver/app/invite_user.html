@@ -11,9 +11,9 @@
                 {% if development_environment %}
                 <div class="alert" id="dev_env_msg"></div>
                 {% endif %}
-                <div class="control-group">
-                    <label class="control-label" for="invitee_emails">{{ _('Emails (one on each line or comma-separated)') }}</label>
-                    <div class="controls">
+                <div class="input-group">
+                    <label for="invitee_emails">{{ _('Emails (one on each line or comma-separated)') }}</label>
+                    <div>
                         <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{ _('One or more email addresses...') }}"></textarea>
                         {% if is_admin %}
                         <div id="invite-method-choice">
@@ -29,9 +29,9 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="control-group">
-                    <label class="control-label" for="invite_as">{{ _('User(s) join as') }}</label>
-                    <div class="controls">
+                <div class="input-group">
+                    <label for="invite_as">{{ _('User(s) join as') }}</label>
+                    <div>
                         <select id="invite_as">
                             <option name="invite_as" value="{{ invite_as.MEMBER }}">{{ _('Members') }}</option>
                             {% if is_admin %}
@@ -41,9 +41,9 @@
                         </select>
                     </div>
                 </div>
-                <div class="control-group">
-                    <label class="control-label">{{ _('Streams they should join') }}</label>
-                    <div class="controls" id="streams_to_add"></div>
+                <div>
+                    <label>{{ _('Streams they should join') }}</label>
+                    <div id="streams_to_add"></div>
                 </div>
             </div>
             <div class="modal-footer">

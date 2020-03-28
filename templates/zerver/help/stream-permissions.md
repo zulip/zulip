@@ -3,8 +3,8 @@
 Streams are similar to chatrooms, IRC channels, or email lists in that they
 determine who receives a message. There are three types of streams in Zulip.
 
-* **Public**: Anyone other than guests can join, and anyone (other than guests) can view the complete message
-  history without joining.
+* **Public**: Anyone other than guests can join, and anyone (other
+  than guests) can view the complete message history without joining.
 
 * **Private, shared history**: You must be added by a member of the stream. The
   complete message history is available as soon as you are added.
@@ -62,11 +62,9 @@ private stream messages:
 
 &#9726; &nbsp; If subscribed to the stream
 
-&#10038; Configurable.  Org admins and Members can, by default, post to
-any public stream, and Guests can only post to public streams if they
-are subscribed.  Additionally, streams can be configured to only allow
-administrators to post.
-
+&#10038; [Configurable](/help/stream-sending-policy).  Org admins and
+Members can, by default, post to any public stream, and Guests can
+only post to public streams if they are subscribed.
 
 ### Private streams
 
@@ -90,4 +88,5 @@ administrators to post.
 
 &#9726; &nbsp; If subscribed to the stream
 
-&#10038; Configurable, but at minimum must be subscribed to the stream
+&#10038; [Configurable](/help/stream-sending-policy), but at minimum
+must be subscribed to the stream.

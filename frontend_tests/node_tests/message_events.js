@@ -1,7 +1,6 @@
 zrequire('message_events');
 zrequire('message_store');
 zrequire('people');
-zrequire('util');
 
 set_global('alert_words', {});
 set_global('condense', {});
@@ -27,7 +26,7 @@ people.add(alice);
 function test_helper(side_effects) {
     const events = [];
 
-    _.each(side_effects, (side_effect) => {
+    for (const side_effect of side_effects) {
         const parts = side_effect.split('.');
         const module = parts[0];
         const field = parts[1];
@@ -35,7 +34,7 @@ function test_helper(side_effects) {
         global[module][field] = () => {
             events.push(side_effect);
         };
-    });
+    }
 
     const self = {};
 

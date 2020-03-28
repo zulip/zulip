@@ -26,7 +26,7 @@ set -x
 ./tools/test-help-documentation --skip-external-links
 ./tools/test-api
 ./tools/test-locked-requirements
-./tools/test-run-dev
+# ./tools/test-run-dev  # https://github.com/zulip/zulip/pull/14233
 
 # This test has been persistently flaky at like 1% frequency, is slow,
 # and is for a very specific single feature, so we don't run it by default:

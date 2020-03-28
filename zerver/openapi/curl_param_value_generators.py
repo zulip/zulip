@@ -4,10 +4,10 @@ from functools import wraps
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.models import Client, UserPresence, UserGroup, get_realm
+from zerver.models import Client, Message, UserPresence, UserGroup, get_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.events import do_events_register
-from zerver.lib.actions import update_user_presence, do_add_realm_filter
+from zerver.lib.actions import update_user_presence, do_add_realm_filter, do_add_reaction
 
 GENERATOR_FUNCTIONS = dict()  # type: Dict[str, Callable[..., Dict[Any, Any]]]
 REGISTERED_GENERATOR_FUNCTIONS = set()  # type: Set[str]
@@ -60,8 +60,23 @@ def patch_openapi_example_values(entry: str, params: List[Dict[str, Any]],
                                 "/messages/{message_id}:patch", "/messages/{message_id}:delete"])
 def iago_message_id() -> Dict[str, int]:
     return {
-        "message_id": helpers.send_stream_message(helpers.example_email("iago"), "Denmark")
+        "message_id": helpers.send_stream_message(helpers.example_user("iago"), "Denmark")
     }
+
+@openapi_param_value_generator(["/messages/{message_id}/reactions:delete"])
+def add_emoji_to_message() -> Dict[str, List[Dict[None, None]]]:
+    user_profile = helpers.example_user('iago')
+
+    # from OpenAPI format data in zulip.yaml
+    message_id = 41
+    emoji_name = 'octopus'
+    emoji_code = '1f419'
+    reaction_type = 'unicode_emoji'
+
+    message = Message.objects.select_related().get(id=message_id)
+    do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
+
+    return {}
 
 @openapi_param_value_generator(["/messages/flags:post"])
 def update_flags_message_ids() -> Dict[str, List[int]]:
@@ -70,7 +85,7 @@ def update_flags_message_ids() -> Dict[str, List[int]]:
 
     messages = []
     for _ in range(3):
-        messages.append(helpers.send_stream_message(helpers.example_email("iago"), stream_name))
+        messages.append(helpers.send_stream_message(helpers.example_user("iago"), stream_name))
     return {
         "messages": messages,
     }
@@ -101,7 +116,7 @@ def get_denmark_stream_id_and_topic() -> Dict[str, Any]:
     topic_name = "Tivoli Gardens"
 
     helpers.subscribe(helpers.example_user("iago"), stream_name)
-    helpers.send_stream_message(helpers.example_email("hamlet"), stream_name, topic_name=topic_name)
+    helpers.send_stream_message(helpers.example_user("hamlet"), stream_name, topic_name=topic_name)
 
     return {
         "stream_id": helpers.get_stream_id(stream_name),
@@ -136,7 +151,7 @@ def get_events() -> Dict[str, Any]:
     helpers.subscribe(profile, "Verona")
     client = Client.objects.create(name="curl-test-client-1")
     response = do_events_register(profile, client, event_types=['message', 'realm_emoji'])
-    helpers.send_stream_message(helpers.example_email("hamlet"), "Verona")
+    helpers.send_stream_message(helpers.example_user("hamlet"), "Verona")
     return {
         "queue_id": response["queue_id"],
         "last_event_id": response["last_event_id"],

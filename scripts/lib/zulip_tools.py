@@ -318,10 +318,17 @@ def generate_sha1sum_emoji(zulip_path):
     dependency_data = parsed_package_file['dependencies']
 
     if 'emoji-datasource-google' in dependency_data:
-        emoji_datasource_version = dependency_data['emoji-datasource-google'].encode('utf-8')
+        with open(os.path.join(zulip_path, "yarn.lock")) as fp:
+            (emoji_datasource_version,) = re.findall(
+                r"^emoji-datasource-google@"
+                + re.escape(dependency_data["emoji-datasource-google"])
+                + r':\n  version "(.*)"',
+                fp.read(),
+                re.M,
+            )
     else:
-        emoji_datasource_version = b"0"
-    sha.update(emoji_datasource_version)
+        emoji_datasource_version = "0"
+    sha.update(emoji_datasource_version.encode())
 
     return sha.hexdigest()
 
@@ -392,7 +399,7 @@ def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]
         with open(path, 'rb') as file_to_hash:
             sha1sum.update(file_to_hash.read())
 
-    # The ouput of tools like build_pygments_data depends
+    # The output of tools like build_pygments_data depends
     # on the version of some pip packages as well.
     for package_version in package_versions:
         sha1sum.update(package_version.encode("utf-8"))

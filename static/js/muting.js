@@ -1,7 +1,6 @@
-const Dict = require('./dict').Dict;
 const FoldDict = require('./fold_dict').FoldDict;
 
-let muted_topics = new Dict();
+const muted_topics = new Map();
 
 exports.add_muted_topic = function (stream_id, topic) {
     let sub_dict = muted_topics.get(stream_id);
@@ -15,7 +14,7 @@ exports.add_muted_topic = function (stream_id, topic) {
 exports.remove_muted_topic = function (stream_id, topic) {
     const sub_dict = muted_topics.get(stream_id);
     if (sub_dict) {
-        sub_dict.del(topic);
+        sub_dict.delete(topic);
     }
 };
 
@@ -29,18 +28,18 @@ exports.is_topic_muted = function (stream_id, topic) {
 
 exports.get_muted_topics = function () {
     const topics = [];
-    muted_topics.each(function (sub_dict, stream_id) {
-        _.each(sub_dict.keys(), function (topic) {
+    for (const [stream_id, sub_dict] of muted_topics) {
+        for (const topic of sub_dict.keys()) {
             topics.push([stream_id, topic]);
-        });
-    });
+        }
+    }
     return topics;
 };
 
 exports.set_muted_topics = function (tuples) {
-    muted_topics = new Dict();
+    muted_topics.clear();
 
-    _.each(tuples, function (tuple) {
+    for (const tuple of tuples) {
         const stream_name = tuple[0];
         const topic = tuple[1];
 
@@ -48,11 +47,11 @@ exports.set_muted_topics = function (tuples) {
 
         if (!stream_id) {
             blueslip.warn('Unknown stream in set_muted_topics: ' + stream_name);
-            return;
+            continue;
         }
 
         exports.add_muted_topic(stream_id, topic);
-    });
+    }
 };
 
 exports.initialize = function () {

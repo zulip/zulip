@@ -4,45 +4,45 @@ set_global('blueslip', global.make_zblueslip());
 run_test('basic', () => {
     const d = new FoldDict();
 
-    assert(d.is_empty());
+    assert.equal(d.size, 0);
 
-    assert.deepEqual(d.keys(), []);
+    assert.deepEqual(Array.from(d.keys()), []);
 
     d.set('foo', 'bar');
     assert.equal(d.get('foo'), 'bar');
-    assert(!d.is_empty());
+    assert.notEqual(d.size, 0);
 
     d.set('foo', 'baz');
     assert.equal(d.get('foo'), 'baz');
-    assert.equal(d.num_items(), 1);
+    assert.equal(d.size, 1);
 
     d.set('bar', 'qux');
     assert.equal(d.get('foo'), 'baz');
     assert.equal(d.get('bar'), 'qux');
-    assert.equal(d.num_items(), 2);
+    assert.equal(d.size, 2);
 
     assert.equal(d.has('bar'), true);
     assert.equal(d.has('baz'), false);
 
-    assert.deepEqual(d.keys(), ['foo', 'bar']);
-    assert.deepEqual(d.values(), ['baz', 'qux']);
-    assert.deepEqual(d.items(), [['foo', 'baz'], ['bar', 'qux']]);
+    assert.deepEqual(Array.from(d.keys()), ['foo', 'bar']);
+    assert.deepEqual(Array.from(d.values()), ['baz', 'qux']);
+    assert.deepEqual(Array.from(d), [['foo', 'baz'], ['bar', 'qux']]);
 
-    d.del('bar');
+    d.delete('bar');
     assert.equal(d.has('bar'), false);
     assert.strictEqual(d.get('bar'), undefined);
 
-    assert.deepEqual(d.keys(), ['foo']);
+    assert.deepEqual(Array.from(d.keys()), ['foo']);
 
     const val = ['foo'];
     const res = d.set('abc', val);
-    assert.equal(val, res);
+    assert.strictEqual(res, d);
 });
 
 run_test('case insensitivity', () => {
     const d = new FoldDict();
 
-    assert.deepEqual(d.keys(), []);
+    assert.deepEqual(Array.from(d.keys()), []);
 
     assert(!d.has('foo'));
     d.set('fOO', 'Hello World');
@@ -51,12 +51,12 @@ run_test('case insensitivity', () => {
     assert(d.has('FOO'));
     assert(!d.has('not_a_key'));
 
-    assert.deepEqual(d.keys(), ['fOO']);
+    assert.deepEqual(Array.from(d.keys()), ['fOO']);
 
-    d.del('Foo');
+    d.delete('Foo');
     assert.equal(d.has('foo'), false);
 
-    assert.deepEqual(d.keys(), []);
+    assert.deepEqual(Array.from(d.keys()), []);
 });
 
 run_test('clear', () => {
@@ -70,18 +70,16 @@ run_test('clear', () => {
     }
 
     populate();
-    assert.equal(d.num_items(), 2);
-    assert(!d.is_empty());
+    assert.equal(d.size, 2);
 
     d.clear();
     assert.equal(d.get('fOO'), undefined);
     assert.equal(d.get('bAR'), undefined);
-    assert.equal(d.num_items(), 0);
-    assert(d.is_empty());
+    assert.equal(d.size, 0);
 
     // make sure it still works after clearing
     populate();
-    assert.equal(d.num_items(), 2);
+    assert.equal(d.size, 2);
 });
 
 run_test('undefined_keys', () => {

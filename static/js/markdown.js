@@ -6,19 +6,14 @@
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
 
-let realm_filter_map = {};
+// This should be initialized with a struct
+// similar to markdown_config.get_helpers().
+// See the call to markdown.initialize() in ui_init
+// for example usage.
+let helpers;
+
+const realm_filter_map = new Map();
 let realm_filter_list = [];
-
-
-// Helper function
-function escape(html, encode) {
-    return html
-        .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
 
 // Regexes that match some of our common bugdown markup
 const backend_only_markdown_re = [
@@ -42,17 +37,54 @@ exports.set_name_in_mention_element = function (element, name) {
     }
 };
 
+exports.translate_emoticons_to_names = (text) => {
+    // Translates emoticons in a string to their colon syntax.
+    let translated = text;
+    let replacement_text;
+    const terminal_symbols = ',.;?!()[] "\'\n\t'; // From composebox_typeahead
+    const symbols_except_space = terminal_symbols.replace(' ', '');
+
+    const emoticon_replacer = function (match, g1, offset, str) {
+        const prev_char = str[offset - 1];
+        const next_char = str[offset + match.length];
+
+        const symbol_at_start = terminal_symbols.includes(prev_char);
+        const symbol_at_end = terminal_symbols.includes(next_char);
+        const non_space_at_start = symbols_except_space.includes(prev_char);
+        const non_space_at_end = symbols_except_space.includes(next_char);
+        const valid_start = symbol_at_start || offset === 0;
+        const valid_end = symbol_at_end || offset === str.length - match.length;
+
+        if (non_space_at_start && non_space_at_end) { // Hello!:)?
+            return match;
+        }
+        if (valid_start && valid_end) {
+            return replacement_text;
+        }
+        return match;
+    };
+
+    for (const translation of helpers.get_emoticon_translations()) {
+        // We can't pass replacement_text directly into
+        // emoticon_replacer, because emoticon_replacer is
+        // a callback for `replace()`.  Instead we just mutate
+        // the `replacement_text` that the function closes on.
+        replacement_text = translation.replacement_text;
+        translated = translated.replace(translation.regex, emoticon_replacer);
+    }
+
+    return translated;
+};
+
 exports.contains_backend_only_syntax = function (content) {
     // Try to guess whether or not a message has bugdown in it
     // If it doesn't, we can immediately render it client-side
-    const markedup = _.find(backend_only_markdown_re, function (re) {
-        return re.test(content);
-    });
+    const markedup = backend_only_markdown_re.find(re => re.test(content));
 
     // If a realm filter doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    const false_filter_match = _.find(realm_filter_list, function (re) {
+    const false_filter_match = realm_filter_list.find(re => {
         const pattern = /(?:[^\s'"\(,:<])/.source + re[0].source + /(?![\w])/.source;
         const regex = new RegExp(pattern);
         return regex.test(content);
@@ -64,49 +96,87 @@ exports.apply_markdown = function (message) {
     message_store.init_booleans(message);
 
     const options = {
-        userMentionHandler: function (name, silently) {
-            let person = people.get_by_name(name);
-
-            const id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
-            const match = id_regex.exec(name);
-            if (match) {
-                const user_id = parseInt(match[2], 10);
-                if (people.is_known_user_id(user_id)) {
-                    person = people.get_person_from_user_id(user_id);
-                    if (person.full_name !== match[1]) { // Invalid Syntax
-                        return;
-                    }
-                }
-            }
-
-            if (person !== undefined) {
-                if (people.is_my_user_id(person.user_id) && !silently) {
-                    message.mentioned = true;
-                    message.mentioned_me_directly = true;
-                }
-                let str = '';
-                if (silently) {
-                    str += '<span class="user-mention silent" data-user-id="' + person.user_id + '">';
-                } else {
-                    str += '<span class="user-mention" data-user-id="' + person.user_id + '">@';
-                }
-                return str + escape(person.full_name, true) + '</span>';
-            } else if (name === 'all' || name === 'everyone' || name === 'stream') {
+        userMentionHandler: function (mention, silently) {
+            if (mention === 'all' || mention === 'everyone' || mention === 'stream') {
                 message.mentioned = true;
                 return '<span class="user-mention" data-user-id="*">' +
-                       '@' + name +
+                       '@' + mention +
                        '</span>';
             }
-            return;
+
+            let full_name;
+            let user_id;
+
+            const id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
+            const match = id_regex.exec(mention);
+
+            if (match) {
+                /*
+                    If we have two users named Alice, we want
+                    users to provide mentions like this:
+
+                        alice|42
+                        alice|99
+
+                    The autocomplete feature will help users
+                    send correct mentions for duplicate names,
+                    but we also have to consider the possibility
+                    that the user will hand-type something
+                    incorrectly, in which case we'll fall
+                    through to the other code (which may be a
+                    misfeature).
+                */
+                full_name = match[1];
+                user_id = parseInt(match[2], 10);
+
+                if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
+                    user_id = undefined;
+                    full_name = undefined;
+                }
+            }
+
+            if (user_id === undefined) {
+                // Handle normal syntax
+                full_name = mention;
+                user_id = helpers.get_user_id_from_name(full_name);
+            }
+
+            if (user_id === undefined) {
+                // This is nothing to be concerned about--the users
+                // are allowed to hand-type mentions and they may
+                // have had a typo in the name.
+                return;
+            }
+
+            // HAPPY PATH! Note that we not only need to return the
+            // appropriate HTML snippet here; we also want to update
+            // flags on the message itself that get used by the message
+            // view code and possibly our filtering code.
+
+            if (helpers.my_user_id() === user_id && !silently) {
+                message.mentioned = true;
+                message.mentioned_me_directly = true;
+            }
+            let str = '';
+            if (silently) {
+                str += '<span class="user-mention silent" data-user-id="' + user_id + '">';
+            } else {
+                str += '<span class="user-mention" data-user-id="' + user_id + '">@';
+            }
+
+            // If I mention "@aLiCe sMITH", I still want "Alice Smith" to
+            // show in the pill.
+            const actual_full_name = helpers.get_actual_name_from_user_id(user_id);
+            return str + _.escape(actual_full_name) + '</span>';
         },
         groupMentionHandler: function (name) {
-            const group = user_groups.get_user_group_from_name(name);
+            const group = helpers.get_user_group_from_name(name);
             if (group !== undefined) {
-                if (user_groups.is_member_of(group.id, people.my_current_user_id())) {
+                if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
                     message.mentioned = true;
                 }
                 return '<span class="user-group-mention" data-user-group-id="' + group.id + '">' +
-                       '@' + escape(group.name, true) +
+                       '@' + _.escape(group.name) +
                        '</span>';
             }
             return;
@@ -135,12 +205,13 @@ exports.apply_markdown = function (message) {
 
 exports.add_topic_links = function (message) {
     if (message.type !== 'stream') {
-        util.set_topic_links(message, []);
+        message.topic_links = [];
         return;
     }
-    const topic = util.get_message_topic(message);
+    const topic = message.topic;
     let links = [];
-    _.each(realm_filter_list, function (realm_filter) {
+
+    for (const realm_filter of realm_filter_list) {
         const pattern = realm_filter[0];
         const url = realm_filter[1];
         let match;
@@ -157,7 +228,7 @@ exports.add_topic_links = function (message) {
             }
             links.push(link_url);
         }
-    });
+    }
 
     // Also make raw urls navigable
     const url_re = /\b(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g; // Slightly modified from third/marked.js
@@ -166,11 +237,11 @@ exports.add_topic_links = function (message) {
         links = links.concat(match);
     }
 
-    util.set_topic_links(message, links);
+    message.topic_links = links;
 };
 
 exports.is_status_message = function (raw_content) {
-    return raw_content.indexOf('/me ') === 0;
+    return raw_content.startsWith('/me ');
 };
 
 function make_emoji_span(codepoint, title, alt_text) {
@@ -182,27 +253,41 @@ function make_emoji_span(codepoint, title, alt_text) {
 
 function handleUnicodeEmoji(unicode_emoji) {
     const codepoint = unicode_emoji.codePointAt(0).toString(16);
-    if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
-        const emoji_name = emoji_codes.codepoint_to_name[codepoint];
+    const emoji_name = helpers.get_emoji_name(codepoint);
+
+    if (emoji_name) {
         const alt_text = ':' + emoji_name + ':';
         const title = emoji_name.split("_").join(" ");
         return make_emoji_span(codepoint, title, alt_text);
     }
+
     return unicode_emoji;
 }
 
 function handleEmoji(emoji_name) {
     const alt_text = ':' + emoji_name + ':';
     const title = emoji_name.split("_").join(" ");
-    if (emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
-        const emoji_url = emoji.active_realm_emojis[emoji_name].emoji_url;
+
+    // Zulip supports both standard/unicode emoji, served by a
+    // spritesheet and custom realm-specific emoji (served by URL).
+    // We first check if this is a realm emoji, and if so, render it.
+    //
+    // Otherwise we'll look at unicode emoji to render with an emoji
+    // span using the spritesheet; and if it isn't one of those
+    // either, we pass through the plain text syntax unmodified.
+    const emoji_url = helpers.get_realm_emoji_url(emoji_name);
+
+    if (emoji_url) {
         return '<img alt="' + alt_text + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + title + '">';
-    } else if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
-        const codepoint = emoji_codes.name_to_codepoint[emoji_name];
+    }
+
+    const codepoint = helpers.get_emoji_codepoint(emoji_name);
+    if (codepoint) {
         return make_emoji_span(codepoint, title, alt_text);
     }
+
     return alt_text;
 }
 
@@ -212,37 +297,38 @@ function handleAvatar(email) {
            ' title="' + email + '">';
 }
 
-function handleStream(streamName) {
-    const stream = stream_data.get_sub(streamName);
+function handleStream(stream_name) {
+    const stream = helpers.get_stream_by_name(stream_name);
     if (stream === undefined) {
         return;
     }
-    const href = hash_util.by_stream_uri(stream.stream_id);
+    const href = helpers.stream_hash(stream.stream_id);
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
         'href="/' + href + '"' +
-        '>' + '#' + escape(stream.name) + '</a>';
+        '>' + '#' + _.escape(stream.name) + '</a>';
 }
 
-function handleStreamTopic(streamName, topic) {
-    const stream = stream_data.get_sub(streamName);
+function handleStreamTopic(stream_name, topic) {
+    const stream = helpers.get_stream_by_name(stream_name);
     if (stream === undefined || !topic) {
         return;
     }
-    const href = hash_util.by_stream_topic_uri(stream.stream_id, topic);
-    const text = '#' + escape(stream.name) + ' > ' + escape(topic);
+    const href = helpers.stream_topic_hash(stream.stream_id, topic);
+    const text = '#' + _.escape(stream.name) + ' > ' + _.escape(topic);
     return '<a class="stream-topic" data-stream-id="' + stream.stream_id + '" ' +
         'href="/' + href + '"' + '>' + text + '</a>';
 }
 
 function handleRealmFilter(pattern, matches) {
-    let url = realm_filter_map[pattern];
+    let url = realm_filter_map.get(pattern);
 
     let current_group = 1;
-    _.each(matches, function (match) {
+
+    for (const match of matches) {
         const back_ref = "\\" + current_group;
         url = url.replace(back_ref, match);
         current_group += 1;
-    });
+    }
 
     return url;
 }
@@ -251,8 +337,8 @@ function handleTex(tex, fullmatch) {
     try {
         return katex.renderToString(tex);
     } catch (ex) {
-        if (ex.message.indexOf('KaTeX parse error') === 0) { // TeX syntax error
-            return '<span class="tex-error">' + escape(fullmatch) + '</span>';
+        if (ex.message.startsWith('KaTeX parse error')) { // TeX syntax error
+            return '<span class="tex-error">' + _.escape(fullmatch) + '</span>';
         }
         blueslip.error(ex);
     }
@@ -286,11 +372,13 @@ function python_to_js_filter(pattern, url) {
     // flags, so keep those and ignore the rest
     if (match) {
         const py_flags = match[1].split("");
-        _.each(py_flags, function (flag) {
-            if ("im".indexOf(flag) !== -1) {
+
+        for (const flag of py_flags) {
+            if ("im".includes(flag)) {
                 js_flags += flag;
             }
-        });
+        }
+
         pattern = pattern.replace(inline_flag_re, "");
     }
     // Ideally we should have been checking that realm filters
@@ -314,30 +402,30 @@ function python_to_js_filter(pattern, url) {
     return [final_regex, url];
 }
 
-exports.set_realm_filters = function (realm_filters) {
+exports.update_realm_filter_rules = function (realm_filters) {
     // Update the marked parser with our particular set of realm filters
-    realm_filter_map = {};
+    realm_filter_map.clear();
     realm_filter_list = [];
 
     const marked_rules = [];
-    _.each(realm_filters, function (realm_filter) {
-        const pattern = realm_filter[0];
-        const url = realm_filter[1];
-        const js_filters = python_to_js_filter(pattern, url);
-        if (!js_filters[0]) {
+
+    for (const [pattern, url] of realm_filters) {
+        const [regex, final_url] = python_to_js_filter(pattern, url);
+        if (!regex) {
             // Skip any realm filters that could not be converted
-            return;
+            continue;
         }
 
-        realm_filter_map[js_filters[0]] = js_filters[1];
-        realm_filter_list.push([js_filters[0], js_filters[1]]);
-        marked_rules.push(js_filters[0]);
-    });
+        realm_filter_map.set(regex, final_url);
+        realm_filter_list.push([regex, final_url]);
+        marked_rules.push(regex);
+    }
 
     marked.InlineLexer.rules.zulip.realm_filters = marked_rules;
 };
 
-exports.initialize = function () {
+exports.initialize = function (realm_filters, helper_config) {
+    helpers = helper_config;
 
     function disable_markdown_regex(rules, name) {
         rules[name] = {exec: function () {
@@ -352,7 +440,7 @@ exports.initialize = function () {
     // class-specific highlighting.
     r.code = function (code) {
         return '<div class="codehilite"><pre>'
-          + escape(code, true)
+          + _.escape(code)
           + '\n</pre></div>\n\n\n';
     };
 
@@ -377,13 +465,13 @@ exports.initialize = function () {
     }
 
     function preprocess_translate_emoticons(src) {
-        if (!page_params.translate_emoticons) {
+        if (!helpers.should_translate_emoticons()) {
             return src;
         }
 
         // In this scenario, the message has to be from the user, so the only
         // requirement should be that they have the setting on.
-        return emoji.translate_emoticons_to_names(src);
+        return exports.translate_emoticons_to_names(src);
     }
 
     // Disable lheadings
@@ -404,14 +492,13 @@ exports.initialize = function () {
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'autolink');
 
-    exports.set_realm_filters(page_params.realm_filters);
+    exports.update_realm_filter_rules(realm_filters);
 
     // Tell our fenced code preprocessor how to insert arbitrary
     // HTML into the output. This generated HTML is safe to not escape
     fenced_code.set_stash_func(function (html) {
         return marked.stashHtml(html, true);
     });
-    fenced_code.set_escape_func(escape);
 
     marked.setOptions({
         gfm: true,

@@ -105,6 +105,12 @@
         padding: 4px;
     }
 
+    /* Emoji; sized to be easily understood while not overwhelming text. */
+    .emoji {
+        height: 20px;
+        width: 20px;
+    }
+
     /* Mentions and alert words */
     .user-mention-me :not(.silent) {
         background-color: hsl(112, 88%, 87%);

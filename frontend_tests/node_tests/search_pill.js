@@ -1,5 +1,4 @@
 zrequire('search_pill');
-zrequire('util');
 zrequire('input_pill');
 zrequire('Filter', 'js/filter');
 set_global('Handlebars', global.make_handlebars());

@@ -8,6 +8,12 @@
       "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n"
     },
     {
+      "name": "ampampamp",
+      "input": "& &amp; &amp;amp;\n~~~~\n& &amp; &amp;amp;\n~~~~\n    & &amp; &amp;amp;",
+      "expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<div class=\"codehilite\"><pre><span></span>&amp; &amp;amp; &amp;amp;amp;\n</pre></div>\n\n\n<div class=\"codehilite\"><pre><span></span>&amp; &amp;amp; &amp;amp;amp;\n</pre></div>",
+      "marked_expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<div class=\"codehilite\"><pre><span></span>&amp; &amp;amp; &amp;amp;amp;\n</pre></div>\n\n\n<div class=\"codehilite\"><pre>&amp; &amp;amp; &amp;amp;amp;\n</pre></div>"
+    },
+    {
       "name": "basic_paragraph",
       "input": "test_input",
       "expected_output": "<p>test_input</p>",
@@ -93,6 +99,12 @@
       "input": "```quote\n# line 1\n#line 2\n```",
       "expected_output": "<blockquote>\n<h1>line 1</h1>\n<p>#line 2</p>\n</blockquote>",
       "text_content": "> line 1\n> #line 2\n"
+    },
+    {
+      "name": "fenced_quote_and_list",
+      "input": "Before:\n* One.\n* Two.\n\n```quote\nLists should work after a quote\n```\n\nAfter:\n* One.\n* Two.",
+      "expected_output": "<p>Before:</p>\n<ul>\n<li>One.</li>\n<li>Two.</li>\n</ul>\n<blockquote>\n<p>Lists should work after a quote</p>\n</blockquote>\n<p>After:</p>\n<ul>\n<li>One.</li>\n<li>Two.</li>\n</ul>",
+      "text_content": "Before:\n\nOne.\nTwo.\n\n> Lists should work after a quote\n\nAfter:\n\nOne.\nTwo.\n"
     },
     {
       "name": "dangerous_block",
@@ -185,6 +197,13 @@
       "input": "Some text with a hanging list:\n* One item\n* Two items\n* Three items",
       "expected_output": "<p>Some text with a hanging list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
       "text_content": "Some text with a hanging list:\n\nOne item\nTwo items\nThree items\n"
+    },
+    {
+      "name": "ulist_codeblock_interference",
+      "input": "* One \n  * Two\n\n    Two continued\n    This shouldn't be a code block\n",
+      "expected_output": "<ul>\n<li>One <ul>\n<li>\n<p>Two</p>\n<p>Two continued<br>\nThis shouldn't be a code block</p>\n</li>\n</ul>\n</li>\n</ul>",
+      "marked_expected_output":"<ul>\n<li><p>One </p>\n<ul>\n<li><p>Two</p>\n<p>Two continued<br>\nThis shouldn't be a code block</p>\n</li>\n</ul>\n</li>\n</ul>",
+      "text_content": "\nOne \n\nTwo\nTwo continued\nThis shouldn't be a code block\n\n\n\n"
     },
     {
       "name": "ulist_hanging_mixed",

@@ -64,9 +64,7 @@ function is_local_part(value, element) {
 }
 
 exports.type_id_to_string = function (type_id) {
-    const name = _.find(page_params.bot_types, function (bot_type) {
-        return bot_type.type_id === type_id;
-    }).name;
+    const name = page_params.bot_types.find(bot_type => bot_type.type_id === type_id).name;
     return i18n.t(name);
 };
 
@@ -77,7 +75,7 @@ exports.render_bots = function () {
     const all_bots_for_current_user = bot_data.get_all_bots_for_current_user();
     let user_owns_an_active_bot = false;
 
-    _.each(all_bots_for_current_user, function (elem) {
+    for (const elem of all_bots_for_current_user) {
         add_bot_row({
             name: elem.full_name,
             email: elem.email,
@@ -89,7 +87,7 @@ exports.render_bots = function () {
             zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
         });
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
-    });
+    }
 
     if (exports.can_create_new_bots()) {
         if (!user_owns_an_active_bot) {
@@ -115,13 +113,7 @@ exports.render_bots = function () {
 
 exports.generate_zuliprc_uri = function (bot_id) {
     const bot = bot_data.get(bot_id);
-    let token;
-    // For outgoing webhooks, include the token in the zuliprc.
-    // It's needed for authenticating to the Botserver.
-    if (bot.bot_type === 3) {
-        token = bot_data.get_services(bot_id)[0].token;
-    }
-    const data = exports.generate_zuliprc_content(bot.email, bot.api_key, token);
+    const data = exports.generate_zuliprc_content(bot);
     return exports.encode_zuliprc_as_uri(data);
 };
 
@@ -129,10 +121,16 @@ exports.encode_zuliprc_as_uri = function (zuliprc) {
     return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
 };
 
-exports.generate_zuliprc_content = function (email, api_key, token) {
+exports.generate_zuliprc_content = function (bot) {
+    let token;
+    // For outgoing webhooks, include the token in the zuliprc.
+    // It's needed for authenticating to the Botserver.
+    if (bot.bot_type === 3) {
+        token = bot_data.get_services(bot.user_id)[0].token;
+    }
     return "[api]" +
-           "\nemail=" + email +
-           "\nkey=" + api_key +
+           "\nemail=" + bot.email +
+           "\nkey=" + bot.api_key +
            "\nsite=" + page_params.realm_uri +
            (token === undefined ? "" : "\ntoken=" + token) +
            // Some tools would not work in files without a trailing new line.
@@ -217,12 +215,14 @@ exports.set_up = function () {
     $('#download_botserverrc').click(function () {
         const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
         let content = "";
-        _.each(bot_data.get_all_bots_for_current_user(), function (bot) {
+
+        for (const bot of bot_data.get_all_bots_for_current_user()) {
             if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
                 const bot_token = bot_data.get_services(bot.user_id)[0].token;
                 content += exports.generate_botserverrc_content(bot.email, bot.api_key, bot_token);
             }
-        });
+        }
+
         $(this).attr("href", "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content));
     });
 
@@ -274,9 +274,9 @@ exports.set_up = function () {
                 });
                 formData.append('config_data', JSON.stringify(config_data));
             }
-            jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
+            for (const [i, file] of Array.prototype.entries.call($('#bot_avatar_file_input')[0].files)) {
                 formData.append('file-' + i, file);
-            });
+            }
             loading.make_indicator(spinner, {text: i18n.t('Creating bot')});
             channel.post({
                 url: '/json/bots',
@@ -389,7 +389,7 @@ exports.set_up = function () {
         const li = $(e.currentTarget).closest('li');
         const bot_id = parseInt(li.find('.bot_info').attr('data-user-id'), 10);
         const bot = bot_data.get(bot_id);
-        const users_list = people.get_active_human_persons();
+        const users_list = people.get_active_humans();
         $("#edit_bot").empty();
         $("#edit_bot").append(render_edit_bot({
             bot: bot,
@@ -448,9 +448,9 @@ exports.set_up = function () {
                     });
                     formData.append('config_data', JSON.stringify(config_data));
                 }
-                jQuery.each(file_input[0].files, function (i, file) {
+                for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
                     formData.append('file-' + i, file);
-                });
+                }
                 loading.make_indicator(spinner, {text: 'Editing bot'});
                 edit_button.hide();
                 channel.patch({
@@ -491,10 +491,10 @@ exports.set_up = function () {
 
     new ClipboardJS('#copy_zuliprc', {
         text: function (trigger) {
-            const bot_info = trigger.closest(".bot-information-box");
-            const email = $(bot_info).find(".email .value").text();
-            const api_key = $(bot_info).find(".api_key .api-key-value-and-button .value").text();
-            const data = exports.generate_zuliprc_content(email.trim(), api_key.trim());
+            const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const bot_id = parseInt(bot_info.attr("data-user-id"), 10);
+            const bot = bot_data.get(bot_id);
+            const data = exports.generate_zuliprc_content(bot);
             return data;
         },
     });

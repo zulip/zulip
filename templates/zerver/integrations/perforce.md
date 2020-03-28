@@ -2,7 +2,7 @@ Zulip supports integration with Perforce as a [trigger][1]
 that fires once a changelist is submitted and committed.
 To do this:
 
-[1]: http://www.perforce.com/perforce/doc.current/manuals/p4sag/chapter.scripting.html
+[1]: https://www.perforce.com/manuals/p4sag/Content/P4SAG/chapter.scripting.html
 
 {!download-python-bindings.md!}
 
@@ -21,7 +21,7 @@ something like the following:
 
     notify_zulip change-commit //depot/... "/usr/local/share/zulip/integrations/perforce/zulip_change-commit.py %change% %changeroot%"
 
-[2]: http://www.perforce.com/perforce/doc.current/manuals/p4sag/chapter.scripting.html#d0e14583
+[2]: https://www.perforce.com/manuals/p4sag/Content/P4SAG/chapter.scripting.html#d0e14583
 
 By default, this hook will send to streams of the form
 `depot_subdirectory-commits`. So, a changelist that modifies

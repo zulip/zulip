@@ -149,7 +149,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
     def test_pm_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
-        self.send_personal_message(self.user_profile.email, self.bot_profile.email,
+        self.send_personal_message(self.user_profile, self.bot_profile,
                                    content="foo")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
@@ -163,7 +163,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
     def test_stream_message_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
-        self.send_stream_message(self.user_profile.email, "Denmark",
+        self.send_stream_message(self.user_profile, "Denmark",
                                  content="@**{}** foo".format(self.bot_profile.full_name),
                                  topic_name="bar")
         last_message = self.get_last_message()

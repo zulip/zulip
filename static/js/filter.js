@@ -1,3 +1,4 @@
+const util = require("./util");
 function zephyr_stream_name_match(message, operand) {
     // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
     // (unsocial, ununsocial, social.d, etc)
@@ -29,7 +30,7 @@ function zephyr_topic_name_match(message, operand) {
         related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
     }
 
-    return related_regexp.test(util.get_message_topic(message));
+    return related_regexp.test(message.topic);
 }
 
 function message_in_home(message) {
@@ -106,7 +107,7 @@ function message_matches_search_term(message, operator, operand) {
         if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
         }
-        return util.get_message_topic(message).toLowerCase() === operand;
+        return message.topic.toLowerCase() === operand;
 
 
     case 'sender':
@@ -121,7 +122,7 @@ function message_matches_search_term(message, operator, operand) {
         if (!user_ids) {
             return false;
         }
-        return user_ids.indexOf(operand_ids[0]) !== -1;
+        return user_ids.includes(operand_ids[0]);
         // We should also check if the current user is in the recipient list (user_ids) of the
         // message, but it is implicit by the fact that the current user has access to the message.
     }
@@ -239,7 +240,7 @@ function encodeOperand(operand) {
 
 function decodeOperand(encoded, operator) {
     encoded = encoded.replace(/"/g, '');
-    if (_.contains(['group-pm-with', 'pm-with', 'sender', 'from'], operator) === false) {
+    if (['group-pm-with', 'pm-with', 'sender', 'from'].includes(operator) === false) {
         encoded = encoded.replace(/\+/g, ' ');
     }
     return util.robust_uri_decode(encoded).trim();
@@ -260,7 +261,8 @@ Filter.parse = function (str) {
     if (matches === null) {
         return operators;
     }
-    _.each(matches, function (token) {
+
+    for (const token of matches) {
         let operator;
         const parts = token.split(':');
         if (token[0] === '"' || parts.length === 1) {
@@ -283,12 +285,13 @@ Filter.parse = function (str) {
             if (Filter.operator_to_prefix(operator, negated) === '') {
                 // Put it as a search term, to not have duplicate operators
                 search_term.push(token);
-                return;
+                continue;
             }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
         }
-    });
+    }
+
     // NB: Callers of 'parse' can assume that the 'search' operator is last.
     if (search_term.length > 0) {
         operator = 'search';
@@ -308,7 +311,7 @@ Filter.parse = function (str) {
    might need to support multiple operators of the same type.
 */
 Filter.unparse = function (operators) {
-    const parts = _.map(operators, function (elem) {
+    const parts = operators.map(elem => {
 
         if (elem.operator === 'search') {
             // Search terms are the catch-all case.
@@ -340,12 +343,15 @@ Filter.prototype = {
     },
 
     public_operators: function () {
-        const safe_to_return = _.filter(this._operators, function (value) {
+        const safe_to_return = this._operators.filter(
             // Filter out the embedded narrow (if any).
-            return !(page_params.narrow_stream !== undefined &&
-                     value.operator === "stream" &&
-                     value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase());
-        });
+            value =>
+                !(
+                    page_params.narrow_stream !== undefined &&
+                    value.operator === "stream" &&
+                    value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase()
+                )
+        );
         return safe_to_return;
     },
 
@@ -357,20 +363,20 @@ Filter.prototype = {
     },
 
     has_negated_operand: function (operator, operand) {
-        return _.any(this._operators, function (elem) {
-            return elem.negated && (elem.operator === operator && elem.operand === operand);
-        });
+        return this._operators.some(
+            elem => elem.negated && (elem.operator === operator && elem.operand === operand)
+        );
     },
 
     has_operand: function (operator, operand) {
-        return _.any(this._operators, function (elem) {
-            return !elem.negated && (elem.operator === operator && elem.operand === operand);
-        });
+        return this._operators.some(
+            elem => !elem.negated && (elem.operator === operator && elem.operand === operand)
+        );
     },
 
     has_operator: function (operator) {
-        return _.any(this._operators, function (elem) {
-            if (elem.negated && !_.contains(['search', 'has'], elem.operator)) {
+        return this._operators.some(elem => {
+            if (elem.negated && !['search', 'has'].includes(elem.operator)) {
                 return false;
             }
             return elem.operator === operator;
@@ -381,7 +387,7 @@ Filter.prototype = {
         return this.has_operator('search');
     },
 
-    can_mark_messages_read: function () {
+    calc_can_mark_messages_read: function () {
         const term_types = this.sorted_term_types();
 
         if (_.isEqual(term_types, ['stream', 'topic'])) {
@@ -413,11 +419,18 @@ Filter.prototype = {
             return true;
         }
 
-        if (term_types.length === 1 && _.contains(['in-home', 'in-all'], term_types[0])) {
+        if (term_types.length === 1 && ['in-home', 'in-all'].includes(term_types[0])) {
             return true;
         }
 
         return false;
+    },
+
+    can_mark_messages_read: function () {
+        if (this._can_mark_messages_read === undefined) {
+            this._can_mark_messages_read = this.calc_can_mark_messages_read();
+        }
+        return this._can_mark_messages_read;
     },
 
     allow_use_first_unread_when_narrowing: function () {
@@ -469,26 +482,22 @@ Filter.prototype = {
             return Filter.term_type(term) === 'pm-with';
         };
 
-        if (!_.any(terms, is_pm_with)) {
+        if (!terms.some(is_pm_with)) {
             return terms;
         }
 
-        return _.reject(terms, (term) => {
-            return Filter.term_type(term) === 'is-private';
-        });
+        return terms.filter(term => Filter.term_type(term) !== 'is-private');
     },
 
     _canonicalize_operators: function (operators_mixed_case) {
-        return _.map(operators_mixed_case, function (tuple) {
-            return Filter.canonicalize_term(tuple);
-        });
+        return operators_mixed_case.map(tuple => Filter.canonicalize_term(tuple));
     },
 
-    filter_with_new_topic: function (new_topic) {
-        const terms = _.map(this._operators, function (term) {
-            const new_term = _.clone(term);
-            if (new_term.operator === 'topic' && !new_term.negated) {
-                new_term.operand = new_topic;
+    filter_with_new_params: function (params) {
+        const terms = this._operators.map(term => {
+            const new_term = { ...term };
+            if (new_term.operator === params.operator && !new_term.negated) {
+                new_term.operand = params.operand;
             }
             return new_term;
         });
@@ -500,15 +509,20 @@ Filter.prototype = {
     },
 
     sorted_term_types: function () {
+        if (this._sorted_term_types === undefined) {
+            this._sorted_term_types = this._build_sorted_term_types();
+        }
+        return this._sorted_term_types;
+    },
+
+    _build_sorted_term_types: function () {
         const terms = this._operators;
-        const term_types = _.map(terms, Filter.term_type);
+        const term_types = terms.map(Filter.term_type);
         const sorted_terms = Filter.sorted_term_types(term_types);
         return sorted_terms;
     },
 
-    can_bucket_by: function () {
-        // TODO: in ES6 use spread operator
-        //
+    can_bucket_by: function (...wanted_term_types) {
         // Examples call:
         //     filter.can_bucket_by('stream', 'topic')
         //
@@ -519,7 +533,6 @@ Filter.prototype = {
         // a predicate to a larger list of candidate ids.
         //
         // (It's for optimization, basically.)
-        const wanted_term_types = [].slice.call(arguments);
         const all_term_types = this.sorted_term_types();
         const term_types = all_term_types.slice(0, wanted_term_types.length);
 
@@ -529,7 +542,7 @@ Filter.prototype = {
     first_valid_id_from: function (msg_ids) {
         const predicate = this.predicate();
 
-        const first_id = _.find(msg_ids, function (msg_id) {
+        const first_id = msg_ids.find(msg_id => {
             const message = message_store.get(msg_id);
 
             if (message === undefined) {
@@ -543,7 +556,7 @@ Filter.prototype = {
     },
 
     update_email: function (user_id, new_email) {
-        _.each(this._operators, function (term) {
+        for (const term of this._operators) {
             switch (term.operator) {
             case 'group-pm-with':
             case 'pm-with':
@@ -555,7 +568,7 @@ Filter.prototype = {
                     new_email
                 );
             }
-        });
+        }
     },
 
     // Build a filter function from a list of operators.
@@ -571,7 +584,7 @@ Filter.prototype = {
         // build JavaScript code in a string and then eval() it.
 
         return function (message) {
-            return _.all(operators, function (term) {
+            return operators.every(term => {
                 let ok = message_matches_search_term(message, term.operator, term.operand);
                 if (term.negated) {
                     ok = !ok;
@@ -591,7 +604,7 @@ Filter.term_type = function (term) {
 
     result += operator;
 
-    if (_.contains(['is', 'has', 'in', 'streams'], operator)) {
+    if (['is', 'has', 'in', 'streams'].includes(operator)) {
         result += '-' + operand;
     }
 
@@ -627,7 +640,7 @@ Filter.sorted_term_types = function (term_types) {
         return util.strcmp(a, b);
     }
 
-    return _.clone(term_types).sort(compare);
+    return term_types.slice().sort(compare);
 };
 
 Filter.operator_to_prefix = function (operator, negated) {
@@ -680,7 +693,7 @@ function describe_is_operator(operator) {
     const verb = operator.negated ? 'exclude ' : '';
     const operand = operator.operand;
     const operand_list = ['private', 'starred', 'alerted', 'unread'];
-    if (operand_list.indexOf(operand) !== -1) {
+    if (operand_list.includes(operand)) {
         return verb + operand + ' messages';
     } else if (operand === 'mentioned') {
         return verb + '@-mentions';
@@ -710,7 +723,7 @@ function describe_unescaped(operators) {
         }
     }
 
-    const more_parts = _.map(operators, function (elem) {
+    const more_parts = operators.map(elem => {
         const operand = elem.operand;
         const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
         if (canonicalized_operator === 'is') {
@@ -720,7 +733,7 @@ function describe_unescaped(operators) {
             // search_suggestion.get_suggestions takes care that this message will
             // only be shown if the `has` operator is not at the last.
             const valid_has_operands = ['image', 'images', 'link', 'links', 'attachment', 'attachments'];
-            if (valid_has_operands.indexOf(operand) === -1) {
+            if (!valid_has_operands.includes(operand)) {
                 return 'invalid ' + operand + ' operand for has operator';
             }
         }

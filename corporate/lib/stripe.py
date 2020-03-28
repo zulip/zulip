@@ -19,7 +19,8 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import Realm, UserProfile, RealmAuditLog
 from corporate.models import Customer, CustomerPlan, LicenseLedger, \
-    get_current_plan
+    get_current_plan_by_customer, get_customer_by_realm, \
+    get_current_plan_by_realm
 from zproject.config import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -199,7 +200,10 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=Non
 @catch_stripe_errors
 def do_replace_payment_source(user: UserProfile, stripe_token: str,
                               pay_invoices: bool=False) -> stripe.Customer:
-    stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+    customer = get_customer_by_realm(user.realm)
+    assert(customer is not None)  # for mypy
+
+    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
     stripe_customer.source = stripe_token
     # Deletes existing card: https://stripe.com/docs/api#update_customer-source
     updated_stripe_customer = stripe.Customer.save(stripe_customer)
@@ -210,7 +214,7 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str,
         for stripe_invoice in stripe.Invoice.list(
                 billing='charge_automatically', customer=stripe_customer.id, status='open'):
             # The user will get either a receipt or a "failed payment" email, but the in-app
-            # messaging could be clearer here (e.g. it could explictly tell the user that there
+            # messaging could be clearer here (e.g. it could explicitly tell the user that there
             # were payment(s) and that they succeeded or failed).
             # Worth fixing if we notice that a lot of cards end up failing at this step.
             stripe.Invoice.pay(stripe_invoice)
@@ -239,7 +243,7 @@ def make_end_of_cycle_updates_if_needed(plan: CustomerPlan,
 # API call if there's nothing to update
 def update_or_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=None) -> Customer:
     realm = user.realm
-    customer = Customer.objects.filter(realm=realm).first()
+    customer = get_customer_by_realm(realm)
     if customer is None or customer.stripe_customer_id is None:
         return do_create_stripe_customer(user, stripe_token=stripe_token)
     if stripe_token is not None:
@@ -276,7 +280,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
                             billing_schedule: int, stripe_token: Optional[str]) -> None:
     realm = user.realm
     customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
-    if get_current_plan(customer) is not None:
+    if get_current_plan_by_customer(customer) is not None:
         # Unlikely race condition from two people upgrading (clicking "Make payment")
         # at exactly the same time. Doesn't fully resolve the race condition, but having
         # a check here reduces the likelihood.
@@ -378,10 +382,7 @@ def update_license_ledger_for_automanaged_plan(realm: Realm, plan: CustomerPlan,
         licenses_at_next_renewal=licenses_at_next_renewal)
 
 def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
-    customer = Customer.objects.filter(realm=realm).first()
-    if customer is None:
-        return
-    plan = get_current_plan(customer)
+    plan = get_current_plan_by_realm(realm)
     if plan is None:
         return
     if not plan.automanage_licenses:
@@ -467,7 +468,7 @@ def attach_discount_to_realm(realm: Realm, discount: Decimal) -> None:
     Customer.objects.update_or_create(realm=realm, defaults={'default_discount': discount})
 
 def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
-    customer = Customer.objects.filter(realm=realm).first()
+    customer = get_customer_by_realm(realm)
     if customer is not None:
         return customer.default_discount
     return None
@@ -496,3 +497,15 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
         # TODO: Decimal stuff
         annual_revenue[plan.customer.realm.string_id] = int(renewal_cents / 100)
     return annual_revenue
+
+# During realm deactivation we instantly downgrade the plan to Limited.
+# Extra users added in the final month are not charged.
+def downgrade_for_realm_deactivation(realm: Realm) -> None:
+    plan = get_current_plan_by_realm(realm)
+    if plan is None:
+        return
+
+    process_downgrade(plan)
+    plan.invoiced_through = LicenseLedger.objects.filter(plan=plan).order_by('id').last()
+    plan.next_invoice_date = next_invoice_date(plan)
+    plan.save(update_fields=["invoiced_through", "next_invoice_date"])

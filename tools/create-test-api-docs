@@ -7,7 +7,7 @@ sanity_check.check_venv(__file__)
 from collections import defaultdict
 from typing import Any, Dict, List, Set
 
-import cgi
+import html
 import os
 import pprint
 import ujson
@@ -44,12 +44,12 @@ def encode_info(info):
             result = '(stringified)\n'
         except Exception:
             pass
-        result += cgi.escape(pprint.pformat(info, indent=4))
+        result += html.escape(pprint.pformat(info, indent=4))
         return '<pre>' + result + '</pre>'
     except Exception:
         pass
     try:
-        return cgi.escape(str(info))
+        return html.escape(str(info))
     except Exception:
         pass
     return 'NOT ENCODABLE'
@@ -69,7 +69,7 @@ def create_single_page(pattern, out_dir, href, calls):
             }
             </style>
             ''')
-        f.write('<h3>%s</h3>\n' % (cgi.escape(pattern),))
+        f.write('<h3>%s</h3>\n' % (html.escape(pattern),))
         calls.sort(key=lambda call: call['status_code'])
         for call in calls:
             f.write('<hr>')
@@ -141,7 +141,7 @@ def create_user_docs():
             f.write('<ul>\n')
             for pattern in sorted(groups[name]):
                 href = pattern.replace('/', '-') + '.html'
-                link = '<a href="%s">%s</a>' % (href, cgi.escape(pattern))
+                link = '<a href="%s">%s</a>' % (href, html.escape(pattern))
                 f.write('<li>' + link + '</li>\n')
                 create_single_page(pattern, out_dir, href, pattern_dict[pattern])
             f.write('</ul>')

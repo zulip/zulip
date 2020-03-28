@@ -1,5 +1,4 @@
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 set_global('blueslip', global.make_zblueslip());
 
 const noop = () => {};
@@ -8,9 +7,9 @@ let form_data;
 
 const _jQuery = {
     each: function (lst, f) {
-        _.each(lst, function (v, k) {
+        for (const [k, v] of lst.entries()) {
             f(k, v);
-        });
+        }
     },
 };
 
@@ -29,6 +28,7 @@ const _page_params = {
         { domain: 'example.com', allow_subdomains: true },
         { domain: 'example.org', allow_subdomains: false },
     ],
+    realm_authentication_methods: {},
 };
 
 const _realm_icon = {};
@@ -68,6 +68,7 @@ set_global('realm_icon', _realm_icon);
 set_global('realm_logo', _realm_logo);
 set_global('ui_report', _ui_report);
 
+const settings_config = zrequire('settings_config');
 zrequire('stream_data');
 zrequire('settings_account');
 zrequire('settings_org');
@@ -197,6 +198,7 @@ function test_submit_settings_form(submit_form) {
         realm_default_language: '"es"',
         realm_default_twenty_four_hour_time: 'false',
         realm_invite_to_stream_policy: 2,
+        realm_create_stream_policy: 1,
     });
 
     global.patch_builtin('setTimeout', func => func());
@@ -223,9 +225,22 @@ function test_submit_settings_form(submit_form) {
     save_button.replace = () => {
         return `${subsection}`;
     };
-    $("#id_realm_create_stream_policy").val("by_members");
-    $("#id_realm_invite_to_stream_policy").val("by_members");
+
     $("#id_realm_waiting_period_threshold").val(10);
+
+    const invite_to_stream_policy_elem = $("#id_realm_invite_to_stream_policy");
+    invite_to_stream_policy_elem.val('1');
+    invite_to_stream_policy_elem.attr("id", 'id_realm_invite_to_stream_policy');
+    invite_to_stream_policy_elem.data = () => {
+        return "integer";
+    };
+
+    const create_stream_policy_elem = $("#id_realm_create_stream_policy");
+    create_stream_policy_elem.val('2');
+    create_stream_policy_elem.attr("id", 'id_realm_create_stream_policy');
+    create_stream_policy_elem.data = () => {
+        return "integer";
+    };
 
     const add_emoji_by_admins_only_elem = $("#id_realm_add_emoji_by_admins_only");
     add_emoji_by_admins_only_elem.val("by_anyone");
@@ -250,6 +265,8 @@ function test_submit_settings_form(submit_form) {
         bot_creation_policy_elem,
         email_address_visibility_elem,
         add_emoji_by_admins_only_elem,
+        create_stream_policy_elem,
+        invite_to_stream_policy_elem,
     ]);
 
     patched = false;
@@ -258,11 +275,10 @@ function test_submit_settings_form(submit_form) {
 
     let expected_value = {
         bot_creation_policy: '1',
-        invite_to_stream_policy: 1,
+        invite_to_stream_policy: '1',
         email_address_visibility: '1',
         add_emoji_by_admins_only: false,
-        create_stream_policy: 1,
-        waiting_period_threshold: 10,
+        create_stream_policy: '2',
     };
     assert.deepEqual(data, expected_value);
 
@@ -412,7 +428,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     parents_obj.set_find_results('.domain', domain_obj);
     elem_obj.prop('checked', allow);
 
-    change_allow_subdomains.apply(elem_obj, [ev]);
+    change_allow_subdomains.call(elem_obj, ev);
 
     success_callback();
     assert.equal(info.val(),
@@ -423,7 +439,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     allow = false;
     elem_obj.prop('checked', allow);
-    change_allow_subdomains.apply(elem_obj, [ev]);
+    change_allow_subdomains.call(elem_obj, ev);
     success_callback();
     assert.equal(info.val(),
                  'translated: Update successful: Subdomains no longer allowed for example.com');
@@ -478,7 +494,8 @@ function test_sync_realm_settings() {
         page_params.realm_create_stream_policy = 3;
 
         settings_org.sync_realm_settings('create_stream_policy');
-        assert.equal($("#id_realm_create_stream_policy").val(), "by_full_members");
+        assert.equal($("#id_realm_create_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_full_members.code);
     }
 
     {
@@ -493,7 +510,8 @@ function test_sync_realm_settings() {
         page_params.realm_create_stream_policy = 1;
 
         settings_org.sync_realm_settings('create_stream_policy');
-        assert.equal($("#id_realm_create_stream_policy").val(), "by_members");
+        assert.equal($("#id_realm_create_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_members.code);
     }
 
     {
@@ -508,7 +526,8 @@ function test_sync_realm_settings() {
         page_params.realm_create_stream_policy = 2;
 
         settings_org.sync_realm_settings('create_stream_policy');
-        assert.equal($("#id_realm_create_stream_policy").val(), "by_admins_only");
+        assert.equal($("#id_realm_create_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_admins_only.code);
     }
 
     {
@@ -523,7 +542,8 @@ function test_sync_realm_settings() {
         page_params.realm_invite_to_stream_policy = 3;
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
-        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_full_members");
+        assert.equal($("#id_realm_invite_to_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_full_members.code);
     }
 
     {
@@ -538,7 +558,8 @@ function test_sync_realm_settings() {
         page_params.realm_invite_to_stream_policy = 1;
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
-        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_members");
+        assert.equal($("#id_realm_invite_to_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_members.code);
     }
 
     {
@@ -553,7 +574,8 @@ function test_sync_realm_settings() {
         page_params.realm_invite_to_stream_policy = 2;
 
         settings_org.sync_realm_settings('invite_to_stream_policy');
-        assert.equal($("#id_realm_invite_to_stream_policy").val(), "by_admins_only");
+        assert.equal($("#id_realm_invite_to_stream_policy").val(),
+                     settings_config.create_stream_policy_values.by_admins_only.code);
     }
 
     {
@@ -566,7 +588,7 @@ function test_sync_realm_settings() {
         page_params.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings('message_content_edit_limit_seconds');
-        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), 2);
+        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
     }
 
     {
@@ -601,7 +623,7 @@ function test_sync_realm_settings() {
         page_params.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings('message_content_edit_limit_seconds');
-        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), 2);
+        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
     }
 
     {
@@ -707,9 +729,9 @@ function test_discard_changes_button(discard_changes) {
     assert.equal(allow_edit_history.prop('checked'), true);
     assert.equal(allow_community_topic_editing.prop('checked'), true);
     assert.equal(msg_edit_limit_setting.val(), "upto_one_hour");
-    assert.equal(message_content_edit_limit_minutes.val(), 60);
+    assert.equal(message_content_edit_limit_minutes.val(), "60");
     assert.equal(msg_delete_limit_setting.val(), "upto_two_min");
-    assert.equal(message_content_delete_limit_minutes.val(), 2);
+    assert.equal(message_content_delete_limit_minutes.val(), "2");
 
     settings_org.change_save_button_state = stubbed_function;
 }
@@ -772,7 +794,7 @@ run_test('set_up', () => {
     const stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
     settings_org.render_notifications_stream_ui = noop;
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
-    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limti parent>'));
+    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limit parent>'));
     $("#message_content_in_email_notifications_label").set_parent($.create('<stub in-content setting checkbox>'));
     $("#enable_digest_emails_label").set_parent($.create('<stub digest setting checkbox>'));
     $("#id_realm_digest_weekday").set_parent($.create('<stub digest weekday setting dropdown>'));
@@ -808,6 +830,106 @@ run_test('set_up', () => {
     test_discard_changes_button(discard_changes);
 
     settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
+});
+
+run_test('test get_organization_settings_options', () => {
+    const sorted_option_values = settings_org.get_organization_settings_options();
+    const sorted_create_stream_policy_values = sorted_option_values.create_stream_policy_values;
+    const expected_create_stream_policy_values = [
+        {
+            key: 'by_admins_only',
+            order: 1,
+            code: 2,
+            description: i18n.t("Admins"),
+        },
+        {
+            key: 'by_full_members',
+            order: 2,
+            code: 3,
+            description: i18n.t("Admins and full members"),
+        },
+        {
+            key: 'by_members',
+            order: 3,
+            code: 1,
+            description: i18n.t("Admins and members"),
+        },
+    ];
+    assert.deepEqual(sorted_create_stream_policy_values, expected_create_stream_policy_values);
+});
+
+run_test('test get_sorted_options_list', () => {
+    const option_values_1 = {
+        by_admins_only: {
+            order: 3,
+            code: 2,
+            description: i18n.t("Admins"),
+        },
+        by_members: {
+            order: 2,
+            code: 1,
+            description: i18n.t("Admins and members"),
+        },
+        by_full_members: {
+            order: 1,
+            code: 3,
+            description: i18n.t("Admins and full members"),
+        },
+    };
+    let expected_option_values = [
+        {
+            key: 'by_full_members',
+            order: 1,
+            code: 3,
+            description: i18n.t("Admins and full members"),
+        },
+        {
+            key: 'by_members',
+            order: 2,
+            code: 1,
+            description: i18n.t("Admins and members"),
+        },
+        {
+            key: 'by_admins_only',
+            order: 3,
+            code: 2,
+            description: i18n.t("Admins"),
+        },
+    ];
+    assert.deepEqual(settings_org.get_sorted_options_list(option_values_1), expected_option_values);
+
+    const option_values_2 = {
+        by_admins_only: {
+            code: 1,
+            description: i18n.t("Admins"),
+        },
+        by_members: {
+            code: 2,
+            description: i18n.t("Admins and members"),
+        },
+        by_full_members: {
+            code: 3,
+            description: i18n.t("Admins and full members"),
+        },
+    };
+    expected_option_values = [
+        {
+            key: 'by_admins_only',
+            code: 1,
+            description: i18n.t("Admins"),
+        },
+        {
+            key: 'by_full_members',
+            code: 3,
+            description: i18n.t("Admins and full members"),
+        },
+        {
+            key: 'by_members',
+            code: 2,
+            description: i18n.t("Admins and members"),
+        },
+    ];
+    assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);
 });
 
 run_test('misc', () => {

@@ -42,7 +42,6 @@ FILES_WITH_LEGACY_SUBJECT = {
     # These use subject in the email sense, and will
     # probably always be exempt:
     'zerver/lib/email_mirror.py',
-    'zerver/lib/feedback.py',
     'zerver/tests/test_new_users.py',
     'zerver/tests/test_email_mirror.py',
 
@@ -133,9 +132,6 @@ js_rules = RuleList(
          'description': 'Do not concatenate i18n strings'},
         {'pattern': r'\+.*i18n\.t\(.+\)',
          'description': 'Do not concatenate i18n strings'},
-        {'pattern': '[.]includes[(]',
-         'exclude': {'frontend_tests/'},
-         'description': '.includes() is incompatible with Internet Explorer. Use .indexOf() !== -1 instead.'},
         {'pattern': '[.]html[(]',
          'exclude_pattern': r'''[.]html[(]("|'|render_|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|widget_elem|[$]error|[$][(]"<p>"[)])''',
          'exclude': {'static/js/portico', 'static/js/lightbox.js', 'static/js/ui_report.js',
@@ -157,13 +153,6 @@ js_rules = RuleList(
          'description': 'Write JS else statements on same line as }'},
         {'pattern': '^else if',
          'description': 'Write JS else statements on same line as }'},
-        {'pattern': 'console[.][a-z]',
-         'exclude': set(['static/js/blueslip.js',
-                         'frontend_tests/zjsunit',
-                         'frontend_tests/casper_lib/common.js',
-                         'frontend_tests/node_tests',
-                         'static/js/debug.js']),
-         'description': 'console.log and similar should not be used in webapp'},
         {'pattern': r'''[.]text\(["'][a-zA-Z]''',
          'description': 'Strings passed to $().text should be wrapped in i18n.t() for internationalization',
          'exclude': set(['frontend_tests/node_tests/'])},
@@ -204,7 +193,6 @@ js_rules = RuleList(
          'exclude': set([
              'frontend_tests/node_tests/copy_and_paste.js',
              'frontend_tests/node_tests/upload.js',
-             'frontend_tests/node_tests/templates.js',
              'static/js/upload.js',
              'static/js/stream_color.js',
          ]),
@@ -401,7 +389,7 @@ python_rules = RuleList(
              # This one in check_message is kinda terrible, since it's
              # how most instances are written, but better to exclude something than nothing
              ('zerver/lib/actions.py', 'stream = get_stream(stream_name, realm)'),
-             ('zerver/lib/actions.py', 'get_stream(admin_realm_signup_notifications_stream, admin_realm)'),
+             ('zerver/lib/actions.py', 'return get_stream("signups", realm)'),
          ]),
          'description': 'Please use access_stream_by_*() to fetch Stream objects',
          },
@@ -555,7 +543,7 @@ css_rules = RuleList(
          'description': "Missing whitespace before '{' in CSS.",
          'good_lines': ["input {", "body {"],
          'bad_lines': ["input{", "body{"]},
-        {'pattern': 'https://',
+        {'pattern': r'^(?:(?!/\*).)*https?://',
          'description': "Zulip CSS should have no dependencies on external resources",
          'good_lines': ['background: url(/static/images/landing-page/pycon.jpg);'],
          'bad_lines': ['background: url(https://example.com/image.png);']},
@@ -616,7 +604,7 @@ html_rules = whitespace_rules + prose_style_rules + [
     {'pattern': r'placeholder="[^{#](?:(?!\.com).)+$',
      'description': "`placeholder` value should be translatable.",
      'exclude_line': {('templates/zerver/register.html', 'placeholder="acme"'),
-                      ('templates/zerver/register.html', 'placeholder="Acme or Aκμή"')},
+                      ('templates/zerver/register.html', 'placeholder="Acme or Ακμή"')},
      'exclude': set(["templates/analytics/support.html"]),
      'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
      'bad_lines': ['<input placeholder="foo">']},
@@ -704,7 +692,7 @@ html_rules = whitespace_rules + prose_style_rules + [
 
          # background image property is dynamically generated
          'static/templates/user_profile_modal.hbs',
-         'static/templates/sidebar_private_message_list.hbs',
+         'static/templates/pm_list_item.hbs',
 
          # Inline styling for an svg; could be moved to CSS files?
          'templates/zerver/landing_nav.html',
@@ -800,6 +788,7 @@ markdown_docs_length_exclude = {
     "templates/zerver/integrations/perforce.md",
     # Has some example code that could perhaps be wrapped
     "templates/zerver/api/incoming-webhooks-walkthrough.md",
+    "templates/zerver/api/get-messages.md",
     # This macro has a long indented URL
     "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
     "templates/zerver/api/update-notification-settings.md",
@@ -849,7 +838,7 @@ help_markdown_rules = RuleList(
 )
 
 txt_rules = RuleList(
-    langs=['txt', 'text', 'yaml', 'rst'],
+    langs=['txt', 'text', 'yaml', 'rst', 'yml'],
     rules=whitespace_rules,
 )
 non_py_rules = [

@@ -1,3 +1,4 @@
+const util = zrequire('util');
 set_global('$', global.make_zjquery());
 
 zrequire('narrow_state');
@@ -7,7 +8,6 @@ zrequire('MessageListData', 'js/message_list_data');
 zrequire('unread');
 zrequire('narrow');
 zrequire('search_pill');
-zrequire('util');
 
 set_global('blueslip', {});
 set_global('channel', {});
@@ -59,7 +59,7 @@ const denmark = {
     stream_id: 1,
     is_muted: true,
 };
-stream_data.add_sub('Denmark', denmark);
+stream_data.add_sub(denmark);
 
 function test_helper() {
     let events = [];
@@ -187,8 +187,7 @@ run_test('basics', () => {
         assert.deepEqual(opts, {
             cont: opts.cont,
             pre_scroll_cont: opts.pre_scroll_cont,
-            then_select_id: 1000,
-            use_first_unread_anchor: false,
+            anchor: 1000,
         });
     };
 
