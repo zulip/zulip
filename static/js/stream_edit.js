@@ -408,6 +408,7 @@ function change_stream_privacy(e) {
         url: "/json/streams/" + stream_id,
         data: data,
         success: function () {
+            overlays.close_modal('stream_privacy_modal');
             $("#stream_privacy_modal").remove();
             // The rest will be done by update stream event we will get.
         },
@@ -535,6 +536,7 @@ exports.initialize = function () {
     $("#subscriptions_table").on('click', '.close-privacy-modal', function (e) {
         // This fixes a weird bug in which, subscription_settings hides
         // unexpectedly by clicking the cancel button.
+        overlays.enable_background_mouse_events();
         e.stopPropagation();
     });
 
