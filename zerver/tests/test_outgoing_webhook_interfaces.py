@@ -5,14 +5,23 @@ import mock
 import json
 import requests
 
+from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.message import MessageDict
 from zerver.lib.outgoing_webhook import (
     get_service_interface_class,
     process_success_response,
 )
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.models import get_realm, get_user, SLACK_INTERFACE, Message
+from zerver.models import (
+    get_realm,
+    get_stream,
+    get_user,
+    Message,
+    SLACK_INTERFACE,
+)
+
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
 
@@ -60,9 +69,45 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         self.assertTrue(m.called)
 
     def test_build_bot_request(self) -> None:
-        message_id = self.send_stream_message(self.example_user('othello'),
-                                              "Denmark", content="@**test**")
+        othello = self.example_user('othello')
+        stream = get_stream('Denmark', othello.realm)
+        message_id = self.send_stream_message(
+            othello,
+            stream.name,
+            content="@**test**"
+        )
+
         message = Message.objects.get(id=message_id)
+
+        gravatar_url = get_gravatar_url(
+            othello.delivery_email,
+            othello.avatar_version,
+        )
+
+        expected_message_data = {
+            'avatar_url': gravatar_url,
+            'client': 'test suite',
+            'content': '@**test**',
+            'content_type': 'text/x-markdown',
+            'display_recipient': 'Denmark',
+            'id': message.id,
+            'is_me_message': False,
+            'reactions': [],
+            'recipient_id': message.recipient_id,
+            'rendered_content': '<p>@<strong>test</strong></p>',
+            'sender_email': othello.email,
+            'sender_full_name': 'Othello, the Moor of Venice',
+            'sender_id': othello.id,
+            'sender_realm_str': 'zulip',
+            'sender_short_name': 'othello',
+            'stream_id': stream.id,
+            TOPIC_NAME: 'test',
+            'submessages': [],
+            'timestamp': datetime_to_timestamp(message.date_sent),
+            'topic_links': [],
+            'type': 'stream',
+        }
+
         wide_message_dict = MessageDict.wide_dict(message)
 
         event = {
@@ -70,14 +115,12 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             u'message': wide_message_dict,
             u'trigger': 'mention',
         }
+
         request_data = self.handler.build_bot_request(event)
         request_data = json.loads(request_data)
         self.assertEqual(request_data['data'], "@**test**")
         self.assertEqual(request_data['token'], "abcdef")
-
-        # TODO: This test doesn't properly show that message['event']
-        #       is getting mutated by build_bot_request.
-        self.assertEqual(request_data['message'], event['message'])
+        self.assertEqual(request_data['message'], expected_message_data)
 
     def test_process_success(self) -> None:
         response = dict(response_not_required=True)  # type: Dict[str, Any]
