@@ -1674,6 +1674,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     USER_INFO_URL = "https://api.github.com/user"
     AUTH_FINISH_URL = "/complete/github/"
     CONFIG_ERROR_URL = "/config-error/github"
+    email_data: List[Dict[str, Any]] = []
 
     def social_auth_test_finish(self, result: HttpResponse,
                                 account_data_dict: Dict[str, str],
@@ -1694,6 +1695,25 @@ class GitHubAuthBackendTest(SocialAuthBase):
             # authentication backends when a new authentacation backend
             # that requires "choose email" screen;
             self.assert_in_success_response(["Select account"], result)
+            # Verify that all the emails returned by GitHub auth
+            # are in the "choose email" screen.
+            all_emails_verified = True
+            for email_data_dict in self.email_data:
+                email = email_data_dict["email"]
+                if email.endswith("noreply.github.com"):
+                    self.assert_not_in_success_response([email], result)
+                elif email_data_dict.get('verified'):
+                    self.assert_in_success_response([email], result)
+                else:
+                    # We may change this if we provide a way to see
+                    # the list of emails the user had.
+                    self.assert_not_in_success_response([email], result)
+                    all_emails_verified = False
+
+            if all_emails_verified:
+                self.assert_not_in_success_response(["also has unverified email"], result)
+            else:
+                self.assert_in_success_response(["also has unverified email"], result)
             result = self.client_get(self.AUTH_FINISH_URL,
                                      dict(state=csrf_state, email=account_data_dict['email']), **headers)
 
@@ -2057,6 +2077,30 @@ class GitHubAuthBackendTest(SocialAuthBase):
                 " emails associated with the account",
                 "GitHub",
             )
+
+    def test_github_unverified_email_with_existing_account(self) -> None:
+        # check if a user is denied to login if the user manages to
+        # send an unverified email that has an existing account in
+        # organisation through `email` GET parameter.
+        account_data_dict = dict(email='hamlet@zulip.com', name=self.name)
+        email_data = [
+            dict(email='iago@zulip.com',
+                 verified=True,),
+            dict(email='hamlet@zulip.com',
+                 verified=False),
+            dict(email="aaron@zulip.com",
+                 verified=True,
+                 primary=True)
+        ]
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.social_auth_test(account_data_dict,
+                                           subdomain='zulip',
+                                           expect_choose_email_screen=True,
+                                           email_data=email_data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/login/")
+            mock_warning.assert_called_once_with("Social auth (%s) failed because user has no verified"
+                                                 " emails associated with the account", "GitHub")
 
 class GitLabAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False

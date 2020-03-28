@@ -1093,10 +1093,15 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
                 if existing_account is not None:
                     existing_account_emails.append(email)
                     avatars[email] = avatar_url(existing_account)
+
             if (len(existing_account_emails) != 1 or backend.strategy.session_get('is_signup') == '1'):
+                unverified_emails = []
+                if hasattr(backend, 'get_unverified_emails'):
+                    unverified_emails = backend.get_unverified_emails(*args, **kwargs)
                 return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
                     'primary_email': verified_emails[0],
                     'verified_non_primary_emails': verified_emails[1:],
+                    'unverified_emails': unverified_emails,
                     'backend': 'github',
                     'avatar_urls': avatars,
                 })
@@ -1373,6 +1378,13 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             # case without any verified emails
             emails = []
         return emails
+
+    def get_unverified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
+        emails = self.get_all_associated_email_objects(*args, **kwargs)
+        return [
+            email_obj['email'] for email_obj in emails
+            if not email_obj.get('verified') and not email_obj["email"].endswith("noreply.github.com")
+        ]
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
         emails = self.get_all_associated_email_objects(*args, **kwargs)
