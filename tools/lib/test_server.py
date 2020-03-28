@@ -14,6 +14,8 @@ sanity_check.check_venv(__file__)
 import django
 import requests
 
+MAX_SERVER_WAIT = 90
+
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if TOOLS_DIR not in sys.path:
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -79,11 +81,14 @@ def test_server_running(force: bool=False, external_host: str='testserver',
         sys.stdout.write('\nWaiting for test server (may take a while)')
         if not dots:
             sys.stdout.write('\n\n')
+        t = time.time()
         while not server_is_up(server, log_file):
             if dots:
                 sys.stdout.write('.')
                 sys.stdout.flush()
             time.sleep(0.4)
+            if time.time() - t > MAX_SERVER_WAIT:
+                raise Exception('Timeout waiting for server')
         sys.stdout.write('\n\n--- SERVER IS UP! ---\n\n')
 
         # DO OUR ACTUAL TESTING HERE!!!
