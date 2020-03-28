@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
+const jsyaml = require('js-yaml');
 const SwaggerParser = require('swagger-parser');
 
 async function validate_swagger(file) {
@@ -13,12 +15,13 @@ async function validate_swagger(file) {
     }
 }
 
-// Iterate through the changed files, passed in the arguments.
-// The two first arguments are the call to the Node interpreter and this
-// script, hence the starting point at 2.
-for (const file of process.argv.slice(2)) {
-    // Run the validator only for YAML files inside static/swagger
-    if (file.startsWith('static/swagger')) {
-        validate_swagger(file);
+(async () => {
+    // Iterate through the changed files, passed in the arguments.
+    // The two first arguments are the call to the Node interpreter and this
+    // script, hence the starting point at 2.
+    for (const file of process.argv.slice(2)) {
+        if (jsyaml.safeLoad(await fs.promises.readFile(file, 'utf8')).openapi !== undefined) {
+            await validate_swagger(file);
+        }
     }
-}
+})();
