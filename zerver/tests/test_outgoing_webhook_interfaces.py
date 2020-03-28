@@ -19,18 +19,6 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        # TODO: Ideally, this test would use the full flow, rather
-        # than making a mock message like this.
-        message_id = self.send_stream_message(self.example_user('othello'),
-                                              "Denmark", content="@**test**")
-        message = Message.objects.get(id=message_id)
-        wide_message_dict = MessageDict.wide_dict(message)
-
-        self.event = {
-            u'command': '@**test**',
-            u'message': wide_message_dict,
-            u'trigger': 'mention',
-        }
         bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         service_class = get_service_interface_class('whatever')  # GenericOutgoingWebhookService
         self.handler = service_class(service_name='test-service',
@@ -72,11 +60,24 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         self.assertTrue(m.called)
 
     def test_build_bot_request(self) -> None:
-        request_data = self.handler.build_bot_request(self.event)
+        message_id = self.send_stream_message(self.example_user('othello'),
+                                              "Denmark", content="@**test**")
+        message = Message.objects.get(id=message_id)
+        wide_message_dict = MessageDict.wide_dict(message)
+
+        event = {
+            u'command': '@**test**',
+            u'message': wide_message_dict,
+            u'trigger': 'mention',
+        }
+        request_data = self.handler.build_bot_request(event)
         request_data = json.loads(request_data)
         self.assertEqual(request_data['data'], "@**test**")
         self.assertEqual(request_data['token'], "abcdef")
-        self.assertEqual(request_data['message'], self.event['message'])
+
+        # TODO: This test doesn't properly show that message['event']
+        #       is getting mutated by build_bot_request.
+        self.assertEqual(request_data['message'], event['message'])
 
     def test_process_success(self) -> None:
         response = dict(response_not_required=True)  # type: Dict[str, Any]
