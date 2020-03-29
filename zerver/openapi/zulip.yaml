@@ -933,17 +933,7 @@ paths:
         required: false
       responses:
         '200':
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/JsonSuccess'
-                - example:
-                      {
-                          "result": "success",
-                          "msg": ""
-                      }
+          $ref: '#/components/responses/SimpleSuccess'
 
         '400':
           description: Bad request.
@@ -1010,17 +1000,7 @@ paths:
         required: false
       responses:
         '200':
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/JsonSuccess'
-                - example:
-                      {
-                          "result": "success",
-                          "msg": ""
-                      }
+          $ref: '#/components/responses/SimpleSuccess'
         '400':
           description: Bad request.
           content:
@@ -1371,17 +1351,7 @@ paths:
 
       responses:
         '200':
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/JsonSuccess'
-                - example:
-                      {
-                          "result": "success",
-                          "msg": ""
-                      }
+          $ref: '#/components/responses/SimpleSuccess'
 
         '400':
           description: Bad request.
@@ -3153,17 +3123,7 @@ paths:
         required: true
       responses:
         '200':
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/JsonSuccess'
-                - example:
-                      {
-                          "result": "success",
-                          "msg": ""
-                      }
+          $ref: '#/components/responses/SimpleSuccess'
 
         '400':
           description: Bad request.
