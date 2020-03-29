@@ -42,3 +42,7 @@ any user group they are a part of. Guests cannot modify user groups.
    to save.  Zulip will notify everyone who is added or removed.
 
 {end_tabs}
+
+## Related articles
+
+* [Restrict user group management](/help/restrict-user-group-management)
