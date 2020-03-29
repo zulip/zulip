@@ -72,6 +72,11 @@ from zerver.models import (
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 MAX_MESSAGES_PER_FETCH = 5000
+# Allow an extra 20 seconds since we potentially allow editing 15 seconds
+# past the limit, and in case there are network issues, etc. The 15 comes
+# from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
+# you change this value also change those two parameters in message_edit.js.
+EDIT_LIMIT_BUFFER = 20
 
 class BadNarrowOperator(JsonableError):
     code = ErrorCode.BAD_NARROW

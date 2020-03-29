@@ -26,6 +26,11 @@ from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
 from zerver.models import Message, Realm, UserMessage, UserProfile
 
+# Allow an extra 20 seconds since we potentially allow editing 15 seconds
+# past the limit, and in case there are network issues, etc. The 15 comes
+# from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
+# you change this value also change those two parameters in message_edit.js.
+EDIT_LIMIT_BUFFER = 20
 
 def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Message) -> None:
     """This fills out the message edit history entries from the database,
@@ -92,6 +97,12 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
     fill_edit_history_entries(message_edit_history, message)
     return json_success({"message_history": list(reversed(message_edit_history))})
 
+def check_edit_time_expiry(message: Message, user_profile: UserProfile) -> None:
+    if user_profile.realm.message_content_edit_limit_seconds > 0:
+        deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + EDIT_LIMIT_BUFFER
+        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+            raise JsonableError(_("The time limit for editing this message has passed"))
+
 PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
@@ -133,11 +144,8 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # past the limit, and in case there are network issues, etc. The 15 comes
     # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
     # you change this value also change those two parameters in message_edit.js.
-    edit_limit_buffer = 20
-    if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
-        deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
-        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
-            raise JsonableError(_("The time limit for editing this message has passed"))
+    if content is not None:
+        check_edit_time_expiry(message, user_profile)
 
     # If there is a change to the topic, check that the user is allowed to
     # edit it and that it has not been too long. If this is not the user who
@@ -145,7 +153,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # topics is passed, raise an error.
     if content is None and message.sender != user_profile and not user_profile.is_realm_admin and \
             not is_no_topic_msg:
-        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
+        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + EDIT_LIMIT_BUFFER
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
