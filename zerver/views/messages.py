@@ -47,6 +47,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
+from zerver.lib.url_preview.preview import get_queue_processor_event_data
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool, \
     check_string_or_int_list, check_string_or_int, check_string_in, \
@@ -1627,14 +1628,11 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # Include the number of messages changed in the logs
     request._log_data['extra'] = "[%s]" % (number_changed,)
     if links_for_embed and bugdown.url_embed_preview_enabled(message):
-        event_data = {
-            'message_id': message.id,
-            'message_content': message.content,
-            # The choice of `user_profile.realm_id` rather than
-            # `sender.realm_id` must match the decision made in the
-            # `render_incoming_message` call earlier in this function.
-            'message_realm_id': user_profile.realm_id,
-            'urls': links_for_embed}
+        # The choice of `user_profile.realm_id` rather than
+        # `sender.realm_id` must match the decision made in the
+        # `render_incoming_message` call earlier in this function.
+        realm_id = user_profile.realm_id
+        event_data = get_queue_processor_event_data(message, realm_id, links_for_embed)
         queue_json_publish('embed_links', event_data)
     return json_success()
 

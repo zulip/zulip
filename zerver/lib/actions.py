@@ -120,6 +120,7 @@ from zerver.lib.email_validation import get_realm_email_validator, \
     validate_email_is_valid, get_existing_user_errors, \
     email_reserved_for_system_bots_error
 from zerver.lib.stream_recipient import StreamRecipientMap
+from zerver.lib.url_preview.preview import get_queue_processor_event_data
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 
@@ -1494,11 +1495,8 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         send_event(message['realm'], event, users)
 
         if url_embed_preview_enabled(message['message']) and links_for_embed:
-            event_data = {
-                'message_id': message['message'].id,
-                'message_content': message['message'].content,
-                'message_realm_id': message['realm'].id,
-                'urls': links_for_embed}
+            event_data = get_queue_processor_event_data(
+                message['message'], message['realm'].id, links_for_embed)
             queue_json_publish('embed_links', event_data)
 
         if message['message'].recipient.type == Recipient.PERSONAL:
