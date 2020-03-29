@@ -121,6 +121,7 @@
 * [Restrict stream invitation](/help/configure-who-can-invite-to-streams)
 * [Restrict private messages](/help/restrict-private-messages)
 * [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
+* [Create and manage user groups](/help/change-who-can-create-and-manage-user-groups)
 * [Block image and link previews](/help/allow-image-link-previews)
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
 * [Disable message edit history](/help/disable-message-edit-history)
