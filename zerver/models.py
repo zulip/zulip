@@ -926,6 +926,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # UI vars
     enter_sends = models.NullBooleanField(default=False)  # type: Optional[bool]
     left_side_userlist = models.BooleanField(default=False)  # type: bool
+    wide_screen = models.BooleanField(default=False)  # type: bool
 
     # display settings
     default_language = models.CharField(default='en', max_length=MAX_LANGUAGE_ID_LENGTH)  # type: str
@@ -1007,6 +1008,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         fluid_layout_width=bool,
         high_contrast_mode=bool,
         left_side_userlist=bool,
+        wide_screen=bool,
         night_mode=bool,
         starred_message_counts=bool,
         timezone=str,

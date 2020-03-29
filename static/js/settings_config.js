@@ -45,6 +45,7 @@ exports.get_all_display_settings = () => ({
             "night_mode",
             "high_contrast_mode",
             "left_side_userlist",
+            "wide_screen",
             "starred_message_counts",
             "fluid_layout_width",
         ],

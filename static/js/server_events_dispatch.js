@@ -386,6 +386,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'high_contrast_mode',
             'night_mode',
             'left_side_userlist',
+            'wide_screen',
             'timezone',
             'twenty_four_hour_time',
             'translate_emoticons',
@@ -404,6 +405,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             if (current_msg_list === message_list.narrowed) {
                 message_list.narrowed.rerender();
             }
+        }
+        if (event.setting_name === 'wide_screen') {
+            // TODO: Make this change the view immediately rather
+            // than requiring a reload or page resize.
         }
         if (event.setting_name === 'high_contrast_mode') {
             $("body").toggleClass("high-contrast");

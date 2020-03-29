@@ -51,6 +51,15 @@ exports.set_up = function () {
             } else {
                 change_display_setting(data, "#display-settings-status");
             }
+
+            if (["wide_screen"].includes(setting)) {
+                change_display_setting(
+                    data,
+                    "#display-settings-status",
+                    i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."), true);
+            } else {
+                change_display_setting(data, "#display-settings-status");
+            }
         });
     }
 
@@ -144,6 +153,7 @@ exports.report_emojiset_change = async function () {
 
 exports.update_page = function () {
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
+    $("#wide_screen").prop('checked', page_params.wide_screen);
     $("#default_language_name").text(page_params.default_language_name);
     $("#translate_emoticons").prop('checked', page_params.translate_emoticons);
     $("#night_mode").prop('checked', page_params.night_mode);

@@ -44,6 +44,7 @@ run_test('tr_tag', () => {
             password_auth_enabled: false,
             avatar_url: "http://example.com",
             left_side_userlist: false,
+            wide_screen: false,
             twenty_four_hour_time: false,
             enable_stream_desktop_notifications: false,
             enable_stream_push_notifications: false,

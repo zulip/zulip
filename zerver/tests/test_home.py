@@ -223,6 +223,7 @@ class HomeTest(ZulipTestCase):
             "user_status",
             "warn_no_email",
             "webpack_public_path",
+            "wide_screen",
             "wildcard_mentions_notify",
             "zulip_version",
         ]

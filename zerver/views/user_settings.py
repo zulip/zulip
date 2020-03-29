@@ -157,6 +157,7 @@ def update_display_settings_backend(
         translate_emoticons: Optional[bool]=REQ(validator=check_bool, default=None),
         default_language: Optional[bool]=REQ(validator=check_string, default=None),
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
+        wide_screen: Optional[bool]=REQ(validator=check_bool, default=None),
         emojiset: Optional[str]=REQ(validator=check_string_in(
             emojiset_choices), default=None),
         demote_inactive_streams: Optional[int]=REQ(validator=check_int_in(

@@ -2573,6 +2573,7 @@ class UserSignUpTest(InviteUserBase):
 
         # Make an account in the Zulip realm, but we're not copying from there.
         hamlet_in_zulip.left_side_userlist = True
+        hamlet_in_zulip.wide_screen = True
         hamlet_in_zulip.default_language = "de"
         hamlet_in_zulip.emojiset = "twitter"
         hamlet_in_zulip.high_contrast_mode = True
@@ -2592,6 +2593,7 @@ class UserSignUpTest(InviteUserBase):
 
         hamlet = get_user(self.example_email("hamlet"), realm)
         self.assertEqual(hamlet.left_side_userlist, False)
+        self.assertEqual(hamlet.wide_screen, False)
         self.assertEqual(hamlet.default_language, "en")
         self.assertEqual(hamlet.emojiset, "google-blob")
         self.assertEqual(hamlet.high_contrast_mode, False)
@@ -2611,6 +2613,7 @@ class UserSignUpTest(InviteUserBase):
             self.client_post("/json/users/me/avatar", {'file': image_file})
         hamlet_in_zulip.refresh_from_db()
         hamlet_in_zulip.left_side_userlist = True
+        hamlet_in_zulip.wide_screen = True
         hamlet_in_zulip.default_language = "de"
         hamlet_in_zulip.emojiset = "twitter"
         hamlet_in_zulip.high_contrast_mode = True
@@ -2641,6 +2644,7 @@ class UserSignUpTest(InviteUserBase):
 
         hamlet_in_lear = get_user(email, lear_realm)
         self.assertEqual(hamlet_in_lear.left_side_userlist, True)
+        self.assertEqual(hamlet_in_lear.wide_screen, True)
         self.assertEqual(hamlet_in_lear.default_language, "de")
         self.assertEqual(hamlet_in_lear.emojiset, "twitter")
         self.assertEqual(hamlet_in_lear.high_contrast_mode, True)

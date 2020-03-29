@@ -586,6 +586,12 @@ const event_fixtures = {
         setting: true,
     },
 
+    update_display_settings__wide_screen: {
+        type: 'update_display_settings',
+        setting_name: 'wide_screen',
+        setting: true,
+    },
+
     update_display_settings__twenty_four_hour_time: {
         type: 'update_display_settings',
         setting_name: 'twenty_four_hour_time',
@@ -1394,6 +1400,11 @@ with_overrides(function (override) {
     dispatch(event);
     assert_same(page_params.twenty_four_hour_time, true);
     assert_same(called, true);
+
+    event = event_fixtures.update_display_settings__wide_screen;
+    page_params.wide_screen = false;
+    dispatch(event);
+    assert_same(page_params.wide_screen, true);
 
     event = event_fixtures.update_display_settings__translate_emoticons;
     page_params.translate_emoticons = false;

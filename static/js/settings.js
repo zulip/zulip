@@ -76,6 +76,7 @@ function setup_settings_label() {
         fluid_layout_width: i18n.t("Use full width on wide screens"),
         high_contrast_mode: i18n.t("High contrast mode"),
         left_side_userlist: i18n.t("Show user list on left sidebar in narrow windows"),
+        wide_screen: i18n.t("Use full width for messages on wide screens (removes user's list)"),
         night_mode: i18n.t("Night mode"),
         starred_message_counts: i18n.t("Show counts for starred messages"),
         twenty_four_hour_time: i18n.t("Time format"),

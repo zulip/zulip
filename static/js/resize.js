@@ -204,9 +204,9 @@ exports.resize_stream_filters_container = function (h) {
 exports.resize_page_components = function () {
     let sidebar;
 
-    if (page_params.left_side_userlist) {
-        const css_narrow_mode = message_viewport.is_narrow();
+    const css_narrow_mode = message_viewport.is_narrow();
 
+    if (page_params.left_side_userlist) {
         $("#top_navbar").removeClass("rightside-userlist");
 
         const right_items = $('.right-sidebar-items').expectOne();
@@ -223,6 +223,28 @@ exports.resize_page_components = function () {
         } else if (!css_narrow_mode && narrow_window) {
             // move stuff to the right sidebar (wide mode)
             narrow_window = false;
+            popovers.set_userlist_placement("right");
+            sidebar = $("#right-sidebar").expectOne();
+            sidebar.append(right_items);
+            $("#buddy_list_wrapper").css("margin", '');
+            $("#userlist-toggle").css("display", '');
+            $("#invite-user-link").show();
+        }
+    }
+
+    if (!css_narrow_mode) {
+        if (page_params.wide_screen) {
+            $("#top_navbar").removeClass("rightside-userlist");
+            const right_items = $('.right-sidebar-items').expectOne();
+            right_items.hide();
+            $(".column-middle").css("margin-right", "10px");
+            popovers.set_userlist_placement("left");
+            $("#buddy_list_wrapper").css("margin", "0px");
+            $("#userlist-toggle").css("display", "none");
+            $("#invite-user-link").hide();
+        } else {
+            $("#top_navbar").removeClass("rightside-userlist");
+            const right_items = $('.right-sidebar-items').expectOne();
             popovers.set_userlist_placement("right");
             sidebar = $("#right-sidebar").expectOne();
             sidebar.append(right_items);
