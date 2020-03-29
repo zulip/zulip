@@ -31,7 +31,7 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
-from zerver.lib.sessions import set_expirable_session_var
+from zerver.lib.sessions import set_expirable_session_var, get_session_user
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.user_agent import parse_user_agent
@@ -46,6 +46,18 @@ from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled, SAMLAuthBackend, \
     redirect_to_config_error, ZulipRemoteUserBackend, validate_otp_params
 from version import ZULIP_VERSION
+
+# My imports
+
+from zproject.backends import email_auth_enabled, email_belongs_to_ldap, check_password_strength
+from zerver.lib.rate_limiter import RateLimited, get_rate_limit_result_from_request, \
+    RateLimitedObject
+from zerver.forms import generate_password_reset_url
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.auth.tokens import default_token_generator 
+from zerver.lib.send_email import send_email, FromAddress
+
+# Ends 
 
 import jwt
 import logging
@@ -988,17 +1000,94 @@ def api_fetch_google_client_id(request: HttpRequest) -> HttpResponse:
 def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     return django_logout_then_login(request, kwargs)
 
+def send_password_reset_email(request: HttpRequest) -> bool:
+    """
+    If the email address has an account in the target realm,
+    generates a one-use only link for resetting password and sends
+    to the user.
+
+    We send a different email if an associated account does not exist in the
+    database, or an account does exist, but not in the realm.
+
+    Note: We ignore protocol and the various email template arguments (those
+    are an artifact of using Django's password reset framework).
+    """
+
+    user = request.user
+    email = request.user.delivery_email
+    realm = get_realm(get_subdomain(request))
+
+    if not email_auth_enabled(realm):
+        logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
+        return False
+    if email_belongs_to_ldap(realm, email):
+        # TODO: Ideally, we'd provide a user-facing error here
+        # about the fact that they aren't allowed to have a
+        # password in the Zulip server and should change it in LDAP.
+        logging.info("Password reset not allowed for user in LDAP domain")
+        return False
+    if realm.deactivated:
+        logging.info("Realm is deactivated")
+        return False
+
+    context = {
+        'email': email,
+        'realm_uri': realm.uri,
+        'realm_name': realm.name,
+    }
+
+    if user is not None and not user.is_active:
+        context['user_deactivated'] = True
+        user = None
+
+    if user is not None:
+        context['active_account_in_realm'] = True
+        context['reset_url'] = generate_password_reset_url(user, default_token_generator)
+        send_email('zerver/emails/password_reset', to_user_ids=[user.id],
+                    from_name=FromAddress.security_email_from_name(user_profile=user),
+                    from_address=FromAddress.tokenized_no_reply_address(),
+                    context=context)
+    else:
+        context['active_account_in_realm'] = False
+        active_accounts_in_other_realms = UserProfile.objects.filter(
+            delivery_email__iexact=email, is_active=True)
+        if active_accounts_in_other_realms:
+            context['active_accounts_in_other_realms'] = active_accounts_in_other_realms
+        language = request.LANGUAGE_CODE
+        send_email('zerver/emails/password_reset', to_emails=[email],
+                    from_name=FromAddress.security_email_from_name(language=language),
+                    from_address=FromAddress.tokenized_no_reply_address(),
+                    language=language, context=context)
+    return True
+
 def password_reset(request: HttpRequest) -> HttpResponse:
     if not Realm.objects.filter(string_id=get_subdomain(request)).exists():
         # If trying to get to password reset on a subdomain that
         # doesn't exist, just go to find_account.
         redirect_url = reverse('zerver.views.registration.find_account')
         return HttpResponseRedirect(redirect_url)
+    
 
-    view_func = DjangoPasswordResetView.as_view(template_name='zerver/reset.html',
+    print(send_password_reset_email(request))
+
+    view_func = DjangoPasswordResetView.as_view(template_name='zerver/reset_emailed.html',
                                                 form_class=ZulipPasswordResetForm,
                                                 success_url='/accounts/password/reset/done/')
     return view_func(request)
+
+# def password_reset(request: HttpRequest) -> HttpResponse:
+#     if not Realm.objects.filter(string_id=get_subdomain(request)).exists():
+#         # If trying to get to password reset on a subdomain that
+#         # doesn't exist, just go to find_account.
+#         redirect_url = reverse('zerver.views.registration.find_account')
+#         return HttpResponseRedirect(redirect_url)
+    
+#     user_profile = request.user
+
+#     view_func = DjangoPasswordResetView.as_view(template_name='zerver/reset.html',
+#                                                 form_class=ZulipPasswordResetForm,
+#                                                 success_url='/accounts/password/reset/done/')
+#     return view_func(request)
 
 @csrf_exempt
 def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # nocoverage
