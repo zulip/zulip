@@ -1,5 +1,5 @@
 import re
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Set
 from typing.re import Match
 
 import magic
@@ -12,6 +12,7 @@ from zerver.lib.cache import cache_with_key, get_cache_with_key, preview_url_cac
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
+from zerver.models import Message
 
 # FIXME: Should we use a database cache or a memcached in production? What if
 # opengraph data is changed for a site?
@@ -105,3 +106,12 @@ def get_link_embed_data(url: str,
 @get_cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME)
 def link_embed_data_from_cache(url: str, maxwidth: int=640, maxheight: int=480) -> Any:
     return
+
+def get_queue_processor_event_data(message: Message, realm_id: int, links: Set[str]) -> Dict[str, Any]:
+    event_data = {
+        'message_id': message.id,
+        'message_content': message.content,
+        'message_realm_id': realm_id,
+        'urls': list(links),
+    }
+    return event_data

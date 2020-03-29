@@ -23,6 +23,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import get_stream_by_id
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
+from zerver.lib.url_preview.preview import get_queue_processor_event_data
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
 from zerver.models import Message, Realm, UserMessage, UserProfile
 
@@ -224,14 +225,11 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # Include the number of messages changed in the logs
     request._log_data['extra'] = f"[{number_changed}]"
     if links_for_embed:
-        event_data = {
-            'message_id': message.id,
-            'message_content': message.content,
-            # The choice of `user_profile.realm_id` rather than
-            # `sender.realm_id` must match the decision made in the
-            # `render_incoming_message` call earlier in this function.
-            'message_realm_id': user_profile.realm_id,
-            'urls': list(links_for_embed)}
+        # The choice of `user_profile.realm_id` rather than
+        # `sender.realm_id` must match the decision made in the
+        # `render_incoming_message` call earlier in this function.
+        realm_id = user_profile.realm_id
+        event_data = get_queue_processor_event_data(message, realm_id, links_for_embed)
         queue_json_publish('embed_links', event_data)
     return json_success()
 

@@ -167,6 +167,7 @@ from zerver.lib.users import (
     get_api_key,
     user_profile_to_user_row,
 )
+from zerver.lib.url_preview.preview import get_queue_processor_event_data
 from zerver.lib.utils import generate_api_key, log_statsd_event
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
@@ -1624,11 +1625,8 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         send_event(message['realm'], event, users)
 
         if links_for_embed:
-            event_data = {
-                'message_id': message['message'].id,
-                'message_content': message['message'].content,
-                'message_realm_id': message['realm'].id,
-                'urls': list(links_for_embed)}
+            event_data = get_queue_processor_event_data(
+                message['message'], message['realm'].id, links_for_embed)
             queue_json_publish('embed_links', event_data)
 
         if message['message'].recipient.type == Recipient.PERSONAL:
