@@ -649,9 +649,12 @@ def add_dev_login_context(realm: Optional[Realm], context: Dict[str, Any]) -> No
     context['current_realm'] = realm
     context['all_realms'] = Realm.objects.all()
 
-    context['direct_admins'] = [u for u in users if u.is_realm_admin]
-    context['guest_users'] = [u for u in users if u.is_guest]
-    context['direct_users'] = [u for u in users if not (u.is_realm_admin or u.is_guest)]
+    def sort(lst: List[UserProfile]) -> List[UserProfile]:
+        return sorted(lst, key=lambda u: u.delivery_email)
+
+    context['direct_admins'] = sort([u for u in users if u.is_realm_admin])
+    context['guest_users'] = sort([u for u in users if u.is_guest])
+    context['direct_users'] = sort([u for u in users if not (u.is_realm_admin or u.is_guest)])
 
 def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> None:
     for key in ('email', 'already_registered', 'is_deactivated'):
