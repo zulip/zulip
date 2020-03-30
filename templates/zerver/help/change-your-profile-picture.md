@@ -28,3 +28,7 @@ right corner of the profile picture.  This will remove your current
 profile picture, reverting to the Gravatar default.
 
 {end_tabs}
+
+## Related articles
+
+* [Restrict profile picture changes](/help/restrict-profile-picture-changes)
