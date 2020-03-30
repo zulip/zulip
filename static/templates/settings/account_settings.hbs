@@ -2,6 +2,7 @@
     <div class="alert" id="dev-account-settings-status"></div>
     <div class="account-settings-form">
         <div class="inline-block">
+            <div id="user_details_section">
             <form class="email-change-form grid">
                 <h3 class="inline-block">{{t "User settings" }}</h3>
                 <div class="alert-notification" id="account-settings-status"></div>
@@ -139,6 +140,7 @@
                     </button>
                 </div>
             </form>
+            </div>
 
             <h3 class="inline-block" id="custom-field-header" {{#unless page_params.custom_profile_fields}}style="display: none"{{/unless}}>{{t "Profile" }}</h3>
             <form class="form-horizontal custom-profile-fields-form grid"></form>
