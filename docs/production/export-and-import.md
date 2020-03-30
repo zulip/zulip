@@ -301,7 +301,9 @@ archive of all the organization's uploaded files.
     * Ensure that the Zulip server you're importing into is running the same
       version of Zulip as the server you're exporting from.
 
-    * For exports from zulipchat.com, run the following:
+    * For exports from zulipchat.com, you need to [upgrade to
+      master][upgrade-zulip-from-git], since we run run master on
+      zulipchat.com:
 
       ```
       /home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
@@ -310,8 +312,6 @@ archive of all the organization's uploaded files.
       It is not sufficient to be on the latest stable release, as
       zulipchat.com runs pre-release versions of Zulip that are often
       several months of development ahead of the latest release.
-
-      Read the instructions [here][upgrade-zulip-from-git] for more details.
 
     * Note that if your server has limited free RAM, you'll want to
       shut down the Zulip server with `supervisorctl stop all` while
