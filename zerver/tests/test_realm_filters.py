@@ -55,6 +55,13 @@ class RealmFilterTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], 'ZUL2-15'))
 
+        data['pattern'] = r'ZUL2-(?P<id>\d+)'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        data['stream_name'] = 'Denmark'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data['pattern'], 'ZUL2-15'))
+
         data['pattern'] = r'_code=(?P<id>[0-9a-zA-Z]+)'
         data['url_format_string'] = 'https://example.com/product/%(id)s/details'
         result = self.client_post("/json/realm/filters", info=data)

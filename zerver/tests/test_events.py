@@ -2028,7 +2028,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('realm_filters', check_list(None)),  # TODO: validate tuples in the list
         ])
         events = self.do_test(lambda: do_add_realm_filter(self.user_profile.realm, "#(?P<id>[123])",
-                                                          "https://realm.com/my_realm_filter/%(id)s"))
+                                                          "https://realm.com/my_realm_filter/%(id)s", 0))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

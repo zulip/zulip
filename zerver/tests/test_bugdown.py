@@ -38,6 +38,7 @@ from zerver.models import (
     Realm,
     RealmEmoji,
     RealmFilter,
+    Recipient,
     UserProfile,
     UserGroup,
 )
@@ -952,14 +953,17 @@ class BugdownTest(ZulipTestCase):
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
         realm_filter = RealmFilter(realm=realm,
                                    pattern=r"#(?P<id>[0-9]{2,8})",
-                                   url_format_string=url_format_string)
+                                   url_format_string=url_format_string,
+                                   stream_id=0)
         realm_filter.save()
         self.assertEqual(
             realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.zulip.net/ticket/%(id)s>')
-
-        msg = Message(sender=self.example_user('othello'))
+            ' https://trac.zulip.net/ticket/%(id)s 0>')
+        iago = self.example_user('iago')
+        denmark = get_stream("Denmark", iago.realm)
+        denmark_recipient = Recipient.objects.get(type=2, type_id=denmark.id)
+        msg = Message(sender=iago, recipient=denmark_recipient)
         msg.set_topic_name("#444")
 
         flush_per_request_caches()
@@ -977,7 +981,11 @@ class BugdownTest(ZulipTestCase):
 
         RealmFilter(realm=realm, pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
                     url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
-        msg = Message(sender=self.example_user('hamlet'))
+
+        hamlet = self.example_user('hamlet')
+        denmark = get_stream("Denmark", hamlet.realm)
+        denmark_recipient = Recipient.objects.get(type=2, type_id=denmark.id)
+        msg = Message(sender=hamlet, recipient=denmark_recipient)
 
         content = '#ZUL-123 was fixed and code was deployed to production, also #zul-321 was deployed to staging'
         converted = bugdown.convert(content, message_realm=realm, message=msg)
@@ -1032,7 +1040,81 @@ class BugdownTest(ZulipTestCase):
         zulip_filters = all_filters[realm.id]
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(zulip_filters[0],
-                         (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id))
+                         (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id, 0))
+
+    def test_stream_patterns(self) -> None:
+        realm = get_realm('zulip')
+        iago = self.example_user('iago')
+        denmark = get_stream("Denmark", iago.realm)
+        denmark_recipient = Recipient.objects.get(type=2, type_id=denmark.id)
+        msg = Message(sender=iago, recipient=denmark_recipient)
+        msg.set_topic_name("Stream Linkifier")
+
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string,
+                                   stream_id=denmark.id)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s '
+            + str(denmark.id) + '>')
+
+        flush_per_request_caches()
+
+        content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
+        converted = bugdown.convert(content, message_realm=realm, message=msg)
+        self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
+
+        scotland = get_stream("Scotland", iago.realm)
+        scotland_recipient = Recipient.objects.get(type=2, type_id=scotland.id)
+        msg = Message(sender=iago, recipient=scotland_recipient)
+        converted = bugdown.convert(content, message_realm=realm, message=msg)
+        self.assertEqual(converted, '<p>We should fix #224 and #115, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
+
+    def test_realm_and_stream_patterns(self) -> None:
+        realm = get_realm('zulip')
+        iago = self.example_user('iago')
+        denmark = get_stream("Denmark", iago.realm)
+        denmark_recipient = Recipient.objects.get(type=2, type_id=denmark.id)
+        msg = Message(sender=iago, recipient=denmark_recipient)
+        msg.set_topic_name("Stream Linkifier")
+
+        url_format_string = r"https://realm.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string,
+                                   stream_id=0)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://realm.zulip.net/ticket/%(id)s 0>')
+
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string,
+                                   stream_id=denmark.id)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s '
+            + str(denmark.id) + '>')
+        flush_per_request_caches()
+
+        content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
+        converted = bugdown.convert(content, message_realm=realm, message=msg)
+        self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
+
+        scotland = get_stream("Scotland", iago.realm)
+        scotland_recipient = Recipient.objects.get(type=2, type_id=scotland.id)
+        msg = Message(sender=iago, recipient=scotland_recipient)
+        converted = bugdown.convert(content, message_realm=realm, message=msg)
+        self.assertEqual(converted, '<p>We should fix <a href="https://realm.zulip.net/ticket/224" target="_blank" title="https://realm.zulip.net/ticket/224">#224</a> and <a href="https://realm.zulip.net/ticket/115" target="_blank" title="https://realm.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
 
     def test_flush_realm_filter(self) -> None:
         realm = get_realm('zulip')
@@ -1051,7 +1133,8 @@ class BugdownTest(ZulipTestCase):
         def save_new_realm_filter() -> None:
             realm_filter = RealmFilter(realm=realm,
                                        pattern=r"whatever",
-                                       url_format_string='whatever')
+                                       url_format_string='whatever',
+                                       stream_id=0)
             realm_filter.save()
 
         # start fresh for our realm
@@ -1557,7 +1640,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.zulip.net/ticket/%(id)s>')
+            ' https://trac.zulip.net/ticket/%(id)s 0>')
         # Create a user that potentially interferes with the pattern.
         test_user = create_user(email='atomic@example.com',
                                 password='whatever',
@@ -1614,7 +1697,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.zulip.net/ticket/%(id)s>')
+            ' https://trac.zulip.net/ticket/%(id)s 0>')
         # Create a user-group that potentially interferes with the pattern.
         user_id = user_profile.id
         user_group = self.create_user_group_for_test('support #123')
@@ -1756,7 +1839,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.zulip.net/ticket/%(id)s>')
+            ' https://trac.zulip.net/ticket/%(id)s 0>')
         # Create a topic link that potentially interferes with the pattern.
         denmark = get_stream('Denmark', realm)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -1824,7 +1907,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.zulip.net/ticket/%(id)s>')
+            ' https://trac.zulip.net/ticket/%(id)s 0>')
         # Create a stream that potentially interferes with the pattern.
         stream = Stream.objects.create(name=u'Stream #1234', realm=realm)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))

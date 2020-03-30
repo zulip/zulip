@@ -2299,6 +2299,17 @@ paths:
           type: string
         example: https://github.com/zulip/zulip/issues/%(id)s
         required: true
+      - name: stream_name
+        in: query
+        description: If it is '', the filter is applied for the entire realm.
+          If it is not '', the url_format_string for the pattern will be applied
+          only in the specific stream. There can be multiple objects with
+          different stream_id and streams are given higher priority over the
+          entire realm formatting.
+        schema:
+          type: string
+        example: Denmark
+        required: false
       responses:
         '200':
           description: Success.

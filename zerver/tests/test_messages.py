@@ -1489,7 +1489,7 @@ class MessageDictTest(ZulipTestCase):
         self.assertEqual(
             realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.zulip.net/ticket/%(id)s>')
+            ' https://trac.zulip.net/ticket/%(id)s 0>')
 
         def get_message(sender: UserProfile) -> Message:
             msg_id = self.send_stream_message(sender, 'Denmark', 'hello world', topic_name,

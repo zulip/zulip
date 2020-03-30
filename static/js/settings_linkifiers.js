@@ -31,6 +31,7 @@ exports.populate_filters = function (filters_data) {
                     pattern: filter[0],
                     url_format_string: filter[1],
                     id: filter[2],
+                    stream_name: stream_data.maybe_get_stream_name(filter[3]),
                 },
                 can_modify: page_params.is_admin,
             });
@@ -65,6 +66,10 @@ exports.populate_filters = function (filters_data) {
         return compare_by_index(a, b, 1);
     });
 
+    filters_list.add_sort_function("name", function (a, b) {
+        return compare_by_index(a, b, 3);
+    });
+
     const active_col = $('.admin_filters_table th.active').expectOne();
     filters_list.sort(
         active_col.data('sort'),
@@ -90,6 +95,17 @@ exports.build_page = function () {
     // Populate filters table
     exports.populate_filters(page_params.realm_filters);
 
+    $('#filter_stream_name').typeahead({
+        items: 5,
+        fixed: true,
+        source: function () {
+            return stream_data.subscribed_streams();
+        },
+        highlighter: function (item) {
+            return typeahead_helper.render_typeahead_item({ primary: item });
+        },
+    });
+
     $('.admin_filters_table').on('click', '.delete', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -113,13 +129,14 @@ exports.build_page = function () {
         const filter_status = $('#admin-filter-status');
         const pattern_status = $('#admin-filter-pattern-status');
         const format_status = $('#admin-filter-format-status');
+        const name_status = $('#admin-filter-name-status');
         const add_filter_button = $('.new-filter-form button');
         add_filter_button.attr("disabled", "disabled");
         filter_status.hide();
         pattern_status.hide();
         format_status.hide();
+        name_status.hide();
         const filter = {};
-
         for (const obj of $(this).serializeArray()) {
             filter[obj.name] = obj.value;
         }
@@ -130,6 +147,7 @@ exports.build_page = function () {
             success: function (data) {
                 $('#filter_pattern').val('');
                 $('#filter_format_string').val('');
+                $('#filter_stream_name').val('');
                 add_filter_button.removeAttr("disabled");
                 filter.id = data.id;
                 ui_report.success(i18n.t("Custom filter added!"), filter_status);
@@ -144,6 +162,10 @@ exports.build_page = function () {
                 if (errors.url_format_string !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.url_format_string});
                     ui_report.error(i18n.t("Failed"), xhr, format_status);
+                }
+                if (errors.stream_name !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.stream_name});
+                    ui_report.error(i18n.t("Failed"), xhr, name_status);
                 }
                 if (errors.__all__ !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.__all__});
