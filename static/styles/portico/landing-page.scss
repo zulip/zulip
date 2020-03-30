@@ -444,21 +444,11 @@ nav ul li.active::after {
     color: hsl(219, 76%, 93%);
 }
 
-.portico-landing.features-app section.keyboard-shortcuts::after {
-    content: " ";
-    display: block;
-
-    position: absolute;
-    top: -169px;
-    right: 0;
+.portico-landing.features-app section.keyboard-shortcuts img.overflow-wave {
     width: 685px;
-    height: 170px;
-
-    background-image: url(/static/images/landing-page/wave.png);
-    background-size: 100% auto;
-    background-repeat: no-repeat;
-
-    z-index: 1;
+    right: 0px;
+    top: -168px;
+    position: absolute;
 }
 
 .portico-landing.features-app section.keyboard-shortcuts h3 {
@@ -478,7 +468,7 @@ nav ul li.active::after {
     color: hsl(170, 52%, 70%);
 }
 
-.portico-landing.features-app section.keyboard-shortcuts img {
+.portico-landing.features-app section.keyboard-shortcuts img.image {
     width: 600px;
     margin-left: 100px;
 }
@@ -3559,6 +3549,10 @@ nav ul li.active::after {
     .portico-landing.hello .integrations .integration-icons .group {
         margin: 10px 16px 0 16px;
     }
+
+    .portico-landing.features-app section.keyboard-shortcuts img.overflow-wave {
+        top: -100px;
+    }
 }
 
 @media (max-width: 550px) {
@@ -3724,12 +3718,25 @@ nav ul li.active::after {
         width: 60px;
     }
 
-    .portico-landing.features-app section.keyboard-shortcuts::after {
-        left: 0;
-    }
-
     .portico-landing.integrations .integration-categories-dropdown {
         width: 323px;
+    }
+
+    .portico-landing.features-app section.keyboard-shortcuts img.overflow-wave {
+        top: -92px;
+    }
+}
+
+@media (max-width: 360px) {
+    .portico-landing.features-app section.keyboard-shortcuts img.overflow-wave {
+        top: -88px;
+    }
+}
+
+/* For iPhone 5/SE device */
+@media (max-width: 320px) {
+    .portico-landing.features-app section.keyboard-shortcuts img.overflow-wave {
+        top: -78px;
     }
 }
 
