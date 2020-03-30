@@ -16,3 +16,15 @@ You can also upload a custom profile picture to Zulip.
 2. Under **Profile picture**, click **Upload new profile picture** and choose an image to upload.
 
 {end_tabs}
+
+### Set profile picture back to gravatar
+
+{start_tabs}
+
+{settings_tab|your-account}
+
+2. Under **Profile picture**, click on the **(X)** icon in the top
+right corner of the profile picture.  This will remove your current
+profile picture, reverting to the Gravatar default.
+
+{end_tabs}
