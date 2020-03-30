@@ -122,6 +122,7 @@
 * [Restrict private messages](/help/restrict-private-messages)
 * [Restrict user group management](/help/restrict-user-group-management)
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
+* [Restrict profile picture changes](/help/restrict-profile-picture-changes)
 * [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
 * [Block image and link previews](/help/allow-image-link-previews)
 * [Disable message edit history](/help/disable-message-edit-history)
