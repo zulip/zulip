@@ -86,6 +86,9 @@ exports.update_org_settings_menu_item = function () {
 exports.initialize = function () {
     exports.update_org_settings_menu_item();
 
+    $('#gear-menu').on('click', function () {
+        popovers.hide_all();
+    });
     $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
         const old_tab = $(e.relatedTarget).attr('href');
