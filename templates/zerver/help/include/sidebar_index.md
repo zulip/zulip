@@ -124,6 +124,7 @@
 * [Create and manage user groups](/help/change-who-can-create-and-manage-user-groups)
 * [Block image and link previews](/help/allow-image-link-previews)
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
+* [Restrict profile picture change](/help/restrict-profile-picture-change)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Manage editing of old messages](/help/configure-message-editing-and-deletion)
 * [Hide message content in emails](/help/hide-message-content-in-emails)
