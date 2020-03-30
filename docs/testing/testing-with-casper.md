@@ -34,6 +34,12 @@ trying to use the Casper debugging tools are:
 * Are there any backend-errors (printed inline) while running the tests?
 * You can check the screenshots of what the UI looked like at the time
   of failures at `var/casper/casper-failure*.png`.
+* If you've experienced a timeout error, it could just be a flake. This
+  happens sometimes if you laptop has heated up due to overload and becomes
+  slow. If the failing test is unrelated, there's a good chance that it is a
+  flake. Running the failed test separately again will let you know about
+  the status of the error. These flakes are rare and won't occur over multiple
+  iterations of testing.
 
 ### Print debugging
 
