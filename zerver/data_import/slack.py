@@ -158,7 +158,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
             user_id = user_id_count
 
         email = get_user_email(user, domain_name)
-        # ref: https://chat.zulip.org/help/set-your-profile-picture
+        # ref: https://chat.zulip.org/help/change-your-profile-picture
         avatar_url = build_avatar_url(slack_user_id, user['team_id'],
                                       user['profile']['avatar_hash'])
         build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
