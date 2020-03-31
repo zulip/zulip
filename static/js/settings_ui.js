@@ -13,18 +13,28 @@ exports.strings = {
 
 // Generic function for informing users about changes to the settings
 // UI.  Intended to replace the old system that was built around
-// direct calls to `ui_report`.
+// direct calls to `ui_report`. The opts paremeter with_button decides
+// whether a spinner or a save_discard_button is to be used to display
+// the status messages.
 exports.do_settings_change = function (request_method, url, data, status_element, opts) {
     let success_msg;
     let success_continuation;
     let error_continuation;
     let remove_after;
     const appear_after = 500;
+    let with_button;
+    let spinner;
+    let save_button_save_state;
+    let save_button_div;
+    let discard_button;
+    let save_btn;
+    let textEl;
 
     if (opts !== undefined) {
         success_msg = opts.success_msg;
         success_continuation = opts.success_continuation;
         error_continuation = opts.error_continuation;
+        with_button = opts.with_button;
         if (opts.sticky) {
             remove_after = null;
         }
@@ -33,19 +43,37 @@ exports.do_settings_change = function (request_method, url, data, status_element
         success_msg = exports.strings.success;
     }
 
-    remove_after = 1000;
-    const spinner = $(status_element).expectOne();
-    spinner.fadeTo(0, 1);
-    loading.make_indicator(spinner, {text: exports.strings.saving});
+    if (with_button) {
+        save_button_save_state = settings_org.change_save_button_state;
+        save_button_div = $(status_element).find(".save-button-controls");
+        discard_button = $(status_element).find(".discard-button");
+        save_btn = $(status_element).find(".save-button");
+        textEl = save_btn.find('.icon-button-text');
+        discard_button.addClass("hide");
+        save_button_div.removeClass('hide').addClass('show').fadeIn(300);
+        save_button_save_state(save_button_div, "saving");
+    } else {
+        remove_after = 1000;
+        spinner = $(status_element).expectOne();
+        spinner.fadeTo(0, 1);
+        loading.make_indicator(spinner, {text: exports.strings.saving});
+    }
 
     request_method({
         url: url,
         data: data,
         success: function (reponse_data) {
-            setTimeout(function () {
-                ui_report.success(success_msg, spinner, remove_after);
-                exports.display_checkmark(spinner);
-            }, appear_after);
+            if (with_button) {
+                save_button_save_state(save_button_div, "succeeded");
+                if (opts !== undefined && opts.success_msg) {
+                    textEl.text(opts.success_msg).fadeIn(0);
+                }
+            } else {
+                setTimeout(function () {
+                    ui_report.success(success_msg, spinner, remove_after);
+                    exports.display_checkmark(spinner);
+                }, appear_after);
+            }
             if (success_continuation !== undefined) {
                 if (opts !== undefined && opts.success_continuation_arg) {
                     success_continuation(opts.success_continuation_arg);
@@ -55,11 +83,19 @@ exports.do_settings_change = function (request_method, url, data, status_element
             }
         },
         error: function (xhr) {
-            if (opts !== undefined && opts.error_msg_element) {
-                loading.destroy_indicator(spinner);
-                ui_report.error(exports.strings.failure, xhr, opts.error_msg_element);
+            if (with_button) {
+                save_button_save_state(save_button_div, "failed");
+                save_button_div.addClass("hide");
+                if (opts !== undefined && opts.error_msg_element) {
+                    ui_report.error(exports.strings.failure, xhr, opts.error_msg_element);
+                }
             } else {
-                ui_report.error(exports.strings.failure, xhr, spinner);
+                if (opts !== undefined && opts.error_msg_element) {
+                    loading.destroy_indicator(spinner);
+                    ui_report.error(exports.strings.failure, xhr, opts.error_msg_element);
+                } else {
+                    ui_report.error(exports.strings.failure, xhr, spinner);
+                }
             }
             if (error_continuation !== undefined) {
                 error_continuation(xhr);
