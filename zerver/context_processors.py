@@ -26,13 +26,22 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
     """Common context used for things like outgoing emails that don't
     have a request.
     """
+    context = common_context_unauthed(user.realm)
+    context.update({
+        'user_name': user.full_name
+    })
+    return context
+
+def common_context_unauthed(realm: Realm) -> Dict[str, Any]:
+    """Common context used for things like outgoing emails that don't
+    have a request and which are not yet authenticated.
+    """
     return {
-        'realm_uri': user.realm.uri,
-        'realm_name': user.realm.name,
+        'realm_uri': realm.uri,
+        'realm_name': realm.name,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-        'external_host': settings.EXTERNAL_HOST,
-        'user_name': user.full_name,
+        'external_host': settings.EXTERNAL_HOST
     }
 
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
