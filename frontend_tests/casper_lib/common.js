@@ -24,6 +24,20 @@ exports.init_viewport = function () {
     casper.options.viewportSize = {width: 1280, height: 1024};
 };
 
+// This function should always be enclosed within a then() otherwise
+// it might not exist on casper object.
+exports.wait_for_text = function (selector, text, then, onTimeout, timeout) {
+    casper.waitForSelector(selector, function _then() {
+        casper.waitFor(function _check() {
+            var content = casper.fetchText(selector);
+            if (util.isRegExp(text)) {
+                return text.test(content);
+            }
+            return content.indexOf(text) !== -1;
+        }, then, onTimeout, timeout);
+    }, onTimeout, timeout);
+};
+
 exports.initialize_casper = function () {
     if (casper.zulip_initialized !== undefined) {
         return;
@@ -65,21 +79,6 @@ exports.initialize_casper = function () {
     casper.on('load.finished', function () {
         casper.test.info('page load finished');
     });
-
-    // This function should always be enclosed within a then() otherwise
-    // it might not exist on casper object.
-    casper.waitForSelectorText = function (selector, text, then, onTimeout, timeout) {
-        this.waitForSelector(selector, function _then() {
-            this.waitFor(function _check() {
-                var content = this.fetchText(selector);
-                if (util.isRegExp(text)) {
-                    return text.test(content);
-                }
-                return content.indexOf(text) !== -1;
-            }, then, onTimeout, timeout);
-        }, onTimeout, timeout);
-        return this;
-    };
 
     casper.evaluate(function () {
         window.localStorage.clear();

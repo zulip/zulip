@@ -45,7 +45,7 @@ common.then_send_message('stream', {
 });
 
 casper.then(function () {
-    casper.waitForSelectorText("#zhome .message_row", "test star");
+    common.wait_for_text("#zhome .message_row", "test star");
 });
 
 casper.then(function () {
