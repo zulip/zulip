@@ -108,10 +108,6 @@ p {
     float: right;
 }
 
-.alert {
-    display: none;
-}
-
 .button {
     font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
     border: none;
@@ -183,6 +179,10 @@ p {
     height: 370px;
     width: 750px;
     position: relative;
+}
+
+#id_stats_errors {
+    display: none;
 }
 
 #users_hover_info,
