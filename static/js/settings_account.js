@@ -467,7 +467,10 @@ exports.set_up = function () {
             $('.email_change_container').find("input[name='email']").val(email);
         }
     });
-
+    if (people.has_only_one_admin() && page_params.is_admin) {
+        $("#user_deactivate_account_button").attr('disabled', 'disabled');
+        $("#user_deactivate_account_button").attr('title', "Cannot deactivate the only organization administrator.");
+    }
     $("#user_deactivate_account_button").on('click', function (e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.

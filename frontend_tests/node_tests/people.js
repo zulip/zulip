@@ -32,7 +32,16 @@ const isaac = {
     email: 'isaac@example.com',
     delivery_email: 'isaac-delivery@example.com',
     user_id: 32,
+    is_admin: true,
     full_name: 'Isaac Newton',
+};
+
+const zoe = {
+    email: 'zoe@example.com',
+    delivery_email: 'zoe-delivery@example.com',
+    user_id: 33,
+    is_admin: false,
+    full_name: 'zoe',
 };
 
 function initialize() {
@@ -159,6 +168,16 @@ run_test('basics', () => {
     assert.deepEqual(
         active_humans.sort((p) => p.user_id),
         [me, isaac]);
+});
+
+run_test('has_only_one_admin', () => {
+    people.add(isaac);
+    people.add(zoe);
+    let admin = people.has_only_one_admin();
+    assert.equal(admin, true);
+    zoe.is_admin = true;
+    admin = people.has_only_one_admin();
+    assert.equal(admin, false);
 });
 
 run_test('pm_lookup_key', () => {

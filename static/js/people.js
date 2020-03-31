@@ -690,6 +690,20 @@ exports.get_realm_users = function () {
     return Array.from(active_user_dict.values());
 };
 
+exports.get_realm_admins = function () {
+    const admins = [];
+    for (const user of active_user_dict.values()) {
+        if (!user.is_bot && user.is_admin) {
+            admins.push(user);
+        }
+    }
+    return admins;
+};
+
+exports.has_only_one_admin = function () {
+    return exports.get_realm_admins().length === 1;
+};
+
 exports.get_active_humans = function () {
     const humans = [];
 
