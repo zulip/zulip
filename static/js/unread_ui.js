@@ -35,10 +35,6 @@ exports.set_count_toggle_button = function (elem, count) {
 };
 
 exports.update_unread_counts = function () {
-    if (unread.suppress_unread_counts) {
-        return;
-    }
-
     // Pure computation:
     const res = unread.get_counts();
 
@@ -59,11 +55,6 @@ exports.update_unread_counts = function () {
 
 };
 
-exports.enable = function enable() {
-    unread.set_suppress_unread_counts(false);
-    exports.update_unread_counts();
-};
-
 exports.should_display_bankruptcy_banner = function () {
     // Until we've handled possibly declaring bankruptcy, don't show
     // unread counts since they only consider messages that are loaded
@@ -72,7 +63,6 @@ exports.should_display_bankruptcy_banner = function () {
 
     if (!page_params.furthest_read_time) {
         // We've never read a message.
-        exports.enable();
         return false;
     }
 
@@ -82,12 +72,11 @@ exports.should_display_bankruptcy_banner = function () {
         return true;
     }
 
-    exports.enable();
     return false;
 };
 
 exports.initialize = function () {
-    exports.enable();
+    exports.update_unread_counts();
 };
 
 window.unread_ui = exports;
