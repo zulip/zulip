@@ -9,10 +9,8 @@ function timestamp() {
 // The timestamp of the last message send or get_events result.
 var last_send_or_update = -1;
 
-function log_in(credentials) {
-    if (credentials === undefined) {
-        credentials = test_credentials.default_user;
-    }
+function log_in() {
+    var credentials = test_credentials.default_user;
 
     casper.test.info('Logging in');
     casper.fill('form[action^="/accounts/login/"]', {
@@ -93,18 +91,18 @@ exports.initialize_casper = function () {
     });
 };
 
-exports.then_log_in = function (credentials) {
+exports.then_log_in = function () {
     casper.then(function () {
-        log_in(credentials);
+        log_in();
     });
 };
 
-exports.start_and_log_in = function (credentials, viewport) {
+exports.start_and_log_in = function () {
     var log_in_url = "http://zulip.zulipdev.com:9981/accounts/login/";
     exports.init_viewport();
     casper.start(log_in_url, function () {
-        exports.initialize_casper(viewport);
-        log_in(credentials);
+        exports.initialize_casper();
+        log_in();
     });
 };
 
