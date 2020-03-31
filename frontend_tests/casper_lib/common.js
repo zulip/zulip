@@ -65,10 +65,7 @@ exports.initialize_casper = function () {
     });
 
     casper.on('load.finished', function () {
-        casper.evaluateOrDie(function () {
-            $(document).trigger($.Event('phantom_page_loaded'));
-            return true;
-        });
+        casper.test.info('page load finished');
     });
 
     // This function should always be enclosed within a then() otherwise
