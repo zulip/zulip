@@ -2001,6 +2001,30 @@ class GitHubAuthBackendTest(SocialAuthBase):
             mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
                                                  " emails associated with the account")
 
+    def test_github_unverified_email_with_existing_account(self) -> None:
+        # check if a user is denied to login if the user manages to
+        # send an unverified email that has an existing account in
+        # organisation through `email` GET parameter.
+        account_data_dict = dict(email='hamlet@zulip.com', name=self.name)
+        email_data = [
+            dict(email='iago@zulip.com',
+                 verified=True,),
+            dict(email='hamlet@zulip.com',
+                 verified=False),
+            dict(email="aaron@zulip.com",
+                 verified=True,
+                 primary=True)
+        ]
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.social_auth_test(account_data_dict,
+                                           subdomain='zulip',
+                                           expect_choose_email_screen=True,
+                                           email_data=email_data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/login/")
+            mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
+                                                 " emails associated with the account")
+
 class GitLabAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
 
