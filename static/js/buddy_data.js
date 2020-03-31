@@ -134,9 +134,6 @@ exports.matches_filter = function (filter_text, user_id) {
 };
 
 function get_num_unread(user_id) {
-    if (unread.suppress_unread_counts) {
-        return 0;
-    }
     return unread.num_unread_for_person(user_id.toString());
 }
 

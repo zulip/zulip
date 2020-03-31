@@ -678,7 +678,6 @@ run_test('insert_unfiltered_user_with_filter', () => {
 
 run_test('realm_presence_disabled', () => {
     page_params.realm_presence_disabled = true;
-    unread.set_suppress_unread_counts(false);
 
     activity.redraw_user();
     activity.build_user_sidebar();

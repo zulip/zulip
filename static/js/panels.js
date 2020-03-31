@@ -94,10 +94,6 @@ exports.initialize = function () {
         resize_app();
     });
 
-    $("#bankruptcy").on("hide", function () {
-        unread_ui.enable();
-    });
-
     $("#panels").on("click", ".alert .close, .alert .exit", function (e) {
         e.stopPropagation();
         const $process = $(e.target).closest("[data-process]");
