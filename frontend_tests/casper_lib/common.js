@@ -90,12 +90,6 @@ exports.initialize_casper = function () {
     });
 };
 
-exports.then_log_in = function () {
-    casper.then(function () {
-        log_in();
-    });
-};
-
 exports.start_and_log_in = function () {
     var log_in_url = "http://zulip.zulipdev.com:9981/accounts/login/";
     exports.init_viewport();
@@ -110,6 +104,12 @@ exports.then_click = function (selector) {
         casper.waitUntilVisible(selector, function () {
             casper.click(selector);
         });
+    });
+};
+
+exports.then_log_in = function () {
+    casper.then(function () {
+        log_in();
     });
 };
 
