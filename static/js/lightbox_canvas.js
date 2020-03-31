@@ -54,6 +54,15 @@ const funcs = {
         }
     },
 
+    // this function toggles the display of switch images widget.
+    switchImageWidget: function (meta) {
+        if (meta.zoom === 1) {
+            $(".center").show();
+        } else {
+            $(".center").hide();
+        }
+    },
+
     // this is a function given a canvas that attaches all of the events
     // required to pan and zoom.
     attachEvents: function (canvas, context, meta) {
@@ -117,7 +126,7 @@ const funcs = {
             );
 
             funcs.setZoom(meta, zoom);
-            funcs.displayImage(canvas, context, meta);
+            funcs.displayCanvas(canvas, context, meta);
 
             return false;
         });
@@ -147,7 +156,7 @@ const funcs = {
                 meta.coords.y += percentMovement.y * 2 / meta.zoom;
 
                 // redraw the image.
-                funcs.displayImage(canvas, context, meta);
+                funcs.displayCanvas(canvas, context, meta);
             }
         });
 
@@ -164,10 +173,10 @@ const funcs = {
             }
             if (e.key === "Z" || e.key === '+') {
                 funcs.setZoom(meta, '+');
-                funcs.displayImage(canvas, context, meta);
+                funcs.displayCanvas(canvas, context, meta);
             } else if (e.key === "z" || e.key === '-') {
                 funcs.setZoom(meta, '-');
-                funcs.displayImage(canvas, context, meta);
+                funcs.displayCanvas(canvas, context, meta);
             } else if (e.key === 'v') {
                 overlays.close_overlay('lightbox');
             }
@@ -175,10 +184,10 @@ const funcs = {
             // and zoom mode
             if (e.key === "ArrowUp") {
                 funcs.moveImage(meta, 'up');
-                funcs.displayImage(canvas, context, meta);
+                funcs.displayCanvas(canvas, context, meta);
             } else if (e.key === "ArrowDown") {
                 funcs.moveImage(meta, 'down');
-                funcs.displayImage(canvas, context, meta);
+                funcs.displayCanvas(canvas, context, meta);
             } else if (e.key === "ArrowLeft") {
                 // Check that panning does not do anything. If it does not do anything, then
                 // it switches the images.
@@ -186,7 +195,7 @@ const funcs = {
                     lightbox.prev();
                 } else {
                     funcs.moveImage(meta, 'left');
-                    funcs.displayImage(canvas, context, meta);
+                    funcs.displayCanvas(canvas, context, meta);
                 }
             } else if (e.key === "ArrowRight") {
                 // Check that panning does not do anything. If it does not do anything, then
@@ -195,7 +204,7 @@ const funcs = {
                     lightbox.next();
                 } else {
                     funcs.moveImage(meta, 'right');
-                    funcs.displayImage(canvas, context, meta);
+                    funcs.displayCanvas(canvas, context, meta);
                 }
             }
             e.preventDefault();
@@ -229,7 +238,7 @@ const funcs = {
             meta: meta,
             callback: function () {
                 funcs.sizeCanvas(canvas, meta);
-                funcs.displayImage(canvas, context, meta);
+                funcs.displayCanvas(canvas, context, meta);
             },
         });
     },
@@ -259,6 +268,13 @@ const funcs = {
         context.imageSmoothingEnabled = false;
 
         context.drawImage(meta.image, x, y, w, h);
+    },
+
+    // this function updates the image as well as toggle the display of switch
+    // images widget
+    displayCanvas: function (canvas, context, meta) {
+        funcs.displayImage(canvas, context, meta);
+        funcs.switchImageWidget(meta);
     },
 
     // the `sizeCanvas` method figures out the appropriate bounding box for
@@ -333,7 +349,7 @@ const LightboxCanvas = function (el) {
         self.meta.ratio = funcs.imageRatio(this);
 
         funcs.sizeCanvas(self.canvas, self.meta);
-        funcs.displayImage(self.canvas, self.context, self.meta);
+        funcs.displayCanvas(self.canvas, self.context, self.meta);
     };
 
     this.canvas.image = this.meta.image;
@@ -358,7 +374,7 @@ LightboxCanvas.prototype = {
 
     setZoom: function (zoom) {
         funcs.setZoom(this.meta, zoom);
-        funcs.displayImage(this.canvas, this.context, this.meta);
+        funcs.displayCanvas(this.canvas, this.context, this.meta);
     },
 
     resize: function (callback) {
