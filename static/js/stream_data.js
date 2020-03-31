@@ -795,7 +795,7 @@ exports.get_streams_for_settings_page = function () {
     return all_subs;
 };
 
-exports.sort_for_stream_settings = function (stream_ids) {
+exports.sort_for_stream_settings = function (stream_ids, order) {
     // TODO: We may want to simply use util.strcmp here,
     //       which uses Intl.Collator() when possible.
 
@@ -807,13 +807,49 @@ exports.sort_for_stream_settings = function (stream_ids) {
         return sub.name.toLocaleLowerCase();
     }
 
-    function by_stream_name(id_a, id_b) {
+    function weekly_traffic(stream_id) {
+        const sub = exports.get_sub_by_id(stream_id);
+        if (sub && sub.is_old_stream) {
+            return sub.stream_weekly_traffic;
+        }
+        // don't intersperse new streams with zero-traffic existing streams
+        return -1;
+    }
+
+    function by_stream_name(id_a, id_b)  {
         const stream_a_name = name(id_a);
         const stream_b_name = name(id_b);
         return String.prototype.localeCompare.call(stream_a_name, stream_b_name);
     }
 
-    stream_ids.sort(by_stream_name);
+    function by_subscriber_count(id_a, id_b) {
+        const out = exports.get_sub_by_id(id_b).subscribers.size
+            - exports.get_sub_by_id(id_a).subscribers.size;
+        if (out === 0) {
+            return by_stream_name(id_a, id_b);
+        }
+        return out;
+    }
+
+    function by_weekly_traffic(id_a, id_b) {
+        const out = weekly_traffic(id_b) - weekly_traffic(id_a);
+        if (out === 0) {
+            return by_stream_name(id_a, id_b);
+        }
+        return out;
+    }
+
+    const orders = {
+        "by-stream-name": by_stream_name,
+        "by-subscriber-count": by_subscriber_count,
+        "by-weekly-traffic": by_weekly_traffic,
+    };
+
+    if (typeof order === "undefined" || !orders.hasOwnProperty(order)) {
+        order = "by-stream-name";
+    }
+
+    stream_ids.sort(orders[order]);
 };
 
 exports.get_streams_for_admin = function () {

@@ -359,8 +359,8 @@ function get_stream_id_buckets(stream_ids, query) {
         }
     }
 
-    stream_data.sort_for_stream_settings(buckets.name);
-    stream_data.sort_for_stream_settings(buckets.desc);
+    stream_data.sort_for_stream_settings(buckets.name, query.sort_order);
+    stream_data.sort_for_stream_settings(buckets.desc, query.sort_order);
 
     return buckets;
 }
@@ -380,7 +380,7 @@ exports.populate_stream_settings_left_panel = function () {
 };
 
 // query is now an object rather than a string.
-// Query { input: String, subscribed_only: Boolean }
+// Query { input: String, subscribed_only: Boolean, sort_order: String }
 exports.filter_table = function (query) {
     exports.show_active_stream_in_left_panel();
 
@@ -442,6 +442,7 @@ exports.filter_table = function (query) {
 };
 
 let subscribed_only = true;
+let sort_order = "by-stream-name";
 
 exports.get_search_params = function () {
     const search_box = $("#add_new_subscription input[type='text']");
@@ -449,6 +450,7 @@ exports.get_search_params = function () {
     const params = {
         input: input,
         subscribed_only: subscribed_only,
+        sort_order: sort_order,
     };
     return params;
 };
@@ -488,6 +490,18 @@ exports.switch_stream_tab = function (tab_name) {
     stream_edit.setup_subscriptions_tab_hash(tab_name);
 };
 
+exports.sort_toggler = undefined;
+exports.switch_stream_sort = function (tab_name) {
+    if (tab_name === "by-stream-name"
+        || tab_name === "by-subscriber-count"
+        || tab_name === "by-weekly-traffic") {
+        sort_order = tab_name;
+    } else {
+        sort_order = "by-stream-name";
+    }
+    exports.actually_filter_streams();
+};
+
 exports.setup_page = function (callback) {
     // We should strongly consider only setting up the page once,
     // but I am writing these comments write before a big release,
@@ -503,6 +517,20 @@ exports.setup_page = function (callback) {
     // continue the strategy that we re-render everything from scratch.
     // Also, we'll always go back to the "Subscribed" tab.
     function initialize_components() {
+        // Sort by name by default when opening "Manage streams".
+        sort_order = "by-stream-name";
+        exports.sort_toggler = components.toggle({
+            values: [
+                { label: `<i class="fa fa-sort-alpha-asc" title="${i18n.t("Sort by name")}"></i>`, key: "by-stream-name" },
+                { label: `<i class="fa fa-user-o" title="${i18n.t("Sort by number of subscribers")}"></i>`, key: "by-subscriber-count" },
+                { label: `<i class="fa fa-bar-chart" title="${i18n.t("Sort by estimated weekly traffic")}"></i>`, key: "by-weekly-traffic" },
+            ],
+            callback: function (value, key) {
+                exports.switch_stream_sort(key);
+            },
+        });
+        $("#subscriptions_table .search-container").prepend(exports.sort_toggler.get());
+
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Manage streams".
         subscribed_only = true;
