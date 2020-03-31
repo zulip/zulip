@@ -119,6 +119,10 @@ class FencedBlockPreprocessorTest(TestCase):
             '```c#',
             'weirdchar()',
             '```',
+            '',
+            '``` none',
+            'no-highlight()',
+            '```',
             ''
         ]
         expected = [
@@ -132,6 +136,10 @@ class FencedBlockPreprocessorTest(TestCase):
             '',
             '',
             '**c#:weirdchar()**',
+            '',
+            '',
+            '',
+            '**:no-highlight()**',
             '',
             ''
         ]
