@@ -5,6 +5,11 @@
 <div class="app portico-page">
 
     <div class="page-content">
+        {% if not analytics_ready %}
+        <div class="alert alert-info">
+            It may take upto a day since organization creation for the analytics data to be fully populated.
+        </div>
+        {% endif %}
         <div id="id_stats_errors" class="alert alert-error"></div>
         <div class="center-charts">
             <h1 class="analytics-page-header">{% trans %}Zulip analytics for {{ target_name }}{% endtrans %}</h1>
