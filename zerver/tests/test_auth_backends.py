@@ -707,6 +707,16 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
         return url, headers
 
+    def social_auth_test_finish(self, result: HttpResponse,
+                                account_data_dict: Dict[str, str],
+                                expect_choose_email_screen: bool,
+                                **headers: Any) -> HttpResponse:
+        parsed_url = urllib.parse.urlparse(result.url)
+        csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
+        result = self.client_get(self.AUTH_FINISH_URL,
+                                 dict(state=csrf_state), **headers)
+        return result
+
     def social_auth_test(self, account_data_dict: Dict[str, str],
                          *, subdomain: Optional[str]=None,
                          mobile_flow_otp: Optional[str]=None,
@@ -765,34 +775,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             )
             self.register_extra_endpoints(requests_mock, account_data_dict, **extra_data)
 
-            parsed_url = urllib.parse.urlparse(result.url)
-            csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
-            result = self.client_get(self.AUTH_FINISH_URL,
-                                     dict(state=csrf_state), **headers)
-
-            if expect_choose_email_screen and result.status_code == 200:
-                # For authentication backends such as GitHub that
-                # successfully authenticate multiple email addresses,
-                # we'll have an additional screen where the user selects
-                # which email address to login using (this screen is a
-                # "partial" state of the python-social-auth pipeline).
-                #
-                # TODO: Generalize this testing code for use with other
-                # authentication backends; for now, we just assert that
-                # it's definitely the GitHub authentication backend.
-                if self.AUTH_FINISH_URL == "/complete/github/":
-                    self.assert_in_success_response(["Select account"], result)
-                    result = self.client_get(self.AUTH_FINISH_URL,
-                                             dict(state=csrf_state, email=account_data_dict['email']), **headers)
-            elif self.AUTH_FINISH_URL == "/complete/github/":
-                # We want to be explicit about when we expect a test to
-                # use the "choose email" screen, but of course we should
-                # only check for that screen with the GitHub backend,
-                # because this test code is shared with other
-                # authentication backends that structurally will never use
-                # that screen.
-                assert not expect_choose_email_screen
-
+            result = self.social_auth_test_finish(result, account_data_dict,
+                                                  expect_choose_email_screen,
+                                                  **headers)
         return result
 
     def test_social_auth_no_key(self) -> None:
@@ -1689,6 +1674,39 @@ class GitHubAuthBackendTest(SocialAuthBase):
     USER_INFO_URL = "https://api.github.com/user"
     AUTH_FINISH_URL = "/complete/github/"
     CONFIG_ERROR_URL = "/config-error/github"
+
+    def social_auth_test_finish(self, result: HttpResponse,
+                                account_data_dict: Dict[str, str],
+                                expect_choose_email_screen: bool,
+                                **headers: Any) -> HttpResponse:
+        parsed_url = urllib.parse.urlparse(result.url)
+        csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
+        result = self.client_get(self.AUTH_FINISH_URL,
+                                 dict(state=csrf_state), **headers)
+
+        if expect_choose_email_screen and result.status_code == 200:
+            # As GitHub authenticates multiple email addresses,
+            # we'll have an additional screen where the user selects
+            # which email address to login using (this screen is a
+            # "partial" state of the python-social-auth pipeline).
+            #
+            # TODO: Generalize this testing code for use with other
+            # authentication backends when a new authentacation backend
+            # that requires "choose email" screen; for now, we just assert
+            # that it's definitely the GitHub authentication backend.
+            if self.AUTH_FINISH_URL == "/complete/github/":
+                self.assert_in_success_response(["Select account"], result)
+                result = self.client_get(self.AUTH_FINISH_URL,
+                                         dict(state=csrf_state, email=account_data_dict['email']), **headers)
+        elif self.AUTH_FINISH_URL == "/complete/github/":
+            # We want to be explicit about when we expect a test to
+            # use the "choose email" screen, but of course we should
+            # only check for that screen with the GitHub backend,
+            # because this test code is shared with other
+            # authentication backends that structurally will never use
+            # that screen.
+            assert not expect_choose_email_screen
+        return result
 
     def register_extra_endpoints(self, requests_mock: responses.RequestsMock,
                                  account_data_dict: Dict[str, str],
