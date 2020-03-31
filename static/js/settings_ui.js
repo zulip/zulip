@@ -15,13 +15,10 @@ exports.strings = {
 // UI.  Intended to replace the old system that was built around
 // direct calls to `ui_report`.
 exports.do_settings_change = function (request_method, url, data, status_element, opts) {
-    const spinner = $(status_element).expectOne();
-    spinner.fadeTo(0, 1);
-    loading.make_indicator(spinner, {text: exports.strings.saving});
     let success_msg;
     let success_continuation;
     let error_continuation;
-    let remove_after = 1000;
+    let remove_after;
     const appear_after = 500;
 
     if (opts !== undefined) {
@@ -35,6 +32,11 @@ exports.do_settings_change = function (request_method, url, data, status_element
     if (success_msg === undefined) {
         success_msg = exports.strings.success;
     }
+
+    remove_after = 1000;
+    const spinner = $(status_element).expectOne();
+    spinner.fadeTo(0, 1);
+    loading.make_indicator(spinner, {text: exports.strings.saving});
 
     request_method({
         url: url,
