@@ -58,6 +58,8 @@ else:
     RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
     RemoteRealmCount = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
+MAX_TIME_FOR_FULL_ANALYTICS_GENERATION = timedelta(days=1, minutes=30)
+
 def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
                  for_installation: bool=False, remote: bool=False) -> HttpRequest:
     page_params = dict(
@@ -244,7 +246,8 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         if end is None:
             end = max(last_successful_fill(stat.property) or
                       datetime.min.replace(tzinfo=timezone_utc) for stat in stats)
-        if start > end:
+
+        if start > end and (timezone_now() - start > MAX_TIME_FOR_FULL_ANALYTICS_GENERATION):
             logging.warning("User from realm %s attempted to access /stats, but the computed "
                             "start time: %s (creation of realm or installation) is later than the computed "
                             "end time: %s (last successful analytics update). Is the "

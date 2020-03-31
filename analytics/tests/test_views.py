@@ -5,6 +5,7 @@ import mock
 from django.utils.timezone import utc
 from django.http import HttpResponse
 import ujson
+from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
@@ -286,12 +287,74 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_error_contains(result, 'Unknown chart name')
 
     def test_analytics_not_running(self) -> None:
-        # try to get data for a valid chart, but before we've put anything in the database
-        # (e.g. before update_analytics_counts has been run)
+        realm = get_realm("zulip")
+
+        self.assertEqual(FillState.objects.count(), 0)
+
+        realm.date_created = timezone_now() - timedelta(days=3)
+        realm.save(update_fields=["date_created"])
         with mock.patch('logging.warning'):
             result = self.client_get('/json/analytics/chart_data',
-                                     {'chart_name': 'number_of_humans'})
+                                     {'chart_name': 'messages_sent_over_time'})
         self.assert_json_error_contains(result, 'No analytics data available')
+
+        realm.date_created = timezone_now() - timedelta(days=1, hours=2)
+        realm.save(update_fields=["date_created"])
+        with mock.patch('logging.warning'):
+            result = self.client_get('/json/analytics/chart_data',
+                                     {'chart_name': 'messages_sent_over_time'})
+        self.assert_json_error_contains(result, 'No analytics data available')
+
+        realm.date_created = timezone_now() - timedelta(days=1, minutes=10)
+        realm.save(update_fields=["date_created"])
+        result = self.client_get('/json/analytics/chart_data',
+                                 {'chart_name': 'messages_sent_over_time'})
+        self.assert_json_success(result)
+
+        realm.date_created = timezone_now() - timedelta(hours=10)
+        realm.save(update_fields=["date_created"])
+        result = self.client_get('/json/analytics/chart_data',
+                                 {'chart_name': 'messages_sent_over_time'})
+        self.assert_json_success(result)
+
+        end_time = timezone_now() - timedelta(days=5)
+        fill_state = FillState.objects.create(property='messages_sent:is_bot:hour', end_time=end_time,
+                                              state=FillState.DONE)
+
+        realm.date_created = timezone_now() - timedelta(days=3)
+        realm.save(update_fields=["date_created"])
+        with mock.patch('logging.warning'):
+            result = self.client_get('/json/analytics/chart_data',
+                                     {'chart_name': 'messages_sent_over_time'})
+        self.assert_json_error_contains(result, 'No analytics data available')
+
+        realm.date_created = timezone_now() - timedelta(days=1, minutes=10)
+        realm.save(update_fields=["date_created"])
+        result = self.client_get('/json/analytics/chart_data',
+                                 {'chart_name': 'messages_sent_over_time'})
+        self.assert_json_success(result)
+
+        end_time = timezone_now() - timedelta(days=2)
+        fill_state.end_time = end_time
+        fill_state.save(update_fields=["end_time"])
+
+        realm.date_created = timezone_now() - timedelta(days=3)
+        realm.save(update_fields=["date_created"])
+        result = self.client_get('/json/analytics/chart_data',
+                                 {'chart_name': 'messages_sent_over_time'})
+        self.assert_json_success(result)
+
+        realm.date_created = timezone_now() - timedelta(days=1, hours=2)
+        realm.save(update_fields=["date_created"])
+        with mock.patch('logging.warning'):
+            result = self.client_get('/json/analytics/chart_data',
+                                     {'chart_name': 'messages_sent_over_time'})
+        self.assert_json_error_contains(result, 'No analytics data available')
+
+        realm.date_created = timezone_now() - timedelta(days=1, minutes=10)
+        realm.save(update_fields=["date_created"])
+        result = self.client_get('/json/analytics/chart_data', {'chart_name': 'messages_sent_over_time'})
+        self.assert_json_success(result)
 
     def test_get_chart_data_for_realm(self) -> None:
         user = self.example_user('hamlet')
