@@ -324,6 +324,8 @@ class Realm(models.Model):
     zoom_api_key = models.TextField(default="")
     zoom_api_secret = models.TextField(default="")
 
+    default_code_block_language = models.TextField(null=True, default=None)  # type: Optional[str]
+
     # Define the types of the various automatically managed properties
     property_types = dict(
         add_emoji_by_admins_only=bool,
@@ -360,6 +362,7 @@ class Realm(models.Model):
         digest_weekday=int,
         private_message_policy=int,
         user_group_edit_policy=int,
+        default_code_block_language=(str, type(None)),
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]

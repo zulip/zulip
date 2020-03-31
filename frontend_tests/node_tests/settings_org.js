@@ -789,6 +789,8 @@ run_test('set_up', () => {
 
     const stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
     settings_org.render_notifications_stream_ui = noop;
+    const stub_language_render = settings_org.default_code_language_widget.render;
+    settings_org.default_code_language_widget.render = noop;
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
     $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limit parent>'));
     $("#message_content_in_email_notifications_label").set_parent($.create('<stub in-content setting checkbox>'));
@@ -826,6 +828,7 @@ run_test('set_up', () => {
     test_discard_changes_button(discard_changes);
 
     settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
+    settings_org.default_code_language_widget.render = stub_language_render;
 });
 
 run_test('test get_organization_settings_options', () => {

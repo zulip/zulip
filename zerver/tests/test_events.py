@@ -1626,7 +1626,8 @@ class EventsRegisterTest(ZulipTestCase):
             google_hangouts_domain=[u"zulip.com", u"zulip.org"],
             zoom_api_secret=[u"abc", u"xyz"],
             zoom_api_key=[u"abc", u"xyz"],
-            zoom_user_id=[u"example@example.com", u"example@example.org"]
+            zoom_user_id=[u"example@example.com", u"example@example.org"],
+            default_code_block_language=[u'python', u'javascript']
         )  # type: Dict[str, Any]
 
         vals = test_values.get(name)
@@ -1635,6 +1636,8 @@ class EventsRegisterTest(ZulipTestCase):
             validator = check_bool
             vals = bool_tests
         elif property_type is str:
+            validator = check_string
+        elif property_type == (str, type(None)):
             validator = check_string
         elif property_type is int:
             validator = check_int

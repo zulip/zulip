@@ -1,0 +1,21 @@
+<div class="input-group" id="realm_default_code_block_language_widget">
+    <label for="realm_default_code_block_language" id="realm_default_code_block_language_label" class="inline-block">
+        {{ label }}
+        <span class="realm_default_code_block_language_setting dropup actual-dropdown-menu prop-element" id="id_realm_default_code_block_language"
+          name="realm_default_code_block_language" aria-labelledby="realm_default_code_block_language_label">
+            <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+                <span id="realm_default_code_block_language_name"></span>
+                <i class="fa fa-pencil"></i>
+            </button>
+            <ul class="dropdown-menu modal-bg" role="menu">
+                <li class="dropdown-search" role="presentation">
+                    <input class="no-input-change-detection" type="text" role="menuitem" placeholder="{{t 'Filter languages' }}" autofocus/>
+                </li>
+                <span class="dropdown-list-body" data-simplebar></span>
+            </ul>
+        </span>
+    </label>
+    {{#if is_admin }}
+    <a class="default_code_block_language_unset" id="default_code_block_language_unset">{{t "[Unset]" }}</a>
+    {{/if}}
+</div>

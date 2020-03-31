@@ -3,10 +3,103 @@ const render_settings_admin_auth_methods_list = require('../templates/settings/a
 const render_settings_admin_realm_domains_list = require("../templates/settings/admin_realm_domains_list.hbs");
 const render_settings_admin_realm_dropdown_stream_list = require("../templates/settings/admin_realm_dropdown_stream_list.hbs");
 const render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
+const pygments_data = require("../generated/pygments_data.json");
 
 const meta = {
     loaded: false,
 };
+
+exports.default_code_language_widget = (function (element_id) {
+
+    const render_language_list = require("../templates/settings/admin_realm_dropdown_code_languages_list.hbs");
+    const language_list = Object.keys(pygments_data.langs).map(x => {
+        return {
+            name: x,
+            priority: pygments_data.langs[x],
+        };
+    });
+
+    const setup = () => {
+        // populate the dropdown
+        const dropdown_list_body = $(`#${element_id} .dropdown-list-body`).expectOne();
+        const search_input = $(`#${element_id} .dropdown-search > input[type=text]`);
+        list_render.create(dropdown_list_body, language_list, {
+            name: "admin-realm-default-code-language-dropdown-list",
+            modifier: function (item) {
+                return render_language_list({ language: item });
+            },
+            filter: {
+                element: search_input,
+                predicate: function (item, value) {
+                    return item.name.toLowerCase().includes(value);
+                },
+            },
+        }).init();
+        $(`#${element_id} .dropdown-search`).click(function (e) {
+            e.stopPropagation();
+        });
+
+        $(`#${element_id} .dropdown-toggle`).click(function () {
+            search_input.val("").trigger("input");
+        });
+    };
+
+    const render = (name) => {
+        $(`#${element_id} #id_realm_default_code_block_language`).data("language", name);
+
+        const elem = $(`#${element_id} #realm_default_code_block_language_name`);
+
+        if (!name) {
+            elem.text(i18n.t("No language set"));
+            elem.addClass("text-warning");
+            elem.closest('.input-group').find('.default_code_block_language_unset').hide();
+            return;
+        }
+
+        // Happy path
+        elem.text(name);
+        elem.removeClass('text-warning');
+        elem.closest('.input-group').find('.default_code_block_language_unset').show();
+    };
+
+    const update = (lang, save_discard_widget_status_handler) => {
+        render(lang);
+        save_discard_widget_status_handler($('#org-other-settings'));
+    };
+
+    const register_event_handlers = (save_discard_widget_status_handler) => {
+        $(`#${element_id} .dropdown-list-body`).on("click keypress", ".lang_name", function (e) {
+            const setting_elem = $(this).closest(".realm_default_code_block_language_setting");
+            if (e.type === "keypress") {
+                if (e.which === 13) {
+                    setting_elem.find(".dropdown-menu").dropdown("toggle");
+                } else {
+                    return;
+                }
+            }
+            const lang = $(this).attr('data-language');
+            update(lang, save_discard_widget_status_handler);
+        });
+        $(`#${element_id} .default_code_block_language_unset`).click(function () {
+            update(null, save_discard_widget_status_handler);
+        });
+    };
+
+    const value = () => {
+        let val = $(`#${element_id} #id_realm_default_code_block_language`).data('language');
+        if (val === null) {
+            val = '';
+        }
+        return val;
+    };
+
+    return {
+        setup,
+        render,
+        register_event_handlers,
+        value,
+    };
+}('realm_default_code_block_language_widget'));
 
 exports.reset = function () {
     meta.loaded = false;
@@ -431,6 +524,8 @@ function discard_property_element_changes(elem) {
         exports.render_notifications_stream_ui(property_value, "notifications");
     } else if (property_name === 'realm_signup_notifications_stream') {
         exports.render_notifications_stream_ui(property_value, "signup_notifications");
+    } else if (property_name === 'realm_default_code_block_language') {
+        exports.default_code_language_widget.render(property_value);
     } else if (typeof property_value === 'boolean') {
         elem.prop('checked', property_value);
     } else if (typeof property_value === 'string' || typeof property_value === 'number') {
@@ -557,9 +652,11 @@ exports.build_page = function () {
         const streams = stream_data.get_streams_for_settings_page();
         exports.populate_notifications_stream_dropdown(streams);
         exports.populate_signup_notifications_stream_dropdown(streams);
+        exports.default_code_language_widget.setup();
     }
     exports.render_notifications_stream_ui(page_params.realm_notifications_stream_id, 'notifications');
     exports.render_notifications_stream_ui(page_params.realm_signup_notifications_stream_id, 'signup_notifications');
+    exports.default_code_language_widget.render(page_params.realm_default_code_block_language);
 
     // Populate realm domains
     exports.populate_realm_domains(page_params.realm_domains);
@@ -604,6 +701,8 @@ exports.build_page = function () {
             changed_val = parseInt($("#id_realm_notifications_stream").data('stream-id'), 10);
         } else if (property_name === 'realm_signup_notifications_stream') {
             changed_val = parseInt($("#id_realm_signup_notifications_stream").data('stream-id'), 10);
+        } else if (property_name === 'realm_default_code_block_language') {
+            changed_val = exports.default_code_language_widget.value();
         } else if (typeof current_val === 'boolean') {
             changed_val = elem.prop('checked');
         } else if (typeof current_val === 'string') {
@@ -726,6 +825,9 @@ exports.build_page = function () {
                 && new_message_retention_days !== "") {
                 new_message_retention_days = "";
             }
+
+            const code_block_language_value = exports.default_code_language_widget.value();
+            data.default_code_block_language = JSON.stringify(code_block_language_value);
 
             data.message_retention_days = new_message_retention_days !== "" ?
                 JSON.stringify(parseInt(new_message_retention_days, 10)) : null;
@@ -959,6 +1061,9 @@ exports.build_page = function () {
         exports.render_notifications_stream_ui(stream_id, notification_type);
         save_discard_widget_status_handler($('#org-notifications'));
     }
+
+    exports.default_code_language_widget.register_event_handlers(
+        save_discard_widget_status_handler);
 
     $(".notifications-stream-setting .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
         const notifications_stream_setting_elem = $(this).closest(".notifications-stream-setting");

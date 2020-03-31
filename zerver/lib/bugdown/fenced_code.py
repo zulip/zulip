@@ -177,8 +177,6 @@ def check_for_new_fence(processor: Any, output: MutableSequence[str], line: str,
         fence = m.group('fence')
         lang = m.group('lang')
 
-        lang = remap_language(lang)
-
         handler = generic_handler(processor, output, fence, lang, run_content_validators)
         processor.push(handler)
     else:
@@ -315,6 +313,12 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return output
 
     def format_code(self, lang: str, text: str) -> str:
+        if not lang:
+            try:
+                lang = self.md.zulip_realm.default_code_block_language
+            except AttributeError:
+                pass
+        lang = remap_language(lang)
         if lang:
             langclass = LANG_TAG % (lang,)
         else:

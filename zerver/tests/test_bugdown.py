@@ -7,6 +7,7 @@ from zerver.lib.actions import (
     do_set_user_display_setting,
     do_remove_realm_emoji,
     do_set_alert_words,
+    do_set_realm_property,
 )
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.create_user import create_user
@@ -120,7 +121,7 @@ class FencedBlockPreprocessorTest(TestCase):
             'weirdchar()',
             '```',
             '',
-            '``` none',
+            '```',
             'no-highlight()',
             '```',
             ''
@@ -1341,6 +1342,34 @@ class BugdownTest(ZulipTestCase):
         expected_user_ids = {user_profiles['hamlet'].id}  # type: Set[int]
         # Only hamlet has alert-word 'issue124' present in the message content
         self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
+
+    def test_default_code_block_language(self) -> None:
+        realm = get_realm('zulip')
+        self.assertEqual(realm.default_code_block_language, None)
+        text = "```{}\nconsole.log('Hello World');\n```\n"
+
+        # Render without default language
+        msg_with_js_before = bugdown_convert(text.format('js'))
+        msg_with_python_before = bugdown_convert(text.format('python'))
+        msg_without_language_before = bugdown_convert(text.format(''))
+
+        # Render with default=javascript
+        do_set_realm_property(realm, 'default_code_block_language', 'javascript')
+        msg_without_language_after = bugdown_convert(text.format(''))
+        msg_with_python_after = bugdown_convert(text.format('python'))
+
+        # Render with default=python
+        do_set_realm_property(realm, 'default_code_block_language', 'python')
+        msg_without_language_later = bugdown_convert(text.format(''))
+        msg_with_none_later = bugdown_convert(text.format('none'))
+
+        # Render without default language
+        do_set_realm_property(realm, 'default_code_block_language', None)
+        msg_without_language_final = bugdown_convert(text.format(''))
+
+        self.assertTrue(msg_with_js_before == msg_without_language_after)
+        self.assertTrue(msg_with_python_before == msg_with_python_after == msg_without_language_later)
+        self.assertTrue(msg_without_language_before == msg_with_none_later == msg_without_language_final)
 
     def test_mention_wildcard(self) -> None:
         user_profile = self.example_user('othello')
