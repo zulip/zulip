@@ -165,12 +165,19 @@ def generic_handler(processor: Any, output: MutableSequence[str],
     else:
         return CodeHandler(processor, output, fence, lang, run_content_validators)
 
+def remap_language(lang: str) -> str:
+    if lang in ['none', 'noop', 'text', 'plain']:
+        return ''
+    return lang
+
 def check_for_new_fence(processor: Any, output: MutableSequence[str], line: str,
                         run_content_validators: Optional[bool]=False) -> None:
     m = FENCE_RE.match(line)
     if m:
         fence = m.group('fence')
         lang = m.group('lang')
+
+        lang = remap_language(lang)
 
         handler = generic_handler(processor, output, fence, lang, run_content_validators)
         processor.push(handler)
