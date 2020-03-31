@@ -160,7 +160,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in ['20.04']:
+if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version in []:
     # For platforms without a pgroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
