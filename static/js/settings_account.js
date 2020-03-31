@@ -406,9 +406,10 @@ exports.set_up = function () {
                 overlays.close_modal("change_password_modal");
             },
             error_msg_element: change_password_error,
+            with_button: true,
         };
         settings_ui.do_settings_change(channel.patch, '/json/settings', data,
-                                       $('#account-settings-status').expectOne(), opts);
+                                       $('#user_details_section').expectOne(), opts);
         clear_password_change();
     });
 
@@ -430,9 +431,10 @@ exports.set_up = function () {
                 overlays.close_modal("change_full_name_modal");
             },
             error_msg_element: change_full_name_error,
+            with_button: true,
         };
         settings_ui.do_settings_change(channel.patch, '/json/settings', data,
-                                       $('#account-settings-status').expectOne(), opts);
+                                       $('#user_details_section').expectOne(), opts);
     });
 
     $('#change_email_button').on('click', function (e) {
@@ -453,9 +455,10 @@ exports.set_up = function () {
             error_msg_element: change_email_error,
             success_msg: i18n.t('Check your email (%s) to confirm the new address.').replace(
                 "%s", data.email),
+            with_button: true,
         };
         settings_ui.do_settings_change(channel.patch, '/json/settings', data,
-                                       $('#account-settings-status').expectOne(), opts);
+                                       $('#user_details_section').expectOne(), opts);
     });
 
     $('#change_email').on('click', function (e) {

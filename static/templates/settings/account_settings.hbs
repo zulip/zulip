@@ -4,8 +4,8 @@
         <div class="inline-block">
             <div id="user_details_section">
                 <h3 class="inline-block">{{t "User settings" }}</h3>
+                {{> settings_save_discard_widget section_name="custom_user_name_section" }}
                 <form class="email-change-form grid">
-                    <div class="alert-notification" id="account-settings-status"></div>
                     <div class="input-group user-name-section">
                         <label class="inline-block title">{{t "Email" }}</label>
                         <button id='change_email' type="button" class="button btn-link small rounded inline-block" id='email_value'
