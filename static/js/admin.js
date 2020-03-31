@@ -16,6 +16,7 @@ const admin_settings_label = {
     realm_message_content_allowed_in_email_notifications:
         i18n.t("Allow message content in missed message emails"),
     realm_digest_emails_enabled: i18n.t("Send weekly digest emails to inactive users"),
+    realm_default_code_language: i18n.t("Default language for code blocks:"),
 
     // Organization permissions
     realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),

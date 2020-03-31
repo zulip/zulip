@@ -710,6 +710,7 @@ class RealmAPITest(ZulipTestCase):
         bool_tests = [False, True]  # type: List[bool]
         test_values = dict(
             default_language=[u'de', u'en'],
+            default_code_block_language=[u'javascript', u''],
             description=[u'Realm description', u'New description'],
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],

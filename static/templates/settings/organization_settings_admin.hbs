@@ -192,6 +192,9 @@
                     </div>
                 </div>
 
+                {{> default_code_language_settings_widget
+                  label=admin_settings_label.realm_default_code_language }}
+
                 {{> settings_checkbox
                   setting_name="realm_message_content_allowed_in_email_notifications"
                   prefix="id_"

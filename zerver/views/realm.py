@@ -78,6 +78,7 @@ def update_realm(
         zoom_user_id: Optional[str]=REQ(validator=check_string, default=None),
         zoom_api_key: Optional[str]=REQ(validator=check_string, default=None),
         zoom_api_secret: Optional[str]=REQ(validator=check_string, default=None),
+        default_code_block_language: Optional[str]=REQ(validator=check_string, default=None),
         digest_weekday: Optional[int]=REQ(validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
@@ -195,6 +196,13 @@ def update_realm(
             do_set_realm_signup_notifications_stream(realm, new_signup_notifications_stream,
                                                      signup_notifications_stream_id)
             data['signup_notifications_stream_id'] = signup_notifications_stream_id
+
+    if default_code_block_language is not None:
+        # Migrate '', used in the API to encode the default/None behavior of this feature.
+        if default_code_block_language == '':
+            data['default_code_block_language'] = None
+        else:
+            data['default_code_block_language'] = default_code_block_language
 
     return json_success(data)
 

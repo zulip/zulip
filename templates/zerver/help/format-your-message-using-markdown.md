@@ -111,6 +111,10 @@ typeahead will pop up when you start typing after the ` ``` `. If you can't
 find your language, search for it [here](https://pygments.org/docs/lexers/)
 and try the **short names** listed for the lexers for your language.
 
+Organization administrators can also configure a default syntax
+highlighting language.  In this configuration, one can use ````text`
+to display content without any syntax highlighting.
+
 ## Latex
 ~~~
 Inline: $$O(n^2)$$
