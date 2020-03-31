@@ -506,6 +506,12 @@ html {
     .inline-block {
         text-align: left;
     }
+
+    .contact-admin p.invite-hint {
+        font-size: 1.3rem;
+        margin-top: 0.8rem;
+        text-align: center;
+    }
 }
 
 #login_form {

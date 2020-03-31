@@ -3956,6 +3956,16 @@ class TestLoginPage(ZulipTestCase):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 200)
 
+    def test_login_page_registration_hint(self) -> None:
+        response = self.client_get("/login/")
+        self.assert_not_in_success_response(["Don't have an account yet? You need to be invited to join this organization."], response)
+
+        realm = get_realm("zulip")
+        realm.invite_required = True
+        realm.save(update_fields=["invite_required"])
+        response = self.client_get("/login/")
+        self.assert_in_success_response(["Don't have an account yet? You need to be invited to join this organization."], response)
+
 class TestFindMyTeam(ZulipTestCase):
     def test_template(self) -> None:
         result = self.client_get('/accounts/find/')

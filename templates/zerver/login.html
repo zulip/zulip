@@ -131,6 +131,12 @@ page can be easily identified in it's respective JavaScript file. -->
                 {% endif %}
             </div>
         </div>
+
+        {% if realm_invite_required %}
+        <div class="contact-admin">
+            <p class="invite-hint">{{ _("Don't have an account yet? You need to be invited to join this organization.") }}</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 
