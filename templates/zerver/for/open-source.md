@@ -131,6 +131,9 @@ Import your existing organization from [Slack](/help/import-from-slack),
 syntax highlighting, makes it easy to discuss code, paste an error message,
 or explain a complicated point. Full LaTeX support as well.
 
+If your community primarily uses a single programming language,
+consider setting a default language for syntax highlighting.
+
 ### Permalink to conversations.
 
 Zulip makes it easy to get a [permanent link to a
