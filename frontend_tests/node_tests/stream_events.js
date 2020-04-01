@@ -2,6 +2,10 @@ const noop = function () {};
 const return_true = function () { return true; };
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
+const _settings_notifications = {
+    update_page: () => {},
+};
+set_global('settings_notifications', _settings_notifications);
 
 zrequire('people');
 zrequire('stream_data');
