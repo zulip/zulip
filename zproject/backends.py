@@ -192,7 +192,11 @@ def rate_limit_authentication_by_username(request: HttpRequest, username: str) -
     RateLimitedAuthenticationByUsername(username).rate_limit_request(request)
 
 def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
-    return hasattr(request, '_ratelimit') and 'RateLimitedAuthenticationByUsername' in request._ratelimit
+    if not hasattr(request, '_ratelimits_applied'):
+        return False
+
+    return any(isinstance(r.entity, RateLimitedAuthenticationByUsername)
+               for r in request._ratelimits_applied)
 
 # Django's authentication mechanism uses introspection on the various authenticate() functions
 # defined by backends, so we need a decorator that doesn't break function signatures.

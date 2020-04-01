@@ -370,9 +370,8 @@ class RateLimitMiddleware(MiddlewareMixin):
             return response
 
         # Add X-RateLimit-*** headers
-        if hasattr(request, '_ratelimit'):
-            rate_limit_results = list(request._ratelimit.values())
-            self.set_response_headers(response, rate_limit_results)
+        if hasattr(request, '_ratelimits_applied'):
+            self.set_response_headers(response, request._ratelimits_applied)
 
         return response
 
