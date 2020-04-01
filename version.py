@@ -14,6 +14,13 @@ LATEST_RELEASE_VERSION = "2.1.2"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2019/12/13/zulip-2-1-released/"
 LATEST_DESKTOP_VERSION = "4.0.3"
 
+# Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
+# prevented from connecting to the Zulip server.  Versions above
+# DESKTOP_MINIMUM_VERSION but below DESKTOP_WARNING_VERSION will have
+# a banner at the top of the page asking the user to upgrade.
+DESKTOP_MINIMUM_VERSION = "5.0.0"
+DESKTOP_WARNING_VERSION = "5.0.0"
+
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
 # the major version to indicate that folks should provision in both
