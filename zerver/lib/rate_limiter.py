@@ -41,14 +41,13 @@ class RateLimitedObject(ABC):
     def rate_limit_request(self, request: HttpRequest) -> None:
         ratelimited, time = self.rate_limit()
 
-        entity_type = type(self).__name__
-        if not hasattr(request, '_ratelimit'):
-            request._ratelimit = {}
-        request._ratelimit[entity_type] = RateLimitResult(
+        if not hasattr(request, '_ratelimits_applied'):
+            request._ratelimits_applied = []
+        request._ratelimits_applied.append(RateLimitResult(
             entity=self,
             secs_to_freedom=time,
             over_limit=ratelimited
-        )
+        ))
         # Abort this request if the user is over their rate limits
         if ratelimited:
             # Pass information about what kind of entity got limited in the exception:
@@ -56,8 +55,8 @@ class RateLimitedObject(ABC):
 
         calls_remaining, time_reset = self.api_calls_left()
 
-        request._ratelimit[entity_type].remaining = calls_remaining
-        request._ratelimit[entity_type].secs_to_freedom = time_reset
+        request._ratelimits_applied[-1].remaining = calls_remaining
+        request._ratelimits_applied[-1].secs_to_freedom = time_reset
 
     def block_access(self, seconds: int) -> None:
         "Manually blocks an entity for the desired number of seconds"
