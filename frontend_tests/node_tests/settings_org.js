@@ -69,6 +69,7 @@ set_global('realm_logo', _realm_logo);
 set_global('ui_report', _ui_report);
 
 const settings_config = zrequire('settings_config');
+const settings_bots = zrequire('settings_bots');
 zrequire('stream_data');
 zrequire('settings_account');
 zrequire('settings_org');
@@ -190,15 +191,17 @@ function createSaveButtons(subsection) {
 
 function test_submit_settings_form(submit_form) {
     Object.assign(page_params, {
-        realm_bot_creation_policy: '2',
-        realm_email_address_visibility: '2',
+        realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
+        realm_email_address_visibility:
+                settings_config.email_address_visibility_values.admins_only.code,
         realm_add_emoji_by_admins_only: true,
         realm_create_stream_by_admins_only: true,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
-        realm_default_twenty_four_hour_time: 'false',
-        realm_invite_to_stream_policy: 2,
-        realm_create_stream_policy: 1,
+        realm_default_twenty_four_hour_time: false,
+        realm_invite_to_stream_policy:
+                settings_config.invite_to_stream_policy_values.by_admins_only.code,
+        realm_create_stream_policy: settings_config.create_stream_policy_values.by_members.code,
     });
 
     global.patch_builtin('setTimeout', func => func());
