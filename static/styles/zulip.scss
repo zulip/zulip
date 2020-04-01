@@ -824,6 +824,11 @@ td.pointer {
     display: block;
 }
 
+.recipient_bar_icon {
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
 .summary_row .message_header {
     padding: 5px 0px 4px 5px;
 }
@@ -1082,7 +1087,6 @@ a.message_label_clickable:hover {
 }
 
 .on_hover_topic_mute {
-    padding-left: 3px;
     opacity: .1;
 }
 
