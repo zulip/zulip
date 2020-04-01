@@ -46,6 +46,7 @@ class RateLimitedObject(ABC):
         request._ratelimits_applied.append(RateLimitResult(
             entity=self,
             secs_to_freedom=time,
+            remaining=0,
             over_limit=ratelimited
         ))
         # Abort this request if the user is over their rate limits
@@ -340,7 +341,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
 class RateLimitResult:
     def __init__(self, entity: RateLimitedObject, secs_to_freedom: float, over_limit: bool,
-                 remaining: Optional[int]=None) -> None:
+                 remaining: int) -> None:
         if over_limit:
             assert not remaining
 
