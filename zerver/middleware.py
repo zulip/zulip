@@ -379,13 +379,13 @@ class RateLimitMiddleware(MiddlewareMixin):
     def process_exception(self, request: HttpRequest,
                           exception: Exception) -> Optional[HttpResponse]:
         if isinstance(exception, RateLimited):
-            entity_type = str(exception)  # entity type is passed to RateLimited when raising
+            secs_to_freedom = float(str(exception))  # secs_to_freedom is passed to RateLimited when raising
             resp = json_error(
                 _("API usage exceeded rate limit"),
-                data={'retry-after': request._ratelimit[entity_type].secs_to_freedom},
+                data={'retry-after': secs_to_freedom},
                 status=429
             )
-            resp['Retry-After'] = request._ratelimit[entity_type].secs_to_freedom
+            resp['Retry-After'] = secs_to_freedom
             return resp
         return None
 

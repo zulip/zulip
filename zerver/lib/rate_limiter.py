@@ -52,7 +52,7 @@ class RateLimitedObject(ABC):
         # Abort this request if the user is over their rate limits
         if ratelimited:
             # Pass information about what kind of entity got limited in the exception:
-            raise RateLimited(entity_type)
+            raise RateLimited(str(time))
 
         calls_remaining, time_reset = self.api_calls_left()
 
@@ -349,6 +349,3 @@ class RateLimitResult:
         self.secs_to_freedom = secs_to_freedom
         self.over_limit = over_limit
         self.remaining = remaining
-
-def get_rate_limit_result_from_request(request: HttpRequest, entity_type: str) -> RateLimitResult:
-    return request._ratelimit[entity_type]

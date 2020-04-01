@@ -23,7 +23,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string, check_int, check_int_in, \
     check_string_in
-from zerver.lib.rate_limiter import RateLimited, get_rate_limit_result_from_request
+from zerver.lib.rate_limiter import RateLimited
 from zerver.lib.request import JsonableError
 from zerver.lib.timezone import get_all_timezones
 from zerver.models import UserProfile, name_changes_disabled, avatar_changes_disabled
@@ -81,8 +81,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
                                 realm=user_profile.realm, return_data=return_data):
                 return json_error(_("Wrong password!"))
         except RateLimited as e:
-            entity_type = str(e)
-            secs_to_freedom = int(get_rate_limit_result_from_request(request, entity_type).secs_to_freedom)
+            secs_to_freedom = int(float(str(e)))
             return json_error(
                 _("You're making too many attempts! Try again in %s seconds.") % (secs_to_freedom,)
             )
