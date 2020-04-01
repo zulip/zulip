@@ -6,6 +6,7 @@ from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_error, json_success
 from zerver.lib.user_agent import parse_user_agent
+from version import DESKTOP_MINIMUM_VERSION, DESKTOP_WARNING_VERSION
 
 def pop_numerals(ver: str) -> Tuple[List[int], str]:
     match = re.search(r'^( \d+ (?: \. \d+ )* ) (.*)', ver, re.X)
@@ -89,7 +90,7 @@ def check_global_compatibility(request: HttpRequest) -> HttpResponse:
     return json_success()
 
 def is_outdated_desktop_app(user_agent_str: str) -> Tuple[bool, bool, bool]:
-    # Returns (insecure, banned, auto_update_broken
+    # Returns (insecure, banned, auto_update_broken)
     user_agent = parse_user_agent(user_agent_str)
     if user_agent['name'] == 'ZulipDesktop':
         # The deprecated QT/webkit based desktop app, last updated in ~2016.
@@ -105,7 +106,11 @@ def is_outdated_desktop_app(user_agent_str: str) -> Tuple[bool, bool, bool]:
         # distinguish those from modern releases.
         return (True, True, True)
 
-    if version_lt(user_agent['version'], '4.0.3'):
+    if version_lt(user_agent['version'], DESKTOP_MINIMUM_VERSION):
+        # Below DESKTOP_MINIMUM_VERSION, we reject access as well.
+        return (True, True, False)
+
+    if version_lt(user_agent['version'], DESKTOP_WARNING_VERSION):
         # Other insecure versions should just warn.
         return (True, False, False)
 
