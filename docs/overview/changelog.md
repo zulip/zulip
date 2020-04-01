@@ -7,13 +7,18 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
-### 2.1.3 -- 2020-02-??
+### 2.1.3 -- 2020-04-01
 
-- Added red warning at top of page for users of ancient desktop app
-  version 2.3.82 with broken auto-update.
+- CVE-2020-9444: Prevent reverse tabnapping attacks.
+- CVE-2020-9445: Remove unused and insecure modal_link feature.
+- CVE-2020-10935: Fix XSS vulnerability in local link rewriting.
+- Blocked access from Zulip Desktop versions below 5.0.0.  This
+  behavior can be adjusted by editing `DESKTOP_*_VERSION`
+  in `/home/zulip/deployments/current/version.py`.
 - Restructured server initialization to simplify initialization of
   Docker containers (eliminating common classes of user error).
 - Removed buggy feedback bot (`ENABLE_FEEDBACK`).
+- Migrated GitHub authentication to use the current encoding.
 - Fixed support for restoring a backup on a different minor release
   (in the common case they have the same database schema).
 - Fixed restoring backups with memcached authentication enabled.
@@ -22,6 +27,7 @@ in bursts.
 - Fixed buggy loading spinner in "emoji format" widget.
 - Fixed sorting and filtering users in organization settings.
 - Fixed handling of links to deleted streams.
+- Fixed check-rabbitmq-consumers monitoring.
 - Fixed copy-to-clipboard button for outgoing webhook bots.
 - Fixed logging spam from soft_deactivation cron job.
 - Fixed email integration handling of emails with nested MIME structure.
