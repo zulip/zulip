@@ -259,7 +259,6 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                 free = boundary - now
                 return True, free
 
-        # No api calls recorded yet
         return False, 0.0
 
     @classmethod
