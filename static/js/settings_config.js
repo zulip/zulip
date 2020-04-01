@@ -159,13 +159,24 @@ exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;
 
 // NOTIFICATIONS
 
-exports.general_notifications_table_columns = [
-    /* An array of notification settings of any category like
-    * `stream_notification_settings` which makes a single row of
-    * "Notification triggers" table should follow this order
-    */
-    "visual", "audio", "mobile", "email", "all_mentions",
-];
+exports.general_notifications_table_labels = {
+    realm: [
+        /* An array of notification settings of any category like
+        * `stream_notification_settings` which makes a single row of
+        * "Notification triggers" table should follow this order
+        */
+        "visual", "audio", "mobile", "email", "all_mentions",
+    ],
+    stream: {
+        is_muted: i18n.t("Mute stream"),
+        desktop_notifications: i18n.t("Visual desktop notifications"),
+        audible_notifications: i18n.t("Audible desktop notifications"),
+        push_notifications: i18n.t("Mobile notifications"),
+        email_notifications: i18n.t("Email notifications"),
+        pin_to_top: i18n.t("Pin stream to top of left sidebar"),
+        wildcard_mentions_notify: i18n.t("Notifications for @all/@everyone mentions"),
+    },
+};
 
 exports.stream_specific_notification_settings = [
     "desktop_notifications",
