@@ -1,0 +1,9 @@
+<div class="widget-button-row">
+    {{#each buttons}}
+        {{#if this.title}}
+        <button title="{{ this.title }}"data-idx="{{ this.idx }}">{{ this.label }}</button>
+        {{else}}
+        <button data-idx="{{ this.idx }}">{{ this.label }}</button>
+        {{/if}}
+    {{/each}}
+</div>
