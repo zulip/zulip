@@ -2044,7 +2044,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
     # once we improve our documentation.
     if isinstance(data, list):
         if len(data) != 1:  # nocoverage
-            raise ValueError("Expected exactly one stream")
+            raise JsonableError(_("Expected exactly one stream"))
         data = data[0]
 
     if isinstance(data, str):
@@ -2055,7 +2055,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
         # We had a stream id.
         return data
 
-    raise ValueError("Invalid data type for stream")
+    raise JsonableError(_("Invalid data type for stream"))
 
 def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
     # We try to accept multiple incoming formats for recipients.
@@ -2070,7 +2070,7 @@ def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
         data = data.split(',')
 
     if not isinstance(data, list):
-        raise ValueError("Invalid data type for recipients")
+        raise JsonableError(_("Invalid data type for recipients"))
 
     if not data:
         # We don't complain about empty message recipients here
@@ -2080,21 +2080,21 @@ def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
         return get_validated_emails(data)
 
     if not isinstance(data[0], int):
-        raise ValueError("Invalid data type for recipients")
+        raise JsonableError(_("Invalid data type for recipients"))
 
     return get_validated_user_ids(data)
 
 def get_validated_user_ids(user_ids: Iterable[int]) -> List[int]:
     for user_id in user_ids:
         if not isinstance(user_id, int):
-            raise TypeError("Recipient lists may contain emails or user IDs, but not both.")
+            raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
 
     return list(set(user_ids))
 
 def get_validated_emails(emails: Iterable[str]) -> List[str]:
     for email in emails:
         if not isinstance(email, str):
-            raise TypeError("Recipient lists may contain emails or user IDs, but not both.")
+            raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
 
     return list(filter(bool, {email.strip() for email in emails}))
 
