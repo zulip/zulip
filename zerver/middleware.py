@@ -355,11 +355,8 @@ class RateLimitMiddleware(MiddlewareMixin):
         limit = min([result.entity.max_api_calls() for result in rate_limit_results])
         response['X-RateLimit-Limit'] = str(limit)
         # Same principle applies to remaining api calls:
-        if all(result.remaining for result in rate_limit_results):
-            remaining_api_calls = min([result.remaining for result in rate_limit_results])
-            response['X-RateLimit-Remaining'] = str(remaining_api_calls)
-        else:
-            response['X-RateLimit-Remaining'] = str(0)
+        remaining_api_calls = min([result.remaining for result in rate_limit_results])
+        response['X-RateLimit-Remaining'] = str(remaining_api_calls)
 
         # The full reset time is the maximum of the reset times for the limits that get applied:
         reset_time = time.time() + max([result.secs_to_freedom for result in rate_limit_results])
