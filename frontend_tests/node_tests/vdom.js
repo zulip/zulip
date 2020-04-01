@@ -1,5 +1,4 @@
 set_global('blueslip', global.make_zblueslip());
-zrequire('util');
 zrequire('vdom');
 
 run_test('basics', () => {
@@ -22,7 +21,31 @@ run_test('basics', () => {
     );
 });
 
-run_test('attributes', () => {
+run_test('attribute escaping', () => {
+    // So far most of the time our attributes are
+    // hard-coded classes like "expanded_private_messages",
+    // but we need to be defensive about future code
+    // that might use data from possibly malicious users.
+    const opts = {
+        keyed_nodes: [],
+        attrs: [
+            ['class', '">something evil<div class="'],
+            ['title', 'apples & oranges'],
+        ],
+    };
+
+    const ul = vdom.ul(opts);
+
+    const html = vdom.render_tag(ul);
+
+    assert.equal(
+        html,
+        '<ul class="&quot;&gt;something evil&lt;div class=&quot;" ' +
+        'title="apples &amp; oranges">\n\n</ul>'
+    );
+});
+
+run_test('attribute updates', () => {
     const opts = {
         keyed_nodes: [],
         attrs: [
@@ -97,9 +120,7 @@ function make_child(i, name) {
 }
 
 function make_children(lst) {
-    return _.map(lst, (i) => {
-        return make_child(i, 'foo' + i);
-    });
+    return lst.map(i => make_child(i, 'foo' + i));
 }
 
 run_test('children', () => {
@@ -262,7 +283,7 @@ run_test('error checking', () => {
 
     const replace_content = 'whatever';
     const find = 'whatever';
-    const ul = {opts: {}};
+    const ul = {opts: { attrs: [] }};
 
     vdom.update(replace_content, find, ul, ul);
     assert.equal(blueslip.get_test_logs('error').length, 1);

@@ -9,7 +9,7 @@ Moderation is a big part of making an open community work.
 Zulip has many features designed to simplify moderation:
 
 * [Disallow disposable email addresses](/help/allow-anyone-to-join-without-an-invitation)
-  or [require users to log in via GitHub](/help/configure-authentication-methods).
+  or [require users to log in via GitHub or GitLab](/help/configure-authentication-methods).
 * Restrict who can [create streams](/help/configure-who-can-create-streams),
   [create bots](/help/restrict-bot-creation), [send private
   messages](/help/restrict-private-messages), or

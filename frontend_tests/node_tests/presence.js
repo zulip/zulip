@@ -42,11 +42,11 @@ const bot = {
     is_bot: true,
 };
 
-people.add_in_realm(me);
-people.add_in_realm(alice);
-people.add_in_realm(fred);
-people.add_in_realm(zoe);
-people.add_in_realm(bot);
+people.add(me);
+people.add(alice);
+people.add(fred);
+people.add(zoe);
+people.add(bot);
 people.initialize_current_user(me.user_id);
 
 run_test('my user', () => {
@@ -123,10 +123,10 @@ run_test('status_from_timestamp', () => {
         pushable: true,
     };
     let called = false;
-    blueslip.error = function () {
-        assert.equal(arguments[0], 'Unexpected status');
-        assert.deepEqual(arguments[1].presence_object, info.random_client);
-        assert.equal(arguments[2], undefined);
+    blueslip.error = function (msg, more_info, stack) {
+        assert.equal(msg, 'Unexpected status');
+        assert.deepEqual(more_info.presence_object, info.random_client);
+        assert.equal(stack, undefined);
         called = true;
     };
     status = status_from_timestamp(
@@ -160,39 +160,41 @@ run_test('set_presence_info', () => {
         },
     };
 
-    presence.set_info(presences, base_time);
+    const params = {};
+    params.presences = presences;
+    params.initial_servertime = base_time;
+    presence.initialize(params);
 
-    assert.deepEqual(presence.presence_info[alice.user_id],
+    assert.deepEqual(presence.presence_info.get(alice.user_id),
                      { status: 'active', last_active: 500}
     );
 
-    assert.deepEqual(presence.presence_info[fred.user_id],
+    assert.deepEqual(presence.presence_info.get(fred.user_id),
                      { status: 'idle', last_active: 500}
     );
 
-    assert.deepEqual(presence.presence_info[me.user_id],
+    assert.deepEqual(presence.presence_info.get(me.user_id),
                      { status: 'active', last_active: 500}
     );
 
-    assert.deepEqual(presence.presence_info[zoe.user_id],
+    assert.deepEqual(presence.presence_info.get(zoe.user_id),
                      { status: 'offline', last_active: undefined}
     );
 
-    assert(!presence.presence_info[bot.user_id]);
+    assert(!presence.presence_info.has(bot.user_id));
 
     // Make it seem like realm has a lot of people
-    const get_realm_count = people.get_realm_count;
-    people.get_realm_count = function () { return 1000; };
+    const get_active_human_count = people.get_active_human_count;
+    people.get_active_human_count = function () { return 1000; };
     assert.equal(presence.set_info(presences, base_time), undefined);
-    people.get_realm_count = get_realm_count;
+    people.get_active_human_count = get_active_human_count;
 });
 
 run_test('last_active_date', () => {
     const unknown_id = 42;
-    presence.presence_info = {
-        1: { last_active: 500 }, // alice.user_id
-        2: {}, // fred.user_id
-    };
+    presence.presence_info.clear();
+    presence.presence_info.set(alice.user_id, { last_active: 500 });
+    presence.presence_info.set(fred.user_id, {});
     set_global('XDate', function (ms) { return {seconds: ms}; });
 
     assert.equal(presence.last_active_date(unknown_id), undefined);
@@ -200,7 +202,7 @@ run_test('last_active_date', () => {
     assert.deepEqual(presence.last_active_date(alice.user_id), {seconds: 500000});
 });
 
-run_test('set_info_for_user', () => {
+run_test('update_info_from_event', () => {
     const server_time = 500;
     const info = {
         website: {
@@ -209,9 +211,9 @@ run_test('set_info_for_user', () => {
         },
     };
 
-    presence.presence_info[alice.user_id] = undefined;
-    presence.set_info_for_user(alice.user_id, info, server_time);
+    presence.presence_info.delete(alice.user_id);
+    presence.update_info_from_event(alice.user_id, info, server_time);
 
     const expected = { status: 'active', last_active: 500 };
-    assert.deepEqual(presence.presence_info[alice.user_id], expected);
+    assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
 });

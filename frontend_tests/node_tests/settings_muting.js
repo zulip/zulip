@@ -1,4 +1,3 @@
-set_global('i18n', global.stub_i18n);
 set_global('$', global.make_zjquery());
 
 zrequire('settings_muting');
@@ -12,7 +11,7 @@ const frontend = {
     stream_id: 101,
     name: 'frontend',
 };
-stream_data.add_sub('frontend', frontend);
+stream_data.add_sub(frontend);
 
 run_test('settings', () => {
 

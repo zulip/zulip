@@ -17,8 +17,8 @@ from zerver.lib.zcommand import process_zcommands
 from zerver.lib.actions import recipient_for_user_profiles, do_update_message_flags, \
     compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients, truncate_body, render_incoming_message, do_delete_messages, \
-    do_mark_all_as_read, do_mark_stream_messages_as_read, \
+    extract_private_recipients, truncate_body, render_incoming_message, do_delete_messages, \
+    do_mark_all_as_read, do_mark_stream_messages_as_read, extract_stream_indicator, \
     get_user_info_for_message_updates, check_schedule_message
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.queue import queue_json_publish
@@ -48,7 +48,7 @@ from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool, \
-    check_string_or_int_list, check_string_or_int
+    check_string_or_int_list, check_string_or_int, check_string_in
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, \
@@ -816,7 +816,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("Too many messages requested (maximum %s).")
                           % (MAX_MESSAGES_PER_FETCH,))
 
-    if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+    if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
@@ -1310,9 +1310,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
 @has_request_variables
 def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_type_name: str=REQ('type'),
-                         message_to: Union[Sequence[int], Sequence[str]]=REQ(
-                             'to', type=Union[List[int], List[str]],
-                             converter=extract_recipients, default=[]),
+                         req_to: Optional[str]=REQ('to', default=None),
                          forged_str: Optional[str]=REQ("forged",
                                                        default=None,
                                                        documentation_pending=True),
@@ -1333,6 +1331,28 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          tz_guess: Optional[str]=REQ('tz_guess', default=None,
                                                      documentation_pending=True)
                          ) -> HttpResponse:
+
+    # If req_to is None, then we default to an
+    # empty list of recipients.
+    message_to = []  # type: Union[Sequence[int], Sequence[str]]
+
+    if req_to is not None:
+        if message_type_name == 'stream':
+            stream_indicator = extract_stream_indicator(req_to)
+
+            # For legacy reasons check_send_message expects
+            # a list of streams, instead of a single stream.
+            #
+            # Also, mypy can't detect that a single-item
+            # list populated from a Union[int, str] is actually
+            # a Union[Sequence[int], Sequence[str]].
+            message_to = cast(
+                Union[Sequence[int], Sequence[str]],
+                [stream_indicator]
+            )
+        else:
+            message_to = extract_private_recipients(req_to)
+
     # Temporary hack: We're transitioning `forged` from accepting
     # `yes` to accepting `true` like all of our normal booleans.
     forged = forged_str is not None and forged_str in ["yes", "true"]
@@ -1364,10 +1384,9 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
         # by an API superuser for your realm and (2) being sent to a
         # mirrored stream.
         #
-        # The security checks are split between the below code
-        # (especially create_mirrored_message_users which checks the
-        # same-realm constraint) and recipient_for_emails (which
-        # checks that PMs are received by the forwarding user)
+        # The most important security checks are in
+        # `create_mirrored_message_users` below, which checks the
+        # same-realm constraint.
         if "sender" not in request.POST:
             return json_error(_("Missing sender"))
         if message_type_name != "private" and not is_super_user:
@@ -1392,6 +1411,8 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("Zephyr mirroring is not allowed in this organization"))
         sender = mirror_sender
     else:
+        if "sender" in request.POST:
+            return json_error(_("Invalid mirrored message"))
         sender = user_profile
 
     if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is None:
@@ -1477,15 +1498,20 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
     fill_edit_history_entries(message_edit_history, message)
     return json_success({"message_history": reversed(message_edit_history)})
 
+PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            message_id: int=REQ(converter=to_non_negative_int, path_only=True),
                            topic_name: Optional[str]=REQ_topic(),
-                           propagate_mode: Optional[str]=REQ(default="change_one"),
+                           propagate_mode: Optional[str]=REQ(
+                               default="change_one",
+                               str_validator=check_string_in(PROPAGATE_MODE_VALUES)),
                            content: Optional[str]=REQ(default=None)) -> HttpResponse:
-
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
+
+    if propagate_mode != "change_one" and topic_name is None:
+        return json_error(_("Invalid propagate_mode without topic edit"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
     is_no_topic_msg = (message.topic_name() == "(no topic)")

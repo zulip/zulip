@@ -82,7 +82,7 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
 
     const days = Math.floor(hours / 24);
     if (days === 1) {
-        return [i18n.t("Yesterday")];
+        return i18n.t("Yesterday");
     }
 
     if (days < 90) {
@@ -172,14 +172,14 @@ exports.update_timestamps = function () {
         const to_process = update_list;
         update_list = [];
 
-        _.each(to_process, function (entry) {
+        for (const entry of to_process) {
             const className = entry.className;
             const elements = $('.' + className);
             // The element might not exist any more (because it
             // was in the zfilt table, or because we added
             // messages above it and re-collapsed).
             if (elements !== null) {
-                _.each(elements, function (element) {
+                for (const element of elements) {
                     const time = entry.time;
                     const time_above = entry.time_above;
                     const rendered_time = exports.render_now(time);
@@ -195,9 +195,9 @@ exports.update_timestamps = function () {
                         time: time,
                         time_above: time_above,
                     });
-                });
+                }
             }
-        });
+        }
 
         next_update = set_to_start_of_day(now.clone().addDays(1));
     }

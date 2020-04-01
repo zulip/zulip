@@ -1,6 +1,5 @@
 const render_stream_privacy = require('../templates/stream_privacy.hbs');
 const render_stream_sidebar_row = require('../templates/stream_sidebar_row.hbs');
-const IntDict = require('./int_dict').IntDict;
 
 let has_scrolled = false;
 
@@ -29,7 +28,7 @@ exports.update_count_in_dom = function (unread_count_elem, count) {
 exports.stream_sidebar = (function () {
     const self = {};
 
-    self.rows = new IntDict(); // stream id -> row widget
+    self.rows = new Map(); // stream id -> row widget
 
     self.set_row = function (stream_id, widget) {
         self.rows.set(stream_id, widget);
@@ -74,9 +73,9 @@ exports.create_initial_sidebar_rows = function () {
     // structures that are kept in stream_data.js.
     const subs = stream_data.subscribed_subs();
 
-    _.each(subs, function (sub) {
+    for (const sub of subs) {
         exports.create_sidebar_row(sub);
-    });
+    }
 };
 
 exports.build_stream_list = function () {
@@ -109,7 +108,7 @@ exports.build_stream_list = function () {
 
     parent.empty();
 
-    _.each(stream_groups.pinned_streams, add_sidebar_li);
+    stream_groups.pinned_streams.forEach(add_sidebar_li);
 
     const any_pinned_streams = stream_groups.pinned_streams.length > 0;
     const any_normal_streams = stream_groups.normal_streams.length > 0;
@@ -119,13 +118,13 @@ exports.build_stream_list = function () {
         elems.push('<hr class="stream-split">');
     }
 
-    _.each(stream_groups.normal_streams, add_sidebar_li);
+    stream_groups.normal_streams.forEach(add_sidebar_li);
 
     if (any_dormant_streams && any_normal_streams) {
         elems.push('<hr class="stream-split">');
     }
 
-    _.each(stream_groups.dormant_streams, add_sidebar_li);
+    stream_groups.dormant_streams.forEach(add_sidebar_li);
 
     parent.append(elems);
 };

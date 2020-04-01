@@ -3,7 +3,7 @@ from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, \
 
 from django.db import models
 from django.db.models.query import QuerySet
-from django.db.models import Manager, Sum, CASCADE
+from django.db.models import Manager, Q, Sum, CASCADE
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
@@ -30,7 +30,6 @@ from zerver.lib import cache
 from zerver.lib.validator import check_int, \
     check_short_string, check_long_string, validate_choice_field, check_date, \
     check_url, check_list
-from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator, ExtendedValidator, \
     ProfileDataElement, ProfileData, RealmUserValidator, \
     ExtendedFieldElement, UserFieldElement, FieldElement, \
@@ -136,7 +135,7 @@ class Realm(models.Model):
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev',
-                            u'RemoteUser', u'AzureAD', u'SAML']
+                            u'RemoteUser', u'AzureAD', u'SAML', u'GitLab']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
 
     # User-visible display name and description used on e.g. the organization homepage
@@ -227,12 +226,14 @@ class Realm(models.Model):
     EMAIL_ADDRESS_VISIBILITY_EVERYONE = 1
     EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
     EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
+    EMAIL_ADDRESS_VISIBILITY_NOBODY = 4
     email_address_visibility = models.PositiveSmallIntegerField(default=EMAIL_ADDRESS_VISIBILITY_EVERYONE)  # type: int
     EMAIL_ADDRESS_VISIBILITY_TYPES = [
         EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         # The MEMBERS level is not yet implemented on the backend.
         ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
         EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        EMAIL_ADDRESS_VISIBILITY_NOBODY,
     ]
 
     # Threshold in days for new users to create streams, and potentially take
@@ -376,7 +377,7 @@ class Realm(models.Model):
                                    max_length=1)  # type: str
     icon_version = models.PositiveSmallIntegerField(default=1)  # type: int
 
-    # Logo is the horizonal logo we show in top-left of webapp navbar UI.
+    # Logo is the horizontal logo we show in top-left of webapp navbar UI.
     LOGO_DEFAULT = u'D'
     LOGO_UPLOADED = u'U'
     LOGO_SOURCES = (
@@ -462,7 +463,7 @@ class Realm(models.Model):
         return self._max_invites
 
     @max_invites.setter
-    def max_invites(self, value: int) -> None:
+    def max_invites(self, value: Optional[int]) -> None:
         self._max_invites = value
 
     def upload_quota_bytes(self) -> Optional[int]:
@@ -569,31 +570,6 @@ class DisposableEmailError(Exception):
 
 class EmailContainsPlusError(Exception):
     pass
-
-# Is a user with the given email address allowed to be in the given realm?
-# (This function does not check whether the user has been invited to the realm.
-# So for invite-only realms, this is the test for whether a user can be invited,
-# not whether the user can sign up currently.)
-def email_allowed_for_realm(email: str, realm: Realm) -> None:
-    if not realm.emails_restricted_to_domains:
-        if realm.disallow_disposable_email_addresses and \
-                is_disposable_domain(email_to_domain(email)):
-            raise DisposableEmailError
-        return
-    elif '+' in email_to_username(email):
-        raise EmailContainsPlusError
-
-    domain = email_to_domain(email)
-    query = RealmDomain.objects.filter(realm=realm)
-    if query.filter(domain=domain).exists():
-        return
-    else:
-        query = query.filter(allow_subdomains=True)
-        while len(domain) > 0:
-            subdomain, sep, domain = domain.partition('.')
-            if query.filter(domain=domain).exists():
-                return
-    raise DomainNotAllowedForRealmError
 
 def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
@@ -819,7 +795,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # with EMAIL_ADDRESS_VISIBILITY_EVERYONE.  For other
     # organizations, it will be a unique value of the form
     # user1234@example.com.  This field exists for backwards
-    # compatibility in Zulip APIs where users are refered to by their
+    # compatibility in Zulip APIs where users are referred to by their
     # email address, not their ID; it should be used in all API use cases.
     #
     # Both fields are unique within a realm (in a case-insensitive fashion).
@@ -1200,6 +1176,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         else:
             return -1
 
+    def format_requestor_for_logs(self) -> str:
+        return "{}@{}".format(self.id, self.realm.string_id or 'root')
+
     def set_password(self, password: Optional[str]) -> None:
         if password is None:
             self.set_unusable_password()
@@ -1432,7 +1411,7 @@ class Stream(models.Model):
     # * "email_token" is not realm-public and thus is not included here.
     # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
-    # * "realm" and "recipient" and not exposed to clients via the API.
+    # * "realm" and "recipient" are not exposed to clients via the API.
     # * "date_created" should probably be added here, as it's useful information
     #   to subscribers and is needed to compute is_old_stream.
     # * message_retention_days should be added here once the feature is
@@ -1449,7 +1428,11 @@ class Stream(models.Model):
         "first_message_id",
     ]
 
-    # This is stream information that is sent to clients
+    @staticmethod
+    def get_client_data(query: QuerySet) -> List[Dict[str, Any]]:
+        query = query.only(*Stream.API_FIELDS)
+        return [row.to_dict() for row in query]
+
     def to_dict(self) -> Dict[str, Any]:
         result = {}
         for field_name in self.API_FIELDS:
@@ -1564,19 +1547,6 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
                                      [stream_name.lower() for stream_name in stream_names],
                                      id_fetcher=stream_to_lower_name)
 
-def get_recipient_cache_key(type: int, type_id: int) -> str:
-    return u"%s:get_recipient:%s:%s" % (cache.KEY_PREFIX, type, type_id,)
-
-@cache_with_key(get_recipient_cache_key, timeout=3600*24*7)
-def get_recipient(type: int, type_id: int) -> Recipient:
-    return Recipient.objects.get(type_id=type_id, type=type)
-
-def get_stream_recipient(stream_id: int) -> Recipient:
-    return get_recipient(Recipient.STREAM, stream_id)
-
-def get_personal_recipient(user_profile_id: int) -> Recipient:
-    return get_recipient(Recipient.PERSONAL, user_profile_id)
-
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
 
     # The caller should ensure that user_profile_ids includes
@@ -1584,7 +1554,7 @@ def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
     # we hit another cache to get the recipient.  We may want to
     # unify our caching strategy here.
     huddle = get_huddle(list(user_profile_ids))
-    return get_recipient(Recipient.HUDDLE, huddle.id)
+    return huddle.recipient
 
 def get_huddle_user_ids(recipient: Recipient) -> List[int]:
     assert(recipient.type == Recipient.HUDDLE)
@@ -1698,7 +1668,7 @@ class Message(AbstractMessage):
         Find out whether a message is a stream message by
         looking up its recipient.type.  TODO: Make this
         an easier operation by denormalizing the message
-        type onto Message, either explicity (message.type)
+        type onto Message, either explicitly (message.type)
         or implicitly (message.stream_id is not None).
         '''
         return self.recipient.type == Recipient.STREAM
@@ -2091,7 +2061,7 @@ class Subscription(models.Model):
 
     # Whether the user has since unsubscribed.  We mark Subscription
     # objects as inactive, rather than deleting them, when a user
-    # unsubscribes, so we can preseve user customizations like
+    # unsubscribes, so we can preserve user customizations like
     # notification settings, stream color, etc., if the user later
     # resubscribes.
     active = models.BooleanField(default=True)  # type: bool
@@ -2159,8 +2129,22 @@ def get_user_profile_by_email(email: str) -> UserProfile:
     return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600*24*7)
+def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
+    try:
+        return UserProfile.objects.select_related().get(api_key=api_key)
+    except UserProfile.DoesNotExist:
+        # We will cache failed lookups with None.  The
+        # use case here is that broken API clients may
+        # continually ask for the same wrong API key, and
+        # we want to handle that as quickly as possible.
+        return None
+
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
-    return UserProfile.objects.select_related().get(api_key=api_key)
+    user_profile = maybe_get_user_profile_by_api_key(api_key)
+    if user_profile is None:
+        raise UserProfile.DoesNotExist()
+
+    return user_profile
 
 def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     """Fetches a user given their delivery email.  For use in
@@ -2172,6 +2156,28 @@ def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(
         delivery_email__iexact=email.strip(), realm=realm)
 
+def get_users_by_delivery_email(emails: Set[str], realm: Realm) -> QuerySet:
+    """This is similar to get_users_by_delivery_email, and
+    it has the same security caveats.  It gets multiple
+    users and returns a QuerySet, since most callers
+    will only need two or three fields.
+
+    If you are using this to get large UserProfile objects, you are
+    probably making a mistake, but if you must,
+    then use `select_related`.
+    """
+
+    '''
+    Django doesn't support delivery_email__iexact__in, so
+    we simply OR all the filters that we'd do for the
+    one-email case.
+    '''
+    email_filter = Q()
+    for email in emails:
+        email_filter |= Q(delivery_email__iexact=email.strip())
+
+    return UserProfile.objects.filter(realm=realm).filter(email_filter)
+
 @cache_with_key(user_profile_cache_key, timeout=3600*24*7)
 def get_user(email: str, realm: Realm) -> UserProfile:
     """Fetches the user by its visible-to-other users username (in the
@@ -2182,14 +2188,6 @@ def get_user(email: str, realm: Realm) -> UserProfile:
     get_user_by_delivery_email.
     """
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
-
-def get_active_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
-    """Variant of get_user_by_delivery_email that excludes deactivated users.
-    See get_user_by_delivery_email docstring for important usage notes."""
-    user_profile = get_user_by_delivery_email(email, realm)
-    if not user_profile.is_active:
-        raise UserProfile.DoesNotExist()
-    return user_profile
 
 def get_active_user(email: str, realm: Realm) -> UserProfile:
     """Variant of get_user_by_email that excludes deactivated users.
@@ -2274,6 +2272,8 @@ class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
     huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)  # type: str
+    # Foreign key to the Recipient object for this Huddle.
+    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
 def get_huddle_hash(id_list: List[int]) -> str:
     id_list = sorted(set(id_list))
@@ -2294,6 +2294,8 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
         if created:
             recipient = Recipient.objects.create(type_id=huddle.id,
                                                  type=Recipient.HUDDLE)
+            huddle.recipient = recipient
+            huddle.save(update_fields=["recipient"])
             subs_to_create = [Subscription(recipient=recipient,
                                            user_profile_id=user_profile_id)
                               for user_profile_id in id_list]
@@ -2327,8 +2329,12 @@ class UserPresence(models.Model):
     """
     class Meta:
         unique_together = ("user_profile", "client")
+        index_together = [
+            ("realm", "timestamp")
+        ]
 
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
 
     # The time we heard this update from the client.
@@ -2360,141 +2366,6 @@ class UserPresence(models.Model):
             return 'idle'
         else:  # nocoverage # TODO: Add a presence test to cover this.
             raise ValueError('Unknown status: %s' % (status,))
-
-    @staticmethod
-    def get_status_dict_by_user(user_profile_id: int,
-                                slim_presence: bool=False) -> Dict[str, Dict[str, Any]]:
-        query = UserPresence.objects.filter(user_profile_id=user_profile_id).values(
-            'client__name',
-            'status',
-            'timestamp',
-            'user_profile__email',
-            'user_profile__id',
-            'user_profile__enable_offline_push_notifications',
-        )
-        presence_rows = list(query)
-
-        mobile_user_ids = set()  # type: Set[int]
-        if PushDeviceToken.objects.filter(user_id=user_profile_id).exists():  # nocoverage
-            # TODO: Add a test, though this is low priority, since we don't use mobile_user_ids yet.
-            mobile_user_ids.add(user_profile_id)
-
-        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
-
-    @staticmethod
-    def get_status_dict_by_realm(realm_id: int, slim_presence: bool = False) -> Dict[str, Dict[str, Any]]:
-        user_profile_ids = UserProfile.objects.filter(
-            realm_id=realm_id,
-            is_active=True,
-            is_bot=False
-        ).order_by('id').values_list('id', flat=True)
-
-        user_profile_ids = list(user_profile_ids)
-        if not user_profile_ids:  # nocoverage
-            # This conditional is necessary because query_for_ids
-            # throws an exception if passed an empty list.
-            #
-            # It's not clear this condition is actually possible,
-            # though, because it shouldn't be possible to end up with
-            # a realm with 0 active users.
-            return {}
-
-        two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
-        query = UserPresence.objects.filter(
-            timestamp__gte=two_weeks_ago
-        ).values(
-            'client__name',
-            'status',
-            'timestamp',
-            'user_profile__email',
-            'user_profile__id',
-            'user_profile__enable_offline_push_notifications',
-        )
-
-        query = query_for_ids(
-            query=query,
-            user_ids=user_profile_ids,
-            field='user_profile_id'
-        )
-        presence_rows = list(query)
-
-        mobile_query = PushDeviceToken.objects.distinct(
-            'user_id'
-        ).values_list(
-            'user_id',
-            flat=True
-        )
-
-        mobile_query = query_for_ids(
-            query=mobile_query,
-            user_ids=user_profile_ids,
-            field='user_id'
-        )
-        mobile_user_ids = set(mobile_query)
-
-        return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
-
-    @staticmethod
-    def get_status_dicts_for_rows(presence_rows: List[Dict[str, Any]],
-                                  mobile_user_ids: Set[int],
-                                  slim_presence: bool) -> Dict[str, Dict[str, Any]]:
-
-        info_row_dct = defaultdict(list)  # type: DefaultDict[str, List[Dict[str, Any]]]
-        for row in presence_rows:
-            # For now slim_presence just means that we will use
-            # user_id as a key instead of email.  We will eventually
-            # do other things based on this flag to make things simpler
-            # for the clients.
-            if slim_presence:
-                # Stringify user_id here, since it's gonna be turned
-                # into a string anyway by JSON, and it keeps mypy happy.
-                user_key = str(row['user_profile__id'])
-            else:
-                user_key = row['user_profile__email']
-
-            client_name = row['client__name']
-            status = UserPresence.status_to_string(row['status'])
-            dt = row['timestamp']
-            timestamp = datetime_to_timestamp(dt)
-            push_enabled = row['user_profile__enable_offline_push_notifications']
-            has_push_devices = row['user_profile__id'] in mobile_user_ids
-            pushable = (push_enabled and has_push_devices)
-
-            info = dict(
-                client=client_name,
-                status=status,
-                dt=dt,
-                timestamp=timestamp,
-                pushable=pushable,
-            )
-
-            info_row_dct[user_key].append(info)
-
-        user_statuses = dict()  # type: Dict[str, Dict[str, Any]]
-
-        for user_key, info_rows in info_row_dct.items():
-            # Note that datetime values have sub-second granularity, which is
-            # mostly important for avoiding test flakes, but it's also technically
-            # more precise for real users.
-            by_time = lambda row: row['dt']
-            most_recent_info = max(info_rows, key=by_time)
-
-            # We don't send datetime values to the client.
-            for r in info_rows:
-                del r['dt']
-
-            client_dict = {info['client']: info for info in info_rows}
-            user_statuses[user_key] = client_dict
-
-            # The word "aggegrated" here is possibly misleading.
-            # It's really just the most recent client's info.
-            user_statuses[user_key]['aggregated'] = dict(
-                client=most_recent_info['client'],
-                status=most_recent_info['status'],
-                timestamp=most_recent_info['timestamp'],
-            )
-
-        return user_statuses
 
     @staticmethod
     def to_presence_dict(client_name: str, status: int, dt: datetime.datetime, push_enabled: bool=False,

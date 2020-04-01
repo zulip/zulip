@@ -1,7 +1,5 @@
-set_global('i18n', global.stub_i18n);
 
 zrequire('unread');
-zrequire('util');
 zrequire('stream_data');
 zrequire('topic_data');
 
@@ -72,7 +70,7 @@ run_test('is_complete_for_stream_id', () => {
         stream_id: 444,
         first_message_id: 1000,
     };
-    stream_data.add_sub(sub.name, sub);
+    stream_data.add_sub(sub);
 
     message_list.all = {
         empty: () => false,
@@ -115,7 +113,7 @@ run_test('server_history', () => {
         stream_id: 66,
     };
     const stream_id = sub.stream_id;
-    stream_data.add_sub(sub.name, sub);
+    stream_data.add_sub(sub);
 
     message_list.all.fetch_status.has_found_newest = () => false;
 
@@ -218,11 +216,11 @@ run_test('test_unread_logic', () => {
         { id: 20, topic: 'UNREAD2' },
     ];
 
-    _.each(msgs, (msg) => {
+    for (const msg of msgs) {
         msg.type = 'stream';
         msg.stream_id = stream_id;
         msg.unread = true;
-    });
+    }
 
     unread.process_loaded_messages(msgs);
 

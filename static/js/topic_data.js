@@ -1,7 +1,6 @@
-const IntDict = require('./int_dict').IntDict;
 const FoldDict = require('./fold_dict').FoldDict;
 
-const stream_dict = new IntDict(); // stream_id -> topic_history object
+const stream_dict = new Map(); // stream_id -> topic_history object
 const fetched_stream_ids = new Set();
 
 exports.is_complete_for_stream_id = (stream_id) => {
@@ -114,7 +113,7 @@ exports.topic_history = function (stream_id) {
         // server.  We have less data about these than the
         // client can maintain for newer topics.
 
-        _.each(server_history, function (obj) {
+        for (const obj of server_history) {
             const name = obj.name;
             const message_id = obj.max_id;
 
@@ -124,7 +123,7 @@ exports.topic_history = function (stream_id) {
                 if (!existing.historical) {
                     // Trust out local data more, since it
                     // maintains counts.
-                    return;
+                    continue;
                 }
             }
 
@@ -137,7 +136,7 @@ exports.topic_history = function (stream_id) {
                 pretty_name: name,
                 historical: true,
             });
-        });
+        }
     };
 
     self.get_recent_names = function () {
@@ -154,9 +153,7 @@ exports.topic_history = function (stream_id) {
             return b.message_id - a.message_id;
         });
 
-        const names = _.map(recents, function (obj) {
-            return obj.pretty_name;
-        });
+        const names = recents.map(obj => obj.pretty_name);
 
         return names;
     };

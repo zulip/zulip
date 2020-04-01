@@ -1,5 +1,4 @@
 const FoldDict = require('./fold_dict').FoldDict;
-const IntDict = require('./int_dict').IntDict;
 
 let user_group_name_dict;
 let user_group_by_id_dict;
@@ -8,7 +7,7 @@ let user_group_by_id_dict;
 // can easily clear data.
 exports.init = function () {
     user_group_name_dict = new FoldDict();
-    user_group_by_id_dict = new IntDict();
+    user_group_by_id_dict = new Map();
 };
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -71,24 +70,24 @@ exports.is_member_of = function (user_group_id, user_id) {
 
 exports.add_members = function (user_group_id, user_ids) {
     const user_group = user_group_by_id_dict.get(user_group_id);
-    _.each(user_ids, function (user_id) {
+
+    for (const user_id of user_ids) {
         user_group.members.add(user_id);
-    });
+    }
 };
 
 exports.remove_members = function (user_group_id, user_ids) {
     const user_group = user_group_by_id_dict.get(user_group_id);
-    _.each(user_ids, function (user_id) {
+
+    for (const user_id of user_ids) {
         user_group.members.delete(user_id);
-    });
+    }
 };
 
-exports.initialize = function () {
-    _.each(page_params.realm_user_groups, function (user_group) {
+exports.initialize = function (params) {
+    for (const user_group of params.realm_user_groups) {
         exports.add(user_group);
-    });
-
-    delete page_params.realm_user_groups; // We are the only consumer of this.
+    }
 };
 
 exports.is_user_group = function (item) {

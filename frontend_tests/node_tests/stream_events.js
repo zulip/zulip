@@ -2,14 +2,6 @@ const noop = function () {};
 const return_true = function () { return true; };
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
-set_global('i18n', global.stub_i18n);
-
-set_global('colorspace', {
-    sRGB_to_linear: noop,
-    luminance_to_lightness: function () {
-        return 1;
-    },
-});
 
 zrequire('people');
 zrequire('stream_data');
@@ -32,7 +24,7 @@ const frontend = {
     invite_only: false,
 };
 
-stream_data.add_sub(frontend.name, frontend);
+stream_data.add_sub(frontend);
 
 run_test('update_property', () => {
     // Invoke error for non-existent stream/property
@@ -374,7 +366,7 @@ const dev_help = {
     is_muted: true,
     invite_only: false,
 };
-stream_data.add_sub(dev_help.name, dev_help);
+stream_data.add_sub(dev_help);
 
 run_test('remove_deactivated_user_from_all_streams', () => {
     subs.rerender_subscriptions_settings = () => {};

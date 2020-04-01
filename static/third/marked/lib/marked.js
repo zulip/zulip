@@ -738,28 +738,28 @@ InlineLexer.prototype.output = function(src) {
     // usermention (zulip)
     if (cap = this.rules.usermention.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.usermention(cap[3] || cap[4], cap[1], cap[2]);
+      out += this.usermention(unescape(cap[3] || cap[4]), cap[1], cap[2]);
       continue;
     }
 
     // groupmention (zulip)
     if (cap = this.rules.groupmention.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.groupmention(cap[1], cap[0]);
+      out += this.groupmention(unescape(cap[1]), cap[0]);
       continue;
     }
 
     // stream_topic (zulip)
     if (cap = this.rules.stream_topic.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.stream_topic(cap[1], cap[2], cap[0]);
+      out += this.stream_topic(unescape(cap[1]), unescape(cap[2]), cap[0]);
       continue;
     }
 
     // stream (zulip)
     if (cap = this.rules.stream.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.stream(cap[1], cap[0]);
+      out += this.stream(unescape(cap[1]), cap[0]);
       continue;
     }
 
@@ -1355,17 +1355,24 @@ function escape(html, encode) {
     .replace(/'/g, '&#39;');
 }
 
+var unescapeReplacements = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  colon: ':',
+};
+
 function unescape(html) {
   // explicitly match decimal, hex, and named HTML entities
-  return html.replace(/&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/g, function(_, n) {
+  return html.replace(/&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:[0-9A-Za-z]+));?/g, function(_, n) {
     n = n.toLowerCase();
-    if (n === 'colon') return ':';
     if (n.charAt(0) === '#') {
       return n.charAt(1) === 'x'
         ? String.fromCharCode(parseInt(n.substring(2), 16))
         : String.fromCharCode(+n.substring(1));
     }
-    return '';
+    return unescapeReplacements[n] || '';
   });
 }
 

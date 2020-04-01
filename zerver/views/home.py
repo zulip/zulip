@@ -24,6 +24,7 @@ from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.lib.utils import statsd, generate_random_token
+from zerver.views.compatibility import is_outdated_desktop_app
 from two_factor.utils import default_device
 
 import calendar
@@ -145,6 +146,18 @@ def home(request: HttpRequest) -> HttpResponse:
 
 @zulip_login_required
 def home_real(request: HttpRequest) -> HttpResponse:
+    # Before we do any real work, check if the app is banned.
+    (insecure_desktop_app, banned_desktop_app, auto_update_broken) = is_outdated_desktop_app(
+        request.META.get("HTTP_USER_AGENT", ""))
+    if banned_desktop_app:
+        return render(
+            request,
+            'zerver/insecure_desktop_app.html',
+            context={
+                "auto_update_broken": auto_update_broken,
+            }
+        )
+
     # We need to modify the session object every two weeks or it will expire.
     # This line makes reloading the page a sufficient action to keep the
     # session alive.
@@ -227,6 +240,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
+        insecure_desktop_app  = insecure_desktop_app,
         login_page            = settings.HOME_NOT_LOGGED_IN,
         root_domain_uri       = settings.ROOT_DOMAIN_URI,
         max_file_upload_size  = settings.MAX_FILE_UPLOAD_SIZE,
@@ -305,20 +319,11 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     csp_nonce = generate_random_token(48)
     if user_profile is not None:
-        if user_profile.emojiset == UserProfile.TEXT_EMOJISET:
-            # If current emojiset is `TEXT_EMOJISET`, then fallback to
-            # GOOGLE_EMOJISET for picking which spritesheet's CSS to
-            # include (and thus how to display emojis in the emoji picker
-            # and composebox typeahead).
-            emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
-        else:
-            emojiset = user_profile.emojiset
         night_mode = user_profile.night_mode
         is_guest = user_profile.is_guest
         is_realm_admin = user_profile.is_realm_admin
         show_webathena = user_profile.realm.webathena_enabled
     else:  # nocoverage
-        emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
         night_mode = False
         is_guest = False
         is_realm_admin = False
@@ -328,11 +333,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
-                               'emojiset': emojiset,
                                'page_params': page_params,
                                'csp_nonce': csp_nonce,
-                               'show_debug':
-                               settings.DEBUG and ('show_debug' in request.GET),
                                'search_pills_enabled': settings.SEARCH_PILLS_ENABLED,
                                'show_invites': show_invites,
                                'show_add_streams': show_add_streams,

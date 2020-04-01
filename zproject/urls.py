@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.conf.urls import url, include
 from django.conf.urls.i18n import i18n_patterns
-from django.http import HttpResponseBadRequest, HttpRequest, HttpResponse
 from django.views.generic import TemplateView, RedirectView
 from django.utils.module_loading import import_string
 import os
@@ -146,7 +145,8 @@ v1_api_and_json_patterns = [
     url(r'^users/(?!me/)(?P<email>[^/]*)/presence$', rest_dispatch,
         {'GET': 'zerver.views.presence.get_presence_backend'}),
     url(r'^users/(?P<user_id>[0-9]+)$', rest_dispatch,
-        {'PATCH': 'zerver.views.users.update_user_backend',
+        {'GET': 'zerver.views.users.get_members_backend',
+         'PATCH': 'zerver.views.users.update_user_backend',
          'DELETE': 'zerver.views.users.deactivate_user_backend'}),
     url(r'^bots$', rest_dispatch,
         {'GET': 'zerver.views.users.get_bots_backend',
@@ -564,33 +564,10 @@ i18n_urls = [
     # Terms of Service and privacy pages.
     url(r'^terms/$', zerver.views.portico.terms_view, name='terms'),
     url(r'^privacy/$', zerver.views.portico.privacy_view, name='privacy'),
+    url(r'^config-error/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view,
+        name='config_error'),
+    url(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view)
 
-    url(r'^config-error/google$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'google_error': True},),
-    url(r'^config-error/github$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'github_error': True},),
-    url(r'^config-error/smtp$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'smtp_error': True},),
-    url(r'^config-error/ldap$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'ldap_error_realm_is_none': True},
-        name='ldap_error_realm_is_none'),
-    url(r'^config-error/dev$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'dev_not_supported_error': True},
-        name='dev_not_supported'),
-    url(r'^config-error/saml$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'saml_error': True},),
-    url(r'^config-error/remoteuser/backend_disabled$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'remoteuser_error_backend_disabled': True},),
-    url(r'^config-error/remoteuser/remote_user_header_missing$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'remoteuser_error_remote_user_header_missing': True},),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -631,7 +608,7 @@ urls += [
                  {'override_api_url_scheme'})}),
 ]
 
-# This url serves as a way to recieve CSP violation reports from the users.
+# This url serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
 urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
             name='zerver.views.report.report_csp_violations'),
@@ -710,16 +687,14 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
 # Tornado views
 urls += [
     # Used internally for communication between Django and Tornado processes
+    #
+    # Since these views don't use rest_dispatch, they cannot have
+    # asynchronous Tornado behavior.
     url(r'^notify_tornado$', zerver.tornado.views.notify, name='zerver.tornado.views.notify'),
     url(r'^api/v1/events/internal$', zerver.tornado.views.get_events_internal),
 ]
 
 # Python Social Auth
-
-# This overrides the analogical entry in social_django.urls, because we want run our own code
-# at the beginning of social auth process. If deleting this override in the future,
-# it should be possible to remove urls.W003 from SILENCED_SYSTEM_CHECKS.
-urls += [url(r'^login/(?P<backend>[^/]+)/$', zerver.views.auth.social_auth, name='social:begin')]
 
 urls += [url(r'^', include('social_django.urls', namespace='social'))]
 urls += [url(r'^saml/metadata.xml$', zerver.views.auth.saml_sp_metadata)]
@@ -745,22 +720,3 @@ if settings.DEVELOPMENT:
 # reverse url mapping points to i18n urls which causes the frontend
 # tests to fail
 urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
-
-def handler400(request: HttpRequest, exception: Exception) -> HttpResponse:
-    # (This workaround should become obsolete with Django 2.1; the
-    #  issue was fixed upstream in commit 7ec0fdf62 on 2018-02-14.)
-    #
-    # This behaves exactly like the default Django implementation in
-    # the case where you haven't made a template "400.html", which we
-    # haven't -- except that it doesn't call `@requires_csrf_token` to
-    # attempt to set a `csrf_token` variable that the template could
-    # use if there were a template.  We skip @requires_csrf_token
-    # because that codepath can raise an error on a bad request, which
-    # is exactly the case we're trying to handle when we get here.
-    # Bug filed upstream: https://code.djangoproject.com/ticket/28693
-    #
-    # This function is used just because it has this special name in
-    # the root urls.py file; for more details, see:
-    # https://docs.djangoproject.com/en/1.11/topics/http/views/#customizing-error-views
-    return HttpResponseBadRequest(
-        '<h1>Bad Request (400)</h1>', content_type='text/html')

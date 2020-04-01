@@ -1,21 +1,24 @@
-set_global('i18n', global.stub_i18n);
 set_global('page_params', {realm_is_zephyr_mirror_realm: false});
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
+
+const settings_config = zrequire('settings_config');
+page_params.realm_email_address_visibility =
+    settings_config.email_address_visibility_values.admins_only.code;
+
 
 set_global('Handlebars', global.make_handlebars());
 zrequire('recent_senders');
 zrequire('pm_conversations');
 zrequire('people');
 zrequire('emoji');
-zrequire('util');
 zrequire('stream_data');
 zrequire('narrow');
 zrequire('hash_util');
 zrequire('marked', 'third/marked/lib/marked');
-const actual_pygments_data = zrequire('actual_pygments_data', 'generated/pygments_data');
-zrequire('settings_org');
+const pygments_data = zrequire('pygments_data', 'generated/pygments_data.json');
+const actual_pygments_data = Object.assign({}, pygments_data);
 const ct = zrequire('composebox_typeahead');
 const th = zrequire('typeahead_helper');
 const LazySet = zrequire('lazy_set.js').LazySet;
@@ -24,8 +27,8 @@ let next_id = 0;
 
 function assertSameEmails(lst1, lst2) {
     assert.deepEqual(
-        _.map(lst1, (r) => r.email),
-        _.map(lst2, (r) => r.email)
+        lst1.map(r => r.email),
+        lst2.map(r => r.email)
     );
 }
 
@@ -46,7 +49,7 @@ run_test('sort_streams', () => {
         {name: 'Denmark', pin_to_top: true, subscribers: popular, subscribed: true},
         {name: 'dead', pin_to_top: false, subscribers: unpopular, subscribed: true},
     ];
-    _.each(test_streams, stream_data.update_calculated_fields);
+    test_streams.forEach(stream_data.update_calculated_fields);
 
     global.stream_data.is_active = function (sub) {
         return sub.name !== 'dead';
@@ -67,7 +70,7 @@ run_test('sort_streams', () => {
         {name: 'Denmark', description: 'visiting Denmark', subscribers: popular, subscribed: true},
         {name: 'dead', description: 'dead stream', subscribers: unpopular, subscribed: true},
     ];
-    _.each(test_streams, stream_data.update_calculated_fields);
+    test_streams.forEach(stream_data.update_calculated_fields);
     test_streams = th.sort_streams(test_streams, 'wr');
     assert.deepEqual(test_streams[0].name, "Docs"); // Description match
     assert.deepEqual(test_streams[1].name, "Denmark"); // Popular stream
@@ -84,7 +87,7 @@ run_test('sort_streams', () => {
         {name: 'Ether', description: 'Destroying ether', subscribed: false, subscribers: popular},
         {name: 'Mew', description: 'Cat mews', subscribed: false, subscribers: popular},
     ];
-    _.each(test_streams, stream_data.update_calculated_fields);
+    test_streams.forEach(stream_data.update_calculated_fields);
 
     test_streams = th.sort_streams(test_streams, 'd');
     assert.deepEqual(test_streams[0].name, "Dev"); // Subscribed and stream name starts with query
@@ -96,7 +99,7 @@ run_test('sort_streams', () => {
 });
 
 run_test('sort_languages', () => {
-    set_global('pygments_data', {langs:
+    Object.assign(pygments_data, {langs:
         {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
     });
 
@@ -107,7 +110,7 @@ run_test('sort_languages', () => {
     assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
 
     // Test if popularity between two languages are the same
-    global.pygments_data.langs.php = 40;
+    pygments_data.langs.php = 40;
     test_langs = ["pascal", "perl", "php", "python", "javascript"];
     test_langs = th.sort_languages(test_langs, "p");
 
@@ -118,7 +121,7 @@ run_test('sort_languages', () => {
     // We may eventually want to use human-readable names like
     // "JavaScript" with several machine-readable aliases for what the
     // user typed, which might help provide a better user experience.
-    global.pygments_data = actual_pygments_data;
+    Object.assign(pygments_data, actual_pygments_data);
     test_langs = ["j", "java", "javascript", "js"];
 
     // Sort acccording to priority only.
@@ -198,20 +201,18 @@ const matches = [
     zman,
 ];
 
-_.each(matches, function (person) {
-    global.people.add_in_realm(person);
-});
+for (const person of matches) {
+    people.add(person);
+}
 
 function get_typeahead_result(query, current_stream, current_topic) {
     const result = th.sort_recipients(
-        global.people.get_realm_persons(),
+        people.get_realm_users(),
         query,
         current_stream,
         current_topic
     );
-    return _.map(result, function (person) {
-        return person.email;
-    });
+    return result.map(person => person.email);
 }
 
 run_test('sort_recipients', () => {
@@ -249,7 +250,7 @@ run_test('sort_recipients', () => {
     stream_data.update_calculated_fields(dev_sub);
     stream_data.update_calculated_fields(linux_sub);
 
-    // For spliting based on whether a PM was sent
+    // For splitting based on whether a PM was sent
     global.pm_conversations.set_partner(5);
     global.pm_conversations.set_partner(6);
     global.pm_conversations.set_partner(2);
@@ -363,9 +364,7 @@ run_test('sort_recipients dup bots', () => {
     const dup_objects = matches.concat([a_bot]);
 
     const recipients = th.sort_recipients(dup_objects, "b", "", "");
-    const recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
+    const recipients_email = recipients.map(person => person.email);
     const expected = [
         'b_bot@example.com',
         'b_user_3@zulip.net',
@@ -402,9 +401,7 @@ run_test('sort_recipients subscribers', () => {
     // b_user_2 is a subscriber and b_user_1 is not.
     const small_matches = [b_user_2, b_user_1];
     const recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev Topic");
-    const recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
+    const recipients_email = recipients.map(person => person.email);
     const expected = [
         'b_user_2@zulip.net',
         'b_user_1@zulip.net',
@@ -417,9 +414,7 @@ run_test('sort_recipients pm partners', () => {
     // both are not subscribered to the stream Linux.
     const small_matches = [b_user_3, b_user_2];
     const recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux Topic");
-    const recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
+    const recipients_email = recipients.map(person => person.email);
     const expected = [
         'b_user_3@zulip.net',
         'b_user_2@zulip.net',
@@ -438,7 +433,7 @@ run_test('sort broadcast mentions', () => {
         '');
 
     assert.deepEqual(
-        _.map(results, (r) => r.email),
+        results.map(r => r.email),
         ['all', 'everyone', 'stream']
     );
 
@@ -455,7 +450,7 @@ run_test('sort broadcast mentions', () => {
         '');
 
     assert.deepEqual(
-        _.map(results2, (r) => r.email),
+        results2.map(r => r.email),
         ['all',
          'everyone',
          'stream',
@@ -507,8 +502,8 @@ run_test('highlight_with_escaping', () => {
 });
 
 run_test('render_person when emails hidden', () => {
-    // Test render_person with regular person, under hidden email visiblity case
-    settings_org.show_email = () => false;
+    // Test render_person with regular person, under hidden email visibility case
+    page_params.is_admin = false;
     let rendered = false;
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
@@ -522,7 +517,7 @@ run_test('render_person when emails hidden', () => {
 });
 
 run_test('render_person', () => {
-    settings_org.show_email = () => true;
+    page_params.is_admin = true;
     // Test render_person with regular person
     let rendered = false;
     global.stub_templates(function (template_name, args) {
@@ -652,9 +647,9 @@ run_test('render_emoji', () => {
         emoji_name: 'thumbs_up',
         emoji_code: '1f44d',
     };
-    emoji.active_realm_emojis = {
+    emoji.active_realm_emojis = new Map(Object.entries({
         realm_emoji: 'TBD',
-    };
+    }));
 
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
@@ -715,9 +710,7 @@ run_test('sort_slash_commands', () => {
 
 run_test('sort_recipientbox_typeahead', () => {
     let recipients = th.sort_recipientbox_typeahead("b, a", matches, ""); // search "a"
-    let recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
+    let recipients_email = recipients.map(person => person.email);
     assert.deepEqual(recipients_email, [
         'a_user@zulip.org', // matches "a"
         'a_bot@zulip.com', // matches "a"
@@ -729,9 +722,7 @@ run_test('sort_recipientbox_typeahead', () => {
     ]);
 
     recipients = th.sort_recipientbox_typeahead("b, a, b", matches, ""); // search "b"
-    recipients_email = _.map(recipients, function (person) {
-        return person.email;
-    });
+    recipients_email = recipients.map(person => person.email);
     assert.deepEqual(recipients_email, [
         'b_bot@example.com',
         'b_user_3@zulip.net',

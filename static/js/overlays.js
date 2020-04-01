@@ -36,6 +36,24 @@ exports.drafts_open = function () {
     return open_overlay_name === 'drafts';
 };
 
+// To address bugs where mouse might apply to the streams/settings
+// overlays underneath an open modal within those settings UI, we add
+// this inline style to '.overlay.show', overriding the
+// "pointer-events: all" style in app_components.scss.
+//
+// This is kinda hacky; it only works for modals within overlays, and
+// we need to make sure it gets re-enabled when the modal closes.
+exports.disable_background_mouse_events = function () {
+    $('.overlay.show').attr("style", "pointer-events: none");
+};
+
+// This removes only the inline-style of the element that
+// was added in disable_background_mouse_events and
+// enables the background mouse events.
+exports.enable_background_mouse_events = function () {
+    $('.overlay.show').attr("style", null);
+};
+
 exports.active_modal = function () {
     if (!exports.is_modal_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
@@ -99,8 +117,8 @@ exports.open_modal = function (name) {
 
     $("#" + name).modal("show").attr("aria-hidden", false);
     // Disable background mouse events when modal is active
-    $('.overlay.show').attr("style", "pointer-events: none");
-    // Remove previous alert messsages from modal, if exists.
+    exports.disable_background_mouse_events();
+    // Remove previous alert messages from modal, if exists.
     $("#" + name).find(".alert").hide();
     $("#" + name).find(".alert-notification").html("");
 };
@@ -163,7 +181,7 @@ exports.close_modal = function (name) {
 
     $("#" + name).modal("hide").attr("aria-hidden", true);
     // Enable mouse events for the background as the modal closes.
-    $('.overlay.show').attr("style", null);
+    exports.enable_background_mouse_events();
 
 };
 

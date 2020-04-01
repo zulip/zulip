@@ -133,7 +133,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/en/history/', 'Cambridge, Massachusetts')
         self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Beautiful messaging')
-        self._test('/hello/', 'productive team chat', landing_missing_strings=["Login"])
+        self._test('/hello/', 'Chat for distributed teams', landing_missing_strings=["Login"])
         self._test('/why-zulip/', 'Why Zulip?')
         self._test('/for/open-source/', 'for open source projects')
         self._test('/for/companies/', 'in a company')
@@ -227,7 +227,8 @@ class DocPageTest(ZulipTestCase):
 
     def test_electron_detection(self) -> None:
         result = self.client_get("/accounts/password/reset/")
-        self.assertTrue('data-platform="website"' in result.content.decode("utf-8"))
+        # TODO: Ideally, this Mozilla would be the specific browser.
+        self.assertTrue('data-platform="Mozilla"' in result.content.decode("utf-8"))
 
         result = self.client_get("/accounts/password/reset/",
                                  HTTP_USER_AGENT="ZulipElectron/1.0.0")
@@ -353,90 +354,18 @@ class AboutPageTest(ZulipTestCase):
         expected_result = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         self.assertEqual(split_by(flat_list, 3, None), expected_result)
 
-class ConfigErrorTest(ZulipTestCase):
-    @override_settings(SOCIAL_AUTH_GOOGLE_KEY=None)
-    def test_google(self) -> None:
-        result = self.client_get("/accounts/login/social/google")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/google')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["social_auth_google_key"], result)
-        self.assert_in_success_response(["social_auth_google_secret"], result)
-        self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
-        self.assert_not_in_success_response(["SOCIAL_AUTH_GOOGLE_KEY"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GOOGLE_KEY=None)
-    @override_settings(DEVELOPMENT=False)
-    def test_google_production_error(self) -> None:
-        result = self.client_get("/accounts/login/social/google")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/google')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SOCIAL_AUTH_GOOGLE_KEY"], result)
-        self.assert_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_in_success_response(["social_auth_google_secret"], result)
-        self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-        self.assert_not_in_success_response(["social_auth_google_key"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
-    def test_github(self) -> None:
-        result = self.client_get("/accounts/login/social/github")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/github')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["social_auth_github_key"], result)
-        self.assert_in_success_response(["social_auth_github_secret"], result)
-        self.assert_in_success_response(["zproject/dev-secrets.conf"], result)
-        self.assert_not_in_success_response(["SOCIAL_AUTH_GITHUB_KEY"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_not_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
-    @override_settings(DEVELOPMENT=False)
-    def test_github_production_error(self) -> None:
-        """Test the !DEVELOPMENT code path of config-error."""
-        result = self.client_get("/accounts/login/social/github")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/github')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SOCIAL_AUTH_GITHUB_KEY"], result)
-        self.assert_in_success_response(["/etc/zulip/settings.py"], result)
-        self.assert_in_success_response(["social_auth_github_secret"], result)
-        self.assert_in_success_response(["/etc/zulip/zulip-secrets.conf"], result)
-        self.assert_not_in_success_response(["social_auth_github_key"], result)
-        self.assert_not_in_success_response(["zproject/dev_settings.py"], result)
-        self.assert_not_in_success_response(["zproject/dev-secrets.conf"], result)
-
-    @override_settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=None)
-    def test_saml_error(self) -> None:
-        result = self.client_get("/accounts/login/social/saml")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/config-error/saml')
-        result = self.client_get(result.url)
-        self.assert_in_success_response(["SAML authentication"], result)
-
+class SmtpConfigErrorTest(ZulipTestCase):
     def test_smtp_error(self) -> None:
         result = self.client_get("/config-error/smtp")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["email configuration"], result)
-
-    def test_dev_direct_production_error(self) -> None:
-        result = self.client_get("/config-error/dev")
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["DevAuthBackend"], result)
 
 class PlansPageTest(ZulipTestCase):
     def test_plans_auth(self) -> None:
         # Test root domain
         result = self.client_get("/plans/", subdomain="")
         self.assert_in_success_response(["Sign up now"], result)
-        # Test non-existant domain
+        # Test non-existent domain
         result = self.client_get("/plans/", subdomain="moo")
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("does not exist", result)
@@ -448,7 +377,7 @@ class PlansPageTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/accounts/login/?next=plans")
         # Test valid domain, with login
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan"], result)
         # Test root domain, with login on different domain
@@ -476,7 +405,7 @@ class PlansPageTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "https://zulipchat.com/plans")
 
-            self.login(self.example_email("iago"))
+            self.login('iago')
 
             # SELF_HOSTED should hide the local plans page, even if logged in
             result = self.client_get("/plans/", subdomain="zulip")

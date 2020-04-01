@@ -2,10 +2,22 @@ const render_settings_deactivation_stream_modal = require("../templates/settings
 const render_stream_member_list_entry = require('../templates/stream_member_list_entry.hbs');
 const render_subscription_settings = require('../templates/subscription_settings.hbs');
 const render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
+const settings_data = require("./settings_data");
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_uri(sub);
     hashchange.update_browser_history(hash);
+}
+
+function compare_by_email(a, b) {
+    if (a.delivery_email && b.delivery_email) {
+        return a.delivery_email.localeCompare(b.delivery_email);
+    }
+    return a.email.localeCompare(b.email);
+}
+
+function compare_by_name(a, b) {
+    return a.full_name.localeCompare(b.full_name);
 }
 
 exports.setup_subscriptions_tab_hash = function (tab_key_value) {
@@ -34,9 +46,9 @@ exports.is_sub_settings_active = function (sub) {
     return false;
 };
 
-exports.get_email_of_subscribers = function (subscribers) {
+exports.get_users_from_subscribers = function (subscribers) {
     return subscribers.map(function (user_id) {
-        return people.get_by_user_id(user_id).email;
+        return people.get_by_user_id(user_id);
     });
 };
 
@@ -86,11 +98,13 @@ exports.open_edit_panel_empty = function () {
     exports.setup_subscriptions_tab_hash(tab_key);
 };
 
-function format_member_list_elem(email) {
-    const person = people.get_by_email(email);
+function format_member_list_elem(person) {
     return render_stream_member_list_entry({
-        name: person.full_name, email: email,
+        name: person.full_name,
+        user_id: person.user_id,
+        email: settings_data.email_for_user_settings(person),
         displaying_for_admin: page_params.is_admin,
+        show_email: settings_data.show_email(),
     });
 }
 
@@ -135,18 +149,25 @@ exports.remove_user_from_stream = function (user_email, sub, success, failure) {
     });
 };
 
-exports.sort_but_pin_current_user_on_top = function (emails) {
-    if (emails === undefined) {
-        blueslip.error("Undefined emails are passed to function sort_but_pin_current_user_on_top");
+exports.sort_but_pin_current_user_on_top = function (users) {
+    if (users === undefined) {
+        blueslip.error("Undefined users are passed to function sort_but_pin_current_user_on_top");
         return;
     }
-    // Set current user top of subscription list, if subscribed.
-    if (emails.indexOf(people.my_current_email()) > -1) {
-        emails.splice(emails.indexOf(people.my_current_email()), 1);
-        emails.sort();
-        emails.unshift(people.my_current_email());
+
+    const my_user = people.get_by_email(people.my_current_email());
+    let compare_function;
+    if (settings_data.show_email()) {
+        compare_function = compare_by_email;
     } else {
-        emails.sort();
+        compare_function = compare_by_name;
+    }
+    if (users.includes(my_user)) {
+        users.splice(users.indexOf(my_user), 1);
+        users.sort(compare_function);
+        users.unshift(my_user);
+    } else {
+        users.sort(compare_function);
     }
 };
 
@@ -170,10 +191,10 @@ function show_subscription_settings(sub_row) {
     const list = get_subscriber_list(sub_settings);
     list.empty();
 
-    const emails = exports.get_email_of_subscribers(sub.subscribers);
-    exports.sort_but_pin_current_user_on_top(emails);
+    const users = exports.get_users_from_subscribers(sub.subscribers);
+    exports.sort_but_pin_current_user_on_top(users);
 
-    list_render.create(list, emails, {
+    list_render.create(list, users, {
         name: "stream_subscribers/" + stream_id,
         modifier: function (item) {
             return format_member_list_elem(item);
@@ -181,20 +202,21 @@ function show_subscription_settings(sub_row) {
         filter: {
             element: $("[data-stream-id='" + stream_id + "'] .search"),
             predicate: function (item, value) {
-                const person = people.get_by_email(item);
+                const person = item;
 
                 if (person) {
-                    const email = person.email.toLocaleLowerCase();
-                    const full_name = person.full_name.toLowerCase();
-
-                    return email.indexOf(value) > -1 || full_name.indexOf(value) > -1;
+                    if (person.email.toLocaleLowerCase().includes(value) &&
+                        settings_data.show_email()) {
+                        return true;
+                    }
+                    return person.full_name.toLowerCase().includes(value);
                 }
             },
         },
     }).init();
 
     sub_settings.find('input[name="principal"]').typeahead({
-        source: people.get_realm_persons, // This is a function.
+        source: () => stream_data.potential_subscribers(sub),
         items: 5,
         highlighter: function (item) {
             return typeahead_helper.render_person(item);
@@ -205,10 +227,8 @@ function show_subscription_settings(sub_row) {
                 return false;
             }
             // Case-insensitive.
-            const item_matches = item.email.toLowerCase().indexOf(query) !== -1 ||
-                               item.full_name.toLowerCase().indexOf(query) !== -1;
-            const is_subscribed = stream_data.is_user_subscribed(sub.name, item.user_id);
-            return item_matches && !is_subscribed;
+            return item.email.toLowerCase().includes(query) ||
+                   item.full_name.toLowerCase().includes(query);
         },
         sorter: function (matches) {
             const current_stream = compose_state.stream_name();
@@ -222,9 +242,9 @@ function show_subscription_settings(sub_row) {
 }
 
 exports.is_notification_setting = function (setting_label) {
-    if (setting_label.indexOf("_notifications") > -1) {
+    if (setting_label.includes("_notifications")) {
         return true;
-    } else if (setting_label.indexOf("_notify") > -1) {
+    } else if (setting_label.includes("_notify")) {
         return true;
     }
     return false;
@@ -308,12 +328,16 @@ function stream_is_muted_clicked(e) {
     }
 }
 
-function stream_setting_clicked(e) {
+exports.stream_setting_clicked = function (e) {
     if (e.currentTarget.id === 'sub_is_muted_setting') {
         return;
     }
 
-    const checkbox = $(e.currentTarget).find('.sub_setting_control');
+    let checkbox = $(e.currentTarget).find('.sub_setting_control');
+    // sub data is being changed from the notification settings page.
+    if (checkbox.length === 0) {
+        checkbox = $(e.currentTarget);
+    }
     const sub = get_sub_for_target(e.target);
     const setting = checkbox.attr('name');
     if (!sub) {
@@ -331,13 +355,7 @@ function stream_setting_clicked(e) {
         }
     }
     exports.set_stream_property(sub, setting, !sub[setting]);
-
-    // A hack.  Don't change the state of the checkbox if we
-    // clicked on the checkbox itself.
-    if (checkbox[0] !== e.target) {
-        checkbox.prop("checked", !checkbox.prop("checked"));
-    }
-}
+};
 
 exports.bulk_set_stream_property = function (sub_data) {
     return channel.post({
@@ -388,6 +406,7 @@ function change_stream_privacy(e) {
         url: "/json/streams/" + stream_id,
         data: data,
         success: function () {
+            overlays.close_modal('stream_privacy_modal');
             $("#stream_privacy_modal").remove();
             // The rest will be done by update stream event we will get.
         },
@@ -400,7 +419,7 @@ function change_stream_privacy(e) {
 exports.change_stream_name = function (e) {
     e.preventDefault();
     const sub_settings = $(e.target).closest('.subscription_settings');
-    const stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
+    const stream_id = get_stream_id(e.target);
     const new_name_box = sub_settings.find('.stream-name-editable');
     const new_name = $.trim(new_name_box.text());
     $(".stream_change_property_info").hide();
@@ -513,8 +532,19 @@ exports.initialize = function () {
                                  change_stream_privacy);
 
     $("#subscriptions_table").on('click', '.close-privacy-modal', function (e) {
+        // Re-enable background mouse events when we close the modal
+        // via the "x" in the corner.  (The other modal-close code
+        // paths call `overlays.close_modal`, rather than using
+        // bootstrap's data-dismiss=modal feature, and this is done
+        // there).
+        //
+        // TODO: It would probably be better to just do this
+        // unconditionally inside the handler for the event sent by
+        // bootstrap on closing a modal.
+        overlays.enable_background_mouse_events();
+
         // This fixes a weird bug in which, subscription_settings hides
-        // unexpectedly by clicking the cancel button.
+        // unexpectedly by clicking the cancel button in a modal on top of it.
         e.stopPropagation();
     });
 
@@ -522,7 +552,7 @@ exports.initialize = function () {
                                  stream_is_muted_clicked);
 
     $("#subscriptions_table").on("click", ".sub_setting_checkbox",
-                                 stream_setting_clicked);
+                                 exports.stream_setting_clicked);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
@@ -563,7 +593,8 @@ exports.initialize = function () {
         e.preventDefault();
 
         const list_entry = $(e.target).closest("tr");
-        const principal = list_entry.children(".subscriber-email").text();
+        const target_user_id = parseInt(list_entry.attr("data-subscriber-id"), 10);
+        const principal = people.get_by_user_id(target_user_id).email;
         const settings_row = $(e.target).closest('.subscription_settings');
 
         const sub = get_sub_for_target(settings_row);

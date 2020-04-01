@@ -1,5 +1,9 @@
 <ul class="grey-box">
-    <h4>{{t 'Who can access the stream?'}}</h4>
+    <h4>{{t 'Who can access the stream?'}}
+        <a href="/help/stream-permissions" target="_blank">
+            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+        </a>
+    </h4>
     <li>
         <label class="radio">
             <input type="radio" name="privacy" value="public" {{#if is_public}}checked{{/if}} />
@@ -19,7 +23,11 @@
         </label>
     </li>
     {{#if is_admin}}
-        <h4>{{t 'Who can post to the stream?'}}</h4>
+        <h4>{{t 'Who can post to the stream?'}}
+            <a href="/help/stream-sending-policy" target="_blank">
+                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+            </a>
+        </h4>
         {{#each stream_post_policy_values}}
         <li>
             <label class="radio">

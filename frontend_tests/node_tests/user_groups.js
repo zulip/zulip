@@ -1,5 +1,4 @@
 set_global('blueslip', global.make_zblueslip());
-set_global('page_params', {});
 
 zrequire('user_groups');
 
@@ -9,9 +8,11 @@ run_test('user_groups', () => {
         id: 0,
         members: [1, 2],
     };
-    global.page_params.realm_user_groups = [students];
 
-    user_groups.initialize();
+    const params = {};
+    params.realm_user_groups = [students];
+
+    user_groups.initialize(params);
     assert.equal(user_groups.get_user_group_from_id(students.id), students);
 
     const admins = {

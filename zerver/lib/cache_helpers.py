@@ -11,7 +11,7 @@ import logging
 from analytics.models import RealmCount
 from django.conf import settings
 from zerver.models import Message, UserProfile, Stream, get_stream_cache_key, \
-    Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
+    Client, get_client_cache_key, \
     Huddle, huddle_hash_cache_key
 from zerver.lib.cache import \
     user_profile_by_api_key_cache_key, \
@@ -65,10 +65,6 @@ def huddle_cache_items(items_for_remote_cache: Dict[str, Tuple[Huddle]],
                        huddle: Huddle) -> None:
     items_for_remote_cache[huddle_hash_cache_key(huddle.huddle_hash)] = (huddle,)
 
-def recipient_cache_items(items_for_remote_cache: Dict[str, Tuple[Recipient]],
-                          recipient: Recipient) -> None:
-    items_for_remote_cache[get_recipient_cache_key(recipient.type, recipient.type_id)] = (recipient,)
-
 session_engine = import_module(settings.SESSION_ENGINE)
 def session_cache_items(items_for_remote_cache: Dict[str, str],
                         session: Session) -> None:
@@ -101,10 +97,6 @@ def get_streams() -> List[Stream]:
             # have 10,000s of streams with only 1 subscriber.
             is_in_zephyr_realm=True)
 
-def get_recipients() -> List[Recipient]:
-    return Recipient.objects.select_related().filter(
-        type_id__in=get_streams().values_list("id", flat=True))  # type: ignore  # Should be QuerySet above
-
 def get_users() -> List[UserProfile]:
     return UserProfile.objects.select_related().filter(
         long_term_idle=False,
@@ -119,7 +111,6 @@ def get_users() -> List[UserProfile]:
 cache_fillers = {
     'user': (get_users, user_cache_items, 3600*24*7, 10000),
     'client': (lambda: Client.objects.select_related().all(), client_cache_items, 3600*24*7, 10000),
-    'recipient': (get_recipients, recipient_cache_items, 3600*24*7, 10000),
     'stream': (get_streams, stream_cache_items, 3600*24*7, 10000),
     # Message cache fetching disabled until we can fix the fact that it
     # does a bunch of inefficient memcached queries as part of filling

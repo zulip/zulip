@@ -34,7 +34,7 @@ run_test('get_emoji_matcher', () => {
     function assert_matches(query, expected) {
         const matcher = typeahead.get_emoji_matcher(query);
         assert.deepEqual(
-            _.filter(emojis, matcher),
+            emojis.filter(matcher),
             expected
         );
     }

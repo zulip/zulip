@@ -1,14 +1,14 @@
+const util = require("./util");
+const pygments_data = require("../generated/pygments_data.json");
 const typeahead = require("../shared/js/typeahead");
 const render_typeahead_list_item = require('../templates/typeahead_list_item.hbs');
-const IntDict = require('./int_dict').IntDict;
+const settings_data = require("./settings_data");
 
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
 exports.get_cleaned_pm_recipients = function (query_string) {
     let recipients = util.extract_pm_recipients(query_string);
-    recipients = _.filter(recipients, function (elem) {
-        return elem.match(/\S/);
-    });
+    recipients = recipients.filter(elem => elem.match(/\S/));
     return recipients;
 };
 
@@ -27,13 +27,15 @@ exports.highlight_with_escaping_and_regex = function (regex, item) {
 
     const pieces = item.split(regex);
     let result = "";
-    _.each(pieces, function (piece) {
+
+    for (const piece of pieces) {
         if (piece.match(regex)) {
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
         } else {
             result += Handlebars.Utils.escapeExpression(piece);
         }
-    });
+    }
+
     return result;
 };
 
@@ -62,7 +64,7 @@ exports.render_typeahead_item = function (args) {
     return render_typeahead_list_item(args);
 };
 
-const rendered = { persons: new IntDict(), streams: new IntDict(), user_groups: new IntDict() };
+const rendered = { persons: new Map(), streams: new Map(), user_groups: new Map() };
 
 exports.render_person = function (person) {
     if (person.special_item_text) {
@@ -81,7 +83,7 @@ exports.render_person = function (person) {
             img_src: avatar_url,
             is_person: true,
         };
-        if (settings_org.show_email()) {
+        if (settings_data.show_email()) {
             typeahead_arguments.secondary = person.email;
         }
         html = exports.render_typeahead_item(typeahead_arguments);
@@ -148,7 +150,7 @@ exports.render_emoji = function (item) {
         is_emoji: true,
         primary: item.emoji_name.split("_").join(" "),
     };
-    if (emoji.active_realm_emojis.hasOwnProperty(item.emoji_name)) {
+    if (emoji.active_realm_emojis.has(item.emoji_name)) {
         args.img_src = item.emoji_url;
     } else {
         args.emoji_code = item.emoji_code;
@@ -304,7 +306,6 @@ exports.sort_recipients = function (
     groups,
     max_num_items
 ) {
-
     if (!groups) {
         groups = [];
     }
@@ -356,11 +357,12 @@ exports.sort_recipients = function (
     */
 
     let items = [];
-    _.each(getters, (getter) => {
+
+    for (const getter of getters) {
         if (items.length < max_num_items) {
             items = items.concat(getter());
         }
-    });
+    }
 
     return items.slice(0, max_num_items);
 };

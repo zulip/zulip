@@ -45,7 +45,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
         for (const [key, obj] of key_to_option) {
             const voters = Array.from(obj.votes.keys());
-            const current_user_vote = _.contains(voters, me);
+            const current_user_vote = voters.includes(me);
 
             options.push({
                 option: obj.option,
@@ -162,18 +162,16 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
     // function to check whether option already exists
     self.is_option_present = function (data, latest_option) {
-        return _.any(data, function (el) {
-            return el.option === latest_option;
-        });
+        return data.some(el => el.option === latest_option);
     };
 
     // function to add all options added along with the /poll command
-    _.each(options, function (option, i) {
+    for (const [i, option] of options.entries()) {
         self.handle.new_option.inbound('canned', {
             idx: i,
             option: option,
         });
-    });
+    }
 
     return self;
 };
@@ -355,9 +353,10 @@ exports.activate = function (opts) {
     }
 
     elem.handle_events = function (events) {
-        _.each(events, function (event) {
+        for (const event of events) {
             poll_data.handle_event(event.sender_id, event.data);
-        });
+        }
+
         render_question();
         render_results();
     };

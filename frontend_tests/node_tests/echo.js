@@ -7,7 +7,6 @@ set_global('page_params', {});
 set_global('blueslip',  global.make_zblueslip());
 
 zrequire('echo');
-zrequire('util');
 zrequire('people');
 
 let disparities = [];
@@ -40,13 +39,13 @@ set_global('message_list', {});
 set_global('current_msg_list', '');
 
 run_test('process_from_server for un-echoed messages', () => {
-    const waiting_for_ack = {};
+    const waiting_for_ack = new Map();
     const server_messages = [
         {
-            local_id: 100.1,
+            local_id: "100.1",
         },
     ];
-    echo._patch_waiting_for_awk(waiting_for_ack);
+    echo._patch_waiting_for_ack(waiting_for_ack);
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, server_messages);
 });
@@ -56,26 +55,26 @@ run_test('process_from_server for differently rendered messages', () => {
     // in local echo.
     const old_value = 'old_value';
     const new_value = 'new_value';
-    const waiting_for_ack = {
-        100.1: {
+    const waiting_for_ack = new Map([
+        ["100.1", {
             content: "<p>A client rendered message</p>",
             timestamp: old_value,
             is_me_message: old_value,
             submessages: old_value,
-            subject_links: old_value,
-        },
-    };
+            topic_links: old_value,
+        }],
+    ]);
     const server_messages = [
         {
-            local_id: 100.1,
+            local_id: "100.1",
             content: "<p>A server rendered message</p>",
             timestamp: new_value,
             is_me_message: new_value,
             submessages: new_value,
-            subject_links: new_value,
+            topic_links: new_value,
         },
     ];
-    echo._patch_waiting_for_awk(waiting_for_ack);
+    echo._patch_waiting_for_ack(waiting_for_ack);
     messages_to_rerender = [];
     disparities = [];
     const non_echo_messages = echo.process_from_server(server_messages);
@@ -86,13 +85,15 @@ run_test('process_from_server for differently rendered messages', () => {
         timestamp: new_value,
         is_me_message: new_value,
         submessages: new_value,
-        subject_links: new_value,
+        topic_links: new_value,
     }]);
 });
 
 run_test('build_display_recipient', () => {
     page_params.user_id = 123;
-    page_params.realm_users = [
+
+    const params = {};
+    params.realm_users = [
         {
             user_id: 123,
             full_name: "Iago",
@@ -104,7 +105,9 @@ run_test('build_display_recipient', () => {
             user_id: 21,
         },
     ];
-    people.initialize();
+    params.realm_non_active_users = [];
+    params.cross_realm_bots = [];
+    people.initialize(page_params.user_id, params);
 
     let message = {
         type: "stream",
@@ -156,17 +159,21 @@ run_test('build_display_recipient', () => {
 });
 
 run_test('insert_local_message', () => {
-    const local_id = 1;
+    const local_id_float = 1;
 
     page_params.user_id = 123;
-    page_params.realm_users = [
+
+    const params = {};
+    params.realm_users = [
         {
             user_id: 123,
             full_name: "Iago",
             email: "iago@zulip.com",
         },
     ];
-    people.initialize();
+    params.realm_non_active_users = [];
+    params.cross_realm_bots = [];
+    people.initialize(page_params.user_id, params);
 
     let apply_markdown_called = false;
     let add_topic_links_called = false;
@@ -196,7 +203,7 @@ run_test('insert_local_message', () => {
         sender_full_name: "Iago",
         sender_id: 123,
     };
-    echo.insert_local_message(message_request, local_id);
+    echo.insert_local_message(message_request, local_id_float);
 
     assert(apply_markdown_called);
     assert(add_topic_links_called);
@@ -218,7 +225,7 @@ run_test('insert_local_message', () => {
         sender_full_name: "Iago",
         sender_id: 123,
     };
-    echo.insert_local_message(message_request, local_id);
+    echo.insert_local_message(message_request, local_id_float);
     assert(add_topic_links_called);
     assert(apply_markdown_called);
     assert(insert_message_called);

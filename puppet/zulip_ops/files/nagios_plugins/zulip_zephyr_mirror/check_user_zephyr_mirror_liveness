@@ -11,7 +11,9 @@ import os
 import sys
 
 sys.path.append('/home/zulip/deployments/current')
-import scripts.lib.setup_path_on_import
+from scripts.lib.setup_path import setup_path
+
+setup_path()
 
 import django
 from django.utils.timezone import now as timezone_now

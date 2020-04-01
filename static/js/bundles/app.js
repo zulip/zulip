@@ -3,7 +3,6 @@ import "./common.js";
 // Import Third party libraries
 import "../../third/bootstrap-notify/js/bootstrap-notify.js";
 import "../../third/bootstrap-typeahead/typeahead.js";
-import "../../third/jquery-filedrop/jquery.filedrop.js";
 import "jquery-caret-plugin/src/jquery.caret.js";
 import "../../third/jquery-idle/jquery.idle.js";
 import "spectrum-colorpicker";
@@ -17,23 +16,18 @@ import "handlebars/dist/cjs/handlebars.runtime.js";
 import "flatpickr/dist/flatpickr.js";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.js";
 import "sortablejs/Sortable.js";
-import "../../generated/emoji/emoji_codes.js";
-import "../../generated/pygments_data.js";
 
 // Import App JS
-import "../translations.js";
+import "../i18n.js";
 import "../feature_flags.js";
 import "../loading.js";
 import "../schema.js";
 import "../vdom.js";
-import "../util.js";
 import "../search_util.js";
 import "../keydown_util.js";
 import "../lightbox_canvas.js";
 import "../rtl.js";
 import "../lazy_set.js";
-import "../dict.ts";
-import "../int_dict.ts";
 import "../fold_dict.ts";
 import "../scroll_util.js";
 import "../components.js";

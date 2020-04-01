@@ -5,6 +5,7 @@ import logging
 
 from typing import Dict, Any, List
 
+from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import (
     do_import_realm,
 )
@@ -16,7 +17,7 @@ from zerver.data_import.mattermost_user import UserHandler
 from zerver.data_import.mattermost import mattermost_data_file_to_dict, process_user, convert_user_data, \
     create_username_to_user_mapping, label_mirror_dummy_users, reset_mirror_dummy_users, \
     convert_channel_data, write_emoticon_data, get_mentioned_user_ids, check_user_in_team, \
-    build_reactions, get_name_to_codepoint_dict, do_convert_data, convert_huddle_data, \
+    build_reactions, do_convert_data, convert_huddle_data, \
     generate_huddle_name
 from zerver.data_import.sequencer import IdMapper
 from zerver.data_import.import_util import SubscriberHandler
@@ -457,7 +458,6 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(zerver_realmemoji[1]["name"], "tick")
         tick_emoji_code = zerver_realmemoji[1]["id"]
 
-        name_to_codepoint = get_name_to_codepoint_dict()
         user_id_mapper = IdMapper()
         harry_id = user_id_mapper.get("harry")
         ron_id = user_id_mapper.get("ron")
@@ -467,7 +467,6 @@ class MatterMostImporter(ZulipTestCase):
             total_reactions=total_reactions,
             reactions=reactions,
             message_id=5,
-            name_to_codepoint=name_to_codepoint,
             user_id_mapper=user_id_mapper,
             zerver_realmemoji=zerver_realmemoji
         )

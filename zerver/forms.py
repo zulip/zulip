@@ -14,18 +14,19 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.http import HttpRequest
 from jinja2 import Markup as mark_safe
 
-from zerver.lib.actions import do_change_password, email_not_system_bot, \
-    validate_email_for_realm
+from zerver.lib.actions import do_change_password, email_not_system_bot
+from zerver.lib.email_validation import email_allowed_for_realm, \
+    validate_email_not_already_in_realm
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.rate_limiter import RateLimited, get_rate_limit_result_from_request, \
-    RateLimitedObject, rate_limit_entity
+    RateLimitedObject
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, get_user_by_delivery_email, UserProfile, get_realm, \
     email_to_domain, \
-    email_allowed_for_realm, DisposableEmailError, DomainNotAllowedForRealmError, \
+    DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError
 from zproject.backends import email_auth_enabled, email_belongs_to_ldap, check_password_strength
 
@@ -177,7 +178,7 @@ class HomepageForm(forms.Form):
         except EmailContainsPlusError:
             raise ValidationError(_("Email addresses containing + are not allowed in this organization."))
 
-        validate_email_for_realm(realm, email)
+        validate_email_not_already_in_realm(realm, email)
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)
@@ -211,7 +212,7 @@ class LoggingSetPasswordForm(SetPasswordForm):
 def generate_password_reset_url(user_profile: UserProfile,
                                 token_generator: PasswordResetTokenGenerator) -> str:
     token = token_generator.make_token(user_profile)
-    uid = urlsafe_base64_encode(force_bytes(user_profile.id)).decode('ascii')
+    uid = urlsafe_base64_encode(force_bytes(user_profile.id))
     endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
                        kwargs=dict(uidb64=uid, token=token))
     return "{}{}".format(user_profile.realm.uri, endpoint)
@@ -284,7 +285,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             context['active_account_in_realm'] = True
             context['reset_url'] = generate_password_reset_url(user, token_generator)
             send_email('zerver/emails/password_reset', to_user_ids=[user.id],
-                       from_name="Zulip Account Security",
+                       from_name=FromAddress.security_email_from_name(user_profile=user),
                        from_address=FromAddress.tokenized_no_reply_address(),
                        context=context)
         else:
@@ -293,27 +294,25 @@ class ZulipPasswordResetForm(PasswordResetForm):
                 delivery_email__iexact=email, is_active=True)
             if active_accounts_in_other_realms:
                 context['active_accounts_in_other_realms'] = active_accounts_in_other_realms
+            language = request.LANGUAGE_CODE
             send_email('zerver/emails/password_reset', to_emails=[email],
-                       from_name="Zulip Account Security",
+                       from_name=FromAddress.security_email_from_name(language=language),
                        from_address=FromAddress.tokenized_no_reply_address(),
-                       language=request.LANGUAGE_CODE,
-                       context=context)
+                       language=language, context=context)
 
 class RateLimitedPasswordResetByEmail(RateLimitedObject):
     def __init__(self, email: str) -> None:
         self.email = email
+        super().__init__()
 
-    def __str__(self) -> str:
-        return "Email: {}".format(self.email)
-
-    def key_fragment(self) -> str:
-        return "{}:{}".format(type(self), self.email)
+    def key(self) -> str:
+        return "{}:{}".format(type(self).__name__, self.email)
 
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_RULES['password_reset_form_by_email']
 
 def rate_limit_password_reset_form_by_email(email: str) -> None:
-    ratelimited, _ = rate_limit_entity(RateLimitedPasswordResetByEmail(email))
+    ratelimited, _ = RateLimitedPasswordResetByEmail(email).rate_limit()
     if ratelimited:
         raise RateLimited
 

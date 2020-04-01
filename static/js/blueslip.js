@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 // System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 
 // This must be included before the first call to $(document).ready
@@ -24,7 +26,7 @@ Logger.prototype = (function () {
     }
 
     function make_logger_func(name) {
-        return function Logger_func() {
+        return function Logger_func(...args) {
             const now = new Date();
             const date_str =
                 now.getUTCFullYear() + '-' +
@@ -35,12 +37,7 @@ Logger.prototype = (function () {
                 pad(now.getUTCSeconds(), 2) + '.' +
                 pad(now.getUTCMilliseconds(), 3) + ' UTC';
 
-            const str_args = _.map(arguments, function (x) {
-                if (typeof x === 'object') {
-                    return JSON.stringify(x);
-                }
-                return x;
-            });
+            const str_args = args.map(x => typeof x === "object" ? JSON.stringify(x) : x);
 
             const log_entry = date_str + " " + name.toUpperCase() +
                 ': ' + str_args.join("");
@@ -52,7 +49,7 @@ Logger.prototype = (function () {
             }
 
             if (console[name] !== undefined) {
-                return console[name].apply(console, arguments);
+                return console[name](...args);
             }
             return;
         };
@@ -79,11 +76,11 @@ exports.get_log = function blueslip_get_log() {
     return logger.get_log();
 };
 
-const reported_errors = {};
-const last_report_attempt = {};
+const reported_errors = new Set();
+const last_report_attempt = new Map();
 
 function report_error(msg, stack, opts) {
-    opts = _.extend({show_ui_msg: false}, opts);
+    opts = { show_ui_msg: false, ...opts };
 
     if (stack === undefined) {
         stack = 'No stacktrace available';
@@ -96,19 +93,22 @@ function report_error(msg, stack, opts) {
     }
 
     const key = ':' + msg + stack;
-    if (reported_errors.hasOwnProperty(key)
-        || last_report_attempt.hasOwnProperty(key)
+    if (reported_errors.has(key)
+        || last_report_attempt.has(key)
             // Only try to report a given error once every 5 minutes
-            && Date.now() - last_report_attempt[key] <= 60 * 5 * 1000) {
+            && Date.now() - last_report_attempt.get(key) <= 60 * 5 * 1000) {
         return;
     }
 
-    last_report_attempt[key] = Date.now();
+    last_report_attempt.set(key, Date.now());
 
     // TODO: If an exception gets thrown before we setup ajax calls
     // to include the CSRF token, our ajax call will fail.  The
     // elegant thing to do in that case is to either wait until that
     // setup is done or do it ourselves and then retry.
+    //
+    // Important: We don't use channel.js here so that exceptions
+    // always make it to the server even if reload_state.is_in_progress.
     $.ajax({
         type: 'POST',
         url: '/json/report/error',
@@ -124,7 +124,7 @@ function report_error(msg, stack, opts) {
         },
         timeout: 3 * 1000,
         success: function () {
-            reported_errors[key] = true;
+            reported_errors.add(key);
             if (opts.show_ui_msg && ui_report !== undefined) {
                 // There are a few races here (and below in the error
                 // callback):
@@ -219,22 +219,22 @@ function build_arg_list(msg, more_info) {
 
 exports.debug = function blueslip_debug(msg, more_info) {
     const args = build_arg_list(msg, more_info);
-    logger.debug.apply(logger, args);
+    logger.debug(...args);
 };
 
 exports.log = function blueslip_log(msg, more_info) {
     const args = build_arg_list(msg, more_info);
-    logger.log.apply(logger, args);
+    logger.log(...args);
 };
 
 exports.info = function blueslip_info(msg, more_info) {
     const args = build_arg_list(msg, more_info);
-    logger.info.apply(logger, args);
+    logger.info(...args);
 };
 
 exports.warn = function blueslip_warn(msg, more_info) {
     const args = build_arg_list(msg, more_info);
-    logger.warn.apply(logger, args);
+    logger.warn(...args);
     if (page_params.debug_mode) {
         console.trace();
     }
@@ -245,7 +245,7 @@ exports.error = function blueslip_error(msg, more_info, stack) {
         stack = Error().stack;
     }
     const args = build_arg_list(msg, more_info);
-    logger.error.apply(logger, args);
+    logger.error(...args);
     report_error(msg, stack, {more_info: more_info});
 
     if (page_params.debug_mode) {

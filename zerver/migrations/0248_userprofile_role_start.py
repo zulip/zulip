@@ -6,29 +6,30 @@ from django.db import migrations, models
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-# The values at the time of this migration
-ROLE_REALM_ADMINISTRATOR = 200
-ROLE_MEMBER = 400
-ROLE_GUEST = 600
-
 def update_role(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model('zerver', 'UserProfile')
+    # The values at the time of this migration
+    UserProfile.ROLE_REALM_ADMINISTRATOR = 200
+    UserProfile.ROLE_MEMBER = 400
+    UserProfile.ROLE_GUEST = 600
     for user in UserProfile.objects.all():
         if user.is_realm_admin:
-            user.role = ROLE_REALM_ADMINISTRATOR
+            user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         elif user.is_guest:
-            user.role = ROLE_GUEST
+            user.role = UserProfile.ROLE_GUEST
         else:
-            user.role = ROLE_MEMBER
+            user.role = UserProfile.ROLE_MEMBER
         user.save(update_fields=['role'])
 
 def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model('zerver', 'UserProfile')
+    UserProfile.ROLE_REALM_ADMINISTRATOR = 200
+    UserProfile.ROLE_GUEST = 600
     for user in UserProfile.objects.all():
-        if user.role == ROLE_REALM_ADMINISTRATOR:
+        if user.role == UserProfile.ROLE_REALM_ADMINISTRATOR:
             user.is_realm_admin = True
             user.save(update_fields=['is_realm_admin'])
-        elif user.role == ROLE_GUEST:
+        elif user.role == UserProfile.ROLE_GUEST:
             user.is_guest = True
             user.save(update_fields=['is_guest'])
 

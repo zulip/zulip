@@ -1,18 +1,17 @@
-set_global('i18n', global.stub_i18n);
 
 zrequire('people');
 zrequire('Filter', 'js/filter');
 zrequire('stream_data');
 zrequire('narrow_state');
-zrequire('util');
 
 set_global('blueslip', global.make_zblueslip());
 set_global('page_params', {});
 
 function set_filter(operators) {
-    operators = _.map(operators, function (op) {
-        return {operator: op[0], operand: op[1]};
-    });
+    operators = operators.map(op => ({
+        operator: op[0],
+        operand: op[1],
+    }));
     narrow_state.set_current_filter(new Filter(operators));
 }
 
@@ -22,7 +21,7 @@ run_test('stream', () => {
     assert(!narrow_state.active());
 
     const test_stream = {name: 'Test', stream_id: 15};
-    stream_data.add_sub('Test', test_stream);
+    stream_data.add_sub(test_stream);
 
     assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
 
@@ -60,6 +59,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
     assert.equal(narrow_state.stream_id(), undefined);
+    assert(!narrow_state.narrowed_to_starred());
 
     set_filter([['stream', 'Foo']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -69,6 +69,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(narrow_state.narrowed_by_stream_reply());
+    assert(!narrow_state.narrowed_to_starred());
 
     set_filter([['pm-with', 'steve@zulip.com']]);
     assert(narrow_state.narrowed_to_pms());
@@ -78,6 +79,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(!narrow_state.narrowed_to_starred());
 
     set_filter([['stream', 'Foo'], ['topic', 'bar']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -87,6 +89,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_search());
     assert(narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(!narrow_state.narrowed_to_starred());
 
     set_filter([['search', 'grail']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -96,6 +99,17 @@ run_test('narrowed', () => {
     assert(narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(!narrow_state.narrowed_to_starred());
+
+    set_filter([['is', 'starred']]);
+    assert(!narrow_state.narrowed_to_pms());
+    assert(!narrow_state.narrowed_by_reply());
+    assert(!narrow_state.narrowed_by_pm_reply());
+    assert(!narrow_state.narrowed_by_topic_reply());
+    assert(!narrow_state.narrowed_to_search());
+    assert(!narrow_state.narrowed_to_topic());
+    assert(!narrow_state.narrowed_by_stream_reply());
+    assert(narrow_state.narrowed_to_starred());
 });
 
 run_test('operators', () => {
@@ -132,6 +146,8 @@ run_test('muting_enabled', () => {
     set_filter([['is', 'private']]);
     assert(!narrow_state.muting_enabled());
 
+    set_filter([['is', 'starred']]);
+    assert(!narrow_state.muting_enabled());
 });
 
 run_test('set_compose_defaults', () => {
@@ -151,7 +167,7 @@ run_test('set_compose_defaults', () => {
         full_name: 'John Doe',
     };
     people.add(john);
-    people.add_in_realm(john);
+    people.add(john);
 
     set_filter([['pm-with', 'john@doe.com']]);
     pm_test = narrow_state.set_compose_defaults();
@@ -160,7 +176,7 @@ run_test('set_compose_defaults', () => {
     set_filter([['topic', 'duplicate'], ['topic', 'duplicate']]);
     assert.deepEqual(narrow_state.set_compose_defaults(), {});
 
-    stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
+    stream_data.add_sub({name: 'ROME', stream_id: 99});
     set_filter([['stream', 'rome']]);
 
     const stream_test = narrow_state.set_compose_defaults();
@@ -194,7 +210,7 @@ run_test('topic', () => {
     set_filter([['stream', 'release'], ['topic', '@#$$^test']]);
     assert.equal(narrow_state.topic(), '@#$$^test');
 
-    set_filter(undefined);
+    set_filter([]);
     assert.equal(narrow_state.topic(), undefined);
 
     set_filter([
@@ -209,7 +225,7 @@ run_test('topic', () => {
 
 
 run_test('stream', () => {
-    set_filter(undefined);
+    set_filter([]);
     assert.equal(narrow_state.stream(), undefined);
     assert.equal(narrow_state.stream_id(), undefined);
 
@@ -219,7 +235,7 @@ run_test('stream', () => {
     assert.equal(narrow_state.stream_id(), undefined);
 
     const sub = {name: 'Foo', stream_id: 55};
-    stream_data.add_sub('Foo', sub);
+    stream_data.add_sub(sub);
     assert.equal(narrow_state.stream_id(), 55);
     assert.deepEqual(narrow_state.stream_sub(), sub);
 

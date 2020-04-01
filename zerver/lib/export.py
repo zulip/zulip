@@ -832,18 +832,28 @@ def fetch_user_profile_cross_realm(response: TableData, config: Config, context:
     realm = context['realm']
     response['zerver_userprofile_crossrealm'] = []
 
+    bot_name_to_default_email = {
+        "NOTIFICATION_BOT": "notification-bot@zulip.com",
+        "EMAIL_GATEWAY_BOT": "emailgateway@zulip.com",
+        "WELCOME_BOT": "welcome-bot@zulip.com",
+    }
+
     if realm.string_id == settings.SYSTEM_BOT_REALM:
         return
 
-    for bot_user in [
-            get_system_bot(settings.NOTIFICATION_BOT),
-            get_system_bot(settings.EMAIL_GATEWAY_BOT),
-            get_system_bot(settings.WELCOME_BOT),
-    ]:
-        recipient_id = Recipient.objects.get(type_id=bot_user.id, type=Recipient.PERSONAL).id
+    for bot in settings.INTERNAL_BOTS:
+        bot_name = bot["var_name"]
+        if bot_name not in bot_name_to_default_email:
+            continue
+
+        bot_email = bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,)
+        bot_default_email = bot_name_to_default_email[bot_name]
+        bot_user_id = get_system_bot(bot_email).id
+
+        recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
         response['zerver_userprofile_crossrealm'].append(dict(
-            email=bot_user.email,
-            id=bot_user.id,
+            email=bot_default_email,
+            id=bot_user_id,
             recipient_id=recipient_id,
         ))
 
@@ -944,7 +954,7 @@ def export_usermessages_batch(input_path: Path, output_path: Path,
     objects. (This is called by the export_usermessage_batch
     management command)."""
     with open(input_path, "r") as input_file:
-        output = ujson.loads(input_file.read())
+        output = ujson.load(input_file)
     message_ids = [item['id'] for item in output['zerver_message']]
     user_profile_ids = set(output['zerver_userprofile_ids'])
     del output['zerver_userprofile_ids']
@@ -1225,6 +1235,9 @@ def _save_s3_object_to_file(key: Key, output_dir: str, processing_avatars: bool,
             raise AssertionError("Suspicious key with invalid format %s" % (key.name,))
         filename = os.path.join(output_dir, key.name)
 
+    if "../" in filename:
+        raise AssertionError("Suspicious file with invalid format %s" % (filename,))
+
     dirname = os.path.dirname(filename)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
@@ -1419,8 +1432,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
         for fn in fns:
             f.write(os.path.basename(fn) + '\n')
             with open(fn, 'r') as filename:
-                payload = filename.read()
-            data = ujson.loads(payload)
+                data = ujson.load(filename)
             for k in sorted(data):
                 f.write('%5d %s\n' % (len(data[k]), k))
             f.write('\n')
@@ -1431,8 +1443,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
         for fn in [avatar_file, uploads_file]:
             f.write(fn+'\n')
             with open(fn, 'r') as filename:
-                payload = filename.read()
-            data = ujson.loads(payload)
+                data = ujson.load(filename)
             f.write('%5d records\n' % (len(data),))
             f.write('\n')
 

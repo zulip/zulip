@@ -3,11 +3,9 @@ const _page_params = {};
 set_global('blueslip', global.make_zblueslip());
 
 set_global('page_params', _page_params);
-set_global('i18n', global.stub_i18n);
 set_global('$', global.make_zjquery());
 zrequire('people');
 zrequire('presence');
-zrequire('util');
 zrequire('user_status');
 
 zrequire('buddy_data');
@@ -53,47 +51,47 @@ const bot_with_owner = {
 };
 
 function make_people() {
-    _.each(_.range(1002, 2000), (i) => {
+    for (const i of _.range(1002, 2000)) {
         const person = {
             user_id: i,
             full_name: `Human ${i}`,
             email: `person${i}@example.com`,
         };
-        people.add_in_realm(person);
-    });
+        people.add(person);
+    }
 
-    people.add_in_realm(bot);
-    people.add_in_realm(bot_with_owner);
-    people.add_in_realm(selma);
-    people.add_in_realm(me);
-    people.add_in_realm(old_user);
+    people.add(bot);
+    people.add(bot_with_owner);
+    people.add(selma);
+    people.add(me);
+    people.add(old_user);
 
     people.initialize_current_user(me.user_id);
 }
 
 
 function activate_people() {
-    const server_time = 9999;
-    const info = {
-        website: {
-            status: "active",
-            timestamp: server_time,
-        },
-    };
+    presence.presence_info.clear();
+
+    function set_presence(user_id, status) {
+        presence.presence_info.set(user_id, {
+            status: status,
+            last_active: 9999,
+        });
+    }
 
     // Make 400 of the users active
-    presence.set_info_for_user(selma.user_id, info, server_time);
-    presence.set_info_for_user(me.user_id, info, server_time);
+    set_presence(selma.user_id, 'active');
+    set_presence(me.user_id, 'active');
 
-    _.each(_.range(1000, 1400), (user_id) => {
-        presence.set_info_for_user(user_id, info, server_time);
-    });
-
+    for (const user_id of _.range(1000, 1400)) {
+        set_presence(user_id, 'active');
+    }
 
     // And then 300 not active
-    _.each(_.range(1400, 1700), (user_id) => {
-        presence.set_info_for_user(user_id, {}, server_time);
-    });
+    for (const user_id of _.range(1400, 1700)) {
+        set_presence(user_id, 'offline');
+    }
 }
 
 
@@ -229,7 +227,7 @@ run_test('level', () => {
 });
 
 run_test('level', () => {
-    presence.presence_info = {};
+    presence.presence_info.clear();
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 3);
 
@@ -240,8 +238,8 @@ run_test('level', () => {
             timestamp: server_time,
         },
     };
-    presence.set_info_for_user(me.user_id, info, server_time);
-    presence.set_info_for_user(selma.user_id, info, server_time);
+    presence.update_info_from_event(me.user_id, info, server_time);
+    presence.update_info_from_event(selma.user_id, info, server_time);
 
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 1);

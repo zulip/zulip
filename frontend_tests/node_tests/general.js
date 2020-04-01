@@ -6,7 +6,7 @@
 // The most basic unit tests load up code, call functions,
 // and assert truths:
 
-zrequire('util');
+const util = zrequire('util');
 assert(!util.find_wildcard_mentions('boring text'));
 assert(util.find_wildcard_mentions('mention @**everyone**'));
 
@@ -26,7 +26,7 @@ assert(!people.is_known_user_id(isaac.user_id));
 people.add(isaac);
 assert(people.is_known_user_id(isaac.user_id));
 
-// The global.people object is a very fundamental object in the
+// The `people`object is a very fundamental object in the
 // Zulip app.  You can learn a lot more about it by reading
 // the tests in people.js in the same directory as this file.
 // Let's create the current user, which some future tests will
@@ -51,23 +51,17 @@ const denmark_stream = {
     subscribed: false,
 };
 
-// We often use IIFEs (immediately invoked function expressions)
-// to make our tests more self-containted.
-
 // Some quick housekeeping:  Let's clear page_params, which is a data
 // structure that the server sends down to us when the app starts.  We
 // prefer to test with a clean slate.
 
 set_global('page_params', {});
-set_global('i18n', global.stub_i18n);
 
 zrequire('stream_data');
-set_global('i18n', global.stub_i18n);
-zrequire('settings_display');
 
 run_test('stream_data', () => {
     assert.equal(stream_data.get_sub_by_name('Denmark'), undefined);
-    stream_data.add_sub('Denmark', denmark_stream);
+    stream_data.add_sub(denmark_stream);
     const sub = stream_data.get_sub_by_name('Denmark');
     assert.equal(sub.color, 'blue');
 });
@@ -111,9 +105,7 @@ zrequire('topic_data');
 zrequire('message_store');
 
 run_test('message_store', () => {
-    // Our test runner automatically sets _ for us.
-    // See http://underscorejs.org/ for help on that library.
-    const in_message = _.clone(messages.isaac_to_denmark_stream);
+    const in_message = { ...messages.isaac_to_denmark_stream };
 
     assert.equal(in_message.alerted, undefined);
     message_store.set_message_booleans(in_message);
@@ -140,7 +132,7 @@ run_test('unread', () => {
 
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 0);
 
-    const in_message = _.clone(messages.isaac_to_denmark_stream);
+    const in_message = { ...messages.isaac_to_denmark_stream };
     message_store.set_message_booleans(in_message);
 
     unread.process_loaded_messages([in_message]);
@@ -235,7 +227,6 @@ run_test('narrow_state', () => {
 
         zrequire - bring in real code
         set_global - create stubs
-        IIFE - enclose tests in their own scope
         assert.equal - verify results
 
     ------
@@ -496,7 +487,6 @@ run_test('insert_message', () => {
 */
 
 set_global('channel', {});
-set_global('feature_flags', {});
 set_global('home_msg_list', {});
 set_global('message_list', {});
 set_global('message_viewport', {});
@@ -596,7 +586,7 @@ const social_stream = {
 };
 
 run_test('set_up_filter', () => {
-    stream_data.add_sub('Social', social_stream);
+    stream_data.add_sub(social_stream);
 
     const filter_terms = [
         {operator: 'stream', operand: 'Social'},

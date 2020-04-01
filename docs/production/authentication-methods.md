@@ -21,13 +21,14 @@ email and password.
 When first setting up your Zulip server, this method must be used for
 creating the initial realm and user.  You can disable it after that.
 
-## Plug-and-play SSO (Google, GitHub)
+## Plug-and-play SSO (Google, GitHub, GitLab)
 
 With just a few lines of configuration, your Zulip server can
 authenticate users with any of several single-sign-on (SSO)
 authentication providers:
 * Google accounts, with `GoogleAuthBackend`
 * GitHub accounts, with `GitHubAuthBackend`
+* GitLab accounts, with `GitLabAuthBackend`
 * Microsoft Azure Active Directory, with `AzureADAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
@@ -73,7 +74,7 @@ it as follows:
    * Fill out `SOCIAL_AUTH_SAML_ENABLED_IDPS` with data provided by
      your identity provider.  You may find [the python-social-auth
      SAML
-     docs](https://python-social-auth-docs.readthedocs.io/en/latest/backends/saml.html)
+     docs](https://python-social-auth.readthedocs.io/en/latest/backends/saml.html)
      helpful.  You'll need to obtain several values from your IdP's
      metadata and enter them on the right-hand side of this
      Python dictionary:

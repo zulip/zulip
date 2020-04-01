@@ -7,8 +7,9 @@ if [ "$TRAVIS" ] ; then
     ZULIP_SRV="/home/travis"
 fi
 YARN_PACKAGE_JSON="$ZULIP_SRV/zulip-yarn/package.json"
-node_version=12.13.0
-yarn_version=1.19.1
+node_version=12.16.1
+yarn_version=1.22.4
+nvm_version=0.35.3
 
 # This is a fix for the fact that nvm uses $HOME to determine which
 # user account's home directory to ~/.config to.  Ideally, we'd have a
@@ -32,16 +33,18 @@ fi
 
 if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path" ]; then
     export NVM_DIR=/usr/local/nvm
-    if ! [ -e "$NVM_DIR/nvm.sh" ]; then
+    # shellcheck source=/dev/null
+    if ! [ -e "$NVM_DIR/nvm.sh" ] || { . "$NVM_DIR/nvm.sh"; [ "$(nvm --version)" != "$nvm_version" ]; }; then
+        mkdir -p "$NVM_DIR"
         wget_opts=(-nv)
         if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
             wget_opts+=(--ca-certificate "${CUSTOM_CA_CERTIFICATES}")
         fi
-        wget "${wget_opts[@]}" -O- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
+        wget "${wget_opts[@]}" -O- "https://raw.githubusercontent.com/nvm-sh/nvm/v$nvm_version/install.sh" | bash
+        # shellcheck source=/dev/null
+        . "$NVM_DIR/nvm.sh"
     fi
 
-    # shellcheck source=/dev/null
-    source "$NVM_DIR/nvm.sh"
     nvm install "$node_version" && nvm alias default "$node_version"
     NODE_BIN="$(nvm which default)"
 

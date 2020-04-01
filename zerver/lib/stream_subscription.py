@@ -1,5 +1,4 @@
 from typing import Any, Dict, List, Tuple
-from typing_extensions import TypedDict
 
 from django.db.models.query import QuerySet
 from zerver.models import (
@@ -25,6 +24,13 @@ def get_active_subscriptions_for_stream_ids(stream_ids: List[int]) -> QuerySet:
         active=True
     )
 
+def get_subscribed_stream_ids_for_user(user_profile: UserProfile) -> QuerySet:
+    return Subscription.objects.filter(
+        user_profile_id=user_profile,
+        recipient__type=Recipient.STREAM,
+        active=True,
+    ).values_list('recipient__type_id', flat=True)
+
 def get_stream_subscriptions_for_user(user_profile: UserProfile) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
     return Subscription.objects.filter(
@@ -38,11 +44,6 @@ def get_stream_subscriptions_for_users(user_profiles: List[UserProfile]) -> Quer
         user_profile__in=user_profiles,
         recipient__type=Recipient.STREAM,
     )
-
-SubInfo = TypedDict('SubInfo', {
-    'sub': Subscription,
-    'stream': Stream,
-})
 
 def get_bulk_stream_subscriber_info(
         user_profiles: List[UserProfile],

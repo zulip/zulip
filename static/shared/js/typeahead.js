@@ -19,7 +19,7 @@
     that other factors still may matter more, such as
     prefix matches trumping "popularity".
 */
-exports.popular_emojis = [
+export const popular_emojis = [
     '1f44d', // +1
     '1f389', // tada
     '1f642', // slight_smile
@@ -30,12 +30,12 @@ exports.popular_emojis = [
 
 const unicode_marks = /\p{M}/gu;
 
-exports.remove_diacritics = function (s) {
+export function remove_diacritics(s) {
     return s.normalize("NFKD").replace(unicode_marks, "");
-};
+}
 
 function query_matches_string(query, source_str, split_char) {
-    source_str = exports.remove_diacritics(source_str);
+    source_str = remove_diacritics(source_str);
 
     // If query doesn't contain a separator, we just want an exact
     // match where query is a substring of one of the target characters.
@@ -64,7 +64,7 @@ function query_matches_string(query, source_str, split_char) {
     }
 
     // For a single token, the match can be anywhere in the string.
-    return source_str.indexOf(query) !== -1;
+    return source_str.includes(query);
 }
 
 // This function attempts to match a query with source's attributes.
@@ -74,15 +74,15 @@ function query_matches_string(query, source_str, split_char) {
 // the entered string might be trying to match, e.g. for a user
 // account, there might be 2 attrs: their full name and their email.
 // * split_char is the separator for this syntax (e.g. ' ').
-exports.query_matches_source_attrs = (query, source, match_attrs, split_char) => {
-    return _.any(match_attrs, function (attr) {
+export function query_matches_source_attrs(query, source, match_attrs, split_char) {
+    return match_attrs.some(attr => {
         const source_str = source[attr].toLowerCase();
         return query_matches_string(query, source_str, split_char);
     });
-};
+}
 
 function clean_query(query) {
-    query = exports.remove_diacritics(query);
+    query = remove_diacritics(query);
     // When `abc ` with a space at the end is typed in a
     // contenteditable widget such as the composebox PM section, the
     // space at the end was a `no break-space (U+00A0)` instead of
@@ -92,23 +92,23 @@ function clean_query(query) {
     return query;
 }
 
-exports.clean_query_lowercase = function (query) {
+export function clean_query_lowercase(query) {
     query = query.toLowerCase();
     query = clean_query(query);
     return query;
-};
+}
 
-exports.get_emoji_matcher = (query) => {
+export function get_emoji_matcher(query) {
     // replaces spaces with underscores for emoji matching
     query = query.split(" ").join("_");
-    query = exports.clean_query_lowercase(query);
+    query = clean_query_lowercase(query);
 
     return function (emoji) {
-        return exports.query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
+        return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
     };
-};
+}
 
-exports.triage = function (query, objs, get_item) {
+export function triage(query, objs, get_item) {
     /*
         We split objs into three groups:
 
@@ -144,37 +144,35 @@ exports.triage = function (query, objs, get_item) {
         matches: beginswithCaseSensitive.concat(beginswithCaseInsensitive),
         rest: noMatch,
     };
-};
+}
 
-exports.sort_emojis = function (objs, query) {
+export function sort_emojis(objs, query) {
     const lowerQuery = query.toLowerCase();
 
     function decent_match(name) {
         const pieces = name.toLowerCase().split('_');
-        return _.any(pieces, (piece) => {
-            return piece.startsWith(lowerQuery);
-        });
+        return pieces.some(piece => piece.startsWith(lowerQuery));
     }
 
-    const popular_set = new Set(exports.popular_emojis);
+    const popular_set = new Set(popular_emojis);
 
     function is_popular(obj) {
         return popular_set.has(obj.emoji_code) &&
             decent_match(obj.emoji_name);
     }
 
-    const popular_emoji_matches = _.filter(objs, is_popular);
-    const others = _.reject(objs, is_popular);
+    const popular_emoji_matches = objs.filter(is_popular);
+    const others = objs.filter(obj => !is_popular(obj));
 
-    const triage_results = exports.triage(
+    const triage_results = triage(
         query,
         others,
         (x) => x.emoji_name
     );
 
-    return [].concat(
-        popular_emoji_matches,
-        triage_results.matches,
-        triage_results.rest
-    );
-};
+    return [
+        ...popular_emoji_matches,
+        ...triage_results.matches,
+        ...triage_results.rest,
+    ];
+}

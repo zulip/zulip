@@ -1,11 +1,12 @@
+const util = require("./util");
 function MessageListData(opts) {
     this.muting_enabled = opts.muting_enabled;
     if (this.muting_enabled) {
         this._all_items = [];
     }
     this._items = [];
-    this._hash = {};
-    this._local_only = {};
+    this._hash = new Map();
+    this._local_only = new Set();
     this._selected_id = -1;
 
     let filter = opts.filter;
@@ -41,7 +42,7 @@ MessageListData.prototype = {
         if (this._selected_id === -1) {
             return;
         }
-        const ids = _.pluck(this._items, 'id');
+        const ids = this._items.map(message => message.id);
 
         const i = ids.indexOf(this._selected_id);
         if (i === -1) {
@@ -108,7 +109,7 @@ MessageListData.prototype = {
         }
 
         this._items = [];
-        this._hash = {};
+        this._hash.clear();
     },
 
     get: function (id) {
@@ -116,7 +117,7 @@ MessageListData.prototype = {
         if (isNaN(id)) {
             return;
         }
-        return this._hash[id];
+        return this._hash.get(id);
     },
 
     clear_selected_id: function () {
@@ -156,21 +157,20 @@ MessageListData.prototype = {
     valid_non_duplicated_messages: function (messages) {
         const predicate = this._get_predicate();
         const self = this;
-        return _.filter(messages, function (msg) {
-            return self.get(msg.id) === undefined && predicate(msg);
-        });
+        return messages.filter(msg => self.get(msg.id) === undefined && predicate(msg));
     },
 
     filter_incoming: function (messages) {
         const predicate = this._get_predicate();
-        return _.filter(messages, predicate);
+        return messages.filter(predicate);
     },
 
     unmuted_messages: function (messages) {
-        return _.reject(messages, function (message) {
-            return muting.is_topic_muted(message.stream_id, util.get_message_topic(message)) &&
-                   !message.mentioned;
-        });
+        return messages.filter(
+            message =>
+                !muting.is_topic_muted(message.stream_id, message.topic) ||
+                message.mentioned
+        );
     },
 
     update_items_for_muting: function () {
@@ -181,9 +181,7 @@ MessageListData.prototype = {
     },
 
     first_unread_message_id: function () {
-        const first_unread = _.find(this._items, function (message) {
-            return unread.message_unread(message);
-        });
+        const first_unread = this._items.find(message => unread.message_unread(message));
 
         if (first_unread) {
             return first_unread.id;
@@ -194,11 +192,11 @@ MessageListData.prototype = {
     },
 
     update_user_full_name: function (user_id, full_name) {
-        _.each(this._items, function (item) {
+        for (const item of this._items) {
             if (item.sender_id && item.sender_id === user_id) {
                 item.sender_full_name = full_name;
             }
-        });
+        }
     },
 
     update_user_avatar: function (user_id, avatar_url) {
@@ -206,20 +204,20 @@ MessageListData.prototype = {
         // We may want to de-dup some logic with update_user_full_name,
         // especially if we want to optimize this with some kind of
         // hash that maps sender_id -> messages.
-        _.each(this._items, function (item) {
+        for (const item of this._items) {
             if (item.sender_id && item.sender_id === user_id) {
                 item.small_avatar_url = avatar_url;
             }
-        });
+        }
     },
 
     update_stream_name: function (stream_id, new_stream_name) {
-        _.each(this._items, function (item) {
+        for (const item of this._items) {
             if (item.stream_id && item.stream_id === stream_id) {
                 item.display_recipient = new_stream_name;
                 item.stream = new_stream_name;
             }
-        });
+        }
     },
 
     add_messages: function (messages) {
@@ -232,15 +230,13 @@ MessageListData.prototype = {
         // bottom_messages regardless
         if (self.selected_id() === -1 && self.empty()) {
             const narrow_messages = self.filter_incoming(messages);
-            bottom_messages = _.reject(narrow_messages, function (msg) {
-                return self.get(msg.id);
-            });
+            bottom_messages = narrow_messages.filter(msg => !self.get(msg.id));
         } else {
             // Filter out duplicates that are already in self, and all messages
             // that fail our filter predicate
             messages = self.valid_non_duplicated_messages(messages);
 
-            _.each(messages, function (msg) {
+            for (const msg of messages) {
                 // Put messages in correct order on either side of the
                 // message list.  This code path assumes that messages
                 // is a (1) sorted, and (2) consecutive block of
@@ -253,7 +249,7 @@ MessageListData.prototype = {
                 } else {
                     interior_messages.push(msg);
                 }
-            });
+            }
         }
 
         if (interior_messages.length > 0) {
@@ -330,25 +326,26 @@ MessageListData.prototype = {
 
     remove: function (messages) {
         const self = this;
-        _.each(messages, function (message) {
-            const stored_message = self._hash[message.id];
-            if (stored_message !== undefined) {
-                delete self._hash[stored_message];
-            }
-            delete self._local_only[message.id];
-        });
 
-        const msg_ids_to_remove = {};
-        _.each(messages, function (message) {
-            msg_ids_to_remove[message.id] = true;
-        });
-        this._items = _.filter(this._items, function (message) {
-            return !msg_ids_to_remove.hasOwnProperty(message.id);
-        });
+        for (const message of messages) {
+            const stored_message = self._hash.get(message.id);
+            if (stored_message !== undefined) {
+                self._hash.delete(stored_message);
+            }
+            self._local_only.delete(message.id);
+        }
+
+        const msg_ids_to_remove = new Set();
+
+        for (const message of messages) {
+            msg_ids_to_remove.add(message.id);
+        }
+
+        this._items = this._items.filter(message => !msg_ids_to_remove.has(message.id));
         if (this.muting_enabled) {
-            this._all_items = _.filter(this._all_items, function (message) {
-                return !msg_ids_to_remove.hasOwnProperty(message.id);
-            });
+            this._all_items = this._all_items.filter(
+                message => !msg_ids_to_remove.has(message.id)
+            );
         }
     },
 
@@ -391,7 +388,7 @@ MessageListData.prototype = {
         // We directly keep track of local-only messages,
         // so if we're asked for one that we know we have,
         // just return it directly
-        if (this._local_only.hasOwnProperty(id)) {
+        if (this._local_only.has(id)) {
             return id;
         }
 
@@ -426,15 +423,15 @@ MessageListData.prototype = {
             potential_closest_matches.unshift(_.last(potential_closest_matches) - 1);
             let best_match = items[closest].id;
 
-            _.each(potential_closest_matches, function (potential_idx) {
+            for (const potential_idx of potential_closest_matches) {
                 if (potential_idx < 0) {
-                    return;
+                    continue;
                 }
                 const item = items[potential_idx];
 
                 if (item === undefined) {
                     blueslip.warn('Invalid potential_idx: ' + potential_idx);
-                    return;
+                    continue;
                 }
 
                 const potential_match = item.id;
@@ -443,7 +440,7 @@ MessageListData.prototype = {
                     best_match = potential_match;
                     closest = potential_idx;
                 }
-            });
+            }
         }
         return items[closest].id;
     },
@@ -455,16 +452,12 @@ MessageListData.prototype = {
         // messages that we have recently visited.
         let next_msg_id = 0;
 
-        const id_set = {};
-
-        _.each(msg_ids, function (msg_id) {
-            id_set[msg_id] = true;
-        });
+        const id_set = new Set(msg_ids);
 
         let idx = this.selected_idx() + 1;
         while (idx < this._items.length) {
             const msg_id = this._items[idx].id;
-            if (!id_set[msg_id]) {
+            if (!id_set.has(msg_id)) {
                 break;
             }
             next_msg_id = msg_id;
@@ -484,13 +477,13 @@ MessageListData.prototype = {
                 blueslip.fatal("Bad message id");
             }
             if (self._is_localonly_id(id)) {
-                self._local_only[id] = elem;
+                self._local_only.add(id);
             }
-            if (self._hash[id] !== undefined) {
+            if (self._hash.has(id)) {
                 blueslip.error("Duplicate message added to MessageListData");
                 return;
             }
-            self._hash[id] = elem;
+            self._hash.set(id, elem);
         });
     },
 
@@ -510,19 +503,19 @@ MessageListData.prototype = {
         // Update our local cache that uses the old id to the new id
         function message_sort_func(a, b) {return a.id - b.id;}
 
-        if (this._hash.hasOwnProperty(old_id)) {
-            const msg = this._hash[old_id];
-            delete this._hash[old_id];
-            this._hash[new_id] = msg;
+        if (this._hash.has(old_id)) {
+            const msg = this._hash.get(old_id);
+            this._hash.delete(old_id);
+            this._hash.set(new_id, msg);
         } else {
             return;
         }
 
-        if (this._local_only.hasOwnProperty(old_id)) {
+        if (this._local_only.has(old_id)) {
             if (this._is_localonly_id(new_id)) {
-                this._local_only[new_id] = this._local_only[old_id];
+                this._local_only.add(new_id);
             }
-            delete this._local_only[old_id];
+            this._local_only.delete(old_id);
         }
 
         if (this._selected_id === old_id) {
@@ -532,7 +525,7 @@ MessageListData.prototype = {
         // If this message is now out of order, re-order and re-render
         const self = this;
         setTimeout(function () {
-            const current_message = self._hash[new_id];
+            const current_message = self._hash.get(new_id);
             const index = self._items.indexOf(current_message);
 
             if (index === -1) {

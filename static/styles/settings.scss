@@ -3,6 +3,7 @@ label {
 }
 
 label,
+h4,
 h3 {
     a {
         color: inherit;
@@ -666,8 +667,30 @@ input[type=checkbox].inline-block {
     margin-top: 4px;
 }
 
-#notification-settings .notification-reminder {
-    text-align: left;
+#notification-settings {
+    .notification-reminder {
+        text-align: left;
+    }
+
+    #notification-table {
+        th,
+        td {
+            text-align: center;
+            vertical-align: middle;
+            cursor: default;
+
+            .stream-privacy span.hashtag,
+            .filter-icon i {
+                padding-right: 0px;
+            }
+        }
+
+        td:first-child {
+            text-align: left;
+            font-weight: bold;
+            word-break: break-all;
+        }
+    }
 }
 
 #account-settings .custom-profile-fields-form .custom_user_field label {
@@ -1540,6 +1563,10 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
 #settings_page .custom_user_field .remove_date:hover {
     opacity: 1;
+}
+
+#settings_page .custom_user_field_value.datepicker {
+    cursor: pointer;
 }
 
 #settings_page .custom_user_field .person_picker {

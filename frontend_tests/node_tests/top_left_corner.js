@@ -3,7 +3,6 @@ set_global('$', global.make_zjquery());
 zrequire('Filter', 'js/filter');
 zrequire('unread_ui');
 zrequire('people');
-zrequire('util');
 
 zrequire('top_left_corner');
 
@@ -36,8 +35,8 @@ run_test('narrowing', () => {
         full_name: 'Bob Patel',
     };
 
-    people.add_in_realm(alice);
-    people.add_in_realm(bob);
+    people.add(alice);
+    people.add(bob);
 
     pm_expanded = false;
     filter = new Filter([

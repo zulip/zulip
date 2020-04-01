@@ -4,6 +4,8 @@ from zerver.lib.types import DisplayRecipientT
 from confirmation.models import one_click_unsubscribe_link
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import override as override_language
+from django.utils.translation import ugettext as _
 from django.contrib.auth import get_backends
 
 from zerver.decorator import statsd_increment
@@ -414,7 +416,8 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             'show_message_content': True,
         })
 
-    from_name = "Zulip missed messages"  # type: str
+    with override_language(user_profile.default_language):
+        from_name = _("Zulip missed messages")  # type: str
     from_address = FromAddress.NOREPLY
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
@@ -543,7 +546,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         from_address = settings.WELCOME_EMAIL_SENDER['email']
     else:
         from_name = None
-        from_address = FromAddress.SUPPORT
+        from_address = FromAddress.support_placeholder
 
     other_account_count = UserProfile.objects.filter(
         delivery_email__iexact=user.delivery_email).exclude(id=user.id).count()

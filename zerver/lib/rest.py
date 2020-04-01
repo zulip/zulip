@@ -6,7 +6,7 @@ from django.utils.cache import add_never_cache_headers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
-    process_as_post, authenticated_uploads_api_view, RespondAsynchronously, \
+    process_as_post, authenticated_uploads_api_view, \
     ReturnT
 from zerver.lib.response import json_method_not_allowed, json_unauthorized
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -21,18 +21,11 @@ def default_never_cache_responses(
     decorator that adds headers to a response so that it will never be
     cached, unless the view code has already set a Cache-Control
     header.
-
-    We also need to patch this because our Django+Tornado
-    RespondAsynchronously hack involves returning a value that isn't a
-    Django response object, on which add_never_cache_headers would
-    crash.  This only occurs in a case where client-side caching
-    wouldn't be possible anyway (we aren't returning a response to the
-    client yet -- it's for longpolling).
     """
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> ReturnT:
         response = view_func(request, *args, **kwargs)
-        if response is RespondAsynchronously or response.has_header("Cache-Control"):
+        if response.has_header("Cache-Control"):
             return response
 
         add_never_cache_headers(response)
@@ -65,6 +58,11 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     etc, as that is where we route HTTP verbs to target functions.
     """
     supported_methods = {}  # type: Dict[str, Any]
+
+    if hasattr(request, "saved_response"):
+        # For completing long-polled Tornado requests, we skip the
+        # view function logic and just return the response.
+        return request.saved_response
 
     # duplicate kwargs so we can mutate the original as we go
     for arg in list(kwargs):

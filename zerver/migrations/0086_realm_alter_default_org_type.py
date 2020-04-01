@@ -3,6 +3,7 @@
 from django.db import migrations, models
 
 
+CORPORATE = 1
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -13,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='realm',
             name='org_type',
-            field=models.PositiveSmallIntegerField(default=1),
+            field=models.PositiveSmallIntegerField(default=CORPORATE),
         ),
     ]

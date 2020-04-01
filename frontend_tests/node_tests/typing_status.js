@@ -118,7 +118,7 @@ run_test('basics', () => {
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,
-        current_recipient: undefined,
+        current_recipient: null,
     });
     assert.deepEqual(events, {
         idle_callback: undefined,
@@ -132,7 +132,7 @@ run_test('basics', () => {
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,
-        current_recipient: undefined,
+        current_recipient: null,
     });
     assert.deepEqual(events, {
         idle_callback: undefined,
@@ -162,7 +162,7 @@ run_test('basics', () => {
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,
-        current_recipient: undefined,
+        current_recipient: null,
     });
     assert.deepEqual(events, {
         idle_callback: undefined,
@@ -192,7 +192,7 @@ run_test('basics', () => {
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,
-        current_recipient: undefined,
+        current_recipient: null,
     });
     assert.deepEqual(events, {
         idle_callback: undefined,
@@ -206,7 +206,7 @@ run_test('basics', () => {
     assert.deepEqual(typing_status.state, {
         next_send_start_time: undefined,
         idle_timer: undefined,
-        current_recipient: undefined,
+        current_recipient: null,
     });
     assert.deepEqual(events, {
         idle_callback: undefined,
@@ -274,7 +274,7 @@ run_test('basics', () => {
         });
     }
 
-    // User ids of poeple in compose narrow doesn't change and is same as stat.current_recipent
+    // User ids of people in compose narrow doesn't change and is same as stat.current_recipient
     // so counts of function should increase except stop_last_notification
     typing_status.update(worker, typing.get_recipient());
     assert.deepEqual(call_count.maybe_ping_server, 1);

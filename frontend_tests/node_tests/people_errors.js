@@ -6,9 +6,7 @@ set_global('reload_state', {
     is_in_progress: return_false,
 });
 
-set_global('blueslip', global.make_zblueslip({
-    debug: true, // testing for debug is disabled by default.
-}));
+set_global('blueslip', global.make_zblueslip());
 
 const me = {
     email: 'me@example.com',
@@ -54,6 +52,11 @@ run_test('blueslip', () => {
     assert.equal(blueslip.get_test_logs('debug').length, 1);
     blueslip.clear_test_data();
 
+    blueslip.set_test_data('error', 'Unknown user_id: 9999');
+    people.get_actual_name_from_user_id(9999);
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
+
     blueslip.set_test_data('error', 'Unknown email for get_user_id: ' + unknown_email);
     people.get_user_id(unknown_email);
     assert.equal(blueslip.get_test_logs('error').length, 1);
@@ -81,7 +84,7 @@ run_test('blueslip', () => {
     blueslip.clear_test_data();
 
     blueslip.set_test_data('warn', 'Unknown emails: ' + unknown_email);
-    people.email_list_to_user_ids_string(unknown_email);
+    people.email_list_to_user_ids_string([unknown_email]);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
 
@@ -123,7 +126,7 @@ run_test('blueslip', () => {
     };
     blueslip.set_test_data('error', 'Unknown user id in message: 42');
     const reply_to = people.pm_reply_to(message);
-    assert(reply_to.indexOf('?') > -1);
+    assert(reply_to.includes('?'));
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
 
@@ -134,4 +137,10 @@ run_test('blueslip', () => {
     assert.equal(uri.indexOf('unk'), uri.length - 3);
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
+
+    blueslip.set_test_data('error', 'Undefined field id');
+    assert.equal(people.my_custom_profile_data(undefined), undefined);
+
+    blueslip.set_test_data('error', 'Trying to set undefined field id');
+    people.set_custom_profile_field_data(maria.user_id, {});
 });

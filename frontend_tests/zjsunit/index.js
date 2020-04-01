@@ -11,7 +11,7 @@ require("@babel/register")({
     plugins: ["rewire-ts"],
 });
 
-global.assert = require('assert');
+global.assert = require('assert').strict;
 global._ = require('underscore/underscore.js');
 const _ = global._;
 
@@ -25,7 +25,7 @@ function immediate(f) {
 // Find the files we need to run.
 const finder = require('./finder.js');
 const files = finder.find_files_to_run(); // may write to console
-if (_.isEmpty(files)) {
+if (files.length === 0) {
     throw "No tests found";
 }
 
@@ -53,7 +53,7 @@ global.make_zjquery = require('./zjquery.js').make_zjquery;
 global.make_zblueslip = require('./zblueslip.js').make_zblueslip;
 
 // Set up fake translation
-global.stub_i18n = require('./i18n.js');
+const stub_i18n = require('./i18n.js');
 
 // Set up Handlebars
 const handlebars = require('./handlebars.js');
@@ -79,9 +79,7 @@ global.read_fixture_data = (fn) => {
 function short_tb(tb) {
     const lines = tb.split('\n');
 
-    const i = _.findIndex(lines, (line) => {
-        return line.includes('run_test') || line.includes('run_one_module');
-    });
+    const i = lines.findIndex(line => line.includes('run_test') || line.includes('run_one_module'));
 
     if (i === -1) {
         return tb;
@@ -115,6 +113,8 @@ try {
         _.throttle = immediate;
         _.debounce = immediate;
 
+        set_global('i18n', stub_i18n);
+        namespace.clear_zulip_refs();
         run_one_module(file);
         namespace.restore();
     });

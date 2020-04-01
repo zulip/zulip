@@ -1,7 +1,6 @@
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
 
-zrequire('util');
 set_global('XDate', zrequire('XDate', 'xdate/src/xdate'));
 zrequire('Filter', 'js/filter');
 zrequire('FetchStatus', 'js/fetch_status');
@@ -15,7 +14,6 @@ set_global('page_params', {
     twenty_four_hour_time: false,
 });
 set_global('home_msg_list', null);
-set_global('feature_flags', {twenty_four_hour_time: false});
 set_global('people', {small_avatar_url: function () { return ''; }});
 set_global('unread', {message_unread: function () {}});
 // timerender calls setInterval when imported
@@ -63,13 +61,15 @@ run_test('msg_edited_vars', () => {
         if (message === undefined) {
             message = {};
         }
-        message_context = _.defaults(message_context, {
+        message_context = {
             include_sender: true,
-        });
-        message_context.msg = _.defaults(message, {
+            ...message_context,
+        };
+        message_context.msg = {
             is_me_message: false,
             last_edit_timestamp: next_timestamp += 1,
-        });
+            ...message,
+        };
         return message_context;
     }
 
@@ -110,10 +110,10 @@ run_test('msg_edited_vars', () => {
         const message_group = build_message_group(messages);
         const list = build_list([message_group]);
 
-        _.each(messages, function (message_container) {
+        for (const message_container of messages) {
             list._maybe_format_me_message(message_container);
             list._add_msg_edited_vars(message_container);
-        });
+        }
 
         const result = list._message_groups[0].message_containers;
 
@@ -134,10 +134,11 @@ run_test('merge_message_groups', () => {
         if (message === undefined) {
             message = {};
         }
-        message_context = _.defaults(message_context, {
+        message_context = {
             include_sender: true,
-        });
-        message_context.msg = _.defaults(message, {
+            ...message_context,
+        };
+        message_context.msg = {
             id: _.uniqueId('test_message_'),
             status_message: false,
             type: 'stream',
@@ -145,7 +146,8 @@ run_test('merge_message_groups', () => {
             topic: 'Test Subject 1',
             sender_email: 'test@example.com',
             timestamp: next_timestamp += 1,
-        });
+            ...message,
+        };
         return message_context;
     }
 
@@ -167,9 +169,7 @@ run_test('merge_message_groups', () => {
     }
 
     function extract_message_ids(lst) {
-        return _.map(lst, (item) => {
-            return item.msg.id;
-        });
+        return lst.map(item => item.msg.id);
     }
 
     function assert_message_list_equal(list1, list2) {
@@ -184,8 +184,8 @@ run_test('merge_message_groups', () => {
     }
 
     function assert_message_groups_list_equal(list1, list2) {
-        const ids1 = _.map(list1, extract_group);
-        const ids2 = _.map(list2, extract_group);
+        const ids1 = list1.map(extract_group);
+        const ids2 = list2.map(extract_group);
         assert(ids1.length);
         assert.deepEqual(ids1, ids2);
     }
@@ -547,11 +547,9 @@ run_test('render_windows', () => {
     let messages;
 
     function reset_list(opts) {
-        messages = _.map(_.range(opts.count), function (i) {
-            return {
-                id: i,
-            };
-        });
+        messages = _.range(opts.count).map(i => ({
+            id: i,
+        }));
         list.selected_idx = function () { return 0; };
         list.clear();
 
@@ -564,11 +562,11 @@ run_test('render_windows', () => {
         // the list where we can move the pointer without forcing
         // a re-render.  The code avoids hasty re-renders for
         // performance reasons.
-        _.each(_.range(start, end), function (idx) {
+        for (const idx of _.range(start, end)) {
             list.selected_idx = function () { return idx; };
             const rendered = view.maybe_rerender();
             assert.equal(rendered, false);
-        });
+        }
     }
 
     function verify_move(idx, range) {

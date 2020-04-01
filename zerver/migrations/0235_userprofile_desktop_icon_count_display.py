@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 
 
+DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -15,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='userprofile',
             name='desktop_icon_count_display',
-            field=models.PositiveSmallIntegerField(default=1),
+            field=models.PositiveSmallIntegerField(default=DESKTOP_ICON_COUNT_DISPLAY_MESSAGES),
         ),
     ]

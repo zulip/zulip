@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
@@ -50,6 +50,7 @@ FAKE_LDAP_NUM_USERS = 8
 SOCIAL_AUTH_GITHUB_KEY = get_secret('social_auth_github_key', development_only=True)
 SOCIAL_AUTH_GITHUB_ORG_NAME = None  # type: Optional[str]
 SOCIAL_AUTH_GITHUB_TEAM_ID = None  # type: Optional[str]
+SOCIAL_AUTH_GITLAB_KEY = get_secret('social_auth_gitlab_key', development_only=True)
 SOCIAL_AUTH_SUBDOMAIN = None  # type: Optional[str]
 SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret('azure_oauth2_secret')
 SOCIAL_AUTH_GOOGLE_KEY = get_secret('social_auth_google_key', development_only=True)
@@ -61,6 +62,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = None  # type: Optional[Dict[str, Dict[str, str]]]
 SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = None  # type: Optional[Dict[str, str]]
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT = None  # type: Optional[Dict[str, str]]
 SOCIAL_AUTH_SAML_ENABLED_IDPS = {}  # type: Dict[str, Dict[str, str]]
+SOCIAL_AUTH_SAML_SECURITY_CONFIG = {}  # type: Dict[str, Any]
 # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
 GOOGLE_OAUTH2_CLIENT_ID = None  # type: Optional[str]
 
@@ -311,7 +313,7 @@ STATSD_HOST = ''
 # Configuration for JWT auth.
 JWT_AUTH_KEYS = {}  # type: Dict[str, str]
 
-# https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SERVER_EMAIL
+# https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.
 SERVER_EMAIL = ZULIP_ADMINISTRATOR
 # Django setting for who receives error emails.
@@ -333,6 +335,10 @@ CUSTOM_LOGO_URL = None  # type: Optional[str]
 # Random salt used when deterministically generating passwords in
 # development.
 INITIAL_PASSWORD_SALT = None  # type: Optional[str]
+
+# Settings configuring the special instrumention of the send_event
+# code path used in generating API documentation for /events.
+LOG_API_EVENT_TYPES = False
 
 # Used to control whether certain management commands are run on
 # the server.

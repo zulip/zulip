@@ -39,6 +39,9 @@ see if there are corresponding test in `frontend_tests/node_tests`.  If
 there are, you should strive to follow the patterns of the existing tests
 and add your own tests.
 
+A good first test to read is
+[general.js](https://github.com/zulip/zulip/blob/master/frontend_tests/node_tests/general.js).
+
 ## How the node tests work
 
 Unlike the [casper unit tests](../testing/testing-with-casper.md),
@@ -135,19 +138,8 @@ rabbit hole of trying to improve that. The pattern here is this:
 ## Creating new test modules
 
 The test runner (`index.js`) automatically runs all .js files in the
-`frontend_tests/node directory`, so you can simply start editing a file
+`frontend_tests/node_tests` directory, so you can simply start editing a file
 in that directory to create a new test.
-
-The nodes tests rely on JS files that use the module pattern. For example, to
-test the `foobar.js` file, you would first ensure that code like below
-is at the bottom of `foobar.js`:
-
->     if (typeof module !== 'undefined') {
->         module.exports = foobar;
->     }
-
-This means `foobar.js` follow the CommonJS module pattern, so it can be
-required in Node.js, which runs our tests.
 
 ## Coverage reports
 

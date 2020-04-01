@@ -61,11 +61,11 @@ class Command(BaseCommand):
 
         if options['all']:
             signal.signal(signal.SIGUSR1, exit_with_three)
-            autoreload.main(run_threaded_workers, (get_active_worker_queues(), logger))
+            autoreload.run_with_reloader(run_threaded_workers, get_active_worker_queues(), logger)
         elif options['multi_threaded']:
             signal.signal(signal.SIGUSR1, exit_with_three)
             queues = options['multi_threaded']
-            autoreload.main(run_threaded_workers, (queues, logger))
+            autoreload.run_with_reloader(run_threaded_workers, queues, logger)
         else:
             queue_name = options['queue_name']
             worker_num = options['worker_num']

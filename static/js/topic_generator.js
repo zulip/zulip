@@ -80,7 +80,7 @@ exports.wrap = function (lst, val) {
         return exports.list_generator(lst);
     }
 
-    const i = _.indexOf(lst, val);
+    const i = lst.indexOf(val);
     if (i < 0) {
         return exports.list_generator(lst);
     }
@@ -98,7 +98,7 @@ exports.wrap_exclude = function (lst, val) {
         return exports.list_generator(lst);
     }
 
-    const i = _.indexOf(lst, val);
+    const i = lst.indexOf(val);
     if (i < 0) {
         return exports.list_generator(lst);
     }
@@ -116,7 +116,7 @@ exports.reverse_wrap_exclude = function (lst, val) {
         return exports.reverse_list_generator(lst);
     }
 
-    const i = _.indexOf(lst, val);
+    const i = lst.indexOf(val);
     if (i < 0) {
         return exports.reverse_list_generator(lst);
     }
@@ -193,7 +193,7 @@ exports.next_topic = function (streams, get_topics, has_unread_messages, curr_st
 exports.get_next_topic = function (curr_stream, curr_topic) {
     let my_streams = stream_sort.get_streams();
 
-    my_streams = _.filter(my_streams, function (stream_name) {
+    my_streams = my_streams.filter(stream_name => {
         if (!stream_data.is_stream_muted_by_name(stream_name)) {
             return true;
         }
@@ -208,9 +208,7 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
     function get_unmuted_topics(stream_name) {
         const stream_id = stream_data.get_stream_id(stream_name);
         let topics = topic_data.get_recent_names(stream_id);
-        topics = _.reject(topics, function (topic) {
-            return muting.is_topic_muted(stream_id, topic);
-        });
+        topics = topics.filter(topic => !muting.is_topic_muted(stream_id, topic));
         return topics;
     }
 

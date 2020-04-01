@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, Set, Tuple
+from typing_extensions import TypedDict
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 
 from zerver.lib.cache import cache_with_key, display_recipient_cache_key, generic_bulk_cached_fetch, \
@@ -12,6 +13,11 @@ display_recipient_fields = [
     "short_name",
     "is_mirror_dummy",
 ]
+
+TinyStreamResult = TypedDict('TinyStreamResult', {
+    'id': int,
+    'name': str,
+})
 
 @cache_with_key(lambda *args: display_recipient_cache_key(args[0]),
                 timeout=3600*24*7)
@@ -73,17 +79,17 @@ def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
     )
     personal_and_huddle_recipients = recipient_tuples - stream_recipients
 
-    def stream_query_function(recipient_ids: List[int]) -> List[Stream]:
+    def stream_query_function(recipient_ids: List[int]) -> List[TinyStreamResult]:
         stream_ids = [
             recipient_id_to_type_pair_dict[recipient_id][1] for recipient_id in recipient_ids
         ]
-        return Stream.objects.filter(id__in=stream_ids)
+        return Stream.objects.filter(id__in=stream_ids).values('name', 'id')
 
-    def stream_id_fetcher(stream: Stream) -> int:
-        return type_pair_to_recipient_id_dict[(Recipient.STREAM, stream.id)]
+    def stream_id_fetcher(stream: TinyStreamResult) -> int:
+        return type_pair_to_recipient_id_dict[(Recipient.STREAM, stream['id'])]
 
-    def stream_cache_transformer(stream: Stream) -> str:
-        return stream.name
+    def stream_cache_transformer(stream: TinyStreamResult) -> str:
+        return stream['name']
 
     # ItemT = Stream, CacheItemT = str (name), ObjKT = int (recipient_id)
     stream_display_recipients = generic_bulk_cached_fetch(

@@ -1,6 +1,6 @@
 # This file contains the API definitions for the Zulip REST API.
 #
-# For details on the OpenAPI specification, see http://swagger.io/specification
+# For details on the OpenAPI specification, see https://swagger.io/specification
 #
 # Our own documentation lives at
 #
@@ -25,6 +25,37 @@ security:
 # Endpoint definitions
 #######################
 paths:
+  /fetch_api_key:
+    post:
+      description: |
+        Given a username and password, fetch the user's API key.
+
+        Used to authenticate the mobile and terminal apps when the server
+        has EmailAuthBackend or LDAPAuthBackend enabled.
+      operationId: zerver.views.auth.api_fetch_api_key
+      parameters:
+      - name: username
+        in: query
+        description: |
+          The username to be used for authentication (typically, the
+          email address, but it could be an LDAP username).
+        schema:
+          type: string
+        required: true
+      - name: password
+        in: query
+        schema:
+          type: string
+        description: |
+          The user's Zulip password (or LDAP password, if LDAP authentication is in use).
+        required: true
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyResponse'
   /dev_fetch_api_key:
     post:
       description: Gather a token bound to a user account, to identify and
@@ -94,7 +125,7 @@ paths:
                       description: An array of `event` objects (possibly
                         zero-length if `dont_block` is set) of events with
                         IDs newer than `last_event_id`. Event IDs are
-                        guaranted to be increasing, but they are not
+                        guaranteed to be increasing, but they are not
                         guaranteed to be consecutive.
                 - example:
                     {
@@ -115,7 +146,7 @@ paths:
                                     "sender_realm_str": "example",
                                     "sender_short_name": "othello-bot",
                                     "topic": "Castle",
-                                    "subject_links": [],
+                                    "topic_links": [],
                                     "timestamp": 1375978403,
                                     "type": "stream"
                                 },
@@ -144,7 +175,7 @@ paths:
                                     "sender_realm_str": "example",
                                     "sender_short_name": "othello-bot",
                                     "subject": "",
-                                    "subject_links": [],
+                                    "topic_links": [],
                                     "timestamp": 1375978404,
                                     "type": "private"
                                 },
@@ -288,10 +319,27 @@ paths:
       parameters:
       - name: anchor
         in: query
-        description: Fetches first unread message when `first_unread` is given as value.
-          Other special values like `'newest'` and `'oldest'` are also supported
+        description: |
+          Integer message ID to anchor fetching of new messages.
+          Supports special string values for when the client wants the
+          server to compute the anchor to use:
+
+          * `newest`: The most recent message.
+          * `oldest`: The oldest message.
+          * `first_unread`: The oldest unread message matching the
+            query, if any; otherwise, the most recent message.
+
+          The special values of `'newest'` and `'oldest'` are also supported
           for anchoring the query at the most recent or oldest messages.
-          The anchor can also take a message ID to fetch the particular message.
+
+          **Changes**: String values are new in Zulip 2.2.  The
+            `first_unread` functionality was supported in Zulip 2.1.x
+            and older by not sending anchor and using use_first_unread_anchor.
+
+            In Zulip 2.1.x and older, `oldest` can be emulated with
+            `anchor=0`, and `newest` with `anchor=10000000000000000`
+            (that specific large value works around a bug in Zulip
+            2.1.x and older in the `found_newest` return value).
         schema:
           oneOf:
             - type: string
@@ -349,6 +397,20 @@ paths:
           type: boolean
           default: true
         example: false
+      - name: use_first_unread_anchor
+        in: query
+        description: |
+          Legacy way to specify `anchor="first_unread"` in Zulip 2.1.x and older.
+
+          Whether to use the (computed by the server) first unread message
+          matching the narrow as the `anchor`.  Mutually exclusive with `anchor`.
+
+          **Changes**: Deprecated in Zulip 2.2, replaced by
+          `anchor="first_unread"` instead.
+        schema:
+          type: boolean
+          default: false
+        example: true
       responses:
         '200':
           description: Success.
@@ -434,7 +496,7 @@ paths:
                                 "sender_id": 4,
                                 "sender_full_name": "King Hamlet",
                                 "recipient_id": 27,
-                                "subject_links": [],
+                                "topic_links": [],
                                 "client": "populate_db",
                                 "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                                 "submessages": [],
@@ -459,7 +521,7 @@ paths:
                                 "sender_id": 4,
                                 "sender_full_name": "King Hamlet",
                                 "recipient_id": 20,
-                                "subject_links": [],
+                                "topic_links": [],
                                 "client": "populate_db",
                                 "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                                 "submessages": [],
@@ -484,11 +546,15 @@ paths:
         required: true
       - name: to
         in: query
-        description: The destination stream, or a CSV/JSON-encoded list
-          containing the usernames (emails) of the recipients.
+        description: |
+          For stream messages, either the name or integer ID of the stream.
+          For private messages, either a list containing integer user
+          IDs or a list containing string email addresses.
+
+          **Changes**: Support using user/stream IDs was added in Zulip 2.0.0.
         schema:
           type: string
-        example: aaron@zulip.com, iago@zulip.com
+        example: [9, 10]
         required: true
       - name: topic
         in: query
@@ -629,7 +695,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                - $ref: '#/components/schemas/JsonError'
+                - $ref: '#/components/schemas/CodedError'
                 - properties:
                     msg:
                       enum:
@@ -842,17 +908,26 @@ paths:
                      you want, and note that emoji's text name.
         schema:
           type: string
-        example: '**:slight smile:**'
+        example: 'octopus'
         required: true
       - name: emoji_code
         in: query
         description: |
-                     An encoded version of the unicode codepoint. Used only
-                     in rare corner cases to consolidate identical reactions
-                     to the same emoji name.
+                     An encoded version of the unicode codepoint.  For
+                     most clients, you won't need this; it's used to
+                     handle a rare corner case when upvoting a unicode
+                     emoji reaction added previously by another user.
+
+                     If the existing reaction was added when the Zulip
+                     server was using a previous version of the emoji
+                     data mapping from codepoints to human-readable
+                     names, sending the `emoji_code` in the data for
+                     the original reaction allows the Zulip server to
+                     correctly consider your upvote as an upvote
+                     rather than a reaction with a "diffenent" emoji.
         schema:
           type: string
-        example: '**foo**'
+        example: '1f419'
         required: false
       - name: reaction_type
         in: query
@@ -861,26 +936,26 @@ paths:
                      set `reaction_type` to `realm_emoji`.
         schema:
           type: string
-        example: '**realm_emoji**'
+        example: 'unicode_emoji'
         required: false
       responses:
         '200':
-          description: Success.
+          $ref: '#/components/responses/SimpleSuccess'
+
+        '400':
+          description: Bad request.
           content:
             application/json:
               schema:
                 allOf:
-                - $ref: '#/components/schemas/JsonSuccess'
-                - properties:
-                    rendered:
-                      type: string
-                      description: The rendered HTML.
+                - $ref: '#/components/schemas/CodedError'
                 - example:
                     {
-                        "msg": "",
-                        "rendered": "<p><strong>foo</strong></p>",
-                        "result": "success"
+                        "result": "error",
+                        "msg": "Invalid emoji code",
+                        "code": "BAD_REQUEST"
                     }
+
     delete:
       description: Delete an emoji reaction from a message.
       parameters:
@@ -889,7 +964,7 @@ paths:
         description: The ID of the message from which you want to delete the emoji reaction.
         schema:
           type: integer
-        example: 42
+        example: 41
         required: true
       - name: emoji_name
         in: query
@@ -900,47 +975,51 @@ paths:
                      reveal three icons on the right, then click the smiley face icon.
                      Images of available reaction emojis appear. Hover over the emoji
                      you want, and note that emoji's text name.
+
+                     Ignored if emoji_code is also passed.
         schema:
           type: string
-        example: '**:slight smile:**'
-        required: true
+        example: 'octopus'
+        required: false
       - name: emoji_code
         in: query
         description: |
-                     An encoded version of the unicode codepoint for the emoji.
-                     Should be passed when adding a vote to an existing emoji reaction,
-                     or order to handle unlikely corner cases where the emoji name to
-                     codepoint mapping has changed since the first reaction was added.
+                     Alternative to emoji_name for expressing which emoji to remove.
+                     An encoded version of the unicode codepoint for the emoji
+                     you'd like to remove from the message.
+
+                     Recommended over using `emoji_name` for Zulip apps
+                     because this more robustly handles changes in the mapping
+                     between user-facing names and aliases for emoji (which change from
+                     time to time) and their unicode codepoints.
         schema:
           type: string
-        example: '**foo**'
+        example: '1f419'
         required: false
       - name: reaction_type
         in: query
         description: |
-                     If you are reacting with a [custom emoji](/help/add-custom-emoji),
+                     When removing a reaction with a [custom emoji](/help/add-custom-emoji),
                      set `reaction_type` to `realm_emoji`.
         schema:
           type: string
-        example: '**realm_emoji**'
+        example: 'unicode_emoji'
         required: false
       responses:
         '200':
-          description: Success.
+          $ref: '#/components/responses/SimpleSuccess'
+        '400':
+          description: Bad request.
           content:
             application/json:
               schema:
                 allOf:
-                - $ref: '#/components/schemas/JsonSuccess'
-                - properties:
-                    rendered:
-                      type: string
-                      description: The rendered HTML.
+                - $ref: '#/components/schemas/CodedError'
                 - example:
                     {
-                        "msg": "",
-                        "rendered": "<p><strong>foo</strong></p>",
-                        "result": "success"
+                        "result": "error",
+                        "msg": "Invalid message(s)",
+                        "code": "BAD_REQUEST"
                     }
   /user_uploads:
     post:
@@ -986,8 +1065,12 @@ paths:
         example: true
       - name: include_custom_profile_fields
         in: query
-        description: Set to `true` if the client wants custom profile field
-          data to be included in the response.
+        description: |
+          Set to `true` if the client wants custom profile field data
+          to be included in the response.
+
+          **Changes**: New in Zulip 2.1.0.  Previous versions do no offer these
+          data via the API.
         schema:
           type: boolean
           default: false
@@ -1003,9 +1086,8 @@ paths:
                 - properties:
                     members:
                       type: array
-                      description: A list of `member` objects, each containing
-                        details of a user in the realm (like their email, name,
-                        avatar, user type...).
+                      description: A list of `user` objects, each containing
+                        details about a user in the organization.
                 - example:
                     {
                        "msg": "",
@@ -1133,6 +1215,201 @@ paths:
                         "msg": "Email 'newbie@zulip.com' already in use",
                         "result": "error"
                     }
+
+  /users/{user_id}:
+    get:
+      description: Retrieve a user in a realm.
+      parameters:
+      - name: user_id
+        in: path
+        description: The user id of the user.
+        schema:
+          type: integer
+        example: 11
+        required: true
+      - name: client_gravatar
+        in: query
+        description: The client should pass true if it can compute its own gravatar hashes.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: include_custom_profile_fields
+        in: query
+        description: The client should pass true if it wants to include custom profile field data.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    user:
+                      type: object
+                      description: |
+                        A dictionary containing the requested user's details.
+                - example:
+                    {
+                       "msg": "",
+                       "result": "success",
+                       "user": {
+                             "date_joined": "2019-10-20T07:50:53.729659+00:00",
+                             "full_name": "King Hamlet",
+                             "is_guest": false,
+                             "profile_data": {
+                                "4": {
+                                   "value": "vim"
+                                },
+                                "2": {
+                                   "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
+                                   "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>"
+                                },
+                                "5": {
+                                   "value": "1900-1-1"
+                                },
+                                "7": {
+                                   "value": "[11]"
+                                },
+                                "6": {
+                                   "value": "https://blog.zulig.org"
+                                },
+                                "1": {
+                                   "value": "+0-11-23-456-7890",
+                                   "rendered_value": "<p>+0-11-23-456-7890</p>"
+                                },
+                                "8": {
+                                   "value": "zulipbot"
+                                },
+                                "3": {
+                                   "rendered_value": "<p>Dark chocolate</p>",
+                                   "value": "Dark chocolate"
+                                }
+                             },
+                             "user_id": 10,
+                             "is_bot": false,
+                             "bot_type": null,
+                             "timezone": "",
+                             "is_admin": false,
+                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                             "is_active": true,
+                             "email": "hamlet@zulip.com"
+                          }
+
+
+                    }
+
+    patch:
+      description: Update the user.
+      parameters:
+      - name: user_id
+        in: path
+        description: The user id of the user.
+        schema:
+          type: integer
+        example: 12
+        required: true
+      - name: full_name
+        in: query
+        description: The user's full name.
+        schema:
+          type: string
+          format: json
+        example: NewName
+        required: false
+      - name: is_admin
+        in: query
+        description: Whether the target user is an administrator.
+        schema:
+          type: boolean
+        example: false
+        required: false
+      - name: is_guest
+        in: query
+        description: Whether the target user is a guest.
+        schema:
+          type: boolean
+        example: true
+        required: false
+      - name: profile_data
+        in: query
+        description: A dictionary containing the to be updated custom profile field data for the user.
+        schema:
+          type: array
+          items:
+           type: object
+
+        example: [
+                    {
+                        "id": 4,
+                        "value": "vim"
+                    },
+                    {
+                        "id": 5,
+                        "value": "1909-04-05"
+                    },
+                  ]
+        required: false
+
+      responses:
+        '200':
+          $ref: '#/components/responses/SimpleSuccess'
+
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "result": "error",
+                        "msg": "Guests cannot be organization administrators",
+                        "code": "BAD_REQUEST"
+                    }
+
+    delete:
+      description: Delete the user with the passed 'user_id' from the realm.
+      parameters:
+      - name: user_id
+        in: path
+        description: The user id of the user.
+        schema:
+          type: integer
+        example: 11
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - example:
+                    {
+                      "msg": "",
+                      "result": "success",
+                    }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "msg": "Cannot deactivate the only organization administrator",
+                        "result": "error"
+                    }
+
   /users/{email}/presence:
     get:
       description: Get the presence status for a specific user.
@@ -1191,7 +1468,10 @@ paths:
                 - properties:
                     avatar_url:
                       type: string
-                      description: "URL for the user's avatar"
+                      description: |
+                        URL for the user's avatar.
+
+                        **Changes**: New in Zulip 2.1.0.
                       example: "x"
                     client_id:
                       type: string
@@ -1374,12 +1654,19 @@ paths:
   /users/me/subscriptions:
     get:
       description: Get information on every stream the user is subscribed to.
+      # operationId can be used to record which view function
+      # corresponds to an endpoint.  TODO: Add these for more
+      # endpoints, and perhaps use this to provide links to implementations.
+      operationId: zerver.views.streams.list_subscriptions_backend
       parameters:
       - name: include_subscribers
         in: query
-        description: Set to `true` if you would like each stream's info to include a
+        description: |
+          Set to `true` if you would like each stream's info to include a
           list of current subscribers to that stream. (This may be significantly slower
           in organizations with thousands of users.)
+
+          **Changes**: New in Zulip 2.1.0.
         schema:
           type: boolean
           default: false
@@ -1392,6 +1679,9 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
+                # TODO: Is this the best way to declare required elements in 200 responses?
+                - required:
+                  - subscriptions
                 - properties:
                     subscriptions:
                       type: array
@@ -1408,7 +1698,7 @@ paths:
                           "description": "A Scandinavian country",
                           "desktop_notifications": true,
                           "email_address": "Denmark+187b4125ed36d6af8b5d03ef4f65c0cf@zulipdev.com:9981",
-                          "in_home_view": true,
+                          "is_muted": false,
                           "invite_only": false,
                           "name": "Denmark",
                           "pin_to_top": false,
@@ -1428,7 +1718,7 @@ paths:
                           "description": "Located in the United Kingdom",
                           "desktop_notifications": true,
                           "email_address": "Scotland+f5786390183e60a1ccb18374f9d05649@zulipdev.com:9981",
-                          "in_home_view": true,
+                          "is_muted": false,
                           "invite_only": false,
                           "name": "Scotland",
                           "pin_to_top": false,
@@ -1504,7 +1794,15 @@ paths:
         example: false
       - name: stream_post_policy
         in: query
-        description: Indicates which users can post messages to the stream.
+        description: |
+          Policy for which users can post messages to the stream.
+
+          * 1 => Any user can post.
+          * 2 => Only administrators can post.
+          * 3 => Only new members can post.
+
+          **Changes**: New in Zulip 2.2, replacing the previous is_announcement_only
+          boolean.
         schema:
           type: integer
           default: 1
@@ -1586,6 +1884,7 @@ paths:
                     }
     patch:
       description: Update which streams you are are subscribed to.
+      operationId: zerver.views.streams.update_subscriptions_backend
       parameters:
         - name: delete
           in: query
@@ -1632,6 +1931,11 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonSuccess'
+                - required:
+                  - subscribed
+                  - not_subscribed
+                  - already_subscribed
+                  - removed
                 - properties:
                     subscribed:
                       type: object
@@ -2034,8 +2338,11 @@ paths:
         example: true
       - name: slim_presence
         in: query
-        description: Setting this to `true` will make presence dictionaries be
+        description: |
+          Setting this to `true` will make presence dictionaries be
           keyed by user_id instead of email.
+
+          **Changes**: New in Zulip 2.2.
         schema:
           type: boolean
           default: false
@@ -2074,6 +2381,26 @@ paths:
           type: boolean
           default: false
         example: true
+      - name: client_capabilities
+        in: query
+        description: |
+          Dictionary containing details on features the client
+          supports that are relevant to the format of responses sent
+          by the server.
+
+          * `notification_settings_null`: Boolean for whether the
+            client can handle the current API with null values for
+            stream-level notification settings (which means the stream
+            is not customized and should inherit the user's global
+            notification settings for stream messages).  New in Zulip
+            2.1.0; in earlier Zulip releases, stream-level
+            notification settings were simple booleans.
+        schema:
+          type: object
+        example:
+          {
+              "notification_settings_null": true
+          }
       - name: fetch_event_types
         in: query
         description: Same as the `event_types` argument except that the values
@@ -2087,8 +2414,9 @@ paths:
         example: ['message']
       - name: narrow
         in: query
-        description: A JSON-encoded array of length 2 indicating the narrow
-          for which you'd like to receive events for. For instance, to
+        description: |
+          A JSON-encoded array of length 2 indicating the narrow
+          for which you'd like to receive events. For instance, to
           receive events for the stream `Denmark`, you would specify
           `narrow=['stream', 'Denmark']`. Another example is
           `narrow=['is', 'private']` for private messages.
@@ -2547,6 +2875,7 @@ paths:
   /streams/{stream_id}:
     delete:
       description: Delete the stream with the given ID.
+      operationId: zerver.views.streams.deactivate_stream_backend
       parameters:
       - name: stream_id
         in: path
@@ -2575,6 +2904,9 @@ paths:
               schema:
                 allOf:
                 - $ref: '#/components/schemas/JsonError'
+                - properties:
+                    msg:
+                      type: string
                 - example:
                     {
                         "code": "BAD_REQUEST",
@@ -2583,6 +2915,7 @@ paths:
                     }
     patch:
       description: Update the stream with the given ID.
+      operationId: zerver.views.streams.update_stream_backend
       parameters:
       - name: stream_id
         in: path
@@ -2609,32 +2942,46 @@ paths:
         required: false
       - name: is_private
         in: query
-        description: The new state of the stream.
+        description: Change whether the stream is a private stream.
         schema:
           type: boolean
         example: true
         required: false
       - name: is_announcement_only
         in: query
-        description: The new state for the announcements.
+        description: |
+          Whether the stream is limited to announcements.
+
+          **Changes**: Deprecated in Zulip 2.2, use `stream_post_policy` instead.
         schema:
           type: boolean
         example: true
         required: false
       - name: stream_post_policy
         in: query
-        description: Indicates which users can post messages to the stream.
+        description: |
+          Policy for which users can post messages to the stream.
+
+          * 1 => Any user can post.
+          * 2 => Only administrators can post.
+          * 3 => Only new members can post.
+
+          **Changes**: New in Zulip 2.2, replacing the previous `is_announcement_only`
+          boolean.
         schema:
           type: integer
         example: 2
         required: false
       - name: history_public_to_subscribers
         in: query
-        description: The new state for the history_public_to_subscribers.
+        description: |
+          Whether subscribers have access to full stream history, even before they joined
+          the stream.
         schema:
           type: boolean
         example: true
         required: false
+
 
       responses:
         '200':
@@ -2680,14 +3027,20 @@ paths:
         required: true
       - name: to
         in: query
-        description: The recipients of the message being typed, in the same format used by the
-          send_message API.  Typing notifications are only supported for private messages,
-          so this should be a JSON-encoded list of email addresses of the message's recipients.
+        description: |
+          The user_ids of the recipients of the message being typed.
+          Typing notifications are only supported for private messages.
+          Send a JSON-encoded list of user_ids. (Use a list even if there is
+          only one recipient.).
+
+          **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
+          list of email addresses.  The email address-based format is deprecated
+          and will be removed in Zulip 2.2.
         schema:
           type: array
           items:
-            type: string
-        example: ["iago@zulip.com", "polonius@zulip.com"]
+            type: integer
+        example: [9, 10]
         required: true
       responses:
         '200':
@@ -2777,17 +3130,7 @@ paths:
         required: true
       responses:
         '200':
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/JsonSuccess'
-                - example:
-                      {
-                          "result": "success",
-                          "msg": ""
-                      }
+          $ref: '#/components/responses/SimpleSuccess'
 
         '400':
           description: Bad request.
@@ -2878,6 +3221,53 @@ paths:
                             }
                         ]
                     }
+  /real-time:
+    # This entry is a hack; it exists to give us a place to put the text
+    # documenting the arguments for call_on_each_event and friends.
+    post:
+      description: (Ignored)
+      parameters:
+      - name: narrow
+        in: query
+        description: |
+          A JSON-encoded array of length 2 indicating the narrow
+          for which you'd like to receive events for. For instance, to receive
+          events for the stream `Denmark`, you would specify
+          `narrow=['stream', 'Denmark']`. Another example is
+          `narrow=['is', 'private']` for private messages. Default is `[]`.
+        schema:
+          type: array
+          items:
+            type: string
+        example: narrow=['stream', 'Denmark']
+        required: false
+      - name: event_types
+        in: query
+        description: |
+          A JSON-encoded array indicating which types of events you're
+          interested in. Values that you might find useful include:
+
+            * **message** (messages)
+            * **subscription** (changes in your subscriptions)
+            * **realm_user** (changes to users in the organization and
+              their properties, such as their name).
+
+          If you do not specify this argument, you will receive all
+          events, and have to filter out the events not relevant to
+          your client in your client code.  For most applications, one
+          is only interested in messages, so one specifies:
+          `event_types=['message']`
+        schema:
+          type: array
+          items:
+            type: string
+          default:
+        example: event_types=['message']
+        required: false
+        default: null
+      security:
+      - basicAuth: []
+
 components:
   #######################
   # Security definitions
@@ -2928,6 +3318,9 @@ components:
     ApiKeyResponse:
       allOf:
       - $ref: '#/components/schemas/JsonSuccess'
+      - required:
+        - api_key
+        - email
       - properties:
           api_key:
             type: string

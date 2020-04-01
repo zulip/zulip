@@ -1,3 +1,6 @@
+const emojisets = require("./emojisets.js");
+const settings_config = require("./settings_config");
+
 const meta = {
     loaded: false,
 };
@@ -18,49 +21,6 @@ function change_display_setting(data, status_element, success_msg, sticky) {
     settings_ui.do_settings_change(channel.patch, '/json/settings/display', data, status_element, opts);
 }
 
-exports.demote_inactive_streams_values = {
-    automatic: {
-        code: 1,
-        description: i18n.t("Automatic"),
-    },
-    always: {
-        code: 2,
-        description: i18n.t("Always"),
-    },
-    never: {
-        code: 3,
-        description: i18n.t("Never"),
-    },
-};
-
-exports.twenty_four_hour_time_values = {
-    twenty_four_hour_clock: {
-        value: true,
-        description: i18n.t("24-hour clock (17:00)"),
-    },
-    twelve_hour_clock: {
-        value: false,
-        description: i18n.t("12-hour clock (5:00 PM)"),
-    },
-};
-
-exports.all_display_settings = {
-    settings: {
-        user_display_settings: [
-            "dense_mode",
-            "night_mode",
-            "high_contrast_mode",
-            "left_side_userlist",
-            "starred_message_counts",
-            "fluid_layout_width",
-        ],
-    },
-    render_only: {
-        high_contrast_mode: page_params.development_environment,
-        dense_mode: page_params.development_environment,
-    },
-};
-
 exports.set_up = function () {
     meta.loaded = true;
     $("#display-settings-status").hide();
@@ -77,12 +37,13 @@ exports.set_up = function () {
         overlays.close_modal('default_language_modal');
     });
 
-    _.each(exports.all_display_settings.settings.user_display_settings, function (setting) {
+    const all_display_settings = settings_config.get_all_display_settings();
+    for (const setting of all_display_settings.settings.user_display_settings) {
         $("#" + setting).change(function () {
             const data = {};
             data[setting] = JSON.stringify($(this).prop('checked'));
 
-            if (["left_side_userlist"].indexOf(setting) > -1) {
+            if (["left_side_userlist"].includes(setting)) {
                 change_display_setting(
                     data,
                     "#display-settings-status",
@@ -91,7 +52,7 @@ exports.set_up = function () {
                 change_display_setting(data, "#display-settings-status");
             }
         });
-    });
+    }
 
     $("#default_language_modal .language").click(function (e) {
         e.preventDefault();
@@ -161,39 +122,24 @@ exports.set_up = function () {
     });
 };
 
-exports.report_emojiset_change = function () {
+exports.report_emojiset_change = async function () {
     // TODO: Clean up how this works so we can use
     // change_display_setting.  The challenge is that we don't want to
     // report success before the server_events request returns that
     // causes the actual sprite sheet to change.  The current
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
-    function emoji_success() {
-        if ($("#emoji-settings-status").length) {
-            loading.destroy_indicator($("#emojiset_spinner"));
-            $("#emojiset_select").val(page_params.emojiset);
-            ui_report.success(i18n.t("Emojiset changed successfully!"),
-                              $('#emoji-settings-status').expectOne());
-            const spinner = $("#emoji-settings-status").expectOne();
-            settings_ui.display_checkmark(spinner);
-        }
+
+    await emojisets.select(page_params.emojiset);
+
+    if ($("#emoji-settings-status").length) {
+        loading.destroy_indicator($("#emojiset_spinner"));
+        $("#emojiset_select").val(page_params.emojiset);
+        ui_report.success(i18n.t("Emojiset changed successfully!"),
+                          $('#emoji-settings-status').expectOne());
+        const spinner = $("#emoji-settings-status").expectOne();
+        settings_ui.display_checkmark(spinner);
     }
-
-    let emojiset = page_params.emojiset;
-
-    if (page_params.emojiset === 'text') {
-        // For `text` emojiset we fallback to `google-blob` emojiset
-        // for displaying emojis in emoji picker and typeahead.
-        emojiset = 'google-blob';
-    }
-
-    const sprite = new Image();
-    sprite.onload = function () {
-        const sprite_css_href = "/static/generated/emoji/" + emojiset + "-sprite.css";
-        $("#emoji-spritesheet").attr('href', sprite_css_href);
-        emoji_success();
-    };
-    sprite.src = "/static/generated/emoji/sheet-" + emojiset + "-64.png";
 };
 
 exports.update_page = function () {

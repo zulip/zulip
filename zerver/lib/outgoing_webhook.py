@@ -28,15 +28,24 @@ class OutgoingWebhookServiceInterface:
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
     def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
-        # Because we don't have a place for the recipient of an
-        # outgoing webhook to indicate whether it wants the raw
-        # Markdown or the rendered HTML, we leave both the content and
-        # rendered_content fields in the message payload.
-        MessageDict.finalize_payload(event['message'], False, False,
-                                     keep_rendered_content=True)
+        '''
+        We send a simple version of the message to outgoing
+        webhooks, since most of them really only need
+        `content` and a few other fields.  We may eventually
+        allow certain bots to get more information, but
+        that's not a high priority.  We do send the gravatar
+        info to the clients (so they don't have to compute
+        it themselves).
+        '''
+        message_dict = MessageDict.finalize_payload(
+            event['message'],
+            apply_markdown=False,
+            client_gravatar=False,
+            keep_rendered_content=True
+        )
 
         request_data = {"data": event['command'],
-                        "message": event['message'],
+                        "message": message_dict,
                         "bot_email": self.user_profile.email,
                         "token": self.token,
                         "trigger": event['trigger']}
@@ -53,8 +62,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         response = requests.request('POST', base_url, data=request_data, headers=headers)
         return response
 
-    def process_success(self, response_json: Dict[str, Any],
-                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "response_not_required" in response_json and response_json['response_not_required']:
             return None
 
@@ -102,8 +110,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         response = requests.request('POST', base_url, data=request_data)
         return response
 
-    def process_success(self, response_json: Dict[str, Any],
-                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "text" in response_json:
             content = response_json['text']
             success_data = dict(content=content)
@@ -251,7 +258,7 @@ def process_success_response(event: Dict[str, Any],
         fail_with_message(event, "Invalid JSON in response")
         return
 
-    success_data = service_handler.process_success(response_json, event)
+    success_data = service_handler.process_success(response_json)
 
     if success_data is None:
         return

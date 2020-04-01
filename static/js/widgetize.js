@@ -1,11 +1,11 @@
-const widgets = {};
+const widgets = new Map([
+    ["poll", poll_widget],
+    ["tictactoe", tictactoe_widget],
+    ["todo", todo_widget],
+    ["zform", zform],
+]);
 
-widgets.poll = poll_widget;
-widgets.tictactoe = tictactoe_widget;
-widgets.todo = todo_widget;
-widgets.zform = zform;
-
-const widget_contents = {};
+const widget_contents = new Map();
 exports.widget_contents = widget_contents;
 
 function set_widget_in_message(row, widget_elem) {
@@ -23,7 +23,7 @@ exports.activate = function (in_opts) {
 
     events.shift();
 
-    if (!widgets[widget_type]) {
+    if (!widgets.has(widget_type)) {
         blueslip.warn('unknown widget_type', widget_type);
         return;
     }
@@ -41,7 +41,7 @@ exports.activate = function (in_opts) {
         return;
     }
 
-    let widget_elem = widget_contents[message.id];
+    let widget_elem = widget_contents.get(message.id);
     if (widget_elem) {
         set_widget_in_message(row, widget_elem);
         return;
@@ -51,14 +51,14 @@ exports.activate = function (in_opts) {
     // the HTML that will eventually go in this div.
     widget_elem = $('<div>').addClass('widget-content');
 
-    widgets[widget_type].activate({
+    widgets.get(widget_type).activate({
         elem: widget_elem,
         callback: callback,
         message: message,
         extra_data: extra_data,
     });
 
-    widget_contents[message.id] = widget_elem;
+    widget_contents.set(message.id, widget_elem);
     set_widget_in_message(row, widget_elem);
 
     // Replay any events that already happened.  (This is common
@@ -70,16 +70,16 @@ exports.activate = function (in_opts) {
 };
 
 exports.set_widgets_for_list = function () {
-    _.each(widget_contents, function (widget_elem, idx) {
+    for (const [idx, widget_elem] of widget_contents) {
         if (current_msg_list.get(idx) !== undefined) {
             const row = current_msg_list.get_row(idx);
             set_widget_in_message(row, widget_elem);
         }
-    });
+    }
 };
 
 exports.handle_event = function (widget_event) {
-    const widget_elem = widget_contents[widget_event.message_id];
+    const widget_elem = widget_contents.get(widget_event.message_id);
 
     if (!widget_elem) {
         // It is common for submessage events to arrive on

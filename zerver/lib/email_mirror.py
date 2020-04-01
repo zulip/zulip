@@ -10,7 +10,7 @@ import email.message as message
 from django.conf import settings
 from django.utils.timezone import timedelta, now as timezone_now
 
-from zerver.lib.actions import internal_send_message, internal_send_private_message, \
+from zerver.lib.actions import internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message, \
     truncate_body, truncate_topic
 from zerver.lib.email_mirror_helpers import decode_email_address, \
@@ -20,7 +20,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import generate_random_token
 from zerver.lib.upload import upload_message_file
 from zerver.lib.send_email import FromAddress
-from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_entity
+from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.exceptions import RateLimited
 from zerver.models import Stream, Recipient, MissedMessageEmailAddress, \
     get_display_recipient, \
@@ -65,8 +65,12 @@ def report_to_zulip(error_message: str) -> None:
         return
     error_bot = get_system_bot(settings.ERROR_BOT)
     error_stream = Stream.objects.get(name="errors", realm=error_bot.realm)
-    send_zulip(settings.ERROR_BOT, error_stream, "email mirror error",
-               """~~~\n%s\n~~~""" % (error_message,))
+    send_zulip(
+        error_bot,
+        error_stream,
+        "email mirror error",
+        """~~~\n%s\n~~~""" % (error_message,)
+    )
 
 def log_and_report(email_message: message.Message, error_message: str, to: Optional[str]) -> None:
     recipient = to or "No recipient found"
@@ -166,12 +170,11 @@ def handle_header_content(content: str) -> str:
 class ZulipEmailForwardUserError(ZulipEmailForwardError):
     pass
 
-def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
-    internal_send_message(
+def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) -> None:
+    internal_send_stream_message(
         stream.realm,
         sender,
-        "stream",
-        stream.name,
+        stream,
         truncate_topic(topic),
         truncate_body(content),
         email_gateway=True)
@@ -298,7 +301,7 @@ def find_emailgateway_recipient(message: message.Message) -> str:
     # We can't use Delivered-To; if there is a X-Gm-Original-To
     # it is more accurate, so try to find the most-accurate
     # recipient list in descending priority order
-    recipient_headers = ["X-Gm-Original-To", "Delivered-To",
+    recipient_headers = ["X-Gm-Original-To", "Delivered-To", "Envelope-To",
                          "Resent-To", "Resent-CC", "To", "CC"]
 
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
@@ -337,7 +340,9 @@ def process_stream_message(to: str, message: message.Message) -> None:
         options['include_quotes'] = is_forwarded(subject_header)
 
     body = construct_zulip_body(message, stream.realm, **options)
-    send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
+    send_zulip(
+        get_system_bot(settings.EMAIL_GATEWAY_BOT),
+        stream, subject, body)
     logger.info("Successfully processed email to %s (%s)" % (
         stream.name, stream.realm.string_id))
 
@@ -437,19 +442,16 @@ def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
 class RateLimitedRealmMirror(RateLimitedObject):
     def __init__(self, realm: Realm) -> None:
         self.realm = realm
+        super().__init__()
 
-    def key_fragment(self) -> str:
-        return "emailmirror:{}:{}".format(type(self.realm), self.realm.id)
+    def key(self) -> str:
+        return "{}:{}".format(type(self).__name__, self.realm.string_id)
 
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_MIRROR_REALM_RULES
 
-    def __str__(self) -> str:
-        return self.realm.string_id
-
 def rate_limit_mirror_by_realm(recipient_realm: Realm) -> None:
-    entity = RateLimitedRealmMirror(recipient_realm)
-    ratelimited = rate_limit_entity(entity)[0]
+    ratelimited = RateLimitedRealmMirror(recipient_realm).rate_limit()[0]
 
     if ratelimited:
         raise RateLimited()

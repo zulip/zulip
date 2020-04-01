@@ -54,7 +54,7 @@ run_test('activate', () => {
     ];
 
     const opts = {
-        events: _.clone(events),
+        events: events.slice(),
         extra_data: '',
         message: {
             id: 2001,
@@ -96,14 +96,14 @@ run_test('activate', () => {
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
-    assert.equal(widgetize.widget_contents[opts.message.id], undefined);
+    assert(!widgetize.widget_contents.has(opts.message.id));
 
     widgetize.activate(opts);
 
     assert(is_widget_elem_inserted);
     assert(is_widget_activated);
     assert(is_event_handled);
-    assert.equal(widgetize.widget_contents[opts.message.id], widget_elem);
+    assert.equal(widgetize.widget_contents.get(opts.message.id), widget_elem);
 
     is_widget_elem_inserted = false;
     is_widget_activated = false;

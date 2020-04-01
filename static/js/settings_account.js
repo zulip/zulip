@@ -1,5 +1,3 @@
-const IntDict = require("./int_dict").IntDict;
-
 const render_settings_custom_user_profile_field = require("../templates/settings/custom_user_profile_field.hbs");
 const render_settings_dev_env_email_access = require('../templates/settings/dev_env_email_access.hbs');
 const render_settings_api_key_modal = require('../templates/settings/api_key_modal.hbs');
@@ -13,7 +11,7 @@ exports.update_email = function (new_email) {
 };
 
 exports.update_full_name = function (new_full_name) {
-    const full_name_field = $("#change_full_name button #full_name_value");
+    const full_name_field = $("#full_name_value");
     if (full_name_field) {
         full_name_field.text(new_full_name);
     }
@@ -100,9 +98,10 @@ function update_user_custom_profile_fields(fields, method) {
     if (method === undefined) {
         blueslip.error("Undefined method in update_user_custom_profile_fields");
     }
-    _.each(fields, function (field) {
+
+    for (const field of fields) {
         update_custom_profile_field(field, method);
-    });
+    }
 }
 
 exports.append_custom_profile_fields = function (element_id, user_id) {
@@ -113,14 +112,15 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
     const all_custom_fields = page_params.custom_profile_fields;
     const all_field_types = page_params.custom_profile_field_types;
 
-    const all_field_template_types = {};
-    all_field_template_types[all_field_types.LONG_TEXT.id] = "text";
-    all_field_template_types[all_field_types.SHORT_TEXT.id] = "text";
-    all_field_template_types[all_field_types.CHOICE.id] = "choice";
-    all_field_template_types[all_field_types.USER.id] = "user";
-    all_field_template_types[all_field_types.DATE.id] = "date";
-    all_field_template_types[all_field_types.EXTERNAL_ACCOUNT.id] = "text";
-    all_field_template_types[all_field_types.URL.id] = "url";
+    const all_field_template_types = new Map([
+        [all_field_types.LONG_TEXT.id, "text"],
+        [all_field_types.SHORT_TEXT.id, "text"],
+        [all_field_types.CHOICE.id, "choice"],
+        [all_field_types.USER.id, "user"],
+        [all_field_types.DATE.id, "date"],
+        [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
+        [all_field_types.URL.id, "url"],
+    ]);
 
     all_custom_fields.forEach(function (field) {
         let field_value = people.get_custom_profile_data(user_id, field.id);
@@ -145,7 +145,7 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
 
         const html = render_settings_custom_user_profile_field({
             field: field,
-            field_type: all_field_template_types[field.type],
+            field_type: all_field_template_types.get(field.type),
             field_value: field_value,
             is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
             is_user_field: field.type === all_field_types.USER.id,
@@ -178,7 +178,7 @@ exports.initialize_custom_date_type_fields = function (element_id) {
 exports.initialize_custom_user_type_fields = function (element_id, user_id, is_editable,
                                                        set_handler_on_update) {
     const field_types = page_params.custom_profile_field_types;
-    const user_pills = new IntDict();
+    const user_pills = new Map();
 
     const person = people.get_by_user_id(user_id);
     if (person.is_bot) {
@@ -559,9 +559,9 @@ exports.set_up = function () {
         const form_data = new FormData();
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
-        jQuery.each(file_input[0].files, function (i, file) {
+        for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
             form_data.append('file-' + i, file);
-        });
+        }
 
         $("#user-avatar-source").hide();
 

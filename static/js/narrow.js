@@ -1,3 +1,4 @@
+const util = require("./util");
 let unnarrow_times;
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
@@ -83,7 +84,7 @@ function update_narrow_title(filter) {
                 exports.narrow_title = names + " and others";
             }
         } else {
-            if (emails.indexOf(',') > -1) {
+            if (emails.includes(',')) {
                 exports.narrow_title = "Invalid users";
             } else {
                 exports.narrow_title = "Invalid user";
@@ -115,17 +116,17 @@ exports.activate = function (raw_operators, opts) {
     notifications.hide_history_limit_message();
     $(".all-messages-search-caution").hide();
 
-    blueslip.debug("Narrowed", {operators: _.map(operators,
-                                                 function (e) { return e.operator; }),
+    blueslip.debug("Narrowed", {operators: operators.map(e => e.operator),
                                 trigger: opts ? opts.trigger : undefined,
                                 previous_id: current_msg_list.selected_id()});
 
-    opts = _.defaults({}, opts, {
+    opts = {
         then_select_id: -1,
         then_select_offset: undefined,
         change_hash: true,
         trigger: 'unknown',
-    });
+        ...opts,
+    };
 
     const id_info = {
         target_id: undefined,
@@ -296,10 +297,11 @@ exports.activate = function (raw_operators, opts) {
 
     if (page_params.search_pills_enabled && opts.trigger !== 'search') {
         search_pill_widget.widget.clear(true);
-        _.each(operators, function (operator) {
+
+        for (const operator of operators) {
             const search_string = Filter.unparse([operator]);
             search_pill.append_search_string(search_string, search_pill_widget.widget);
-        });
+        }
     }
 
     if (filter.contains_only_private_messages()) {
@@ -539,27 +541,6 @@ exports.update_selection = function (opts) {
     unread_ops.process_visible();
 };
 
-exports.stream_topic = function () {
-    // This function returns the stream/topic that we most
-    // specifically care about, according (mostly) to the
-    // currently selected message.
-    const msg = current_msg_list.selected_message();
-
-    if (msg) {
-        return {
-            stream: msg.stream || undefined,
-            topic: util.get_message_topic(msg) || undefined,
-        };
-    }
-
-    // We may be in an empty narrow.  In that case we use
-    // our narrow parameters to return the stream/topic.
-    return {
-        stream: narrow_state.stream(),
-        topic: narrow_state.topic(),
-    };
-};
-
 exports.activate_stream_for_cycle_hotkey = function (stream_name) {
     // This is the common code for A/D hotkeys.
     const filter_expr = [
@@ -602,11 +583,10 @@ exports.stream_cycle_forward = function () {
 };
 
 exports.narrow_to_next_topic = function () {
-    const curr_info = exports.stream_topic();
-
-    if (!curr_info) {
-        return;
-    }
+    const curr_info = {
+        stream: narrow_state.stream(),
+        topic: narrow_state.topic(),
+    };
 
     const next_narrow = topic_generator.get_next_topic(
         curr_info.stream,
@@ -675,15 +655,15 @@ exports.by_topic = function (target_id, opts) {
 
     const search_terms = [
         {operator: 'stream', operand: original.stream},
-        {operator: 'topic', operand: util.get_message_topic(original)},
+        {operator: 'topic', operand: original.topic},
     ];
-    opts = _.defaults({}, opts, {then_select_id: target_id});
+    opts = { then_select_id: target_id, ...opts };
     exports.activate(search_terms, opts);
 };
 
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function (target_id, opts) {
-    opts = _.defaults({}, opts, {then_select_id: target_id});
+    opts = { then_select_id: target_id, ...opts };
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
 
@@ -724,7 +704,7 @@ exports.to_compose_target = function () {
         const topics = topic_data.get_recent_names(stream_id);
         const operators = [{operator: 'stream', operand: stream_name}];
         const topic = compose_state.topic();
-        if (topics.indexOf(topic) !== -1) {
+        if (topics.includes(topic)) {
             operators.push({operator: 'topic', operand: topic});
         }
         exports.activate(operators, opts);
@@ -734,7 +714,7 @@ exports.to_compose_target = function () {
     if (compose_state.get_message_type() === 'private') {
         const recipient_string = compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient_string);
-        const invalid = _.reject(emails, people.is_valid_email_for_compose);
+        const invalid = emails.filter(email => !people.is_valid_email_for_compose(email));
         // If there are no recipients or any recipient is
         // invalid, narrow to all PMs.
         if (emails.length === 0 || invalid.length > 0) {
@@ -887,19 +867,19 @@ function show_search_query() {
         search_string_display.append($('<span>').text(stream_topic_string));
     }
 
-    _.each(query_words, function (query_word) {
+    for (const query_word of query_words) {
         search_string_display.append(' ');
 
         // if query contains stop words, it is enclosed by a <del> tag
-        if (_.contains(page_params.stop_words, query_word)) {
-            // stop_words do not need sanitization so this is unnecesary but it is fail-safe.
+        if (page_params.stop_words.includes(query_word)) {
+            // stop_words do not need sanitization so this is unnecessary but it is fail-safe.
             search_string_display.append($('<del>').text(query_word));
             query_contains_stop_words = true;
         } else {
             // We use .text("...") to sanitize the user-given query_string.
             search_string_display.append($('<span>').text(query_word));
         }
-    });
+    }
 
     if (query_contains_stop_words) {
         search_string_display.html(i18n.t(
@@ -966,23 +946,35 @@ function pick_empty_narrow_banner() {
     } else if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
         // You are narrowed to a stream which does not exist or is a private stream
         // in which you were never subscribed.
-        const stream_sub = stream_data.get_sub(narrow_state.stream());
-        if (!stream_sub || !stream_sub.should_display_subscription_button) {
-            return $("#nonsubbed_private_nonexistent_stream_narrow_message");
+
+        function should_display_subscription_button() {
+            const stream_name = narrow_state.stream();
+
+            if (!stream_name) {
+                return false;
+            }
+
+            const stream_sub = stream_data.get_sub(first_operand);
+            return stream_sub && stream_sub.should_display_subscription_button;
         }
-        return $("#nonsubbed_stream_narrow_message");
+
+        if (should_display_subscription_button()) {
+            return $("#nonsubbed_stream_narrow_message");
+        }
+
+        return $("#nonsubbed_private_nonexistent_stream_narrow_message");
     } else if (first_operator === "search") {
         // You are narrowed to empty search results.
         show_search_query();
         return $("#empty_search_narrow_message");
     } else if (first_operator === "pm-with") {
         if (!people.is_valid_bulk_emails_for_compose(first_operand.split(','))) {
-            if (first_operand.indexOf(',') === -1) {
+            if (!first_operand.includes(',')) {
                 return $("#non_existing_user");
             }
             return $("#non_existing_users");
         }
-        if (first_operand.indexOf(',') === -1) {
+        if (!first_operand.includes(',')) {
             // You have no private messages with this person
             if (people.is_current_user(first_operand)) {
                 return $("#empty_narrow_self_private_message");

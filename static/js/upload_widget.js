@@ -12,7 +12,7 @@ function is_image_format(file) {
     if (!type) {
         return false;
     }
-    return _.indexOf(supported_types, type) >= 0;
+    return supported_types.includes(type);
 }
 
 exports.build_widget = function (
@@ -23,7 +23,7 @@ exports.build_widget = function (
     upload_button, // jQuery button to open file dialog
     max_file_upload_size
 ) {
-    // default value of max upladed file size
+    // default value of max uploaded file size
     max_file_upload_size = max_file_upload_size || default_max_file_size;
 
     function accept(file) {
@@ -109,7 +109,7 @@ exports.build_direct_upload_widget = function (
     upload_function,
     max_file_upload_size
 ) {
-    // default value of max upladed file size
+    // default value of max uploaded file size
     max_file_upload_size = max_file_upload_size || default_max_file_size;
     function accept() {
         input_error.hide();

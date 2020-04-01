@@ -5,8 +5,8 @@ import { path_parts } from './landing-page';
 
 // these constants are populated immediately with data from the DOM on page load
 // name -> display name
-const INTEGRATIONS = {};
-const CATEGORIES = {};
+const INTEGRATIONS = new Map();
+const CATEGORIES = new Map();
 
 function load_data() {
     $('.integration-lozenge').toArray().forEach(function (integration) {
@@ -14,7 +14,7 @@ function load_data() {
         const display_name = $(integration).find('.integration-name').text().trim();
 
         if (display_name && name) {
-            INTEGRATIONS[name] = display_name;
+            INTEGRATIONS.set(name, display_name);
         }
     });
 
@@ -23,7 +23,7 @@ function load_data() {
         const display_name = $(category).text().trim();
 
         if (display_name && name) {
-            CATEGORIES[name] = display_name;
+            CATEGORIES.set(name, display_name);
         }
     });
 }
@@ -84,7 +84,7 @@ function update_categories() {
     if (state.category === INITIAL_STATE.category) {
         $dropdown_label.text(i18n.t('Filter by category'));
     } else {
-        $dropdown_label.text(CATEGORIES[state.category]);
+        $dropdown_label.text(CATEGORIES.get(state.category));
     }
 
     $('.integration-lozenges').animate(
@@ -112,10 +112,10 @@ const update_integrations = _.debounce(function () {
         }
 
         if (!$integration.hasClass('integration-create-your-own')) {
-            const display_name = INTEGRATIONS[$integration.data('name')];
+            const display_name = INTEGRATIONS.get($integration.data('name'));
             const display =
                 common.phrase_match(state.query, display_name) &&
-                ($integration.data('categories').indexOf(CATEGORIES[state.category]) !== -1 ||
+                ($integration.data('categories').includes(CATEGORIES.get(state.category)) ||
                  state.category === 'all');
 
             if (display) {
@@ -143,15 +143,15 @@ function hide_catalog_show_integration() {
         });
 
     function show_integration(doc) {
-        $('#integration-instructions-group .name').text(INTEGRATIONS[state.integration]);
+        $('#integration-instructions-group .name').text(INTEGRATIONS.get(state.integration));
         $('#integration-instructions-group .categories .integration-category').remove();
         categories.forEach(function (category) {
             let link;
-            Object.keys(CATEGORIES).forEach(function (name) {
-                if (CATEGORIES[name] === category) {
+            for (const [name, display_name] of CATEGORIES) {
+                if (display_name === category) {
                     link = name;
                 }
-            });
+            }
             const category_el = $('<a></a>')
                 .attr('href', '/integrations/' + link)
                 .append('<h3 class="integration-category"></h3>');
@@ -232,9 +232,9 @@ function get_state_from_path() {
     result.query = state.query;
 
     const parts = path_parts();
-    if (parts[1] === 'doc' && INTEGRATIONS[parts[2]]) {
+    if (parts[1] === 'doc' && INTEGRATIONS.get(parts[2])) {
         result.integration = parts[2];
-    } else if (CATEGORIES[parts[1]]) {
+    } else if (CATEGORIES.has(parts[1])) {
         result.category = parts[1];
     }
 

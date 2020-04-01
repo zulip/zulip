@@ -139,7 +139,7 @@ cryptography==2.8 \
     --hash=sha256:df6b4dca2e11865e6cfbfb708e800efb18370f5a46fd601d3755bc7f85b3a8a2 \
     --hash=sha256:ecadccc7ba52193963c0475ac9f6fa28ac01e01349a2ca48509667ef41ffd2cf \
     --hash=sha256:fb81c17e0ebe3358486cd8cc3ad78adbae58af12fc2bf2bc0bb84e8090fa5ce8 \
-    # via apns2, pyopenssl, requests
+    # via apns2, pyopenssl, requests, social-auth-core
 cssselect==1.1.0 \
     --hash=sha256:f612ee47b749c877ebae5bb77035d8f4202c6ad0f0fc1271b3c18ad6c4468ecf \
     --hash=sha256:f95f8dedd925fd8f54edb3d2dfb44c190d9d18512377d3c1e2388d16126879bc \
@@ -157,6 +157,9 @@ defusedxml==0.6.0 \
 disposable-email-domains==0.0.57 \
     --hash=sha256:0f443152526d33e017e429cc9c7ed59b2feb8d1331f1feecb339fa4a3f43c99a \
     --hash=sha256:beb3eada4902a5105fffeb534b62724365d6cc7010f4bc698a532aa0378b3466
+distro==1.4.0 \
+    --hash=sha256:362dde65d846d23baee4b5c058c8586f219b5a54be1cf5fc6ff55c4578392f57 \
+    --hash=sha256:eedf82a470ebe7d010f1872c17237c79ab04097948800029994fa458e52fb4b4
 https://github.com/zulip/django-auth-ldap/archive/e26d0ef2a7ff77ab3fdd7b6578a76081f780778c.zip#egg=django-auth-ldap==2.0.0zulip1 \
     --hash=sha256:1a104fdb5085ef9340996ae82d4b302f99c39c5d9d60d4ae55bcc7c1f58cb65e
 django-bitfield==2.0.1 \
@@ -190,9 +193,9 @@ django-two-factor-auth[phonenumberslite]==1.10.0 \
 django-webpack4-loader==0.0.5 \
     --hash=sha256:baa043c4601ed763d161490e2888cf6aa93a2fd9b60681e6b19e35dc7fcb155d \
     --hash=sha256:be90257041170f39c025ff674c9064569c9303b464536488b6a6cedd8e3d28be
-django==1.11.28 \
-    --hash=sha256:a3b01cdff845a43830d7ccacff55e0b8ff08305a4cbf894517a686e53ba3ad2d \
-    --hash=sha256:b33ce35f47f745fea6b5aa3cf3f4241069803a3712d423ac748bd673a39741eb
+django==2.2.10 \
+    --hash=sha256:1226168be1b1c7efd0e66ee79b0e0b58b2caa7ed87717909cd8a57bb13a7079a \
+    --hash=sha256:9a4635813e2d498a3c01b10c701fe4a515d76dd290aaa792ccb65ca4ccb6b038
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d \
     # via python-twitter
@@ -454,7 +457,8 @@ python3-openid==3.1.0 \
 python3-saml==1.9.0 \
     --hash=sha256:38aa4a338b9514f3c1e2e5a92b76ae6d41c7cc561a0bfeb68b04463fcd4fcd97 \
     --hash=sha256:68ca2e5591769a1a87c9aac1779ff2c0852ddc89fb0b0371f50f781d354323da \
-    --hash=sha256:9c18fa906ef86f56812511124813ae3444e4ea50c11d7ea2d70f2c6bba28c784
+    --hash=sha256:9c18fa906ef86f56812511124813ae3444e4ea50c11d7ea2d70f2c6bba28c784 \
+    # via social-auth-core
 pytz==2019.3 \
     --hash=sha256:1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d \
     --hash=sha256:b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be
@@ -515,11 +519,10 @@ social-auth-app-django==3.1.0 \
     --hash=sha256:6d0dd18c2d9e71ca545097d57b44d26f59e624a12833078e8e52f91baf849778 \
     --hash=sha256:9237e3d7b6f6f59494c3b02e0cce6efc69c9d33ad9d1a064e3b2318bcbe89ae3 \
     --hash=sha256:f151396e5b16e2eee12cd2e211004257826ece24fc4ae97a147df386c1cd7082
-social-auth-core==3.2.0 \
-    --hash=sha256:47cd2458c8fefd02466b0c514643e02ad8b61d8b4b69f7573e80882e3a97b0f0 \
-    --hash=sha256:8320666548a532eb158968eda542bbe1863682357c432d8c4e28034a7f1e3b58 \
-    --hash=sha256:d81ed681e3c0722300b61a0792c5db5d21206793f95ca810f010c1cc931c8d89 \
-    # via social-auth-app-django
+social-auth-core[azuread,saml]==3.3.2 \
+    --hash=sha256:1ce0f672827465df416b7170536cf6ac2415158fe993acc227aec1ead5d429ee \
+    --hash=sha256:3d04148d3f01d163cbf893d35250abe86e3e759203bd6f3036fdb85f89f85109 \
+    --hash=sha256:6320ff4644eece77dd8cec7939361918e26a877fc282974071f9a8892fd6df7e
 soupsieve==1.9.5 \
     --hash=sha256:bdb0d917b03a1369ce964056fc195cfdff8819c40de04695a80bc813c3cfa1f5 \
     --hash=sha256:e2c1c5dee4a1c36bcb790e0fabd5492d874b8ebd4617622c4f6a731701060dda \
@@ -529,6 +532,10 @@ sourcemap==0.2.1 \
     --hash=sha256:c448a8c48f9482e522e4582106b0c641a83b5dbc7f13927b178848e3ea20967b
 sqlalchemy==1.3.13 \
     --hash=sha256:64a7b71846db6423807e96820993fa12a03b89127d278290ca25c0b11ed7b4fb
+sqlparse==0.3.0 \
+    --hash=sha256:40afe6b8d4b1117e7dff5504d7a8ce07d9a1b15aeeade8a2d10f130a834f8177 \
+    --hash=sha256:7c3dca29c022744e95b547e867cee89f4fce4373f3549ccd8797d8eb52cdb873 \
+    # via django
 statsd==3.3.0 \
     --hash=sha256:c610fb80347fca0ef62666d241bce64184bd7cc1efe582f9690e045c25535eaa \
     --hash=sha256:e3e6db4c246f7c59003e51c9720a51a7f39a396541cb9b147ff4b14d15b5dd1f \
@@ -575,10 +582,10 @@ xmlsec==1.3.3 \
 yamole==2.1.6 \
     --hash=sha256:e9b9af803cd856517a5e0ce2a44820c49b7626c83117118a064622829aa8c5a7 \
     --hash=sha256:ea094cc8acee25316c41ab515921253b8dff965e04ac68e922e11bf86aa1cee4
-https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip==0.6.1_git&subdirectory=zulip \
-    --hash=sha256:270cebf4554a3a2fb1c95190168c952ef97081541ed2be0a83f00fb48e29928a
-https://github.com/zulip/python-zulip-api/archive/804501610b6a205334e71b4e441fca60acf650da.zip#egg=zulip_bots==0.6.1+git&subdirectory=zulip_bots \
-    --hash=sha256:270cebf4554a3a2fb1c95190168c952ef97081541ed2be0a83f00fb48e29928a
+https://github.com/zulip/python-zulip-api/archive/0.6.4.zip/#egg=zulip==0.6.4_git&subdirectory=zulip \
+    --hash=sha256:d1d46d435a147ea3f3ef63e0f0b5ce8356694d341502d1600eabb2db751adb9f
+https://github.com/zulip/python-zulip-api/archive/0.6.4.zip/#egg=zulip_bots==0.6.4+git&subdirectory=zulip_bots \
+    --hash=sha256:d1d46d435a147ea3f3ef63e0f0b5ce8356694d341502d1600eabb2db751adb9f
 zxcvbn==4.4.28 \
     --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1
 

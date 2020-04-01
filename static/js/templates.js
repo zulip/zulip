@@ -16,31 +16,31 @@ Handlebars.registerHelper('plural', function (condition, one, other) {
 
 Handlebars.registerHelper({
     eq: function (a, b) { return a === b; },
-    and: function () {
-        // last argument is Handlebars options
-        if (arguments.length < 2) {
+    and: function (...args) {
+        args.pop(); // Handlebars options
+        if (args.length === 0) {
             return true;
         }
-        let i;
-        for (i = 0; i < arguments.length - 2; i += 1) {
-            if (!arguments[i] || Handlebars.Utils.isEmpty(arguments[i])) {
-                return arguments[i];
+        const last = args.pop();
+        for (const arg of args) {
+            if (!arg || Handlebars.Utils.isEmpty(arg)) {
+                return arg;
             }
         }
-        return arguments[i];
+        return last;
     },
-    or: function () {
-        // last argument is Handlebars options
-        if (arguments.length < 2) {
+    or: function (...args) {
+        args.pop(); // Handlebars options
+        if (args.length === 0) {
             return false;
         }
-        let i;
-        for (i = 0; i < arguments.length - 2; i += 1) {
-            if (arguments[i] && !Handlebars.Utils.isEmpty(arguments[i])) {
-                return arguments[i];
+        const last = args.pop();
+        for (const arg of args) {
+            if (arg && !Handlebars.Utils.isEmpty(arg)) {
+                return arg;
             }
         }
-        return arguments[i];
+        return last;
     },
     not: function (a) { return !a || Handlebars.Utils.isEmpty(a); },
 });

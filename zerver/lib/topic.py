@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
 TOPIC_NAME = "subject"
-TOPIC_LINKS = "subject_links"
+TOPIC_LINKS = "topic_links"
 MATCH_TOPIC = "match_subject"
 
 # This constant is actually embedded into
@@ -94,9 +94,9 @@ def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet
 def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QuerySet:
     return query.filter(message__subject__iexact=topic_name)
 
-def messages_for_topic(stream_id: int, topic_name: str) -> QuerySet:
+def messages_for_topic(stream_recipient_id: int, topic_name: str) -> QuerySet:
     return Message.objects.filter(
-        recipient__type_id=stream_id,
+        recipient_id=stream_recipient_id,
         subject__iexact=topic_name,
     )
 
@@ -104,7 +104,7 @@ def save_message_for_edit_use_case(message: Message) -> None:
     message.save(update_fields=[TOPIC_NAME, "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history", "has_attachment", "has_image",
-                                "has_link"])
+                                "has_link", "recipient_id"])
 
 
 def user_message_exists_for_topic(user_profile: UserProfile,

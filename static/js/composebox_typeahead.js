@@ -1,3 +1,4 @@
+const pygments_data = require("../generated/pygments_data.json");
 const typeahead = require("../shared/js/typeahead");
 const autosize = require('autosize');
 
@@ -20,7 +21,7 @@ exports.emoji_collection = [];
 
 exports.update_emoji_data = function () {
     exports.emoji_collection = [];
-    _.each(emoji.emojis_by_name, function (emoji_dict) {
+    for (const emoji_dict of emoji.emojis_by_name.values()) {
         if (emoji_dict.is_realm_emoji === true) {
             exports.emoji_collection.push({
                 emoji_name: emoji_dict.name,
@@ -28,14 +29,14 @@ exports.update_emoji_data = function () {
                 is_realm_emoji: true,
             });
         } else {
-            _.each(emoji_dict.aliases, function (alias) {
+            for (const alias of emoji_dict.aliases) {
                 exports.emoji_collection.push({
                     emoji_name: alias,
                     emoji_code: emoji_dict.emoji_code,
                 });
-            });
+            }
         }
-    });
+    }
 };
 
 exports.topics_seen_for = function (stream_name) {
@@ -50,7 +51,7 @@ exports.topics_seen_for = function (stream_name) {
 function get_language_matcher(query) {
     query = query.toLowerCase();
     return function (lang) {
-        return lang.indexOf(query) !== -1;
+        return lang.includes(query);
     };
 }
 
@@ -241,7 +242,7 @@ function handle_keyup(e) {
     }
 }
 
-// http://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
+// https://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
 function select_on_focus(field_id) {
     // A select event appears to trigger a focus event under certain
     // conditions in Chrome so we need to protect against infinite
@@ -325,19 +326,22 @@ exports.tokenize_compose_str = function (s) {
 };
 
 exports.broadcast_mentions = function () {
-    return _.map(['all', 'everyone', 'stream'], function (mention, idx) {
-        return {
-            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                      {wildcard_mention_token: mention}),
-            email: mention,
-            // Always sort above, under the assumption that names will
-            // be longer and only contain "all" as a substring.
-            pm_recipient_count: Infinity,
-            full_name: mention,
-            is_broadcast: true,
-            idx: idx, // used for sorting
-        };
-    });
+    return ['all', 'everyone', 'stream'].map((mention, idx) => ({
+        special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
+                                  {wildcard_mention_token: mention}),
+
+        email: mention,
+
+        // Always sort above, under the assumption that names will
+        // be longer and only contain "all" as a substring.
+        pm_recipient_count: Infinity,
+
+        full_name: mention,
+        is_broadcast: true,
+
+        // used for sorting
+        idx: idx,
+    }));
 };
 
 function filter_mention_name(current_token) {
@@ -363,12 +367,7 @@ function should_show_custom_query(query, items) {
     if (!query) {
         return false;
     }
-    const matched = _.reduce(items, function (matched, elem) {
-        if (elem.toLowerCase() === query.toLowerCase()) {
-            return true;
-        }
-        return matched;
-    }, false);
+    const matched = items.some(elem => elem.toLowerCase() === query.toLowerCase());
     return !matched;
 }
 
@@ -424,7 +423,7 @@ exports.get_person_suggestions = function (query, opts) {
         if (opts.want_broadcast) {
             persons = persons.concat(exports.broadcast_mentions());
         }
-        return _.filter(persons, person_matcher);
+        return persons.filter(person_matcher);
     }
 
     let groups;
@@ -435,7 +434,7 @@ exports.get_person_suggestions = function (query, opts) {
         groups = [];
     }
 
-    const filtered_groups = _.filter(groups, group_matcher);
+    const filtered_groups = groups.filter(group_matcher);
 
     /*
         Let's say you're on a big realm and type
@@ -471,7 +470,7 @@ exports.get_person_suggestions = function (query, opts) {
         filtered_persons = filtered_message_persons;
     } else {
         filtered_persons = filter_persons(
-            people.get_realm_persons()
+            people.get_realm_users()
         );
     }
 
@@ -533,9 +532,7 @@ exports.get_sorted_filtered_items = function (query) {
 exports.filter_and_sort_candidates = function (completing, candidates, token) {
     const matcher = exports.compose_content_matcher(completing, token);
 
-    const small_results = _.filter(candidates, function (item) {
-        return matcher(item);
-    });
+    const small_results = candidates.filter(item => matcher(item));
 
     const sorted_results = exports.sort_results(completing, small_results, token);
 
@@ -557,7 +554,7 @@ exports.get_candidates = function (query) {
 
     // We will likely want to extend this list to be more i18n-friendly.
     const terminal_symbols = ',.;?!()[] "\'\n\t';
-    if (rest !== '' && terminal_symbols.indexOf(rest[0]) === -1) {
+    if (rest !== '' && !terminal_symbols.includes(rest[0])) {
         return false;
     }
 
@@ -780,7 +777,7 @@ exports.content_typeahead_selected = function (item, event) {
             beginning = beginning.substring(0, backticks) + item;
         }
     } else if (this.completing === 'topic_jump') {
-        // Put the cursor at the end of immediately preceeding stream mention syntax,
+        // Put the cursor at the end of immediately preceding stream mention syntax,
         // just before where the `**` at the end of the syntax.  This will delete that
         // final ** and set things up for the topic_list typeahead.
         const index = beginning.lastIndexOf('**');
@@ -974,7 +971,7 @@ exports.initialize = function () {
         },
         sorter: function (items) {
             const sorted = typeahead_helper.sorter(this.query, items, function (x) {return x;});
-            if (sorted.length > 0 && sorted.indexOf(this.query) === -1) {
+            if (sorted.length > 0 && !sorted.includes(this.query)) {
                 sorted.unshift(this.query);
             }
             return sorted;
@@ -1002,7 +999,7 @@ exports.initialize = function () {
                     // filter out inserted users and current user from pill insertion
                     const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
                     const current_user = people.is_current_user(user.email);
-                    if (inserted_users.indexOf(user.user_id) === -1 && !current_user) {
+                    if (!inserted_users.includes(user.user_id) && !current_user) {
                         compose_pm_pill.set_from_typeahead(user);
                     }
                 }

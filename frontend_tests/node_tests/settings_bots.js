@@ -5,29 +5,30 @@ set_global("page_params", {
         {name: "giphy", config: {key: "12345678"}},
         {name: "foobot", config: {bar: "baz", qux: "quux"}},
     ],
+});
+
+const bot_data_params = {
     realm_bots: [{api_key: 'QadL788EkiottHmukyhHgePUFHREiu8b',
                   email: 'error-bot@zulip.org',
                   full_name: 'Error bot',
-                  user_id: 1},
+                  user_id: 1,
+                  services: []},
     ],
-});
+};
 
 set_global("avatar", {});
 
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 
 zrequire('bot_data');
 zrequire('settings_bots');
-set_global('Handlebars', global.make_handlebars());
 zrequire('people');
-zrequire('templates');
 
 set_global('ClipboardJS', function (sel) {
     assert.equal(sel, '#copy_zuliprc');
 });
 
-bot_data.initialize();
+bot_data.initialize(bot_data_params);
 
 run_test('generate_zuliprc_uri', () => {
     const uri = settings_bots.generate_zuliprc_uri(1);
@@ -78,7 +79,7 @@ function test_create_bot_type_input_box_toggle(f) {
     const GENERIC_BOT_TYPE = '1';
 
     $('#create_bot_type :selected').val(EMBEDDED_BOT_TYPE);
-    f.apply();
+    f();
     assert(!create_payload_url.hasClass('required'));
     assert(!payload_url_inputbox.visible());
     assert($('#select_service_name').hasClass('required'));
@@ -86,13 +87,13 @@ function test_create_bot_type_input_box_toggle(f) {
     assert(config_inputbox.visible());
 
     $('#create_bot_type :selected').val(OUTGOING_WEBHOOK_BOT_TYPE);
-    f.apply();
+    f();
     assert(create_payload_url.hasClass('required'));
     assert(payload_url_inputbox.visible());
     assert(!config_inputbox.visible());
 
     $('#create_bot_type :selected').val(GENERIC_BOT_TYPE);
-    f.apply();
+    f();
     assert(!create_payload_url.hasClass('required'));
     assert(!payload_url_inputbox.visible());
     assert(!config_inputbox.visible());
@@ -150,9 +151,9 @@ run_test('test tab clicks', () => {
 
     $('#bots_lists_navbar .active').removeClass = (cls) => {
         assert.equal(cls, 'active');
-        _.each(tabs, (tab) => {
+        for (const tab of Object.values(tabs)) {
             tab.removeClass('active');
-        });
+        }
     };
 
     const forms = {

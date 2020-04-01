@@ -1,5 +1,6 @@
 from typing import Optional, Any, Dict
 
+from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
@@ -10,10 +11,12 @@ from zerver.decorator import has_request_variables, \
     REQ, human_users_only
 from zerver.lib.actions import do_change_password, do_change_notification_settings, \
     do_change_enter_sends, do_regenerate_api_key, do_change_avatar_fields, \
-    do_set_user_display_setting, validate_email, do_change_user_delivery_email, \
+    do_set_user_display_setting, do_change_user_delivery_email, \
     do_start_email_change_process, check_change_full_name, \
-    get_available_notification_sounds
+    get_available_notification_sounds, validate_email_is_valid
 from zerver.lib.avatar import avatar_url
+from zerver.lib.email_validation import get_realm_email_validator, \
+    validate_email_not_already_in_realm
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
@@ -45,9 +48,11 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     do_change_user_delivery_email(user_profile, new_email)
 
     context = {'realm_name': user_profile.realm.name, 'new_email': new_email}
+    language = user_profile.default_language
     send_email('zerver/emails/notify_change_in_email', to_emails=[old_email],
-               from_name="Zulip Account Security", from_address=FromAddress.SUPPORT,
-               language=user_profile.default_language, context=context)
+               from_name=FromAddress.security_email_from_name(user_profile=user_profile),
+               from_address=FromAddress.SUPPORT, language=language,
+               context=context)
 
     ctx = {
         'new_email': new_email,
@@ -105,11 +110,22 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
     if user_profile.delivery_email != new_email and new_email != '':
         if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
             return json_error(_("Email address changes are disabled in this organization."))
-        error, skipped, deactivated = validate_email(user_profile, new_email)
+
+        error = validate_email_is_valid(
+            new_email,
+            get_realm_email_validator(user_profile.realm),
+        )
         if error:
             return json_error(error)
-        if skipped:
-            return json_error(skipped)
+
+        try:
+            validate_email_not_already_in_realm(
+                user_profile.realm,
+                new_email,
+                verbose=False,
+            )
+        except ValidationError as e:
+            return json_error(e.message)
 
         do_start_email_change_process(user_profile, new_email)
         result['account_email'] = _("Check your email for a confirmation link. ")

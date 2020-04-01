@@ -1,11 +1,9 @@
-set_global('i18n', global.stub_i18n);
 global.stub_out_jquery();
 
 set_global('ui', {
     get_content_element: element => element,
     get_scroll_element: element => element,
 });
-zrequire('util');
 zrequire('stream_data');
 zrequire('search_util');
 set_global('page_params', {});
@@ -34,39 +32,40 @@ run_test('filter_table', () => {
     };
 
     // set-up sub rows stubs
-    const sub_row_data = {};
-    sub_row_data[1] = {
-        elem: 'denmark',
-        subscribed: false,
-        name: 'Denmark',
-        stream_id: 1,
-        description: 'Copenhagen',
-    };
-    sub_row_data[2] = {
-        elem: 'poland',
-        subscribed: true,
-        name: 'Poland',
-        stream_id: 2,
-        description: 'monday',
-    };
-    sub_row_data[3] = {
-        elem: 'pomona',
-        subscribed: true,
-        name: 'Pomona',
-        stream_id: 3,
-        description: 'college',
-    };
-    sub_row_data[4] = {
-        elem: 'cpp',
-        subscribed: true,
-        name: 'C++',
-        stream_id: 4,
-        description: 'programming lang',
-    };
+    const sub_row_data = [
+        {
+            elem: 'denmark',
+            subscribed: false,
+            name: 'Denmark',
+            stream_id: 1,
+            description: 'Copenhagen',
+        },
+        {
+            elem: 'poland',
+            subscribed: true,
+            name: 'Poland',
+            stream_id: 2,
+            description: 'monday',
+        },
+        {
+            elem: 'pomona',
+            subscribed: true,
+            name: 'Pomona',
+            stream_id: 3,
+            description: 'college',
+        },
+        {
+            elem: 'cpp',
+            subscribed: true,
+            name: 'C++',
+            stream_id: 4,
+            description: 'programming lang',
+        },
+    ];
 
-    _.each(sub_row_data, function (sub) {
-        stream_data.add_sub(sub.name, sub);
-    });
+    for (const sub of sub_row_data) {
+        stream_data.add_sub(sub);
+    }
 
     let populated_subs;
 
@@ -78,7 +77,8 @@ run_test('filter_table', () => {
     subs.populate_stream_settings_left_panel();
 
     const sub_stubs = [];
-    _.each(populated_subs, function (data) {
+
+    for (const data of populated_subs) {
         const sub_row = ".stream-row-" + data.elem;
         sub_stubs.push(sub_row);
 
@@ -87,7 +87,7 @@ run_test('filter_table', () => {
         $(sub_row).detach = function () {
             return sub_row;
         };
-    });
+    }
 
     let tooltip_called = false;
     $(".tooltip").tooltip = function (obj) {

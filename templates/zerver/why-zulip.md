@@ -4,7 +4,7 @@ We talk about Slack in the discussion below, but the problems apply equally
 to other apps with Slack’s conversation model, including Hipchat, IRC,
 Mattermost, Discord, Spark, and others.
 
-## Reading busy Slack channels is extremely inefficient
+## Reading busy Slack channels is extremely inefficient.
 
 Anyone who wakes up to this frequently can tell you it is not fun.
 
@@ -14,7 +14,7 @@ The lack of organization and context in Slack channels means that anyone
 using Slack heavily has to manually scan through hundreds of messages a day
 to find the content that is relevant to them.
 
-## Senior people rarely use large Slack channels
+## Senior people rarely use large Slack channels.
 
 Slack channels are even worse for managers and other people involved in
 multiple projects. Even modest usage of Slack leads to more channel messages
@@ -23,19 +23,19 @@ a day than most managers have time to handle.
 In practice, in organizations that use Slack, many senior personnel
 (sensibly) don’t read their channel messages at all, or only read a handful
 of smaller channels. This means you now have a company communication
-platform ... with everyone but the decision makers.
+platform…with everyone but the decision makers.
 
-## Channels rapidly devolve into GIF posts
+## Channels rapidly devolve into GIF posts.
 
 Once a channel reaches dozens of messages a day, substantive conversations
 become increasingly difficult or even impossible. If you send a thoughtful
 question at 10am, anyone who checks in after lunch is too late to reply,
 since someone else will have already started another conversation in that
-channel. This means that even moderately busy channels can't be used for
+channel. This means that even moderately busy channels can’t be used for
 serious discussion, and they devolve into a mix of quick questions and
 random spam.
 
-## Remote workers can’t participate
+## Remote workers can’t participate.
 
 This means that workers in different timezones can only effectively
 collaborate during the narrow windows when everyone is at their
@@ -50,7 +50,7 @@ In contrast, the Zulip team has over 30 core team members distributed
 across a dozen time zones, and uses only Zulip and GitHub issues for
 communication (no email lists, video meetings, etc).
 
-## Teams that love Slack are often mostly using DMs and small channels
+## Teams that love Slack are often mostly using DMs and small channels.
 
 Slack is great for private messages (&ldquo;DMs&rdquo;), integrations, and quick
 questions when everyone’s online. Most glowing reviews of Slack are
@@ -86,7 +86,7 @@ knowledge within the team, and leads to only managers having the full
 picture on projects. Having discussions accessible to larger lists allows
 more stakeholders to stay in the loop.
 
-## Asynchronous communication is fundamental to productive work
+## Asynchronous communication is fundamental to productive work.
 
 These problems are all symptoms of the underlying fact that the channel
 model used by Slack and similar tools is a really bad way to structure
@@ -132,7 +132,7 @@ and reply in context, even to conversations that started hours or days ago.
 
 <img src="/static/images/why-zulip/zulip-reply-later.png" class="zulip-reply-later-image" alt="Zulip reply later">
 
-## Zulip changes how you can operate
+## Zulip changes how you can operate.
 
 It’s simple in concept, but switching from Slack to Zulip can
 transform how your organization communicates:
@@ -141,7 +141,7 @@ transform how your organization communicates:
   thus effectively participate in the chat community.
 * More discussions can be moved from meetings and email to chat.
 * Individual contributors can do focused work instead of paging
-  through GIFs making sure they don't miss anything important.
+  through GIFs making sure they don’t miss anything important.
 * Remote workers can participate in an equal way to people present in
   person.
 * Employees don’t need to be glued to their keyboard or phone in order

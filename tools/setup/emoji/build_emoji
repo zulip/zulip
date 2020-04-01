@@ -7,7 +7,7 @@ import shutil
 import sys
 import ujson
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
     get_emoji_code, generate_name_to_codepoint_map, emoji_names_for_picker, \
@@ -20,40 +20,31 @@ sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import generate_sha1sum_emoji
 
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
+TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji-styles')
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
 NODE_MODULES_PATH = os.path.join(ZULIP_PATH, 'node_modules')
 
-EMOJI_CODES_FILE_TEMPLATE = """\
-var emoji_codes = (function () {
-var exports = {};
 
-exports.names = %(names)s;
+# The CSS for emoji spritesheet has somewhat tricky requirements.  One
+# is that we want to be able to use the same emoji CSS classes for
+# different display sizes of our emoji (e.g. reactions are smaller
+# than inline message emoji, which are smaller than those in the emoji
+# picker) while only downloading 1 copy of the spritesheet, having
+# good browser rendering performance, and reusing as much common CSS
+# as is possible.
 
-exports.name_to_codepoint = %(name_to_codepoint)s;
-
-exports.codepoint_to_name = %(codepoint_to_name)s;
-
-exports.emoji_catalog = %(emoji_catalog)s;
-
-exports.emoticon_conversions = %(emoticon_conversions)s;
-
-return exports;
-}());
-if (typeof module !== 'undefined') {
-    module.exports = emoji_codes;
-}
-"""
-
+# Our solution to those problem is to use the `background-size` (Which
+# is e.g. 5700%) and background-position attributes to select the
+# region of the spritesheet corresponding to the target sprite and
+# display it properly scaled in an emoji span.
 SPRITE_CSS_FILE_TEMPLATE = """\
 div.emoji,
 span.emoji
 {
     display: inline-block;
-    background-image: url('sheet-%(emojiset)s-64.png');
-    -webkit-background-size: 5200%%;
-    -moz-background-size: 5200%%;
-    background-size: 5200%%;
+    background-image: url(~emoji-datasource-%(emojiset)s/img/%(alt_name)s/sheets-256/64.png);
+    background-size: %(background_size)s;
     background-repeat: no-repeat;
 
     /* Hide the text. */
@@ -64,7 +55,7 @@ span.emoji
 
 .emoji-1f419
 {
-    background-image: url('images-google-64/1f419.png') !important;
+    background-image: url(../emoji/images-google-64/1f419.png) !important;
     background-position: 0%% 0%% !important;
     background-size: contain !important;
 }
@@ -74,7 +65,7 @@ span.emoji
 
 EMOJI_POS_INFO_TEMPLATE = """\
 .emoji-%(codepoint)s {
-    background-position: %(pos_x)s%% %(pos_y)s%%;
+    background-position: %(pos_x)s %(pos_y)s;
 }
 """
 
@@ -100,27 +91,68 @@ def main() -> None:
         os.remove(TARGET_EMOJI_DUMP)
     os.symlink(source_emoji_dump, TARGET_EMOJI_DUMP)
 
+    # These must not be symlinked so webpack can resolve module references.
+    os.makedirs(TARGET_EMOJI_STYLES, exist_ok=True)
+    to_remove = set(os.listdir(TARGET_EMOJI_STYLES))
+    for filename in os.listdir(source_emoji_dump):
+        if filename.endswith(".css"):
+            shutil.copy2(os.path.join(source_emoji_dump, filename), TARGET_EMOJI_STYLES)
+            to_remove.discard(filename)
+    for filename in to_remove:
+        os.remove(os.path.join(TARGET_EMOJI_STYLES, filename))
+
 def get_success_stamp() -> str:
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
     return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
 
+def percent(f: float) -> str:
+    return '%0.3f%%' % (f * 100,)
+
+def get_square_size(emoji_data: List[Dict[str, Any]]) -> int:
+    """
+    Spritesheets are usually NxN squares, and we have to
+    infer N from the sheet_x/sheet_y values of emojis.
+    """
+    def get_offsets(emoji_data: List[Dict[str, Any]]) -> Iterator[int]:
+        for emoji_dict in emoji_data:
+            yield emoji_dict['sheet_x']
+            yield emoji_dict['sheet_y']
+            if 'skin_variations' in emoji_dict:
+                for img_info in emoji_dict['skin_variations'].values():
+                    yield img_info['sheet_x']
+                    yield img_info['sheet_y']
+
+    n = max(get_offsets(emoji_data)) + 1
+    return n
+
 def generate_sprite_css_files(cache_path: str,
                               emoji_data: List[Dict[str, Any]],
-                              emojiset: str) -> None:
-    def get_max_val(field: str, emoji_data: List[Dict[str, Any]]) -> int:
-        max_val = 0
-        for emoji_dict in emoji_data:
-            max_val = max(max_val, emoji_dict[field])
-            if 'skin_variations' in emoji_dict:
-                for skin_tone, img_info in emoji_dict['skin_variations'].items():
-                    max_val = max(max_val, img_info[field])
-        return max_val
+                              emojiset: str,
+                              alt_name: str) -> None:
+    """
+    Spritesheets are usually NxN squares.
+    """
+    n = get_square_size(emoji_data)
 
-    # Spritesheet CSS generation code. Spritesheets are squared using
-    # padding, so we have to take only the maximum of two dimensions.
-    nrows = get_max_val('sheet_x', emoji_data)
-    ncols = get_max_val('sheet_y', emoji_data)
-    max_dim = max(nrows, ncols)
+    """
+    Each single emoji is 64x64, with 1px gutters on every border.
+    We just consider the gutters to be part of the image for
+    simplicity reasons, so you can think of the spritesheet as
+    an NxN square of 66x66 pre-padded emojis.  The CSS
+    background-size parameter below says to size the background
+    element as N times the size of the element that you're drawing.
+
+    Note that we use percentages here, instead of absolute
+    pixel values, because when we render emojis as actual elements,
+    their size will vary depending on which part of the UI we're
+    in (message emojis, emoji reactions, emoji popup, emoji
+    popup showcase, etc.).
+
+    (The next step is to offset the image; that will be in the
+    upcoming loop.)
+    """
+    background_size = percent(n)
+
     emoji_positions = ""
     for emoji in emoji_data:
         if emoji["has_img_google"]:
@@ -129,16 +161,57 @@ def generate_sprite_css_files(cache_path: str,
             # Google emoji (not just the universal ones), we need to
             # ensure the spritesheet is setup to correctly display
             # those google emoji (in case anyone used them).
+
+            """
+            For background-position we need to use percentages.
+            Absolute pixel values won't work, because the size
+            of the background sprite image is proportional to
+            the size of the element we're rendering, and we render
+            elements in multiple sizes.
+
+            The way that CSS background-position works is linear
+            interpolation.  When you tell CSS background-position
+            is "42% 37%", then in the `x` dimension it will align
+            the image such that 42% of the background image is to
+            the left of the 42% mark in the element itself.
+
+            For simplicity assume we render the emoji as 66px
+            (and everything will scale appropriately for other
+            size images as long as we use percentages).
+
+            The image size will be 66n.
+            The left offset of the x-th emoji (including its
+            padding) will be 66x.  And the element's width
+            will be 66.
+
+            So, solve this equation for `p`, where p is
+            the ratio that we'll later express as a
+            percentage:
+
+                <image offset> = <offset of p% mark of element>
+                (p * 66n) = 66x + p66
+                p * n = x + p
+                p * n - p = x
+                p * (n - 1) = x
+                p = x / (n - 1)
+
+            If you ever want to change the code so that the
+            gutters don't show up in the element, the algebra
+            will get more complicated.
+            """
+
             emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
                 'codepoint': get_emoji_code(emoji),
-                'pos_x': (emoji["sheet_x"] * 100) / max_dim,
-                'pos_y': (emoji["sheet_y"] * 100) / max_dim,
+                'pos_x': percent(emoji["sheet_x"] / (n - 1)),
+                'pos_y': percent(emoji["sheet_y"] / (n - 1)),
             }
 
     SPRITE_CSS_PATH = os.path.join(cache_path, '%s-sprite.css' % (emojiset,))
     with open(SPRITE_CSS_PATH, 'w') as f:
         f.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
+                                            'alt_name': alt_name,
                                             'emoji_positions': emoji_positions,
+                                            'background_size': background_size,
                                             })
 
 def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
@@ -185,19 +258,13 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         for f in os.listdir(zulip_image):
             shutil.copy2(os.path.join(zulip_image, f), target_emoji_farm, follow_symlinks=False)
 
-        # Copy spritesheets.
-        emoji_data_path = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-' + emojiset)
-        input_sprite_sheet = os.path.join(emoji_data_path, 'img', alt_name, 'sheets-256', '64.png')
-        output_sprite_sheet = os.path.join(cache_path, 'sheet-%s-64.png' % (emojiset,))
-        shutil.copyfile(input_sprite_sheet, output_sprite_sheet)
-
         # We hardcode octopus emoji image to Google emojiset's old
         # "cute octopus" image. Copy it to the emoji farms.
         input_img_file = os.path.join(EMOJI_SCRIPT_DIR_PATH, '1f419.png')
         output_img_file = os.path.join(cache_path, 'images-' + emojiset + '-64', '1f419.png')
         shutil.copyfile(input_img_file, output_img_file)
 
-        generate_sprite_css_files(cache_path, emoji_data, emojiset)
+        generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name)
 
     # Setup standard emojisets.
     for emojiset in ['google', 'twitter']:
@@ -244,32 +311,20 @@ def setup_old_emoji_farm(cache_path: str,
             pass
 
 def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> None:
-    # This function generates the various data files consumed by webapp, mobile apps, bugdown etc.
+    # This function generates the data file consumed by webapp, mobile apps, bugdown etc.
     names = emoji_names_for_picker(EMOJI_NAME_MAPS)
     codepoint_to_name = generate_codepoint_to_name_map(EMOJI_NAME_MAPS)
     name_to_codepoint = generate_name_to_codepoint_map(EMOJI_NAME_MAPS)
 
-    EMOJI_CODES_FILE_PATH = os.path.join(cache_path, 'emoji_codes.js')
+    EMOJI_CODES_FILE_PATH = os.path.join(cache_path, 'emoji_codes.json')
     with open(EMOJI_CODES_FILE_PATH, 'w') as emoji_codes_file:
-        emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
+        ujson.dump({
             'names': names,
             'name_to_codepoint': name_to_codepoint,
             'codepoint_to_name': codepoint_to_name,
             'emoji_catalog': emoji_catalog,
             'emoticon_conversions': EMOTICON_CONVERSIONS,
-        })
-
-    NAME_TO_CODEPOINT_PATH = os.path.join(cache_path, 'name_to_codepoint.json')
-    with open(NAME_TO_CODEPOINT_PATH, 'w') as name_to_codepoint_file:
-        name_to_codepoint_file.write(ujson.dumps(name_to_codepoint))
-
-    CODEPOINT_TO_NAME_PATH = os.path.join(cache_path, 'codepoint_to_name.json')
-    with open(CODEPOINT_TO_NAME_PATH, 'w') as codepoint_to_name_file:
-        codepoint_to_name_file.write(ujson.dumps(codepoint_to_name))
-
-    EMOTICON_CONVERSIONS_PATH = os.path.join(cache_path, 'emoticon_conversions.json')
-    with open(EMOTICON_CONVERSIONS_PATH, 'w') as emoticon_conversions_file:
-        emoticon_conversions_file.write(ujson.dumps(EMOTICON_CONVERSIONS))
+        }, emoji_codes_file)
 
 def dump_emojis(cache_path: str) -> None:
     with open('emoji_map.json') as emoji_map_file:

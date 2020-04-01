@@ -1,3 +1,5 @@
+const settings_data = require("./settings_data");
+
 exports.max_num_of_search_results = 12;
 
 function stream_matches_query(stream_name, q) {
@@ -8,7 +10,7 @@ function make_person_highlighter(query) {
     const hilite = typeahead_helper.make_query_highlighter(query);
 
     return function (person) {
-        if (settings_org.show_email()) {
+        if (settings_data.show_email()) {
             return hilite(person.full_name) + " &lt;" + hilite(person.email) + "&gt;";
         }
         return hilite(person.full_name);
@@ -17,8 +19,8 @@ function make_person_highlighter(query) {
 
 function match_criteria(operators, criteria) {
     const filter = new Filter(operators);
-    return _.any(criteria, function (cr) {
-        if (_.has(cr, 'operand')) {
+    return criteria.some(cr => {
+        if (Object.prototype.hasOwnProperty.call(cr, 'operand')) {
             return filter.has_operand(cr.operator, cr.operand);
         }
         return filter.has_operator(cr.operator);
@@ -28,7 +30,7 @@ function match_criteria(operators, criteria) {
 function check_validity(last, operators, valid, invalid) {
     // valid: list of strings valid for the last operator
     // invalid: list of operators invalid for any previous operators except last.
-    if (valid.indexOf(last.operator) === -1) {
+    if (!valid.includes(last.operator)) {
         return false;
     }
     if (match_criteria(operators, invalid)) {
@@ -45,18 +47,16 @@ function format_as_suggestion(terms) {
 }
 
 function compare_by_huddle(huddle) {
-    huddle = _.map(huddle.slice(0, -1), function (person) {
+    huddle = huddle.slice(0, -1).map(person => {
         person = people.get_by_email(person);
-        if (person) {
-            return person.user_id;
-        }
+        return person && person.user_id;
     });
 
     // Construct dict for all huddles, so we can lookup each's recency
     const huddles = activity.get_huddles();
-    const huddle_dict = {};
-    for (let i = 0; i < huddles.length; i += 1) {
-        huddle_dict[huddles[i]] = i + 1;
+    const huddle_dict = new Map();
+    for (const [i, huddle] of huddles.entries()) {
+        huddle_dict.set(huddle, i + 1);
     }
 
     return function (person1, person2) {
@@ -64,8 +64,8 @@ function compare_by_huddle(huddle) {
         const huddle2 = huddle.concat(person2.user_id).sort().join(',');
 
         // If not in the dict, assign an arbitrarily high index
-        const score1 = huddle_dict[huddle1] || 100;
-        const score2 = huddle_dict[huddle2] || 100;
+        const score1 = huddle_dict.get(huddle1) || huddles.length + 1;
+        const score2 = huddle_dict.get(huddle2) || huddles.length + 1;
         const diff = score1 - score2;
 
         if (diff !== 0) {
@@ -90,16 +90,14 @@ function get_stream_suggestions(last, operators) {
     const query = last.operand;
     let streams = stream_data.subscribed_streams();
 
-    streams = _.filter(streams, function (stream) {
-        return stream_matches_query(stream, query);
-    });
+    streams = streams.filter(stream => stream_matches_query(stream, query));
 
     streams = typeahead_helper.sorter(query, streams);
 
     const regex = typeahead_helper.build_highlight_regex(query);
     const hilite = typeahead_helper.highlight_with_escaping_and_regex;
 
-    const objs = _.map(streams, function (stream) {
+    const objs = streams.map(stream => {
         const prefix = 'stream';
         const highlighted_stream = hilite(regex, stream);
         const verb = last.negated ? 'exclude ' : '';
@@ -145,7 +143,7 @@ function get_group_suggestions(last, operators) {
 
     const person_matcher = people.build_person_matcher(last_part);
     let persons = people.filter_all_persons(function (person) {
-        if (_.contains(parts, person.email)) {
+        if (parts.includes(person.email)) {
             return false;
         }
         return last_part === '' || person_matcher(person);
@@ -160,7 +158,7 @@ function get_group_suggestions(last, operators) {
 
     const highlight_person = make_person_highlighter(last_part);
 
-    const suggestions = _.map(persons, function (person) {
+    const suggestions = persons.map(person => {
         const term = {
             operator: 'pm-with',
             operand: all_but_last_part + ',' + person.email,
@@ -240,7 +238,7 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
 
     const highlight_person = make_person_highlighter(query);
 
-    const objs = _.map(persons, function (person) {
+    const objs = persons.map(person => {
         const name = highlight_person(person);
         const description = prefix + ' ' + name;
         const terms = [{
@@ -350,9 +348,7 @@ function get_topic_suggestions(last, operators) {
     topics = topics.slice(0, 300);
 
     if (guess !== '') {
-        topics = _.filter(topics, function (topic) {
-            return common.phrase_match(guess, topic);
-        });
+        topics = topics.filter(topic => common.phrase_match(guess, topic));
     }
 
     topics = topics.slice(0, 10);
@@ -363,7 +359,7 @@ function get_topic_suggestions(last, operators) {
     // care about case.
     topics.sort();
 
-    return _.map(topics, function (topic) {
+    return topics.map(topic => {
         const topic_term = {operator: 'topic', operand: topic, negated: negated};
         const operators = suggest_operators.concat([topic_term]);
         return format_as_suggestion(operators);
@@ -394,17 +390,15 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     // Negating suggestions on is_search_operand_negated is required for
     // suggesting negated operators.
     if (last.negated || is_search_operand_negated) {
-        suggestions = _.map(suggestions, function (suggestion) {
-            return {
-                search_string: '-' + suggestion.search_string,
-                description: 'exclude ' + suggestion.description,
-                invalid: suggestion.invalid,
-            };
-        });
+        suggestions = suggestions.map(suggestion => ({
+            search_string: '-' + suggestion.search_string,
+            description: 'exclude ' + suggestion.description,
+            invalid: suggestion.invalid,
+        }));
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
-    suggestions = _.filter(suggestions, function (s) {
+    suggestions = suggestions.filter(s => {
         if (match_criteria(operators, s.invalid)) {
             return false;
         }
@@ -579,11 +573,9 @@ function get_operator_suggestions(last) {
     }
 
     let choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'from', 'group-pm-with'];
-    choices = _.filter(choices, function (choice) {
-        return common.phrase_match(last_operand, choice);
-    });
+    choices = choices.filter(choice => common.phrase_match(last_operand, choice));
 
-    return _.map(choices, function (choice) {
+    return choices.map(choice => {
         const op = [{operator: choice, operand: '', negated: negated}];
         return format_as_suggestion(op);
     });
@@ -592,7 +584,7 @@ function get_operator_suggestions(last) {
 function make_attacher(base) {
     const self = {};
     self.result = [];
-    const prev = {};
+    const prev = new Set();
 
     function prepend_base(suggestion) {
         if (base && base.description.length > 0) {
@@ -602,21 +594,21 @@ function make_attacher(base) {
     }
 
     self.push = function (suggestion) {
-        if (!prev[suggestion.search_string]) {
-            prev[suggestion.search_string] = suggestion;
+        if (!prev.has(suggestion.search_string)) {
+            prev.add(suggestion.search_string);
             self.result.push(suggestion);
         }
     };
 
     self.concat = function (suggestions) {
-        _.each(suggestions, self.push);
+        suggestions.forEach(self.push);
     };
 
     self.attach_many = function (suggestions) {
-        _.each(suggestions, function (suggestion) {
+        for (const suggestion of suggestions) {
             prepend_base(suggestion);
             self.push(suggestion);
-        });
+        }
     };
 
     return self;
@@ -658,7 +650,7 @@ exports.get_search_result = function (base_query, query) {
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
     if (query_operators_len > 1 &&
         last.operator === 'search' &&
-        person_suggestion_ops.indexOf(query_operators[query_operators_len - 2].operator) !== -1) {
+        person_suggestion_ops.includes(query_operators[query_operators_len - 2].operator)) {
         const person_op = query_operators[query_operators_len - 2];
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
@@ -718,12 +710,12 @@ exports.get_search_result = function (base_query, query) {
 
     const max_items = exports.max_num_of_search_results;
 
-    _.each(filterers, function (filterer) {
+    for (const filterer of filterers) {
         if (attacher.result.length < max_items) {
             const suggestions = filterer(last, base_operators);
             attacher.attach_many(suggestions);
         }
-    });
+    }
 
     return attacher.result.slice(0, max_items);
 };
@@ -749,7 +741,7 @@ exports.get_search_result_legacy = function (query) {
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
     if (operators_len > 1 &&
         last.operator === 'search' &&
-        person_suggestion_ops.indexOf(operators[operators_len - 2].operator) !== -1) {
+        person_suggestion_ops.includes(operators[operators_len - 2].operator)) {
         const person_op = operators[operators_len - 2];
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
@@ -804,12 +796,12 @@ exports.get_search_result_legacy = function (query) {
 
     const max_items = exports.max_num_of_search_results;
 
-    _.each(filterers, function (filterer) {
+    for (const filterer of filterers) {
         if (attacher.result.length < max_items) {
             const suggestions = filterer(last, base_operators);
             attacher.attach_many(suggestions);
         }
-    });
+    }
 
     // This is unique to the legacy search system.  With pills
     // it is difficult to "suggest" a subset of operators,
@@ -835,20 +827,20 @@ exports.get_suggestions = function (base_query, query) {
 };
 
 exports.finalize_search_result = function (result) {
-    _.each(result, function (sug) {
+    for (const sug of result) {
         const first = sug.description.charAt(0).toUpperCase();
         sug.description = first + sug.description.slice(1);
-    });
+    }
 
     // Typeahead expects us to give it strings, not objects,
     // so we maintain our own hash back to our objects
-    const lookup_table = {};
-    _.each(result, function (obj) {
-        lookup_table[obj.search_string] = obj;
-    });
-    const strings = _.map(result, function (obj) {
-        return obj.search_string;
-    });
+    const lookup_table = new Map();
+
+    for (const obj of result) {
+        lookup_table.set(obj.search_string, obj);
+    }
+
+    const strings = result.map(obj => obj.search_string);
     return {
         strings: strings,
         lookup_table: lookup_table,

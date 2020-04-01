@@ -25,11 +25,6 @@ look at `node_tests/people_errors.js` for actual usage of this module.
 // zblueslip stub variable.
 set_global('blueslip', global.make_zblueslip());
 
-// Aditionally, you can specify which functions you want to test for/ignore.
-// By default, we ignore debug, log and info. To test for debug, for example, do:
-// set_global('blueslip', global.make_zblueslip({debug: true}));
-// Similarly, you can ignore tests for errors by passing {debug: true, error: false}.
-
 run_test('basics', () => {
     // Let's create a sample piece of code to test:
     function throw_an_error() {
@@ -65,7 +60,7 @@ run_test('basics', () => {
     blueslip.clear_test_data();
 
     // Let's repeat the above procedue with warnings. Unlike errors,
-    // warnings shoudln't stop the code execution, and thus, the
+    // warnings shouldn't stop the code execution, and thus, the
     // behaviour is slightly different.
 
     function throw_a_warning() {

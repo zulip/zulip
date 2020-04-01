@@ -13,9 +13,6 @@ set_global('stream_popover', {
 set_global('unread', {});
 set_global('unread_ui', {});
 set_global('blueslip', global.make_zblueslip());
-set_global('popovers', {
-    hide_all: function () {},
-});
 set_global('vdom', {
     render: () => {
         return 'fake-dom-for-pm-list';
@@ -53,11 +50,11 @@ const bot_test = {
     is_admin: false,
     is_bot: true,
 };
-global.people.add_in_realm(alice);
-global.people.add_in_realm(bob);
-global.people.add_in_realm(me);
-global.people.add_in_realm(bot_test);
-global.people.initialize_current_user(me.user_id);
+people.add(alice);
+people.add(bob);
+people.add(me);
+people.add(bot_test);
+people.initialize_current_user(me.user_id);
 
 run_test('close', () => {
     let collapsed;

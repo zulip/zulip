@@ -11,7 +11,6 @@
  * unicode string containing their diff.
  */
 
-const _ = require('underscore');
 const difflib = require('difflib');
 
 function apply_color(input_string, changes) {
@@ -118,7 +117,7 @@ function diff_strings(string_0, string_1) {
     const emphasize_codes = (string) => {
         return "\u001b[34m" + string.slice(0, 1) + "\u001b[0m" + string.slice(1);
     };
-    output_lines = _.map(output_lines, emphasize_codes);
+    output_lines = output_lines.map(emphasize_codes);
 
     return output_lines.join("\n");
 }
@@ -131,7 +130,7 @@ if (require.main === module) {
     // First two args are just "node" and "mdiff.js"
     const argv = require('minimist')(process.argv.slice(2));
 
-    if (_.has(argv, "help")) {
+    if (Object.prototype.hasOwnProperty.call(argv, "help")) {
         console.log(process.argv[0] + " " + process.argv[1] +
             " [ --help ]" +
             " string_0" +

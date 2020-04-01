@@ -17,6 +17,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_update_user_custom_profile_data_if_changed, check_remove_custom_profile_field_value
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
+from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import has_request_variables, REQ
@@ -24,12 +25,13 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict, check_list
+from zerver.lib.url_encoding import add_query_arg_to_redirect_url
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
     access_bot_by_id, add_service, access_user_by_id, check_bot_name_available, \
     validate_user_custom_profile_data, get_raw_user_data, get_api_key
 from zerver.lib.utils import generate_api_key, generate_random_token
-from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
+from zerver.models import UserProfile, Stream, Message, \
     get_user_by_delivery_email, Service, get_user_including_cross_realm, \
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
     EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm, Realm, \
@@ -148,8 +150,7 @@ def avatar(request: HttpRequest, user_profile: UserProfile,
     # add query parameters to our url, get_avatar_url does '?x=x'
     # hacks to prevent us from having to jump through decode/encode hoops.
     assert url is not None
-    assert '?' in url
-    url += '&' + request.META['QUERY_STRING']
+    url = add_query_arg_to_redirect_url(url, request.META['QUERY_STRING'])
     return redirect(url)
 
 def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
@@ -378,7 +379,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
         default_events_register_stream = get_stream_name(bot_profile.default_events_register_stream)
 
         # Bots are supposed to have only one API key, at least for now.
-        # Therefore we can safely asume that one and only valid API key will be
+        # Therefore we can safely assume that one and only valid API key will be
         # the first one.
         api_key = get_api_key(bot_profile)
 
@@ -395,7 +396,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     return json_success({'bots': list(map(bot_info, bot_profiles))})
 
 @has_request_variables
-def get_members_backend(request: HttpRequest, user_profile: UserProfile,
+def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id: Optional[int]=None,
                         include_custom_profile_fields: bool=REQ(validator=check_bool,
                                                                 default=False),
                         client_gravatar: bool=REQ(validator=check_bool, default=False)
@@ -407,15 +408,25 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
     the server to compute this for us.
     '''
     realm = user_profile.realm
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
-    members = get_raw_user_data(realm,
-                                user_profile=user_profile,
-                                client_gravatar=client_gravatar,
+    target_user = None
+    if user_id is not None:
+        target_user = access_user_by_id(user_profile, user_id, allow_deactivated=True,
+                                        read_only=True)
+
+    members = get_raw_user_data(realm, user_profile, client_gravatar=client_gravatar,
+                                target_user=target_user,
                                 include_custom_profile_fields=include_custom_profile_fields)
-    return json_success({'members': members.values()})
+
+    if target_user is not None:
+        data = {"user": members[target_user.id]}  # type: Dict[str, Any]
+    else:
+        data = {"members": [members[k] for k in members]}
+
+    return json_success(data)
 
 @require_realm_admin
 @has_request_variables

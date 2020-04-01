@@ -14,7 +14,7 @@ exports.set_up_toggler = function () {
         callback: function (name, key) {
             $(".overlay-modal").hide();
             $("#" + key).show();
-            $("#" + key).find(".modal-body").focus();
+            ui.get_scroll_element($("#" + key).find(".modal-body")).focus();
         },
     };
 
@@ -22,13 +22,14 @@ exports.set_up_toggler = function () {
     const elem = exports.toggler.get();
     elem.addClass('large allow-overflow');
 
-    const modals = _.map(opts.values, function (item) {
+    const modals = opts.values.map(item => {
         const key = item.key; // e.g. message-formatting
         const modal = $('#' + key).find('.modal-body');
         return modal;
     });
 
-    _.each(modals, function (modal) {
+    for (const modal of modals) {
+        ui.get_scroll_element(modal).prop("tabindex", 0);
         keydown_util.handle({
             elem: modal,
             handlers: {
@@ -36,7 +37,7 @@ exports.set_up_toggler = function () {
                 right_arrow: exports.toggler.maybe_go_right,
             },
         });
-    });
+    }
 
     $(".informational-overlays .overlay-tabs").append(elem);
 

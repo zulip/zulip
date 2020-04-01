@@ -35,9 +35,9 @@ run_test('pick_color', () => {
         'yellow',
     ];
 
-    _.each(expected_colors, (expected_color) => {
+    for (const expected_color of expected_colors) {
         assert.equal(color_data.pick_color(), expected_color);
-    });
+    }
 
     color_data.claim_color('blue');
     assert.equal(color_data.pick_color(), 'orange');

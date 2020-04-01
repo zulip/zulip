@@ -1,7 +1,6 @@
 const FoldDict = require('./fold_dict').FoldDict;
-const IntDict = require('./int_dict').IntDict;
 
-const muted_topics = new IntDict();
+const muted_topics = new Map();
 
 exports.add_muted_topic = function (stream_id, topic) {
     let sub_dict = muted_topics.get(stream_id);
@@ -40,7 +39,7 @@ exports.get_muted_topics = function () {
 exports.set_muted_topics = function (tuples) {
     muted_topics.clear();
 
-    _.each(tuples, function (tuple) {
+    for (const tuple of tuples) {
         const stream_name = tuple[0];
         const topic = tuple[1];
 
@@ -48,11 +47,11 @@ exports.set_muted_topics = function (tuples) {
 
         if (!stream_id) {
             blueslip.warn('Unknown stream in set_muted_topics: ' + stream_name);
-            return;
+            continue;
         }
 
         exports.add_muted_topic(stream_id, topic);
-    });
+    }
 };
 
 exports.initialize = function () {

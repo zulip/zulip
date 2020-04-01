@@ -7,6 +7,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
+import ujson
 
 IS_AWAITING_SIGNATURE = "is awaiting the signature of {awaiting_recipients}"
 WAS_JUST_SIGNED_BY = "was just signed by {signed_recipients}"
@@ -54,8 +55,11 @@ def get_recipients_text(recipients: List[str]) -> str:
 @api_key_only_webhook_view('HelloSign')
 @has_request_variables
 def api_hellosign_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body')) -> HttpResponse:
-    body = get_message_body(payload)
-    topic = payload['signature_request']['title']
-    check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+                          payload: Dict[str, Dict[str, Any]]=REQ(
+                              whence='json', converter=ujson.loads)) -> HttpResponse:
+    if "signature_request" in payload:
+        body = get_message_body(payload)
+        topic = payload['signature_request']['title']
+        check_send_webhook_message(request, user_profile, topic, body)
+
+    return json_success({"msg": "Hello API Event Received"})

@@ -2,7 +2,6 @@ set_global('blueslip', global.make_zblueslip());
 set_global('pm_conversations', {
     recent: {},
 });
-set_global('i18n', global.stub_i18n);
 
 zrequire('muting');
 zrequire('unread');
@@ -215,19 +214,19 @@ run_test('streams', () => {
 
 run_test('topics', () => {
     const streams = [1, 2, 3, 4];
-    const topics = {};
-
-    topics[1] = ['read', 'read', '1a', '1b', 'read', '1c'];
-    topics[2] = [];
-    topics[3] = ['3a', 'read', 'read', '3b', 'read'];
-    topics[4] = ['4a'];
+    const topics = new Map([
+        [1, ['read', 'read', '1a', '1b', 'read', '1c']],
+        [2, []],
+        [3, ['3a', 'read', 'read', '3b', 'read']],
+        [4, ['4a']],
+    ]);
 
     function has_unread_messages(stream, topic) {
         return topic !== 'read';
     }
 
     function get_topics(stream) {
-        return topics[stream];
+        return topics.get(stream);
     }
 
     function next_topic(curr_stream, curr_topic) {
@@ -288,7 +287,7 @@ run_test('topics', () => {
     };
 
     global.unread.topic_has_any_unread = function (stream_id) {
-        return _.contains([devel_stream_id, muted_stream_id], stream_id);
+        return [devel_stream_id, muted_stream_id].includes(stream_id);
     };
 
     global.muting.is_topic_muted = function (stream_name, topic) {

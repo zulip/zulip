@@ -9,6 +9,12 @@ let get_events_timeout;
 let get_events_failures = 0;
 const get_events_params = {};
 
+// This field keeps track of whether we are attempting to
+// force-reconnect to the events server due to suspecting we are
+// offline.  It is important for avoiding races with the presence
+// system when coming back from unsuspend.
+exports.suspect_offline = false;
+
 function get_events_success(events) {
     let messages = [];
     const update_message_events = [];
@@ -20,7 +26,7 @@ function get_events_success(events) {
         return _.pick(event, 'id', 'type', 'op');
     };
 
-    _.each(events, function (event) {
+    for (const event of events) {
         try {
             get_events_params.last_event_id = Math.max(get_events_params.last_event_id,
                                                        event.id);
@@ -29,7 +35,7 @@ function get_events_success(events) {
                            {event: clean_event(event)},
                            ex.stack);
         }
-    });
+    }
 
     if (waiting_on_homeview_load) {
         events_stored_while_loading = events_stored_while_loading.concat(events);
@@ -77,7 +83,7 @@ function get_events_success(events) {
         }
     };
 
-    _.each(events, function (event) {
+    for (const event of events) {
         try {
             dispatch_event(event);
         } catch (ex1) {
@@ -86,7 +92,7 @@ function get_events_success(events) {
                            {event: clean_event(event)},
                            ex1.stack);
         }
-    });
+    }
 
     if (messages.length !== 0) {
         // Sort by ID, so that if we get multiple messages back from
@@ -96,23 +102,19 @@ function get_events_success(events) {
         try {
             messages = echo.process_from_server(messages);
             if (messages.length > 0) {
-                _.each(messages, message_store.set_message_booleans);
-                let sent_by_this_client = false;
-                _.each(messages, function (msg) {
-                    const msg_state = sent_messages.messages[msg.local_id];
-                    if (msg_state) {
-                        // Almost every time, this message will be the
-                        // only one in messages, because multiple messages
-                        // being returned by get_events usually only
-                        // happens when a client is offline, but we know
-                        // this client just sent a message in this batch
-                        // of events.  But in any case,
-                        // insert_new_messages handles multiple messages,
-                        // only one of which was sent by this client,
-                        // correctly.
-                        sent_by_this_client = true;
-                    }
-                });
+                messages.forEach(message_store.set_message_booleans);
+
+                const sent_by_this_client = messages.some(msg =>
+                    sent_messages.messages.has(msg.local_id)
+                );
+                // If some message in this batch of events was sent by this
+                // client, almost every time, this message will be the only one
+                // in messages, because multiple messages being returned by
+                // get_events usually only happens when a client is offline.
+                // But in any case, insert_new_messages handles multiple
+                // messages, only one of which was sent by this client,
+                // correctly.
+
                 message_events.insert_new_messages(messages, sent_by_this_client);
             }
         } catch (ex2) {
@@ -148,9 +150,9 @@ function get_events_success(events) {
     // We do things like updating message flags and deleting messages last,
     // to avoid ordering issues that are caused by batch handling of
     // messages above.
-    _.each(post_message_events, function (event) {
+    for (const event of post_message_events) {
         server_events_dispatch.dispatch_normal_event(event);
-    });
+    }
 }
 
 function show_ui_connection_error() {
@@ -164,7 +166,7 @@ function hide_ui_connection_error() {
 }
 
 function get_events(options) {
-    options = _.extend({dont_block: false}, options);
+    options = { dont_block: false, ...options };
 
     if (reload_state.is_in_progress()) {
         return;
@@ -172,6 +174,13 @@ function get_events(options) {
 
     get_events_params.dont_block = options.dont_block || get_events_failures > 0;
 
+    if (get_events_params.dont_block) {
+        // If we're requesting an immediate re-connect to the server,
+        // that means it's fairly likely that this client has been off
+        // the Internet and thus may have stale state (which is
+        // important for potential presence issues).
+        exports.suspect_offline = true;
+    }
     if (get_events_params.queue_id === undefined) {
         get_events_params.queue_id = page_params.queue_id;
         get_events_params.last_event_id = page_params.last_event_id;
@@ -194,6 +203,7 @@ function get_events(options) {
         idempotent: true,
         timeout: page_params.poll_timeout,
         success: function (data) {
+            exports.suspect_offline = false;
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
@@ -308,6 +318,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     channel.del({
         url: '/json/events',
         data: {queue_id: page_params.queue_id},
+        ignore_reload: true,
     });
 };
 

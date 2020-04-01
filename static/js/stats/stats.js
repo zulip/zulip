@@ -96,12 +96,18 @@ function populate_messages_sent_over_time(data) {
         });
         const common = { x: dates, type: type, hoverinfo: 'none', text: text };
         return {
-            human: $.extend({ // 5062a0
-                name: i18n.t("Humans"), y: values.human, marker: {color: '#5f6ea0'}}, common),
-            bot: $.extend({ // a09b5f bbb56e
-                name: i18n.t("Bots"), y: values.bot, marker: {color: '#b7b867'}}, common),
-            me: $.extend({
-                name: i18n.t("Me"), y: values.me, marker: {color: '#be6d68'}}, common),
+            human: { // 5062a0
+                name: i18n.t("Humans"), y: values.human, marker: {color: '#5f6ea0'},
+                ...common,
+            },
+            bot: { // a09b5f bbb56e
+                name: i18n.t("Bots"), y: values.bot, marker: {color: '#b7b867'},
+                ...common,
+            },
+            me: {
+                name: i18n.t("Me"), y: values.me, marker: {color: '#be6d68'},
+                ...common,
+            },
         };
     }
 
@@ -125,8 +131,8 @@ function populate_messages_sent_over_time(data) {
     function make_rangeselector(x, y, button1, button2) {
         return {x: x, y: y,
                 buttons: [
-                    $.extend({stepmode: 'backward'}, button1),
-                    $.extend({stepmode: 'backward'}, button2),
+                    {stepmode: 'backward', ...button1},
+                    {stepmode: 'backward', ...button2},
                     {step: 'all', label: 'All time'}]};
     }
 
@@ -330,9 +336,8 @@ function round_to_percentages(values, total) {
 
 // Last label will turn into "Other" if time_series data has a label not in labels
 function compute_summary_chart_data(time_series_data, num_steps, labels_) {
-    const data = {};
-    let key;
-    for (key in time_series_data) {
+    const data = new Map();
+    for (const key in time_series_data) {
         if (!time_series_data.hasOwnProperty(key)) {
             continue;
         }
@@ -343,24 +348,22 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
         for (let i = 1; i <= num_steps; i += 1) {
             sum += time_series_data[key][time_series_data[key].length - i];
         }
-        data[key] = sum;
+        data.set(key, sum);
     }
     const labels = labels_.slice();
     const values = [];
     labels.forEach(function (label) {
-        if (data.hasOwnProperty(label)) {
-            values.push(data[label]);
-            delete data[label];
+        if (data.has(label)) {
+            values.push(data.get(label));
+            data.delete(label);
         } else {
             values.push(0);
         }
     });
-    if (!$.isEmptyObject(data)) {
+    if (data.size !== 0) {
         labels[labels.length - 1] = "Other";
-        for (key in data) {
-            if (data.hasOwnProperty(key)) {
-                values[labels.length - 1] += data[key];
-            }
+        for (const sum of data.values()) {
+            values[labels.length - 1] += sum;
         }
     }
     const total = values.reduce(function (a, b) { return a + b; }, 0);
@@ -472,7 +475,7 @@ function populate_messages_sent_by_client(data) {
         $('#id_messages_sent_by_client > div').removeClass("spinner");
         const data_ = plot_data[user_button][time_button];
         layout.height = layout.margin.b + data_.trace.x.length * 30;
-        layout.xaxis.range = [0, Math.max.apply(null, data_.trace.x) * 1.3];
+        layout.xaxis.range = [0, Math.max(...data_.trace.x) * 1.3];
         Plotly.newPlot('id_messages_sent_by_client',
                        [data_.trace, data_.trace_annotations],
                        layout,

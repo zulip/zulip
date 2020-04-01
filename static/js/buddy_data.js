@@ -1,3 +1,4 @@
+const util = require("./util");
 /*
 
    This is the main model code for building the buddy list.
@@ -115,16 +116,12 @@ function filter_user_ids(filter_text, user_ids) {
         return user_ids;
     }
 
-    user_ids = _.reject(user_ids, people.is_my_user_id);
+    user_ids = user_ids.filter(user_id => !people.is_my_user_id(user_id));
 
     let search_terms = filter_text.toLowerCase().split(/[|,]+/);
-    search_terms = _.map(search_terms, function (s) {
-        return s.trim();
-    });
+    search_terms = search_terms.map(s => s.trim());
 
-    const persons = _.map(user_ids, function (user_id) {
-        return people.get_by_user_id(user_id);
-    });
+    const persons = user_ids.map(user_id => people.get_by_user_id(user_id));
 
     const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
     return Array.from(user_id_dict.keys());
@@ -137,9 +134,6 @@ exports.matches_filter = function (filter_text, user_id) {
 };
 
 function get_num_unread(user_id) {
-    if (unread.suppress_unread_counts) {
-        return 0;
-    }
     return unread.num_unread_for_person(user_id.toString());
 }
 
@@ -221,12 +215,13 @@ exports.get_title_data = function (user_ids_string, is_group) {
     const person = people.get_by_user_id(user_id);
 
     if (person.is_bot) {
-        // Bot has an owner.
-        if (person.bot_owner_id !== null) {
-            person.bot_owner_full_name = people.get_by_user_id(
-                person.bot_owner_id).full_name;
+        const bot_owner = people.get_bot_owner_user(person);
 
-            const bot_owner_name = i18n.t('Owner: __name__', {name: person.bot_owner_full_name});
+        if (bot_owner) {
+            const bot_owner_name = i18n.t(
+                'Owner: __name__',
+                {name: bot_owner.full_name}
+            );
 
             return {
                 first_line: person.full_name,
@@ -273,7 +268,7 @@ exports.get_item = function (user_id) {
 };
 
 function user_is_recently_active(user_id) {
-    // return true if the user has a green/orange cirle
+    // return true if the user has a green/orange circle
     return exports.level(user_id) <= 2;
 }
 
@@ -292,7 +287,7 @@ function maybe_shrink_list(user_ids, filter_text) {
         return user_ids;
     }
 
-    user_ids = _.filter(user_ids, user_is_recently_active);
+    user_ids = user_ids.filter(user_is_recently_active);
 
     return user_ids;
 }
@@ -311,7 +306,7 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
         user_ids = presence.get_user_ids();
     }
 
-    user_ids = _.filter(user_ids, function (user_id) {
+    user_ids = user_ids.filter(user_id => {
         const person = people.get_by_user_id(user_id);
 
         if (!person) {
@@ -330,20 +325,21 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
 };
 
 exports.get_items_for_users = function (user_ids) {
-    const user_info = _.map(user_ids, exports.info_for);
+    const user_info = user_ids.map(exports.info_for);
     compose_fade.update_user_info(user_info, fade_config);
     return user_info;
 };
 
 exports.huddle_fraction_present = function (huddle) {
-    const user_ids = huddle.split(',');
+    const user_ids = huddle.split(',').map(s => parseInt(s, 10));
 
     let num_present = 0;
-    _.each(user_ids, function (user_id) {
+
+    for (const user_id of user_ids) {
         if (presence.is_active(user_id)) {
             num_present += 1;
         }
-    });
+    }
 
     if (num_present === user_ids.length) {
         return 1;

@@ -1,10 +1,9 @@
+const util = zrequire('util');
 zrequire('pm_conversations');
-zrequire('util');
 zrequire('people');
 zrequire('message_store');
 
 const noop = function () {};
-const people = global.people;
 
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
@@ -58,23 +57,21 @@ const denise  = {
     full_name: 'Denise ',
 };
 
-people.add_in_realm(me);
-people.add_in_realm(alice);
-people.add_in_realm(bob);
-people.add_in_realm(cindy);
-people.add_in_realm(denise);
+people.add(me);
+people.add(alice);
+people.add(bob);
+people.add(cindy);
+people.add(denise);
 
-global.people.initialize_current_user(me.user_id);
+people.initialize_current_user(me.user_id);
 
 function convert_recipients(people) {
     // Display_recipient uses `id` for user_ids.
-    return _.map(people, (p) => {
-        return {
-            email: p.email,
-            id: p.user_id,
-            full_name: p.full_name,
-        };
-    });
+    return people.map(p => ({
+        email: p.email,
+        id: p.user_id,
+        full_name: p.full_name,
+    }));
 }
 
 run_test('add_message_metadata', () => {

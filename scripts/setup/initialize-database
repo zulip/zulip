@@ -32,17 +32,6 @@ cd "$THIS_DIR/../.."
 ./manage.py migrate --noinput
 ./manage.py createcachetable third_party_api_results
 
-if ! ./manage.py initialize_production_database; then
-    set +x
-    echo
-    echo -e '\033[32mPopulating default database failed.'
-    echo "After you fix the problem, you will need to do the following before rerunning this:"
-    echo "  * supervisorctl stop all # to stop all services that might be accessing the database"
-    echo "  * scripts/setup/postgres-init-db # run as root to drop and re-create the database"
-    echo -e '\033[0m'
-    exit 1
-fi
-
 # Check if the supervisor socket exists.  If not, it could be:
 #
 # A) A normal installation went bad (supervisor hasn't started)

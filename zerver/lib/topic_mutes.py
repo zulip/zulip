@@ -5,7 +5,6 @@ from zerver.lib.topic import (
     topic_match_sa,
 )
 from zerver.models import (
-    get_stream_recipient,
     get_stream,
     MutedTopic,
     UserProfile
@@ -47,12 +46,12 @@ def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[str]],
         date_muted = timezone_now()
     for stream_name, topic_name in muted_topics:
         stream = get_stream(stream_name, user_profile.realm)
-        recipient = get_stream_recipient(stream.id)
+        recipient_id = stream.recipient_id
 
         add_topic_mute(
             user_profile=user_profile,
             stream_id=stream.id,
-            recipient_id=recipient.id,
+            recipient_id=recipient_id,
             topic_name=topic_name,
             date_muted=date_muted,
         )

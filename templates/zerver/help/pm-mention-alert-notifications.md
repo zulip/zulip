@@ -30,7 +30,7 @@ can toggle whether you receive notifications for wildcard mentions:
 
 {settings_tab|notifications}
 
-1. Under **Stream messages**, toggle **Notifications for @all/@everyone mentions**.
+1. Under **Streams**, toggle the **@all** checkbox.
 
 {end_tabs}
 

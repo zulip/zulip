@@ -9,12 +9,12 @@ from unittest.mock import patch, MagicMock
 
 from django.http import HttpResponse
 
-import zerver.lib.openapi as openapi
+import zerver.openapi.openapi as openapi
 from zerver.lib.bugdown.api_code_examples import generate_curl_example, \
     render_curl_example, parse_language_and_options
 from zerver.lib.request import _REQ
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.openapi import (
+from zerver.openapi.openapi import (
     get_openapi_fixture, get_openapi_parameters,
     validate_against_openapi_schema, to_python_type,
     SchemaError, openapi_spec, get_openapi_paths
@@ -38,7 +38,7 @@ VARMAP = {
 
 class OpenAPIToolsTest(ZulipTestCase):
     """Make sure that the tools we use to handle our OpenAPI specification
-    (located in zerver/lib/openapi.py) work as expected.
+    (located in zerver/openapi/openapi.py) work as expected.
 
     These tools are mostly dedicated to fetching parts of the -already parsed-
     specification, and comparing them to objects returned by our REST API.
@@ -155,7 +155,7 @@ class OpenAPIToolsTest(ZulipTestCase):
         self.assertNotEqual(openapi_spec.last_update, 0)
 
         # Now verify calling it again doesn't call reload
-        with mock.patch('zerver.lib.openapi.openapi_spec.reload') as mock_reload:
+        with mock.patch('zerver.openapi.openapi.openapi_spec.reload') as mock_reload:
             get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD)
             self.assertFalse(mock_reload.called)
 
@@ -189,7 +189,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/default_stream_groups/{group_id}/streams',
         # Administer a user -- reactivate and/or modify settings.
         '/users/{user_id}/reactivate',
-        '/users/{user_id}',
         # Administer invitations
         '/invites',
         '/invites/multiuse',
@@ -200,6 +199,9 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # users/me/subscriptions/properties; probably should just be a
         # section of the same page.
         '/users/me/subscriptions/{stream_id}',
+
+        # Real-time-events endpoint
+        '/real-time',
 
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for fetching API keys
@@ -346,10 +348,22 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
         needs to be mapped to list."""
 
-        if sys.version_info < (3, 6) and type(t) is type(Union):  # nocoverage # in python3.6+
-            origin = Union
-        else:  # nocoverage  # in python3.5. I.E. this is used in python3.6+
+        if sys.version_info < (3, 7):  # nocoverage  # python 3.5-3.6
+            if sys.version_info < (3, 6) and type(t) is type(Union):  # python 3.5 has special consideration for Union
+                origin = Union
+            else:
+                origin = getattr(t, "__origin__", None)
+        else:  # nocoverage  # python3.7+
             origin = getattr(t, "__origin__", None)
+            t_name = getattr(t, "_name", None)
+            if origin == list:
+                origin = List
+            elif origin == dict:
+                origin = Dict
+            elif t_name == "Iterable":
+                origin = Iterable
+            elif t_name == "Mapping":
+                origin = Mapping
 
         if not origin:
             # Then it's most likely one of the fundamental data types
@@ -409,6 +423,17 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         AssertionError. """
         openapi_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, object]]]]
         for element in openapi_parameters:
+            if function.__name__ == 'send_notification_backend':
+                if element['name'] == 'to':
+                    '''
+                    We want users to send ints here, but the mypy
+                    types for send_notification_backend are still
+                    str, because we need backward compatible
+                    support for old versions of mobile that still
+                    send emails for typing requests.
+                    '''
+                    continue
+
             name = element["name"]  # type: str
             schema = element["schema"]
             if 'oneOf' in schema:
@@ -535,7 +560,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                 # accepted by every view function in arguments_map.
                 accepted_arguments = set(arguments_map[function_name])
 
-                regex_pattern = p.regex.pattern
+                regex_pattern = p.pattern.regex.pattern
                 url_pattern = self.convert_regex_to_url_pattern(regex_pattern)
 
                 if "intentionally_undocumented" in tags:
@@ -567,7 +592,7 @@ so maybe we shouldn't include it in pending_endpoints.
                 #
                 # * method is the HTTP method, e.g. GET, POST, or PATCH
                 #
-                # * p.regex.pattern is the URL pattern; might require
+                # * p.pattern.regex.pattern is the URL pattern; might require
                 #   some processing to match with OpenAPI rules
                 #
                 # * accepted_arguments is the full set of arguments
@@ -824,7 +849,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_default_examples(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_without_examples
         generated_curl_example = self.curl_example("/mark_stream_as_read", "POST")
@@ -838,7 +863,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_invalid_method(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_with_invalid_method
         with self.assertRaises(ValueError):
@@ -856,12 +881,13 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    -d 'num_after=8' \\",
             '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
             "    -d 'client_gravatar=true' \\",
-            "    -d 'apply_markdown=false'",
+            "    -d 'apply_markdown=false' \\",
+            "    -d 'use_first_unread_anchor=true'",
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_object(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_object
         generated_curl_example = self.curl_example("/endpoint", "GET")
@@ -874,19 +900,19 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_object_without_example(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_object_without_example
         with self.assertRaises(ValueError):
             self.curl_example("/endpoint", "GET")
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_array_without_example(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_array_without_example
         with self.assertRaises(ValueError):
             self.curl_example("/endpoint", "GET")
 
-    @patch("zerver.lib.openapi.OpenAPISpec.spec")
+    @patch("zerver.openapi.openapi.OpenAPISpec.spec")
     def test_generate_and_render_curl_with_param_in_path(self, spec_mock: MagicMock) -> None:
         spec_mock.return_value = self.spec_mock_using_param_in_path
         generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")
@@ -922,7 +948,8 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    -d 'use_first_unread_anchor=true' \\",
             "    -d 'num_before=4' \\",
             "    -d 'num_after=8' \\",
-            '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\'',
+            '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
+            "    -d 'use_first_unread_anchor=true'",
             '```'
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)

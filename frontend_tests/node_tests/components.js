@@ -1,4 +1,3 @@
-set_global('i18n', global.stub_i18n);
 
 zrequire('keydown_util');
 zrequire('components');
@@ -67,9 +66,9 @@ run_test('basics', () => {
         };
 
         self.removeClass = function (c) {
-            _.each(tabs, function (tab) {
+            for (const tab of tabs) {
                 tab.removeClass(c);
-            });
+            }
         };
 
         self.eq = function (idx) {

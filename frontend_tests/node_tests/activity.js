@@ -1,16 +1,12 @@
 set_global('$', global.make_zjquery());
 set_global('blueslip', global.make_zblueslip());
 
-const Dict = zrequire('dict').Dict;
-
 let filter_key_handlers;
 
 const _page_params = {
     realm_users: [],
     user_id: 999,
 };
-
-const _feature_flags = {};
 
 const _document = {
     hasFocus: function () {
@@ -54,27 +50,20 @@ const _stream_popover = {
     },
 };
 
-const _reload_state = {
-    is_in_progress: () => false,
-};
-
 const _resize = {
     resize_page_components: () => {},
 };
 
-set_global('i18n', global.stub_i18n);
 set_global('padded_widget', {
     update_padding: () => {},
 });
 set_global('channel', _channel);
 set_global('compose_state', _compose_state);
 set_global('document', _document);
-set_global('feature_flags', _feature_flags);
 set_global('keydown_util', _keydown_util);
 set_global('page_params', _page_params);
 set_global('pm_list', _pm_list);
 set_global('popovers', _popovers);
-set_global('reload_state', _reload_state);
 set_global('resize', _resize);
 set_global('scroll_util', _scroll_util);
 set_global('stream_popover', _stream_popover);
@@ -82,11 +71,9 @@ set_global('ui', _ui);
 
 zrequire('compose_fade');
 set_global('Handlebars', global.make_handlebars());
-zrequire('templates');
 zrequire('unread');
 zrequire('hash_util');
 zrequire('narrow');
-zrequire('util');
 zrequire('presence');
 zrequire('people');
 zrequire('buddy_data');
@@ -134,24 +121,22 @@ const zoe = {
     full_name: 'Zoe Yang',
 };
 
-const people = global.people;
-
-people.add_in_realm(alice);
-people.add_in_realm(fred);
-people.add_in_realm(jill);
-people.add_in_realm(mark);
-people.add_in_realm(norbert);
-people.add_in_realm(zoe);
-people.add_in_realm(me);
+people.add(alice);
+people.add(fred);
+people.add(jill);
+people.add(mark);
+people.add(norbert);
+people.add(zoe);
+people.add(me);
 people.initialize_current_user(me.user_id);
 
 const real_update_huddles = activity.update_huddles;
 activity.update_huddles = () => {};
 
-const presence_info = {};
-presence_info[alice.user_id] = { status: 'inactive' };
-presence_info[fred.user_id] = { status: 'active' };
-presence_info[jill.user_id] = { status: 'active' };
+const presence_info = new Map();
+presence_info.set(alice.user_id, { status: 'inactive' });
+presence_info.set(fred.user_id, { status: 'active' });
+presence_info.set(jill.user_id, { status: 'active' });
 
 presence.presence_info = presence_info;
 
@@ -280,24 +265,24 @@ run_test('huddle_fraction_present', () => {
     let huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
-    let presence_info = {};
-    presence_info[alice.user_id] = { status: 'active' }; // counts as present
-    presence_info[fred.user_id] = { status: 'idle' }; // doest not count as present
+    let presence_info = new Map();
+    presence_info.set(alice.user_id, { status: 'active' }); // counts as present
+    presence_info.set(fred.user_id, { status: 'idle' }); // doest not count as present
     // jill not in list
-    presence_info[mark.user_id] = { status: 'offline' }; // does not count
+    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
     presence.presence_info = presence_info;
 
     assert.equal(
         buddy_data.huddle_fraction_present(huddle),
-        '0.50');
+        0.5);
 
     huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
     huddle = people.emails_strings_to_user_ids_string(huddle);
-    presence_info = {};
-    presence_info[alice.user_id] = { status: 'idle' };
-    presence_info[fred.user_id] = { status: 'idle' }; // does not count as present
+    presence_info = new Map();
+    presence_info.set(alice.user_id, { status: 'idle' });
+    presence_info.set(fred.user_id, { status: 'idle' }); // does not count as present
     // jill not in list
-    presence_info[mark.user_id] = { status: 'offline' }; // does not count
+    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
     presence.presence_info = presence_info;
 
     assert.equal(
@@ -305,14 +290,14 @@ run_test('huddle_fraction_present', () => {
         undefined);
 });
 
-presence.presence_info = {};
-presence.presence_info[alice.user_id] = { status: activity.IDLE };
-presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
-presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
-presence.presence_info[mark.user_id] = { status: activity.IDLE };
-presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
-presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
-presence.presence_info[me.user_id] = { status: activity.ACTIVE };
+presence.presence_info = new Map();
+presence.presence_info.set(alice.user_id, { status: activity.IDLE });
+presence.presence_info.set(fred.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(jill.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(mark.user_id, { status: activity.IDLE });
+presence.presence_info.set(norbert.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(zoe.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(me.user_id, { status: activity.ACTIVE });
 
 function clear_buddy_list() {
     buddy_list.populate({
@@ -383,13 +368,13 @@ run_test('PM_update_dom_counts', () => {
     li.set_find_results('.count', count);
     count.set_parents_result('li', li);
 
-    const counts = new Dict();
+    const counts = new Map();
     counts.set(pm_key, 5);
     li.addClass('user_sidebar_entry');
 
     activity.update_dom_with_unread_counts({pm_count: counts});
     assert(li.hasClass('user-with-count'));
-    assert.equal(value.text(), 5);
+    assert.equal(value.text(), "5");
 
     counts.set(pm_key, 0);
 
@@ -408,13 +393,13 @@ run_test('group_update_dom_counts', () => {
     li.set_find_results('.count', count);
     count.set_parent(li);
 
-    const counts = new Dict();
+    const counts = new Map();
     counts.set(pm_key, 5);
     li.addClass('group-pms-sidebar-entry');
 
     activity.update_dom_with_unread_counts({pm_count: counts});
     assert(li.hasClass('group-with-count'));
-    assert.equal(value.text(), 5);
+    assert.equal(value.text(), "5");
 
     counts.set(pm_key, 0);
 
@@ -517,13 +502,13 @@ run_test('handlers', () => {
     }());
 });
 
-presence.presence_info = {};
-presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
-presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
-presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
-presence.presence_info[mark.user_id] = { status: activity.IDLE };
-presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
-presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
+presence.presence_info = new Map();
+presence.presence_info.set(alice.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(fred.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(jill.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(mark.user_id, { status: activity.IDLE });
+presence.presence_info.set(norbert.user_id, { status: activity.ACTIVE });
+presence.presence_info.set(zoe.user_id, { status: activity.ACTIVE });
 
 reset_setup();
 
@@ -589,13 +574,13 @@ run_test('filter_user_ids', () => {
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 
-    presence.presence_info[alice.user_id] = { status: activity.IDLE };
+    presence.presence_info.set(alice.user_id, { status: activity.IDLE });
     user_filter.val('fr,al'); // match fred and alice partials and idle user
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, [fred.user_id, alice.user_id]);
 
     $.stub_selector('.user-list-filter', []);
-    presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
+    presence.presence_info.set(alice.user_id, { status: activity.ACTIVE });
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 });
@@ -693,7 +678,6 @@ run_test('insert_unfiltered_user_with_filter', () => {
 
 run_test('realm_presence_disabled', () => {
     page_params.realm_presence_disabled = true;
-    unread.set_suppress_unread_counts(false);
 
     activity.redraw_user();
     activity.build_user_sidebar();
@@ -797,17 +781,17 @@ run_test('update_presence_info', () => {
         inserted = true;
     };
 
-    presence.presence_info[me.user_id] = undefined;
+    presence.presence_info.delete(me.user_id);
     activity.update_presence_info(me.user_id, info, server_time);
     assert(inserted);
-    assert.deepEqual(presence.presence_info[me.user_id].status, 'active');
+    assert.deepEqual(presence.presence_info.get(me.user_id).status, 'active');
 
-    presence.presence_info[alice.user_id] = undefined;
+    presence.presence_info.delete(alice.user_id);
     activity.update_presence_info(alice.user_id, info, server_time);
     assert(inserted);
 
     const expected = { status: 'active', last_active: 500 };
-    assert.deepEqual(presence.presence_info[alice.user_id], expected);
+    assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
 });
 
 run_test('initialize', () => {
@@ -816,6 +800,7 @@ run_test('initialize', () => {
         buddy_list.container = $('#user_presences');
         buddy_list.container.append = () => {};
         clear_buddy_list();
+        page_params.presences = {};
     }
 
     clear();
@@ -848,7 +833,6 @@ run_test('initialize', () => {
     assert(scroll_handler_started);
     assert(!activity.new_user_input);
     assert(!$('#zephyr-mirror-error').hasClass('show'));
-    assert.equal(page_params.presences, undefined);
     assert(activity.client_is_active);
     $(window).idle = function (params) {
         params.onIdle();
@@ -856,6 +840,7 @@ run_test('initialize', () => {
     channel.post = function (payload) {
         payload.success({
             zephyr_mirror_active: false,
+            presences: {},
         });
     };
     global.setInterval = (func) => func();
@@ -866,14 +851,6 @@ run_test('initialize', () => {
     assert(!activity.new_user_input);
     assert(!activity.client_is_active);
 
-    clear();
-
-    // Now execute the reload-in-progress code path
-    _reload_state.is_in_progress = function () {
-        return true;
-    };
-
-    activity.initialize();
     clear();
 });
 

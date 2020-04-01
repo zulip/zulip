@@ -126,7 +126,7 @@ don't have a favorite, here are some suggestions:
 
 * [atom](https://atom.io/)
 * [emacs](https://www.gnu.org/software/emacs/)
-* [vim](http://www.vim.org/)
+* [vim](https://www.vim.org/)
 * [spacemacs](https://github.com/syl20bnr/spacemacs)
 * [sublime](https://www.sublimetext.com/)
 
@@ -193,6 +193,7 @@ To setup [rmate](https://github.com/textmate/rmate) for VS Code:
 [Remote VSCode](https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode).
 2. On your remote machine, run:
 ```
+$ mkdir -p ~/bin
 $ curl -Lo ~/bin/rmate https://raw.githubusercontent.com/textmate/rmate/master/bin/rmate
 $ chmod a+x ~/bin/rmate
 ```
@@ -219,7 +220,7 @@ Two editors often available by default on Linux systems are:
   recommended it for quick edits to things like configuration files. Launch by
   running command `nano <filename>`. Exit by pressing *control-X*.
 
-* **[Vim](http://www.vim.org/)**: A very powerful editor that can take a while
+* **[Vim](https://www.vim.org/)**: A very powerful editor that can take a while
   to learn. Launch by running `vim <filename>`. Quit Vim by pressing *escape*,
   typing `:q`, and then pressing *return*. Vim comes with a program to learn it
   called `vimtutor` (just run that command to start it).

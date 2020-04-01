@@ -1,5 +1,3 @@
-const Dict = require('./dict').Dict;
-
 let current_filter;
 
 exports.reset_current_filter = function () {
@@ -47,9 +45,10 @@ exports.search_string = function () {
 // Collect operators which appear only once into an object,
 // and discard those which appear more than once.
 function collect_single(operators) {
-    const seen   = new Dict();
-    const result = new Dict();
-    _.each(operators, function (elem) {
+    const seen   = new Map();
+    const result = new Map();
+
+    for (const elem of operators) {
         const key = elem.operator;
         if (seen.has(key)) {
             result.delete(key);
@@ -57,7 +56,8 @@ function collect_single(operators) {
             result.set(key, elem.operand);
             seen.set(key, true);
         }
-    });
+    }
+
     return result;
 }
 
@@ -331,9 +331,16 @@ exports.narrowed_to_search = function () {
     return current_filter !== undefined && current_filter.is_search();
 };
 
+exports.narrowed_to_starred = function () {
+    if (current_filter === undefined) {
+        return false;
+    }
+    return current_filter.has_operand("is", "starred");
+};
+
 exports.muting_enabled = function () {
     return !exports.narrowed_to_topic() && !exports.narrowed_to_search() &&
-            !exports.narrowed_to_pms();
+            !exports.narrowed_to_pms() && !exports.narrowed_to_starred();
 };
 
 exports.is_for_stream_id = function (stream_id) {

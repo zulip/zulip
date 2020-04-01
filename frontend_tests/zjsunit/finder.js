@@ -23,7 +23,7 @@ exports.find_files_to_run = function () {
 
     if (oneFileFilter.length > 0) {
         tests = tests.filter(function (filename) {
-            return oneFileFilter.indexOf(filename) !== -1;
+            return oneFileFilter.includes(filename);
         });
         testsDifference = _.difference(oneFileFilter, tests);
     }

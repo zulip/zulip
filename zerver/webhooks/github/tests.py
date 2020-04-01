@@ -131,13 +131,13 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('issue_comment', expected_topic, expected_message)
 
     def test_issue_msg(self) -> None:
-        expected_message = u"baxterthehacker opened [Issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidently spelled 'commit' with two 't's.\n~~~"
+        expected_message = u"baxterthehacker opened [Issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.send_and_test_stream_message('issues', self.EXPECTED_TOPIC_ISSUE_EVENTS, expected_message)
 
     def test_issue_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
-        expected_message = u"baxterthehacker opened [Issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidently spelled 'commit' with two 't's.\n~~~"
+        expected_message = u"baxterthehacker opened [Issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.send_and_test_stream_message('issues', expected_topic, expected_message)
 
     def test_membership_msg(self) -> None:
@@ -210,7 +210,7 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('release', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_page_build_msg(self) -> None:
-        expected_message = u"Github Pages build, trigerred by baxterthehacker, has finished building."
+        expected_message = u"Github Pages build, triggered by baxterthehacker, has finished building."
         self.send_and_test_stream_message('page_build', self.EXPECTED_TOPIC_REPO_EVENTS, expected_message)
 
     def test_status_msg(self) -> None:
@@ -274,9 +274,15 @@ class GithubWebhookTest(WebhookTestCase):
                                           expected_message)
 
     def test_pull_request_review_requested_multiple_reviwers_msg(self) -> None:
-        expected_message = u"**eeshangarg** requested [showell](https://github.com/showell), and [timabbott](https://github.com/timabbott) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
+        expected_message = u"**eeshangarg** requested [showell](https://github.com/showell) and [timabbott](https://github.com/timabbott) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
         self.send_and_test_stream_message('pull_request__review_requested_multiple_reviewers',
                                           'Scheduler / PR #1 This is just a test commit',
+                                          expected_message)
+
+    def test_pull_request__review_requested_team_reviewer_msg(self) -> None:
+        expected_message = u"**singhsourabh** requested [shreyaskargit](https://github.com/shreyaskargit), [bajaj99prashant](https://github.com/bajaj99prashant), [review-team](https://github.com/orgs/test-org965/teams/review-team), [authority](https://github.com/orgs/test-org965/teams/authority) and [management](https://github.com/orgs/test-org965/teams/management) for a review on [PR #4](https://github.com/test-org965/webhook-test/pull/4)."
+        self.send_and_test_stream_message('pull_request__review_requested_team_reviewer',
+                                          'webhook-test / PR #4 testing webhook',
                                           expected_message)
 
     def test_pull_request_review_requested_with_custom_topic_in_url(self) -> None:

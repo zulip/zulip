@@ -111,13 +111,13 @@ exports.process = function (message_content) {
     }
 
     const day_commands = ['/day', '/light'];
-    if (day_commands.indexOf(content) >= 0) {
+    if (day_commands.includes(content)) {
         exports.enter_day_mode();
         return true;
     }
 
     const night_commands = ['/night', '/dark'];
-    if (night_commands.indexOf(content) >= 0) {
+    if (night_commands.includes(content)) {
         exports.enter_night_mode();
         return true;
     }

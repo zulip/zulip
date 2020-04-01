@@ -1,3 +1,4 @@
+const util = require("./util");
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
     if (!localstorage.supported()) {
@@ -117,10 +118,11 @@ exports.initialize = function () {
     fragment = fragment.replace(/^reload:/, "");
     const keyvals = fragment.split("+");
     const vars = {};
-    _.each(keyvals, function (str) {
+
+    for (const str of keyvals) {
         const pair = str.split("=");
         vars[pair[0]] = decodeURIComponent(pair[1]);
-    });
+    }
 
     if (vars.msg !== undefined) {
         const send_now = parseInt(vars.send_after_reload, 10);
@@ -218,13 +220,14 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
 }
 
 exports.initiate = function (options) {
-    options = _.defaults({}, options, {
+    options = {
         immediate: false,
         save_pointer: true,
         save_narrow: true,
         save_compose: true,
         send_after_reload: false,
-    });
+        ...options,
+    };
 
     if (options.save_pointer === undefined ||
         options.save_narrow === undefined ||

@@ -15,8 +15,7 @@ from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.models import UserProfile, Service, Realm, \
     get_user_profile_by_id_in_realm, CustomProfileFieldValue, \
-    get_realm_user_dicts, \
-    CustomProfileField
+    get_realm_user_dicts, CustomProfileField
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
@@ -199,7 +198,8 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
     return target
 
 def access_user_by_id(user_profile: UserProfile, user_id: int,
-                      allow_deactivated: bool=False, allow_bots: bool=False) -> UserProfile:
+                      allow_deactivated: bool=False, allow_bots: bool=False,
+                      read_only: bool=False) -> UserProfile:
     try:
         target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
@@ -208,6 +208,9 @@ def access_user_by_id(user_profile: UserProfile, user_id: int,
         raise JsonableError(_("No such user"))
     if not target.is_active and not allow_deactivated:
         raise JsonableError(_("User is deactivated"))
+    if read_only:
+        # Administrative access is not required just to read a user.
+        return target
     if not user_profile.can_admin_user(target):
         raise JsonableError(_("Insufficient permission"))
     return target
@@ -375,10 +378,8 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
 
     return result
 
-def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
-    # TODO: Consider optimizing this query away with caching.
-    custom_profile_field_values = CustomProfileFieldValue.objects.select_related(
-        "field").filter(user_profile__realm_id=realm_id)
+def get_custom_profile_field_values(custom_profile_field_values:
+                                    List[CustomProfileFieldValue]) -> Dict[int, Dict[str, Any]]:
     profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
     for profile_field in custom_profile_field_values:
         user_id = profile_field.user_profile_id
@@ -393,21 +394,38 @@ def get_custom_profile_field_values(realm_id: int) -> Dict[int, Dict[str, Any]]:
             }
     return profiles_by_user_id
 
-def get_raw_user_data(realm: Realm, user_profile: UserProfile, client_gravatar: bool,
+def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: bool,
+                      target_user: Optional[UserProfile]=None,
                       include_custom_profile_fields: bool=True) -> Dict[int, Dict[str, str]]:
-    user_dicts = get_realm_user_dicts(realm.id)
+    """Fetches data about the target user(s) appropriate for sending to
+    acting_user via the standard format for the Zulip API.  If
+    target_user is None, we fetch all users in the realm.
+    """
     profiles_by_user_id = None
     custom_profile_field_data = None
+    # target_user is an optional parameter which is passed when user data of a specific user
+    # is required. It is 'None' otherwise.
+    if target_user is not None:
+        user_dicts = [user_profile_to_user_row(target_user)]
+    else:
+        user_dicts = get_realm_user_dicts(realm.id)
 
     if include_custom_profile_fields:
-        profiles_by_user_id = get_custom_profile_field_values(realm.id)
+        base_query = CustomProfileFieldValue.objects.select_related("field")
+        # TODO: Consider optimizing this query away with caching.
+        if target_user is not None:
+            custom_profile_field_values = base_query.filter(user_profile=target_user)
+        else:
+            custom_profile_field_values = base_query.filter(field__realm_id=realm.id)
+        profiles_by_user_id = get_custom_profile_field_values(custom_profile_field_values)
+
     result = {}
     for row in user_dicts:
         if profiles_by_user_id is not None:
             custom_profile_field_data = profiles_by_user_id.get(row['id'], {})
 
         result[row['id']] = format_user_row(realm,
-                                            acting_user = user_profile,
+                                            acting_user = acting_user,
                                             row=row,
                                             client_gravatar= client_gravatar,
                                             custom_profile_field_data = custom_profile_field_data

@@ -1,4 +1,3 @@
-zrequire('util');
 const rs = zrequire('recent_senders');
 
 let next_id = 0;

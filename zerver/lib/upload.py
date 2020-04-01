@@ -263,7 +263,7 @@ class ZulipUploadBackend:
 def get_bucket(conn: S3Connection, bucket_name: str) -> Bucket:
     # Calling get_bucket() with validate=True can apparently lead
     # to expensive S3 bills:
-    #    http://www.appneta.com/blog/s3-list-get-bucket-default/
+    #    https://www.appneta.com/blog/s3-list-get-bucket-default/
     # The benefits of validation aren't completely clear to us, and
     # we want to save on our bills, so we set the validate flag to False.
     # (We think setting validate to True would cause us to fail faster

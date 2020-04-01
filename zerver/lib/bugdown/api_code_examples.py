@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional, List, Tuple
 import markdown
 
 import zerver.openapi.python_examples
-from zerver.lib.openapi import get_openapi_fixture, openapi_spec
+from zerver.openapi.openapi import get_openapi_fixture, openapi_spec
 
 MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
 CODE_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
@@ -337,7 +337,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
         fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True,
                                   separators=(',', ': '))
 
-        fixture.append('```')
+        fixture.append('``` json')
         fixture.extend(fixture_json.splitlines())
         fixture.append('```')
 

@@ -9,7 +9,6 @@
         "cn": ["King Hamlet"],
         "uid": ["hamlet"],
         "mail": ["hamlet@zulip.com"],
-        "userPassword": ["testing"],
         "userAccountControl": ["512"],
         "sn": ["Hamlet"],
         "homePhone": ["123456789"],
@@ -22,7 +21,6 @@
         "cn": ["Cordelia Lear"],
         "uid": ["cordelia"],
         "mail": ["cordelia@zulip.com"],
-        "userPassword": ["testing"],
         "sn": ["Cordelia"]
     },
 
@@ -31,7 +29,6 @@
         "cn": ["aaron"],
         "uid": ["letham"],
         "mail": ["aaron@zulip.com"],
-        "userPassword": ["testing"],
         "sn": ["aaron"]
     },
 
@@ -39,7 +36,6 @@
         "objectClass": ["user"],
         "cn": ["New LDAP fullname"],
         "uid": ["newuser"],
-        "userPassword": ["testing"],
         "sn": ["shortname"],
         "homePhone": ["a-new-number"],
         "jpegPhoto": "file:static/images/team/tim.png"
@@ -49,7 +45,6 @@
         "objectClass": ["user"],
         "cn": ["Last"],
         "uid": ["newuser_splitname"],
-        "userPassword": ["testing"],
         "sn": ["First"]
     },
 
@@ -57,7 +52,6 @@
         "objectClass": ["user"],
         "cn": ["New LDAP fullname"],
         "uid": ["newuser_with_email"],
-        "userPassword": ["testing"],
         "sn": ["shortname"],
         "mail": ["newuser_email@zulip.com"]
     },
@@ -66,7 +60,6 @@
         "objectClass": ["user"],
         "cn": ["New LDAP fullname"],
         "uid": ["newuser_email_as_uid@zulip.com"],
-        "userPassword": ["testing"],
         "sn": ["shortname"]
     },
 
@@ -74,7 +67,6 @@
         "objectClass": ["user"],
         "cn": ["New LDAP fullname"],
         "uid": ["user1_with_shared_email"],
-        "userPassword": ["testing"],
         "sn": ["shortname"],
         "mail": ["shared_email@zulip.com"]
     },
@@ -83,7 +75,6 @@
         "objectClass": ["user"],
         "cn": ["New LDAP fullname"],
         "uid": ["user2_with_shared_email"],
-        "userPassword": ["testing"],
         "sn": ["shortname"],
         "mail": ["shared_email@zulip.com"]
     }

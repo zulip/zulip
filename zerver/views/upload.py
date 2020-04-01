@@ -67,7 +67,7 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         return json_error(_("You may only upload one file at a time"))
 
     user_file = list(request.FILES.values())[0]
-    file_size = user_file._get_size()
+    file_size = user_file.size
     if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
         return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
             settings.MAX_FILE_UPLOAD_SIZE))

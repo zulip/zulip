@@ -90,10 +90,10 @@ def confirmation_url(confirmation_key: str, host: str,
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=CASCADE)
-    object_id = models.PositiveIntegerField()  # type: int
+    object_id = models.PositiveIntegerField(db_index=True)  # type: int
     content_object = GenericForeignKey('content_type', 'object_id')
-    date_sent = models.DateTimeField()  # type: datetime.datetime
-    confirmation_key = models.CharField(max_length=40)  # type: str
+    date_sent = models.DateTimeField(db_index=True)  # type: datetime.datetime
+    confirmation_key = models.CharField(max_length=40, db_index=True)  # type: str
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
 
     # The following list is the set of valid types
@@ -109,6 +109,9 @@ class Confirmation(models.Model):
 
     def __str__(self) -> str:
         return '<Confirmation: %s>' % (self.content_object,)
+
+    class Meta:
+        unique_together = ("type", "confirmation_key")
 
 class ConfirmationType:
     def __init__(self, url_name: str,
@@ -171,7 +174,7 @@ def generate_realm_creation_url(by_admin: bool=False) -> str:
                                kwargs={'creation_key': key}))
 
 class RealmCreationKey(models.Model):
-    creation_key = models.CharField('activation key', max_length=40)
+    creation_key = models.CharField('activation key', db_index=True, max_length=40)
     date_created = models.DateTimeField('created', default=timezone_now)
 
     # True just if we should presume the email address the user enters

@@ -92,7 +92,7 @@ exports.compute_placeholder_text = function (opts) {
     // For Private Messages
     if (opts.private_message_recipient) {
         const recipient_list = opts.private_message_recipient.split(",");
-        const recipient_names = _.map(recipient_list, (recipient) => {
+        const recipient_names = recipient_list.map(recipient => {
             const user = people.get_by_email(recipient);
             return user.full_name;
         }).join(", ");

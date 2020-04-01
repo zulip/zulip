@@ -20,7 +20,7 @@ Zulip's message retention and deletion features.
 Examples:
 To restore all recently deleted messages:
   ./manage.py restore_messages
-To restore a specfic ArchiveTransaction:
+To restore a specific ArchiveTransaction:
   ./manage.py restore_messages --transaction-id=1
 """
 

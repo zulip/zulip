@@ -124,22 +124,18 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             zoom_api_key: noop,
             zoom_api_secret: noop,
         };
-        if (event.op === 'update' && _.has(realm_settings, event.property)) {
+        if (event.op === 'update' && Object.prototype.hasOwnProperty.call(realm_settings, event.property)) {
             page_params['realm_' + event.property] = event.value;
             realm_settings[event.property]();
             settings_org.sync_realm_settings(event.property);
             if (event.property === 'create_stream_policy') {
-                if (!page_params.is_admin) {
-                    // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_create_streams =
-                        page_params.realm_create_stream_policy === 1;
-                }
+                // TODO: Add waiting_period_threshold logic here.
+                page_params.can_create_streams = page_params.is_admin ||
+                    page_params.realm_create_stream_policy === 1;
             } else if (event.property === 'invite_to_stream_policy') {
-                if (!page_params.is_admin) {
-                    // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_invite_to_stream =
-                        page_params.realm_invite_to_stream_policy === 1;
-                }
+                // TODO: Add waiting_period_threshold logic here.
+                page_params.can_invite_to_stream = page_params.is_admin ||
+                    page_params.realm_invite_to_stream_policy === 1;
             } else if (event.property === 'notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(
                     page_params.realm_notifications_stream_id, 'notifications');
@@ -152,15 +148,15 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 window.electron_bridge.send_event('realm_name', event.value);
             }
         } else if (event.op === 'update_dict' && event.property === 'default') {
-            _.each(event.data, function (value, key) {
+            for (const [key, value] of Object.entries(event.data)) {
                 page_params['realm_' + key] = value;
                 if (key === 'allow_message_editing') {
                     message_edit.update_message_topic_editing_pencil();
                 }
-                if (_.has(realm_settings, key)) {
+                if (Object.prototype.hasOwnProperty.call(realm_settings, key)) {
                     settings_org.sync_realm_settings(key);
                 }
-            });
+            }
             if (event.data.authentication_methods !== undefined) {
                 settings_org.populate_auth_methods(event.data.authentication_methods);
             }
@@ -185,6 +181,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             window.location.href = "/accounts/deactivated/";
         }
 
+        if (page_params.is_admin) {
+            // Update the UI notice about the user's profile being
+            // incomplete, as we might have filled in the missing field(s).
+            panels.check_profile_incomplete();
+        }
         break;
     }
 
@@ -200,7 +201,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             bot_data.del(event.bot.user_id);
             settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'update') {
-            if (_.has(event.bot, 'owner_id')) {
+            if (Object.prototype.hasOwnProperty.call(event.bot, 'owner_id')) {
                 event.bot.owner = people.get_by_user_id(event.bot.owner_id).email;
             }
             bot_data.update(event.bot.user_id, event.bot);
@@ -220,7 +221,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'realm_filters':
         page_params.realm_filters = event.realm_filters;
-        markdown.set_realm_filters(page_params.realm_filters);
+        markdown.update_realm_filter_rules(page_params.realm_filters);
         settings_linkifiers.populate_filters(page_params.realm_filters);
         break;
 
@@ -250,7 +251,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'realm_user':
         if (event.op === 'add') {
-            people.add_in_realm(event.person);
+            people.add(event.person);
         } else if (event.op === 'remove') {
             people.deactivate(event.person);
             stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
@@ -273,20 +274,23 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_streams.update_default_streams_table();
         } else if (event.op === 'create') {
             stream_data.create_streams(event.streams);
-            _.each(event.streams, function (stream) {
+
+            for (const stream of event.streams) {
                 const sub = stream_data.get_sub_by_id(stream.stream_id);
                 stream_data.update_calculated_fields(sub);
-                subs.add_sub_to_table(sub);
-            });
+                if (overlays.streams_open()) {
+                    subs.add_sub_to_table(sub);
+                }
+            }
         } else if (event.op === 'delete') {
-            _.each(event.streams, function (stream) {
+            for (const stream of event.streams) {
                 const was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
                 subs.remove_stream(stream.stream_id);
                 stream_data.delete_sub(stream.stream_id);
                 if (was_subscribed) {
                     stream_list.remove_sidebar_row(stream.stream_id);
                 }
-                settings_streams.remove_default_stream(stream.stream_id);
+                settings_streams.update_default_streams_table();
                 stream_data.remove_default_stream(stream.stream_id);
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {
                     page_params.realm_notifications_stream_id = -1;
@@ -298,7 +302,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     settings_org.render_notifications_stream_ui(
                         page_params.realm_signup_notifications_stream_id, 'signup_notifications');
                 }
-            });
+            }
         }
         break;
 
@@ -319,7 +323,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'subscription':
         if (event.op === 'add') {
-            _.each(event.subscriptions, function (rec) {
+            for (const rec of event.subscriptions) {
                 const sub = stream_data.get_sub_by_id(rec.stream_id);
                 if (sub) {
                     stream_data.update_stream_email_address(sub, rec.email_address);
@@ -327,28 +331,28 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 } else {
                     blueslip.error('Subscribing to unknown stream with ID ' + rec.stream_id);
                 }
-            });
+            }
         } else if (event.op === 'peer_add') {
-            _.each(event.subscriptions, function (sub) {
+            for (const sub of event.subscriptions) {
                 if (stream_data.add_subscriber(sub, event.user_id)) {
                     $(document).trigger('peer_subscribe.zulip', {stream_name: sub});
                 } else {
                     blueslip.warn('Cannot process peer_add event');
                 }
-            });
+            }
         } else if (event.op === 'peer_remove') {
-            _.each(event.subscriptions, function (sub) {
+            for (const sub of event.subscriptions) {
                 if (stream_data.remove_subscriber(sub, event.user_id)) {
                     $(document).trigger('peer_unsubscribe.zulip', {stream_name: sub});
                 } else {
                     blueslip.warn('Cannot process peer_remove event.');
                 }
-            });
+            }
         } else if (event.op === 'remove') {
-            _.each(event.subscriptions, function (rec) {
+            for (const rec of event.subscriptions) {
                 const sub = stream_data.get_sub_by_id(rec.stream_id);
                 stream_events.mark_unsubscribed(sub);
-            });
+            }
         } else if (event.op === 'update') {
             stream_events.update_property(
                 event.stream_id,
@@ -387,7 +391,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'translate_emoticons',
             'starred_message_counts',
         ];
-        if (_.contains(user_display_settings, event.setting_name)) {
+        if (user_display_settings.includes(event.setting_name)) {
             page_params[event.setting_name] = event.setting;
         }
         if (event.setting_name === 'default_language') {
@@ -469,9 +473,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         const new_value = event.operation === "add";
         switch (event.flag) {
         case 'starred':
-            _.each(event.messages, function (message_id) {
+            for (const message_id of event.messages) {
                 message_flags.update_starred_flag(message_id, new_value);
-            });
+            }
+
             if (event.operation === "add") {
                 starred_messages.add(event.messages);
             } else {

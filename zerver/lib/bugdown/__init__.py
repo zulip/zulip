@@ -16,7 +16,6 @@ import html
 import time
 import functools
 from io import StringIO
-import ujson
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element
 import ahocorasick
@@ -33,10 +32,10 @@ from markdown.extensions import codehilite, nl2br, tables, sane_lists
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
-from zerver.lib.emoji import translate_emoticons, emoticon_regex
+from zerver.lib.emoji import translate_emoticons, emoticon_regex, \
+    name_to_codepoint, codepoint_to_name
 from zerver.lib.mention import possible_mentions, \
     possible_user_group_mentions, extract_user_group
-from zerver.lib.storage import static_path
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.thumbnail import user_uploads_or_external
 from zerver.lib.timeout import timeout, TimeoutExpired
@@ -258,7 +257,7 @@ def list_of_tlds() -> List[str]:
     # HACK we manually blacklist a few domains
     blacklist = ['PY\n', "MD\n"]
 
-    # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+    # tlds-alpha-by-domain.txt comes from https://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
     tlds = [tld.lower().strip() for tld in open(tlds_file, 'r')
             if tld not in blacklist and not tld[0].startswith('#')]
@@ -665,7 +664,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if parsed_url.netloc == 'pasteboard.co':
             return False
 
-        # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
+        # List from https://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
             if parsed_url.path.lower().endswith(ext):
                 return True
@@ -736,7 +735,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def youtube_id(self, url: str) -> Optional[str]:
         if not self.markdown.image_preview_enabled:
             return None
-        # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
+        # Youtube video id extraction regular expression from https://pastebin.com/KyKAFv1s
         # Slightly modified to support URLs of the forms
         #   - youtu.be/<id>
         #   - youtube.com/playlist?v=<id>&list=<list-id>
@@ -1204,14 +1203,6 @@ def possible_avatar_emails(content: str) -> Set[str]:
 
     return emails
 
-path_to_name_to_codepoint = static_path("generated/emoji/name_to_codepoint.json")
-with open(path_to_name_to_codepoint) as name_to_codepoint_file:
-    name_to_codepoint = ujson.load(name_to_codepoint_file)
-
-path_to_codepoint_to_name = static_path("generated/emoji/codepoint_to_name.json")
-with open(path_to_codepoint_to_name) as codepoint_to_name_file:
-    codepoint_to_name = ujson.load(codepoint_to_name_file)
-
 # All of our emojis(non ZWJ sequences) belong to one of these unicode blocks:
 # \U0001f100-\U0001f1ff - Enclosed Alphanumeric Supplement
 # \U0001f200-\U0001f2ff - Enclosed Ideographic Supplement
@@ -1641,12 +1632,13 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             el = markdown.util.etree.Element("span")
             el.set('data-user-id', user_id)
+            text = "%s" % (name,)
             if silent:
                 el.set('class', 'user-mention silent')
-                el.text = "%s" % (name,)
             else:
                 el.set('class', 'user-mention')
-                el.text = "@%s" % (name,)
+                text = "@{}".format(text)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
@@ -1670,7 +1662,8 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
             el = markdown.util.etree.Element("span")
             el.set('class', 'user-group-mention')
             el.set('data-user-group-id', user_group_id)
-            el.text = "@%s" % (name,)
+            text = "@%s" % (name,)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
@@ -1699,7 +1692,8 @@ class StreamPattern(CompiledPattern):
             # Also do the same for StreamTopicPattern.
             stream_url = encode_stream(stream['id'], name)
             el.set('href', '/#narrow/stream/{stream_url}'.format(stream_url=stream_url))
-            el.text = '#{stream_name}'.format(stream_name=name)
+            text = '#{stream_name}'.format(stream_name=name)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
@@ -1727,7 +1721,8 @@ class StreamTopicPattern(CompiledPattern):
             link = '/#narrow/stream/{stream_url}/topic/{topic_url}'.format(stream_url=stream_url,
                                                                            topic_url=topic_url)
             el.set('href', link)
-            el.text = '#{stream_name} > {topic_name}'.format(stream_name=stream_name, topic_name=topic_name)
+            text = '#{stream_name} > {topic_name}'.format(stream_name=stream_name, topic_name=topic_name)
+            el.text = markdown.util.AtomicString(text)
             return el
         return None
 
@@ -1867,21 +1862,20 @@ class Bugdown(markdown.Markdown):
         # We disable the following blockparsers from upstream:
         #
         # indent - replaced by ours
-        # hashheader - disabled, since headers look bad and don't make sense in a chat context.
-        # setextheader - disabled, since headers look bad and don't make sense in a chat context.
+        # setextheader - disabled; we only support hashheaders for headings
         # olist - replaced by ours
         # ulist - replaced by ours
         # quote - replaced by ours
         parser = markdown.blockprocessors.BlockParser(self)
-        parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 85)
+        parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 95)
+        parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 90)
         if not self.getConfig('code_block_processor_disabled'):
-            parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 80)
-        parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 78)
+            parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 85)
+        parser.blockprocessors.register(HashHeaderProcessor(parser), 'hashheader', 80)
         # We get priority 75 from 'table' extension
         parser.blockprocessors.register(markdown.blockprocessors.HRProcessor(parser), 'hr', 70)
-        parser.blockprocessors.register(OListProcessor(parser), 'olist', 68)
-        parser.blockprocessors.register(UListProcessor(parser), 'ulist', 65)
-        parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 60)
+        parser.blockprocessors.register(OListProcessor(parser), 'olist', 65)
+        parser.blockprocessors.register(UListProcessor(parser), 'ulist', 60)
         parser.blockprocessors.register(BlockQuoteProcessor(parser), 'quote', 55)
         parser.blockprocessors.register(markdown.blockprocessors.ParagraphProcessor(parser), 'paragraph', 50)
         return parser
@@ -2097,7 +2091,7 @@ def privacy_clean_markdown(content: str) -> str:
 
 def log_bugdown_error(msg: str) -> None:
     """We use this unusual logging approach to log the bugdown error, in
-    order to prevent AdminNotifyHandler from sending the santized
+    order to prevent AdminNotifyHandler from sending the sanitized
     original markdown formatting into another Zulip message, which
     could cause an infinite exception loop."""
     bugdown_logger.error(msg)

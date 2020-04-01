@@ -1,18 +1,17 @@
 const render_more_topics = require('../templates/more_topics.hbs');
 const render_more_topics_spinner = require('../templates/more_topics_spinner.hbs');
 const render_topic_list_item = require('../templates/topic_list_item.hbs');
-const IntDict = require('./int_dict').IntDict;
 const topic_list_data = require('./topic_list_data');
 
 /*
-    Track all active widgets with an IntDict.
+    Track all active widgets with a Map.
 
     (We have at max one for now, but we may
     eventually allow multiple streams to be
     expanded.)
 */
 
-const active_widgets = new IntDict();
+const active_widgets = new Map();
 
 // We know whether we're zoomed or not.
 let zoomed = false;
@@ -136,8 +135,7 @@ exports.widget = function (parent_elem, my_stream_id) {
             ['class', 'topic-list'],
         ];
 
-        const nodes = _.map(
-            list_info.items, exports.keyed_topic_li);
+        const nodes = list_info.items.map(exports.keyed_topic_li);
 
         if (spinner) {
             nodes.push(exports.spinner_li());

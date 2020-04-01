@@ -1,9 +1,7 @@
-exports.make_zblueslip = function (opts) {
-
+exports.make_zblueslip = function () {
     const lib = {};
 
-    // Apply defaults
-    opts = Object.assign({
+    const opts = {
         // Silently swallow all debug, log and info calls.
         debug: false,
         log: false,
@@ -12,7 +10,7 @@ exports.make_zblueslip = function (opts) {
         warn: true,
         error: true,
         fatal: true,
-    }, opts);
+    };
 
     // Store valid test data for options.
     lib.test_data = {};
@@ -65,8 +63,8 @@ exports.make_zblueslip = function (opts) {
         }
         lib[name] = function (message, more_info, stack) {
             lib.test_logs[name].push({message, more_info, stack});
-            const exact_match_fail = lib.test_data[name].indexOf(message) === -1;
-            const string_match_fail = lib.test_data[name].indexOf(message.toString()) === -1;
+            const exact_match_fail = !lib.test_data[name].includes(message);
+            const string_match_fail = !lib.test_data[name].includes(message.toString());
             if (exact_match_fail && string_match_fail) {
                 const error = Error(`Invalid ${name} message: "${message}".`);
                 error.blueslip = true;

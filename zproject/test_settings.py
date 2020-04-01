@@ -54,6 +54,9 @@ if "CASPER_TESTS" in os.environ:
 if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
     RUNNING_OPENAPI_CURL_TEST = True
 
+if "GENERATE_STRIPE_FIXTURES" in os.environ:
+    GENERATE_STRIPE_FIXTURES = True
+
 # Decrease the get_updates timeout to 1 second.
 # This allows CasperJS to proceed quickly to the next test step.
 POLL_TIMEOUT = 1000
@@ -156,7 +159,7 @@ HOME_NOT_LOGGED_IN = '/login/'
 LOGIN_URL = '/accounts/login/'
 
 # By default will not send emails when login occurs.
-# Explicity set this to True within tests that must have this on.
+# Explicitly set this to True within tests that must have this on.
 SEND_LOGIN_EMAILS = False
 
 GOOGLE_OAUTH2_CLIENT_ID = "id"
@@ -164,9 +167,11 @@ GOOGLE_OAUTH2_CLIENT_SECRET = "secret"
 
 SOCIAL_AUTH_GITHUB_KEY = "key"
 SOCIAL_AUTH_GITHUB_SECRET = "secret"
+SOCIAL_AUTH_GITLAB_KEY = "key"
+SOCIAL_AUTH_GITLAB_SECRET = "secret"
 SOCIAL_AUTH_GOOGLE_KEY = "key"
 SOCIAL_AUTH_GOOGLE_SECRET = "secret"
-SOCIAL_AUTH_SUBDOMAIN = 'www'
+SOCIAL_AUTH_SUBDOMAIN = 'auth'
 
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.

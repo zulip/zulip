@@ -1,5 +1,4 @@
 import datetime
-import time
 
 from django.conf import settings
 from typing import Any, Dict, Optional
@@ -11,20 +10,18 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import human_users_only
 from zerver.lib.actions import (
     do_update_user_status,
-    get_status_dict,
     update_user_presence,
+)
+from zerver.lib.presence import (
+    get_presence_response,
+    get_presence_for_user,
 )
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool, check_capped_string
 from zerver.models import UserActivity, UserPresence, UserProfile, \
-    get_active_user_by_delivery_email
-
-def get_status_list(requesting_user_profile: UserProfile,
-                    slim_presence: bool) -> Dict[str, Any]:
-    return {'presences': get_status_dict(requesting_user_profile, slim_presence),
-            'server_timestamp': time.time()}
+    get_active_user
 
 def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
                          email: str) -> HttpResponse:
@@ -32,15 +29,15 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
     try:
-        target = get_active_user_by_delivery_email(email, user_profile.realm)
+        target = get_active_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
     if target.is_bot:
         return json_error(_('Presence is not supported for bot users.'))
 
-    presence_dict = UserPresence.get_status_dict_by_user(target.id)
+    presence_dict = get_presence_for_user(target.id)
     if len(presence_dict) == 0:
-        return json_error(_('No presence data for %s') % (target.email,))
+        return json_error(_('No presence data for %s') % (email,))
 
     # For initial version, we just include the status and timestamp keys
     result = dict(presence=presence_dict[target.email])
@@ -95,7 +92,7 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
     if ping_only:
         ret = {}  # type: Dict[str, Any]
     else:
-        ret = get_status_list(user_profile, slim_presence)
+        ret = get_presence_response(user_profile, slim_presence)
 
     if user_profile.realm.is_zephyr_mirror_realm:
         # In zephyr mirroring realms, users can't see the presence of other
@@ -117,4 +114,4 @@ def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> H
     # This isn't used by the webapp; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
-    return json_success(get_status_list(user_profile, slim_presence=False))
+    return json_success(get_presence_response(user_profile, slim_presence=False))

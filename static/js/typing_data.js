@@ -1,9 +1,8 @@
-const Dict = require('./dict').Dict;
-
+const util = require("./util");
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
-const typist_dct = new Dict();
-const inbound_timer_dict = new Dict();
+const typist_dct = new Map();
+const inbound_timer_dict = new Map();
 
 function to_int(s) {
     return parseInt(s, 10);
@@ -18,7 +17,7 @@ exports.add_typist = function (group, typist) {
     const key = get_key(group);
     const current = typist_dct.get(key) || [];
     typist = to_int(typist);
-    if (!_.contains(current, typist)) {
+    if (!current.includes(typist)) {
         current.push(typist);
     }
     typist_dct.set(key, util.sorted_ids(current));
@@ -29,13 +28,11 @@ exports.remove_typist = function (group, typist) {
     let current = typist_dct.get(key) || [];
 
     typist = to_int(typist);
-    if (!_.contains(current, typist)) {
+    if (!current.includes(typist)) {
         return false;
     }
 
-    current = _.reject(current, function (user_id) {
-        return to_int(user_id) === to_int(typist);
-    });
+    current = current.filter(user_id => to_int(user_id) !== to_int(typist));
 
     typist_dct.set(key, current);
     return true;
@@ -47,7 +44,7 @@ exports.get_group_typists = function (group) {
 };
 
 exports.get_all_typists = function () {
-    let typists = _.flatten(Array.from(typist_dct.values()), true);
+    let typists = [].concat(...Array.from(typist_dct.values()));
     typists = util.sorted_ids(typists);
     typists = _.uniq(typists, true);
     return typists;

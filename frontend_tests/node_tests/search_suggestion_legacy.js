@@ -5,9 +5,11 @@ set_global('message_store', {
     user_ids: () => [],
 });
 
-set_global('i18n', global.stub_i18n);
 
-zrequire('util');
+const settings_config = zrequire('settings_config');
+page_params.realm_email_address_visibility =
+    settings_config.email_address_visibility_values.admins_only.code;
+
 zrequire('typeahead_helper');
 set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');
@@ -36,9 +38,8 @@ function init() {
 init();
 
 set_global('narrow', {});
-set_global('settings_org', {
-    show_email: () => true,
-});
+
+page_params.is_admin = true;
 
 topic_data.reset();
 
@@ -479,7 +480,7 @@ run_test('empty_query_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
     assert.equal(describe('is:private'), 'Private messages');
     assert.equal(describe('is:starred'), 'Starred messages');
@@ -513,7 +514,7 @@ run_test('has_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
 
     assert.equal(describe('has:link'), 'Messages with one or more link');
@@ -598,7 +599,7 @@ run_test('check_is_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
 
     assert.equal(describe('is:private'), 'Private messages');
@@ -683,8 +684,8 @@ run_test('sent_by_me_suggestions', () => {
 
     let query = '';
     let suggestions = search.get_suggestions_legacy(query);
-    assert(suggestions.strings.indexOf('sender:bob@zulip.com') !== -1);
-    assert.equal(suggestions.lookup_table['sender:bob@zulip.com'].description,
+    assert(suggestions.strings.includes('sender:bob@zulip.com'));
+    assert.equal(suggestions.lookup_table.get('sender:bob@zulip.com').description,
                  'Sent by me');
 
     query = 'sender';
@@ -815,12 +816,12 @@ run_test('topic_suggestions', () => {
         topic_name: 'REXX',
     });
 
-    _.each(['team', 'ignore', 'test'], function (topic_name) {
+    for (const topic_name of ['team', 'ignore', 'test']) {
         topic_data.add_message({
             stream_id: office_id,
             topic_name: topic_name,
         });
-    });
+    }
 
     suggestions = search.get_suggestions_legacy('te');
     expected = [
@@ -831,7 +832,7 @@ run_test('topic_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
     assert.equal(describe('te'), "Search for te");
     assert.equal(describe('stream:office topic:team'), "Stream office &gt; team");
@@ -1001,7 +1002,7 @@ run_test('people_suggestions', () => {
 
     assert.deepEqual(suggestions.strings, expected);
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
     assert.equal(describe('pm-with:ted@zulip.com'),
                  "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");

@@ -10,10 +10,9 @@ body {
 
 .header-main .logo {
     margin-top: 5px;
-}
-
-.header-main .logo .brand-logo {
-    margin-top: 4px;
+    .brand-logo {
+        margin-top: 4px;
+    }
 }
 
 .message_area_padder {
@@ -34,10 +33,9 @@ body {
 
     .header-main .logo {
         margin-top: 5px;
-    }
-
-    .header-main .logo .brand-logo {
-        margin-top: 4px;
+        .brand-logo {
+            margin-top: 4px;
+        }
     }
 
     #floating_recipient_bar {

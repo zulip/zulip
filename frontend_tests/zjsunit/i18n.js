@@ -16,8 +16,8 @@ exports.t = function (str, context) {
     We have to munge in the context here.
     */
     const keyword_regex = /__(- )?(\w)+__/g;
-    const keys_in_str = str.match(keyword_regex);
-    const substitutions = _.map(keys_in_str, function (key) {
+    const keys_in_str = str.match(keyword_regex) || [];
+    const substitutions = keys_in_str.map(key => {
         let prefix_length;
         if (key.startsWith("__- ")) {
             prefix_length = 4;
@@ -30,9 +30,11 @@ exports.t = function (str, context) {
             suffix: key.slice(key.length - 2, key.length),
         };
     });
-    _.each(substitutions, function (item) {
+
+    for (const item of substitutions) {
         str = str.replace(item.prefix + item.keyword + item.suffix,
                           context[item.keyword]);
-    });
+    }
+
     return 'translated: ' + str;
 };

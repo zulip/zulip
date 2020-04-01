@@ -59,21 +59,16 @@ function lower_same(a, b) {
 exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.
     return a.stream_id === b.stream_id &&
-            lower_same(
-                exports.get_message_topic(a),
-                exports.get_message_topic(b)
-            );
+        lower_same(a.topic, b.topic);
 };
 
 exports.is_pm_recipient = function (email, message) {
     const recipients = message.reply_to.toLowerCase().split(',');
-    return recipients.indexOf(email.toLowerCase()) !== -1;
+    return recipients.includes(email.toLowerCase());
 };
 
 exports.extract_pm_recipients = function (recipients) {
-    return _.filter(recipients.split(/\s*[,;]\s*/), function (recipient) {
-        return recipient.trim() !== "";
-    });
+    return recipients.split(/\s*[,;]\s*/).filter(recipient => recipient.trim() !== "");
 };
 
 exports.same_recipient = function util_same_recipient(a, b) {
@@ -107,9 +102,9 @@ exports.normalize_recipients = function (recipients) {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = _.map(recipients.split(','), function (s) { return s.trim(); });
-    recipients = _.map(recipients, function (s) { return s.toLowerCase(); });
-    recipients = _.filter(recipients, function (s) { return s.length > 0; });
+    recipients = recipients.split(',').map(s => s.trim());
+    recipients = recipients.map(s => s.toLowerCase());
+    recipients = recipients.filter(s => s.length > 0);
     recipients.sort();
     return recipients.join(',');
 };
@@ -133,10 +128,6 @@ exports.robust_uri_decode = function (str) {
     return '';
 };
 
-exports.rtrim = function (str) {
-    return str.replace(/\s+$/, '');
-};
-
 // If we can, use a locale-aware sorter.  However, if the browser
 // doesn't support the ECMAScript Internationalization API
 // Specification, do a dumb string comparison because
@@ -154,15 +145,6 @@ exports.make_strcmp = function () {
     };
 };
 exports.strcmp = exports.make_strcmp();
-
-exports.escape_html = function (html, encode) {
-    return html
-        .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-};
 
 exports.escape_regexp = function (string) {
     // code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
@@ -193,7 +175,7 @@ exports.array_compare = function util_array_compare(a, b) {
 const unassigned_value_sentinel = {};
 exports.CachedValue = function (opts) {
     this._value = unassigned_value_sentinel;
-    _.extend(this, opts);
+    Object.assign(this, opts);
 };
 
 exports.CachedValue.prototype = {
@@ -218,22 +200,13 @@ exports.find_wildcard_mentions = function (message_content) {
 };
 
 exports.move_array_elements_to_front = function util_move_array_elements_to_front(array, selected) {
-    let i;
-    const selected_hash = {};
-    for (i = 0; i < selected.length; i += 1) {
-        selected_hash[selected[i]] = true;
-    }
+    const selected_hash = new Set(selected);
     const selected_elements = [];
     const unselected_elements = [];
-    for (i = 0; i < array.length; i += 1) {
-        if (selected_hash[array[i]]) {
-            selected_elements.push(array[i]);
-        } else {
-            unselected_elements.push(array[i]);
-        }
+    for (const element of array) {
+        (selected_hash.has(element) ? selected_elements : unselected_elements).push(element);
     }
-    // Add the unselected elements after the selected ones
-    return selected_elements.concat(unselected_elements);
+    return [...selected_elements, ...unselected_elements];
 };
 
 // check by the userAgent string if a user's client is likely mobile.
@@ -249,23 +222,13 @@ function to_int(s) {
 exports.sorted_ids = function (ids) {
     // This mapping makes sure we are using ints, and
     // it also makes sure we don't mutate the list.
-    let id_list = _.map(ids, to_int);
+    let id_list = ids.map(to_int);
     id_list.sort(function (a, b) {
         return a - b;
     });
     id_list = _.uniq(id_list, true);
 
     return id_list;
-};
-
-exports.set_topic_links = function (obj, topic_links) {
-    // subject_links is a legacy name
-    obj.subject_links = topic_links;
-};
-
-exports.get_topic_links = function (obj) {
-    // subject_links is a legacy name
-    return obj.subject_links;
 };
 
 exports.set_match_data = function (target, source) {
@@ -287,19 +250,6 @@ exports.get_reload_topic = function (obj) {
     // topic=foo in the code, the user's reload URL
     // may still have subject=foo from the prior version.
     return obj.topic || obj.subject || '';
-};
-
-exports.set_message_topic = function (obj, topic) {
-    obj.topic = topic;
-};
-
-exports.get_message_topic = function (obj) {
-    if (obj.topic === undefined) {
-        blueslip.warn('programming error: message has no topic');
-        return obj.subject;
-    }
-
-    return obj.topic;
 };
 
 exports.get_edit_event_topic = function (obj) {
@@ -329,5 +279,3 @@ exports.convert_message_topic = function (message) {
         message.topic = message.subject;
     }
 };
-
-window.util = exports;

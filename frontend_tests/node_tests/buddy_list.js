@@ -52,7 +52,7 @@ run_test('basics', () => {
 
     buddy_list.get_data_from_keys = (opts) => {
         const keys = opts.keys;
-        assert.deepEqual(keys, [alice.user_id.toString()]);
+        assert.deepEqual(keys, [alice.user_id]);
         return 'data-stub';
     };
 
@@ -81,7 +81,7 @@ run_test('basics', () => {
     buddy_list.get_li_from_key = (opts) => {
         const key = opts.key;
 
-        assert.equal(key, alice.user_id.toString());
+        assert.equal(key, alice.user_id);
         return alice_li;
     };
 

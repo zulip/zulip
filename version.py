@@ -12,6 +12,7 @@ if os.path.exists(zulip_git_version_file):
 LATEST_MAJOR_VERSION = "2.1"
 LATEST_RELEASE_VERSION = "2.1.2"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2019/12/13/zulip-2-1-released/"
+LATEST_DESKTOP_VERSION = "4.0.3"
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -26,4 +27,4 @@ LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2019/12/13/zulip-2-1-relea
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = '70.1'
+PROVISION_VERSION = '75.5'

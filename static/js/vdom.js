@@ -13,9 +13,7 @@ exports.eq_array = (a, b, eq) => {
         return false;
     }
 
-    return _.all(a, (item, i) => {
-        return eq(item, b[i]);
-    });
+    return a.every((item, i) => eq(item, b[i]));
 };
 
 exports.ul = (opts) => {
@@ -39,9 +37,7 @@ exports.render_tag = (tag) => {
     */
     const opts = tag.opts;
     const tag_name = tag.tag_name;
-    const attr_str = _.map(opts.attrs, (attr) => {
-        return ' ' + attr[0] + '="' + util.escape_html(attr[1]) + '"';
-    }).join('');
+    const attr_str = opts.attrs.map(attr => ' ' + attr[0] + '="' + _.escape(attr[1]) + '"').join('');
 
     const start_tag = '<' + tag_name + attr_str + '>';
     const end_tag = '</' + tag_name + '>';
@@ -51,9 +47,7 @@ exports.render_tag = (tag) => {
         return;
     }
 
-    const innards = _.map(opts.keyed_nodes, (node) => {
-        return node.render();
-    }).join('\n');
+    const innards = opts.keyed_nodes.map(node => node.render()).join('\n');
     return start_tag + '\n' + innards + '\n' + end_tag;
 };
 
@@ -157,14 +151,14 @@ exports.update = (replace_content, find, new_dom, old_dom) => {
 
     const child_elems = find().children();
 
-    _.each(new_opts.keyed_nodes, (new_node, i) => {
+    for (const [i, new_node] of new_opts.keyed_nodes.entries()) {
         const old_node = old_opts.keyed_nodes[i];
         if (new_node.eq(old_node)) {
-            return;
+            continue;
         }
         const rendered_dom = new_node.render();
         child_elems.eq(i).replaceWith(rendered_dom);
-    });
+    }
 
     exports.update_attrs(
         find(),
@@ -174,30 +168,20 @@ exports.update = (replace_content, find, new_dom, old_dom) => {
 };
 
 exports.update_attrs = (elem, new_attrs, old_attrs) => {
-    function make_dict(attrs) {
-        const dict = {};
-        _.each(attrs, (attr) => {
-            const k = attr[0];
-            const v = attr[1];
-            dict[k] = v;
-        });
-        return dict;
-    }
+    const new_dict = new Map(new_attrs);
+    const old_dict = new Map(old_attrs);
 
-    const new_dict = make_dict(new_attrs);
-    const old_dict = make_dict(old_attrs);
-
-    _.each(new_dict, (v, k) => {
-        if (v !== old_dict[k]) {
+    for (const [k, v] of new_attrs) {
+        if (v !== old_dict.get(k)) {
             elem.attr(k, v);
         }
-    });
+    }
 
-    _.each(old_dict, (v, k) => {
-        if (new_dict[k] === undefined) {
+    for (const [k] of old_attrs) {
+        if (!new_dict.has(k)) {
             elem.removeAttr(k);
         }
-    });
+    }
 };
 
 window.vdom = exports;

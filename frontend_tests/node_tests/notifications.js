@@ -20,14 +20,12 @@ const _navigator = {
 };
 set_global('navigator', _navigator);
 
-set_global('i18n', global.stub_i18n);
 
 zrequire('alert_words');
 zrequire('muting');
 zrequire('stream_data');
 zrequire('people');
 zrequire('ui');
-zrequire('util');
 
 zrequire('notifications');
 
@@ -49,8 +47,8 @@ const muted = {
     wildcard_mentions_notify: null,
 };
 
-stream_data.add_sub('general', general);
-stream_data.add_sub('muted', muted);
+stream_data.add_sub(general);
+stream_data.add_sub(muted);
 
 muting.add_muted_topic(general.stream_id, 'muted topic');
 
@@ -80,7 +78,7 @@ run_test('message_is_notifiable', () => {
     // Not notifiable because it was sent by the current user
     assert.equal(notifications.message_is_notifiable(message), false);
 
-    // Case 2: If the user has already been sent a notificaton about this message,
+    // Case 2: If the user has already been sent a notification about this message,
     //  DO NOT notify the user
     // In this test, all other circumstances should trigger notification
     // EXCEPT notification_sent, which should trump them
@@ -308,46 +306,46 @@ run_test('basic_notifications', () => {
     // Send notification.
     notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal('Jesse Pinkman to general > whatever' in n, true);
-    assert.equal(Object.keys(n).length, 1);
+    assert.equal(n.has('Jesse Pinkman to general > whatever'), true);
+    assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Remove notification.
     notifications.close_notification(message_1);
     n = notifications.get_notifications();
-    assert.equal('Jesse Pinkman to general > whatever' in n, false);
-    assert.equal(Object.keys(n).length, 0);
+    assert.equal(n.has('Jesse Pinkman to general > whatever'), false);
+    assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_1.id);
 
     // Send notification.
     message_1.id = 1001;
     notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal('Jesse Pinkman to general > whatever' in n, true);
-    assert.equal(Object.keys(n).length, 1);
+    assert.equal(n.has('Jesse Pinkman to general > whatever'), true);
+    assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Process same message again. Notification count shouldn't increase.
     message_1.id = 1002;
     notifications.process_notification({message: message_1, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal('Jesse Pinkman to general > whatever' in n, true);
-    assert.equal(Object.keys(n).length, 1);
+    assert.equal(n.has('Jesse Pinkman to general > whatever'), true);
+    assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Send another message. Notification count should increase.
     notifications.process_notification({message: message_2, desktop_notify: true});
     n = notifications.get_notifications();
-    assert.equal('Gus Fring to general > lunch' in n, true);
-    assert.equal('Jesse Pinkman to general > whatever' in n, true);
-    assert.equal(Object.keys(n).length, 2);
+    assert.equal(n.has('Gus Fring to general > lunch'), true);
+    assert.equal(n.has('Jesse Pinkman to general > whatever'), true);
+    assert.equal(n.size, 2);
     assert.equal(last_shown_message_id, message_2.id);
 
     // Remove notifications.
     notifications.close_notification(message_1);
     notifications.close_notification(message_2);
     n = notifications.get_notifications();
-    assert.equal('Jesse Pinkman to general > whatever' in n, false);
-    assert.equal(Object.keys(n).length, 0);
+    assert.equal(n.has('Jesse Pinkman to general > whatever'), false);
+    assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, message_2.id);
 });

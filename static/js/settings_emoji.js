@@ -77,7 +77,7 @@ exports.populate_emoji = function (emoji_data) {
         filter: {
             element: emoji_table.closest(".settings-section").find(".search"),
             predicate: function (item, value) {
-                return item.name.toLowerCase().indexOf(value) >= 0;
+                return item.name.toLowerCase().includes(value);
             },
             onupdate: function () {
                 ui.reset_scrollbar(emoji_table);
@@ -134,12 +134,14 @@ exports.set_up = function () {
         $('#admin_emoji_submit').attr('disabled', true);
         const emoji = {};
         const formData = new FormData();
-        _.each($(this).serializeArray(), function (obj) {
+
+        for (const obj of $(this).serializeArray()) {
             emoji[obj.name] = obj.value;
-        });
-        $.each($('#emoji_file_input')[0].files, function (i, file) {
+        }
+
+        for (const [i, file] of Array.prototype.entries.call($('#emoji_file_input')[0].files)) {
             formData.append('file-' + i, file);
-        });
+        }
         channel.post({
             url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
             data: formData,

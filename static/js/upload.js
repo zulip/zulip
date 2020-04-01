@@ -1,10 +1,14 @@
-function make_upload_absolute(uri) {
+const Uppy = require('@uppy/core');
+const XHRUpload = require('@uppy/xhr-upload');
+const ProgressBar = require('@uppy/progress-bar');
+
+exports.make_upload_absolute = function (uri) {
     if (uri.startsWith(compose.uploads_path)) {
         // Rewrite the URI to a usable link
         return compose.uploads_domain + uri;
     }
     return uri;
-}
+};
 
 // Show the upload button only if the browser supports it.
 exports.feature_check = function (upload_button) {
@@ -13,187 +17,235 @@ exports.feature_check = function (upload_button) {
     }
 };
 
-exports.options = function (config) {
-    let textarea;
-    let send_button;
-    let send_status;
-    let send_status_close;
-    let error_msg;
-    let upload_bar;
-    let file_input;
-
-    switch (config.mode) {
-    case 'compose':
-        textarea = $('#compose-textarea');
-        send_button = $('#compose-send-button');
-        send_status = $('#compose-send-status');
-        send_status_close = $('.compose-send-status-close');
-        error_msg = $('#compose-error-msg');
-        upload_bar = 'compose-upload-bar';
-        file_input = 'file_input';
-        break;
-    case 'edit':
-        textarea = $('#message_edit_content_' + config.row);
-        send_button = textarea.closest('#message_edit_form').find('.message_edit_save');
-        send_status = $('#message-edit-send-status-' + config.row);
-        send_status_close = send_status.find('.send-status-close');
-        error_msg = send_status.find('.error-msg');
-        upload_bar = 'message-edit-upload-bar-' + config.row;
-        file_input = 'message_edit_file_input_' + config.row;
-        break;
-    default:
+exports.get_item = function (key, config) {
+    if (!config) {
+        throw Error("Missing config");
+    }
+    if (config.mode === "compose") {
+        switch (key) {
+        case "textarea":
+            return $('#compose-textarea');
+        case "send_button":
+            return $('#compose-send-button');
+        case "send_status_identifier":
+            return '#compose-send-status';
+        case "send_status":
+            return $('#compose-send-status');
+        case "send_status_close_button":
+            return $('.compose-send-status-close');
+        case "send_status_message":
+            return $('#compose-error-msg');
+        case "file_input_identifier":
+            return "#file_input";
+        case "source":
+            return "compose-file-input";
+        case "drag_drop_container":
+            return $("#compose");
+        default:
+            throw Error(`Invalid key name for mode "${config.mode}"`);
+        }
+    } else if (config.mode === "edit") {
+        if (!config.row) {
+            throw Error("Missing row in config");
+        }
+        switch (key) {
+        case "textarea":
+            return $('#message_edit_content_' + config.row);
+        case "send_button":
+            return $('#message_edit_content_' + config.row).closest('#message_edit_form').find('.message_edit_save');
+        case "send_status_identifier":
+            return '#message-edit-send-status-' + config.row;
+        case "send_status":
+            return $('#message-edit-send-status-' + config.row);
+        case "send_status_close_button":
+            return $('#message-edit-send-status-' + config.row).find('.send-status-close');
+        case "send_status_message":
+            return $('#message-edit-send-status-' + config.row).find('.error-msg');
+        case "file_input_identifier":
+            return '#message_edit_file_input_' + config.row;
+        case "source":
+            return "message-edit-file-input";
+        case "drag_drop_container":
+            return $("#message_edit_form");
+        default:
+            throw Error(`Invalid key name for mode "${config.mode}"`);
+        }
+    } else {
         throw Error("Invalid upload mode!");
     }
+};
 
-    const hide_upload_status = function () {
-        send_button.prop("disabled", false);
-        send_status.removeClass("alert-info").hide();
-        $('div.progress.active').remove();
-    };
+exports.hide_upload_status = function (config) {
+    exports.get_item("send_button", config).prop("disabled", false);
+    exports.get_item("send_status", config).removeClass("alert-info").hide();
+};
 
-    const drop = function () {
-        send_button.attr("disabled", "");
-        send_status.addClass("alert-info").show();
-        send_status_close.one('click', function () {
-            setTimeout(function () {
-                hide_upload_status();
-            }, 500);
-            compose.abort_xhr();
-        });
-    };
+exports.show_error_message = function (config, message) {
+    if (!message) {
+        message = i18n.t("An unknown error occurred.");
+    }
+    exports.get_item("send_button", config).prop("disabled", false);
+    exports.get_item("send_status", config).addClass("alert-error").removeClass("alert-info").show();
+    exports.get_item("send_status_message", config).text(message);
+};
 
-    const uploadStarted = function (i, file) {
-        error_msg.html($("<p>").text(i18n.t("Uploading…")));
-        // file.lastModified is unique for each upload, and was previously used to track each
-        // upload. But, when an image is pasted into Safari, it looks like the lastModified time
-        // gets changed by the time the image upload is finished, and we lose track of the
-        // uploaded images. Instead, we set a random ID for each image, to track it.
-        if (!file.trackingId) {  // The conditional check is present to make this easy to test
-            file.trackingId = Math.random().toString().substring(2);  // Use digits after the `.`
+exports.upload_files = function (uppy, config, files) {
+    if (files.length === 0) {
+        uppy.cancelAll();
+        exports.hide_upload_status(config);
+        return;
+    }
+    if (page_params.max_file_upload_size === 0) {
+        exports.show_error_message(config, i18n.t('File and image uploads have been disabled for this organization.'));
+        return;
+    }
+    exports.get_item("send_button", config).attr("disabled", "");
+    exports.get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
+    exports.get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
+    exports.get_item("send_status_close_button", config).one('click', function () {
+        uppy.cancelAll();
+        setTimeout(function () {
+            exports.hide_upload_status(config);
+        }, 500);
+    });
+
+    for (const file of files) {
+        try {
+            compose_ui.insert_syntax_and_focus("[Uploading " + file.name + "…]()", exports.get_item("textarea", config));
+            compose_ui.autosize_textarea();
+            uppy.addFile({
+                source: exports.get_item("source", config),
+                name: file.name,
+                type: file.type,
+                data: file,
+            });
+        } catch (error) {
+            // Errors are handled by info-visible and upload-error event callbacks.
         }
-        send_status.append('<div class="progress active">' +
-                           '<div class="bar" id="' + upload_bar + '-' + file.trackingId + '" style="width: 0"></div>' +
-                           '</div>');
-        compose_ui.insert_syntax_and_focus("[Uploading " + file.name + "…]()", textarea);
-    };
+    }
+};
 
-    const progressUpdated = function (i, file, progress) {
-        $("#" + upload_bar + '-' + file.trackingId).width(progress + "%");
-    };
-
-    const uploadError = function (error_code, server_response, file) {
-        let msg;
-        send_status.addClass("alert-error").removeClass("alert-info");
-        send_button.prop("disabled", false);
-        if (file !== undefined) {
-            $("#" + upload_bar + '-' + file.trackingId).parent().remove();
+exports.setup_upload = function (config) {
+    const uppy = Uppy({
+        debug: false,
+        autoProceed: true,
+        restrictions: {
+            maxFileSize: page_params.max_file_upload_size * 1024 * 1024,
+        },
+        locale: {
+            strings: {
+                exceedsSize: i18n.t('This file exceeds maximum allowed size of'),
+                failedToUpload: i18n.t('Failed to upload %{file}'),
+            },
+        },
+    });
+    uppy.setMeta({
+        csrfmiddlewaretoken: csrf_token,
+    });
+    uppy.use(
+        XHRUpload, {
+            endpoint: '/json/user_uploads',
+            formData: true,
+            fieldName: 'file',
+            // Number of concurrent uploads
+            limit: 5,
+            locale: {
+                strings: {
+                    timedOut: i18n.t('Upload stalled for %{seconds} seconds, aborting.'),
+                },
+            },
         }
+    );
 
-        switch (error_code) {
-        case 'BrowserNotSupported':
-            msg = i18n.t("File upload is not yet available for your browser.");
-            break;
-        case 'TooManyFiles':
-            msg = i18n.t("Unable to upload that many files at once.");
-            break;
-        case 'FileTooLarge':
-            if (page_params.max_file_upload_size > 0) {
-                // sanitization not needed as the file name is not potentially parsed as HTML, etc.
-                const context = {
-                    file_name: file.name,
-                    file_size: page_params.max_file_upload_size,
-                };
-                msg = i18n.t('"__file_name__" was too large; the maximum file size is __file_size__MB.',
-                             context);
-            } else {
-                // If uploading files has been disabled.
-                msg = i18n.t('File and image uploads have been disabled for this organization.');
-            }
-            break;
-        case 413: // HTTP status "Request Entity Too Large"
-            msg = i18n.t("Sorry, the file was too large.");
-            break;
-        case 400: {
-            const server_message = server_response && server_response.msg;
-            msg = server_message || i18n.t("An unknown error occurred.");
-            break;
-        }
-        default:
-            msg = i18n.t("An unknown error occurred.");
-            break;
-        }
-        error_msg.text(msg);
-    };
+    uppy.use(ProgressBar, {
+        target: exports.get_item("send_status_identifier", config),
+        hideAfterFinish: false,
+    });
 
-    const uploadFinished = function (i, file, response) {
-        if (response.uri === undefined) {
+    $("body").on("change", exports.get_item("file_input_identifier", config), (event) => {
+        const files = event.target.files;
+        exports.upload_files(uppy, config, files);
+    });
+
+    const drag_drop_container = exports.get_item("drag_drop_container", config);
+    drag_drop_container.on("dragover", (event) => event.preventDefault());
+    drag_drop_container.on("dragenter", (event) => event.preventDefault());
+
+    drag_drop_container.on("drop", (event) => {
+        event.preventDefault();
+        const files = event.originalEvent.dataTransfer.files;
+        exports.upload_files(uppy, config, files);
+    });
+
+    drag_drop_container.on("paste", (event) => {
+        const clipboard_data = event.clipboardData || event.originalEvent.clipboardData;
+        if (!clipboard_data) {
             return;
         }
-        const split_uri = response.uri.split("/");
+        const items = clipboard_data.items;
+        const files = [];
+        for (const item of items) {
+            if (item.kind !== "file") {
+                continue;
+            }
+            const file = item.getAsFile();
+            files.push(file);
+        }
+        exports.upload_files(uppy, config, files);
+    });
+
+    uppy.on('upload-success', (file, response) => {
+        const uri = response.body.uri;
+        if (uri === undefined) {
+            return;
+        }
+        const split_uri = uri.split("/");
         const filename = split_uri[split_uri.length - 1];
-        // Urgh, yet another hack to make sure we're "composing"
-        // when text gets added into the composebox.
-        if (config.mode === 'compose' && !compose_state.composing()) {
+        if (!compose_state.composing()) {
             compose_actions.start('stream');
-        } else if (config.mode === 'edit' && document.activeElement !== textarea) {
-            // If we are editing, focus on the edit message box
-            textarea.focus();
         }
-
-        const uri = make_upload_absolute(response.uri);
-
-        if (i === -1) {
-            // This is a paste, so there's no filename. Show the image directly
-            const pasted_image_uri = "[pasted image](" + uri + ")";
-            compose_ui.replace_syntax("[Uploading " + file.name + "…]()", pasted_image_uri, textarea);
-        } else {
-            // This is a dropped file, so make the filename a link to the image
-            const filename_uri = "[" + filename + "](" + uri + ")";
-            compose_ui.replace_syntax("[Uploading " + file.name + "…]()", filename_uri, textarea);
-        }
+        const absolute_uri = upload.make_upload_absolute(uri);
+        const filename_uri = "[" + filename + "](" + absolute_uri + ")";
+        compose_ui.replace_syntax("[Uploading " + file.name + "…]()", filename_uri, exports.get_item("textarea", config));
         compose_ui.autosize_textarea();
+    });
 
+    uppy.on('complete', () => {
         setTimeout(function () {
-            $("#" + upload_bar  + '-' + file.trackingId).parent().remove();
-            if ($('div.progress.active').length === 0) {
-                hide_upload_status(file);
-            }
+            uppy.cancelAll();
+            exports.hide_upload_status(config);
         }, 500);
+    });
 
-        // In order to upload the same file twice in a row, we need to clear out
-        // the file input element, so that the next time we use the file dialog,
-        // an actual change event is fired. IE doesn't allow .val('') so we
-        // need to clone it. (Taken from the jQuery form plugin)
-        if (/MSIE/.test(navigator.userAgent)) {
-            $('#' + file_input).replaceWith($('#' + file_input).clone(true));
-        } else {
-            $('#' + file_input).val('');
+    uppy.on('info-visible', () => {
+        const info = uppy.getState().info;
+        if (info.type === "error" && info.message === "No Internet connection") {
+            // server_events already handles the case of no internet.
+            return;
         }
-    };
 
-    return {
-        url: "/json/user_uploads",
-        fallback_id: file_input,  // Target for standard file dialog
-        paramname: "file",
-        max_file_upload_size: page_params.max_file_upload_size,
-        data: {
-            // the token isn't automatically included in filedrop's post
-            csrfmiddlewaretoken: csrf_token,
-        },
-        raw_droppable: ['text/uri-list', 'text/plain'],
-        drop: drop,
-        uploadStarted: uploadStarted,
-        progressUpdated: progressUpdated,
-        error: uploadError,
-        uploadFinished: uploadFinished,
-        rawDrop: function (contents) {
-            if (!compose_state.composing()) {
-                compose_actions.start('stream');
-            }
-            textarea.val(textarea.val() + contents);
-            compose_ui.autosize_textarea();
-        },
-    };
+        if (info.type === "error" && info.details === "Upload Error") {
+            // The server errors come under 'Upload Error'. But we can't handle them
+            // here because info object don't contain response.body.msg received from
+            // the server. Server errors are hence handled by on('upload-error').
+            return;
+        }
+
+        if (info.type === "error") {
+            // The remaining errors are mostly frontend errors like file being too large
+            // for upload.
+            uppy.cancelAll();
+            exports.show_error_message(config, info.message);
+        }
+    });
+
+    uppy.on('upload-error', (file, error, response) => {
+        const message = response ? response.body.msg : null;
+        uppy.cancelAll();
+        exports.show_error_message(config, message);
+    });
+
+    return uppy;
 };
 
 window.upload = exports;

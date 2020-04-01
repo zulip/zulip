@@ -134,9 +134,12 @@ def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def remove_default_stream(request: HttpRequest,
                           user_profile: UserProfile,
-                          stream_name: str=REQ()) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name,
-                                                     allow_realm_admin=True)
+                          stream_id: int=REQ(validator=check_int)) -> HttpResponse:
+    (stream, recipient, sub) = access_stream_by_id(
+        user_profile,
+        stream_id,
+        allow_realm_admin=True
+    )
     do_remove_default_stream(stream)
     return json_success()
 
@@ -508,7 +511,7 @@ def delete_in_topic(request: HttpRequest, user_profile: UserProfile,
                     topic_name: str=REQ("topic_name")) -> HttpResponse:
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
-    messages = messages_for_topic(stream.id, topic_name)
+    messages = messages_for_topic(stream.recipient_id, topic_name)
     if not stream.is_history_public_to_subscribers():
         # Don't allow the user to delete messages that they don't have access to.
         deletable_message_ids = UserMessage.objects.filter(

@@ -72,9 +72,9 @@ function buddy_list_create() {
         'height_to_fill',
     ];
 
-    _.each(func_names, function (func_name) {
+    for (const func_name of func_names) {
         self[func_name] = conf[func_name];
-    });
+    }
 
     self.keys = [];
 

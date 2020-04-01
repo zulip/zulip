@@ -6,9 +6,11 @@ set_global('message_store', {
     user_ids: () => [],
 });
 
-set_global('i18n', global.stub_i18n);
 
-zrequire('util');
+const settings_config = zrequire('settings_config');
+page_params.realm_email_address_visibility =
+    settings_config.email_address_visibility_values.admins_only.code;
+
 zrequire('typeahead_helper');
 set_global('Handlebars', global.make_handlebars());
 zrequire('Filter', 'js/filter');
@@ -37,10 +39,8 @@ function init() {
 }
 init();
 
+page_params.is_admin = true;
 set_global('narrow', {});
-set_global('settings_org', {
-    show_email: () => true,
-});
 
 topic_data.reset();
 
@@ -478,7 +478,7 @@ run_test('empty_query_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
     assert.equal(describe('is:private'), 'Private messages');
     assert.equal(describe('is:starred'), 'Starred messages');
@@ -512,7 +512,7 @@ run_test('has_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
 
     assert.equal(describe('has:link'), 'Messages with one or more link');
@@ -596,7 +596,7 @@ run_test('check_is_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
 
     assert.equal(describe('is:private'), 'Private messages');
@@ -714,8 +714,8 @@ run_test('sent_by_me_suggestions', () => {
 
     let query = '';
     let suggestions = get_suggestions('', query);
-    assert(suggestions.strings.indexOf('sender:bob@zulip.com') !== -1);
-    assert.equal(suggestions.lookup_table['sender:bob@zulip.com'].description,
+    assert(suggestions.strings.includes('sender:bob@zulip.com'));
+    assert.equal(suggestions.lookup_table.get('sender:bob@zulip.com').description,
                  'Sent by me');
 
     query = 'sender';
@@ -846,12 +846,12 @@ run_test('topic_suggestions', () => {
         topic_name: 'REXX',
     });
 
-    _.each(['team', 'ignore', 'test'], function (topic_name) {
+    for (const topic_name of ['team', 'ignore', 'test']) {
         topic_data.add_message({
             stream_id: office_id,
             topic_name: topic_name,
         });
-    });
+    }
 
     suggestions = get_suggestions('', 'te');
     expected = [
@@ -862,7 +862,7 @@ run_test('topic_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table[q].description;
+        return suggestions.lookup_table.get(q).description;
     }
     assert.equal(describe('te'), "Search for te");
     assert.equal(describe('stream:office topic:team'), "Stream office &gt; team");
@@ -974,7 +974,7 @@ run_test('stream_completion', () => {
 });
 
 function people_suggestion_setup() {
-    global.stream_data.subscribed_streams = noop;
+    global.stream_data.subscribed_streams = () => [];
     global.narrow_state.stream = noop;
 
     const ted = {
@@ -1017,7 +1017,7 @@ run_test('people_suggestions', () => {
 
     assert.deepEqual(suggestions.strings, expected);
 
-    const describe = (q) => suggestions.lookup_table[q].description;
+    const describe = (q) => suggestions.lookup_table.get(q).description;
 
     assert.equal(describe('pm-with:ted@zulip.com'),
                  "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
@@ -1073,7 +1073,7 @@ run_test('people_suggestion (Admin only email visibility)', () => {
     only */
     people_suggestion_setup();
     const query = 'te';
-    settings_org.show_email = () => false;
+    page_params.is_admin = false;
     const suggestions = get_suggestions('', query);
     const expected = [
         "te",
@@ -1087,7 +1087,7 @@ run_test('people_suggestion (Admin only email visibility)', () => {
 
     assert.deepEqual(suggestions.strings, expected);
 
-    const describe = (q) => suggestions.lookup_table[q].description;
+    const describe = (q) => suggestions.lookup_table.get(q).description;
 
     assert.equal(describe('pm-with:ted@zulip.com'),
                  'Private messages with <strong>Te</strong>d Smith');

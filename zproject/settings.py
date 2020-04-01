@@ -68,6 +68,8 @@ TUTORIAL_ENABLED = True
 CASPER_TESTS = False
 # This is overridden in test_settings.py for the test suites
 RUNNING_OPENAPI_CURL_TEST = False
+# This is overridden in test_settings.py for the test suites
+GENERATE_STRIPE_FIXTURES = False
 
 # Google Compute Engine has an /etc/boto.cfg that is "nicely
 # configured" to work with GCE's storage service.  However, their
@@ -113,7 +115,7 @@ MANAGERS = ADMINS
 ########################################################################
 
 # Local time zone for this installation. Choices can be found here:
-# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
+# https://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
 TIME_ZONE = 'UTC'
@@ -161,8 +163,7 @@ MIDDLEWARE = (
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',
     'zerver.middleware.FlushDisplayRecipientCache',
-    'django_cookies_samesite.middleware.CookiesSameSite',
-    'django.middleware.common.CommonMiddleware',
+    'zerver.middleware.ZulipCommonMiddleware',
     'zerver.middleware.SessionHostDomainMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -222,12 +223,8 @@ SILENCED_SYSTEM_CHECKS = [
     # `unique=True`.  For us this is `email`, and it's unique only per-realm.
     # Per Django docs, this is perfectly fine so long as our authentication
     # backends support the username not being unique; and they do.
-    # See: https://docs.djangoproject.com/en/1.11/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
+    # See: https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
-    # urls.W003 warns against using colons in the name in url(..., name) because colons are used
-    # for namespaces. We need to override a url entry in the social: namespace, so we use
-    # the colon in this way intentionally.
-    "urls.W003",
 ]
 
 ########################################################################
@@ -379,6 +376,8 @@ REDIS_PASSWORD = get_secret('redis_password')
 # SECURITY SETTINGS
 ########################################################################
 
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 # Tell the browser to never send our cookies without encryption, e.g.
 # when executing the initial http -> https redirect.
 #
@@ -391,9 +390,6 @@ if PRODUCTION:
     domain = get_config('django', 'cookie_domain', None)
     if domain is not None:
         CSRF_COOKIE_DOMAIN = '.' + domain
-
-# Enable SameSite cookies (default in Django 2.1)
-SESSION_COOKIE_SAMESITE = 'Lax'
 
 # Prevent Javascript from reading the CSRF token from cookies.  Our code gets
 # the token from the DOM, which means malicious code could too.  But hiding the
@@ -729,10 +725,6 @@ LOGGING = {
             '()': 'django.utils.log.CallbackFilter',
             'callback': zerver.lib.logging_util.skip_200_and_304,
         },
-        'skip_boring_404s': {
-            '()': 'django.utils.log.CallbackFilter',
-            'callback': zerver.lib.logging_util.skip_boring_404s,
-        },
         'skip_site_packages_logs': {
             '()': 'django.utils.log.CallbackFilter',
             'callback': zerver.lib.logging_util.skip_site_packages_logs,
@@ -809,8 +801,14 @@ LOGGING = {
             # configured; which is what we want for it.
         },
         'django.request': {
-            'level': 'WARNING',
-            'filters': ['skip_boring_404s'],
+            # We set this to ERROR to prevent Django's default
+            # low-value logs with lines like "Not Found: /robots.txt"
+            # from being logged for every HTTP 4xx error at WARNING
+            # level, which would otherwise end up spamming our
+            # errors.log.  We'll still get logs in errors.log
+            # including tracebacks for 5xx errors (i.e. Python
+            # exceptions).
+            'level': 'ERROR',
         },
         'django.security.DisallowedHost': {
             'handlers': ['file'],
@@ -982,7 +980,10 @@ SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['subdomain', 'is_signup', 'mobile_flow_o
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
 
 SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
+SOCIAL_AUTH_GITLAB_SECRET = get_secret('social_auth_gitlab_secret')
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
+if SOCIAL_AUTH_GITHUB_ORG_NAME or SOCIAL_AUTH_GITHUB_TEAM_ID:
+    SOCIAL_AUTH_GITHUB_SCOPE.append("read:org")
 SOCIAL_AUTH_GITHUB_ORG_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
@@ -999,6 +1000,13 @@ SOCIAL_AUTH_GOOGLE_SECRET = SOCIAL_AUTH_GOOGLE_SECRET or GOOGLE_OAUTH2_CLIENT_SE
 if PRODUCTION:
     SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = get_from_file_if_exists("/etc/zulip/saml/zulip-cert.crt")
     SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists("/etc/zulip/saml/zulip-private-key.key")
+
+if "signatureAlgorithm" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
+    # If the configuration doesn't explicitly specify the algorithm,
+    # we set RSA1 with SHA256 to override the python3-saml default, which uses
+    # insecure SHA1.
+    default_signature_alg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+    SOCIAL_AUTH_SAML_SECURITY_CONFIG["signatureAlgorithm"] = default_signature_alg
 
 for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     if DEVELOPMENT:

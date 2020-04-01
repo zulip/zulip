@@ -169,19 +169,18 @@ exports.maybe_scroll_up_selected_message = function () {
 };
 
 function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
-    let default_opts = {
+    return {
         message_type: msg_type,
         stream: '',
         topic: '',
         private_message_recipient: '',
         trigger: 'unknown',
-    };
 
-    // Set default parameters based on the current narrowed view.
-    const compose_opts = narrow_state.set_compose_defaults();
-    default_opts = _.extend(default_opts, compose_opts);
-    opts = _.extend(default_opts, opts);
-    return opts;
+        // Set default parameters based on the current narrowed view.
+        ...narrow_state.set_compose_defaults(),
+
+        ...opts,
+    };
 }
 
 function same_recipient_as_before(msg_type, opts) {
@@ -334,7 +333,7 @@ exports.respond_to_message = function (opts) {
     let pm_recipient = '';
     if (msg_type === "stream") {
         stream = message.stream;
-        topic = util.get_message_topic(message);
+        topic = message.topic;
     } else {
         pm_recipient = message.reply_to;
         if (opts.reply_type === "personal") {

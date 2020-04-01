@@ -1,8 +1,8 @@
 set_global('$', global.make_zjquery());
-set_global('blueslip', global.make_zblueslip({}));
+set_global('blueslip', global.make_zblueslip());
 set_global('document', {});
+const util = zrequire('util');
 
-zrequire('util');
 
 run_test('CachedValue', () => {
     let x = 5;
@@ -37,12 +37,6 @@ run_test('is_pm_recipient', () => {
     assert(util.is_pm_recipient('alice@example.com', message));
     assert(util.is_pm_recipient('bob@example.com', message));
     assert(!util.is_pm_recipient('unknown@example.com', message));
-});
-
-run_test('rtrim', () => {
-    assert.equal(util.rtrim('foo'), 'foo');
-    assert.equal(util.rtrim('  foo'), '  foo');
-    assert.equal(util.rtrim('foo  '), 'foo');
 });
 
 run_test('lower_bound', () => {
@@ -112,13 +106,6 @@ run_test('robust_uri_decode', () => {
     } catch (e) {
         assert.equal(e, 'foo');
     }
-});
-
-run_test('get_message_topic', () => {
-    blueslip.set_test_data('warn', 'programming error: message has no topic');
-    assert.equal(util.get_message_topic({subject: 'foo'}), 'foo');
-    blueslip.clear_test_data();
-    assert.equal(util.get_message_topic({topic: 'bar'}), 'bar');
 });
 
 run_test('dumb_strcmp', () => {

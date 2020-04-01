@@ -38,8 +38,9 @@ zulip(config).then((client) => {
 // Send a private message
 zulip(config).then((client) => {
     // Send a private message
+    const user_id = 9;
     const params = {
-        to: 'hamlet@example.com',
+        to: [user_id],
         type: 'private',
         content: 'With mirth and laughter let old wrinkles come.',
     }
@@ -64,7 +65,7 @@ curl -X POST {{ api_url }}/v1/messages \
 curl -X POST {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "type=private" \
-    -d "to=hamlet@example.com" \
+    -d "to=[9]" \
     -d $"content=With mirth and laughter let old wrinkles come."
 ```
 

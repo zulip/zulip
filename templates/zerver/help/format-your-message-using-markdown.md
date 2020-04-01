@@ -108,7 +108,7 @@ You can also use `~~~` to start codeblocks, or just indent the code 4 or more sp
 
 Zulip supports syntax highlighting for hundreds of languages, and a
 typeahead will pop up when you start typing after the ` ``` `. If you can't
-find your language, search for it [here](http://pygments.org/docs/lexers)
+find your language, search for it [here](https://pygments.org/docs/lexers/)
 and try the **short names** listed for the lexers for your language.
 
 ## Latex

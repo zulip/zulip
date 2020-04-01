@@ -12,14 +12,9 @@ set_global('home_msg_list', {
     select_id: noop,
     selected_id: function () {return 1;},
 });
-set_global('echo', {
-    process_from_server: function (messages) {
-        return messages;
-    },
-});
 
 set_global('markdown', {
-    set_realm_filters: noop,
+    update_realm_filter_rules: noop,
 });
 
 set_global('notifications', {
@@ -63,12 +58,12 @@ set_global('settings_exports', {
 });
 
 // page_params is highly coupled to dispatching now
-set_global('page_params', {test_suite: false});
+set_global('page_params', {
+    test_suite: false,
+    is_admin: true,
+    realm_description: 'already set description',
+});
 const page_params = global.page_params;
-
-// alert_words is coupled to dispatching in the sense
-// that we write directly to alert_words.words
-zrequire('alert_words');
 
 // We access various msg_list object to rerender them
 set_global('current_msg_list', {rerender: noop});
@@ -86,7 +81,12 @@ set_global('blueslip', {
     },
 });
 
-// notify_server_message_read requires message_store and these dependencies.
+set_global('overlays', {
+    streams_open: () => true,
+});
+
+// For data-oriented modules, just use them, don't stub them.
+zrequire('alert_words');
 zrequire('unread');
 zrequire('topic_data');
 zrequire('stream_list');
@@ -94,9 +94,12 @@ zrequire('message_flags');
 zrequire('message_store');
 zrequire('people');
 zrequire('starred_messages');
-zrequire('util');
 zrequire('user_status');
+zrequire('subs');
+zrequire('stream_ui_updates');
+
 zrequire('server_events_dispatch');
+zrequire('panels');
 
 function dispatch(ev) {
     server_events_dispatch.dispatch_normal_event(ev);
@@ -240,6 +243,13 @@ const event_fixtures = {
         op: 'update',
         property: 'bot_creation_policy',
         value: 1,
+    },
+
+    realm__update__email_addresses_visibility: {
+        type: 'realm',
+        op: 'update',
+        property: 'email_address_visibility',
+        value: 3,
     },
 
     realm__update__disallow_disposable_email_addresses: {
@@ -740,15 +750,23 @@ const with_overrides = global.with_overrides; // make lint happy
 
 with_overrides(function (override) {
     // alert_words
+    assert(!alert_words.has_alert_word('fire'));
+    assert(!alert_words.has_alert_word('lunch'));
+
     override('alert_words_ui.render_alert_words_ui', noop);
     const event = event_fixtures.alert_words;
     dispatch(event);
-    assert_same(global.alert_words.words, ['fire', 'lunch']);
 
+    assert.deepEqual(
+        alert_words.get_word_list(),
+        ['fire', 'lunch']
+    );
+    assert(alert_words.has_alert_word('fire'));
+    assert(alert_words.has_alert_word('lunch'));
 });
 
 with_overrides(function (override) {
-    // attachements
+    // attachments
     const event = event_fixtures.attachment;
     global.with_stub(function (stub) {
         override('attachments_ui.update_attachments', stub.f);
@@ -889,11 +907,11 @@ with_overrides(function (override) {
     // realm
     function test_realm_boolean(event, parameter_name) {
         page_params[parameter_name] = true;
-        event = _.clone(event);
+        event = { ...event };
         event.value = false;
         dispatch(event);
         assert.equal(page_params[parameter_name], false);
-        event = _.clone(event);
+        event = { ...event };
         event.value = true;
         dispatch(event);
         assert.equal(page_params[parameter_name], true);
@@ -929,6 +947,11 @@ with_overrides(function (override) {
 
     event = event_fixtures.realm__update__disallow_disposable_email_addresses;
     test_realm_boolean(event, 'realm_disallow_disposable_email_addresses');
+
+    event = event_fixtures.realm__update__email_addresses_visibility;
+    override('stream_ui_updates.update_subscribers_list', noop);
+    dispatch(event);
+    assert_same(page_params.realm_email_address_visibility, 3);
 
     event = event_fixtures.realm__update_notifications_stream_id;
     override('settings_org.render_notifications_stream_ui', noop);
@@ -1155,7 +1178,7 @@ with_overrides(function (override) {
         override('subs.add_sub_to_table', noop);
         dispatch(event);
         const args = stub.get_args('streams');
-        assert_same(_.pluck(args.streams, 'stream_id'), [42, 99]);
+        assert_same(args.streams.map(stream => stream.stream_id), [42, 99]);
     });
 
     // stream delete
@@ -1163,7 +1186,7 @@ with_overrides(function (override) {
     global.with_stub(function (stub) {
         override('subs.remove_stream', noop);
         override('stream_data.delete_sub', noop);
-        override('settings_streams.remove_default_stream', noop);
+        override('settings_streams.update_default_streams_table', noop);
         override('stream_data.remove_default_stream', noop);
 
         override('stream_data.get_sub_by_id', function (id) {
@@ -1501,7 +1524,7 @@ with_overrides(function (override) {
 });
 
 with_overrides(function (override) {
-    // attachements
+    // attachments
     let event = event_fixtures.user_status__set_away;
     global.with_stub(function (stub) {
         override('activity.on_set_away', stub.f);

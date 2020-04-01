@@ -1,5 +1,6 @@
 import "core-js/features/promise";
 import "core-js/features/symbol";
+import "../../../tools/debug-require";
 import "jquery/dist/jquery.js";
 import "underscore/underscore.js";
 import "../page_params.js";
@@ -18,3 +19,5 @@ import "font-awesome/css/font-awesome.css";
 import "../../assets/icons/zulip-icons.font.js";
 import "source-sans-pro/source-sans-pro.css";
 import "../../styles/pygments.scss";
+import "@uppy/core/dist/style.css";
+import "@uppy/progress-bar/dist/style.css";

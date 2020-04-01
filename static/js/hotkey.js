@@ -1,3 +1,5 @@
+const emoji_codes = require("../generated/emoji/emoji_codes.json");
+
 function do_narrow_action(action) {
     action(current_msg_list.selected_id(), {trigger: 'hotkey'});
     return true;
@@ -535,7 +537,7 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
-    if (menu_dropdown_hotkeys.indexOf(event_name) !== -1) {
+    if (menu_dropdown_hotkeys.includes(event_name)) {
         if (popovers.actions_popped()) {
             popovers.actions_menu_handle_keyboard(event_name);
             return true;

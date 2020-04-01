@@ -103,16 +103,6 @@ exports.toggle_pin_to_top_stream = function (sub) {
     stream_edit.set_stream_property(sub, 'pin_to_top', !sub.pin_to_top);
 };
 
-exports.maybe_update_realm_default_stream_name  = function (stream_id, new_name) {
-    const idx = _.findIndex(page_params.realm_default_streams, function (stream) {
-        return stream.stream_id === stream_id;
-    });
-    if (idx === -1) {
-        return;
-    }
-    page_params.realm_default_streams[idx].name = new_name;
-};
-
 exports.is_subscribed_stream_tab_active = function () {
     // Returns true if "Subscribed" tab in stream settings is open
     // otherwise false.
@@ -131,9 +121,6 @@ exports.update_stream_name = function (sub, new_name) {
 
     // Update the left sidebar.
     stream_list.rename_stream(sub, new_name);
-
-    // Update the default streams page in organization settings.
-    exports.maybe_update_realm_default_stream_name(stream_id, new_name);
 
     // Update the stream settings
     stream_edit.update_stream_name(sub, new_name);
@@ -290,11 +277,11 @@ exports.show_active_stream_in_left_panel = function () {
 };
 
 exports.add_tooltips_to_left_panel = function () {
-    _.each($("#subscriptions_table .stream-row"), function (row) {
+    for (const row of $("#subscriptions_table .stream-row")) {
         $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
             placement: 'left', animation: false,
         });
-    });
+    }
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
@@ -358,7 +345,7 @@ function get_stream_id_buckets(stream_ids, query) {
         other: [],
     };
 
-    _.each(stream_ids, function (stream_id) {
+    for (const stream_id of stream_ids) {
         const sub = stream_data.get_sub_by_id(stream_id);
         const match_status = triage_stream(query, sub);
 
@@ -369,7 +356,7 @@ function get_stream_id_buckets(stream_ids, query) {
         } else {
             buckets.other.push(stream_id);
         }
-    });
+    }
 
     stream_data.sort_for_stream_settings(buckets.name);
     stream_data.sort_for_stream_settings(buckets.desc);
@@ -400,50 +387,52 @@ exports.filter_table = function (query) {
         return parseInt($(row).attr('data-stream-id'), 10);
     }
 
-    const widgets = {};
+    const widgets = new Map();
     const streams_list_scrolltop = ui.get_scroll_element($(".streams-list")).scrollTop();
 
     const stream_ids = [];
-    _.each($("#subscriptions_table .stream-row"), function (row) {
+
+    for (const row of $("#subscriptions_table .stream-row")) {
         const stream_id = stream_id_for_row(row);
         stream_ids.push(stream_id);
-    });
+    }
 
     const buckets = get_stream_id_buckets(stream_ids, query);
 
     // If we just re-built the DOM from scratch we wouldn't need
     // all this hidden/notdisplayed logic.
-    const hidden_ids = {};
-    _.each(buckets.other, function (stream_id) {
-        hidden_ids[stream_id] = true;
-    });
+    const hidden_ids = new Set();
 
-    _.each($("#subscriptions_table .stream-row"), function (row) {
+    for (const stream_id of buckets.other) {
+        hidden_ids.add(stream_id);
+    }
+
+    for (const row of $("#subscriptions_table .stream-row")) {
         const stream_id = stream_id_for_row(row);
 
         // Below code goes away if we don't do sort-DOM-in-place.
-        if (hidden_ids[stream_id]) {
+        if (hidden_ids.has(stream_id)) {
             $(row).addClass('notdisplayed');
         } else {
             $(row).removeClass('notdisplayed');
         }
 
-        widgets[stream_id] = $(row).detach();
-    });
+        widgets.set(stream_id, $(row).detach());
+    }
 
     exports.add_tooltips_to_left_panel();
 
     ui.reset_scrollbar($("#subscription_overlay .streams-list"));
 
-    const all_stream_ids = [].concat(
-        buckets.name,
-        buckets.desc,
-        buckets.other
-    );
+    const all_stream_ids = [
+        ...buckets.name,
+        ...buckets.desc,
+        ...buckets.other,
+    ];
 
-    _.each(all_stream_ids, function (stream_id) {
-        ui.get_content_element($('#subscriptions_table .streams-list')).append(widgets[stream_id]);
-    });
+    for (const stream_id of all_stream_ids) {
+        ui.get_content_element($('#subscriptions_table .streams-list')).append(widgets.get(stream_id));
+    }
 
     exports.maybe_reset_right_panel();
 

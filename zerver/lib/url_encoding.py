@@ -97,3 +97,10 @@ def near_pm_message_url(realm: Realm,
     ]
     full_url = '/'.join(parts)
     return full_url
+
+def add_query_to_redirect_url(original_url: str, query: str) -> str:
+    return original_url + "?" + query
+
+def add_query_arg_to_redirect_url(original_url: str, query_arg: str) -> str:
+    assert '?' in original_url
+    return original_url + "&" + query_arg

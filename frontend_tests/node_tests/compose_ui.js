@@ -7,7 +7,6 @@ set_global('document', {
 });
 
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 set_global('blueslip', {});
 
 const alice = {
@@ -21,8 +20,8 @@ const bob = {
     full_name: 'Bob',
 };
 
-global.people.add_in_realm(alice);
-global.people.add_in_realm(bob);
+people.add(alice);
+people.add(bob);
 
 const noop = function () {};
 

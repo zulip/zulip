@@ -39,7 +39,7 @@ run_test("initialize", () => {
         if (form_name === "autopay") {
             assert.equal(stripe_token, "stripe_add_card_token");
         } else if (form_name === "invoice") {
-            assert.equal(stripe_token, null);
+            assert.equal(stripe_token, undefined);
         } else {
             throw Error("Unhandled case");
         }
