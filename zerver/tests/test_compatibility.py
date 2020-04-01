@@ -1,3 +1,5 @@
+import mock
+
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.views.compatibility import find_mobile_os, version_lt, is_outdated_desktop_app
 
@@ -96,8 +98,15 @@ class CompatibilityTest(ZulipTestCase):
     def test_insecure_desktop_app(self) -> None:
         self.assertEqual(is_outdated_desktop_app('ZulipDesktop/0.5.2 (Mac)'), (True, True, True))
         self.assertEqual(is_outdated_desktop_app('ZulipElectron/2.3.82 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/2.3.82 Chrome/61.0.3163.100 Electron/2.0.9 Safari/537.36'), (True, True, True))
-        self.assertEqual(is_outdated_desktop_app('ZulipElectron/4.0.0 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36'), (True, False, False))
-        self.assertEqual(is_outdated_desktop_app('ZulipElectron/4.0.3 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36'), (False, False, False))
+        self.assertEqual(is_outdated_desktop_app('ZulipElectron/4.0.0 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36'), (True, True, False))
+
+        self.assertEqual(is_outdated_desktop_app('ZulipElectron/4.0.3 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36'), (True, True, False))
+
+        # Verify what happens if DESKTOP_MINIMUM_VERSION < v < DESKTOP_WARNING_VERSION
+        with mock.patch('zerver.views.compatibility.DESKTOP_MINIMUM_VERSION', '4.0.3'):
+            self.assertEqual(is_outdated_desktop_app('ZulipElectron/4.0.3 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36'), (True, False, False))
+
+        self.assertEqual(is_outdated_desktop_app('ZulipElectron/5.0.0 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36'), (False, False, False))
 
         self.assertEqual(is_outdated_desktop_app('Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'), (False, False, False))
 
