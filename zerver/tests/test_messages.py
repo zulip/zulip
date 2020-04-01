@@ -669,13 +669,13 @@ class ExtractTest(TestCase):
             123,
         )
 
-        with self.assertRaisesRegex(ValueError, 'Invalid data type for stream'):
+        with self.assertRaisesRegex(JsonableError, 'Invalid data type for stream'):
             extract_stream_indicator('{}')
 
-        with self.assertRaisesRegex(ValueError, 'Invalid data type for stream'):
+        with self.assertRaisesRegex(JsonableError, 'Invalid data type for stream'):
             extract_stream_indicator('[{}]')
 
-        with self.assertRaisesRegex(ValueError, 'Expected exactly one stream'):
+        with self.assertRaisesRegex(JsonableError, 'Expected exactly one stream'):
             extract_stream_indicator('[1,2,"general"]')
 
     def test_extract_private_recipients_emails(self) -> None:
@@ -707,11 +707,11 @@ class ExtractTest(TestCase):
 
         # Invalid data
         s = ujson.dumps(dict(color='red'))
-        with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
+        with self.assertRaisesRegex(JsonableError, 'Invalid data type for recipients'):
             extract_private_recipients(s)
 
         s = ujson.dumps([{}])
-        with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
+        with self.assertRaisesRegex(JsonableError, 'Invalid data type for recipients'):
             extract_private_recipients(s)
 
         # Empty list
@@ -719,7 +719,7 @@ class ExtractTest(TestCase):
 
         # Heterogeneous lists are not supported
         mixed = ujson.dumps(['eeshan@example.com', 3, 4])
-        with self.assertRaisesRegex(TypeError, 'Recipient lists may contain emails or user IDs, but not both.'):
+        with self.assertRaisesRegex(JsonableError, 'Recipient lists may contain emails or user IDs, but not both.'):
             extract_private_recipients(mixed)
 
     def test_extract_recipient_ids(self) -> None:
@@ -730,12 +730,12 @@ class ExtractTest(TestCase):
 
         # Invalid data
         ids = ujson.dumps(dict(recipient=12))
-        with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
+        with self.assertRaisesRegex(JsonableError, 'Invalid data type for recipients'):
             extract_private_recipients(ids)
 
         # Heterogeneous lists are not supported
         mixed = ujson.dumps([3, 4, 'eeshan@example.com'])
-        with self.assertRaisesRegex(TypeError, 'Recipient lists may contain emails or user IDs, but not both.'):
+        with self.assertRaisesRegex(JsonableError, 'Recipient lists may contain emails or user IDs, but not both.'):
             extract_private_recipients(mixed)
 
 class PersonalMessagesTest(ZulipTestCase):
