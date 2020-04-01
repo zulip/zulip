@@ -54,10 +54,10 @@ class RateLimitedObject(ABC):
             # Pass information about what kind of entity got limited in the exception:
             raise RateLimited(str(time))
 
-        calls_remaining, time_reset = self.api_calls_left()
+        calls_remaining, seconds_until_reset = self.api_calls_left()
 
         request._ratelimits_applied[-1].remaining = calls_remaining
-        request._ratelimits_applied[-1].secs_to_freedom = time_reset
+        request._ratelimits_applied[-1].secs_to_freedom = seconds_until_reset
 
     def block_access(self, seconds: int) -> None:
         "Manually blocks an entity for the desired number of seconds"
@@ -212,7 +212,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         else:
             time_reset = now
 
-        return calls_left, time_reset
+        return calls_left, time_reset - now
 
     @classmethod
     def is_ratelimited(cls, entity_key: str, rules: List[Tuple[int, int]]) -> Tuple[bool, float]:
