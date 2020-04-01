@@ -18,8 +18,7 @@ from zerver.lib.actions import do_change_password, email_not_system_bot
 from zerver.lib.email_validation import email_allowed_for_realm, \
     validate_email_not_already_in_realm
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
-from zerver.lib.rate_limiter import RateLimited, get_rate_limit_result_from_request, \
-    RateLimitedObject
+from zerver.lib.rate_limiter import RateLimited, RateLimitedObject
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
@@ -339,9 +338,7 @@ class OurAuthenticationForm(AuthenticationForm):
                 self.user_cache = authenticate(request=self.request, username=username, password=password,
                                                realm=realm, return_data=return_data)
             except RateLimited as e:
-                entity_type = str(e)
-                secs_to_freedom = int(get_rate_limit_result_from_request(self.request,
-                                                                         entity_type).secs_to_freedom)
+                secs_to_freedom = int(float(str(e)))
                 raise ValidationError(AUTHENTICATION_RATE_LIMITED_ERROR % (secs_to_freedom,))
 
             if return_data.get("inactive_realm"):
