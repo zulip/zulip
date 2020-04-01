@@ -14,6 +14,8 @@ sanity_check.check_venv(__file__)
 import django
 import requests
 
+MAX_SERVER_WAIT = 90
+
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if TOOLS_DIR not in sys.path:
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
@@ -45,7 +47,8 @@ def server_is_up(server, log_file):
     assert_server_running(server, log_file)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
-        return requests.get('http://127.0.0.1:9981/accounts/home').status_code == 200
+        # Note that zulipdev.com is mapped via DNS to 127.0.0.1.
+        return requests.get('http://zulipdev.com:9981/accounts/home').status_code == 200
     except Exception:
         return False
 
@@ -78,11 +81,14 @@ def test_server_running(force: bool=False, external_host: str='testserver',
         sys.stdout.write('\nWaiting for test server (may take a while)')
         if not dots:
             sys.stdout.write('\n\n')
+        t = time.time()
         while not server_is_up(server, log_file):
             if dots:
                 sys.stdout.write('.')
                 sys.stdout.flush()
-            time.sleep(0.1)
+            time.sleep(0.4)
+            if time.time() - t > MAX_SERVER_WAIT:
+                raise Exception('Timeout waiting for server')
         sys.stdout.write('\n\n--- SERVER IS UP! ---\n\n')
 
         # DO OUR ACTUAL TESTING HERE!!!

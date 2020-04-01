@@ -18,7 +18,7 @@ class Command(ZulipBaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         try:
-            # first check if the db has been initalized
+            # first check if the db has been initialized
             Realm.objects.first()
         except ProgrammingError:
             raise CommandError("The Zulip database does not appear to exist. "

@@ -13,10 +13,6 @@ const FoldDict = require('./fold_dict').FoldDict;
 // See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html
 // for more details on how this system is designed.
 
-exports.suppress_unread_counts = true;
-exports.set_suppress_unread_counts = function (value) {
-    exports.suppress_unread_counts = value;
-};
 exports.messages_read_in_narrow = false;
 exports.set_messages_read_in_narrow = function (value) {
     exports.messages_read_in_narrow = value;
@@ -159,7 +155,9 @@ exports.unread_pm_counter = (function () {
         const ids = [];
 
         for (const id_set of bucketer.values()) {
-            ids.push(...Array.from(id_set));
+            for (const id of id_set) {
+                ids.push(id);
+            }
         }
 
         return util.sorted_ids(ids);
@@ -331,9 +329,11 @@ exports.unread_topic_counter = (function () {
 
         const ids = [];
         const sub = stream_data.get_sub_by_id(stream_id);
-        for (const [topic, msgs] of per_stream_bucketer) {
+        for (const [topic, id_set] of per_stream_bucketer) {
             if (sub && !muting.is_topic_muted(stream_id, topic)) {
-                ids.push(...Array.from(msgs));
+                for (const id of id_set) {
+                    ids.push(id);
+                }
             }
         }
 

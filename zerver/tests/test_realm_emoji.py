@@ -26,7 +26,7 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_list(self) -> None:
         emoji_author = self.example_user('iago')
-        self.login(emoji_author.email)
+        self.login_user(emoji_author)
         self.create_test_emoji('my_emoji', emoji_author)
 
         result = self.client_get("/json/realm/emoji")
@@ -35,8 +35,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertEqual(len(result.json()["emoji"]), 2)
 
     def test_list_no_author(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         realm = get_realm('zulip')
         realm_emoji = self.create_test_emoji_with_no_author('my_emoji', realm)
 
@@ -50,8 +49,7 @@ class RealmEmojiTest(ZulipTestCase):
     def test_list_admins_only(self) -> None:
         # Test that realm emoji list is public and realm emojis
         # having no author are also there in the list.
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
@@ -65,8 +63,9 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertIsNone(test_emoji['author'])
 
     def test_upload(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        user = self.example_user('iago')
+        email = user.email
+        self.login_user(user)
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
             result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
@@ -92,24 +91,21 @@ class RealmEmojiTest(ZulipTestCase):
         )
 
     def test_upload_exception(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
             result = self.client_post('/json/realm/emoji/my_em*oji', info=emoji_data)
         self.assert_json_error(result, 'Invalid characters in emoji name')
 
     def test_upload_uppercase_exception(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
             result = self.client_post('/json/realm/emoji/my_EMoji', info=emoji_data)
         self.assert_json_error(result, 'Invalid characters in emoji name')
 
     def test_upload_admins_only(self) -> None:
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
@@ -119,8 +115,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_upload_anyone(self) -> None:
-        email = self.example_email('othello')
-        self.login(email)
+        self.login('othello')
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = False
         realm.save()
@@ -130,8 +125,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_emoji_upload_by_guest_user(self) -> None:
-        email = self.example_email('polonius')
-        self.login(email)
+        self.login('polonius')
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
             result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
@@ -139,7 +133,7 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_delete(self) -> None:
         emoji_author = self.example_user('iago')
-        self.login(emoji_author.email)
+        self.login_user(emoji_author)
         realm_emoji = self.create_test_emoji('my_emoji', emoji_author)
         result = self.client_delete('/json/realm/emoji/my_emoji')
         self.assert_json_success(result)
@@ -154,8 +148,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertEqual(test_emoji["deactivated"], True)
 
     def test_delete_no_author(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         realm = get_realm('zulip')
         self.create_test_emoji_with_no_author('my_emoji', realm)
         result = self.client_delete('/json/realm/emoji/my_emoji')
@@ -163,7 +156,7 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_delete_admins_only(self) -> None:
         emoji_author = self.example_user('othello')
-        self.login(emoji_author.email)
+        self.login_user(emoji_author)
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
@@ -180,46 +173,42 @@ class RealmEmojiTest(ZulipTestCase):
         realm.save()
 
         self.create_test_emoji('my_emoji_1', emoji_author)
-        self.login(emoji_author.email)
+        self.login_user(emoji_author)
         result = self.client_delete("/json/realm/emoji/my_emoji_1")
         self.assert_json_success(result)
         self.logout()
 
         self.create_test_emoji('my_emoji_2', emoji_author)
-        self.login(self.example_email('iago'))
+        self.login('iago')
         result = self.client_delete("/json/realm/emoji/my_emoji_2")
         self.assert_json_success(result)
         self.logout()
 
         self.create_test_emoji('my_emoji_3', emoji_author)
-        self.login(self.example_email('cordelia'))
+        self.login('cordelia')
         result = self.client_delete("/json/realm/emoji/my_emoji_3")
         self.assert_json_error(result, 'Must be an organization administrator or emoji author')
 
     def test_delete_exception(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         result = self.client_delete("/json/realm/emoji/invalid_emoji")
         self.assert_json_error(result, "Emoji 'invalid_emoji' does not exist")
 
     def test_multiple_upload(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         with get_test_image_file('img.png') as fp1, get_test_image_file('img.png') as fp2:
             result = self.client_post('/json/realm/emoji/my_emoji', {'f1': fp1, 'f2': fp2})
         self.assert_json_error(result, 'You must upload exactly one file.')
 
     def test_emoji_upload_file_size_error(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         with get_test_image_file('img.png') as fp:
             with self.settings(MAX_EMOJI_FILE_SIZE=0):
                 result = self.client_post('/json/realm/emoji/my_emoji', {'file': fp})
         self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MB')
 
     def test_upload_already_existed_emoji(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
             result = self.client_post('/json/realm/emoji/green_tick', info=emoji_data)
@@ -227,8 +216,7 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_reupload(self) -> None:
         # An user should be able to reupload an emoji with same name.
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
             result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
@@ -248,8 +236,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertEqual(len(emojis), 3)
 
     def test_failed_file_upload(self) -> None:
-        email = self.example_email('iago')
-        self.login(email)
+        self.login('iago')
         with mock.patch('zerver.lib.upload.write_local_file', side_effect=Exception()):
             with get_test_image_file('img.png') as fp1:
                 emoji_data = {'f1': fp1}
@@ -262,13 +249,13 @@ class RealmEmojiTest(ZulipTestCase):
         # other user B.
         emoji_author_1 = self.example_user('cordelia')
         self.create_test_emoji('test_emoji', emoji_author_1)
-        self.login(emoji_author_1.email)
+        self.login_user(emoji_author_1)
         result = self.client_delete('/json/realm/emoji/test_emoji')
         self.assert_json_success(result)
 
         emoji_author_2 = self.example_user('othello')
         self.create_test_emoji('test_emoji', emoji_author_2)
-        self.login(emoji_author_2.email)
+        self.login_user(emoji_author_2)
         result = self.client_delete('/json/realm/emoji/test_emoji')
         self.assert_json_success(result)
 
@@ -285,6 +272,6 @@ class RealmEmojiTest(ZulipTestCase):
 
         emoji_author_2 = self.example_user('othello')
         self.create_test_emoji('test_emoji', emoji_author_2)
-        self.login(emoji_author_2.email)
+        self.login_user(emoji_author_2)
         result = self.client_delete('/json/realm/emoji/test_emoji')
         self.assert_json_success(result)

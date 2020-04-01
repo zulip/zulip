@@ -91,7 +91,9 @@ run_test('process_from_server for differently rendered messages', () => {
 
 run_test('build_display_recipient', () => {
     page_params.user_id = 123;
-    page_params.realm_users = [
+
+    const params = {};
+    params.realm_users = [
         {
             user_id: 123,
             full_name: "Iago",
@@ -103,9 +105,9 @@ run_test('build_display_recipient', () => {
             user_id: 21,
         },
     ];
-    page_params.realm_non_active_users = [];
-    page_params.cross_realm_bots = [];
-    people.initialize();
+    params.realm_non_active_users = [];
+    params.cross_realm_bots = [];
+    people.initialize(page_params.user_id, params);
 
     let message = {
         type: "stream",
@@ -160,16 +162,18 @@ run_test('insert_local_message', () => {
     const local_id_float = 1;
 
     page_params.user_id = 123;
-    page_params.realm_users = [
+
+    const params = {};
+    params.realm_users = [
         {
             user_id: 123,
             full_name: "Iago",
             email: "iago@zulip.com",
         },
     ];
-    page_params.realm_non_active_users = [];
-    page_params.cross_realm_bots = [];
-    people.initialize();
+    params.realm_non_active_users = [];
+    params.cross_realm_bots = [];
+    people.initialize(page_params.user_id, params);
 
     let apply_markdown_called = false;
     let add_topic_links_called = false;

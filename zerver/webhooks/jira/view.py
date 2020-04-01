@@ -18,6 +18,9 @@ IGNORED_EVENTS = [
     'attachment_created',
     'issuelink_deleted',
     'sprint_started',
+    'sprint_closed',
+    'worklog_created',
+    'worklog_updated',
 ]
 
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[UserProfile]:
@@ -125,9 +128,27 @@ def get_issue_author(payload: Dict[str, Any]) -> str:
     return get_in(payload, ['user', 'displayName'])
 
 def get_issue_id(payload: Dict[str, Any]) -> str:
+    if 'issue' not in payload:
+        # Some ancient version of Jira or one of its extensions posts
+        # comment_created events without an "issue" element.  For
+        # these, the best we can do is extract the Jira-intenral
+        # issue number and use that in the topic.
+        #
+        # Users who want better formatting can upgrade Jira.
+        return payload['comment']['self'].split('/')[-3]
+
     return get_in(payload, ['issue', 'key'])
 
 def get_issue_title(payload: Dict[str, Any]) -> str:
+    if 'issue' not in payload:
+        # Some ancient version of Jira or one of its extensions posts
+        # comment_created events without an "issue" element.  For
+        # these, the best we can do is extract the Jira-intenral
+        # issue number and use that in the topic.
+        #
+        # Users who want better formatting can upgrade Jira.
+        return 'Upgrade Jira to get the issue title here.'
+
     return get_in(payload, ['issue', 'fields', 'summary'])
 
 def get_issue_subject(payload: Dict[str, Any]) -> str:
@@ -253,26 +274,29 @@ def normalize_comment(comment: str) -> str:
     return normalized_comment
 
 def handle_comment_created_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+    title = get_issue_title(payload)
     return "{author} commented on issue: *\"{title}\"\
 *\n``` quote\n{comment}\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
-        title = payload["issue"]["fields"]["summary"],
+        title = title,
         comment = normalize_comment(payload["comment"]["body"])
     )
 
 def handle_comment_updated_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+    title = get_issue_title(payload)
     return "{author} updated their comment on issue: *\"{title}\"\
 *\n``` quote\n{comment}\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
-        title = payload["issue"]["fields"]["summary"],
+        title = title,
         comment = normalize_comment(payload["comment"]["body"])
     )
 
 def handle_comment_deleted_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+    title = get_issue_title(payload)
     return "{author} deleted their comment on issue: *\"{title}\"\
 *\n``` quote\n~~{comment}~~\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
-        title = payload["issue"]["fields"]["summary"],
+        title = title,
         comment = normalize_comment(payload["comment"]["body"])
     )
 
@@ -297,8 +321,6 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
                      payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
 
     event = get_event_type(payload)
-    subject = get_issue_subject(payload)
-
     if event in IGNORED_EVENTS:
         return json_success()
 
@@ -307,6 +329,7 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
     if content_func is None:
         raise UnexpectedWebhookEventType('Jira', event)
 
+    subject = get_issue_subject(payload)
     content = content_func(payload, user_profile)  # type: str
 
     check_send_webhook_message(request, user_profile,

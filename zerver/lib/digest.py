@@ -212,7 +212,8 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
         logger.info("Sending digest email for user %s" % (user_profile.id,))
         # Send now, as a ScheduledEmail
         send_future_email('zerver/emails/digest', user_profile.realm, to_user_ids=[user_profile.id],
-                          from_name="Zulip Digest", from_address=FromAddress.NOREPLY, context=context)
+                          from_name="Zulip Digest", from_address=FromAddress.no_reply_placeholder,
+                          context=context)
     return None
 
 def exclude_subscription_modified_streams(user_profile: UserProfile,

@@ -1,5 +1,4 @@
 const ui = zrequire('ui');
-set_global('i18n', global.stub_i18n);
 
 set_global('navigator', {
     userAgent: '',

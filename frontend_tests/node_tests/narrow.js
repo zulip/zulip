@@ -1,4 +1,3 @@
-set_global('i18n', global.stub_i18n);
 set_global('$', global.make_zjquery());
 zrequire('hash_util');
 zrequire('hashchange');
@@ -6,7 +5,6 @@ zrequire('narrow_state');
 zrequire('people');
 zrequire('stream_data');
 zrequire('Filter', 'js/filter');
-set_global('i18n', global.stub_i18n);
 set_global('page_params', {
     stop_words: ['what', 'about'],
 });
@@ -38,37 +36,6 @@ const ray = {
     user_id: 22,
     full_name: 'Raymond',
 };
-
-run_test('stream_topic', () => {
-    set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
-
-    set_global('current_msg_list', {
-    });
-
-    global.current_msg_list.selected_message = function () {};
-
-    let stream_topic = narrow.stream_topic();
-
-    assert.deepEqual(stream_topic, {
-        stream: 'Foo',
-        topic: 'Bar',
-    });
-
-    global.current_msg_list.selected_message = function () {
-        return {
-            stream: 'Stream1',
-            topic: 'Topic1',
-        };
-    };
-
-    stream_topic = narrow.stream_topic();
-
-    assert.deepEqual(stream_topic, {
-        stream: 'Stream1',
-        topic: 'Topic1',
-    });
-
-});
 
 run_test('uris', () => {
     people.add(ray);
@@ -137,7 +104,7 @@ run_test('show_empty_narrow_message', () => {
     narrow.show_empty_narrow_message();
     assert($('#non_existing_user').visible());
 
-    people.add_in_realm(alice);
+    people.add(alice);
     set_filter([['pm-with', ['alice@example.com', 'Yo']]]);
     narrow.show_empty_narrow_message();
     assert($('#non_existing_users').visible());
@@ -235,8 +202,8 @@ run_test('show_invalid_narrow_message', () => {
     assert($('#empty_search_narrow_message').visible());
     assert.equal(display.text(), 'translated: You are searching for messages that belong to more than one topic, which is not possible.');
 
-    people.add_in_realm(ray);
-    people.add_in_realm(alice);
+    people.add(ray);
+    people.add(alice);
 
     set_filter([['sender', 'alice@example.com'], ['sender', 'ray@example.com']]);
     narrow.show_empty_narrow_message();
@@ -314,9 +281,9 @@ run_test('narrow_to_compose_target', () => {
 
     // --- Tests for PMs ---
     global.compose_state.get_message_type = () => 'private';
-    people.add_in_realm(ray);
-    people.add_in_realm(alice);
-    people.add_in_realm(me);
+    people.add(ray);
+    people.add(alice);
+    people.add(me);
 
     // Test with valid person
     global.compose_state.private_message_recipient = () => 'alice@example.com';
@@ -336,7 +303,7 @@ run_test('narrow_to_compose_target', () => {
         {operator: 'pm-with', operand: 'alice@example.com,ray@example.com'},
     ]);
 
-    // Test with some inavlid persons
+    // Test with some invalid persons
     global.compose_state.private_message_recipient = () => 'alice@example.com,random,ray@example.com';
     args.called = false;
     narrow.to_compose_target();
@@ -345,7 +312,7 @@ run_test('narrow_to_compose_target', () => {
         {operator: 'is', operand: 'private'},
     ]);
 
-    // Test with all inavlid persons
+    // Test with all invalid persons
     global.compose_state.private_message_recipient = () => 'alice,random,ray';
     args.called = false;
     narrow.to_compose_target();

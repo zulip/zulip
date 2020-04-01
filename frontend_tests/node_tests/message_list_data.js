@@ -156,12 +156,12 @@ run_test('more muting', () => {
     });
 
     assert.deepEqual(
-        _.pluck(mld._all_items, 'id'),
+        mld._all_items.map(message => message.id),
         [3, 4, 7, 8]
     );
 
     assert.deepEqual(
-        _.pluck(mld.all_messages(), 'id'),
+        mld.all_messages().map(message => message.id),
         [4, 8]
     );
 
@@ -178,12 +178,12 @@ run_test('more muting', () => {
     const more_info = mld.add_messages(more_messages);
 
     assert.deepEqual(
-        _.pluck(mld._all_items, 'id'),
+        mld._all_items.map(message => message.id),
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     );
 
     assert.deepEqual(
-        _.pluck(mld.all_messages(), 'id'),
+        mld.all_messages().map(message => message.id),
         [2, 4, 6, 8, 10]
     );
 

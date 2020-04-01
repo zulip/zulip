@@ -99,7 +99,7 @@ The following set of considerations is not comprehensive, but has a few
 principles that were applied to the current set of names. We use (strong),
 (medium), and (weak) denote how strong a consideration it is.
 
-* Even with over 1000 symbols, emoji feels suprisingly sparse as a language,
+* Even with over 1000 symbols, emoji feels surprisingly sparse as a language,
   and more often than not, if you search for something, you don't find an
   appropriate emoji for it. So a primary goal for our set of names is to
   maximize the number of situations in which the user finds an emoji that

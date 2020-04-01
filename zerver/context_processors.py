@@ -102,7 +102,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     # We can't use request.client here because we might not be using
     # an auth decorator that sets it, but we can call its helper to
     # get the same result.
-    platform = get_client_name(request, True)
+    platform = get_client_name(request)
 
     context = {
         'root_domain_landing_page': settings.ROOT_DOMAIN_LANDING_PAGE,

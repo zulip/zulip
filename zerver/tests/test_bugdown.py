@@ -216,12 +216,12 @@ class BugdownMiscTest(ZulipTestCase):
             for row in lst
         }
         self.assertEqual(by_id.get(fred2.id), dict(
-            email='fred2@example.com',
+            email=fred2.email,
             full_name='Fred Flintstone',
             id=fred2.id
         ))
         self.assertEqual(by_id.get(fred4.id), dict(
-            email='fred4@example.com',
+            email=fred4.email,
             full_name='Fred Flintstone',
             id=fred4.id
         ))
@@ -357,7 +357,7 @@ class BugdownTest(ZulipTestCase):
     def load_bugdown_tests(self) -> Tuple[Dict[str, Any], List[List[str]]]:
         test_fixtures = {}
         with open(os.path.join(os.path.dirname(__file__), 'fixtures/markdown_test_cases.json'), 'r') as f:
-            data = ujson.loads('\n'.join(f.readlines()))
+            data = ujson.load(f)
         for test in data['regular_tests']:
             test_fixtures[test['name']] = test
 
@@ -380,23 +380,22 @@ class BugdownTest(ZulipTestCase):
                           "translate_emoticons", "ignore"])
 
         for name, test in format_tests.items():
-            # Check that there aren't any unexpected keys as those are often typos
-            self.assertEqual(len(set(test.keys()) - valid_keys), 0)
-
-            # Ignore tests if specified
-            if test.get('ignore', False):
-                continue  # nocoverage
-
-            if test.get('translate_emoticons', False):
-                # Create a userprofile and send message with it.
-                user_profile = self.example_user('othello')
-                do_set_user_display_setting(user_profile, 'translate_emoticons', True)
-                msg = Message(sender=user_profile, sending_client=get_client("test"))
-                converted = render_markdown(msg, test['input'])
-            else:
-                converted = bugdown_convert(test['input'])
-
             with self.subTest(markdown_test_case=name):
+                # Check that there aren't any unexpected keys as those are often typos
+                self.assertEqual(len(set(test.keys()) - valid_keys), 0)
+                # Ignore tests if specified
+                if test.get('ignore', False):
+                    continue  # nocoverage
+
+                if test.get('translate_emoticons', False):
+                    # Create a userprofile and send message with it.
+                    user_profile = self.example_user('othello')
+                    do_set_user_display_setting(user_profile, 'translate_emoticons', True)
+                    msg = Message(sender=user_profile, sending_client=get_client("test"))
+                    converted = render_markdown(msg, test['input'])
+                else:
+                    converted = bugdown_convert(test['input'])
+
                 self.assertEqual(converted, test['expected_output'])
 
         def replaced(payload: str, url: str, phrase: str='') -> str:
@@ -1544,6 +1543,39 @@ class BugdownTest(ZulipTestCase):
                          '<p>Hey @<strong>Nonexistent User</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
 
+    def test_user_mention_atomic_string(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        realm = get_realm('zulip')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        # Create a linkifier.
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+        # Create a user that potentially interferes with the pattern.
+        test_user = create_user(email='atomic@example.com',
+                                password='whatever',
+                                realm=realm,
+                                full_name='Atomic #123',
+                                short_name='whatever')
+        content = "@**Atomic #123**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention" '
+                         'data-user-id="%s">'
+                         '@Atomic #123</span></p>' % (test_user.id,))
+        self.assertEqual(msg.mentions_user_ids, set([test_user.id]))
+        content = "@_**Atomic #123**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention silent" '
+                         'data-user-id="%s">'
+                         'Atomic #123</span></p>' % (test_user.id,))
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def create_user_group_for_test(self, user_group_name: str) -> UserGroup:
         othello = self.example_user('othello')
         return create_user_group(user_group_name, [othello], get_realm('zulip'))
@@ -1564,6 +1596,37 @@ class BugdownTest(ZulipTestCase):
                          'data-user-group-id="%s">'
                          '@support</span></p>' % (user_id,
                                                   user_group.id))
+        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
+        self.assertEqual(msg.mentions_user_group_ids, set([user_group.id]))
+
+    def test_user_group_mention_atomic_string(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        realm = get_realm('zulip')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_profile = self.example_user('hamlet')
+        # Create a linkifier.
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+        # Create a user-group that potentially interferes with the pattern.
+        user_id = user_profile.id
+        user_group = self.create_user_group_for_test('support #123')
+
+        content = "@**King Hamlet** @*support #123*"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention" '
+                         'data-user-id="%s">'
+                         '@King Hamlet</span> '
+                         '<span class="user-group-mention" '
+                         'data-user-group-id="%s">'
+                         '@support #123</span></p>' % (user_id,
+                                                       user_group.id))
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
         self.assertEqual(msg.mentions_user_group_ids, set([user_group.id]))
 
@@ -1680,6 +1743,29 @@ class BugdownTest(ZulipTestCase):
                 d=denmark
             ))
 
+    def test_topic_atomic_string(self) -> None:
+        realm = get_realm('zulip')
+        # Create a linkifier.
+        sender_user_profile = self.example_user('othello')
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+        # Create a topic link that potentially interferes with the pattern.
+        denmark = get_stream('Denmark', realm)
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**Denmark>#1234**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/.231234">#{d.name} &gt; #1234</a></p>'.format(
+                d=denmark
+            ))
+
     def test_topic_multiple(self) -> None:
         denmark = get_stream('Denmark', get_realm('zulip'))
         scotland = get_stream('Scotland', get_realm('zulip'))
@@ -1722,6 +1808,31 @@ class BugdownTest(ZulipTestCase):
             render_markdown(msg, content),
             u'<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(
                 s=uni,
+                href=href,
+            ))
+
+    def test_stream_atomic_string(self) -> None:
+        realm = get_realm('zulip')
+        # Create a linkifier.
+        sender_user_profile = self.example_user('othello')
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            realm_filter.__str__(),
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+        # Create a stream that potentially interferes with the pattern.
+        stream = Stream.objects.create(name=u'Stream #1234', realm=realm)
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = u"#**Stream #1234**"
+        href = '/#narrow/stream/{stream_id}-Stream-.231234'.format(stream_id=stream.id)
+        self.assertEqual(
+            render_markdown(msg, content),
+            u'<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(
+                s=stream,
                 href=href,
             ))
 
@@ -1858,7 +1969,7 @@ class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'
         result = self.api_post(
-            self.example_email("othello"),
+            self.example_user("othello"),
             '/api/v1/messages/render',
             dict(content=content)
         )
@@ -1870,7 +1981,7 @@ class BugdownApiTests(ZulipTestCase):
         """Determines whether we're correctly passing the realm context"""
         content = 'This mentions #**Denmark** and @**King Hamlet**.'
         result = self.api_post(
-            self.example_email("othello"),
+            self.example_user("othello"),
             '/api/v1/messages/render',
             dict(content=content)
         )
@@ -1893,7 +2004,7 @@ class BugdownErrorTests(ZulipTestCase):
             # We don't use assertRaisesRegex because it seems to not
             # handle i18n properly here on some systems.
             with self.assertRaises(JsonableError):
-                self.send_stream_message(self.example_email("othello"), "Denmark", message)
+                self.send_stream_message(self.example_user("othello"), "Denmark", message)
 
     def test_ultra_long_rendering(self) -> None:
         """A rendered message with an ultra-long lenght (> 10 * MAX_MESSAGE_LENGTH)

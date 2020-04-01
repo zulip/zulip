@@ -53,7 +53,7 @@ from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_status import get_user_info_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import (
-    Client, Message, Realm, UserProfile,
+    Client, Message, Realm, UserProfile, UserMessage,
     get_user_profile_by_id, realm_filters_for_realm,
     custom_profile_fields_for_realm, get_realm_domains,
     get_default_stream_groups, CustomProfileField, Stream
@@ -112,9 +112,12 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # The client should use get_messages() to fetch messages
         # starting with the max_message_id.  They will get messages
         # newer than that ID via get_events()
-        messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
-        if messages:
-            state['max_message_id'] = messages[0].id
+        user_messages = UserMessage.objects \
+            .filter(user_profile=user_profile) \
+            .order_by('-message_id') \
+            .values('message_id')[:1]
+        if user_messages:
+            state['max_message_id'] = user_messages[0]['message_id']
         else:
             state['max_message_id'] = -1
 
@@ -681,11 +684,12 @@ def apply_event(state: Dict[str, Any],
         if 'raw_unread_msgs' in state and event['flag'] == 'read' and event['operation'] == 'add':
             for remove_id in event['messages']:
                 remove_message_id_from_unread_mgs(state['raw_unread_msgs'], remove_id)
-        if event['flag'] == 'starred' and event['operation'] == 'add':
-            state['starred_messages'] += event['messages']
-        if event['flag'] == 'starred' and event['operation'] == 'remove':
-            state['starred_messages'] = [message for message in state['starred_messages']
-                                         if not (message in event['messages'])]
+        if event['flag'] == 'starred' and 'starred_messages' in state:
+            if event['operation'] == 'add':
+                state['starred_messages'] += event['messages']
+            if event['operation'] == 'remove':
+                state['starred_messages'] = [message for message in state['starred_messages']
+                                             if not (message in event['messages'])]
     elif event['type'] == "realm_domains":
         if event['op'] == 'add':
             state['realm_domains'].append(event['realm_domain'])
@@ -782,8 +786,8 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
     # handling perspective to do it before contacting Tornado
     check_supported_events_narrow_filter(narrow)
 
-    if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
-        # If email addresses are only available to administrators,
+    if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        # If real email addresses are not available to the user, their
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
 

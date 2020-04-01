@@ -228,15 +228,12 @@ function do_hashchange_overlay(old_hash) {
 }
 
 function hashchanged(from_reload, e) {
+    const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : state.old_hash);
+    state.old_hash = window.location.hash;
+
     if (state.is_internal_change) {
         state.is_internal_change = false;
         return;
-    }
-
-    let old_hash;
-    if (e) {
-        old_hash = "#" + (e.oldURL || state.old_hash).split(/#/).slice(1).join("");
-        state.old_hash = window.location.hash;
     }
 
     if (is_overlay_hash(window.location.hash)) {

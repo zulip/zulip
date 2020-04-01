@@ -21,7 +21,6 @@ const rewiremock = require("rewiremock/node");
 
 */
 const util = zrequire('util');
-set_global('i18n', global.stub_i18n);
 set_global('document', {
     location: {
         protocol: 'http',
@@ -32,7 +31,6 @@ set_global('csrf_token', 'whatever');
 
 set_global('$', () => {});
 set_global('resize', {});
-set_global('feature_flags', {});
 set_global('page_params', {});
 
 const ignore_modules = [
@@ -48,7 +46,6 @@ const ignore_modules = [
     'hotspots',
     'message_scroll',
     'message_viewport',
-    'night_mode',
     'panels',
     'popovers',
     'reload',
@@ -76,6 +73,7 @@ util.is_mobile = () => false;
 global.stub_templates(() => 'some-html');
 ui.get_scroll_element = element => element;
 
+zrequire('alert_words');
 zrequire('hash_util');
 zrequire('echo');
 zrequire('colorspace');

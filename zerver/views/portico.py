@@ -8,10 +8,16 @@ from zerver.context_processors import get_realm_from_request
 from zerver.decorator import redirect_to_login
 from zerver.lib.storage import static_path
 from zerver.models import Realm
+from version import LATEST_DESKTOP_VERSION
 
 def apps_view(request: HttpRequest, _: str) -> HttpResponse:
     if settings.ZILENCER_ENABLED:
-        return render(request, 'zerver/apps.html')
+        return render(request, 'zerver/apps.html',
+                      context={
+                          "page_params": {
+                              'electron_app_version': LATEST_DESKTOP_VERSION,
+                          }
+                      })
     return HttpResponseRedirect('https://zulipchat.com/apps/', status=301)
 
 def plans_view(request: HttpRequest) -> HttpResponse:

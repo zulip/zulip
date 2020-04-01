@@ -289,7 +289,7 @@ exports.get_non_default_stream_names = function () {
     subs = subs.filter(
         sub => !exports.is_default_stream_id(sub.stream_id) && (sub.subscribed || !sub.invite_only)
     );
-    const names = _.pluck(subs, 'name');
+    const names = subs.map(sub => sub.name);
     return names;
 };
 
@@ -329,46 +329,77 @@ exports.unsubscribed_subs = function () {
 };
 
 exports.subscribed_streams = function () {
-    return _.pluck(exports.subscribed_subs(), 'name');
+    return exports.subscribed_subs().map(sub => sub.name);
 };
 
 exports.get_invite_stream_data = function () {
-    const filter_stream_data = function (sub) {
+    function get_data(sub) {
         return {
             name: sub.name,
             stream_id: sub.stream_id,
             invite_only: sub.invite_only,
-            default_stream: exports.get_default_status(sub.name),
+            default_stream: default_stream_ids.has(sub.stream_id),
         };
-    };
-    const invite_stream_data = exports.subscribed_subs().map(filter_stream_data);
-    const default_stream_data = page_params.realm_default_streams.map(filter_stream_data);
+    }
 
-    // Since, union doesn't work on array of objects we are using filter
-    const is_included = new Set();
-    const streams = default_stream_data.concat(invite_stream_data).filter(sub => {
-        if (is_included.has(sub.name)) {
-            return false;
+    const streams = [];
+
+    // Invite users to all default streams...
+    for (const stream_id of default_stream_ids) {
+        const sub = subs_by_stream_id.get(stream_id);
+        streams.push(get_data(sub));
+    }
+
+    // ...plus all your subscribed streams (avoiding repeats).
+    for (const sub of exports.subscribed_subs()) {
+        if (!default_stream_ids.has(sub.stream_id)) {
+            streams.push(get_data(sub));
         }
-        is_included.add(sub.name);
-        return true;
-    });
+    }
+
     return streams;
 };
 
-exports.invite_streams = function () {
-    const invite_list = exports.subscribed_streams();
-    const default_list = _.pluck(page_params.realm_default_streams, 'name');
-    return _.union(invite_list, default_list);
-};
-
 exports.get_colors = function () {
-    return _.pluck(exports.subscribed_subs(), 'color');
+    return exports.subscribed_subs().map(sub => sub.color);
 };
 
 exports.update_subscribers_count = function (sub) {
     const count = sub.subscribers.size;
     sub.subscriber_count = count;
+};
+
+exports.potential_subscribers = function (sub) {
+    /*
+        This is a list of unsubscribed users
+        for the current stream, who the current
+        user could potentially subscribe to the
+        stream.  This may include some bots.
+
+        We currently use it for typeahead in
+        stream_edit.js.
+
+        This may be a superset of the actual
+        subscribers that you can change in some cases
+        (like if you're a guest?); we should refine this
+        going forward, especially if we use it for something
+        other than typeahead.  (The guest use case
+        may be moot now for other reasons.)
+    */
+
+    function is_potential_subscriber(person) {
+        // Use verbose style to force better test
+        // coverage, plus we may add more conditions over
+        // time.
+        if (sub.subscribers.has(person.user_id)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    return people.filter_all_users(is_potential_subscriber);
+
 };
 
 exports.update_stream_email_address = function (sub, email) {
@@ -553,7 +584,6 @@ exports.all_topics_in_cache = function (sub) {
 };
 
 exports.set_realm_default_streams = function (realm_default_streams) {
-    page_params.realm_default_streams = realm_default_streams;
     default_stream_ids.clear();
 
     realm_default_streams.forEach(function (stream) {
@@ -561,20 +591,8 @@ exports.set_realm_default_streams = function (realm_default_streams) {
     });
 };
 
-exports.get_default_stream_names = function () {
-    const streams = Array.from(default_stream_ids).map(exports.get_sub_by_id);
-    const default_stream_names = _.pluck(streams, 'name');
-    return default_stream_names;
-};
-
-exports.get_default_status = function (stream_name) {
-    const stream_id = exports.get_stream_id(stream_name);
-
-    if (!stream_id) {
-        return false;
-    }
-
-    return default_stream_ids.has(stream_id);
+exports.get_default_stream_ids = function () {
+    return Array.from(default_stream_ids);
 };
 
 exports.is_default_stream_id = function (stream_id) {
@@ -728,6 +746,38 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
     return sub;
 };
 
+exports.get_unmatched_streams_for_notification_settings = function () {
+    const subscribed_rows = exports.subscribed_subs();
+    subscribed_rows.sort((a, b) => util.strcmp(a.name, b.name));
+
+    const notification_settings = [];
+    for (const row of subscribed_rows) {
+        const settings_values = {};
+        let make_table_row = false;
+        for (const notification_name of stream_notification_settings) {
+            const prepend = notification_name === 'wildcard_mentions_notify' ? "" : "enable_stream_";
+            const default_setting = page_params[prepend + notification_name];
+            const stream_setting = exports.receives_notifications(row.name, notification_name);
+
+            settings_values[notification_name] = stream_setting;
+            if (stream_setting !== default_setting) {
+                make_table_row = true;
+            }
+        }
+        // We do not need to display the streams whose settings
+        // match with the global settings defined by the user.
+        if (make_table_row) {
+            settings_values.stream_name = row.name;
+            settings_values.stream_id = row.stream_id;
+            settings_values.invite_only = row.invite_only;
+            settings_values.is_web_public = row.is_web_public;
+
+            notification_settings.push(settings_values);
+        }
+    }
+    return notification_settings;
+};
+
 exports.get_streams_for_settings_page = function () {
     // TODO: This function is only used for copy-from-stream, so
     //       the current name is slightly misleading now, plus
@@ -788,8 +838,28 @@ exports.get_streams_for_admin = function () {
     return subs;
 };
 
-exports.initialize = function () {
-    color_data.claim_colors(page_params.subscriptions);
+exports.initialize = function (params) {
+    /*
+        We get `params` data, which is data that we "own"
+        and which has already been removed from `page_params`.
+        We only use it in this function to populate other
+        data structures.
+    */
+
+    const subscriptions = params.subscriptions;
+    const unsubscribed = params.unsubscribed;
+    const never_subscribed = params.never_subscribed;
+    const realm_default_streams = params.realm_default_streams;
+
+    /*
+        We also consume some data directly from `page_params`.
+        This data can be accessed by any other module,
+        and we consider the authoritative source to be
+        `page_params`.  Some of this data should eventually
+        be fully handled by stream_data.
+    */
+
+    color_data.claim_colors(subscriptions);
 
     function populate_subscriptions(subs, subscribed, previously_subscribed) {
         subs.forEach(function (sub) {
@@ -801,11 +871,11 @@ exports.initialize = function () {
         });
     }
 
-    exports.set_realm_default_streams(page_params.realm_default_streams);
+    exports.set_realm_default_streams(realm_default_streams);
 
-    populate_subscriptions(page_params.subscriptions, true, true);
-    populate_subscriptions(page_params.unsubscribed, false, true);
-    populate_subscriptions(page_params.never_subscribed, false, false);
+    populate_subscriptions(subscriptions, true, true);
+    populate_subscriptions(unsubscribed, false, true);
+    populate_subscriptions(never_subscribed, false, false);
 
     // Migrate the notifications stream from the new API structure to
     // what the frontend expects.
@@ -824,17 +894,9 @@ exports.initialize = function () {
     }
 
     exports.set_filter_out_inactives();
-
-    // Garbage collect data structures that were only used for initialization.
-    delete page_params.subscriptions;
-    delete page_params.unsubscribed;
-    delete page_params.never_subscribed;
 };
 
 exports.remove_default_stream = function (stream_id) {
-    page_params.realm_default_streams = page_params.realm_default_streams.filter(
-        stream => stream.stream_id !== stream_id
-    );
     default_stream_ids.delete(stream_id);
 };
 

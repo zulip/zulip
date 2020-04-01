@@ -5,7 +5,6 @@ set_global('blueslip', global.make_zblueslip());
 const noop = function () {};
 
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 
 const LazySet = zrequire('lazy_set.js').LazySet;
 
@@ -248,7 +247,7 @@ run_test('validate', () => {
 
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient', {}));
 
-    people.add_in_realm(bob);
+    people.add(bob);
     compose_state.private_message_recipient('bob@example.com');
     assert(compose.validate());
 
@@ -276,11 +275,16 @@ run_test('get_invalid_recipient_emails', () => {
         user_id: 124,
         full_name: 'Welcome Bot',
     };
-    page_params.realm_users = [];
-    page_params.realm_non_active_users = [];
-    page_params.cross_realm_bots = [welcome_bot];
+
     page_params.user_id = 30;
-    people.initialize();
+
+    const params = {};
+    params.realm_users = [];
+    params.realm_non_active_users = [];
+    params.cross_realm_bots = [welcome_bot];
+
+    people.initialize(page_params.user_id, params);
+
     compose_state.private_message_recipient('welcome-bot@example.com');
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
@@ -324,8 +328,8 @@ run_test('validate_stream_message', () => {
 });
 
 run_test('test_validate_stream_message_post_policy', () => {
-    // This test is in continuation with test_validate but it has been seperated out
-    // for better readabilty. Their relative position of execution should not be changed.
+    // This test is in continuation with test_validate but it has been separated out
+    // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
     // as `get_stream_post_policy` is reset at the end.
     page_params.is_admin = false;

@@ -337,7 +337,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
         fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True,
                                   separators=(',', ': '))
 
-        fixture.append('```')
+        fixture.append('``` json')
         fixture.extend(fixture_json.splitlines())
         fixture.append('```')
 

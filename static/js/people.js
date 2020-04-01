@@ -2,6 +2,7 @@ const util = require("./util");
 require("unorm");  // String.prototype.normalize polyfill for IE11
 const FoldDict = require('./fold_dict').FoldDict;
 const typeahead = require("../shared/js/typeahead");
+const settings_data = require("./settings_data");
 
 let people_dict;
 let people_by_name_dict;
@@ -41,6 +42,7 @@ function split_to_ints(lst) {
     return lst.split(',').map(s => parseInt(s, 10));
 }
 
+
 exports.get_by_user_id = function (user_id, ignore_missing) {
     if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
         blueslip.error('Unknown user_id in get_by_user_id: ' + user_id);
@@ -66,10 +68,15 @@ exports.get_by_email = function (email) {
     return person;
 };
 
-exports.get_realm_count = function () {
-    // This returns the number of active people in our realm.  It should
-    // exclude bots and deactivated users.
-    return active_user_dict.size;
+exports.get_bot_owner_user = function (user) {
+    const owner_id = user.bot_owner_id;
+
+    if (owner_id === undefined || owner_id === null) {
+        // This is probably a cross-realm bot.
+        return;
+    }
+
+    return exports.get_by_user_id(owner_id);
 };
 
 exports.id_matches_email_operand = function (user_id, email) {
@@ -213,16 +220,7 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
 exports.get_user_time_preferences = function (user_id) {
     const user_timezone = exports.get_by_user_id(user_id).timezone;
     if (user_timezone) {
-        if (page_params.twenty_four_hour_time) {
-            return {
-                timezone: user_timezone,
-                format: "H:mm",
-            };
-        }
-        return {
-            timezone: user_timezone,
-            format: "h:mm A",
-        };
+        return settings_data.get_time_preferences(user_timezone);
     }
 };
 
@@ -689,15 +687,41 @@ exports.filter_all_persons = function (pred) {
     return ret;
 };
 
-exports.get_realm_persons = function () {
+exports.filter_all_users = function (pred) {
+    const ret = [];
+    for (const person of active_user_dict.values()) {
+        if (pred(person)) {
+            ret.push(person);
+        }
+    }
+    return ret;
+};
+
+exports.get_realm_users = function () {
+    // includes humans and bots from your realm
     return Array.from(active_user_dict.values());
 };
 
-exports.get_active_human_persons = function () {
-    const human_persons = exports.get_realm_persons().filter(function (person)  {
-        return !person.is_bot;
-    });
-    return human_persons;
+exports.get_active_humans = function () {
+    const humans = [];
+
+    for (const user of active_user_dict.values()) {
+        if (!user.is_bot) {
+            humans.push(user);
+        }
+    }
+
+    return humans;
+};
+
+exports.get_active_human_count = function () {
+    let count = 0;
+    for (const person of active_user_dict.values()) {
+        if (!person.is_bot) {
+            count += 1;
+        }
+    }
+    return count;
 };
 
 exports.get_active_user_ids = function () {
@@ -910,7 +934,7 @@ exports.get_people_for_stream_create = function () {
     /*
         If you are thinking of reusing this function,
         a better option in most cases is to just
-        call `exports.get_realm_persons()` and then
+        call `exports.get_realm_users()` and then
         filter out the "me" user yourself as part of
         any other filtering that you are doing.
 
@@ -969,7 +993,12 @@ exports.get_mention_syntax = function (full_name, user_id, silent) {
     return mention;
 };
 
-exports.add = function add(person) {
+exports._add_user = function add(person) {
+    /*
+        This is common code to add any user, even
+        users who may be deactivated or outside
+        our realm (like cross-realm bots).
+    */
     if (person.user_id) {
         people_by_user_id_dict.set(person.user_id, person);
     } else {
@@ -987,9 +1016,9 @@ exports.add = function add(person) {
     people_by_name_dict.set(person.full_name, person);
 };
 
-exports.add_in_realm = function (person) {
+exports.add = function (person) {
     active_user_dict.set(person.user_id, person);
-    exports.add(person);
+    exports._add_user(person);
 };
 
 exports.deactivate = function (person) {
@@ -1044,7 +1073,7 @@ exports.extract_people_from_message = function (message) {
 
         exports.report_late_add(user_id, person.email);
 
-        exports.add({
+        exports._add_user({
             email: person.email,
             user_id: user_id,
             full_name: person.full_name,
@@ -1059,7 +1088,7 @@ function safe_lower(s) {
 }
 
 exports.matches_user_settings_search = function (person, value) {
-    const email = exports.email_for_user_settings(person);
+    const email = settings_data.email_for_user_settings(person);
 
     return safe_lower(person.full_name).includes(value) ||
     safe_lower(email).includes(value);
@@ -1078,18 +1107,6 @@ exports.filter_for_user_settings_search = function (persons, query) {
               See #13554 for more context.
     */
     return persons.filter(person => exports.matches_user_settings_search(person, query));
-};
-
-exports.email_for_user_settings = function (person) {
-    if (!settings_org.show_email()) {
-        return;
-    }
-
-    if (page_params.is_admin && person.delivery_email) {
-        return person.delivery_email;
-    }
-
-    return person.email;
 };
 
 exports.maybe_incr_recipient_count = function (message) {
@@ -1188,27 +1205,23 @@ exports.is_my_user_id = function (user_id) {
     return user_id === my_user_id;
 };
 
-exports.initialize = function () {
-    for (const person of page_params.realm_users) {
-        exports.add_in_realm(person);
-    }
-
-    for (const person of page_params.realm_non_active_users) {
+exports.initialize = function (my_user_id, params) {
+    for (const person of params.realm_users) {
         exports.add(person);
     }
 
-    for (const person of page_params.cross_realm_bots) {
+    for (const person of params.realm_non_active_users) {
+        exports._add_user(person);
+    }
+
+    for (const person of params.cross_realm_bots) {
         if (!people_dict.has(person.email)) {
-            exports.add(person);
+            exports._add_user(person);
         }
         cross_realm_dict.set(person.user_id, person);
     }
 
-    exports.initialize_current_user(page_params.user_id);
-
-    delete page_params.realm_users; // We are the only consumer of this.
-    delete page_params.realm_non_active_users;
-    delete page_params.cross_realm_bots;
+    exports.initialize_current_user(my_user_id);
 };
 
 window.people = exports;

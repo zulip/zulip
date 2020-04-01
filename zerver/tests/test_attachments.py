@@ -18,7 +18,7 @@ class AttachmentsTests(ZulipTestCase):
 
     def test_list_by_user(self) -> None:
         user_profile = self.example_user('cordelia')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         result = self.client_get('/json/attachments')
         self.assert_json_success(result)
         attachments = user_attachments(user_profile)
@@ -26,7 +26,7 @@ class AttachmentsTests(ZulipTestCase):
 
     def test_remove_attachment_exception(self) -> None:
         user_profile = self.example_user('cordelia')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         with mock.patch('zerver.lib.attachments.delete_message_image', side_effect=Exception()):
             result = self.client_delete('/json/attachments/{id}'.format(id=self.attachment.id))
         self.assert_json_error(result, "An error occurred while deleting the attachment. Please try again later.")
@@ -34,7 +34,7 @@ class AttachmentsTests(ZulipTestCase):
     @mock.patch('zerver.lib.attachments.delete_message_image')
     def test_remove_attachment(self, ignored: Any) -> None:
         user_profile = self.example_user('cordelia')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         result = self.client_delete('/json/attachments/{id}'.format(id=self.attachment.id))
         self.assert_json_success(result)
         attachments = user_attachments(user_profile)
@@ -42,14 +42,14 @@ class AttachmentsTests(ZulipTestCase):
 
     def test_list_another_user(self) -> None:
         user_profile = self.example_user('iago')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         result = self.client_get('/json/attachments')
         self.assert_json_success(result)
         self.assertEqual(result.json()['attachments'], [])
 
     def test_remove_another_user(self) -> None:
         user_profile = self.example_user('iago')
-        self.login(user_profile.email)
+        self.login_user(user_profile)
         result = self.client_delete('/json/attachments/{id}'.format(id=self.attachment.id))
         self.assert_json_error(result, 'Invalid attachment')
         user_profile_to_remove = self.example_user('cordelia')

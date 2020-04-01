@@ -212,7 +212,7 @@ exports.create = function (opts) {
 
             // this sends a flag that the operation wasn't completely successful,
             // which in this case is defined as some of the pills not autofilling
-            // correclty.
+            // correctly.
             if (drafts.length > 0) {
                 return false;
             }
@@ -223,7 +223,7 @@ exports.create = function (opts) {
         },
 
         items: function () {
-            return _.pluck(store.pills, 'item');
+            return store.pills.map(pill => pill.item);
         },
     };
 

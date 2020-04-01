@@ -23,6 +23,9 @@ class RemoteZulipServer(models.Model):
     def __str__(self) -> str:
         return "<RemoteZulipServer %s %s>" % (self.hostname, self.uuid[0:12])
 
+    def format_requestor_for_logs(self) -> str:
+        return "zulip-server:" + self.uuid
+
 # Variant of PushDeviceToken for a remote server.
 class RemotePushDeviceToken(AbstractPushDeviceToken):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)  # type: RemoteZulipServer

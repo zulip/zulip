@@ -147,7 +147,7 @@ to undo without going to backups.
 If you follow the processes described above, `tools/provision` and
 `tools/test-backend` should detect any changes to the declared
 migrations and run migrations on (`./manage.py migrate`) or rebuild
-the relevant database automatially as appropriate.
+the relevant database automatically as appropriate.
 
 Developing migrations can result in manual fiddling that leads to a
 broken database state, however.  For those situations, we have

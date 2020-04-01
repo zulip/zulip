@@ -60,8 +60,15 @@ except (configparser.NoSectionError, configparser.NoOptionError):
 # insufficient priority.  This is important, because Tornado is the
 # main source of user-visible downtime when we restart a Zulip server.
 if tornado_processes > 1:
-    subprocess.check_call(["supervisorctl", "restart", "zulip-tornado:*"])
+    for p in range(9800, 9800+tornado_processes):
+        # Restart Tornado processes individually for a better rate of
+        # restarts.  This also avoids behavior with restarting a whole
+        # supervisord group where if any individual process is slow to
+        # stop, the whole bundle stays stopped for an extended time.
+        logging.info("Restarting Tornado process on port %s" % (p,))
+        subprocess.check_call(["supervisorctl", "restart", "zulip-tornado:port-%s" % (p,)])
 else:
+    logging.info("Restarting Tornado process")
     subprocess.check_call(["supervisorctl", "restart", "zulip-tornado", "zulip-tornado:*"])
 
 # Restart the uWSGI and related processes via supervisorctl.

@@ -242,7 +242,7 @@ function handle_keyup(e) {
     }
 }
 
-// http://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
+// https://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
 function select_on_focus(field_id) {
     // A select event appears to trigger a focus event under certain
     // conditions in Chrome so we need to protect against infinite
@@ -470,7 +470,7 @@ exports.get_person_suggestions = function (query, opts) {
         filtered_persons = filtered_message_persons;
     } else {
         filtered_persons = filter_persons(
-            people.get_realm_persons()
+            people.get_realm_users()
         );
     }
 
@@ -777,7 +777,7 @@ exports.content_typeahead_selected = function (item, event) {
             beginning = beginning.substring(0, backticks) + item;
         }
     } else if (this.completing === 'topic_jump') {
-        // Put the cursor at the end of immediately preceeding stream mention syntax,
+        // Put the cursor at the end of immediately preceding stream mention syntax,
         // just before where the `**` at the end of the syntax.  This will delete that
         // final ** and set things up for the topic_list typeahead.
         const index = beginning.lastIndexOf('**');

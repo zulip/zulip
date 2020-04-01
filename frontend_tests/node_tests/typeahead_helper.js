@@ -1,8 +1,12 @@
-set_global('i18n', global.stub_i18n);
 set_global('page_params', {realm_is_zephyr_mirror_realm: false});
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
+
+const settings_config = zrequire('settings_config');
+page_params.realm_email_address_visibility =
+    settings_config.email_address_visibility_values.admins_only.code;
+
 
 set_global('Handlebars', global.make_handlebars());
 zrequire('recent_senders');
@@ -15,7 +19,6 @@ zrequire('hash_util');
 zrequire('marked', 'third/marked/lib/marked');
 const pygments_data = zrequire('pygments_data', 'generated/pygments_data.json');
 const actual_pygments_data = Object.assign({}, pygments_data);
-zrequire('settings_org');
 const ct = zrequire('composebox_typeahead');
 const th = zrequire('typeahead_helper');
 const LazySet = zrequire('lazy_set.js').LazySet;
@@ -199,12 +202,12 @@ const matches = [
 ];
 
 for (const person of matches) {
-    global.people.add_in_realm(person);
+    people.add(person);
 }
 
 function get_typeahead_result(query, current_stream, current_topic) {
     const result = th.sort_recipients(
-        global.people.get_realm_persons(),
+        people.get_realm_users(),
         query,
         current_stream,
         current_topic
@@ -247,7 +250,7 @@ run_test('sort_recipients', () => {
     stream_data.update_calculated_fields(dev_sub);
     stream_data.update_calculated_fields(linux_sub);
 
-    // For spliting based on whether a PM was sent
+    // For splitting based on whether a PM was sent
     global.pm_conversations.set_partner(5);
     global.pm_conversations.set_partner(6);
     global.pm_conversations.set_partner(2);
@@ -499,8 +502,8 @@ run_test('highlight_with_escaping', () => {
 });
 
 run_test('render_person when emails hidden', () => {
-    // Test render_person with regular person, under hidden email visiblity case
-    settings_org.show_email = () => false;
+    // Test render_person with regular person, under hidden email visibility case
+    page_params.is_admin = false;
     let rendered = false;
     global.stub_templates(function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
@@ -514,7 +517,7 @@ run_test('render_person when emails hidden', () => {
 });
 
 run_test('render_person', () => {
-    settings_org.show_email = () => true;
+    page_params.is_admin = true;
     // Test render_person with regular person
     let rendered = false;
     global.stub_templates(function (template_name, args) {

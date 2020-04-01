@@ -1,7 +1,5 @@
 const typeahead = zrequire('typeahead', 'shared/js/typeahead');
-set_global('i18n', global.stub_i18n);
 zrequire('compose_state');
-zrequire('ui_util');
 zrequire('pm_conversations');
 zrequire('emoji');
 set_global('Handlebars', global.make_handlebars());
@@ -242,17 +240,18 @@ const harry = {
     email: 'harry@zulip.com',
 };
 
-global.people.add_in_realm(alice);
-global.people.add_in_realm(hamlet);
-global.people.add_in_realm(othello);
-global.people.add_in_realm(cordelia);
-global.people.add_in_realm(lear);
-global.people.add_in_realm(twin1);
-global.people.add_in_realm(twin2);
-global.people.add_in_realm(gael);
-global.people.add_in_realm(hal);
-global.people.add_in_realm(harry);
-global.people.add(deactivated_user);
+people.add(alice);
+people.add(hamlet);
+people.add(othello);
+people.add(cordelia);
+people.add(lear);
+people.add(twin1);
+people.add(twin2);
+people.add(gael);
+people.add(hal);
+people.add(harry);
+people.add(deactivated_user);
+people.deactivate(deactivated_user);
 
 const hamletcharacters = {
     name: "hamletcharacters",
@@ -522,7 +521,7 @@ run_test('content_typeahead_selected', () => {
 });
 
 function sorted_names_from(subs) {
-    return _.pluck(subs, 'name').sort();
+    return subs.map(sub => sub.name).sort();
 }
 
 run_test('initialize', () => {

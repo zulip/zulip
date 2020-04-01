@@ -12,6 +12,7 @@ from analytics.models import FillState, \
     RealmCount, UserCount, last_successful_fill
 from analytics.views import rewrite_client_arrays, \
     sort_by_totals, sort_client_labels
+from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, datetime_to_timestamp
@@ -22,7 +23,7 @@ from zerver.models import Client, get_realm, MultiuseInvite
 class TestStatsEndpoint(ZulipTestCase):
     def test_stats(self) -> None:
         self.user = self.example_user('hamlet')
-        self.login(self.user.email)
+        self.login_user(self.user)
         result = self.client_get('/stats')
         self.assertEqual(result.status_code, 200)
         # Check that we get something back
@@ -30,7 +31,7 @@ class TestStatsEndpoint(ZulipTestCase):
 
     def test_guest_user_cant_access_stats(self) -> None:
         self.user = self.example_user('polonius')
-        self.login(self.user.email)
+        self.login_user(self.user)
         result = self.client_get('/stats')
         self.assert_json_error(result, "Not allowed for guest users", 400)
 
@@ -38,15 +39,15 @@ class TestStatsEndpoint(ZulipTestCase):
         self.assert_json_error(result, "Not allowed for guest users", 400)
 
     def test_stats_for_realm(self) -> None:
-        user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
 
         result = self.client_get('/stats/realm/zulip/')
         self.assertEqual(result.status_code, 302)
 
-        user_profile = self.example_user('hamlet')
-        user_profile.is_staff = True
-        user_profile.save(update_fields=['is_staff'])
+        user = self.example_user('hamlet')
+        user.is_staff = True
+        user.save(update_fields=['is_staff'])
 
         result = self.client_get('/stats/realm/not_existing_realm/')
         self.assertEqual(result.status_code, 302)
@@ -56,15 +57,15 @@ class TestStatsEndpoint(ZulipTestCase):
         self.assert_in_response("Zulip analytics for", result)
 
     def test_stats_for_installation(self) -> None:
-        user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
 
         result = self.client_get('/stats/installation')
         self.assertEqual(result.status_code, 302)
 
-        user_profile = self.example_user('hamlet')
-        user_profile.is_staff = True
-        user_profile.save(update_fields=['is_staff'])
+        user = self.example_user('hamlet')
+        user.is_staff = True
+        user.save(update_fields=['is_staff'])
 
         result = self.client_get('/stats/installation')
         self.assertEqual(result.status_code, 200)
@@ -75,7 +76,7 @@ class TestGetChartData(ZulipTestCase):
         super().setUp()
         self.realm = get_realm('zulip')
         self.user = self.example_user('hamlet')
-        self.login(self.user.email)
+        self.login_user(self.user)
         self.end_times_hour = [ceiling_to_hour(self.realm.date_created) + timedelta(hours=i)
                                for i in range(4)]
         self.end_times_day = [ceiling_to_day(self.realm.date_created) + timedelta(days=i)
@@ -293,16 +294,16 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_error_contains(result, 'No analytics data available')
 
     def test_get_chart_data_for_realm(self) -> None:
-        user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
 
         result = self.client_get('/json/analytics/chart_data/realm/zulip/',
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_error(result, "Must be an server administrator", 400)
 
-        user_profile = self.example_user('hamlet')
-        user_profile.is_staff = True
-        user_profile.save(update_fields=['is_staff'])
+        user = self.example_user('hamlet')
+        user.is_staff = True
+        user.save(update_fields=['is_staff'])
         stat = COUNT_STATS['realm_active_humans::day']
         self.insert_data(stat, [None], [])
 
@@ -315,16 +316,16 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_get_chart_data_for_installation(self) -> None:
-        user_profile = self.example_user('hamlet')
-        self.login(user_profile.email)
+        user = self.example_user('hamlet')
+        self.login_user(user)
 
         result = self.client_get('/json/analytics/chart_data/installation',
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_error(result, "Must be an server administrator", 400)
 
-        user_profile = self.example_user('hamlet')
-        user_profile.is_staff = True
-        user_profile.save(update_fields=['is_staff'])
+        user = self.example_user('hamlet')
+        user.is_staff = True
+        user.save(update_fields=['is_staff'])
         stat = COUNT_STATS['realm_active_humans::day']
         self.insert_data(stat, [None], [])
 
@@ -334,6 +335,8 @@ class TestGetChartData(ZulipTestCase):
 
 class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
+        reset_emails_in_zulip_realm()
+
         def check_hamlet_user_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<span class="label">user</span>\n', '<h3>King Hamlet</h3>',
                                              '<b>Email</b>: hamlet@zulip.com', '<b>Is active</b>: True<br>',
@@ -398,15 +401,13 @@ class TestSupportEndpoint(ZulipTestCase):
                                              '<b>Expires in</b>: 1\xa0day'
                                              ], result)
 
-        cordelia_email = self.example_email("cordelia")
-        self.login(cordelia_email)
+        self.login('cordelia')
 
         result = self.client_get("/activity/support")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
-        iago_email = self.example_email("iago")
-        self.login(iago_email)
+        self.login('iago')
 
         result = self.client_get("/activity/support")
         self.assert_in_success_response(['<input type="text" name="q" class="input-xxlarge search-query"'], result)
@@ -436,7 +437,7 @@ class TestSupportEndpoint(ZulipTestCase):
         check_lear_realm_query_result(result)
 
         self.client_post('/accounts/home/', {'email': self.nonreg_email("test")})
-        self.login(iago_email)
+        self.login('iago')
         result = self.client_get("/activity/support", {"q": self.nonreg_email("test")})
         check_preregistration_user_query_result(result, self.nonreg_email("test"))
         check_zulip_realm_query_result(result)
@@ -466,15 +467,15 @@ class TestSupportEndpoint(ZulipTestCase):
         check_zulip_realm_query_result(result)
 
     def test_change_plan_type(self) -> None:
-        cordelia = self.example_user("cordelia")
-        self.login(cordelia.email)
+        cordelia = self.example_user('cordelia')
+        self.login_user(cordelia)
 
         result = self.client_post("/activity/support", {"realm_id": "%s" % (cordelia.realm_id,), "plan_type": "2"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
         iago = self.example_user("iago")
-        self.login(iago.email)
+        self.login_user(iago)
 
         with mock.patch("analytics.views.do_change_plan_type") as m:
             result = self.client_post("/activity/support", {"realm_id": "%s" % (iago.realm_id,), "plan_type": "2"})
@@ -482,16 +483,15 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(["Plan type of Zulip Dev changed from self hosted to limited"], result)
 
     def test_attach_discount(self) -> None:
-        lear_realm = get_realm("lear")
-        cordelia_email = self.example_email("cordelia")
-        self.login(cordelia_email)
+        cordelia = self.example_user('cordelia')
+        lear_realm = get_realm('lear')
+        self.login_user(cordelia)
 
         result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "discount": "25"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
-        iago_email = self.example_email("iago")
-        self.login(iago_email)
+        self.login('iago')
 
         with mock.patch("analytics.views.attach_discount_to_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "discount": "25"})
@@ -499,16 +499,15 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(["Discount of Lear &amp; Co. changed to 25 from None"], result)
 
     def test_activate_or_deactivate_realm(self) -> None:
-        lear_realm = get_realm("lear")
-        cordelia_email = self.example_email("cordelia")
-        self.login(cordelia_email)
+        cordelia = self.example_user('cordelia')
+        lear_realm = get_realm('lear')
+        self.login_user(cordelia)
 
         result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "status": "deactivated"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
-        iago_email = self.example_email("iago")
-        self.login(iago_email)
+        self.login('iago')
 
         with mock.patch("analytics.views.do_deactivate_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "status": "deactivated"})
@@ -521,16 +520,15 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(["Realm reactivation email sent to admins of Lear"], result)
 
     def test_scrub_realm(self) -> None:
-        lear_realm = get_realm("lear")
-        cordelia_email = self.example_email("cordelia")
-        self.login(cordelia_email)
+        cordelia = self.example_user('cordelia')
+        lear_realm = get_realm('lear')
+        self.login_user(cordelia)
 
         result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "discount": "25"})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
-        iago_email = self.example_email("iago")
-        self.login(iago_email)
+        self.login('iago')
 
         with mock.patch("analytics.views.do_scrub_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": "%s" % (lear_realm.id,), "scrub_realm": "scrub_realm"})

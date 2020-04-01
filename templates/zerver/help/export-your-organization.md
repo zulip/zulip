@@ -32,6 +32,8 @@ Zulip Standard customers have access to **full export without member consent**.
 1. After a few minutes, you'll be able to download the export as a `.tar.gz`
 file from that page.
 
+1. Import the tarball using [Zulip's logical data import tool][import-only].
+
 {end_tabs}
 
 Note that generating the export can take up to an hour for organizations
@@ -47,6 +49,12 @@ with lots of messages or uploaded files.
 
 1. We will verify that you are an organization administrator, and email you
    instructions on how to collect member consent.
+
+1. The end result of that process with be an archive in the same
+   format as the public exports discussed above, including extra
+   private stream and private message data for users who gave consent.
+
+1. Import the tarball using [Zulip's logical data import tool][import-only].
 
 {end_tabs}
 
@@ -81,5 +89,5 @@ their use of such an export.
 * [Import into an on-premises installation][import-only]
 
 [production-backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
-[export-and-import]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html
+[export-and-import]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html#data-export
 [import-only]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html#import-into-a-new-zulip-server

@@ -389,7 +389,7 @@ exports.set_up = function () {
         const li = $(e.currentTarget).closest('li');
         const bot_id = parseInt(li.find('.bot_info').attr('data-user-id'), 10);
         const bot = bot_data.get(bot_id);
-        const users_list = people.get_active_human_persons();
+        const users_list = people.get_active_humans();
         $("#edit_bot").empty();
         $("#edit_bot").append(render_edit_bot({
             bot: bot,

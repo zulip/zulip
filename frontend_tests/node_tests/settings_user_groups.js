@@ -2,7 +2,6 @@ zrequire('user_pill');
 zrequire('settings_user_groups');
 
 set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
 set_global('confirm_dialog', {});
 
 const noop = function () {};
@@ -113,7 +112,7 @@ run_test('populate_user_groups', () => {
         full_name: 'Bob',
     };
 
-    people.get_realm_persons = function () {
+    people.get_realm_users = function () {
         return [iago, alice, bob];
     };
 
@@ -203,7 +202,7 @@ run_test('populate_user_groups', () => {
 
         (function test_source() {
             const result = config.source.call(fake_context, iago);
-            const emails = _.pluck(result, 'email').sort();
+            const emails = result.map(user => user.email).sort();
             assert.deepEqual(emails, [alice.email, bob.email]);
         }());
 
@@ -345,7 +344,7 @@ run_test('with_external_user', () => {
     };
 
     // We return noop because these are already tested, so we skip them
-    people.get_realm_persons = function () {
+    people.get_realm_users = function () {
         return noop;
     };
 

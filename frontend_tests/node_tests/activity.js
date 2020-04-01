@@ -8,8 +8,6 @@ const _page_params = {
     user_id: 999,
 };
 
-const _feature_flags = {};
-
 const _document = {
     hasFocus: function () {
         return true;
@@ -52,27 +50,20 @@ const _stream_popover = {
     },
 };
 
-const _reload_state = {
-    is_in_progress: () => false,
-};
-
 const _resize = {
     resize_page_components: () => {},
 };
 
-set_global('i18n', global.stub_i18n);
 set_global('padded_widget', {
     update_padding: () => {},
 });
 set_global('channel', _channel);
 set_global('compose_state', _compose_state);
 set_global('document', _document);
-set_global('feature_flags', _feature_flags);
 set_global('keydown_util', _keydown_util);
 set_global('page_params', _page_params);
 set_global('pm_list', _pm_list);
 set_global('popovers', _popovers);
-set_global('reload_state', _reload_state);
 set_global('resize', _resize);
 set_global('scroll_util', _scroll_util);
 set_global('stream_popover', _stream_popover);
@@ -80,7 +71,6 @@ set_global('ui', _ui);
 
 zrequire('compose_fade');
 set_global('Handlebars', global.make_handlebars());
-zrequire('templates');
 zrequire('unread');
 zrequire('hash_util');
 zrequire('narrow');
@@ -131,15 +121,13 @@ const zoe = {
     full_name: 'Zoe Yang',
 };
 
-const people = global.people;
-
-people.add_in_realm(alice);
-people.add_in_realm(fred);
-people.add_in_realm(jill);
-people.add_in_realm(mark);
-people.add_in_realm(norbert);
-people.add_in_realm(zoe);
-people.add_in_realm(me);
+people.add(alice);
+people.add(fred);
+people.add(jill);
+people.add(mark);
+people.add(norbert);
+people.add(zoe);
+people.add(me);
 people.initialize_current_user(me.user_id);
 
 const real_update_huddles = activity.update_huddles;
@@ -690,7 +678,6 @@ run_test('insert_unfiltered_user_with_filter', () => {
 
 run_test('realm_presence_disabled', () => {
     page_params.realm_presence_disabled = true;
-    unread.set_suppress_unread_counts(false);
 
     activity.redraw_user();
     activity.build_user_sidebar();
@@ -864,14 +851,6 @@ run_test('initialize', () => {
     assert(!activity.new_user_input);
     assert(!activity.client_is_active);
 
-    clear();
-
-    // Now execute the reload-in-progress code path
-    _reload_state.is_in_progress = function () {
-        return true;
-    };
-
-    activity.initialize();
     clear();
 });
 

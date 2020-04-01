@@ -47,7 +47,7 @@ class TestHotspots(ZulipTestCase):
 
     def test_hotspots_url_endpoint(self) -> None:
         user = self.example_user('hamlet')
-        self.login(user.email)
+        self.login_user(user)
         result = self.client_post('/json/users/me/hotspots',
                                   {'hotspot': ujson.dumps('intro_reply')})
         self.assert_json_success(result)

@@ -33,7 +33,8 @@ class ThumbnailTest(ZulipTestCase):
             settings.S3_AUTH_UPLOADS_BUCKET,
             settings.S3_AVATAR_BUCKET)
 
-        self.login(self.example_email("hamlet"))
+        hamlet = self.example_user('hamlet')
+        self.login_user(hamlet)
         fp = StringIO("zulip!")
         fp.name = "zulip.jpeg"
 
@@ -79,7 +80,7 @@ class ThumbnailTest(ZulipTestCase):
         # Tests the /api/v1/thumbnail api endpoint with standard API auth
         self.logout()
         result = self.api_get(
-            self.example_email("hamlet"),
+            hamlet,
             '/thumbnail?url=%s&size=full' %
             (quoted_uri,))
         self.assertEqual(result.status_code, 302, result)
@@ -87,7 +88,7 @@ class ThumbnailTest(ZulipTestCase):
         self.assertIn(expected_part_url, result.url)
 
         # Test with another user trying to access image using thumbor.
-        self.login(self.example_email("iago"))
+        self.login('iago')
         result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri,))
         self.assertEqual(result.status_code, 403, result)
         self.assert_in_response("You are not authorized to view this file.", result)
@@ -95,7 +96,7 @@ class ThumbnailTest(ZulipTestCase):
     def test_external_source_type(self) -> None:
         def run_test_with_image_url(image_url: str) -> None:
             # Test full size image.
-            self.login(self.example_email("hamlet"))
+            self.login('hamlet')
             quoted_url = urllib.parse.quote(image_url, safe='')
             encoded_url = base64.urlsafe_b64encode(image_url.encode()).decode('utf-8')
             result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_url,))
@@ -112,7 +113,7 @@ class ThumbnailTest(ZulipTestCase):
             # Test api endpoint with standard API authentication.
             self.logout()
             user_profile = self.example_user("hamlet")
-            result = self.api_get(user_profile.email,
+            result = self.api_get(user_profile,
                                   "/thumbnail?url=%s&size=thumbnail" % (quoted_url,))
             self.assertEqual(result.status_code, 302, result)
             expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
@@ -136,7 +137,7 @@ class ThumbnailTest(ZulipTestCase):
 
             # Test with another user trying to access image using thumbor.
             # File should be always accessible to user in case of external source
-            self.login(self.example_email("iago"))
+            self.login('iago')
             result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_url,))
             self.assertEqual(result.status_code, 302, result)
             expected_part_url = '/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
@@ -161,7 +162,7 @@ class ThumbnailTest(ZulipTestCase):
             hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
             return url_in_result % (sharpen_filter, hex_uri)
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         fp = StringIO("zulip!")
         fp.name = "zulip.jpeg"
 
@@ -227,7 +228,7 @@ class ThumbnailTest(ZulipTestCase):
         self.logout()
         user_profile = self.example_user("hamlet")
         result = self.api_get(
-            self.example_email("hamlet"),
+            user_profile,
             '/thumbnail?url=%s&size=full' %
             (quoted_uri,))
         self.assertEqual(result.status_code, 302, result)
@@ -245,14 +246,14 @@ class ThumbnailTest(ZulipTestCase):
         self.assertIn(expected_part_url, result.url)
 
         # Test with another user trying to access image using thumbor.
-        self.login(self.example_email("iago"))
+        self.login('iago')
         result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri,))
         self.assertEqual(result.status_code, 403, result)
         self.assert_in_response("You are not authorized to view this file.", result)
 
     @override_settings(THUMBOR_URL='127.0.0.1:9995')
     def test_with_static_files(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         uri = '/static/images/cute/turtle.png'
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
         result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri,))
@@ -260,7 +261,7 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(uri, result.url)
 
     def test_with_thumbor_disabled(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         fp = StringIO("zulip!")
         fp.name = "zulip.jpeg"
 
@@ -304,7 +305,7 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(base, result.url)
 
     def test_with_different_THUMBOR_URL(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         fp = StringIO("zulip!")
         fp.name = "zulip.jpeg"
 
@@ -336,7 +337,7 @@ class ThumbnailTest(ZulipTestCase):
             hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
             return url_in_result % (sharpen_filter, hex_uri)
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         fp = StringIO("zulip!")
         fp.name = "zulip.jpeg"
 

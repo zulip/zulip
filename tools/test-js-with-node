@@ -146,7 +146,6 @@ EXEMPT_FILES = {
     'static/js/todo_widget.js',
     'static/js/topic_list.js',
     'static/js/topic_zoom.js',
-    'static/js/translations.js',
     'static/js/tutorial.js',
     'static/js/typing_events.js',
     'static/js/typing.js',

@@ -23,7 +23,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
 
     def test_pm_to_embedded_bot(self) -> None:
         assert self.bot_profile is not None
-        self.send_personal_message(self.user_profile.email, self.bot_profile.email,
+        self.send_personal_message(self.user_profile, self.bot_profile,
                                    content="help")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "beep boop")
@@ -37,7 +37,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
 
     def test_stream_message_to_embedded_bot(self) -> None:
         assert self.bot_profile is not None
-        self.send_stream_message(self.user_profile.email, "Denmark",
+        self.send_stream_message(self.user_profile, "Denmark",
                                  content="@**{}** foo".format(self.bot_profile.full_name),
                                  topic_name="bar")
         last_message = self.get_last_message()
@@ -48,7 +48,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.assertEqual(display_recipient, "Denmark")
 
     def test_stream_message_not_to_embedded_bot(self) -> None:
-        self.send_stream_message(self.user_profile.email, "Denmark",
+        self.send_stream_message(self.user_profile, "Denmark",
                                  content="foo", topic_name="bar")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "foo")
@@ -57,7 +57,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         assert self.bot_profile is not None
         with patch('zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.initialize',
                    create=True) as mock_initialize:
-            self.send_stream_message(self.user_profile.email, "Denmark",
+            self.send_stream_message(self.user_profile, "Denmark",
                                      content="@**{}** foo".format(self.bot_profile.full_name),
                                      topic_name="bar")
             mock_initialize.assert_called_once()
@@ -67,7 +67,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         with patch('zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message',
                    side_effect=EmbeddedBotQuitException("I'm quitting!")):
             with patch('logging.warning') as mock_logging:
-                self.send_stream_message(self.user_profile.email, "Denmark",
+                self.send_stream_message(self.user_profile, "Denmark",
                                          content="@**{}** foo".format(self.bot_profile.full_name),
                                          topic_name="bar")
                 mock_logging.assert_called_once_with("I'm quitting!")
@@ -84,7 +84,7 @@ class TestEmbeddedBotFailures(ZulipTestCase):
         service_profile.name = 'invalid'
         service_profile.save()
         with patch('logging.error') as logging_error_mock:
-            self.send_stream_message(user_profile.email, "Denmark",
+            self.send_stream_message(user_profile, "Denmark",
                                      content="@**{}** foo".format(bot_profile.full_name),
                                      topic_name="bar")
             logging_error_mock.assert_called_once_with(

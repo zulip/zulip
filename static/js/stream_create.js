@@ -240,7 +240,7 @@ exports.new_stream_clicked = function (stream_name) {
     // focus  the button on that page, the entire app view jumps over to
     // the other tab, and the animation breaks.
     // it is unclear whether this is a browser bug or "feature", however what
-    // is clear is that this shoudn't be touched unless you're also changing
+    // is clear is that this shouldn't be touched unless you're also changing
     // the mobile @media query at 700px.
     if (window.innerWidth > 700) {
         $('#create_stream_name').focus();

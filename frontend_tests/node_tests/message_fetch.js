@@ -25,7 +25,6 @@ set_global('channel', {});
 set_global('document', 'document-stub');
 set_global('message_util', {});
 set_global('message_store', {});
-set_global('muting', {});
 set_global('narrow_state', {});
 set_global('notifications', {
     hide_or_show_history_limit_message: () => {},
@@ -44,7 +43,6 @@ const alice = {
 };
 people.add(alice);
 
-muting.is_topic_muted = function () { return false; };
 resize.resize_bottom_whitespace = noop;
 server_events.home_view_loaded = noop;
 

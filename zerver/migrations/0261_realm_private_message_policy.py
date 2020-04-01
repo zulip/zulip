@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 
 
+PRIVATE_MESSAGE_POLICY_UNLIMITED = 1
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -15,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='realm',
             name='private_message_policy',
-            field=models.PositiveSmallIntegerField(default=1),
+            field=models.PositiveSmallIntegerField(default=PRIVATE_MESSAGE_POLICY_UNLIMITED),
         ),
     ]

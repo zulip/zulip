@@ -9,7 +9,6 @@ set_global('$', function () {
 
 set_global('blueslip', global.make_zblueslip());
 set_global('document', null);
-set_global('i18n', global.stub_i18n);
 global.stub_out_jquery();
 
 zrequire('color_data');
@@ -29,7 +28,7 @@ const settings_config = zrequire("settings_config");
 const me = {
     email: 'me@zulip.com',
     full_name: 'Current User',
-    user_id: 81,
+    user_id: 100,
 };
 
 // set up user data
@@ -102,9 +101,9 @@ run_test('basics', () => {
     assert.equal(stream_data.maybe_get_stream_name(42), undefined);
 
     stream_data.set_realm_default_streams([denmark]);
-    assert(stream_data.get_default_status('Denmark'));
-    assert(!stream_data.get_default_status('social'));
-    assert(!stream_data.get_default_status('UNKNOWN'));
+    assert(stream_data.is_default_stream_id(denmark.stream_id));
+    assert(!stream_data.is_default_stream_id(social.stream_id));
+    assert(!stream_data.is_default_stream_id(999999));
 });
 
 run_test('renames', () => {
@@ -187,11 +186,34 @@ run_test('subscribers', () => {
     people.add(not_fred);
     people.add(george);
 
-    stream_data.set_subscribers(sub, [fred.user_id, george.user_id]);
+    function potential_subscriber_ids() {
+        const users = stream_data.potential_subscribers(sub);
+        return users.map((u) => u.user_id).sort();
+    }
+
+    assert.deepEqual(
+        potential_subscriber_ids(),
+        [
+            me.user_id,
+            fred.user_id,
+            not_fred.user_id,
+            george.user_id,
+        ]
+    );
+
+    stream_data.set_subscribers(sub, [me.user_id, fred.user_id, george.user_id]);
     stream_data.update_calculated_fields(sub);
+    assert(stream_data.is_user_subscribed('Rome', me.user_id));
     assert(stream_data.is_user_subscribed('Rome', fred.user_id));
     assert(stream_data.is_user_subscribed('Rome', george.user_id));
     assert(!stream_data.is_user_subscribed('Rome', not_fred.user_id));
+
+    assert.deepEqual(
+        potential_subscriber_ids(),
+        [
+            not_fred.user_id,
+        ]
+    );
 
     stream_data.set_subscribers(sub, []);
 
@@ -536,11 +558,17 @@ run_test('default_stream_names', () => {
     stream_data.add_sub(private_stream);
     stream_data.add_sub(general);
 
-    let names = stream_data.get_non_default_stream_names();
-    assert.deepEqual(names, ['public', 'private']);
+    const names = stream_data.get_non_default_stream_names();
+    assert.deepEqual(names.sort(), ['private', 'public']);
 
-    names = stream_data.get_default_stream_names();
-    assert.deepEqual(names, ['announce', 'general']);
+    const default_stream_ids = stream_data.get_default_stream_ids();
+    assert.deepEqual(
+        default_stream_ids.sort(),
+        [
+            announce.stream_id,
+            general.stream_id,
+        ]
+    );
 });
 
 run_test('delete_sub', () => {
@@ -611,6 +639,8 @@ run_test('notifications', () => {
         stream_id: 102,
         name: 'India',
         subscribed: true,
+        invite_only: false,
+        is_web_public: false,
         desktop_notifications: null,
         audible_notifications: null,
         email_notifications: null,
@@ -674,6 +704,84 @@ run_test('notifications', () => {
     page_params.enable_stream_email_notifications = true;
     india.email_notifications = false;
     assert(!stream_data.receives_notifications('India', "email_notifications"));
+
+    const canada = {
+        stream_id: 103,
+        name: 'Canada',
+        subscribed: true,
+        invite_only: true,
+        is_web_public: false,
+        desktop_notifications: null,
+        audible_notifications: null,
+        email_notifications: null,
+        push_notifications: null,
+        wildcard_mentions_notify: null,
+    };
+    stream_data.add_sub(canada);
+
+    const antarctica = {
+        stream_id: 104,
+        name: 'Antarctica',
+        subscribed: true,
+        desktop_notifications: null,
+        audible_notifications: null,
+        email_notifications: null,
+        push_notifications: null,
+        wildcard_mentions_notify: null,
+    };
+    stream_data.add_sub(antarctica);
+
+    page_params.enable_stream_desktop_notifications = true;
+    page_params.enable_stream_audible_notifications = true;
+    page_params.enable_stream_email_notifications = false;
+    page_params.enable_stream_push_notifications = false;
+    page_params.wildcard_mentions_notify = true;
+
+    india.desktop_notifications = null;
+    india.audible_notifications = true;
+    india.email_notifications = true;
+    india.push_notifications = true;
+    india.wildcard_mentions_notify = false;
+
+    canada.desktop_notifications = true;
+    canada.audible_notifications = false;
+    canada.email_notifications = true;
+    canada.push_notifications = null;
+    canada.wildcard_mentions_notify = false;
+
+    antarctica.desktop_notifications = true;
+    antarctica.audible_notifications = null;
+    antarctica.email_notifications = false;
+    antarctica.push_notifications = null;
+    antarctica.wildcard_mentions_notify = null;
+
+    const unmatched_streams = stream_data.get_unmatched_streams_for_notification_settings();
+    const expected_streams = [
+        {
+            desktop_notifications: true,
+            audible_notifications: false,
+            email_notifications: true,
+            push_notifications: false,
+            wildcard_mentions_notify: false,
+            invite_only: true,
+            is_web_public: false,
+            stream_name: 'Canada',
+            stream_id: 103,
+        },
+        {
+            desktop_notifications: true,
+            audible_notifications: true,
+            email_notifications: true,
+            push_notifications: true,
+            wildcard_mentions_notify: false,
+            invite_only: false,
+            is_web_public: false,
+            stream_name: 'India',
+            stream_id: 102,
+        },
+    ];
+
+    assert.deepEqual(unmatched_streams, expected_streams);
 });
 
 run_test('is_muted', () => {
@@ -717,8 +825,7 @@ run_test('remove_default_stream', () => {
     stream_data.add_sub(remove_me);
     stream_data.set_realm_default_streams([remove_me]);
     stream_data.remove_default_stream(remove_me.stream_id);
-    assert(!stream_data.get_default_status('remove_me'));
-    assert.equal(page_params.realm_default_streams.length, 0);
+    assert(!stream_data.is_default_stream_id(remove_me.stream_id));
 });
 
 run_test('canonicalized_name', () => {
@@ -770,42 +877,49 @@ run_test('create_sub', () => {
 });
 
 run_test('initialize', () => {
-    function initialize() {
-        page_params.subscriptions = [{
+    function get_params() {
+        const params = {};
+
+        params.subscriptions = [{
             name: 'subscriptions',
             stream_id: 2001,
         }];
 
-        page_params.unsubscribed = [{
+        params.unsubscribed = [{
             name: 'unsubscribed',
             stream_id: 2002,
         }];
 
-        page_params.never_subscribed = [{
+        params.never_subscribed = [{
             name: 'never_subscribed',
             stream_id: 2003,
         }];
+
+        params.realm_default_streams = [
+        ];
+
+        return params;
     }
 
-    initialize();
+    function initialize() {
+        stream_data.initialize(get_params());
+    }
+
     page_params.demote_inactive_streams = 1;
     page_params.realm_notifications_stream_id = -1;
-    stream_data.initialize();
+
+    initialize();
     assert(!stream_data.is_filtering_inactives());
 
     const stream_names = stream_data.get_streams_for_admin().map(elem => elem.name);
     assert(stream_names.includes('subscriptions'));
     assert(stream_names.includes('unsubscribed'));
     assert(stream_names.includes('never_subscribed'));
-    assert(!page_params.subscriptions);
-    assert(!page_params.unsubscribed);
-    assert(!page_params.never_subscribed);
     assert.equal(page_params.notifications_stream, "");
 
     // Simulate a private stream the user isn't subscribed to
-    initialize();
     page_params.realm_notifications_stream_id = 89;
-    stream_data.initialize();
+    initialize();
     assert.equal(page_params.notifications_stream, "");
 
     // Now actually subscribe the user to the stream
@@ -816,21 +930,19 @@ run_test('initialize', () => {
     };
 
     stream_data.add_sub(foo);
-    stream_data.initialize();
+    initialize();
     assert.equal(page_params.notifications_stream, "foo");
 });
 
 run_test('filter inactives', () => {
-    page_params.unsubscribed = [];
-    page_params.never_subscribed = [];
-    page_params.subscriptions = [];
+    const params = {};
+    params.unsubscribed = [];
+    params.never_subscribed = [];
+    params.subscriptions = [];
+    params.realm_default_streams = [];
 
-    stream_data.initialize();
+    stream_data.initialize(params);
     assert(!stream_data.is_filtering_inactives());
-
-    page_params.unsubscribed = [];
-    page_params.never_subscribed = [];
-    page_params.subscriptions = [];
 
     _.times(30, function (i) {
         const name = 'random' + i.toString();
@@ -844,7 +956,7 @@ run_test('filter inactives', () => {
         };
         stream_data.add_sub(sub);
     });
-    stream_data.initialize();
+    stream_data.initialize(params);
     assert(stream_data.is_filtering_inactives());
 });
 
@@ -885,35 +997,6 @@ run_test('is_subscriber_subset', () => {
             row[2]
         );
     }
-});
-
-run_test('invite_streams', () => {
-    // add default stream
-    const orie = {
-        stream_id: 320,
-        name: 'Orie',
-        subscribed: true,
-    };
-
-    // clear all the data form stream_data, and people
-    stream_data.clear_subscriptions();
-    people.init();
-
-    stream_data.add_sub(orie);
-    stream_data.set_realm_default_streams([orie]);
-
-    const expected_list = ['Orie'];
-    assert.deepEqual(stream_data.invite_streams(), expected_list);
-
-    const inviter = {
-        stream_id: 25,
-        name: 'Inviter',
-        subscribed: true,
-    };
-    stream_data.add_sub(inviter);
-
-    expected_list.push('Inviter');
-    assert.deepEqual(stream_data.invite_streams(), expected_list);
 });
 
 run_test('edge_cases', () => {

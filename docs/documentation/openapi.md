@@ -1,6 +1,6 @@
 # OpenAPI configuration
 
-The [OpenAPI](http://swagger.io/specification/) (formerly known as
+The [OpenAPI](https://swagger.io/specification/) (formerly known as
 Swagger) specification is a standardized way to describe how an API
 functions. This description then can then be used by any tool that
 supports the standard.
@@ -14,7 +14,7 @@ may contain other objects, or reference objects defined
 elsewhere. Larger API specifications may be split into multiple
 files. There are more types of objects than mentioned here, you can
 find the complete details at
-[Swagger/OpenAPI specification page](http://swagger.io/specification).
+[Swagger/OpenAPI specification page](https://swagger.io/specification/).
 
 This library isn't in production use yet, but it is our current plan
 for how Zulip's API documentation will work.
@@ -53,16 +53,16 @@ info:
 
 ### Endpoint definitions
 
-The [Paths Object](http://swagger.io/specification/#pathsObject)
+The [Paths Object](https://swagger.io/specification/#pathsObject)
 contains
-[Path Item Objects](http://swagger.io/specification/#pathItemObject)
+[Path Item Objects](https://swagger.io/specification/#pathItemObject)
 for each endpoint. It describes in detail the methods and parameters
 the endpoint accepts and responses it returns.
 
 There is one Path Item Object for each supported method, containing a
 [Parameters Definition Object](http://swagger.io/specification/#parameterObject)
 describing the required and optional inputs. A
-[Response Object](http://swagger.io/specification/#responseObject)
+[Response Object](https://swagger.io/specification/#responseObject)
 similarly specifies the content of the response. They may reference
 schemas from a global Definitions Object (see [Schemas](#schemas),
 below.)
@@ -72,7 +72,7 @@ Example:
 The `/users/{email}/presence` endpoint (defined in a
 [Path Item Object](http://swagger.io/specification/#pathItemObject))
 expects a GET request with one
-[parameter](http://swagger.io/specification/#parameterObject), HTTP
+[parameter](https://swagger.io/specification/#parameterObject), HTTP
 Basic authentication, and returns a JSON response containing `msg`,
 `result`, and `presence` values.
 
@@ -107,7 +107,7 @@ Basic authentication, and returns a JSON response containing `msg`,
 ### Schemas
 
 The
-[Definitions Object](http://swagger.io/specification/#definitionsObject)
+[Definitions Object](https://swagger.io/specification/#definitionsObject)
 contains schemas referenced by other objects. For example,
 `JsonSuccess`, as seen in the above `/users/{email}/presence` endpoint,
 contains two required parameters that are all Strings.

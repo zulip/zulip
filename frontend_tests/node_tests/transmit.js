@@ -3,7 +3,6 @@ const noop = function () {};
 set_global('$', global.make_zjquery());
 set_global('page_params', {});
 set_global('channel', {});
-set_global('navigator', {});
 set_global('reload', {});
 set_global('reload_state', {});
 set_global('sent_messages', {

@@ -84,12 +84,10 @@ exports.remove_members = function (user_group_id, user_ids) {
     }
 };
 
-exports.initialize = function () {
-    for (const user_group of page_params.realm_user_groups) {
+exports.initialize = function (params) {
+    for (const user_group of params.realm_user_groups) {
         exports.add(user_group);
     }
-
-    delete page_params.realm_user_groups; // We are the only consumer of this.
 };
 
 exports.is_user_group = function (item) {

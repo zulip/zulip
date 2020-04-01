@@ -69,6 +69,10 @@ exports.email_address_visibility_values = {
         code: 3,
         description: i18n.t("Admins only"),
     },
+    nobody: {
+        code: 4,
+        description: i18n.t("Nobody"),
+    },
 };
 
 exports.create_stream_policy_values = {
