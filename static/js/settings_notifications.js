@@ -2,7 +2,7 @@ const render_stream_specific_notification_row = require('../templates/settings/s
 const settings_config = require("./settings_config");
 
 exports.get_notifications_table_row_data = function (notify_settings) {
-    return settings_config.general_notifications_table_columns.map((column, index) => {
+    return settings_config.general_notifications_table_labels.realm.map((column, index) => {
         const setting_name = notify_settings[index];
         if (setting_name === undefined) {
             return {

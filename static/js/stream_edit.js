@@ -4,6 +4,7 @@ const render_stream_member_list_entry = require('../templates/stream_member_list
 const render_subscription_settings = require('../templates/subscription_settings.hbs');
 const render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
 const settings_data = require("./settings_data");
+const settings_config = require("./settings_config");
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_uri(sub);
@@ -253,21 +254,10 @@ exports.is_notification_setting = function (setting_label) {
     return false;
 };
 
-const settings_labels = {
-    is_muted: i18n.t("Mute stream"),
-    desktop_notifications: i18n.t("Visual desktop notifications"),
-    audible_notifications: i18n.t("Audible desktop notifications"),
-    push_notifications: i18n.t("Mobile notifications"),
-    email_notifications: i18n.t("Email notifications"),
-    pin_to_top: i18n.t("Pin stream to top of left sidebar"),
-    wildcard_mentions_notify: i18n.t("Notifications for @all/@everyone mentions"),
-};
-
-const check_realm_setting = {
-    push_notifications: !page_params.realm_push_notifications_enabled,
-};
-
 exports.stream_settings = function (sub) {
+    const settings_labels = settings_config.general_notifications_table_labels.stream;
+    const check_realm_setting = settings_config.all_notifications().show_push_notifications_tooltip;
+
     const settings = Object.keys(settings_labels).map((setting) => {
         const ret = {
             name: setting,
