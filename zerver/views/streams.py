@@ -357,7 +357,7 @@ def add_subscriptions_backend(
             # Realm.INVITE_TO_STREAM_POLICY_MEMBERS only fails if the
             # user is a guest, which happens in the decorator above.
             assert user_profile.realm.invite_to_stream_policy == \
-                Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD
+                Realm.INVITE_TO_STREAM_POLICY_FULL_MEMBERS
             return json_error(_("Your account is too new to modify other users' subscriptions."))
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:

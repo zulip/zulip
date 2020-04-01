@@ -181,25 +181,25 @@ class Realm(models.Model):
     # Who in the organization is allowed to create streams.
     CREATE_STREAM_POLICY_MEMBERS = 1
     CREATE_STREAM_POLICY_ADMINS = 2
-    CREATE_STREAM_POLICY_WAITING_PERIOD = 3
+    CREATE_STREAM_POLICY_FULL_MEMBERS = 3
     create_stream_policy = models.PositiveSmallIntegerField(
         default=CREATE_STREAM_POLICY_MEMBERS)  # type: int
     CREATE_STREAM_POLICY_TYPES = [
         CREATE_STREAM_POLICY_MEMBERS,
         CREATE_STREAM_POLICY_ADMINS,
-        CREATE_STREAM_POLICY_WAITING_PERIOD,
+        CREATE_STREAM_POLICY_FULL_MEMBERS,
     ]
 
     # Who in the organization is allowed to invite other users to streams.
     INVITE_TO_STREAM_POLICY_MEMBERS = 1
     INVITE_TO_STREAM_POLICY_ADMINS = 2
-    INVITE_TO_STREAM_POLICY_WAITING_PERIOD = 3
+    INVITE_TO_STREAM_POLICY_FULL_MEMBERS = 3
     invite_to_stream_policy = models.PositiveSmallIntegerField(
         default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: int
     INVITE_TO_STREAM_POLICY_TYPES = [
         INVITE_TO_STREAM_POLICY_MEMBERS,
         INVITE_TO_STREAM_POLICY_ADMINS,
-        INVITE_TO_STREAM_POLICY_WAITING_PERIOD,
+        INVITE_TO_STREAM_POLICY_FULL_MEMBERS,
     ]
 
     USER_GROUP_EDIT_POLICY_MEMBERS = 1
@@ -1161,7 +1161,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         if self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_MEMBERS:
             return True
 
-        assert self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD
+        assert self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_FULL_MEMBERS
         return not self.is_new_member
 
     def can_access_public_streams(self) -> bool:
