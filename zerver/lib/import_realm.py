@@ -29,6 +29,7 @@ from zerver.lib.upload import random_name, sanitize_name, \
     guess_type, BadImageError
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.lib.parallel import run_parallel
+from zerver.lib.server_initialization import server_initialized, create_internal_realm
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
@@ -773,6 +774,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     realm_data_filename = os.path.join(import_dir, "realm.json")
     if not os.path.exists(realm_data_filename):
         raise Exception("Missing realm.json file!")
+
+    if not server_initialized():
+        create_internal_realm()
 
     logging.info("Importing realm data from %s" % (realm_data_filename,))
     with open(realm_data_filename) as f:
