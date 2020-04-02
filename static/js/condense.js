@@ -178,8 +178,15 @@ exports.condense_and_collapse = function (elems) {
 
     for (const elem of elems) {
         const content = $(elem).find(".message_content");
+
+        if (content.length !== 1) {
+            // We could have a "/me did this" message or something
+            // else without a `message_content` div.
+            continue;
+        }
+
         const message = current_msg_list.get(rows.id($(elem)));
-        if (content !== undefined && message !== undefined) {
+        if (message !== undefined) {
             const message_height = get_message_height(elem, message.id);
             const long_message = message_height > height_cutoff;
             if (long_message) {
