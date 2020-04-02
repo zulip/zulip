@@ -107,7 +107,7 @@ class RateLimitTests(ZulipTestCase):
         # We actually wait a second here, rather than force-clearing our history,
         # to make sure the rate-limiting code automatically forgives a user
         # after some time has passed.
-        with mock.patch('time.time', return_value=(start_time + 1.0)):
+        with mock.patch('time.time', return_value=(start_time + 1.01)):
             result = self.send_api_message(user, "Good message")
 
             self.assert_json_success(result)
