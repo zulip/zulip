@@ -89,65 +89,12 @@ exports.open = function (image, options) {
 
     const $image = $(image);
 
-    // if wrapped in the .youtube-video class, it will be length = 1, and therefore
-    // cast to true.
-    const is_youtube_video = !!$image.closest(".youtube-video").length;
-    const is_vimeo_video = !!$image.closest(".vimeo-video").length;
-    const is_embed_video = !!$image.closest(".embed-video").length;
-
-    // check if image is descendent of #preview_content
-    const is_compose_preview_image = $image.closest("#preview_content").length === 1;
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
     const $image_source = $image.attr("data-src-fullsize") || $image.attr("src");
-    let payload = asset_map.get($image_source);
+    const payload = asset_map.get($image_source);
     if (payload === undefined) {
-        // otherwise retrieve the metadata from the DOM and store into the asset_map.
-        const $parent = $image.parent();
-        let $type;
-        let $source;
-        const $url = $parent.attr("href");
-        if (is_youtube_video) {
-            $type = "youtube-video";
-            $source = $parent.attr("data-id");
-        } else if (is_vimeo_video) {
-            $type = "vimeo-video";
-            $source = $parent.attr("data-id");
-        } else if (is_embed_video) {
-            $type = "embed-video";
-            $source = $parent.attr("data-id");
-        } else {
-            $type = "image";
-            // thumbor supplies the src as thumbnail, data-src-fullsize as full-sized.
-            if ($image.attr("data-src-fullsize")) {
-                $source = $image.attr("data-src-fullsize");
-            } else {
-                $source = $image.attr("src");
-            }
-        }
-        let sender_full_name;
-        if (is_compose_preview_image) {
-            sender_full_name = people.my_full_name();
-        } else {
-            const $message = $parent.closest("[zid]");
-            const zid = rows.id($message);
-            const message = message_store.get(zid);
-            if (message === undefined) {
-                blueslip.error("Lightbox for unknown message " + zid);
-            } else {
-                sender_full_name = message.sender_full_name;
-            }
-        }
-        payload = {
-            user: sender_full_name,
-            title: $parent.attr("title"),
-            type: $type,
-            preview: $image.attr("src"),
-            source: $source,
-            url: $url,
-        };
-
-        asset_map.set($source, payload);
+        payload = exports.parse_image_data($image)
     }
 
     if (payload.type.match("-video")) {
@@ -217,6 +164,65 @@ exports.show_from_selected_message = function () {
     if ($image.length !== 0) {
         exports.open($image);
     }
+};
+
+// retrieve the metadata from the DOM and store into the asset_map.
+exports.parse_image_data = function ($image) {
+    // if wrapped in the .youtube-video class, it will be length = 1, and therefore
+    // cast to true.
+    const is_youtube_video = !!$image.closest(".youtube-video").length;
+    const is_vimeo_video = !!$image.closest(".vimeo-video").length;
+    const is_embed_video = !!$image.closest(".embed-video").length;
+
+    // check if image is descendent of #preview_content
+    const is_compose_preview_image = $image.closest("#preview_content").length === 1;
+
+    const $parent = $image.parent();
+    let $type;
+    let $source;
+    const $url = $parent.attr("href");
+    if (is_youtube_video) {
+        $type = "youtube-video";
+        $source = $parent.attr("data-id");
+    } else if (is_vimeo_video) {
+        $type = "vimeo-video";
+        $source = $parent.attr("data-id");
+    } else if (is_embed_video) {
+        $type = "embed-video";
+        $source = $parent.attr("data-id");
+    } else {
+        $type = "image";
+        // thumbor supplies the src as thumbnail, data-src-fullsize as full-sized.
+        if ($image.attr("data-src-fullsize")) {
+            $source = $image.attr("data-src-fullsize");
+        } else {
+            $source = $image.attr("src");
+        }
+    }
+    let sender_full_name;
+    if (is_compose_preview_image) {
+        sender_full_name = people.my_full_name();
+    } else {
+        const $message = $parent.closest("[zid]");
+        const zid = rows.id($message);
+        const message = message_store.get(zid);
+        if (message === undefined) {
+            blueslip.error("Lightbox for unknown message " + zid);
+        } else {
+            sender_full_name = message.sender_full_name;
+        }
+    }
+    const payload = {
+        user: sender_full_name,
+        title: $parent.attr("title"),
+        type: $type,
+        preview: $image.attr("src"),
+        source: $source,
+        url: $url,
+    };
+
+    asset_map.set($source, payload);
+    return payload;
 };
 
 exports.prev = function () {
