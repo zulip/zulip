@@ -206,6 +206,9 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Rest error handling endpoint
         '/rest-error-handling',
 
+        # Zulip outgoing webhook payload
+        '/zulip-outgoing-webhook',
+
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for fetching API keys
         '/fetch_api_key',

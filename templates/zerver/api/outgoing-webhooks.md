@@ -112,7 +112,7 @@ is helpful to distinguish deliberate non-responses from bugs.)
 This is an example of the JSON payload that the Zulip server will `POST`
 to your server:
 
-{generate_code_example|zulip-outgoing-webhook-payload|fixture}
+{generate_code_example|/zulip-outgoing-webhook:post|fixture(200)}
 
 ### Example response payloads
 
