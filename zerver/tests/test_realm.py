@@ -442,7 +442,7 @@ class RealmTest(ZulipTestCase):
     def test_change_stream_creation_policy(self) -> None:
         # We need an admin user.
         self.login('iago')
-        req = dict(create_stream_policy = ujson.dumps(Realm.CREATE_STREAM_POLICY_ADMINS))
+        req = dict(create_stream_policy = ujson.dumps(Realm.POLICY_ADMINS_ONLY))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
@@ -454,7 +454,7 @@ class RealmTest(ZulipTestCase):
     def test_change_invite_to_stream_policy(self) -> None:
         # We need an admin user.
         self.login('iago')
-        req = dict(invite_to_stream_policy = ujson.dumps(Realm.INVITE_TO_STREAM_POLICY_ADMINS))
+        req = dict(invite_to_stream_policy = ujson.dumps(Realm.POLICY_ADMINS_ONLY))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
 
@@ -715,16 +715,16 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
-            create_stream_policy=[Realm.CREATE_STREAM_POLICY_ADMINS,
-                                  Realm.CREATE_STREAM_POLICY_MEMBERS,
-                                  Realm.CREATE_STREAM_POLICY_FULL_MEMBERS],
+            create_stream_policy=[Realm.POLICY_ADMINS_ONLY,
+                                  Realm.POLICY_MEMBERS_ONLY,
+                                  Realm.POLICY_FULL_MEMBERS_ONLY],
             user_group_edit_policy=[Realm.USER_GROUP_EDIT_POLICY_ADMINS,
                                     Realm.USER_GROUP_EDIT_POLICY_MEMBERS],
             private_message_policy=[Realm.PRIVATE_MESSAGE_POLICY_UNLIMITED,
                                     Realm.PRIVATE_MESSAGE_POLICY_DISABLED],
-            invite_to_stream_policy=[Realm.INVITE_TO_STREAM_POLICY_ADMINS,
-                                     Realm.INVITE_TO_STREAM_POLICY_MEMBERS,
-                                     Realm.INVITE_TO_STREAM_POLICY_FULL_MEMBERS],
+            invite_to_stream_policy=[Realm.POLICY_ADMINS_ONLY,
+                                     Realm.POLICY_MEMBERS_ONLY,
+                                     Realm.POLICY_FULL_MEMBERS_ONLY],
             bot_creation_policy=[1, 2],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                                       Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,

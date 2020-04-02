@@ -178,34 +178,28 @@ class Realm(models.Model):
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
     avatar_changes_disabled = models.BooleanField(default=False)  # type: bool
 
-    # Who in the organization is allowed to create streams.
-    CREATE_STREAM_POLICY_MEMBERS = 1
-    CREATE_STREAM_POLICY_ADMINS = 2
-    CREATE_STREAM_POLICY_FULL_MEMBERS = 3
-    create_stream_policy = models.PositiveSmallIntegerField(
-        default=CREATE_STREAM_POLICY_MEMBERS)  # type: int
-    CREATE_STREAM_POLICY_TYPES = [
-        CREATE_STREAM_POLICY_MEMBERS,
-        CREATE_STREAM_POLICY_ADMINS,
-        CREATE_STREAM_POLICY_FULL_MEMBERS,
+    POLICY_MEMBERS_ONLY = 1
+    POLICY_ADMINS_ONLY = 2
+    POLICY_FULL_MEMBERS_ONLY = 3
+
+    COMMON_POLICY_TYPES = [
+        POLICY_MEMBERS_ONLY,
+        POLICY_ADMINS_ONLY,
+        POLICY_FULL_MEMBERS_ONLY,
     ]
 
+    # Who in the organization is allowed to create streams.
+    create_stream_policy = models.PositiveSmallIntegerField(
+        default=POLICY_MEMBERS_ONLY)  # type: int
+
     # Who in the organization is allowed to invite other users to streams.
-    INVITE_TO_STREAM_POLICY_MEMBERS = 1
-    INVITE_TO_STREAM_POLICY_ADMINS = 2
-    INVITE_TO_STREAM_POLICY_FULL_MEMBERS = 3
     invite_to_stream_policy = models.PositiveSmallIntegerField(
-        default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: int
-    INVITE_TO_STREAM_POLICY_TYPES = [
-        INVITE_TO_STREAM_POLICY_MEMBERS,
-        INVITE_TO_STREAM_POLICY_ADMINS,
-        INVITE_TO_STREAM_POLICY_FULL_MEMBERS,
-    ]
+        default=POLICY_MEMBERS_ONLY)  # type: int
 
     USER_GROUP_EDIT_POLICY_MEMBERS = 1
     USER_GROUP_EDIT_POLICY_ADMINS = 2
     user_group_edit_policy = models.PositiveSmallIntegerField(
-        default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: int
+        default=USER_GROUP_EDIT_POLICY_MEMBERS)  # type: int
     USER_GROUP_EDIT_POLICY_TYPES = [
         USER_GROUP_EDIT_POLICY_MEMBERS,
         USER_GROUP_EDIT_POLICY_ADMINS,
@@ -1141,27 +1135,27 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def can_create_streams(self) -> bool:
         if self.is_realm_admin:
             return True
-        if self.realm.create_stream_policy == Realm.CREATE_STREAM_POLICY_ADMINS:
+        if self.realm.create_stream_policy == Realm.POLICY_ADMINS_ONLY:
             return False
         if self.is_guest:
             return False
 
-        if self.realm.create_stream_policy == Realm.CREATE_STREAM_POLICY_MEMBERS:
+        if self.realm.create_stream_policy == Realm.POLICY_MEMBERS_ONLY:
             return True
         return not self.is_new_member
 
     def can_subscribe_other_users(self) -> bool:
         if self.is_realm_admin:
             return True
-        if self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_ADMINS:
+        if self.realm.invite_to_stream_policy == Realm.POLICY_ADMINS_ONLY:
             return False
         if self.is_guest:
             return False
 
-        if self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_MEMBERS:
+        if self.realm.invite_to_stream_policy == Realm.POLICY_MEMBERS_ONLY:
             return True
 
-        assert self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_FULL_MEMBERS
+        assert self.realm.invite_to_stream_policy == Realm.POLICY_FULL_MEMBERS_ONLY
         return not self.is_new_member
 
     def can_access_public_streams(self) -> bool:
