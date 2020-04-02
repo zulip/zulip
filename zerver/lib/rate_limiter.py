@@ -39,7 +39,7 @@ class RateLimitedObject(ABC):
 
     def rate_limit(self) -> Tuple[bool, float]:
         # Returns (ratelimited, secs_to_freedom)
-        return self.backend.rate_limit_entity(self.key(), self.rules(),
+        return self.backend.rate_limit_entity(self.key(), self.get_rules(),
                                               self.max_api_calls(),
                                               self.max_api_window())
 
@@ -76,11 +76,11 @@ class RateLimitedObject(ABC):
 
     def max_api_calls(self) -> int:
         "Returns the API rate limit for the highest limit"
-        return self.rules()[-1][1]
+        return self.get_rules()[-1][1]
 
     def max_api_window(self) -> int:
         "Returns the API time window for the highest limit"
-        return self.rules()[-1][0]
+        return self.get_rules()[-1][0]
 
     def api_calls_left(self) -> Tuple[int, float]:
         """Returns how many API calls in this range this client has, as well as when
@@ -88,6 +88,16 @@ class RateLimitedObject(ABC):
         max_window = self.max_api_window()
         max_calls = self.max_api_calls()
         return self.backend.get_api_calls_left(self.key(), max_window, max_calls)
+
+    def get_rules(self) -> List[Tuple[int, int]]:
+        """
+        This is a simple wrapper meant to protect against having to deal with
+        an empty list of rules, as it would require fiddling with that special case
+        all around this system. "9999 max request per seconds" should be a good proxy
+        for "no rules".
+        """
+        rules_list = self.rules()
+        return rules_list or [(1, 9999), ]
 
     @abstractmethod
     def key(self) -> str:
@@ -270,8 +280,7 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
             else:
                 del cls.timestamps_blocked_until[entity_key]
 
-        if len(rules) == 0:
-            return False, 0
+        assert rules
         for time_window, max_count in rules:
             ratelimited, time_till_free = cls.need_to_limit(entity_key, time_window, max_count)
 
@@ -338,6 +347,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     @classmethod
     def is_ratelimited(cls, entity_key: str, rules: List[Tuple[int, int]]) -> Tuple[bool, float]:
         "Returns a tuple of (rate_limited, time_till_free)"
+        assert rules
         list_key, set_key, blocking_key = cls.get_keys(entity_key)
 
         # Go through the rules from shortest to longest,
@@ -365,9 +375,6 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                 blocking_ttl = int(blocking_ttl_b)
             return True, blocking_ttl
 
-        if len(rules) == 0:
-            return False, 0.0
-
         now = time.time()
         for timestamp, (range_seconds, num_requests) in zip(rule_timestamps, rules):
             # Check if the nth timestamp is newer than the associated rule. If so,
@@ -383,15 +390,10 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         return False, 0.0
 
     @classmethod
-    def incr_ratelimit(cls, entity_key: str, rules: List[Tuple[int, int]],
-                       max_api_calls: int, max_api_window: int) -> None:
+    def incr_ratelimit(cls, entity_key: str, max_api_calls: int, max_api_window: int) -> None:
         """Increases the rate-limit for the specified entity"""
         list_key, set_key, _ = cls.get_keys(entity_key)
         now = time.time()
-
-        # If we have no rules, we don't store anything
-        if len(rules) == 0:
-            return
 
         # Start redis transaction
         with client.pipeline() as pipe:
@@ -451,7 +453,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
         else:
             try:
-                cls.incr_ratelimit(entity_key, rules, max_api_calls, max_api_window)
+                cls.incr_ratelimit(entity_key, max_api_calls, max_api_window)
             except RateLimiterLockingException:
                 logger.warning("Deadlock trying to incr_ratelimit for %s" % (entity_key,))
                 # rate-limit users who are hitting the API so hard we can't update our stats.
