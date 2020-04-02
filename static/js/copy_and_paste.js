@@ -57,13 +57,15 @@ how modern browsers deal with copy/paste.  Just test
 your changes carefully.
 */
 function construct_copy_div(div, start_id, end_id) {
-    const start_row = current_msg_list.get_row(start_id);
+    const copy_rows = rows.visible_range(start_id, end_id);
+
+    const start_row = copy_rows[0];
     const start_recipient_row = rows.get_message_recipient_row(start_row);
     const start_recipient_row_id = rows.id_for_recipient_row(start_recipient_row);
     let should_include_start_recipient_header = false;
-
     let last_recipient_row_id = start_recipient_row_id;
-    for (let row = start_row; rows.id(row) <= end_id; row = rows.next_visible(row)) {
+
+    for (const row of copy_rows) {
         const recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row(row));
         // if we found a message from another recipient,
         // it means that we have messages from several recipients,
