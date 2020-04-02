@@ -41,7 +41,16 @@ exports.last_visible = function () {
     return $('.focused_table .selectable_row').last();
 };
 
+exports.is_draft_row = function (row) {
+    return row.find('.restore-draft').length >= 1;
+};
+
 exports.id = function (message_row) {
+    if (exports.is_draft_row(message_row)) {
+        blueslip.error('Drafts have no zid');
+        return;
+    }
+
     /*
         For blueslip errors, don't return early, since
         we may have some code now that actually relies
@@ -49,6 +58,7 @@ exports.id = function (message_row) {
         that up in the future, but we mainly just want
         more data now.
     */
+
     if (message_row.length !== 1) {
         blueslip.error("Caller should pass in a single row.");
     }
