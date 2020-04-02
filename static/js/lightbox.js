@@ -91,8 +91,8 @@ exports.open = function (image, options) {
 
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
-    const $image_source = $image.attr("data-src-fullsize") || $image.attr("src");
-    let payload = asset_map.get($image_source);
+    const $preview_src = $image.attr("src");
+    let payload = asset_map.get($preview_src);
     if (payload === undefined) {
         payload = exports.parse_image_data($image);
     }
@@ -168,6 +168,7 @@ exports.show_from_selected_message = function () {
 
 // retrieve the metadata from the DOM and store into the asset_map.
 exports.parse_image_data = function ($image) {
+    const $preview_src = $image.attr("src");
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
     // cast to true.
     const is_youtube_video = !!$image.closest(".youtube-video").length;
@@ -196,7 +197,7 @@ exports.parse_image_data = function ($image) {
         if ($image.attr("data-src-fullsize")) {
             $source = $image.attr("data-src-fullsize");
         } else {
-            $source = $image.attr("src");
+            $source = $preview_src;
         }
     }
     let sender_full_name;
@@ -216,12 +217,12 @@ exports.parse_image_data = function ($image) {
         user: sender_full_name,
         title: $parent.attr("title"),
         type: $type,
-        preview: $image.attr("src"),
+        preview: $preview_src,
         source: $source,
         url: $url,
     };
 
-    asset_map.set($source, payload);
+    asset_map.set($preview_src, payload);
     return payload;
 };
 
