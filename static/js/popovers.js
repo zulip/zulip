@@ -700,7 +700,7 @@ exports.show_sender_info = function () {
 // side effect of closing popovers, which we don't want.  So we
 // suppress the first hide from scrolling after a resize using this
 // variable.
-let suppress_scroll_hide = false;
+let suppress_scroll_hide = true;
 
 exports.set_suppress_scroll_hide = function () {
     suppress_scroll_hide = true;
@@ -1072,15 +1072,15 @@ exports.register_click_handlers = function () {
     });
 
     (function () {
-        let last_scroll = 0;
+        let last_scroll = new Date().getTime();
 
         $('.app').on('scroll', function () {
+            const date = new Date().getTime();
             if (suppress_scroll_hide) {
                 suppress_scroll_hide = false;
+                last_scroll = date;
                 return;
             }
-
-            const date = new Date().getTime();
 
             // only run `popovers.hide_all()` if the last scroll was more
             // than 250ms ago.
