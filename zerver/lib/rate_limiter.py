@@ -255,7 +255,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                 continue
 
             boundary = float(timestamp) + range_seconds
-            if boundary > now:
+            if boundary >= now:
                 free = boundary - now
                 return True, free
 
