@@ -28,6 +28,7 @@ run_test('pan_and_zoom', () => {
     img.set_parent(link);
     link.closest = () => msg;
     msg.attr("zid", "1234");
+    img.attr("src", "example");
 
     let fetched_zid;
 
