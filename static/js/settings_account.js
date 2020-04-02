@@ -75,6 +75,23 @@ exports.update_avatar_change_display = function () {
     }
 };
 
+function display_avatar_upload_complete() {
+    $('#user-avatar-background').css({display: 'none'});
+    $('#user-avatar-spinner').css({display: 'none'});
+    $('#user_avatar_upload_button').show();
+    $('#user_avatar_delete_button').show();
+
+}
+
+function display_avatar_upload_started() {
+    $("#user-avatar-source").hide();
+    $('#user-avatar-background').css({display: 'block'});
+    $('#user-avatar-spinner').css({display: 'block'});
+    $('#user_avatar_upload_button').hide();
+    $('#user_avatar_delete_button').hide();
+}
+
+
 function settings_change_error(message, xhr) {
     ui_report.error(message, xhr, $('#account-settings-status').expectOne());
 }
@@ -562,12 +579,7 @@ exports.set_up = function () {
         for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
             form_data.append('file-' + i, file);
         }
-
-        $("#user-avatar-source").hide();
-
-        const spinner = $("#upload_avatar_spinner").expectOne();
-        loading.make_indicator(spinner, {text: i18n.t('Uploading profile picture.')});
-
+        display_avatar_upload_started();
         channel.post({
             url: '/json/users/me/avatar',
             data: form_data,
@@ -575,14 +587,13 @@ exports.set_up = function () {
             processData: false,
             contentType: false,
             success: function () {
-                loading.destroy_indicator($("#upload_avatar_spinner"));
-                $("#user_avatar_delete_button").show();
+                display_avatar_upload_complete();
                 $("#user_avatar_file_input_error").hide();
                 $("#user-avatar-source").hide();
                 // Rest of the work is done via the user_events -> avatar_url event we will get
             },
             error: function (xhr) {
-                loading.destroy_indicator($("#upload_avatar_spinner"));
+                display_avatar_upload_complete();
                 if (page_params.avatar_source === 'G') {
                     $("#user-avatar-source").show();
                 }
