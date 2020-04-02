@@ -86,6 +86,7 @@ exports.update_org_settings_menu_item = function () {
 exports.initialize = function () {
     exports.update_org_settings_menu_item();
 
+    $('#gear-menu a[data-toggle="dropdown"]').removeClass("disabled");
     $('#gear-menu').on('click', function () {
         popovers.hide_all();
     });

@@ -120,10 +120,11 @@ exports.then_click = function (selector) {
 };
 
 exports.then_log_out = function () {
+    var menu_selector_disabled = '#settings-dropdown[class="disabled"]';
     var menu_selector = '#settings-dropdown';
     var logout_selector = 'a[href="#logout"]';
 
-    casper.waitUntilVisible(menu_selector, function () {
+    casper.waitWhileVisible(menu_selector_disabled, function () {
         casper.click(menu_selector);
 
         casper.waitUntilVisible(logout_selector, function () {
