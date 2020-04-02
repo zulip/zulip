@@ -210,10 +210,14 @@ exports.condense_and_collapse = function (elems) {
         if (message.condensed === true) {
             condense_row($(elem));
             continue;
-        } else if (message.condensed === false) {
+        }
+
+        if (message.condensed === false) {
             uncondense_row($(elem));
             continue;
-        } else if (long_message) {
+        }
+
+        if (long_message) {
             // By default, condense a long message.
             condense_row($(elem));
         } else {
