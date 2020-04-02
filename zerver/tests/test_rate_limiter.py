@@ -69,7 +69,7 @@ class RateLimiterBackendBase(ZulipTestCase):
         self.assertEqual(expected_time_till_reset, time_till_reset)
 
     def expected_api_calls_left(self, obj: RateLimitedTestObject, now: float) -> Tuple[int, float]:
-        longest_rule = obj.rules()[-1]
+        longest_rule = obj.get_rules()[-1]
         max_window, max_calls = longest_rule
         history = self.requests_record.get(obj.key())
         if history is None:
@@ -198,13 +198,13 @@ class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
         with mock.patch('time.time', return_value=(start_time + 1.01)):
             self.make_request(obj, expect_ratelimited=False, verify_api_calls_left=False)
 
-class RateLimitedUserTest(ZulipTestCase):
+class RateLimitedObjectsTest(ZulipTestCase):
     def test_user_rate_limits(self) -> None:
         user_profile = self.example_user("hamlet")
         user_profile.rate_limits = "1:3,2:4"
         obj = RateLimitedUser(user_profile)
 
-        self.assertEqual(obj.rules(), [(1, 3), (2, 4)])
+        self.assertEqual(obj.get_rules(), [(1, 3), (2, 4)])
 
     def test_add_remove_rule(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -213,9 +213,13 @@ class RateLimitedUserTest(ZulipTestCase):
         add_ratelimit_rule(10, 100, domain='some_new_domain')
         obj = RateLimitedUser(user_profile)
 
-        self.assertEqual(obj.rules(), [(1, 2), ])
+        self.assertEqual(obj.get_rules(), [(1, 2), ])
         obj.domain = 'some_new_domain'
-        self.assertEqual(obj.rules(), [(4, 5), (10, 100)])
+        self.assertEqual(obj.get_rules(), [(4, 5), (10, 100)])
 
         remove_ratelimit_rule(10, 100, domain='some_new_domain')
-        self.assertEqual(obj.rules(), [(4, 5), ])
+        self.assertEqual(obj.get_rules(), [(4, 5), ])
+
+    def test_empty_rules_edge_case(self) -> None:
+        obj = RateLimitedTestObject("test", rules=[], backend=RedisRateLimiterBackend)
+        self.assertEqual(obj.get_rules(), [(1, 9999), ])
