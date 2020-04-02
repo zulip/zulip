@@ -28,13 +28,15 @@ function render_lightbox_list_images(preview_source) {
     }
 }
 
-function display_image(payload, options) {
+function display_image(payload) {
     render_lightbox_list_images(payload.preview);
 
     $(".player-container").hide();
     $(".image-actions, .image-description, .download, .lightbox-canvas-trigger").show();
 
-    if (options.lightbox_canvas === true) {
+    const lightbox_canvas = $(".lightbox-canvas-trigger").hasClass("enabled");
+
+    if (lightbox_canvas === true) {
         const canvas = document.createElement("canvas");
         canvas.setAttribute("data-src", payload.source);
 
@@ -85,14 +87,7 @@ function display_video(payload) {
 // the image param is optional, but required on the first preview of an image.
 // this will likely be passed in every time but just ignored if the result is already
 // stored in the `asset_map`.
-exports.open = function ($image, options) {
-    if (!options) {
-        options = {
-            // default to showing standard images.
-            lightbox_canvas: $(".lightbox-canvas-trigger").hasClass("enabled"),
-        };
-    }
-
+exports.open = function ($image) {
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
     let $preview_src = $image.attr("src");
@@ -120,7 +115,7 @@ exports.open = function ($image, options) {
     if (payload.type.match("-video")) {
         display_video(payload);
     } else if (payload.type === "image") {
-        display_image(payload, options);
+        display_image(payload);
     }
 
     if (is_open) {
