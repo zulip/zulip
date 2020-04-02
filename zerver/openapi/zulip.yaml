@@ -3260,6 +3260,58 @@ paths:
         default: null
       security:
       - basicAuth: []
+  /rest-error-handling:
+    post:
+      description: |
+        Common error to many endpoints
+      responses:
+        '400_invalid_api_key':
+          description: |
+            Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "msg": "Invalid API key",
+                        "result": "error"
+                    }
+        '400_missing_request_argument_error':
+          description: |
+            Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - properties:
+                    var_name:
+                      type: string
+                      description: |
+                        It contains the information about the missing argument.
+                - example:
+                    {
+                        "code": "REQUEST_VARIABLE_MISSING",
+                        "msg": "Missing 'content' argument",
+                        "result": "error",
+                        "var_name": "content"
+                    }
+        '400_user_not_authorized_error':
+          description: |
+            Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "User not authorized for this query",
+                        "result": "error"
+                    }
 
 components:
   #######################
