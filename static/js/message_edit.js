@@ -143,9 +143,26 @@ exports.show_topic_edit_spinner = function (row) {
     $(".topic_edit_cancel").hide();
 };
 
+exports.end_if_focused = function () {
+    const focused_elem = $(".message_edit").find(':focus');
+
+    if (focused_elem.length === 1) {
+        focused_elem.blur();
+        const row = focused_elem.closest('.message_row');
+        exports.end(row);
+    }
+};
+
 function handle_edit_keydown(from_topic_edited_only, e) {
     let row;
     const code = e.keyCode || e.which;
+
+    if (code === 27) {
+        exports.end_if_focused();
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+    }
 
     if ($(e.target).hasClass("message_edit_content") && code === 13) {
         // Pressing enter to save edits is coupled with enter to send

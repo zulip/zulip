@@ -178,8 +178,6 @@ exports.in_content_editable_widget = function (e) {
 
 // Returns true if we handled it, false if the browser should.
 exports.process_escape_key = function (e) {
-    let row;
-
     if (exports.in_content_editable_widget(e)) {
         return false;
     }
@@ -204,32 +202,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    if (message_edit.is_editing(current_msg_list.selected_id())) {
-        // Using this definition of "row" instead of "current_msg_list.selected_row()"
-        // because it returns a more complete object.
-        // Necessary for refocusing on message list in Firefox.
-        const message_edit_inputs = $(".message_edit_content, .message_edit_topic");
-        row = message_edit_inputs.filter(":focus").closest(".message_row");
-        row.find('.message_edit_content').blur();
-        message_edit.end(row);
-        return true;
-    }
-
     if (exports.processing_text()) {
-        if ($(".message_edit_content").filter(":focus").length > 0) {
-            row = $(".message_edit_content").filter(":focus").closest(".message_row");
-            row.find('.message_edit_content').blur();
-            message_edit.end(row);
-            return true;
-        }
-
-        if ($(".message_edit_topic").filter(":focus").length > 0) {
-            row = $(".message_edit_topic").filter(":focus").closest(".message_row");
-            row.find('.message_edit_topic').blur();
-            message_edit.end(row);
-            return true;
-        }
-
         if (activity.searching()) {
             activity.escape_search();
             return true;
