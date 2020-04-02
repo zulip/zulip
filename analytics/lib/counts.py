@@ -193,28 +193,26 @@ def do_aggregate_to_summary_table(stat: CountStat, end_time: datetime,
         logger.info("%s RealmCount aggregation (%dms/%sr)" % (
             stat.property, (end - start) * 1000, cursor.rowcount))
 
-    if realm is None:
-        # Aggregate into InstallationCount.  Only run if we just
-        # processed counts for all realms.
-        #
-        # TODO: Add support for updating installation data after
-        # changing an individual realm's values.
-        installationcount_query = """
-            INSERT INTO analytics_installationcount
-                (value, property, subgroup, end_time)
-            SELECT
-                sum(value), '%(property)s', analytics_realmcount.subgroup, %%(end_time)s
-            FROM analytics_realmcount
-            WHERE
-                property = '%(property)s' AND
-                end_time = %%(end_time)s
-            GROUP BY analytics_realmcount.subgroup
-            """ % {'property': stat.property}
-        start = time.time()
-        cursor.execute(installationcount_query, {'end_time': end_time})
-        end = time.time()
-        logger.info("%s InstallationCount aggregation (%dms/%sr)" % (
-            stat.property, (end - start) * 1000, cursor.rowcount))
+    installationcount_query = """
+        INSERT INTO analytics_installationcount
+            (value, property, subgroup, end_time)
+        SELECT
+            sum(value), '%(property)s', analytics_realmcount.subgroup, %%(end_time)s
+        FROM analytics_realmcount
+        WHERE
+            property = '%(property)s' AND
+            end_time = %%(end_time)s
+        GROUP BY analytics_realmcount.subgroup
+        ON CONFLICT
+            (property, subgroup, end_time)
+        DO UPDATE SET
+            value = EXCLUDED.value
+        """ % {'property': stat.property}
+    start = time.time()
+    cursor.execute(installationcount_query, {'end_time': end_time})
+    end = time.time()
+    logger.info("%s InstallationCount aggregation (%dms/%sr)" % (
+        stat.property, (end - start) * 1000, cursor.rowcount))
 
     cursor.close()
 
