@@ -1,7 +1,7 @@
 import os
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Type
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -29,8 +29,11 @@ class RateLimiterLockingException(Exception):
     pass
 
 class RateLimitedObject(ABC):
-    def __init__(self) -> None:
-        self.backend = RedisRateLimiterBackend
+    def __init__(self, backend: Optional['Type[RateLimiterBackend]']=None) -> None:
+        if backend is not None:
+            self.backend = backend  # type: Type[RateLimiterBackend]
+        else:
+            self.backend = RedisRateLimiterBackend
 
     def rate_limit(self) -> Tuple[bool, float]:
         # Returns (ratelimited, secs_to_freedom)
