@@ -203,6 +203,9 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Real-time-events endpoint
         '/real-time',
 
+        # Rest error handling endpoint
+        '/rest-error-handling',
+
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for fetching API keys
         '/fetch_api_key',

@@ -1,19 +1,4 @@
 {
-    "invalid-api-key": {
-        "msg": "Invalid API key",
-        "result": "error"
-    },
-    "missing-request-argument-error": {
-        "code": "REQUEST_VARIABLE_MISSING",
-        "msg": "Missing 'content' argument",
-        "result": "error",
-        "var_name": "content"
-    },
-    "user-not-authorized-error": {
-        "code": "BAD_REQUEST",
-        "msg": "User not authorized for this query",
-        "result": "error"
-    },
     "zulip-outgoing-webhook-payload": {
         "data": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
         "trigger": "mention",

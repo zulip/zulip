@@ -422,8 +422,7 @@ def test_user_not_authorized_error(nonadmin_client):
     # type: (Client) -> None
     result = nonadmin_client.get_streams(include_all_active=True)
 
-    fixture = FIXTURES['user-not-authorized-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_user_not_authorized_error')
 
 def get_subscribers(client):
     # type: (Client) -> None
@@ -1108,15 +1107,14 @@ def update_user_group_members(client, group_id):
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
-    fixture = FIXTURES['invalid-api-key']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_invalid_api_key')
 
 def test_missing_request_argument(client):
     # type: (Client) -> None
     result = client.render_message({})
 
-    fixture = FIXTURES['missing-request-argument-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_missing_request_argument_error')
+
 
 def test_invalid_stream_error(client):
     # type: (Client) -> None
