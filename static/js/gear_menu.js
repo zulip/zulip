@@ -88,7 +88,7 @@ exports.initialize = function () {
 
     $('#gear-menu a[data-toggle="dropdown"]').removeClass("disabled");
     $('#gear-menu').on('click', function () {
-        popovers.hide_all();
+        popovers.hide_all_popovers();
     });
     $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch

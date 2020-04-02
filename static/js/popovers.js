@@ -1135,6 +1135,13 @@ exports.hide_all = function () {
     exports.hide_userlist_sidebar();
     stream_popover.hide_streamlist_sidebar();
     exports.hide_all_except_sidebars();
+    $(".dropdown").removeClass("open");
+};
+
+exports.hide_all_popovers = function () {
+    exports.hide_userlist_sidebar();
+    stream_popover.hide_streamlist_sidebar();
+    exports.hide_all_except_sidebars();
 };
 
 exports.set_userlist_placement = function (placement) {
