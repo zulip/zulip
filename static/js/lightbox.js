@@ -278,9 +278,9 @@ exports.initialize = function () {
 
     $("#lightbox_overlay").on("click", ".image-list .image", function () {
         const $image_list = $(this).parent();
-        const original_image = $(".message_row img[src='" + $(this).attr('data-src') + "']");
+        const $original_image = $(".message_row img[src='" + $(this).attr('data-src') + "']");
 
-        exports.open(original_image);
+        exports.open($original_image);
 
         $(".image-list .image.selected").removeClass("selected");
         $(this).addClass("selected");
