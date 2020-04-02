@@ -14,6 +14,8 @@ set_global('popovers', {
     hide_all: () => {},
 });
 
+rows.is_draft_row = () => false;
+
 set_global('$', global.make_zjquery());
 
 run_test('pan_and_zoom', () => {
