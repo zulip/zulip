@@ -466,10 +466,10 @@ exports.initialize_everything = function () {
     search.initialize();
     tutorial.initialize();
     notifications.initialize();
-    gear_menu.initialize();
     settings_panel_menu.initialize();
     settings_sections.initialize();
     settings_toggle.initialize();
+    gear_menu.initialize();
     hashchange.initialize();
     pointer.initialize();
     unread_ui.initialize();
