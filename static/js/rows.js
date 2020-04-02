@@ -41,6 +41,30 @@ exports.last_visible = function () {
     return $('.focused_table .selectable_row').last();
 };
 
+exports.visible_range = function (start_id, end_id) {
+    /*
+        Get all visible rows between start_id
+        and end_in, being inclusive on both ends.
+    */
+
+    const rows = [];
+
+    let row = current_msg_list.get_row(start_id);
+    let msg_id = exports.id(row);
+
+    while (msg_id <= end_id) {
+        rows.push(row);
+
+        if (msg_id >= end_id) {
+            break;
+        }
+        row = exports.next_visible(row);
+        msg_id = exports.id(row);
+    }
+
+    return rows;
+};
+
 exports.is_draft_row = function (row) {
     return row.find('.restore-draft').length >= 1;
 };
