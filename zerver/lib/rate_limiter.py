@@ -369,7 +369,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
         if key_blocked is not None:
             # We are manually blocked. Report for how much longer we will be
-            if blocking_ttl_b is None:
+            if blocking_ttl_b is None:  # nocoverage # defensive code, this should never happen
                 blocking_ttl = 0.5
             else:
                 blocking_ttl = int(blocking_ttl_b)
@@ -436,7 +436,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
                     # If no exception was raised in the execution, there were no transaction conflicts
                     break
-                except redis.WatchError:
+                except redis.WatchError:  # nocoverage # Ideally we'd have a test for this.
                     if count > 10:
                         raise RateLimiterLockingException()
                     count += 1
