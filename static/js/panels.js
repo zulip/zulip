@@ -76,6 +76,7 @@ exports.initialize = function () {
     $(".request-desktop-notifications").on("click", function (e) {
         e.preventDefault();
         $(this).closest(".alert").hide();
+        $("#notifications-area").find("audio")[0].play();
         notifications.request_desktop_notifications_permission();
         resize_app();
     });
