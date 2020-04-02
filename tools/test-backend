@@ -93,7 +93,6 @@ not_yet_fully_covered = {path for target in [
     'zerver/lib/parallel.py',
     'zerver/lib/profile.py',
     'zerver/lib/queue.py',
-    'zerver/lib/rate_limiter.py',
     'zerver/lib/sqlalchemy_utils.py',
     'zerver/lib/storage.py',
     'zerver/lib/stream_recipient.py',
