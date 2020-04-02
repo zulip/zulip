@@ -300,8 +300,6 @@ class APICodeExamplesPreprocessor(Preprocessor):
                     if key == 'fixture':
                         if argument:
                             text = self.render_fixture(function, name=argument)
-                        else:
-                            text = self.render_fixture(function)
                     elif key == 'example':
                         if argument == 'admin_config=True':
                             text = SUPPORTED_LANGUAGES[language]['render'](function, admin_config=True)
@@ -331,8 +329,6 @@ class APICodeExamplesPreprocessor(Preprocessor):
         if function.startswith('/'):
             path, method = function.rsplit(':', 1)
             fixture_dict = get_openapi_fixture(path, method, name)
-        else:
-            fixture_dict = zerver.openapi.python_examples.FIXTURES[function]
 
         fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True,
                                   separators=(',', ': '))

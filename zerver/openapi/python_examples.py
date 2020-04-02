@@ -13,7 +13,6 @@ from zerver.models import get_realm, get_user
 from zulip import Client
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-FIXTURE_PATH = os.path.join(ZULIP_DIR, 'templates', 'zerver', 'api', 'fixtures.json')
 
 TEST_FUNCTIONS = dict()  # type: Dict[str, Callable[..., None]]
 REGISTERED_TEST_FUNCTIONS = set()  # type: Set[str]
@@ -45,14 +44,6 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
     user_ids = [get_user(name + '@zulip.com', realm).id for name in user_names]
 
     assert ids_list == user_ids
-
-def load_api_fixtures():
-    # type: () -> Dict[str, Any]
-    with open(FIXTURE_PATH, 'r') as fp:
-        json_dict = json.load(fp)
-        return json_dict
-
-FIXTURES = load_api_fixtures()
 
 @openapi_test_function("/users/me/subscriptions:post")
 def add_subscriptions(client):
