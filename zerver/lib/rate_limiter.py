@@ -222,9 +222,6 @@ class RedisRateLimiterBackend(RateLimiterBackend):
         "Returns a tuple of (rate_limited, time_till_free)"
         list_key, set_key, blocking_key = cls.get_keys(entity_key)
 
-        if len(rules) == 0:
-            return False, 0.0
-
         # Go through the rules from shortest to longest,
         # seeing if this user has violated any of them. First
         # get the timestamps for each nth items
@@ -249,6 +246,9 @@ class RedisRateLimiterBackend(RateLimiterBackend):
             else:
                 blocking_ttl = int(blocking_ttl_b)
             return True, blocking_ttl
+
+        if len(rules) == 0:
+            return False, 0.0
 
         now = time.time()
         for timestamp, (range_seconds, num_requests) in zip(rule_timestamps, rules):
