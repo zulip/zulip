@@ -373,8 +373,24 @@ function should_show_custom_query(query, items) {
 
 exports.slash_commands = [
     {
+        text: i18n.t("/dark (Toggle night mode)"),
+        name: "dark",
+    },
+    {
+        text: i18n.t("/day (Toggle day mode)"),
+        name: "day",
+    },
+    {
+        text: i18n.t("/light (Toggle day mode)"),
+        name: "light",
+    },
+    {
         text: i18n.t("/me is excited (Display action text)"),
         name: "me",
+    },
+    {
+        text: i18n.t("/night (Toggle night mode)"),
+        name: "night",
     },
     {
         text: i18n.t("/poll Where should we go to lunch today? (Create a poll)"),
