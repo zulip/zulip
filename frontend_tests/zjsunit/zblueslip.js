@@ -49,10 +49,18 @@ exports.make_zblueslip = function () {
             return;
         }
         lib[name] = function (message, more_info, stack) {
+            if (typeof message !== 'string') {
+                // We may catch exceptions in blueslip, and if
+                // so our stub should include that.
+                if (message.toString().includes('exception')) {
+                    message = message.toString();
+                } else {
+                    throw Error('message should be string: ' + message);
+                }
+            }
             lib.test_logs[name].push({message, more_info, stack});
             const exact_match_fail = !lib.test_data[name].includes(message);
-            const string_match_fail = !lib.test_data[name].includes(message.toString());
-            if (exact_match_fail && string_match_fail) {
+            if (exact_match_fail) {
                 const error = Error(`Invalid ${name} message: "${message}".`);
                 error.blueslip = true;
                 throw error;
