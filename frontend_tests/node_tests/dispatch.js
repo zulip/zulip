@@ -941,6 +941,9 @@ with_overrides(function (override) {
     event = event_fixtures.realm__update__invite_to_stream_policy;
     test_realm_integer(event, 'realm_invite_to_stream_policy');
 
+    event = event_fixtures.realm__update__bot_creation_policy;
+    test_realm_integer(event, 'realm_bot_creation_policy');
+
     event = event_fixtures.realm__update__invite_required;
     test_realm_boolean(event, 'realm_invite_required');
 
