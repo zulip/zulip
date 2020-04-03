@@ -1380,16 +1380,18 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         return emails
 
     def get_unverified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
-        emails = self.get_all_associated_email_objects(*args, **kwargs)
         return [
-            email_obj['email'] for email_obj in emails
-            if not email_obj.get('verified') and not email_obj["email"].endswith("noreply.github.com")
+            email_obj['email'] for email_obj in self.get_usable_email_objects(*args, **kwargs)
+            if not email_obj.get('verified')
         ]
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
-        emails = self.get_all_associated_email_objects(*args, **kwargs)
+        # We only let users login using email addresses that are
+        # verified by GitHub, because the whole point is for the user
+        # to demonstrate that they control the target email address.
         verified_emails: List[str] = []
-        for email_obj in self.filter_usable_emails(emails):
+        for email_obj in [obj for obj in self.get_usable_email_objects(*args, **kwargs)
+                          if obj.get('verified')]:
             # social_associate_user_helper assumes that the first email in
             # verified_emails is primary.
             if email_obj.get("primary"):
@@ -1399,17 +1401,15 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
         return verified_emails
 
-    def filter_usable_emails(self, emails: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        # We only let users login using email addresses that are
-        # verified by GitHub, because the whole point is for the user
-        # to demonstrate that they control the target email address.
-        # We also disallow the
+    def get_usable_email_objects(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
+        # We disallow the
         # @noreply.github.com/@users.noreply.github.com email
         # addresses, because structurally, we only want to allow email
         # addresses that can receive emails, and those cannot.
+        email_objs = self.get_all_associated_email_objects(*args, **kwargs)
         return [
-            email for email in emails
-            if email.get('verified') and not email["email"].endswith("noreply.github.com")
+            email for email in email_objs
+            if not email["email"].endswith("noreply.github.com")
         ]
 
     def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Dict[str, str]:
