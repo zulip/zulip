@@ -11,6 +11,9 @@ What is zblueslip?
     custom validation for checking that only particular errors and warnings are
     thrown by our test modules.
 
+    The test runner automatically replaces `blueslip` with an instance
+    of a zblueslip object.
+
 The code we are testing lives here:
 
     https://github.com/zulip/zulip/blob/master/frontend_tests/zjsunit/zblueslip.js
@@ -18,11 +21,6 @@ The code we are testing lives here:
 Read the following contents for an overview of how zblueslip works. Also take a
 look at `node_tests/people_errors.js` for actual usage of this module.
 */
-
-// The first thing we do to use zblueslip is patch our global namespace
-// with zblueslip as follows.  This call gives us our own instance of a
-// zblueslip stub variable.
-set_global('blueslip', global.make_zblueslip());
 
 run_test('basics', () => {
     // Let's create a sample piece of code to test:

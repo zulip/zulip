@@ -9,7 +9,6 @@ set_global('sent_messages', {
     start_tracking_message: noop,
     report_server_ack: noop,
 });
-set_global('blueslip', global.make_zblueslip());
 
 zrequire('people');
 zrequire('transmit');

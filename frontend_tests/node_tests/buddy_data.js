@@ -1,7 +1,5 @@
 const _page_params = {};
 
-set_global('blueslip', global.make_zblueslip());
-
 set_global('page_params', _page_params);
 set_global('$', global.make_zjquery());
 zrequire('people');

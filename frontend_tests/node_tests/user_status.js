@@ -1,4 +1,3 @@
-set_global('blueslip', global.make_zblueslip());
 set_global('channel', {});
 zrequire('user_status');
 

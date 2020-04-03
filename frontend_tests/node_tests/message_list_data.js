@@ -4,7 +4,6 @@ zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 
 set_global('page_params', {});
-set_global('blueslip', global.make_zblueslip());
 set_global('muting', {});
 
 global.patch_builtin('setTimeout', (f, delay) => {

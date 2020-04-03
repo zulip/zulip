@@ -1,4 +1,3 @@
-set_global('blueslip', global.make_zblueslip());
 set_global('pm_conversations', {
     recent: {},
 });

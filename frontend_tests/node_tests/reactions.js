@@ -45,8 +45,6 @@ set_global('emoji', {
     },
 });
 
-set_global('blueslip', global.make_zblueslip());
-
 set_global('page_params', {user_id: 5});
 
 set_global('channel', {});

@@ -1,5 +1,4 @@
 zrequire('people');
-set_global('blueslip', global.make_zblueslip());
 set_global('message_store', {});
 set_global('page_params', {});
 set_global('settings_data', {});

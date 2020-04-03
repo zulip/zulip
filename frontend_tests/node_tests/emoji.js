@@ -4,7 +4,6 @@ set_global('page_params', {
     realm_emoji: {},
 });
 set_global('upload_widget', {});
-set_global('blueslip', global.make_zblueslip());
 
 zrequire('emoji');
 

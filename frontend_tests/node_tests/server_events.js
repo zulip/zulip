@@ -9,7 +9,6 @@ zrequire('server_events_dispatch');
 zrequire('server_events');
 zrequire('sent_messages');
 
-set_global('blueslip', global.make_zblueslip());
 set_global('channel', {});
 set_global('home_msg_list', {
     select_id: noop,

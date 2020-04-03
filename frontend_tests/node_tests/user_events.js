@@ -50,8 +50,6 @@ set_global('settings_account', {
 set_global('message_live_update', {
 });
 
-set_global('blueslip', global.make_zblueslip());
-
 const me = {
     email: 'me@example.com',
     user_id: 30,
