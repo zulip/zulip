@@ -92,9 +92,9 @@ exports.open = function (image, options) {
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
     const $image_source = $image.attr("data-src-fullsize") || $image.attr("src");
-    const payload = asset_map.get($image_source);
+    let payload = asset_map.get($image_source);
     if (payload === undefined) {
-        payload = exports.parse_image_data($image)
+        payload = exports.parse_image_data($image);
     }
 
     if (payload.type.match("-video")) {
