@@ -39,19 +39,6 @@ exports.make_zblueslip = function () {
         return lib.test_logs[name];
     };
 
-    lib.check_error = (isblueslip = false) => {
-        return function (error) {
-            if (isblueslip) {
-                assert(error.blueslip, "Not a blueslip error.");
-                return true;
-            }
-            // If an error was thrown by zblueslip, we know that that
-            // error was not in the list of expeccted errors for the test.
-            assert(!error.blueslip, "Error not in expected errors.");
-            return true;
-        };
-    };
-
     // Create logging functions
     Object.keys(opts).forEach(name => {
         if (!opts[name]) {
