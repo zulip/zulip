@@ -580,22 +580,22 @@ run_test('python_to_js_filter', () => {
     expected_value = [/#cf([0-9]+)([A-Z][0-9A-Z]*)(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
-    blueslip.set_test_data('error', 'python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group');
+    blueslip.expect('error', 'python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group');
     markdown.update_realm_filter_rules([['!@#@(!#&((!&(@#(', 'http://google.com']]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     expected_value = [];
     assert.deepEqual(actual_value, expected_value);
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });
 
 run_test('katex_throws_unexpected_exceptions', () => {
     katex.renderToString = function () { throw new Error('some-exception'); };
-    blueslip.set_test_data('error', 'Error: some-exception');
+    blueslip.expect('error', 'Error: some-exception');
     const message = { raw_content: '$$a$$' };
     markdown.apply_markdown(message);
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });
 
 run_test('misc_helpers', () => {

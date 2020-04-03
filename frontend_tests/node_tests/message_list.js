@@ -172,7 +172,7 @@ run_test('message_range', () => {
     assert.deepEqual(list.message_range(30, 40), [{id: 30}, {id: 40}]);
     assert.deepEqual(list.message_range(31, 39), [{id: 40}]);
     assert.deepEqual(list.message_range(31, 1000), [{id: 40}, {id: 50}, {id: 60}]);
-    blueslip.set_test_data('error', 'message_range given a start of -1');
+    blueslip.expect('error', 'message_range given a start of -1');
     assert.deepEqual(list.message_range(-1, 40), [{id: 30}, {id: 40}]);
 });
 

@@ -48,17 +48,17 @@ run_test('user_groups', () => {
     user_groups.update(update_des_event);
     assert.equal(user_groups.get_user_group_from_id(admins.id).description, "administer");
 
-    blueslip.set_test_data('error', 'Unknown group_id in get_user_group_from_id: ' + all.id);
+    blueslip.expect('error', 'Unknown group_id in get_user_group_from_id: ' + all.id);
     assert.equal(user_groups.get_user_group_from_id(all.id), undefined);
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 
     user_groups.remove(students);
 
-    blueslip.set_test_data('error', 'Unknown group_id in get_user_group_from_id: ' + students.id);
+    blueslip.expect('error', 'Unknown group_id in get_user_group_from_id: ' + students.id);
     assert.equal(user_groups.get_user_group_from_id(students.id), undefined);
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 
     assert.equal(user_groups.get_user_group_from_name(all.name), undefined);
     assert.equal(user_groups.get_user_group_from_name(admins.name).id, 1);
@@ -90,8 +90,8 @@ run_test('user_groups', () => {
     user_groups.init();
     assert.equal(user_groups.get_realm_user_groups().length, 0);
 
-    blueslip.set_test_data('error', 'Could not find user group with ID -1');
+    blueslip.expect('error', 'Could not find user group with ID -1');
     assert.equal(user_groups.is_member_of(-1, 15), false);
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });

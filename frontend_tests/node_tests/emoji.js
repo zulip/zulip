@@ -44,10 +44,10 @@ run_test('get_canonical_name', () => {
     canonical_name = emoji.get_canonical_name('airplane');
     assert.equal(canonical_name, 'airplane');
 
-    blueslip.set_test_data('error', 'Invalid emoji name: non_existent');
+    blueslip.expect('error', 'Invalid emoji name: non_existent');
     emoji.get_canonical_name('non_existent');
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });
 
 function set_up_spain_realm_emoji_for_test() {

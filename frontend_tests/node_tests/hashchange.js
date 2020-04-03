@@ -299,9 +299,9 @@ run_test('save_narrow', () => {
         {operator: 'is', operand: 'private'},
     ];
 
-    blueslip.set_test_data('warn', 'browser does not support pushState');
+    blueslip.expect('warn', 'browser does not support pushState');
     hashchange.save_narrow(operators);
-    blueslip.clear_test_data();
+    blueslip.reset();
 
     helper.assert_events([
         'message_viewport.stop_auto_scrolling',

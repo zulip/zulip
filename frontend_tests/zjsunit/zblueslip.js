@@ -24,7 +24,7 @@ exports.make_zblueslip = function () {
         lib.seen_messages[name] = new Set();
     }
 
-    lib.set_test_data = (name, message) => {
+    lib.expect = (name, message) => {
         lib.test_data[name].push(message);
     };
 
@@ -38,7 +38,7 @@ exports.make_zblueslip = function () {
         }
     };
 
-    lib.clear_test_data = () => {
+    lib.reset = () => {
         lib.check_seen_messages();
 
         for (const name of names) {

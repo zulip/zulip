@@ -83,7 +83,7 @@ run_test('clear', () => {
 });
 
 run_test('undefined_keys', () => {
-    blueslip.set_test_data('error', 'Tried to call a FoldDict method with an undefined key.');
+    blueslip.expect('error', 'Tried to call a FoldDict method with an undefined key.');
 
     const d = new FoldDict();
 
@@ -91,6 +91,6 @@ run_test('undefined_keys', () => {
     assert.strictEqual(d.get(undefined), undefined);
     assert.equal(blueslip.get_test_logs('error').length, 2);
 
-    blueslip.clear_test_data();
+    blueslip.reset();
 });
 
