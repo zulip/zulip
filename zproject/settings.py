@@ -15,6 +15,7 @@ import os
 import time
 import sys
 from typing import Any, Dict, List, Union
+from urllib.parse import urljoin
 
 from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
@@ -516,7 +517,10 @@ if CAMO_URI != '':
 # STATIC CONTENT AND MINIFICATION SETTINGS
 ########################################################################
 
-STATIC_URL = '/static/'
+if PRODUCTION or os.getenv('EXTERNAL_HOST') is not None:
+    STATIC_URL = urljoin(ROOT_DOMAIN_URI, '/static/')
+else:
+    STATIC_URL = 'http://localhost:9991/static/'
 
 # ZulipStorage is a modified version of ManifestStaticFilesStorage,
 # and, like that class, it inserts a file hash into filenames
@@ -549,7 +553,7 @@ else:
 WEBPACK_LOADER = {
     'DEFAULT': {
         'CACHE': not DEBUG,
-        'BUNDLE_DIR_NAME': 'webpack-bundles/',
+        'BUNDLE_DIR_NAME': '../webpack/' if DEBUG else 'webpack-bundles/',
         'STATS_FILE': os.path.join(DEPLOY_ROOT, WEBPACK_STATS_FILE),
     }
 }

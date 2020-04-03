@@ -1,6 +1,9 @@
+from urllib.parse import urlsplit
 from django.conf.urls import url
 from django.conf import settings
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.conf.urls.static import static
+from django.contrib.staticfiles.views import serve as staticfiles_serve
+from django.http import HttpRequest, HttpResponse
 from django.views.generic import TemplateView
 import os
 from django.views.static import serve
@@ -70,7 +73,12 @@ if use_prod_static:
         url(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
     ]
 else:
-    urls += staticfiles_urlpatterns()
+    def serve_static(request: HttpRequest, path: str) -> HttpResponse:
+        response = staticfiles_serve(request, path)
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
+
+    urls += static(urlsplit(settings.STATIC_URL).path, view=serve_static)
 
 i18n_urls = [
     url(r'^confirmation_key/$', zerver.views.development.registration.confirmation_key),
