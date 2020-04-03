@@ -4,7 +4,7 @@ import ujson
 
 from django.http import HttpResponse
 from django.test import override_settings
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
@@ -332,8 +332,8 @@ class ChangeSettingsTest(ZulipTestCase):
         if test_value is None:
             raise AssertionError('No test created for %s' % (setting_name,))
 
-        if setting_name == 'demote_inactive_streams':
-            invalid_value = 4  # type: Union[int, str]
+        if isinstance(test_value, int):
+            invalid_value = 100  # type: Any
         else:
             invalid_value = 'invalid_' + setting_name
         data = {setting_name: ujson.dumps(test_value)}
@@ -350,11 +350,7 @@ class ChangeSettingsTest(ZulipTestCase):
         result = self.client_patch("/json/settings/display", data)
         # the json error for multiple word setting names (ex: default_language)
         # displays as 'Invalid language'. Using setting_name.split('_') to format.
-        if setting_name == 'demote_inactive_streams':
-            self.assert_json_error(result, "Invalid setting value '%s'" % (invalid_value,))
-        else:
-            self.assert_json_error(result, "Invalid %s '%s'" % (setting_name.split('_')[-1],
-                                                                invalid_value))
+        self.assert_json_error(result, "Invalid %s" % (setting_name,))
 
         user_profile = self.example_user('hamlet')
         self.assertNotEqual(getattr(user_profile, setting_name), invalid_value)
@@ -378,7 +374,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         for emojiset in banned_emojisets:
             result = self.do_change_emojiset(emojiset)
-            self.assert_json_error(result, "Invalid emojiset '%s'" % (emojiset,))
+            self.assert_json_error(result, "Invalid emojiset")
 
         for emojiset in valid_emojisets:
             result = self.do_change_emojiset(emojiset)
