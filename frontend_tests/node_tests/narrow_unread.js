@@ -192,7 +192,6 @@ run_test('get_unread_ids', () => {
     ];
     set_filter(terms);
 
-    blueslip.set_test_data('warn', 'Unknown emails: bob@example.com');
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 

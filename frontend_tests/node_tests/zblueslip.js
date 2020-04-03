@@ -30,10 +30,6 @@ run_test('basics', () => {
         blueslip.error('world');
     }
 
-    // Let's add an error that we are expecting from the module.
-    // The function 'set_test_data' pushes the expected error message to the array
-    // of messages expected for that log type; here, 'error'.
-    blueslip.set_test_data('error', 'hello');
     // Since the error 'world' is not being expected, blueslip will
     // throw an error.
     assert.throws(throw_an_error);
@@ -66,9 +62,6 @@ run_test('basics', () => {
         blueslip.warn('world');
     }
 
-    // Populate one valid value, and test with an invalid value.
-    // This should throw an error, and we'll assert it was thrown by zblueslip.
-    blueslip.set_test_data('warn', 'hello');
     assert.throws(throw_a_warning);
     blueslip.clear_test_data();
 
