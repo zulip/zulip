@@ -529,14 +529,22 @@ def apply_event(state: Dict[str, Any],
                 state['plan_includes_wide_organization_logo'] = event['value'] != Realm.LIMITED
                 state['realm_upload_quota'] = event['extra_data']['upload_quota']
 
-            # Tricky interaction: Whether we can create streams can get changed here.
-            if (field in ['realm_create_stream_policy',
-                          'realm_waiting_period_threshold']) and 'can_create_streams' in state:
-                state['can_create_streams'] = user_profile.can_create_streams()
+            policy_permission_dict = {'create_stream_policy': 'can_create_streams',
+                                      'invite_to_stream_policy': 'can_subscribe_other_users'}
 
-            if (field in ['realm_invite_to_stream_policy',
-                          'realm_waiting_period_threshold']) and 'can_subscribe_other_users' in state:
-                state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
+            # Tricky interaction: Whether we can create streams and can subscribe other users
+            # can get changed here.
+
+            if field == 'realm_waiting_period_threshold':
+                for policy, permission in policy_permission_dict.items():
+                    if permission in state:
+                        state[permission] = user_profile.has_permission(policy)
+
+            if event['property'] in policy_permission_dict.keys():
+                if policy_permission_dict[event['property']] in state:
+                    state[policy_permission_dict[event['property']]] = user_profile.has_permission(
+                        event['property'])
+
         elif event['op'] == "update_dict":
             for key, value in event['data'].items():
                 state['realm_' + key] = value
