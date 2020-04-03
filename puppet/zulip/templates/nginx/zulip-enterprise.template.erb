@@ -25,7 +25,6 @@ server {
 <% if @no_serve_uploads == '' -%>
     location /user_avatars {
         include /etc/nginx/zulip-include/headers;
-        add_header X-Content-Type-Options nosniff;
         add_header Content-Security-Policy "default-src 'none' img-src 'self'";
         include /etc/nginx/zulip-include/uploads.types;
         alias /home/zulip/uploads/avatars;
