@@ -1959,6 +1959,14 @@ input[type=text]#settings_search {
     margin: 20px;
 }
 
+@media (max-width: 430px) {
+    // selects the label (inline-block)
+    // immediately following the checkbox
+    .settings-box .checkbox + .inline-block {
+        width: calc(100% - 25px);
+    }
+}
+
 @media only screen and (min-width: 700px) and (max-width: 875px) {
     .bots_list .bot-information-box {
         width: calc(100% - 10px);
