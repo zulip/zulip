@@ -38,7 +38,6 @@ set_global('search_pill_widget', {
     },
 });
 
-
 const noop = () => {};
 //
 // We have strange hacks in narrow.activate to sleep 0

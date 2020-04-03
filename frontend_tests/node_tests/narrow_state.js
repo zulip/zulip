@@ -15,7 +15,6 @@ function set_filter(operators) {
     narrow_state.set_current_filter(new Filter(operators));
 }
 
-
 run_test('stream', () => {
     assert.equal(narrow_state.public_operators(), undefined);
     assert(!narrow_state.active());
@@ -47,7 +46,6 @@ run_test('stream', () => {
     assert.deepEqual(public_operators, expected_operators);
     assert.equal(narrow_state.search_string(), 'stream:Test topic:Bar yo');
 });
-
 
 run_test('narrowed', () => {
     narrow_state.reset_current_filter(); // not narrowed, basically
@@ -222,7 +220,6 @@ run_test('topic', () => {
     narrow_state.set_current_filter(undefined);
     assert.equal(narrow_state.topic(), undefined);
 });
-
 
 run_test('stream', () => {
     set_filter([]);

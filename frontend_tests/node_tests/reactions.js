@@ -404,7 +404,6 @@ run_test('add_and_remove_reaction', () => {
     current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
     assert.deepEqual(current_emojis, ['smile', 'inactive_realm_emoji']);
 
-
     // Now add Cali's realm_emoji reaction.
     const cali_event = {
         message_id: 1001,

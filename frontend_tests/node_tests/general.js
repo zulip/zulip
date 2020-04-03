@@ -451,7 +451,6 @@ run_test('insert_message', () => {
     assert.equal(inserted_message.content, 'example content');
 });
 
-
 /*
 
    The previous example starts to get us out of the data layer of
@@ -709,7 +708,6 @@ run_test('stream_list', () => {
     const jquery_helper = make_jquery_helper();
     const sidebar_helper = make_sidebar_helper();
     const topic_list_helper = make_topic_list_helper();
-
 
     // This is what we are testing!
     stream_list.update_streams_sidebar();

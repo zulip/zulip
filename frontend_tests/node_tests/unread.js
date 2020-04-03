@@ -322,7 +322,6 @@ run_test('num_unread_for_topic', () => {
     assert.deepEqual(msg_ids, []);
 });
 
-
 run_test('home_messages', () => {
     stream_data.is_subscribed = function () {
         return true;
@@ -480,7 +479,6 @@ run_test('private_messages', () => {
     assert.equal(counts.private_message_count, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
 });
-
 
 run_test('mentions', () => {
     let counts = unread.get_counts();

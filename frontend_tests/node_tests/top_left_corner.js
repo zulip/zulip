@@ -123,7 +123,6 @@ run_test('update_count_in_dom', () => {
         '<starred-value>'
     );
 
-
     top_left_corner.update_dom_with_unread_counts(counts);
     top_left_corner.update_starred_count(444);
 

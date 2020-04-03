@@ -15,7 +15,6 @@ zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');
 const MessageList = zrequire('message_list').MessageList;
 
-
 const with_overrides = global.with_overrides; // make lint happy
 
 function accept_all_filter() {
@@ -286,7 +285,6 @@ run_test('local_echo', () => {
     assert.equal(list.closest_id(31), 30);
     assert.equal(list.closest_id(54), 50);
     assert.equal(list.closest_id(58), 60);
-
 
     list = new MessageList({});
     list.append([

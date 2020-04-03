@@ -352,8 +352,6 @@ run_test('content_typeahead_selected', () => {
     expected_value = '{ :octopus: ';
     assert.equal(actual_value, expected_value);
 
-
-
     // mention
     fake_this.completing = 'mention';
 
@@ -992,7 +990,6 @@ run_test('initialize', () => {
     event.target.id = 'some_non_existing_id';
     $('form#send_message_form').keydown(event);
 
-
     // Setup jquery functions used in compose_textarea enter
     // handler.
     let range_length = 0;
@@ -1253,7 +1250,6 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("abc/po", false);
     assert_typeahead_equals("hello /poll", false);
     assert_typeahead_equals("\n/pol", false);
-
 
     assert_typeahead_equals("x/", false);
     assert_typeahead_equals("```", false);

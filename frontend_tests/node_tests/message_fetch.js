@@ -272,7 +272,6 @@ run_test('initialize', () => {
     test_backfill_idle(idle_config);
 });
 
-
 function simulate_narrow() {
     const filter = {
         predicate: () => () => false,

@@ -75,7 +75,6 @@ run_test('basics', () => {
     mld.get(10).unread = false;
     assert.equal(mld.first_unread_message_id(), 15);
 
-
     mld.clear();
     assert_contents(mld, []);
     assert.equal(mld.closest_id(99), -1);

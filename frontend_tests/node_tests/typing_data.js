@@ -45,7 +45,6 @@ run_test('basics', () => {
     assert.deepEqual(typing_data.get_group_typists([20, 40]), [20]);
 });
 
-
 run_test('timers', () => {
     const events = {};
 

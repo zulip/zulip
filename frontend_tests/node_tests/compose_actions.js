@@ -13,7 +13,6 @@ set_global('$', global.make_zjquery());
 set_global('compose_pm_pill', {
 });
 
-
 set_global('hash_util', {
 });
 

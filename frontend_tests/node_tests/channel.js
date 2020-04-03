@@ -5,7 +5,6 @@ set_global('reload', {});
 zrequire('reload_state');
 zrequire('channel');
 
-
 const default_stub_xhr = 'default-stub-xhr';
 
 function test_with_mock_ajax(test_params) {
@@ -37,7 +36,6 @@ function test_with_mock_ajax(test_params) {
     assert(ajax_called);
     check_ajax_options(ajax_options);
 }
-
 
 run_test('basics', () => {
     test_with_mock_ajax({

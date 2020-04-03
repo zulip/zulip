@@ -29,7 +29,6 @@ people.initialize_current_user(me.user_id);
 people.add(alice);
 people.add(bob);
 
-
 run_test('set_focused_recipient', () => {
     const sub = {
         stream_id: 101,

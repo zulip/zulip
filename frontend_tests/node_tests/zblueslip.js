@@ -19,7 +19,6 @@ Read the following contents for an overview of how zblueslip works. Also take a
 look at `node_tests/people_errors.js` for actual usage of this module.
 */
 
-
 // The first thing we do to use zblueslip is patch our global namespace
 // with zblueslip as follows.  This call gives us our own instance of a
 // zblueslip stub variable.
