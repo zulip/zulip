@@ -32,7 +32,6 @@ set_global('stream_data', {
         return '#FFFFFF';
     },
 });
-set_global('blueslip', {});
 set_global('people', {
     // Mocking get_by_email function, here we are
     // just returning string before `@` in email
@@ -300,7 +299,6 @@ run_test('format_drafts', () => {
         },
     ];
 
-    blueslip.error = noop;
     $('#drafts_table').append = noop;
 
     const draft_model = drafts.draft_model;

@@ -11,7 +11,6 @@ zrequire('settings_notifications');
 
 const FoldDict = zrequire('fold_dict').FoldDict;
 
-set_global('blueslip', {});
 set_global('narrow_state', {});
 set_global('current_msg_list', {});
 set_global('home_msg_list', {});

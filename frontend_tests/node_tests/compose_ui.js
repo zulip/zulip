@@ -7,7 +7,6 @@ set_global('document', {
 });
 
 set_global('$', global.make_zjquery());
-set_global('blueslip', {});
 
 const alice = {
     email: 'alice@zulip.com',
@@ -22,8 +21,6 @@ const bob = {
 
 people.add(alice);
 people.add(bob);
-
-const noop = function () {};
 
 function make_textbox(s) {
     // Simulate a jQuery textbox for testing purposes.
@@ -75,8 +72,6 @@ function make_textbox(s) {
 }
 
 run_test('insert_syntax_and_focus', () => {
-    blueslip.error = noop;
-    blueslip.log = noop;
     $('#compose-textarea').val("xyz ");
     $('#compose-textarea').caret = function (syntax) {
         if (syntax !== undefined) {

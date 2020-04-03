@@ -1,3 +1,4 @@
+set_global('blueslip', global.make_zblueslip());
 const util = zrequire('util');
 set_global('$', global.make_zjquery());
 
@@ -9,7 +10,6 @@ zrequire('unread');
 zrequire('narrow');
 zrequire('search_pill');
 
-set_global('blueslip', {});
 set_global('channel', {});
 set_global('compose', {});
 set_global('compose_actions', {});
@@ -38,7 +38,6 @@ set_global('search_pill_widget', {
     },
 });
 
-const noop = () => {};
 //
 // We have strange hacks in narrow.activate to sleep 0
 // seconds.
@@ -85,8 +84,6 @@ function test_helper() {
     stub('compose', 'update_closed_compose_buttons_for_stream');
     stub('compose', 'update_closed_compose_buttons_for_private');
     stub('notifications', 'hide_history_limit_message');
-
-    blueslip.debug = noop;
 
     return {
         clear: () => {
