@@ -12,7 +12,7 @@ const OFFLINE_THRESHOLD_SECS = 140;
 
 const me = {
     email: 'me@zulip.com',
-    user_id: 999,
+    user_id: 101,
     full_name: 'Me Myself',
 };
 
@@ -50,6 +50,28 @@ people.initialize_current_user(me.user_id);
 
 run_test('my user', () => {
     assert.equal(presence.get_status(me.user_id), 'active');
+});
+
+run_test('unknown user', () => {
+    const unknown_user_id = 999;
+    const now = 888888;
+    const presences = {};
+    presences[unknown_user_id.toString()] = 'does-not-matter';
+
+    blueslip.expect('error', 'Unknown user ID in presence data: 999');
+    presence.set_info(presences, now);
+    blueslip.reset();
+
+    // If the server is suspected to be offline or reloading,
+    // then we suppress errors.  The use case here is that we
+    // haven't gotten info for a brand new user yet.
+    server_events.suspect_offline = true;
+    presence.set_info(presences, now);
+    server_events.suspect_offline = false;
+
+    reload_state.is_in_progress = () => true;
+    presence.set_info(presences, now);
+    reload_state.is_in_progress = () => false;
 });
 
 run_test('status_from_timestamp', () => {
