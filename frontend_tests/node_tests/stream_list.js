@@ -459,7 +459,6 @@ run_test('sort_streams', () => {
         return sub.name !== 'cars';
     };
 
-
     let appended_elems;
     $('#stream_filters').append = function (elems) {
         appended_elems = elems;
@@ -591,7 +590,6 @@ run_test('separators_only_pinned', () => {
         subscribed: true,
     };
     add_row(RomeSub);
-
 
     let appended_elems;
     $('#stream_filters').append = function (elems) {

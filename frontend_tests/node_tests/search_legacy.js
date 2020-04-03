@@ -188,7 +188,6 @@ run_test('initialize', () => {
             };
         };
 
-
         operators = [{
             negated: false,
             operator: 'search',
@@ -216,14 +215,12 @@ run_test('initialize', () => {
         assert(is_blurred);
         assert(search_button.prop('disabled'));
 
-
         _setup('ver');
         search.is_using_input_method = true;
         func(ev);
         // No change on enter keyup event when using input tool
         assert(!is_blurred);
         assert(!search_button.prop('disabled'));
-
 
         _setup('ver');
         ev.which = 13;

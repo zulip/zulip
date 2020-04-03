@@ -34,7 +34,6 @@ set_global('ui_report', {
     show_error: function () { return false; },
 });
 
-
 server_events.home_view_loaded();
 
 run_test('message_event', () => {
@@ -77,7 +76,6 @@ run_test('pointer_event', () => {
     assert.equal(global.pointer.server_furthest_read, event.pointer);
 });
 
-
 // Start blueslip tests here
 
 const setup = function () {
@@ -117,7 +115,6 @@ run_test('event_dispatch_error', () => {
     assert.equal(logs[0].more_info.other, undefined);
     blueslip.clear_test_data();
 });
-
 
 run_test('event_new_message_error', () => {
     setup();

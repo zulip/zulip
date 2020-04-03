@@ -17,7 +17,6 @@ set_global('blueslip', global.make_zblueslip());
 set_global('narrow_state', {});
 set_global('current_msg_list', {});
 
-
 run_test('activate', () => {
     // Both widgetize.activate and widgetize.handle_event are tested
     // here to use the "caching" of widgets

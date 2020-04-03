@@ -5,7 +5,6 @@ set_global('message_store', {
     user_ids: () => [],
 });
 
-
 const settings_config = zrequire('settings_config');
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
@@ -28,7 +27,6 @@ const bob = {
     full_name: 'Bob Roberts',
     user_id: 42,
 };
-
 
 function init() {
     people.init();
@@ -194,7 +192,6 @@ run_test('private_suggestions', () => {
         "is:unread",
     ];
     assert.deepEqual(suggestions.strings, expected);
-
 
     // Users can enter bizarre queries, and if they do, we want to
     // be conservative with suggestions.
@@ -984,7 +981,6 @@ run_test('people_suggestions', () => {
     people.add(ted);
     people.add(bob);
     people.add(alice);
-
 
     topic_data.reset();
 

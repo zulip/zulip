@@ -362,7 +362,6 @@ run_test('merge_message_groups', () => {
         assert_message_list_equal(result.rerender_messages_next_same_sender, [message1]);
     }());
 
-
     (function test_prepend_message_same_subject() {
 
         const message1 = build_message_context();
@@ -555,7 +554,6 @@ run_test('render_windows', () => {
 
         list.add_messages(messages, {});
     }
-
 
     function verify_no_move_range(start, end) {
         // In our render window, there are up to 300 positions in

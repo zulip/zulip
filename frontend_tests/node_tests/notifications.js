@@ -20,7 +20,6 @@ const _navigator = {
 };
 set_global('navigator', _navigator);
 
-
 zrequire('alert_words');
 zrequire('muting');
 zrequire('stream_data');
@@ -248,7 +247,6 @@ run_test('message_is_notifiable', () => {
     assert.equal(notifications.should_send_audible_notification(message), false);
     assert.equal(notifications.message_is_notifiable(message), true);
 });
-
 
 run_test('basic_notifications', () => {
 

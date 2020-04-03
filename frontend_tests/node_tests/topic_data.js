@@ -86,7 +86,6 @@ run_test('is_complete_for_stream_id', () => {
         topic_data.is_complete_for_stream_id(sub.stream_id),
         true);
 
-
     // Now simulate a more recent message id.
     message_list.all.first = () => {
         return {id: sub.first_message_id + 1};

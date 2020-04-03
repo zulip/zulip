@@ -285,7 +285,6 @@ function test_submit_settings_form(submit_form) {
     };
     assert.deepEqual(data, expected_value);
 
-
     subsection = 'user-defaults';
     ev.currentTarget = `#org-submit-${subsection}`;
     stubs = createSaveButtons(subsection);
@@ -320,7 +319,6 @@ function test_submit_settings_form(submit_form) {
         default_twenty_four_hour_time: 'true',
     };
     assert.deepEqual(data, expected_value);
-
 
     // Testing only once for since callback is same for all cases
     success_callback();
@@ -422,7 +420,6 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     const domain_obj = $.create('domain object');
     domain_obj.text(domain);
-
 
     const elem_obj = $.create('<elem html>');
     const parents_obj = $.create('parents object');
@@ -708,7 +705,6 @@ function test_discard_changes_button(discard_changes) {
     allow_community_topic_editing.attr('id', 'id_realm_allow_community_topic_editing');
     message_content_edit_limit_minutes.attr('id', 'id_realm_message_content_edit_limit_minutes');
     message_content_delete_limit_minutes.attr('id', 'id_realm_message_content_delete_limit_minutes');
-
 
     const discard_button_parent = $('.org-subsection-parent');
     discard_button_parent.find = () => [

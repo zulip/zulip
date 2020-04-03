@@ -80,7 +80,6 @@ run_test('get_and_set_muted_topics', () => {
 
     blueslip.clear_test_data();
 
-
     assert.deepEqual(muting.get_muted_topics().sort(), [
         [design.stream_id, 'typography'],
         [social.stream_id, 'breakfast'],

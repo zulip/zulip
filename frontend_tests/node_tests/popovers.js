@@ -24,7 +24,6 @@ set_global('page_params', {
 });
 set_global('rows', {});
 
-
 set_global('message_viewport', {
     height: () => 500,
 });

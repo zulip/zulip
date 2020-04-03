@@ -3,7 +3,6 @@ set_global('$', global.make_zjquery());
 set_global('loading', {});
 set_global('Sortable', {create: () => {}});
 
-
 const SHORT_TEXT_ID = 1;
 const CHOICE_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;

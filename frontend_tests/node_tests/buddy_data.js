@@ -69,7 +69,6 @@ function make_people() {
     people.initialize_current_user(me.user_id);
 }
 
-
 function activate_people() {
     presence.presence_info.clear();
 
@@ -93,7 +92,6 @@ function activate_people() {
         set_presence(user_id, 'offline');
     }
 }
-
 
 make_people();
 activate_people();
@@ -208,7 +206,6 @@ run_test('bulk_data_hacks', () => {
     // We match on "p" for the email.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('p');
     assert.equal(user_ids.length, 998);
-
 
     // Make our shrink limit higher, and go back to an empty search.
     // We won't get all 1000 users, just the present ones.

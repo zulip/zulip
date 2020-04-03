@@ -6,7 +6,6 @@ set_global('blueslip', global.make_zblueslip());
 set_global('document', {});
 const util = zrequire('util');
 
-
 run_test('CachedValue', () => {
     let x = 5;
 

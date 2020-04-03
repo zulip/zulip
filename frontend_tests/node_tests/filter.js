@@ -1284,7 +1284,6 @@ run_test('update_email', () => {
     assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
 });
 
-
 run_test('error_cases', () => {
     // This test just gives us 100% line coverage on defensive code that
     // should not be reached unless we break other code.

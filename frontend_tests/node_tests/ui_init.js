@@ -68,7 +68,6 @@ for (const mod of ignore_modules) {
 
 emoji.emojis_by_name = new Map();
 
-
 util.is_mobile = () => false;
 global.stub_templates(() => 'some-html');
 ui.get_scroll_element = element => element;
@@ -180,7 +179,6 @@ $("#stream_message_recipient_topic").typeahead = () => {};
 $("#private_message_recipient").typeahead = () => {};
 $("#compose-textarea").typeahead = () => {};
 $("#search_query").typeahead = () => {};
-
 
 const value_stub = $.create('value');
 const count_stub = $.create('count');

@@ -15,7 +15,6 @@ people.add({
 
 people.initialize_current_user(42);
 
-
 const regular_message = {
     sender_email: 'another@zulip.com',
     content: '<p>a message</p>',

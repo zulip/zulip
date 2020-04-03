@@ -179,7 +179,6 @@ run_test('validate', () => {
         $("#sending-indicator").hide();
         $("#compose-textarea").select(noop);
 
-
         const pm_pill_container = $.create('fake-pm-pill-container');
         $('#private_message_recipient').set_parent(pm_pill_container);
         pm_pill_container.set_find_results('.input', $('#private_message_recipient'));
@@ -880,7 +879,6 @@ run_test('warn_if_private_stream_is_linked', () => {
     for (const f of checks) { f(); }
 });
 
-
 run_test('initialize', () => {
     // In this test we mostly do the setup stuff in addition to testing the
     // normal workflow of the function. All the tests for the on functions are
@@ -1105,7 +1103,6 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
             return function () { assert(called); };
         }()),
 
-
         (function () {
             let called;
             global.stub_templates(function (template_name, context) {
@@ -1137,7 +1134,6 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
     assert.equal($('#compose_invite_users').visible(), true);
 
     for (const f of checks) { f(); }
-
 
     // Simulate that the row was added to the DOM.
     const warning_row = $('<warning row>');
@@ -1619,7 +1615,6 @@ run_test('create_message_object', () => {
     global.$.trim = function (s) {
         return s;
     };
-
 
     let message = compose.create_message_object();
     assert.equal(message.to, sub.stream_id);

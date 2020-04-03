@@ -31,7 +31,6 @@ run_test('set_up_ids', () => {
     };
 });
 
-
 function pill_html(value, data_id, img_src) {
     const has_image = img_src !== undefined;
 

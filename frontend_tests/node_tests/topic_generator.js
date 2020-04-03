@@ -251,7 +251,6 @@ run_test('topics', () => {
     assert.deepEqual(next_topic(undefined, undefined),
                      {stream: 1, topic: '1a'});
 
-
     // Now test the deeper function that is wired up to
     // real functions stream_data/stream_sort/unread.
 
