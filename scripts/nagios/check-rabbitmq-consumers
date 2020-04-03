@@ -9,6 +9,10 @@ import os
 import subprocess
 from typing import Dict
 
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(ZULIP_PATH)
+from scripts.lib.check_rabbitmq_queue import normal_queues
+
 states = {
     0: "OK",
     1: "WARNING",
@@ -46,26 +50,10 @@ output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
 consumers = defaultdict(int)  # type: Dict[str, int]
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
-queues = {
-    'deferred_work',
-    'digest_emails',
-    'email_mirror',
-    'embed_links',
-    'embedded_bots',
-    'error_reports',
-    'invites',
-    'missedmessage_emails',
-    'email_senders',
-    'missedmessage_mobile_notifications',
-    'outgoing_webhooks',
-    'signups',
-    'slow_queries',
-    'user_activity',
-    'user_activity_interval',
-    'user_presence',
+queues = set(normal_queues).union({
     # These queues may not be present if settings.TORNADO_PROCESSES > 1
     'notify_tornado',
-}
+})
 
 for queue_name in queues:
     queue_name = queue_name.strip()
