@@ -294,7 +294,7 @@ exports.initialize = function () {
             // enable the `LightboxCanvas` class.
             exports.open($img);
         } else {
-            $img = $("#lightbox_overlay").find(".image-preview canvas")[0].image;
+            $img = $($("#lightbox_overlay").find(".image-preview canvas")[0].image);
 
             $(this).removeClass("enabled");
             exports.open($img);
