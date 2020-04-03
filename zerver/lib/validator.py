@@ -32,7 +32,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
 from typing import Any, Dict, Iterable, Optional, Tuple, cast, List, Callable, TypeVar, \
-    Collection
+    Set, Union
 
 from datetime import datetime
 from zerver.lib.request import JsonableError
@@ -71,7 +71,7 @@ def check_required_string(var_name: str, val: object) -> Optional[str]:
 
     return None
 
-def check_string_in(possible_values: Collection[str]) -> Validator:
+def check_string_in(possible_values: Union[Set[str], List[str]]) -> Validator:
     @set_type_structure("str")
     def validator(var_name: str, val: object) -> Optional[str]:
         not_str = check_string(var_name, val)
