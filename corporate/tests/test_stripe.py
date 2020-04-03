@@ -982,6 +982,44 @@ class StripeTest(StripeTestCase):
         self.assertIsNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.ENDED)
 
+    @patch("corporate.lib.stripe.billing_logger.warning")
+    @patch("corporate.lib.stripe.billing_logger.info")
+    def test_reupgrade_by_billing_admin_after_downgrade(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+
+        self.login_user(user)
+        self.client_post("/json/billing/plan/change",
+                         {'status': CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE})
+
+        with self.assertRaises(BillingError) as context:
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+        self.assertEqual(context.exception.description, "subscribing with existing subscription")
+
+        invoice_plans_as_needed(self.next_year)
+
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["Your organization is on the <b>Zulip Free</b>"], response)
+
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.next_year):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+
+        self.assertEqual(Customer.objects.count(), 1)
+        self.assertEqual(CustomerPlan.objects.count(), 2)
+
+        current_plan = CustomerPlan.objects.all().order_by("id").last()
+        next_invoice_date = add_months(self.next_year, 1)
+        self.assertEqual(current_plan.next_invoice_date, next_invoice_date)
+        self.assertEqual(get_realm('zulip').plan_type, Realm.STANDARD)
+        self.assertEqual(current_plan.status, CustomerPlan.ACTIVE)
+
+        old_plan = CustomerPlan.objects.all().order_by("id").first()
+        self.assertEqual(old_plan.next_invoice_date, None)
+        self.assertEqual(old_plan.status, CustomerPlan.ENDED)
+
     @patch("corporate.lib.stripe.billing_logger.info")
     def test_deactivate_realm(self, mock_: Mock) -> None:
         user = self.example_user("hamlet")
@@ -1025,6 +1063,37 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.invoice_plan") as mocked:
             invoice_plans_as_needed(self.next_year)
         mocked.assert_not_called()
+
+    @patch("corporate.lib.stripe.billing_logger.info")
+    def test_reupgrade_by_billing_admin_after_realm_deactivation(self, mock_: Mock) -> None:
+        user = self.example_user("hamlet")
+
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+
+        do_deactivate_realm(get_realm("zulip"))
+        self.assertTrue(get_realm('zulip').deactivated)
+        do_reactivate_realm(get_realm('zulip'))
+
+        self.login_user(user)
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["Your organization is on the <b>Zulip Free</b>"], response)
+
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+
+        self.assertEqual(Customer.objects.count(), 1)
+
+        self.assertEqual(CustomerPlan.objects.count(), 2)
+
+        current_plan = CustomerPlan.objects.all().order_by("id").last()
+        self.assertEqual(current_plan.next_invoice_date, self.next_month)
+        self.assertEqual(get_realm('zulip').plan_type, Realm.STANDARD)
+        self.assertEqual(current_plan.status, CustomerPlan.ACTIVE)
+
+        old_plan = CustomerPlan.objects.all().order_by("id").first()
+        self.assertEqual(old_plan.next_invoice_date, None)
+        self.assertEqual(old_plan.status, CustomerPlan.ENDED)
 
 class RequiresBillingAccessTest(ZulipTestCase):
     def setUp(self) -> None:
