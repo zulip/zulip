@@ -1159,31 +1159,29 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             return True
         return False
 
-    def can_create_streams(self) -> bool:
+    def has_permission(self, policy_name: str) -> bool:
+        if policy_name not in ['create_stream_policy', 'invite_to_stream_policy']:
+            raise AssertionError("Invalid policy")
+
         if self.is_realm_admin:
             return True
-        if self.realm.create_stream_policy == Realm.POLICY_ADMINS_ONLY:
+
+        policy_value = getattr(self.realm, policy_name)
+        if policy_value == Realm.POLICY_ADMINS_ONLY:
             return False
+
         if self.is_guest:
             return False
 
-        if self.realm.create_stream_policy == Realm.POLICY_MEMBERS_ONLY:
+        if policy_value == Realm.POLICY_MEMBERS_ONLY:
             return True
         return not self.is_new_member
+
+    def can_create_streams(self) -> bool:
+        return self.has_permission('create_stream_policy')
 
     def can_subscribe_other_users(self) -> bool:
-        if self.is_realm_admin:
-            return True
-        if self.realm.invite_to_stream_policy == Realm.POLICY_ADMINS_ONLY:
-            return False
-        if self.is_guest:
-            return False
-
-        if self.realm.invite_to_stream_policy == Realm.POLICY_MEMBERS_ONLY:
-            return True
-
-        assert self.realm.invite_to_stream_policy == Realm.POLICY_FULL_MEMBERS_ONLY
-        return not self.is_new_member
+        return self.has_permission('invite_to_stream_policy')
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
