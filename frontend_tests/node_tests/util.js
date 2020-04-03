@@ -2,7 +2,6 @@ const { JSDOM } = require("jsdom");
 
 set_global('$', global.make_zjquery());
 set_global('DOMParser', new JSDOM().window.DOMParser);
-set_global('blueslip', global.make_zblueslip());
 set_global('document', {});
 const util = zrequire('util');
 

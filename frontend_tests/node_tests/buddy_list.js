@@ -4,8 +4,6 @@ zrequire('buddy_data');
 zrequire('buddy_list');
 zrequire('ui');
 
-set_global('blueslip', global.make_zblueslip());
-
 set_global('padded_widget', {
     update_padding: () => {},
 });

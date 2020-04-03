@@ -1,5 +1,4 @@
 set_global('$', global.make_zjquery());
-set_global('blueslip', global.make_zblueslip());
 
 let filter_key_handlers;
 

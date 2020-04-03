@@ -1,4 +1,3 @@
-set_global('blueslip', global.make_zblueslip());
 const util = zrequire('util');
 set_global('$', global.make_zjquery());
 

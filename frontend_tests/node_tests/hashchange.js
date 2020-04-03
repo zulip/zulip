@@ -25,7 +25,6 @@ set_global('overlays', {});
 set_global('settings', {});
 set_global('subs', {});
 set_global('ui_util', {});
-set_global('blueslip', global.make_zblueslip());
 
 run_test('operators_round_trip', () => {
     let operators;

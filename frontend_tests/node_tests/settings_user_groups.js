@@ -13,7 +13,6 @@ const pills = {
 let create_item_handler;
 
 set_global('channel', {});
-set_global('blueslip', global.make_zblueslip());
 set_global('typeahead_helper', {});
 set_global('user_groups', {
     get_user_group_from_id: noop,

@@ -1,7 +1,6 @@
 
 zrequire('muting');
 zrequire('stream_data');
-set_global('blueslip', global.make_zblueslip());
 set_global('page_params', {});
 
 run_test('edge_cases', () => {

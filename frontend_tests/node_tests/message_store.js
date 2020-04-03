@@ -25,8 +25,6 @@ set_global('page_params', {
     is_admin: true,
 });
 
-set_global('blueslip', global.make_zblueslip());
-
 const me = {
     email: 'me@example.com',
     user_id: 101,

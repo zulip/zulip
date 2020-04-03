@@ -1,7 +1,5 @@
 zrequire('list_cursor');
 
-set_global('blueslip', global.make_zblueslip());
-
 run_test('config errors', () => {
     blueslip.expect('error', 'Programming error');
     list_cursor({});

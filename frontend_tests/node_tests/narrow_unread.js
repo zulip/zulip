@@ -3,7 +3,6 @@ zrequire('Filter', 'js/filter');
 zrequire('people');
 zrequire('stream_data');
 zrequire('unread');
-set_global('blueslip', global.make_zblueslip());
 
 set_global('message_store', {});
 set_global('page_params', {});

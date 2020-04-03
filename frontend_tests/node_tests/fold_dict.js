@@ -1,5 +1,4 @@
 const FoldDict = zrequire('fold_dict').FoldDict;
-set_global('blueslip', global.make_zblueslip());
 
 run_test('basic', () => {
     const d = new FoldDict();

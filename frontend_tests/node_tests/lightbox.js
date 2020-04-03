@@ -1,8 +1,6 @@
 zrequire('rows');
 zrequire('lightbox');
 
-set_global('blueslip', global.make_zblueslip());
-
 set_global('message_store', {});
 set_global('Image', class Image {});
 set_global('overlays', {

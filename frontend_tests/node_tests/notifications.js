@@ -2,7 +2,6 @@
 set_global('$', global.make_zjquery({
     silent: true,
 }));
-set_global('blueslip', global.make_zblueslip());
 set_global('document', {
     hasFocus: function () {
         return true;

@@ -6,8 +6,6 @@ set_global('reload_state', {
     is_in_progress: return_false,
 });
 
-set_global('blueslip', global.make_zblueslip());
-
 const me = {
     email: 'me@example.com',
     user_id: 30,

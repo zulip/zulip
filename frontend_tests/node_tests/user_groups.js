@@ -1,4 +1,3 @@
-set_global('blueslip', global.make_zblueslip());
 
 zrequire('user_groups');
 

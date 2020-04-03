@@ -4,7 +4,6 @@ zrequire('input_pill');
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 
-set_global('blueslip', global.make_zblueslip());
 set_global('document', {});
 
 const noop = function () {};

@@ -1,4 +1,3 @@
-set_global('blueslip', global.make_zblueslip());
 const LazySet = zrequire('lazy_set').LazySet;
 
 /*

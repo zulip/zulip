@@ -13,7 +13,6 @@ $(document).on = noop;
 
 zrequire('widgetize');
 
-set_global('blueslip', global.make_zblueslip());
 set_global('narrow_state', {});
 set_global('current_msg_list', {});
 

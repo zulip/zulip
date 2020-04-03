@@ -42,8 +42,6 @@ set_global('page_params', {
     translate_emoticons: false,
 });
 
-set_global('blueslip', global.make_zblueslip());
-
 set_global('Image', function () {
     return {};
 });
