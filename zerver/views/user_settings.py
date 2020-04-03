@@ -142,7 +142,6 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 
     return json_success(result)
 
-language_codes = set(get_available_language_codes())
 all_timezones = set(get_all_timezones())
 emojiset_choices = set([emojiset['key'] for emojiset in UserProfile.emojiset_choices()])
 
@@ -157,8 +156,7 @@ def update_display_settings_backend(
         high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         translate_emoticons: Optional[bool]=REQ(validator=check_bool, default=None),
-        default_language: Optional[bool]=REQ(validator=check_string_in(
-            language_codes), default=None),
+        default_language: Optional[bool]=REQ(validator=check_string, default=None),
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
         emojiset: Optional[str]=REQ(validator=check_string_in(
             emojiset_choices), default=None),
@@ -166,6 +164,14 @@ def update_display_settings_backend(
             UserProfile.DEMOTE_STREAMS_CHOICES), default=None),
         timezone: Optional[str]=REQ(validator=check_string_in(all_timezones),
                                     default=None)) -> HttpResponse:
+
+    # We can't use REQ for this widget because
+    # get_available_language_codes requires provisioning to be
+    # complete.
+    if (default_language is not None and
+            default_language not in get_available_language_codes()):
+        raise JsonableError(_("Invalid default_language"))
+
     request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
     result = {}  # type: Dict[str, Any]
     for k, v in list(request_settings.items()):
