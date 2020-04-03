@@ -21,7 +21,8 @@ from django.utils.timezone import now as timezone_now
 import stripe
 
 from zerver.lib.actions import do_deactivate_user, do_create_user, \
-    do_activate_user, do_reactivate_user, do_deactivate_realm
+    do_activate_user, do_reactivate_user, do_deactivate_realm, \
+    do_reactivate_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
@@ -984,7 +985,6 @@ class StripeTest(StripeTestCase):
     @patch("corporate.lib.stripe.billing_logger.info")
     def test_deactivate_realm(self, mock_: Mock) -> None:
         user = self.example_user("hamlet")
-        self.login_user(user)
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
 
@@ -1004,10 +1004,17 @@ class StripeTest(StripeTestCase):
         do_deactivate_realm(get_realm("zulip"))
 
         plan.refresh_from_db()
+        self.assertTrue(get_realm('zulip').deactivated)
         self.assertEqual(get_realm('zulip').plan_type, Realm.LIMITED)
         self.assertEqual(plan.status, CustomerPlan.ENDED)
         self.assertEqual(plan.invoiced_through, last_ledger_entry)
         self.assertIsNone(plan.next_invoice_date)
+
+        do_reactivate_realm(get_realm('zulip'))
+
+        self.login_user(user)
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["Your organization is on the <b>Zulip Free</b>"], response)
 
         # The extra users added in the final month are not charged
         with patch("corporate.lib.stripe.invoice_plan") as mocked:

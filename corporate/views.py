@@ -159,15 +159,11 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     if not user.is_realm_admin and not user.is_billing_admin:
         context = {'admin_access': False}  # type: Dict[str, Any]
         return render(request, 'corporate/billing.html', context=context)
-    context = {'admin_access': True}
 
-    plan_name = "Zulip Free"
-    licenses = 0
-    licenses_used = 0
-    renewal_date = ''
-    renewal_cents = 0
-    payment_method = ''
-    charge_automatically = False
+    context = {
+        'admin_access': True,
+        'has_active_plan': False,
+    }
 
     plan = get_current_plan_by_customer(customer)
     if plan is not None:
@@ -190,17 +186,19 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             else:
                 payment_method = 'Billed by invoice'
 
-    context.update({
-        'plan_name': plan_name,
-        'licenses': licenses,
-        'licenses_used': licenses_used,
-        'renewal_date': renewal_date,
-        'renewal_amount': '{:,.2f}'.format(renewal_cents / 100.),
-        'payment_method': payment_method,
-        'charge_automatically': charge_automatically,
-        'publishable_key': STRIPE_PUBLISHABLE_KEY,
-        'stripe_email': stripe_customer.email,
-    })
+            context.update({
+                'plan_name': plan_name,
+                'has_active_plan': True,
+                'licenses': licenses,
+                'licenses_used': licenses_used,
+                'renewal_date': renewal_date,
+                'renewal_amount': '{:,.2f}'.format(renewal_cents / 100.),
+                'payment_method': payment_method,
+                'charge_automatically': charge_automatically,
+                'publishable_key': STRIPE_PUBLISHABLE_KEY,
+                'stripe_email': stripe_customer.email,
+            })
+
     return render(request, 'corporate/billing.html', context=context)
 
 @require_billing_access
