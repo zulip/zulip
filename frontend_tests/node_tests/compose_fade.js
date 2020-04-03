@@ -1,6 +1,3 @@
-set_global('blueslip', {});
-global.blueslip.warn = function () {};
-
 zrequire('stream_data');
 zrequire('people');
 zrequire('compose_fade');

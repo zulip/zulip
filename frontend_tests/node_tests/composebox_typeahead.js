@@ -31,9 +31,6 @@ set_global('message_store', {
 const ct = composebox_typeahead;
 const noop = function () {};
 
-set_global('blueslip', {});
-blueslip.warn = noop;
-
 // Use a slightly larger value than what's user-facing
 // to facilitate testing different combinations of
 // broadcast-mentions/persons/groups.
@@ -145,6 +142,7 @@ const sweden_stream = {
     description: 'Cold, mountains and home decor.',
     stream_id: 1,
     subscribed: true,
+    can_access_subscribers: true,
 };
 const denmark_stream = {
     name: 'Denmark',

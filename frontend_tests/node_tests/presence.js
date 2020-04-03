@@ -1,10 +1,10 @@
+set_global('blueslip', global.make_zblueslip());
 zrequire('people');
 zrequire('presence');
 
 const return_false = function () { return false; };
 
 set_global('server_events', {});
-set_global('blueslip', {});
 set_global('reload_state', {
     is_in_progress: return_false,
 });
@@ -122,17 +122,12 @@ run_test('status_from_timestamp', () => {
         timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
         pushable: true,
     };
-    let called = false;
-    blueslip.error = function (msg, more_info, stack) {
-        assert.equal(msg, 'Unexpected status');
-        assert.deepEqual(more_info.presence_object, info.random_client);
-        assert.equal(stack, undefined);
-        called = true;
-    };
+
+    blueslip.expect('error', 'Unexpected status');
     status = status_from_timestamp(
         base_time + OFFLINE_THRESHOLD_SECS - 1, info);
+    blueslip.reset();
     assert.equal(status.status, "active"); // website
-    assert(called);
 });
 
 run_test('set_presence_info', () => {
