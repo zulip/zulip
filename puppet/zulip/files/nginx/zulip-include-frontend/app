@@ -9,6 +9,9 @@ error_page 502 503 504 /static/webpack-bundles/5xx.html;
 # Serve static files directly
 location /static/ {
     alias /home/zulip/prod-static/;
+    include /etc/nginx/zulip-include/headers;
+    add_header Access-Control-Allow-Origin *;
+
     # Set a nonexistent path, so we just serve the nice Django 404 page.
     error_page 404 /django_static_404.html;
 }

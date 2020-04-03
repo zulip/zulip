@@ -112,6 +112,7 @@ if CASPER_TESTS:
     WEBPACK_FILE = 'webpack-stats-production.json'
 else:
     WEBPACK_FILE = os.path.join('var', 'webpack-stats-test.json')
+WEBPACK_LOADER['DEFAULT']['BUNDLE_DIR_NAME'] = 'webpack-bundles/'
 WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = os.path.join(DEPLOY_ROOT, WEBPACK_FILE)
 
 # Don't auto-restart Tornado server during automated tests
