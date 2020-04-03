@@ -1241,7 +1241,7 @@ run_test('on_events', () => {
         assert(!helper.container_was_removed());
 
         // !sub will result false here and we check the failure code path.
-        blueslip.set_test_data('warn', 'Stream no longer exists: no-stream');
+        blueslip.expect('warn', 'Stream no longer exists: no-stream');
         $('#stream_message_recipient_stream').val('no-stream');
         helper.container.data = function (field) {
             assert.equal(field, 'useremail');
@@ -1257,7 +1257,7 @@ run_test('on_events', () => {
         assert(!$("#compose_invite_users").visible());
         assert.equal($('#compose-error-msg').html(), "Stream no longer exists: no-stream");
         assert.equal(blueslip.get_test_logs('warn').length, 1);
-        blueslip.clear_test_data();
+        blueslip.reset();
 
         // !sub will result in true here and we check the success code path.
         stream_data.add_sub(subscription);
@@ -1621,7 +1621,7 @@ run_test('create_message_object', () => {
     assert.equal(message.topic, 'lunch');
     assert.equal(message.content, 'burrito');
 
-    blueslip.set_test_data('error', 'Trying to send message with bad stream name: BOGUS STREAM');
+    blueslip.expect('error', 'Trying to send message with bad stream name: BOGUS STREAM');
 
     page['#stream_message_recipient_stream'] = 'BOGUS STREAM';
     message = compose.create_message_object();

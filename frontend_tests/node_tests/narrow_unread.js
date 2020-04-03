@@ -212,7 +212,7 @@ run_test('get_unread_ids', () => {
     });
 
     narrow_state.reset_current_filter();
-    blueslip.set_test_data('error', 'unexpected call to get_first_unread_info');
+    blueslip.expect('error', 'unexpected call to get_first_unread_info');
     assert_unread_info({
         flavor: 'cannot_compute',
     });

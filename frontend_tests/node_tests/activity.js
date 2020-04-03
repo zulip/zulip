@@ -158,10 +158,10 @@ run_test('get_status', () => {
 });
 
 run_test('reload_defaults', () => {
-    blueslip.set_test_data('warn', 'get_filter_text() is called before initialization');
+    blueslip.expect('warn', 'get_filter_text() is called before initialization');
     assert.equal(activity.get_filter_text(), '');
     assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });
 
 run_test('sort_users', () => {

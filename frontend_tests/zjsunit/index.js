@@ -117,8 +117,8 @@ try {
         namespace.clear_zulip_refs();
         run_one_module(file);
 
-        if (global.blueslip && blueslip.clear_test_data) {
-            blueslip.clear_test_data();
+        if (global.blueslip && blueslip.reset) {
+            blueslip.reset();
         }
 
         namespace.restore();

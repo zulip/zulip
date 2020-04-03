@@ -3,7 +3,7 @@ zrequire('list_cursor');
 set_global('blueslip', global.make_zblueslip());
 
 run_test('config errors', () => {
-    blueslip.set_test_data('error', 'Programming error');
+    blueslip.expect('error', 'Programming error');
     list_cursor({});
 });
 
@@ -39,13 +39,13 @@ run_test('misc errors', () => {
 
     cursor.get_row('nada');
 
-    blueslip.set_test_data('error', 'Caller is not checking keys for list_cursor.go_to');
+    blueslip.expect('error', 'Caller is not checking keys for list_cursor.go_to');
     cursor.go_to(undefined);
 
-    blueslip.set_test_data('error', 'Cannot highlight key for list_cursor: nada');
+    blueslip.expect('error', 'Cannot highlight key for list_cursor: nada');
     cursor.go_to('nada');
 
-    blueslip.clear_test_data();
+    blueslip.reset();
     cursor.prev();
     cursor.next();
 });
@@ -70,7 +70,7 @@ run_test('single item list', () => {
 
     // Test prev/next, which should just silently do nothing.
     // (Our basic_conf() has prev_key and next_key return undefined.)
-    blueslip.clear_test_data();
+    blueslip.reset();
     cursor.prev();
     cursor.next();
 

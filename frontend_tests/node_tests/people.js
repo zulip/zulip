@@ -154,10 +154,10 @@ run_test('basics', () => {
     assert.equal(people.get_active_human_count(), 1);
 
     // Invalid user ID returns false and warns.
-    blueslip.set_test_data('warn', 'Unexpectedly invalid user_id in user popover query: 123412');
+    blueslip.expect('warn', 'Unexpectedly invalid user_id in user popover query: 123412');
     assert.equal(people.is_active_user_for_popover(123412), false);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 
     // We can still get their info for non-realm needs.
     person = people.get_by_email(email);
@@ -551,7 +551,7 @@ run_test('message_methods', () => {
                  'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50'
     );
 
-    blueslip.set_test_data('error', 'Unknown user_id in get_by_user_id: 9999999');
+    blueslip.expect('error', 'Unknown user_id in get_by_user_id: 9999999');
     message = {
         avatar_url: undefined,
         sender_email: 'foo@example.com',
@@ -804,13 +804,13 @@ run_test('updates', () => {
 
     // Test shim where we can still retrieve user info using the
     // old email.
-    blueslip.set_test_data('warn',
-                           'Obsolete email passed to get_by_email: ' +
-                           'FOO@example.com new email = bar@example.com');
+    blueslip.expect('warn',
+                    'Obsolete email passed to get_by_email: ' +
+                    'FOO@example.com new email = bar@example.com');
     person = people.get_by_email(old_email);
     assert.equal(person.user_id, user_id);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });
 
 initialize();
@@ -913,10 +913,10 @@ run_test('track_duplicate_full_names', () => {
     people.add(stephen2);
     people.add(maria);
 
-    blueslip.set_test_data('warn', 'get_mention_syntax called without user_id.');
+    blueslip.expect('warn', 'get_mention_syntax called without user_id.');
     assert.equal(people.get_mention_syntax('Stephen King'), '@**Stephen King**');
     assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
     assert.equal(people.get_mention_syntax('Stephen King', 601), '@**Stephen King|601**');
     assert.equal(people.get_mention_syntax('Stephen King', 602), '@**Stephen King|602**');
     assert.equal(people.get_mention_syntax('Maria Athens', 603), '@**Maria Athens**');
@@ -1059,9 +1059,9 @@ run_test('emails_strings_to_user_ids_array', function () {
     let user_ids = people.emails_strings_to_user_ids_array(`${steven.email},${maria.email}`);
     assert.deepEqual(user_ids, [steven.user_id, maria.user_id]);
 
-    blueslip.set_test_data('warn', 'Unknown emails: dummyuser@example.com');
+    blueslip.expect('warn', 'Unknown emails: dummyuser@example.com');
     user_ids = people.emails_strings_to_user_ids_array('dummyuser@example.com');
     assert.equal(user_ids, undefined);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });

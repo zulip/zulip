@@ -73,7 +73,7 @@ run_test('server', () => {
 });
 
 run_test('defensive checks', () => {
-    blueslip.set_test_data('error', 'need ints for user_id');
+    blueslip.expect('error', 'need ints for user_id');
     user_status.set_away('string');
     user_status.revoke_away('string');
 });

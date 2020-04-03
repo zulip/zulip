@@ -146,7 +146,7 @@ run_test('populate_user_groups', () => {
             return noop;
         }
         assert.equal(user_id, 4);
-        blueslip.set_test_data('warn', 'Undefined user in function append_user');
+        blueslip.expect('warn', 'Undefined user in function append_user');
         get_by_user_id_called = true;
     };
 
@@ -322,7 +322,7 @@ run_test('populate_user_groups', () => {
     assert(get_by_user_id_called);
     assert(input_typeahead_called);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
