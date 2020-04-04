@@ -85,10 +85,19 @@ function display_video(payload) {
 exports.open = function ($image) {
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
-    const $preview_src = $image.attr("src");
+    let $preview_src = $image.attr("src");
     let payload = asset_map.get($preview_src);
     if (payload === undefined) {
-        payload = exports.parse_image_data($image);
+        if ($preview_src.endsWith("&size=full")) {
+            // while fetching an image for canvas, `src` attribute supplies
+            // full-sized image instead of thumbnail, so we have to replace
+            // `size=full` with `size=thumbnail`.
+            $preview_src = $preview_src.replace(/.{4}$/, "thumbnail");
+            payload = asset_map.get($preview_src);
+        }
+        if (payload === undefined) {
+            payload = exports.parse_image_data($image);
+        }
     }
 
     if (payload.type.match("-video")) {
