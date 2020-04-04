@@ -1684,7 +1684,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         result = self.client_get(self.AUTH_FINISH_URL,
                                  dict(state=csrf_state), **headers)
 
-        if expect_choose_email_screen and result.status_code == 200:
+        if expect_choose_email_screen:
             # As GitHub authenticates multiple email addresses,
             # we'll have an additional screen where the user selects
             # which email address to login using (this screen is a
@@ -1692,20 +1692,11 @@ class GitHubAuthBackendTest(SocialAuthBase):
             #
             # TODO: Generalize this testing code for use with other
             # authentication backends when a new authentacation backend
-            # that requires "choose email" screen; for now, we just assert
-            # that it's definitely the GitHub authentication backend.
-            if self.AUTH_FINISH_URL == "/complete/github/":
-                self.assert_in_success_response(["Select account"], result)
-                result = self.client_get(self.AUTH_FINISH_URL,
-                                         dict(state=csrf_state, email=account_data_dict['email']), **headers)
-        elif self.AUTH_FINISH_URL == "/complete/github/":
-            # We want to be explicit about when we expect a test to
-            # use the "choose email" screen, but of course we should
-            # only check for that screen with the GitHub backend,
-            # because this test code is shared with other
-            # authentication backends that structurally will never use
-            # that screen.
-            assert not expect_choose_email_screen
+            # that requires "choose email" screen;
+            self.assert_in_success_response(["Select account"], result)
+            result = self.client_get(self.AUTH_FINISH_URL,
+                                     dict(state=csrf_state, email=account_data_dict['email']), **headers)
+
         return result
 
     def register_extra_endpoints(self, requests_mock: responses.RequestsMock,
