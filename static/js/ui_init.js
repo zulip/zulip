@@ -438,6 +438,7 @@ exports.initialize_everything = function () {
     subs.initialize();
     stream_list.initialize();
     condense.initialize();
+    spoilers.initialize();
     lightbox.initialize();
     click_handlers.initialize();
     copy_and_paste.initialize();

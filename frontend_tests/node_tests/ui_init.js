@@ -84,6 +84,7 @@ zrequire('color_data');
 zrequire('stream_data');
 zrequire('muting');
 zrequire('condense');
+zrequire('spoilers');
 zrequire('lightbox');
 zrequire('overlays');
 zrequire('invite');

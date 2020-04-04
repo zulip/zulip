@@ -13,6 +13,7 @@ to allow you to easily format your messages.
 * [Code blocks](#code)
 * [LaTeX](#latex)
 * [Quotes](#quotes)
+* [Spoilers](#spoilers)
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mentions](#mentions)
 * [Status messages](#status-messages)
@@ -149,6 +150,28 @@ quote in two paragraphs
 ~~~
 
 ![](/static/images/help/markdown-quotes.png)
+
+## Spoilers
+
+You can use spoilers to hide content that you do not want to be visible until
+the user interacts with it.
+
+
+~~~
+Normal content in message
+
+```spoiler Spoiler Header
+Spoiler content. These lines won't be visible until the user expands the spoiler.
+```
+~~~
+
+The spoiler will initially display in a collapsed form:
+
+![](/static/images/help/spoiler-collapsed.png)
+
+Clicking the arrow will expand the spoiler content:
+
+![](/static/images/help/spoiler-expanded.png)
 
 ## Emoji and emoticons
 

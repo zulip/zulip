@@ -853,6 +853,38 @@
       "expected_output": "<ol>\n<li>\n<p>A</p>\n</li>\n<li>\n<p>B</p>\n</li>\n<li>\n<p>C</p>\n</li>\n<li>\n<p>D<br>\nordinary paragraph</p>\n</li>\n<li>\n<p>AA</p>\n</li>\n<li>\n<p>BB</p>\n</li>\n</ol>",
       "marked_expected_output": "<ol>\n<li><p>A</p>\n</li>\n<li><p>B</p>\n</li>\n<li><p>C</p>\n</li>\n<li><p>D<br>\nordinary paragraph</p>\n</li>\n<li><p>AA</p>\n</li>\n<li><p>BB</p>\n</li>\n</ol>",
       "text_content": "1. A\n2. B\n3. C\n4. D\nordinary paragraph\n5. AA\n6. BB"
+    },
+    {
+      "name": "spoilers_fenced_spoiler",
+      "input": "```spoiler header\ncontent\n```\noutside spoiler\n",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>"
+    },
+    {
+      "name": "spoilers_empty_header",
+      "input": "```spoiler\ncontent\n```\noutside spoiler\n",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>"
+    },
+    {
+      "name": "spoilers_script_tags",
+      "input": "```spoiler <script>alert(1)</script>\n<script>alert(1)</script>\n```",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div></div>",
+      "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>\n</div></div>"
+    },
+    {
+      "name": "spoilers_block_quote",
+      "input": "~~~quote\n```spoiler header\ncontent\n```\noutside spoiler\n~~~\noutside quote",
+      "expected_output": "<blockquote>\n<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>\n</blockquote>\n<p>outside quote</p>"
+    },
+    {
+      "name": "spoilers_with_header_markdown",
+      "input": "```spoiler [Header](https://example.com) :smile:\ncontent\n```",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p><a href=\"https://example.com\">Header</a> <span aria-label=\"smile\" class=\"emoji emoji-263a\" role=\"img\" title=\"smile\">:smile:</span></p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>content</p>\n</div></div>"
+    },
+    {
+      "name": "spoiler_with_inline_image",
+      "input": "```spoiler header\nContent http://example.com/image.png\n```",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://example.com/image.png\"><img data-src-fullsize=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=full\" src=\"/thumbnail?url=http%3A%2F%2Fexample.com%2Fimage.png&amp;size=thumbnail\"></a></div></div></div>",
+      "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n</div></div>"
     }
   ],
   "linkify_tests": [

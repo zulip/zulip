@@ -70,6 +70,7 @@ const get_content_element = () => {
     $content.set_find_results('a.stream-topic', $array([]));
     $content.set_find_results('span.timestamp', $array([]));
     $content.set_find_results('.emoji', $array([]));
+    $content.set_find_results('div.spoiler-header', $array([]));
     return $content;
 };
 
@@ -197,4 +198,34 @@ run_test('emoji', () => {
     rm.update_elements($content);
 
     assert(called);
+
+    // Set page paramaters back so that test run order is independent
+    page_params.emojiset = 'apple';
+});
+
+run_test('spoiler-header', () => {
+    // Setup
+    const $content = get_content_element();
+    const $header = $.create('div.spoiler-header');
+    $content.set_find_results('div.spoiler-header', $array([$header]));
+
+    // Test that button gets appened to a spoiler header
+    const label = 'My Spoiler Header';
+    const toggle_button_html = '<a class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></a>';
+    $header.html(label);
+    rm.update_elements($content);
+    assert.equal(toggle_button_html + label, $header.html());
+});
+
+run_test('spoiler-header-empty-fill', () => {
+    // Setup
+    const $content = get_content_element();
+    const $header = $.create('div.spoiler-header');
+    $content.set_find_results('div.spoiler-header', $array([$header]));
+
+    // Test that an empty header gets the default text applied (through i18n filter)
+    const toggle_button_html = '<a class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></a>';
+    $header.html('');
+    rm.update_elements($content);
+    assert.equal(toggle_button_html + '<p>translated: Spoiler</p>', $header.html());
 });
