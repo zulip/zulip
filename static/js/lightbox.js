@@ -84,9 +84,6 @@ function display_video(payload) {
     $(".image-actions .open").attr("href", payload.url);
 }
 
-// the image param is optional, but required on the first preview of an image.
-// this will likely be passed in every time but just ignored if the result is already
-// stored in the `asset_map`.
 exports.open = function ($image) {
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
