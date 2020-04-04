@@ -10,6 +10,7 @@ WARNING: no certificate subject alternative name matches
   Strict-Transport-Security: max-age=15768000
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
 Location: /login/ [following]
 Reusing existing connection to localhost:443.
   HTTP/1.1 200 OK
@@ -20,6 +21,7 @@ Reusing existing connection to localhost:443.
   Strict-Transport-Security: max-age=15768000
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
 Length: 6361 (6.2K) [text/html]
 Saving to: ‘/tmp/index.html’
 
