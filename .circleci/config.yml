@@ -21,7 +21,7 @@ aliases:
   - &restore_cache_requirements
     restore_cache:
       keys:
-      - v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+      - v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor-dev.txt" }}-{{ checksum "requirements/dev.txt" }}
 
   - &install_dependencies
     run:
