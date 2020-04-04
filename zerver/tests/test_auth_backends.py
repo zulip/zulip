@@ -713,9 +713,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def social_auth_test_finish(self, result: HttpResponse,
                                 account_data_dict: Dict[str, str],
-                                expect_choose_email_screen: bool,
-                                email_data: List[Dict[str, str]],
-                                **headers: Any) -> HttpResponse:
+                                headers: Dict[str, Any],
+                                **extra_data: Any) -> HttpResponse:
         parsed_url = urllib.parse.urlparse(result.url)
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
         result = self.client_get(self.AUTH_FINISH_URL,
@@ -729,7 +728,6 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                          is_signup: bool=False,
                          next: str='',
                          multiuse_object_key: str='',
-                         expect_choose_email_screen: bool=False,
                          alternative_start_url: Optional[str]=None,
                          **extra_data: Any) -> HttpResponse:
         url, headers = self.prepare_login_url_and_headers(
@@ -778,14 +776,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             )
             self.register_extra_endpoints(requests_mock, account_data_dict, **extra_data)
 
-            if "email_data" in extra_data:
-                email_data = extra_data["email_data"]
-            else:
-                email_data = [account_data_dict]
             result = self.social_auth_test_finish(result, account_data_dict,
-                                                  expect_choose_email_screen,
-                                                  email_data,
-                                                  **headers)
+                                                  headers=headers, **extra_data)
         return result
 
     def test_social_auth_no_key(self) -> None:
@@ -1620,13 +1612,16 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
     def social_auth_test_finish(self, result: HttpResponse,
                                 account_data_dict: Dict[str, str],
-                                expect_choose_email_screen: bool,
-                                email_data: List[Dict[str, str]],
-                                **headers: Any) -> HttpResponse:
+                                headers: Dict[str, Any]={},
+                                expect_choose_email_screen: bool=False,
+                                email_data: Optional[List[Dict[str, str]]]=None,
+                                **extra_data: Any) -> HttpResponse:
         parsed_url = urllib.parse.urlparse(result.url)
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
         result = self.client_get(self.AUTH_FINISH_URL,
                                  dict(state=csrf_state), **headers)
+        if email_data is None:
+            email_data = [account_data_dict]
 
         if expect_choose_email_screen:
             # As GitHub authenticates multiple email addresses,
