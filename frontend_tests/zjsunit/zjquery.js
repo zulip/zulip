@@ -144,6 +144,10 @@ exports.make_new_elem = function (selector, opts) {
             classes.set(class_name, true);
             return self;
         },
+        append: function (arg) {
+            html = html + arg;
+            return self;
+        },
         attr: function (name, val) {
             if (val === undefined) {
                 return attrs.get(name);
@@ -283,6 +287,10 @@ exports.make_new_elem = function (selector, opts) {
             assert(result, 'You need to call set_parents_result for ' +
                             parents_selector + ' in ' + selector);
             return result;
+        },
+        prepend: function (arg) {
+            html = arg + html;
+            return self;
         },
         prop: function (name, val) {
             if (val === undefined) {

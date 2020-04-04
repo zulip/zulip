@@ -5,14 +5,20 @@
 // auto-completing code blocks missing a trailing close.
 
 // See backend fenced_code.py:71 for associated regexp
-const fencestr = "^(~{3,}|`{3,})"            + // Opening Fence
+const fencestr = "^(~{3,}|`{3,})"          + // Opening Fence
                "[ ]*"                      + // Spaces
                "("                         +
                    "\\{?\\.?"              +
                    "([a-zA-Z0-9_+-./#]*)"  + // Language
                    "\\}?"                  +
+               ")"                         +
                "[ ]*"                      + // Spaces
-               ")$";
+               "("                         +
+                   "\\{?\\.?"              +
+                   "([^~`]*)"              + // Header (see fenced_code.py)
+                   "\\}?"                  +
+               ")"                         +
+               "$";
 const fence_re = new RegExp(fencestr);
 
 // Default stashing function does nothing
@@ -52,6 +58,20 @@ function wrap_tex(tex) {
     }
 }
 
+function wrap_spoiler(header, text, stash_func) {
+    const output = [];
+    const header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">';
+    const end_header_start_content_html = '</div><div class="spoiler-content" aria-hidden="true">';
+    const footer_html = '</div></div>';
+
+    output.push(stash_func(header_div_open_html));
+    output.push(header);
+    output.push(stash_func(end_header_start_content_html));
+    output.push(text);
+    output.push(stash_func(footer_html));
+    return output.join("\n\n");
+}
+
 exports.set_stash_func = function (stash_handler) {
     stash_func = stash_handler;
 };
@@ -62,7 +82,7 @@ exports.process_fenced_code = function (content) {
     const handler_stack = [];
     let consume_line;
 
-    function handler_for_fence(output_lines, fence, lang) {
+    function handler_for_fence(output_lines, fence, lang, header) {
         // lang is ignored except for 'quote', as we
         // don't do syntax highlighting yet
         return (function () {
@@ -108,6 +128,26 @@ exports.process_fenced_code = function (content) {
                 };
             }
 
+            if (lang === 'spoiler') {
+                return {
+                    handle_line: function (line) {
+                        if (line === fence) {
+                            this.done();
+                        } else {
+                            lines.push(line);
+                        }
+                    },
+
+                    done: function () {
+                        const text = wrap_spoiler(header, lines.join('\n'), stash_func);
+                        output_lines.push('');
+                        output_lines.push(text);
+                        output_lines.push('');
+                        handler_stack.pop();
+                    },
+                };
+            }
+
             return {
                 handle_line: function (line) {
                     if (line === fence) {
@@ -146,7 +186,8 @@ exports.process_fenced_code = function (content) {
         if (match) {
             const fence = match[1];
             const lang = match[3];
-            const handler = handler_for_fence(output_lines, fence, lang);
+            const header = match[5];
+            const handler = handler_for_fence(output_lines, fence, lang, header);
             handler_stack.push(handler);
         } else {
             output_lines.push(line);

@@ -153,6 +153,19 @@ exports.update_elements = (content) => {
         }
     });
 
+    content.find('div.spoiler-header').each(function () {
+        // If a spoiler block has no header content, it should have a default header
+        // We do this client side to allow for i18n by the client
+        if ($.trim($(this).html()).length === 0) {
+            $(this).append(`<p>${i18n.t('Spoiler')}</p>`);
+        }
+
+        // Add the expand/collapse button to spoiler blocks
+        const toggle_button_html = '<a class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></a>';
+        $(this).prepend(toggle_button_html);
+    });
+
+
     // Display emoji (including realm emoji) as text if
     // page_params.emojiset is 'text'.
     if (page_params.emojiset === 'text') {

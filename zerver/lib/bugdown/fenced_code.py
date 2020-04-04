@@ -102,6 +102,13 @@ FENCE_RE = re.compile("""
         \\}?
     ) # language, like ".py" or "{javascript}"
     [ ]* # spaces
+    (
+        \\{?\\.?
+        (?P<header>
+            [^~`]*
+        )
+        \\}?
+    ) # header for features that use fenced block header syntax (like spoilers)
     $
     """, re.VERBOSE)
 
@@ -155,13 +162,16 @@ class BaseHandler:
         raise NotImplementedError()
 
 def generic_handler(processor: Any, output: MutableSequence[str],
-                    fence: str, lang: str,
+                    fence: str, lang: str, header: str,
                     run_content_validators: bool=False,
                     default_language: Optional[str]=None) -> BaseHandler:
+    lang = lang.lower()
     if lang in ('quote', 'quoted'):
         return QuoteHandler(processor, output, fence, default_language)
     elif lang == 'math':
         return TexHandler(processor, output, fence)
+    elif lang == 'spoiler':
+        return SpoilerHandler(processor, output, fence, header)
     else:
         return CodeHandler(processor, output, fence, lang, run_content_validators)
 
@@ -172,9 +182,11 @@ def check_for_new_fence(processor: Any, output: MutableSequence[str], line: str,
     if m:
         fence = m.group('fence')
         lang = m.group('lang')
+        header = m.group('header')
         if not lang and default_language:
             lang = default_language
-        handler = generic_handler(processor, output, fence, lang, run_content_validators, default_language)
+        handler = generic_handler(processor, output, fence, lang, header,
+                                  run_content_validators, default_language)
         processor.push(handler)
     else:
         output.append(line)
@@ -245,6 +257,37 @@ class QuoteHandler(BaseHandler):
     def done(self) -> None:
         text = '\n'.join(self.lines)
         text = self.processor.format_quote(text)
+        processed_lines = text.split('\n')
+        self.output.append('')
+        self.output.extend(processed_lines)
+        self.output.append('')
+        self.processor.pop()
+
+
+class SpoilerHandler(BaseHandler):
+    def __init__(self, processor: Any, output: MutableSequence[str],
+                 fence: str, spoiler_header: str) -> None:
+        self.processor = processor
+        self.output = output
+        self.fence = fence
+        self.spoiler_header = spoiler_header
+        self.lines: List[str] = []
+
+    def handle_line(self, line: str) -> None:
+        if line.rstrip() == self.fence:
+            self.done()
+        else:
+            check_for_new_fence(self.processor, self.lines, line)
+
+    def done(self) -> None:
+        if len(self.lines) == 0:
+            # No content, do nothing
+            return
+        else:
+            header = self.spoiler_header
+            text = '\n'.join(self.lines)
+
+        text = self.processor.format_spoiler(header, text)
         processed_lines = text.split('\n')
         self.output.append('')
         self.output.extend(processed_lines)
@@ -358,6 +401,20 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             lines = paragraph.split("\n")
             quoted_paragraphs.append("\n".join("> " + line for line in lines if line != ''))
         return "\n\n".join(quoted_paragraphs)
+
+    def format_spoiler(self, header: str, text: str) -> str:
+        output = []
+        header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">'
+        end_header_start_content_html = '</div><div class="spoiler-content"' \
+            ' aria-hidden="true">'
+        footer_html = '</div></div>'
+
+        output.append(self.placeholder(header_div_open_html))
+        output.append(header)
+        output.append(self.placeholder(end_header_start_content_html))
+        output.append(text)
+        output.append(self.placeholder(footer_html))
+        return "\n\n".join(output)
 
     def format_tex(self, text: str) -> str:
         paragraphs = text.split("\n\n")
