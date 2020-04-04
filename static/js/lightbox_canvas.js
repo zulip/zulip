@@ -229,6 +229,10 @@ const funcs = {
     // means that the height is less than 100% of the parent height. If so,
     // then we size the photo as w = 100%, h = 100% / 1.5.
     sizeCanvas: function (canvas, meta) {
+        if (canvas.parentNode === null) {
+            return;
+        }
+
         if (typeof meta.onresize === "function") {
             meta.onresize(canvas);
         }
