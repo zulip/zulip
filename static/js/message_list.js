@@ -311,8 +311,8 @@ exports.MessageList.prototype = {
     },
 
     hide_edit_message: function MessageList_hide_edit_message(row) {
-        row.find(".message_content, .status-message, .message_controls").show();
-        row.find(".message_edit").hide();
+        row.find(".message_edit").slideUp();
+        row.find(".message_content, .status-message, .message_controls").fadeIn(2000);
         row.trigger("mouseleave");
     },
 
