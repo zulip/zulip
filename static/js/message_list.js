@@ -318,6 +318,7 @@ exports.MessageList.prototype = {
 
     show_edit_topic: function MessageList_show_edit_topic(recipient_row, form) {
         recipient_row.find(".topic_edit_form").empty().append(form);
+        recipient_row.find('.on_hover_topic_edit').hide();
         recipient_row.find('.edit_content_button').hide();
         recipient_row.find(".stream_topic").hide();
         recipient_row.find(".topic_edit").show();
@@ -325,6 +326,7 @@ exports.MessageList.prototype = {
 
     hide_edit_topic: function MessageList_hide_edit_topic(recipient_row) {
         recipient_row.find(".stream_topic").show();
+        recipient_row.find('.on_hover_topic_edit').show();
         recipient_row.find('.edit_content_button').show();
         recipient_row.find(".topic_edit").hide();
     },
