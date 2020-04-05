@@ -523,7 +523,7 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     data = get_login_data(token)
     if data is None:
         logging.warning("log_into_subdomain: Invalid token given: %s" % (token,))
-        return HttpResponse(status=400)
+        return render(request, 'zerver/log_into_subdomain_token_invalid.html', status=400)
 
     # We extract fields provided by the caller via the data object.
     # The only fields that are required are email and subdomain (if we
