@@ -2122,6 +2122,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             result = self.get_log_into_subdomain(data, force_token=token)
             mock_warn.assert_called_once_with("log_into_subdomain: Invalid token given: %s" % (token,))
         self.assertEqual(result.status_code, 400)
+        self.assert_in_response("Invalid or expired login session.", result)
 
     def test_prevent_duplicate_signups(self) -> None:
         existing_user = self.example_user('hamlet')
