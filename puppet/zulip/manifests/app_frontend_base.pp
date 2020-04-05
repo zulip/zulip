@@ -68,7 +68,10 @@ class zulip::app_frontend_base {
   # The number of Tornado processes to run on the server;
   # historically, this has always been 1, but we now have experimental
   # support for Tornado sharding.
-  $tornado_processes = zulipconf('application_server', 'tornado_processes', 1)
+  # We need to convert the string returned by zulipconf to an integer. Puppet 5
+  # requires the awkward + 0 to achieve that. When we're fully on Puppet 6 on all
+  # supported platforms, this can be changed to the much nicer Integer() cast.
+  $tornado_processes = zulipconf('application_server', 'tornado_processes', 1) + 0
   if $tornado_processes > 1 {
     $tornado_ports = range(9800, 9800 + $tornado_processes)
     $tornado_multiprocess = true
