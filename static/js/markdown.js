@@ -31,9 +31,9 @@ const backend_only_markdown_re = [
     /[^\s]*(?:(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?)\s+/m,
     /[^\s]*(?:(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?)$/m,
 
-    // Twitter and youtube links are given previews
+    // Twitter links are given previews
 
-    /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
+    /[^\s]*twitter.com\/[^\s]*/,
 ];
 
 exports.translate_emoticons_to_names = (text) => {

@@ -223,7 +223,6 @@ run_test("markdown_detection", () => {
         "https://twitter.com/jacobian/status/407886996565016579",
         "then https://twitter.com/jacobian/status/407886996565016579",
         "twitter url http://twitter.com/jacobian/status/407886996565016579",
-        "youtube url https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
     ];
 
     no_markup.forEach((content) => {
