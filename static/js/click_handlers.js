@@ -309,7 +309,7 @@ exports.initialize = function () {
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
         const recipient_row = $(this).closest(".recipient_row");
-        current_msg_list.hide_edit_topic(recipient_row);
+        current_msg_list.hide_edit_topic_on_recipient_row(recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });

@@ -426,7 +426,7 @@ exports.start = function (row, edit_box_open_callback) {
 
 exports.start_topic_edit = function (recipient_row) {
     const form = $(render_topic_edit_form());
-    current_msg_list.show_edit_topic(recipient_row, form);
+    current_msg_list.show_edit_topic_on_recipient_row(recipient_row, form);
     form.keydown(_.partial(handle_edit_keydown, true));
     const msg_id = rows.id_for_recipient_row(recipient_row);
     const message = current_msg_list.get(msg_id);
@@ -461,7 +461,7 @@ exports.end = function (row) {
         current_msg_list.hide_edit_message(row);
     }
     if (row !== undefined) {
-        current_msg_list.hide_edit_topic(row);
+        current_msg_list.hide_edit_topic_on_recipient_row(row);
     }
     condense.show_message_expander(row);
     row.find(".message_reactions").show();
