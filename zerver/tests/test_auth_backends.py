@@ -1012,11 +1012,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                        subdomain='zulip', is_signup=True)
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        # BUG: The following should be true, since there's no reason
-        # the ExternalAuthResult should be contaminated with data from
-        # the UserProfile object for an existing user.
-        #
-        # self.assertNotIn('full_name', data)
+        # Verify we didn't contaminate the ExternalAuthResult with
+        # name data from the existing user; we're just logging in as
+        # that user and don't need or want it.
+        self.assertEqual('full_name', 'Full Name')
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
@@ -1892,7 +1891,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], 'hamlet@zulip.com')
-        self.assertEqual(data['full_name'], 'King Hamlet')
+        self.assertEqual(data['full_name'], 'Hamlet')
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)

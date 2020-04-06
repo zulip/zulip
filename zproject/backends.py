@@ -957,7 +957,6 @@ class ExternalAuthResult:
     def _load_user_data_from_user_profile(self) -> None:
         assert self.user_profile is not None
         self.data_dict.update({
-            'full_name': self.user_profile.full_name,
             'email': self.user_profile.delivery_email,
             'subdomain': self.user_profile.realm.subdomain,
         })
