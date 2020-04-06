@@ -1,5 +1,6 @@
 // This will be used for pills for things like composing PMs
 // or adding users to a stream/group.
+const settings_data = require("./settings_data");
 
 exports.create_item_from_email = function (email, current_items) {
     // For normal Zulip use, we need to validate the email for our realm.
@@ -130,7 +131,11 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func) {
         matcher: function (item) {
             let query = this.query.toLowerCase();
             query = query.replace(/\u00A0/g, String.fromCharCode(32));
-            return item.email.toLowerCase().includes(query)
+            if (!settings_data.show_email()) {
+                return item.full_name.toLowerCase().includes(query);
+            }
+            const email = people.get_visible_email(item);
+            return email.toLowerCase().includes(query)
                     || item.full_name.toLowerCase().includes(query);
         },
         sorter: function (matches) {

@@ -13,6 +13,7 @@ zrequire('compose_pm_pill');
 zrequire('composebox_typeahead');
 zrequire('recent_senders');
 zrequire('settings_org');
+const settings_config = zrequire('settings_config');
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
@@ -694,6 +695,15 @@ run_test('initialize', () => {
         query = 'cordelia@zulip.com, cord';
         assert.equal(matcher(query, othello), false);
         assert.equal(matcher(query, cordelia), false);
+
+        query = 'oth';
+        page_params.realm_email_address_visibility =
+            settings_config.email_address_visibility_values.admins_only.code;
+        page_params.is_admin = false;
+        assert.equal(matcher(query, deactivated_user), false);
+
+        page_params.is_admin = true;
+        assert.equal(matcher(query, deactivated_user), true);
 
         function sorter(query, people) {
             return typeahead_helper.sort_recipients(
