@@ -253,7 +253,7 @@ function maybe_select_emoji(e) {
             if (exports.is_composition(first_emoji)) {
                 first_emoji.click();
             } else {
-                toggle_reaction(first_emoji.data("emoji-name"));
+                toggle_reaction(first_emoji.attr("data-emoji-name"));
             }
         }
     }
@@ -267,7 +267,7 @@ exports.toggle_selected_emoji = function () {
         return;
     }
 
-    const emoji_name = $(selected_emoji).data("emoji-name");
+    const emoji_name = $(selected_emoji).attr("data-emoji-name");
 
     toggle_reaction(emoji_name);
 };
@@ -619,12 +619,12 @@ exports.register_click_handlers = function () {
         // if the user has reacted to this message with this emoji
         // the reaction is removed
         // otherwise, the reaction is added
-        const emoji_name = $(this).data("emoji-name");
+        const emoji_name = $(this).attr("data-emoji-name");
         toggle_reaction(emoji_name);
     });
 
     $(document).on('click', '.emoji-popover-emoji.composition', function (e) {
-        const emoji_name = $(this).data("emoji-name");
+        const emoji_name = $(this).attr("data-emoji-name");
         const emoji_text = ':' + emoji_name + ':';
         // The following check will return false if emoji was not selected in
         // message edit form.
