@@ -390,7 +390,7 @@ if PRODUCTION:
 # Prevent Javascript from reading the CSRF token from cookies.  Our code gets
 # the token from the DOM, which means malicious code could too.  But hiding the
 # cookie will slow down some attackers.
-CSRF_COOKIE_PATH = '/;HttpOnly'
+CSRF_COOKIE_HTTPONLY = True
 CSRF_FAILURE_VIEW = 'zerver.middleware.csrf_failure'
 
 if DEVELOPMENT:
