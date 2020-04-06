@@ -38,19 +38,19 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
         with open(markdown_email_base_template_path) as base_template:
             # Note that we're doing a hacky non-Jinja2 substitution here;
             # we do this because the normal render_markdown_path ordering
-            # doesn't commute properly with inline-email-css.
+            # doesn't commute properly with inline_email_css.
             f.write(base_template.read().replace('{{ rendered_input }}',
                                                  rendered_input))
 
     with open(subject_path, "w") as f:
         f.write(options["subject"])
 
-    # Then, we compile the email template using inline-email-css to
+    # Then, we compile the email template using inline_email_css to
     # add our standard styling to the paragraph tags (etc.).
     #
     # TODO: Ideally, we'd just refactor inline-email-css to
     # compile this one template, not all of them.
-    subprocess.check_call(["./scripts/setup/inline-email-css"])
+    subprocess.check_call(["./scripts/setup/inline_email_css.py"])
 
     # Finally, we send the actual emails.
     for user_profile in users:
