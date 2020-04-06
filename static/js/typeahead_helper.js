@@ -83,9 +83,7 @@ exports.render_person = function (person) {
             img_src: avatar_url,
             is_person: true,
         };
-        if (settings_data.show_email()) {
-            typeahead_arguments.secondary = person.email;
-        }
+        typeahead_arguments.secondary = settings_data.email_for_user_settings(person);
         html = exports.render_typeahead_item(typeahead_arguments);
         rendered.persons.set(person.user_id, html);
     }
