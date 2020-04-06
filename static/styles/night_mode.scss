@@ -24,6 +24,10 @@ body.night-mode {
         background-color: hsl(212, 28%, 18%);
     }
 
+    .compose-send-status-close {
+        color: hsl(0, 0%, 100%);
+    }
+
     .message_embed .data-container::after {
         background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 100%);
     }
