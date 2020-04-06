@@ -22,6 +22,9 @@ in bursts.
 
 **Upgrade notes:**
 
+- Logged in users may be logged out during this one-time upgrade to
+  transition them to more secure session cookies.
+
 **Full feature changelog:**
 
 - Added new options to control whether the incoming email integration
