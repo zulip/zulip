@@ -6,16 +6,12 @@ from typing import Any, AnyStr, Dict, \
     Iterable, List, MutableMapping, Optional
 
 from django.conf import settings
-from django.contrib.sessions.backends.base import UpdateError
-from django.contrib.sessions.middleware import SessionMiddleware
-from django.core.exceptions import DisallowedHost, SuspiciousOperation
+from django.core.exceptions import DisallowedHost
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
 from django.middleware.common import CommonMiddleware
 from django.shortcuts import render
-from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.http import http_date
 from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 
@@ -396,7 +392,7 @@ class FlushDisplayRecipientCache(MiddlewareMixin):
         flush_per_request_caches()
         return response
 
-class SessionHostDomainMiddleware(SessionMiddleware):
+class HostDomainMiddleware(MiddlewareMixin):
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         if getattr(response, "asynchronous", False):
             # This special Tornado "asynchronous" response is
@@ -422,65 +418,6 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                     get_realm(subdomain)
                 except Realm.DoesNotExist:
                     return render(request, "zerver/invalid_realm.html", status=404)
-        """
-        If request.session was modified, or if the configuration is to save the
-        session every time, save the changes and set a session cookie or delete
-        the session cookie if the session has been emptied.
-        """
-        try:
-            accessed = request.session.accessed
-            modified = request.session.modified
-            empty = request.session.is_empty()
-        except AttributeError:
-            pass
-        else:
-            # First check if we need to delete this cookie.
-            # The session should be deleted only if the session is entirely empty
-            if settings.SESSION_COOKIE_NAME in request.COOKIES and empty:
-                response.delete_cookie(
-                    settings.SESSION_COOKIE_NAME,
-                    path=settings.SESSION_COOKIE_PATH,
-                    domain=settings.SESSION_COOKIE_DOMAIN,
-                )
-            else:
-                if accessed:
-                    patch_vary_headers(response, ('Cookie',))
-                if (modified or settings.SESSION_SAVE_EVERY_REQUEST) and not empty:
-                    if request.session.get_expire_at_browser_close():
-                        max_age = None
-                        expires = None
-                    else:
-                        max_age = request.session.get_expiry_age()
-                        expires_time = time.time() + max_age
-                        expires = http_date(expires_time)
-                    # Save the session data and refresh the client cookie.
-                    # Skip session save for 500 responses, refs #3881.
-                    if response.status_code != 500:
-                        try:
-                            request.session.save()
-                        except UpdateError:
-                            raise SuspiciousOperation(
-                                "The request's session was deleted before the "
-                                "request completed. The user may have logged "
-                                "out in a concurrent request, for example."
-                            )
-                        host = request.get_host().split(':')[0]
-
-                        # The subdomains feature overrides the
-                        # SESSION_COOKIE_DOMAIN setting, since the setting
-                        # is a fixed value and with subdomains enabled,
-                        # the session cookie domain has to vary with the
-                        # subdomain.
-                        session_cookie_domain = host
-                        response.set_cookie(
-                            settings.SESSION_COOKIE_NAME,
-                            request.session.session_key, max_age=max_age,
-                            expires=expires, domain=session_cookie_domain,
-                            path=settings.SESSION_COOKIE_PATH,
-                            secure=settings.SESSION_COOKIE_SECURE or None,
-                            httponly=settings.SESSION_COOKIE_HTTPONLY or None,
-                            samesite=settings.SESSION_COOKIE_SAMESITE,
-                        )
         return response
 
 class SetRemoteAddrFromForwardedFor(MiddlewareMixin):

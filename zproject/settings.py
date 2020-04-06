@@ -164,7 +164,8 @@ MIDDLEWARE = (
     'zerver.middleware.RateLimitMiddleware',
     'zerver.middleware.FlushDisplayRecipientCache',
     'zerver.middleware.ZulipCommonMiddleware',
-    'zerver.middleware.SessionHostDomainMiddleware',
+    'zerver.middleware.HostDomainMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -385,11 +386,6 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 if PRODUCTION:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-
-    # For get_updates hostname sharding.
-    domain = get_config('django', 'cookie_domain', None)
-    if domain is not None:
-        CSRF_COOKIE_DOMAIN = '.' + domain
 
 # Prevent Javascript from reading the CSRF token from cookies.  Our code gets
 # the token from the DOM, which means malicious code could too.  But hiding the
