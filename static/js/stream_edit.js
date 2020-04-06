@@ -231,6 +231,9 @@ function show_subscription_settings(sub_row) {
                 return false;
             }
             // Case-insensitive.
+            if (!settings_data.show_email()) {
+                return item.full_name.toLowerCase().includes(query);
+            }
             return item.email.toLowerCase().includes(query) ||
                    item.full_name.toLowerCase().includes(query);
         },

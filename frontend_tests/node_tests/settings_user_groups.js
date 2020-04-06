@@ -9,6 +9,7 @@ const noop = function () {};
 const pills = {
     pill: {},
 };
+const settings_config = zrequire('settings_config');
 
 let create_item_handler;
 
@@ -119,6 +120,10 @@ run_test('populate_user_groups', () => {
         return [realm_user_group];
     };
 
+    people.get_visible_email = function () {
+        return bob.email;
+    };
+
     let templates_render_called = false;
     const fake_rendered_temp = $.create('fake_admin_user_group_list_template_rendered');
     global.stub_templates(function (template, args) {
@@ -199,6 +204,10 @@ run_test('populate_user_groups', () => {
             query: 'ali',
         };
 
+        const fake_context_for_email = {
+            query: 'am',
+        };
+
         (function test_source() {
             const result = config.source.call(fake_context, iago);
             const emails = result.map(user => user.email).sort();
@@ -212,6 +221,16 @@ run_test('populate_user_groups', () => {
             assert(!result);
 
             result = config.matcher.call(fake_context, alice);
+            assert(result);
+
+            page_params.realm_email_address_visibility =
+                settings_config.email_address_visibility_values.admins_only.code;
+            page_params.is_admin = false;
+            result = config.matcher.call(fake_context_for_email, bob);
+            assert(!result);
+
+            page_params.is_admin = true;
+            result = config.matcher.call(fake_context_for_email, bob);
             assert(result);
         }());
 

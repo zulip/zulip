@@ -1,6 +1,7 @@
 const pygments_data = require("../generated/pygments_data.json");
 const typeahead = require("../shared/js/typeahead");
 const autosize = require('autosize');
+const settings_data = require("./settings_data");
 
 //************************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
@@ -56,7 +57,14 @@ function get_language_matcher(query) {
 }
 
 exports.query_matches_person = function (query, person) {
-    return typeahead.query_matches_source_attrs(query, person, ["full_name", "email"], " ");
+    if (!settings_data.show_email()) {
+        return typeahead.query_matches_source_attrs(query, person, ["full_name"], " ");
+    }
+    let email_attr = "email";
+    if (person.delivery_email) {
+        email_attr = "delivery_email";
+    }
+    return typeahead.query_matches_source_attrs(query, person, ["full_name", email_attr], " ");
 };
 
 function query_matches_name_description(query, user_group_or_stream) {
