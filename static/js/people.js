@@ -102,6 +102,13 @@ exports.update_email = function (user_id, new_email) {
     // still work correctly.
 };
 
+exports.get_visible_email = function (user) {
+    if (user.delivery_email) {
+        return user.delivery_email;
+    }
+    return user.email;
+};
+
 exports.get_user_id = function (email) {
     const person = exports.get_by_email(email);
     if (person === undefined) {

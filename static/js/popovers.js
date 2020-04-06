@@ -149,13 +149,6 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
     return profile_field;
 }
 
-function get_visible_email(user) {
-    if (user.delivery_email) {
-        return user.delivery_email;
-    }
-    return user.email;
-}
-
 function render_user_info_popover(user, popover_element, is_sender_popover, private_msg_class,
                                   template_class, popover_placement) {
     const is_me = people.is_my_user_id(user.user_id);
@@ -184,7 +177,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         sent_by_uri: hash_util.by_sender_uri(user.email),
         show_email: settings_data.show_email(),
         show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
-        user_email: get_visible_email(user),
+        user_email: people.get_visible_email(user),
         user_full_name: user.full_name,
         user_id: user.user_id,
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
@@ -307,7 +300,7 @@ exports.show_user_profile = function (user) {
 
     const args = {
         full_name: user.full_name,
-        email: get_visible_email(user),
+        email: people.get_visible_email(user),
         profile_data: profile_data,
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),

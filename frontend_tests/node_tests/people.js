@@ -1056,3 +1056,27 @@ run_test('emails_strings_to_user_ids_array', function () {
     user_ids = people.emails_strings_to_user_ids_array('dummyuser@example.com');
     assert.equal(user_ids, undefined);
 });
+
+run_test('get_visible_email', function () {
+    const steven = {
+        email: 'steven@example.com',
+        delivery_email: 'steven-delivery@example.com',
+        user_id: 7,
+        full_name: 'Steven',
+    };
+
+    const maria = {
+        email: 'maria@example.com',
+        user_id: 728,
+        full_name: 'Maria',
+    };
+
+    people.add(steven);
+    people.add(maria);
+
+    let email = people.get_visible_email(steven);
+    assert.equal(email, steven.delivery_email);
+
+    email = people.get_visible_email(maria);
+    assert.equal(email, maria.email);
+});
