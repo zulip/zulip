@@ -658,6 +658,11 @@ function make_topic_list_helper() {
     topic_list.active_stream_id = () => undefined;
     topic_list.get_stream_li = () => undefined;
 
+    let topic_list_cleared;
+    topic_list.clear = () => {
+        topic_list_cleared = true;
+    };
+
     let topic_list_closed;
     topic_list.close = () => {
         topic_list_closed = true;
@@ -670,6 +675,7 @@ function make_topic_list_helper() {
 
     return {
         verify_actions: () => {
+            assert(topic_list_cleared);
             assert(topic_list_closed);
             assert(topic_list_rebuilt);
         },

@@ -107,7 +107,14 @@ run_test('create_sidebar_row', () => {
         appended_elems = elems;
     };
 
+    let topic_list_cleared;
+    topic_list.clear = () => {
+        topic_list_cleared = true;
+    };
+
     stream_list.build_stream_list();
+
+    assert(topic_list_cleared);
 
     const expected_elems = [
         devel_sidebar,          //pinned

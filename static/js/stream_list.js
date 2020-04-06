@@ -106,6 +106,7 @@ exports.build_stream_list = function () {
         elems.push(sidebar_row.get_li());
     }
 
+    topic_list.clear();
     parent.empty();
 
     stream_groups.pinned_streams.forEach(add_sidebar_li);
