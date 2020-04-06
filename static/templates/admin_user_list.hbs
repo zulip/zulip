@@ -1,7 +1,7 @@
 {{#with user}}
 <tr class="user_row{{#unless is_active}} deactivated_user{{/unless}}" data-user-id="{{user_id}}">
     <td>
-        <span class="user_name">{{full_name}}</span>
+        <span class="user_name" >{{full_name}} {{#if ../is_current_user}}<span class="my_user_status">({{t 'you' }})</span>{{/if}}</span>
         <i class="fa fa-ban deactivated-user-icon" title="{{t 'User is deactivated' }}" {{#if is_active}}style="display: none;"{{/if}}></i>
     </td>
     {{#if ../display_email}}
@@ -44,12 +44,12 @@
     <td class="actions">
         <span class="user-status-settings">
             {{#if is_active}}
-            <button class="button rounded small deactivate btn-danger" {{#if ../is_current_user}}disabled="disabled"{{/if}}>
-                {{t "Deactivate" }}
+            <button title="{{t 'Deactivate' }}" class="button rounded small deactivate btn-danger" {{#if ../is_current_user}}disabled="disabled"{{/if}}>
+                <i class="fa fa-user-times" aria-hidden="true"></i>
             </button>
             {{else}}
-            <button class="button rounded small reactivate btn-warning">
-                {{t "Reactivate" }}
+            <button title="{{t 'Reactivate' }}" class="button rounded small reactivate btn-warning">
+                <i class="fa fa-user-plus" aria-hidden="true"></i>
             </button>
             {{/if}}
         </span>
