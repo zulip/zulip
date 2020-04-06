@@ -398,9 +398,12 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     user_profile = authenticate(username=email,
                                 realm=realm,
                                 use_dummy_backend=True)
-    result = ExternalAuthResult(user_profile=user_profile,
-                                data_dict={"email": email, "full_name": remote_user,
-                                           "subdomain": realm.subdomain})
+    if user_profile is None:
+        result = ExternalAuthResult(data_dict={"email": email, "full_name": remote_user,
+                                               "subdomain": realm.subdomain})
+    else:
+        result = ExternalAuthResult(user_profile=user_profile)
+
     return login_or_register_remote_user(request, result)
 
 def oauth_redirect_to_root(request: HttpRequest, url: str,

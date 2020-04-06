@@ -1012,10 +1012,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                        subdomain='zulip', is_signup=True)
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
-        # Verify we didn't contaminate the ExternalAuthResult with
-        # name data from the existing user; we're just logging in as
-        # that user and don't need or want it.
-        self.assertEqual('full_name', 'Full Name')
+        # Verify data has the full_name consistent with the user we're logging in as.
+        self.assertEqual(data['full_name'], self.example_user("hamlet").full_name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
@@ -1873,6 +1871,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         # In the login flow, if multiple of the user's verified emails
         # are associated with existing accounts, we expect the choose
         # email screen to select which account to use.
+        hamlet = self.example_user("hamlet")
         account_data_dict = dict(email='hamlet@zulip.com', name="Hamlet")
         email_data = [
             dict(email=account_data_dict["email"],
@@ -1891,7 +1890,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                                        next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], 'hamlet@zulip.com')
-        self.assertEqual(data['full_name'], 'Hamlet')
+        self.assertEqual(data['full_name'], hamlet.full_name)
         self.assertEqual(data['subdomain'], 'zulip')
         self.assertEqual(data['redirect_to'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)

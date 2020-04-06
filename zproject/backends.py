@@ -929,43 +929,46 @@ class ExternalAuthResult:
     LOGIN_TOKEN_LENGTH = UserProfile.API_KEY_LENGTH
 
     def __init__(self, *, user_profile: Optional[UserProfile]=None,
-                 data_dict: ExternalAuthDataDict={},
+                 data_dict: Optional[ExternalAuthDataDict]=None,
                  login_token: Optional[str]=None,
                  delete_stored_data: bool=True) -> None:
+        if data_dict is None:
+            data_dict = {}
+
         if login_token is not None:
+            assert (not data_dict) and (user_profile is None), ("Passing in data_dict or user_profile " +
+                                                                "with login_token is disallowed.")
             self.instantiate_with_token(login_token, delete_stored_data)
-            return
         else:
-            self.data_dict = data_dict
-        self.user_profile = user_profile
-        if self.user_profile:
-            self._load_user_data_from_user_profile()
+            self.data_dict = cast(ExternalAuthDataDict, {**data_dict})
+            self.user_profile = user_profile
+
+        if self.user_profile is not None:
+            # Ensure data inconsistent with the user_profile wasn't passed in inside the data_dict argument.
+            assert 'full_name' not in data_dict or data_dict['full_name'] == self.user_profile.full_name
+            assert 'email' not in data_dict or data_dict['email'] == self.user_profile.delivery_email
+            # Update these data_dict fields to ensure consistency with self.user_profile. This is mostly
+            # defensive code, but is useful in these scenarios:
+            # 1. user_profile argument was passed in, and no full_name or email_data in the data_dict arg.
+            # 2. We're instantiating from the login_token and the user has changed their full_name since
+            #    the data was stored under the token.
+            self.data_dict['full_name'] = self.user_profile.full_name
+            self.data_dict['email'] = self.user_profile.delivery_email
+
+            if 'subdomain' not in self.data_dict:
+                self.data_dict['subdomain'] = self.user_profile.realm.subdomain
+            if not self.user_profile.is_mirror_dummy:
+                self.data_dict['is_signup'] = False
 
     def copy_data_dict(self) -> ExternalAuthDataDict:
         return self.data_dict.copy()
 
     def store_data(self) -> str:
-        if self.user_profile:
-            self._load_user_data_from_user_profile()
-
         key = put_dict_in_redis(redis_client, self.LOGIN_KEY_FORMAT, cast(Dict[str, Any], self.data_dict),
                                 expiration_seconds=self.LOGIN_KEY_EXPIRATION_SECONDS,
                                 token_length=self.LOGIN_TOKEN_LENGTH)
         token = key.split(self.LOGIN_KEY_PREFIX, 1)[1]  # remove the prefix
         return token
-
-    def _load_user_data_from_user_profile(self) -> None:
-        assert self.user_profile is not None
-        self.data_dict.update({
-            'email': self.user_profile.delivery_email,
-            'subdomain': self.user_profile.realm.subdomain,
-        })
-
-        # Don't allow signup flow if we found an existing UserProfile account.
-        #
-        # TODO: It feels fragile to have this check here; should it be somewhere else?
-        if not self.user_profile.is_mirror_dummy:
-            self.data_dict['is_signup'] = False
 
     def instantiate_with_token(self, token: str, delete_stored_data: bool=True) -> None:
         key = self.LOGIN_KEY_FORMAT.format(token=token)
@@ -1265,8 +1268,6 @@ def social_auth_finish(backend: Any,
     # there are two code paths here because of an optimization to save
     # a redirect on mobile and desktop.
     data_dict = ExternalAuthDataDict(
-        full_name=full_name,
-        email=email_address,
         subdomain=realm.subdomain,
         is_signup=is_signup,
         redirect_to=redirect_to,
@@ -1275,6 +1276,9 @@ def social_auth_finish(backend: Any,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp
     )
+    if user_profile is None:
+        data_dict.update(dict(full_name=full_name, email=email_address))
+
     result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
 
     if mobile_flow_otp or desktop_flow_otp:
