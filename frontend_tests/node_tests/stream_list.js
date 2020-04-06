@@ -377,13 +377,10 @@ run_test('narrowing', () => {
         topic: noop,
     });
 
-    topic_list.set_click_handlers = noop;
     topic_list.close = noop;
-    topic_list.remove_expanded_topics = noop;
     topic_list.rebuild = noop;
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
-    stream_list.zoom_out_topics = noop;
     scroll_util.scroll_element_into_container = noop;
 
     set_global('ui', {
