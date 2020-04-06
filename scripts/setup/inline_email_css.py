@@ -8,14 +8,7 @@ from cssutils.profiles import Profiles, properties, macros
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 
-if __name__ == "__main__":
-    escaped_jinja2_characters = [('%7B%7B%20', '{{ '), ('%20%7D%7D', ' }}'), ('&gt;', '>')]
-
-    templates_to_inline = set()
-    for f in os.listdir(os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails')):
-        if f.endswith('.source.html'):
-            templates_to_inline.add(f.split('.source.html')[0])
-
+def configure_cssutils() -> None:
     # These properties are not supported by cssutils by default and will
     # result in warnings when premailer package is run.
     properties[Profiles.CSS_LEVEL_2]['-ms-interpolation-mode'] = r'none|bicubic|nearest-neighbor'
@@ -30,6 +23,16 @@ if __name__ == "__main__":
 
     profile.addProfiles([(Profiles.CSS_LEVEL_2, properties[Profiles.CSS_LEVEL_2],
                          macros[Profiles.CSS_LEVEL_2])])
+
+if __name__ == "__main__":
+    escaped_jinja2_characters = [('%7B%7B%20', '{{ '), ('%20%7D%7D', ' }}'), ('&gt;', '>')]
+
+    templates_to_inline = set()
+    for f in os.listdir(os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails')):
+        if f.endswith('.source.html'):
+            templates_to_inline.add(f.split('.source.html')[0])
+
+    configure_cssutils()
 
     os.chdir(os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails'))
 
