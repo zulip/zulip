@@ -43,7 +43,7 @@ setup_node_modules(production=True, stdout=fp, stderr=fp)
 run(['./tools/setup/emoji/build_emoji'], stdout=fp, stderr=fp)
 
 # Inline CSS in emails
-run(['./scripts/setup/inline-email-css'], stdout=fp, stderr=fp)
+run(['./scripts/setup/inline_email_css.py'], stdout=fp, stderr=fp)
 
 # Copy over static files from the zulip_bots package
 run(['./tools/setup/generate_zulip_bots_static_files.py'], stdout=fp, stderr=fp)

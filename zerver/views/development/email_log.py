@@ -50,7 +50,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
         # here, since that saves a step when testing out changes to
         # the email CSS.  But we don't run this inside the test suite,
         # because by role, the tests shouldn't be doing a provision-like thing.
-        subprocess.check_call(["./scripts/setup/inline-email-css"])
+        subprocess.check_call(["./scripts/setup/inline_email_css.py"])
 
     # We import the Django test client inside the view function,
     # because it isn't needed in production elsewhere, and not

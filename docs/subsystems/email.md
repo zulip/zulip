@@ -85,7 +85,7 @@ EmailMessage instance for each message that would be sent.
 
 Other notes:
 * After changing any HTML email or `email_base.html`, you need to run
-  `scripts/setup/inline-email-css` for the changes to be reflected in the dev
+  `scripts/setup/inline_email_css.py` for the changes to be reflected in the dev
   environment. The script generates files like
   `templates/zerver/emails/compiled/<template_prefix>.html`.
 ## Email templates
@@ -103,13 +103,13 @@ two copies of each email (plain-text and HTML).
 So for each email, there are two source templates: the `.txt` version
 (for plain-text format) as well as a `.source.html` template.  The
 `.txt` version is used directly; while the `.source.html` template is
-processed by `scripts/setup/inline-email-css` (generating a `.html` template
+processed by `scripts/setup/inline_email_css.py` (generating a `.html` template
 under `templates/zerver/emails/compiled`); that tool (powered by
 `premailer`) injects the CSS we use for styling our emails
 (`templates/zerver/emails/email.css`) into the templates inline.
 
 What this means is that when you're editing emails, **you need to run
-`scripts/setup/inline-email-css`** after making changes to see the changes
+`scripts/setup/inline_email_css.py`** after making changes to see the changes
 take effect.  Our tooling automatically runs this as part of
 `tools/provision` and production deployments; but you should bump
 `PROVISION_VERSION` when making changes to emails that change test
@@ -132,7 +132,7 @@ translators to not have to deal with multiple versions of each string
 in our emails.
 
 One can test whether you did the translating part right by running
-`scripts/setup/inline-email-css && manage.py makemessages` and then searching
+`scripts/setup/inline_email_css.py && manage.py makemessages` and then searching
 for the strings in `locale/en/LC_MESSAGES/django.po`; if there
 are multiple copies or they contain CSS colors, you did it wrong.
 
