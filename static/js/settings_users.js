@@ -78,7 +78,8 @@ function update_view_on_deactivate(row) {
     row.find('i.deactivated-user-icon').show();
     button.addClass("btn-warning reactivate");
     button.removeClass("deactivate btn-danger");
-    button.text(i18n.t("Reactivate"));
+    button.html("<i class='fa fa-user-plus' aria-hidden='true'></i>");
+    button.attr('title', 'Reactivate');
     row.addClass("deactivated_user");
 
     if (user_role) {
@@ -95,7 +96,8 @@ function update_view_on_reactivate(row) {
     row.find('i.deactivated-user-icon').hide();
     button.addClass("btn-danger deactivate");
     button.removeClass("btn-warning reactivate");
-    button.text(i18n.t("Deactivate"));
+    button.attr('title', 'Deactivate');
+    button.html('<i class="fa fa-user-plus" aria-hidden="true"></i>');
     row.removeClass("deactivated_user");
 
     if (user_role) {
