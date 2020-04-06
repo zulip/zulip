@@ -22,7 +22,7 @@ exports.update = function () {
     }
 };
 
-exports.remove_expanded_topics = function () {
+exports.clear = function () {
     stream_popover.hide_topic_popover();
 
     for (const widget of active_widgets.values()) {
@@ -34,7 +34,7 @@ exports.remove_expanded_topics = function () {
 
 exports.close = function () {
     zoomed = false;
-    exports.remove_expanded_topics();
+    exports.clear();
 };
 
 exports.zoom_out = function () {
@@ -213,7 +213,7 @@ exports.rebuild = function (stream_li, stream_id) {
         return;
     }
 
-    exports.remove_expanded_topics();
+    exports.clear();
     const widget = exports.widget(stream_li, stream_id);
     widget.build();
 
