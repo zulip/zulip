@@ -22,8 +22,7 @@ import requests
 import json
 
 FIXTURE_FILE = os.path.join(os.path.dirname(__file__), '../zerver/tests/fixtures/authors.json')
-duplicate_commits_file = os.path.join(os.path.dirname(__file__),
-                                      '../zerver/tests/fixtures/duplicate_commits.json')
+duplicate_commits_file = os.path.join(os.path.dirname(__file__), 'duplicate_commits.json')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--max-retries', type=int, default=3,
