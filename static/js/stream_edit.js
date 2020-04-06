@@ -326,14 +326,14 @@ exports.stream_setting_clicked = function (e) {
         return;
     }
 
+    const sub = get_sub_for_target(e.target);
     let checkbox = $(e.currentTarget).find('.sub_setting_control');
-    let status_element;
+    let status_element = "#stream_change_property_status" + sub.stream_id;
     // sub data is being changed from the notification settings page.
     if (checkbox.length === 0) {
         checkbox = $(e.currentTarget);
         status_element = checkbox.closest('.subsection-parent').find('.alert-notification');
     }
-    const sub = get_sub_for_target(e.target);
     const setting = checkbox.attr('name');
     if (!sub) {
         blueslip.error('undefined sub in stream_setting_clicked()');
@@ -353,11 +353,14 @@ exports.stream_setting_clicked = function (e) {
 };
 
 exports.bulk_set_stream_property = function (sub_data, status_element) {
-    const stream_id = sub_data[0].stream_id;
     const url = '/json/users/me/subscriptions/properties';
     const data = {subscription_data: JSON.stringify(sub_data)};
     if (!status_element) {
-        status_element = "#stream_change_property_status" + stream_id;
+        return channel.post({
+            url: url,
+            data: data,
+            timeout: 10 * 1000,
+        });
     }
 
     settings_ui.do_settings_change(channel.post, url, data, status_element);
