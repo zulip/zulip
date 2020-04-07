@@ -187,6 +187,9 @@ $(".top_left_starred_messages").set_find_results('.count', count_stub);
 
 $("#tab_list .stream").length = 0;
 
+compose.compute_show_video_chat_button = () => {};
+$("#below-compose-content .video_link").toggle = () => {};
+
 run_test('initialize_everything', () => {
     ui_init.initialize_everything();
 });
