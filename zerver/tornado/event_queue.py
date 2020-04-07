@@ -460,19 +460,20 @@ def load_event_queues(port: int) -> None:
     global clients
     start = time.time()
 
-    # ujson chokes on bad input pretty easily.  We separate out the actual
-    # file reading from the loading so that we don't silently fail if we get
-    # bad input.
     try:
         with open(persistent_queue_filename(port), "r") as stored_queues:
-            json_data = stored_queues.read()
+            data = ujson.load(stored_queues)
+    except FileNotFoundError:
+        pass
+    except ValueError:
+        logging.exception("Tornado %d could not deserialize event queues" % (port,))
+    else:
         try:
-            clients = dict((qid, ClientDescriptor.from_dict(client))
-                           for (qid, client) in ujson.loads(json_data))
+            clients = {
+                qid: ClientDescriptor.from_dict(client) for (qid, client) in data
+            }
         except Exception:
             logging.exception("Tornado %d could not deserialize event queues" % (port,))
-    except (IOError, EOFError):
-        pass
 
     for client in clients.values():
         # Put code for migrations due to event queue data format changes here
@@ -823,6 +824,15 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
     presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
     wide_dict = event_template['message_dict']  # type: Dict[str, Any]
 
+    # Temporary transitional code: Zulip servers that have message
+    # events in their event queues and upgrade to the new version
+    # that expects sender_delivery_email in these events will
+    # throw errors processing events.  We can remove this block
+    # once we don't expect anyone to be directly upgrading from
+    # 2.0.x to the latest Zulip.
+    if 'sender_delivery_email' not in wide_dict:  # nocoverage
+        wide_dict['sender_delivery_email'] = wide_dict['sender_email']
+
     sender_id = wide_dict['sender_id']  # type: int
     message_id = wide_dict['id']  # type: int
     message_type = wide_dict['type']  # type: str
@@ -830,19 +840,11 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
 
     @cachify
     def get_client_payload(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
-        dct = copy.deepcopy(wide_dict)
-
-        # Temporary transitional code: Zulip servers that have message
-        # events in their event queues and upgrade to the new version
-        # that expects sender_delivery_email in these events will
-        # throw errors processing events.  We can remove this block
-        # once we don't expect anyone to be directly upgrading from
-        # 2.0.x to the latest Zulip.
-        if 'sender_delivery_email' not in dct:  # nocoverage
-            dct['sender_delivery_email'] = dct['sender_email']
-
-        MessageDict.finalize_payload(dct, apply_markdown, client_gravatar)
-        return dct
+        return MessageDict.finalize_payload(
+            wide_dict,
+            apply_markdown=apply_markdown,
+            client_gravatar=client_gravatar
+        )
 
     # Extra user-specific data to include
     extra_user_data = {}  # type: Dict[int, Any]

@@ -61,18 +61,39 @@ in bursts.
   system was always a hack, was only ever used for one endpoint, and
   did not provide a measureable latency benefit over HTTP/2.
 
-### 2.1.3 -- Unreleased
+### 2.1.3 -- 2020-04-01
 
+- CVE-2020-9444: Prevent reverse tabnapping attacks.
+- CVE-2020-9445: Remove unused and insecure modal_link feature.
+- CVE-2020-10935: Fix XSS vulnerability in local link rewriting.
+- Blocked access from Zulip Desktop versions below 5.0.0.  This
+  behavior can be adjusted by editing `DESKTOP_*_VERSION`
+  in `/home/zulip/deployments/current/version.py`.
 - Restructured server initialization to simplify initialization of
   Docker containers (eliminating common classes of user error).
 - Removed buggy feedback bot (`ENABLE_FEEDBACK`).
+- Migrated GitHub authentication to use the current encoding.
+- Fixed support for restoring a backup on a different minor release
+  (in the common case they have the same database schema).
+- Fixed restoring backups with memcached authentication enabled.
 - Fixed preview content (preheaders) for many emails.
 - Fixed buggy text in missed-message emails with PM content disabled.
 - Fixed buggy loading spinner in "emoji format" widget.
 - Fixed sorting and filtering users in organization settings.
+- Fixed handling of links to deleted streams.
+- Fixed check-rabbitmq-consumers monitoring.
+- Fixed copy-to-clipboard button for outgoing webhook bots.
+- Fixed logging spam from soft_deactivation cron job.
 - Fixed email integration handling of emails with nested MIME structure.
 - Fixed unicode bugs in incoming email integration.
 - Fixed error handling for Slack data import.
+- Fixed incoming webhook support for AWX 9.x.y.
+- Fixed a couple missing translation tags.
+- Fixed "User groups" settings UI bug for administrators.
+- Fixed data import tool to reset resource limits after importing
+  data from a free plan organization on zulipchat.com.
+- Changed the SAML default signature algorithm to SHA-256, overriding
+  the SHA-1 default used by python3-saml.
 
 ### 2.1.2 -- 2020-01-16
 
@@ -277,7 +298,7 @@ lose the setting and need to re-enable it.
 - Replaced title attributes with nice tooltips in the message feed and
   buddy list.
 - Fixed incorrect caching settings for the Zulip API, which could result
-  in browers appearing to display old content or remark messages unread.
+  in browsers appearing to display old content or remark messages unread.
 - Fixed a bug that prevented sending mobile push notifications when the
   user was recently online via the mobile app.
 - Fixed buggy handling of LaTeX in quote-and-reply.
@@ -618,7 +639,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Fixed confusing intermediate states of group PMs online indicators.
 - Fixed several subtle unread count corner case bugs.
 - Fixed several installer issues to make it easier to Dockerize Zulip.
-- Fixed several subtle issues with both the LDAP/Active Direcotry
+- Fixed several subtle issues with both the LDAP/Active Directory
   integration and its documentation, making it much easier to setup.
 - Fixed several minor bugs and otherwise optimized search typeahead.
 - Fixed a bad nginx configuration interaction with servers that have

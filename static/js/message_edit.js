@@ -143,9 +143,27 @@ exports.show_topic_edit_spinner = function (row) {
     $(".topic_edit_cancel").hide();
 };
 
+exports.end_if_focused = function () {
+    const focused_elem = $(".message_edit").find(':focus');
+
+    if (focused_elem.length === 1) {
+        focused_elem.blur();
+        const row = focused_elem.closest('.message_row');
+        exports.end(row);
+    }
+};
+
 function handle_edit_keydown(from_topic_edited_only, e) {
     let row;
     const code = e.keyCode || e.which;
+
+    // Handle escape keys in the message_edit form.
+    if (code === 27) {
+        exports.end_if_focused();
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+    }
 
     if ($(e.target).hasClass("message_edit_content") && code === 13) {
         // Pressing enter to save edits is coupled with enter to send
@@ -408,7 +426,7 @@ exports.start = function (row, edit_box_open_callback) {
 
 exports.start_topic_edit = function (recipient_row) {
     const form = $(render_topic_edit_form());
-    current_msg_list.show_edit_topic(recipient_row, form);
+    current_msg_list.show_edit_topic_on_recipient_row(recipient_row, form);
     form.keydown(_.partial(handle_edit_keydown, true));
     const msg_id = rows.id_for_recipient_row(recipient_row);
     const message = current_msg_list.get(msg_id);
@@ -443,7 +461,7 @@ exports.end = function (row) {
         current_msg_list.hide_edit_message(row);
     }
     if (row !== undefined) {
-        current_msg_list.hide_edit_topic(row);
+        current_msg_list.hide_edit_topic_on_recipient_row(row);
     }
     condense.show_message_expander(row);
     row.find(".message_reactions").show();

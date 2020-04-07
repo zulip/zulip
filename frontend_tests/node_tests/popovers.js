@@ -24,7 +24,6 @@ set_global('page_params', {
 });
 set_global('rows', {});
 
-
 set_global('message_viewport', {
     height: () => 500,
 });
@@ -75,8 +74,8 @@ const e = {
 
 function initialize_people() {
     people.init();
-    people.add_in_realm(me);
-    people.add_in_realm(alice);
+    people.add(me);
+    people.add(alice);
     people.initialize_current_user(me.user_id);
 }
 

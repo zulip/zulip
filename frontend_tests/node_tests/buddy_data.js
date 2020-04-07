@@ -1,7 +1,5 @@
 const _page_params = {};
 
-set_global('blueslip', global.make_zblueslip());
-
 set_global('page_params', _page_params);
 set_global('$', global.make_zjquery());
 zrequire('people');
@@ -57,18 +55,17 @@ function make_people() {
             full_name: `Human ${i}`,
             email: `person${i}@example.com`,
         };
-        people.add_in_realm(person);
+        people.add(person);
     }
 
-    people.add_in_realm(bot);
-    people.add_in_realm(bot_with_owner);
-    people.add_in_realm(selma);
-    people.add_in_realm(me);
-    people.add_in_realm(old_user);
+    people.add(bot);
+    people.add(bot_with_owner);
+    people.add(selma);
+    people.add(me);
+    people.add(old_user);
 
     people.initialize_current_user(me.user_id);
 }
-
 
 function activate_people() {
     presence.presence_info.clear();
@@ -93,7 +90,6 @@ function activate_people() {
         set_presence(user_id, 'offline');
     }
 }
-
 
 make_people();
 activate_people();
@@ -209,7 +205,6 @@ run_test('bulk_data_hacks', () => {
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('p');
     assert.equal(user_ids.length, 998);
 
-
     // Make our shrink limit higher, and go back to an empty search.
     // We won't get all 1000 users, just the present ones.
     buddy_data.max_size_before_shrinking = 50000;
@@ -284,8 +279,8 @@ run_test('user_last_seen_time_status', () => {
 
 run_test('error handling', () => {
     presence.get_user_ids = () => [42];
-    blueslip.set_test_data('error', 'Unknown user_id in get_by_user_id: 42');
-    blueslip.set_test_data('warn', 'Got user_id in presence but not people: 42');
+    blueslip.expect('error', 'Unknown user_id in get_by_user_id: 42');
+    blueslip.expect('warn', 'Got user_id in presence but not people: 42');
     buddy_data.get_filtered_and_sorted_user_ids();
     assert.equal(blueslip.get_test_logs('error').length, 1);
     assert.equal(blueslip.get_test_logs('warn').length, 1);

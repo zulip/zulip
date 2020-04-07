@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 
 
+DEMOTE_STREAMS_AUTOMATIC = 1
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -15,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='userprofile',
             name='demote_inactive_streams',
-            field=models.PositiveSmallIntegerField(default=1),
+            field=models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC),
         ),
     ]

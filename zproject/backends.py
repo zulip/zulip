@@ -16,10 +16,8 @@ import copy
 import logging
 import magic
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, \
-    no_type_check
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
 from typing_extensions import TypedDict
-from urllib.parse import urljoin
 from zxcvbn import zxcvbn
 
 from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, \
@@ -39,7 +37,7 @@ from django.utils.translation import ugettext as _
 from requests import HTTPError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
-    GithubTeamOAuth2, GithubMemberOAuth2
+    GithubTeamOAuth2
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.base import BaseAuth
@@ -57,7 +55,7 @@ from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.email_validation import email_allowed_for_realm, \
     validate_email_not_already_in_realm
 from zerver.lib.mobile_auth_otp import is_valid_otp
-from zerver.lib.rate_limiter import clear_history, rate_limit_request_by_entity, RateLimitedObject
+from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.lib.redis_utils import get_redis_client, get_dict_from_redis, put_dict_in_redis
@@ -182,19 +180,16 @@ rate_limiting_rules = settings.RATE_LIMITING_RULES['authenticate_by_username']
 class RateLimitedAuthenticationByUsername(RateLimitedObject):
     def __init__(self, username: str) -> None:
         self.username = username
+        super().__init__()
 
-    def __str__(self) -> str:
-        return "Username: {}".format(self.username)
-
-    def key_fragment(self) -> str:
-        return "{}:{}".format(type(self), self.username)
+    def key(self) -> str:
+        return "{}:{}".format(type(self).__name__, self.username)
 
     def rules(self) -> List[Tuple[int, int]]:
         return rate_limiting_rules
 
 def rate_limit_authentication_by_username(request: HttpRequest, username: str) -> None:
-    entity = RateLimitedAuthenticationByUsername(username)
-    rate_limit_request_by_entity(request, entity)
+    RateLimitedAuthenticationByUsername(username).rate_limit_request(request)
 
 def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
     return hasattr(request, '_ratelimit') and 'RateLimitedAuthenticationByUsername' in request._ratelimit
@@ -226,7 +221,7 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
     result = auth_func(*args, **kwargs)
     if result is not None:
         # Authentication succeeded, clear the rate-limiting record.
-        clear_history(RateLimitedAuthenticationByUsername(username))
+        RateLimitedAuthenticationByUsername(username).clear_history()
 
     return result
 
@@ -994,17 +989,21 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
 
         if not chosen_email:
             avatars = {}  # Dict[str, str]
+            existing_account_emails = []
             for email in verified_emails:
                 existing_account = common_get_active_user(email, realm, {})
                 if existing_account is not None:
+                    existing_account_emails.append(email)
                     avatars[email] = avatar_url(existing_account)
-
-            return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
-                'primary_email': verified_emails[0],
-                'verified_non_primary_emails': verified_emails[1:],
-                'backend': 'github',
-                'avatar_urls': avatars,
-            })
+            if (len(existing_account_emails) != 1 or backend.strategy.session_get('is_signup') == '1'):
+                return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
+                    'primary_email': verified_emails[0],
+                    'verified_non_primary_emails': verified_emails[1:],
+                    'backend': 'github',
+                    'avatar_urls': avatars,
+                })
+            else:
+                chosen_email = existing_account_emails[0]
 
         try:
             validate_email(chosen_email)
@@ -1320,55 +1319,19 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 access_token, *args, **kwargs
             )
         elif team_id is not None:
-            backend = GithubTeamBackend(self.strategy, self.redirect_uri)
+            backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
             try:
                 return backend.user_data(access_token, *args, **kwargs)
             except AuthFailed:
                 return dict(auth_failed_reason="GitHub user is not member of required team")
         elif org_name is not None:
-            backend = GithubOrganizationBackend(self.strategy, self.redirect_uri)
+            backend = GithubOrganizationOAuth2(self.strategy, self.redirect_uri)
             try:
                 return backend.user_data(access_token, *args, **kwargs)
             except AuthFailed:
                 return dict(auth_failed_reason="GitHub user is not member of required organization")
 
         raise AssertionError("Invalid configuration")
-
-    def _user_data(self, access_token: str, path: Any=None) -> Any:
-        # Monkey patching. Should be removed once upstream merges a fix for
-        # https://github.com/python-social-auth/social-core/issues/430
-        url = urljoin(self.api_url(), 'user{0}'.format(path or ''))
-        return self.get_json(url, headers={'Authorization': 'token {0}'.format(access_token)})
-
-class GithubMemberUserDataMixin(GithubMemberOAuth2):
-    """
-    This mixin class and the ones inheriting from it serve as a way
-    to monkey-patch a fix for https://github.com/python-social-auth/social-core/issues/430
-    Changes from the commit adding this should be reverted once the issue is fixed upstream.
-    """
-    @no_type_check
-    def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Any:  # nocoverage
-        # this is copy-pasted from a good PR upstream that fixes the issue.
-        """Loads user data from service"""
-        user_data = super(GithubMemberOAuth2, self).user_data(
-            access_token, *args, **kwargs
-        )
-        headers = {'Authorization': 'token {0}'.format(access_token)}
-        try:
-            self.request(self.member_url(user_data), headers=headers)
-        except HTTPError as err:
-            # if the user is a member of the organization, response code
-            # will be 204, see http://bit.ly/ZS6vFl
-            if err.response.status_code != 204:
-                raise AuthFailed(self,
-                                 'User doesn\'t belong to the organization')
-        return user_data
-
-class GithubTeamBackend(GithubMemberUserDataMixin, GithubTeamOAuth2):
-    pass
-
-class GithubOrganizationBackend(GithubMemberUserDataMixin, GithubOrganizationOAuth2):
-    pass
 
 @external_auth_method
 class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
@@ -1528,7 +1491,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                     # If an attacker managed to eavesdrop on the RelayState token,
                     # they may pass it here to the endpoint with an invalid SAMLResponse.
                     # We remove these potentially sensitive parameters that we have set in the session
-                    # ealier, to avoid leaking their values.
+                    # earlier, to avoid leaking their values.
                     self.strategy.session_set(param, None)
 
         return result

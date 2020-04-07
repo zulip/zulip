@@ -4,7 +4,6 @@ zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 
 set_global('page_params', {});
-set_global('blueslip', global.make_zblueslip());
 set_global('muting', {});
 
 global.patch_builtin('setTimeout', (f, delay) => {
@@ -74,7 +73,6 @@ run_test('basics', () => {
     assert.equal(mld.first_unread_message_id(), 10);
     mld.get(10).unread = false;
     assert.equal(mld.first_unread_message_id(), 15);
-
 
     mld.clear();
     assert_contents(mld, []);
@@ -208,11 +206,11 @@ run_test('errors', () => {
     });
     assert.equal(mld.get('bogus-id'), undefined);
 
-    blueslip.set_test_data('fatal', 'Bad message id');
+    blueslip.expect('fatal', 'Bad message id');
     mld._add_to_hash(['asdf']);
     assert.equal(blueslip.get_test_logs('fatal').length, 1);
 
-    blueslip.set_test_data('error', 'Duplicate message added to MessageListData');
+    blueslip.expect('error', 'Duplicate message added to MessageListData');
     mld._hash.set(1, 'taken');
     mld._add_to_hash(make_msgs([1]));
     assert.equal(blueslip.get_test_logs('error').length, 1);

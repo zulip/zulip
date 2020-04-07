@@ -1,42 +1,3 @@
-<div id="panels">
-    <div data-process="notifications" class="alert alert-info">
-        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
-        <div data-step="1">
-            {% trans %}Zulip needs your permission to
-            <a class="request-desktop-notifications alert-link">enable desktop notifications.</a>
-            {% endtrans %}
-        </div>
-        <div data-step="2" style="display: none">
-            {{ _('We strongly recommend enabling desktop notifications. They help Zulip keep your team connected.') }}
-            <span class="buttons">
-                <a class="alert-link request-desktop-notifications">{{ _('Enable notifications') }}</a>
-                &bull;
-                <a class="alert-link exit">{{ _('Ask me later') }}</a>
-                &bull;
-                <a class="alert-link reject-notifications">{{ _('Never ask on this computer') }}</a>
-            </span>
-        </div>
-    </div>
-    <div data-process="email-server" class="alert alert-info red">
-        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
-        <div data-step="1">
-            {% trans %}Zulip needs to send email to confirm users' addresses and send notifications.{% endtrans %}
-            <a class="alert-link" href="https://zulip.readthedocs.io/en/latest/production/email.html" target="_blank">
-                {% trans %}See how to configure email.{% endtrans %}
-            </a>
-        </div>
-    </div>
-    <div data-process="insecure-desktop-app" class="alert alert-info red">
-        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}">&times;</span>
-        <div data-step="1">
-            You are using an old, insecure version of the Zulip
-            desktop app that cannot auto-update.
-            <a class="alert-link" href="https://zulipchat.com/apps" target="_blank">
-                Download the latest version.
-            </a>
-        </div>
-    </div>
-</div>
 <div class="header">
     <nav class="header-main rightside-userlist" id="top_navbar">
         <div class="column-left">
@@ -51,35 +12,37 @@
                         <span id="streamlist-toggle-unreadcount">0</span>
                     </a>
                 </div>
-                {% if search_pills_enabled %}
-                <div id="searchbox" class="searchbox-rightmargin">
-                    <div id="tab_bar" class="notdisplayed">
-                    </div>
-                    <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
-                    <form id="searchbox_form" class="form-search navbar-search">
-                        <div id="search_arrows" class="pill-container input-append">
-                            <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
-                              autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"> </div>
+                <div class="top-navbar-border">
+                    {% if search_pills_enabled %}
+                    <div id="searchbox">
+                        <div id="tab_bar" class="notdisplayed">
                         </div>
-                    </form>
-                    {# Start the button off disabled since there is no active search #}
-                    <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
-                </div>
-                {% else %}
-                <div id="searchbox_legacy" class="searchbox-rightmargin">
-                    <div id="tab_bar" class="notdisplayed">
+                        <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
+                        <form id="searchbox_form" class="form-search navbar-search">
+                            <div id="search_arrows" class="pill-container input-append">
+                                <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
+                                  autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"> </div>
+                            </div>
+                        </form>
+                        {# Start the button off disabled since there is no active search #}
+                        <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
                     </div>
-                    <form id="searchbox_form" class="form-search navbar-search">
-                        <div id="search_arrows" class="input-append">
-                            <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
-                              autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"/>
-                            {# Start the button off disabled since there is no active search #}
-                            <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
-                            <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
+                    {% else %}
+                    <div id="searchbox_legacy">
+                        <div id="tab_bar" class="notdisplayed">
                         </div>
-                    </form>
+                        <form id="searchbox_form" class="form-search navbar-search">
+                            <div id="search_arrows" class="input-append">
+                                <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
+                                  autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"/>
+                                {# Start the button off disabled since there is no active search #}
+                                <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
+                                <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
         </div>
         <div class="column-right">

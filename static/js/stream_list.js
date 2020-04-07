@@ -106,6 +106,7 @@ exports.build_stream_list = function () {
         elems.push(sidebar_row.get_li());
     }
 
+    topic_list.clear();
     parent.empty();
 
     stream_groups.pinned_streams.forEach(add_sidebar_li);
@@ -395,11 +396,11 @@ exports.update_stream_sidebar_for_narrow = function (filter) {
     const stream_li = exports.get_stream_li(stream_id);
 
     if (!stream_li) {
-        // It should be the case then when we have a subscribed
+        // This is a sanity check.  When we narrow to a subscribed
         // stream, there will always be a stream list item
-        // corresponding to that stream in our sidebar.  We have
-        // evidence that this assumption breaks down for some users,
-        // but we are not clear why it happens.
+        // corresponding to that stream in our sidebar.  This error
+        // stopped appearing from March 2018 until at least
+        // April 2020, so if it appears again, something regressed.
         blueslip.error('No stream_li for subscribed stream ' + stream_id);
         topic_zoom.clear_topics();
         return;

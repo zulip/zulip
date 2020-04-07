@@ -26,7 +26,7 @@ assert(!people.is_known_user_id(isaac.user_id));
 people.add(isaac);
 assert(people.is_known_user_id(isaac.user_id));
 
-// The global.people object is a very fundamental object in the
+// The `people`object is a very fundamental object in the
 // Zulip app.  You can learn a lot more about it by reading
 // the tests in people.js in the same directory as this file.
 // Let's create the current user, which some future tests will
@@ -50,9 +50,6 @@ const denmark_stream = {
     stream_id: 101,
     subscribed: false,
 };
-
-// We often use IIFEs (immediately invoked function expressions)
-// to make our tests more self-containted.
 
 // Some quick housekeeping:  Let's clear page_params, which is a data
 // structure that the server sends down to us when the app starts.  We
@@ -95,7 +92,6 @@ const messages = {
 const noop = () => undefined;
 
 set_global('alert_words', {});
-set_global('blueslip', global.make_zblueslip());
 
 alert_words.process_message = noop;
 
@@ -230,7 +226,6 @@ run_test('narrow_state', () => {
 
         zrequire - bring in real code
         set_global - create stubs
-        IIFE - enclose tests in their own scope
         assert.equal - verify results
 
     ------
@@ -455,7 +450,6 @@ run_test('insert_message', () => {
     assert.equal(inserted_message.content, 'example content');
 });
 
-
 /*
 
    The previous example starts to get us out of the data layer of
@@ -664,6 +658,11 @@ function make_topic_list_helper() {
     topic_list.active_stream_id = () => undefined;
     topic_list.get_stream_li = () => undefined;
 
+    let topic_list_cleared;
+    topic_list.clear = () => {
+        topic_list_cleared = true;
+    };
+
     let topic_list_closed;
     topic_list.close = () => {
         topic_list_closed = true;
@@ -676,6 +675,7 @@ function make_topic_list_helper() {
 
     return {
         verify_actions: () => {
+            assert(topic_list_cleared);
             assert(topic_list_closed);
             assert(topic_list_rebuilt);
         },
@@ -713,7 +713,6 @@ run_test('stream_list', () => {
     const jquery_helper = make_jquery_helper();
     const sidebar_helper = make_sidebar_helper();
     const topic_list_helper = make_topic_list_helper();
-
 
     // This is what we are testing!
     stream_list.update_streams_sidebar();

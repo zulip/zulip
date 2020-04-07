@@ -50,7 +50,7 @@ global.with_stub = stub.with_stub;
 global.make_zjquery = require('./zjquery.js').make_zjquery;
 
 // Set up fake blueslip
-global.make_zblueslip = require('./zblueslip.js').make_zblueslip;
+const make_blueslip = require('./zblueslip.js').make_zblueslip;
 
 // Set up fake translation
 const stub_i18n = require('./i18n.js');
@@ -113,9 +113,16 @@ try {
         _.throttle = immediate;
         _.debounce = immediate;
 
+        set_global('blueslip', make_blueslip());
         set_global('i18n', stub_i18n);
         namespace.clear_zulip_refs();
+
         run_one_module(file);
+
+        if (blueslip.reset) {
+            blueslip.reset();
+        }
+
         namespace.restore();
     });
 } catch (e) {

@@ -3,7 +3,6 @@ zrequire('Filter', 'js/filter');
 zrequire('people');
 zrequire('stream_data');
 zrequire('unread');
-set_global('blueslip', global.make_zblueslip());
 
 set_global('message_store', {});
 set_global('page_params', {});
@@ -192,7 +191,6 @@ run_test('get_unread_ids', () => {
     ];
     set_filter(terms);
 
-    blueslip.set_test_data('warn', 'Unknown emails: bob@example.com');
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 
@@ -213,7 +211,7 @@ run_test('get_unread_ids', () => {
     });
 
     narrow_state.reset_current_filter();
-    blueslip.set_test_data('error', 'unexpected call to get_first_unread_info');
+    blueslip.expect('error', 'unexpected call to get_first_unread_info');
     assert_unread_info({
         flavor: 'cannot_compute',
     });

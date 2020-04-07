@@ -2,9 +2,14 @@
 {% set entrypoint = "stats" %}
 
 {% block content %}
-<div class="app portico-page">
+<div class="app portico-page stats-page">
 
     <div class="page-content">
+        {% if not analytics_ready %}
+        <div class="alert alert-info">
+            {{ _("Analytics are fully available 24 hours after organization creation.") }}
+        </div>
+        {% endif %}
         <div id="id_stats_errors" class="alert alert-error"></div>
         <div class="center-charts">
             <h1 class="analytics-page-header">{% trans %}Zulip analytics for {{ target_name }}{% endtrans %}</h1>

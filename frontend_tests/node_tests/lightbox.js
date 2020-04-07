@@ -1,8 +1,6 @@
 zrequire('rows');
 zrequire('lightbox');
 
-set_global('blueslip', global.make_zblueslip());
-
 set_global('message_store', {});
 set_global('Image', class Image {});
 set_global('overlays', {
@@ -13,6 +11,8 @@ set_global('overlays', {
 set_global('popovers', {
     hide_all: () => {},
 });
+
+rows.is_draft_row = () => false;
 
 set_global('$', global.make_zjquery());
 
@@ -28,6 +28,7 @@ run_test('pan_and_zoom', () => {
     img.set_parent(link);
     link.closest = () => msg;
     msg.attr("zid", "1234");
+    img.attr("src", "example");
 
     let fetched_zid;
 

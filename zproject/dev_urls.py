@@ -54,7 +54,7 @@ urls = [
     url(r'^errors/404/$', TemplateView.as_view(template_name='404.html')),
     url(r'^errors/5xx/$', TemplateView.as_view(template_name='500.html')),
 
-    # Add a convinient way to generate webhook messages from fixtures.
+    # Add a convenient way to generate webhook messages from fixtures.
     url(r'^devtools/integrations/$', zerver.views.development.integrations.dev_panel),
     url(r'^devtools/integrations/check_send_webhook_fixture_message$',
         zerver.views.development.integrations.check_send_webhook_fixture_message),

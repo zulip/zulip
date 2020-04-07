@@ -1,4 +1,3 @@
-set_global('blueslip', global.make_zblueslip());
 zrequire('vdom');
 
 run_test('basics', () => {
@@ -277,7 +276,7 @@ run_test('eq_array elementwise', () => {
 });
 
 run_test('error checking', () => {
-    blueslip.set_test_data(
+    blueslip.expect(
         'error',
         'We need keyed_nodes for updates.');
 
@@ -288,7 +287,7 @@ run_test('error checking', () => {
     vdom.update(replace_content, find, ul, ul);
     assert.equal(blueslip.get_test_logs('error').length, 1);
 
-    blueslip.set_test_data(
+    blueslip.expect(
         'error',
         'We need keyed_nodes to render innards.');
     vdom.render_tag(ul);

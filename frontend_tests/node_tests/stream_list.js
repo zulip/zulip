@@ -1,6 +1,5 @@
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
-set_global('blueslip', global.make_zblueslip());
 
 zrequire('unread_ui');
 zrequire('Filter', 'js/filter');
@@ -108,7 +107,14 @@ run_test('create_sidebar_row', () => {
         appended_elems = elems;
     };
 
+    let topic_list_cleared;
+    topic_list.clear = () => {
+        topic_list_cleared = true;
+    };
+
     stream_list.build_stream_list();
+
+    assert(topic_list_cleared);
 
     const expected_elems = [
         devel_sidebar,          //pinned
@@ -378,13 +384,10 @@ run_test('narrowing', () => {
         topic: noop,
     });
 
-    topic_list.set_click_handlers = noop;
     topic_list.close = noop;
-    topic_list.remove_expanded_topics = noop;
     topic_list.rebuild = noop;
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
-    stream_list.zoom_out_topics = noop;
     scroll_util.scroll_element_into_container = noop;
 
     set_global('ui', {
@@ -459,7 +462,6 @@ run_test('sort_streams', () => {
         return sub.name !== 'cars';
     };
 
-
     let appended_elems;
     $('#stream_filters').append = function (elems) {
         appended_elems = elems;
@@ -529,7 +531,7 @@ run_test('separators_only_pinned_and_dormant', () => {
         subscribed: true,
     };
     add_row(RomeSub);
-    // dorment stream
+    // dormant stream
     const DenmarkSub = {
         name: 'Denmark',
         stream_id: 3000,
@@ -591,7 +593,6 @@ run_test('separators_only_pinned', () => {
         subscribed: true,
     };
     add_row(RomeSub);
-
 
     let appended_elems;
     $('#stream_filters').append = function (elems) {

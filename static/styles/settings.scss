@@ -619,7 +619,7 @@ input[type=checkbox].inline-block {
     }
 }
 
-#settings_page .alert-notification:not(:empty) {
+.alert-notification {
     display: inline-block !important;
     vertical-align: top;
     height: auto !important;
@@ -629,46 +629,71 @@ input[type=checkbox].inline-block {
     border-radius: 4px;
     margin-top: 14px;
     margin-left: 10px;
-    border: 1px solid hsl(156, 30%, 50%);
     color: hsl(156, 30%, 50%);
     padding: 3px 10px;
     font-size: 15px;
-}
 
-#settings_page .alert-notification.alert-error {
-    color: hsl(2, 46%, 68%);
-    border-color: hsl(2, 46%, 68%);
-}
+    &:not(:empty) {
+        border: 1px solid hsl(156, 30%, 50%);
+    }
 
-#settings_page .alert-notification .loading_indicator_spinner {
-    width: 13px;
-    height: 20px;
-    margin: 0;
-}
+    .alert-error {
+        color: hsl(2, 46%, 68%);
+        border-color: hsl(2, 46%, 68%);
+    }
 
-/* make the spinner green like the text and box. */
-#settings_page .alert-notification .loading_indicator_spinner svg path {
-    fill: hsl(178, 100%, 40%);
-}
+    .loading_indicator_spinner {
+        width: 13px;
+        height: 20px;
+        margin: 0;
+    }
 
-#settings_page .alert-notification .loading_indicator_text {
-    margin-top: 0px;
-    font-size: inherit;
-    vertical-align: top;
-}
+    /* make the spinner green like the text and box. */
+    .loading_indicator_spinner svg path {
+        fill: hsl(178, 100%, 40%);
+    }
 
-#settings_page .alert-notification img {
-    margin-right: 6px;
-    vertical-align: middle;
-    margin-top: -2px;
+    .loading_indicator_text {
+        margin-top: 0px;
+        font-size: inherit;
+        vertical-align: top;
+    }
+
+    img {
+        margin-right: 6px;
+        vertical-align: middle;
+        margin-top: -2px;
+    }
 }
 
 #profile-field-settings #admin-add-profile-field-status {
     margin-top: 4px;
 }
 
-#notification-settings .notification-reminder {
-    text-align: left;
+#notification-settings {
+    .notification-reminder {
+        text-align: left;
+    }
+
+    #notification-table {
+        th,
+        td {
+            text-align: center;
+            vertical-align: middle;
+            cursor: default;
+
+            .stream-privacy span.hashtag,
+            .filter-icon i {
+                padding-right: 0px;
+            }
+        }
+
+        td:first-child {
+            text-align: left;
+            font-weight: bold;
+            word-break: break-all;
+        }
+    }
 }
 
 #account-settings .custom-profile-fields-form .custom_user_field label {
@@ -1932,6 +1957,14 @@ input[type=text]#settings_search {
 
 .admin_exports_table {
     margin: 20px;
+}
+
+@media (max-width: 430px) {
+    // selects the label (inline-block)
+    // immediately following the checkbox
+    .settings-box .checkbox + .inline-block {
+        width: calc(100% - 25px);
+    }
 }
 
 @media only screen and (min-width: 700px) and (max-width: 875px) {

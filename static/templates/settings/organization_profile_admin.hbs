@@ -34,6 +34,7 @@
                 <input type="file" name="realm_icon_file_input" class="notvisible"
                   id="realm_icon_file_input" value="{{t 'Upload profile picture' }}"/>
             </div>
+            {{#if is_admin}}
             <div class="inline-block avatar-controls">
                 <div id="realm_icon_file_input_error" class="alert text-error"></div>
                 <button class="button rounded sea-green w-200 block input-size"
@@ -44,6 +45,7 @@
                 <button class="button rounded btn-danger w-200 m-t-10 block input-size"
                   id="realm_icon_delete_button">{{t 'Delete profile picture' }}</button>
             </div>
+            {{/if}}
         </div>
         <a href="/login/?preview=true" target="_blank" class="button rounded sea-green w-200 block" id="id_org_profile_preview">
             {{t 'Preview organization profile' }}

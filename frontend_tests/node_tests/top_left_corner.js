@@ -35,8 +35,8 @@ run_test('narrowing', () => {
         full_name: 'Bob Patel',
     };
 
-    people.add_in_realm(alice);
-    people.add_in_realm(bob);
+    people.add(alice);
+    people.add(bob);
 
     pm_expanded = false;
     filter = new Filter([
@@ -122,7 +122,6 @@ run_test('update_count_in_dom', () => {
         '<starred-count>',
         '<starred-value>'
     );
-
 
     top_left_corner.update_dom_with_unread_counts(counts);
     top_left_corner.update_starred_count(444);

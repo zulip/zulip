@@ -1,8 +1,10 @@
+const util = require("./util");
 const render_settings_deactivation_stream_modal = require("../templates/settings/deactivation_stream_modal.hbs");
 const render_stream_member_list_entry = require('../templates/stream_member_list_entry.hbs');
 const render_subscription_settings = require('../templates/subscription_settings.hbs');
 const render_subscription_stream_privacy_modal = require("../templates/subscription_stream_privacy_modal.hbs");
 const settings_data = require("./settings_data");
+const settings_config = require("./settings_config");
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_uri(sub);
@@ -122,7 +124,9 @@ exports.update_stream_name = function (sub, new_name) {
 exports.update_stream_description = function (sub) {
     const stream_settings = exports.settings_for_sub(sub);
     stream_settings.find('input.description').val(sub.description);
-    stream_settings.find('.stream-description-editable').html(sub.rendered_description);
+    stream_settings.find('.stream-description-editable').html(
+        util.clean_user_content_links(sub.rendered_description)
+    );
 };
 
 exports.invite_user_to_stream = function (user_email, sub, success, failure) {
@@ -216,7 +220,7 @@ function show_subscription_settings(sub_row) {
     }).init();
 
     sub_settings.find('input[name="principal"]').typeahead({
-        source: people.get_realm_persons, // This is a function.
+        source: () => stream_data.potential_subscribers(sub),
         items: 5,
         highlighter: function (item) {
             return typeahead_helper.render_person(item);
@@ -227,10 +231,8 @@ function show_subscription_settings(sub_row) {
                 return false;
             }
             // Case-insensitive.
-            const item_matches = item.email.toLowerCase().includes(query) ||
-                               item.full_name.toLowerCase().includes(query);
-            const is_subscribed = stream_data.is_user_subscribed(sub.name, item.user_id);
-            return item_matches && !is_subscribed;
+            return item.email.toLowerCase().includes(query) ||
+                   item.full_name.toLowerCase().includes(query);
         },
         sorter: function (matches) {
             const current_stream = compose_state.stream_name();
@@ -252,21 +254,10 @@ exports.is_notification_setting = function (setting_label) {
     return false;
 };
 
-const settings_labels = {
-    is_muted: i18n.t("Mute stream"),
-    desktop_notifications: i18n.t("Visual desktop notifications"),
-    audible_notifications: i18n.t("Audible desktop notifications"),
-    push_notifications: i18n.t("Mobile notifications"),
-    email_notifications: i18n.t("Email notifications"),
-    pin_to_top: i18n.t("Pin stream to top of left sidebar"),
-    wildcard_mentions_notify: i18n.t("Notifications for @all/@everyone mentions"),
-};
-
-const check_realm_setting = {
-    push_notifications: !page_params.realm_push_notifications_enabled,
-};
-
 exports.stream_settings = function (sub) {
+    const settings_labels = settings_config.general_notifications_table_labels.stream;
+    const check_realm_setting = settings_config.all_notifications().show_push_notifications_tooltip;
+
     const settings = Object.keys(settings_labels).map((setting) => {
         const ret = {
             name: setting,
@@ -330,13 +321,19 @@ function stream_is_muted_clicked(e) {
     }
 }
 
-function stream_setting_clicked(e) {
+exports.stream_setting_clicked = function (e) {
     if (e.currentTarget.id === 'sub_is_muted_setting') {
         return;
     }
 
-    const checkbox = $(e.currentTarget).find('.sub_setting_control');
     const sub = get_sub_for_target(e.target);
+    let checkbox = $(e.currentTarget).find('.sub_setting_control');
+    let status_element = "#stream_change_property_status" + sub.stream_id;
+    // sub data is being changed from the notification settings page.
+    if (checkbox.length === 0) {
+        checkbox = $(e.currentTarget);
+        status_element = checkbox.closest('.subsection-parent').find('.alert-notification');
+    }
     const setting = checkbox.attr('name');
     if (!sub) {
         blueslip.error('undefined sub in stream_setting_clicked()');
@@ -352,26 +349,26 @@ function stream_setting_clicked(e) {
             sub[setting] = page_params["enable_stream_" + setting];
         }
     }
-    exports.set_stream_property(sub, setting, !sub[setting]);
-
-    // A hack.  Don't change the state of the checkbox if we
-    // clicked on the checkbox itself.
-    if (checkbox[0] !== e.target) {
-        checkbox.prop("checked", !checkbox.prop("checked"));
-    }
-}
-
-exports.bulk_set_stream_property = function (sub_data) {
-    return channel.post({
-        url: '/json/users/me/subscriptions/properties',
-        data: {subscription_data: JSON.stringify(sub_data)},
-        timeout: 10 * 1000,
-    });
+    exports.set_stream_property(sub, setting, !sub[setting], status_element);
 };
 
-exports.set_stream_property = function (sub, property, value) {
+exports.bulk_set_stream_property = function (sub_data, status_element) {
+    const url = '/json/users/me/subscriptions/properties';
+    const data = {subscription_data: JSON.stringify(sub_data)};
+    if (!status_element) {
+        return channel.post({
+            url: url,
+            data: data,
+            timeout: 10 * 1000,
+        });
+    }
+
+    settings_ui.do_settings_change(channel.post, url, data, status_element);
+};
+
+exports.set_stream_property = function (sub, property, value, status_element) {
     const sub_data = {stream_id: sub.stream_id, property: property, value: value};
-    exports.bulk_set_stream_property([sub_data]);
+    exports.bulk_set_stream_property([sub_data], status_element);
 };
 
 function change_stream_privacy(e) {
@@ -410,6 +407,7 @@ function change_stream_privacy(e) {
         url: "/json/streams/" + stream_id,
         data: data,
         success: function () {
+            overlays.close_modal('stream_privacy_modal');
             $("#stream_privacy_modal").remove();
             // The rest will be done by update stream event we will get.
         },
@@ -478,7 +476,9 @@ exports.change_stream_description = function (e) {
                               $(".stream_change_property_info"));
         },
         error: function (xhr) {
-            sub_settings.find('.stream-description-editable').html(sub.rendered_description);
+            sub_settings.find('.stream-description-editable').html(
+                util.clean_user_content_links(sub.rendered_description)
+            );
             ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
         },
     });
@@ -535,8 +535,19 @@ exports.initialize = function () {
                                  change_stream_privacy);
 
     $("#subscriptions_table").on('click', '.close-privacy-modal', function (e) {
+        // Re-enable background mouse events when we close the modal
+        // via the "x" in the corner.  (The other modal-close code
+        // paths call `overlays.close_modal`, rather than using
+        // bootstrap's data-dismiss=modal feature, and this is done
+        // there).
+        //
+        // TODO: It would probably be better to just do this
+        // unconditionally inside the handler for the event sent by
+        // bootstrap on closing a modal.
+        overlays.enable_background_mouse_events();
+
         // This fixes a weird bug in which, subscription_settings hides
-        // unexpectedly by clicking the cancel button.
+        // unexpectedly by clicking the cancel button in a modal on top of it.
         e.stopPropagation();
     });
 
@@ -544,7 +555,7 @@ exports.initialize = function () {
                                  stream_is_muted_clicked);
 
     $("#subscriptions_table").on("click", ".sub_setting_checkbox",
-                                 stream_setting_clicked);
+                                 exports.stream_setting_clicked);
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();

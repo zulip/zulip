@@ -13,7 +13,6 @@ from zerver.models import get_realm, get_user
 from zulip import Client
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-FIXTURE_PATH = os.path.join(ZULIP_DIR, 'templates', 'zerver', 'api', 'fixtures.json')
 
 TEST_FUNCTIONS = dict()  # type: Dict[str, Callable[..., None]]
 REGISTERED_TEST_FUNCTIONS = set()  # type: Set[str]
@@ -45,14 +44,6 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
     user_ids = [get_user(name + '@zulip.com', realm).id for name in user_names]
 
     assert ids_list == user_ids
-
-def load_api_fixtures():
-    # type: () -> Dict[str, Any]
-    with open(FIXTURE_PATH, 'r') as fp:
-        json_dict = json.loads(fp.read())
-        return json_dict
-
-FIXTURES = load_api_fixtures()
 
 @openapi_test_function("/users/me/subscriptions:post")
 def add_subscriptions(client):
@@ -223,23 +214,14 @@ def get_single_user(client):
     # {code_example|start}
     # Fetch details on a user given a user ID
     user_id = 8
-    url = 'users/' + str(user_id)
-    result = client.call_endpoint(
-        url=url,
-        method='GET'
-    )
+    result = client.get_user_by_id(user_id)
     # {code_example|end}
     validate_against_openapi_schema(result, '/users/{user_id}', 'get', '200')
 
     # {code_example|start}
     # If you'd like data on custom profile fields, you can request them as follows:
-    result = client.call_endpoint(
-        url=url,
-        method='GET',
-        request={'include_custom_profile_fields': True}
-    )
+    result = client.get_user_by_id(user_id, {'include_custom_profile_fields': True})
     # {code_example|end}
-
     validate_against_openapi_schema(result, '/users/{user_id}', 'get', '200')
 
 @openapi_test_function("/users/{user_id}:delete")
@@ -431,8 +413,7 @@ def test_user_not_authorized_error(nonadmin_client):
     # type: (Client) -> None
     result = nonadmin_client.get_streams(include_all_active=True)
 
-    fixture = FIXTURES['user-not-authorized-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_user_not_authorized_error')
 
 def get_subscribers(client):
     # type: (Client) -> None
@@ -796,8 +777,7 @@ def test_update_message_edit_permission_error(client, nonadmin_client):
     }
     result = nonadmin_client.update_message(request)
 
-    fixture = FIXTURES['update-message-edit-permission-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'patch', '400')
 
 @openapi_test_function("/messages/{message_id}:delete")
 def delete_message(client, message_id):
@@ -1118,15 +1098,14 @@ def update_user_group_members(client, group_id):
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
-    fixture = FIXTURES['invalid-api-key']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_invalid_api_key')
 
 def test_missing_request_argument(client):
     # type: (Client) -> None
     result = client.render_message({})
 
-    fixture = FIXTURES['missing-request-argument-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_missing_request_argument_error')
+
 
 def test_invalid_stream_error(client):
     # type: (Client) -> None

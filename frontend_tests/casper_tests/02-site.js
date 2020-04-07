@@ -6,7 +6,7 @@
 */
 
 // Provides a few utility functions.
-// See https://web.archive.org/web/20200110122733if_/http://docs.casperjs.org/en/latest/modules/utils.html
+// See https://web.archive.org/web/20200110122733if_/https://docs.casperjs.org/en/latest/modules/utils.html
 // For example, utils.dump() prints an Object with nice formatting.
 var common = require('../casper_lib/common.js');
 

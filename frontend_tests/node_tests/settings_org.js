@@ -1,5 +1,4 @@
 set_global('$', global.make_zjquery());
-set_global('blueslip', global.make_zblueslip());
 
 const noop = () => {};
 
@@ -69,6 +68,7 @@ set_global('realm_logo', _realm_logo);
 set_global('ui_report', _ui_report);
 
 const settings_config = zrequire('settings_config');
+const settings_bots = zrequire('settings_bots');
 zrequire('stream_data');
 zrequire('settings_account');
 zrequire('settings_org');
@@ -190,15 +190,17 @@ function createSaveButtons(subsection) {
 
 function test_submit_settings_form(submit_form) {
     Object.assign(page_params, {
-        realm_bot_creation_policy: '2',
-        realm_email_address_visibility: '2',
+        realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
+        realm_email_address_visibility:
+                settings_config.email_address_visibility_values.admins_only.code,
         realm_add_emoji_by_admins_only: true,
         realm_create_stream_by_admins_only: true,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
-        realm_default_twenty_four_hour_time: 'false',
-        realm_invite_to_stream_policy: 2,
-        realm_create_stream_policy: 1,
+        realm_default_twenty_four_hour_time: false,
+        realm_invite_to_stream_policy:
+                settings_config.invite_to_stream_policy_values.by_admins_only.code,
+        realm_create_stream_policy: settings_config.create_stream_policy_values.by_members.code,
     });
 
     global.patch_builtin('setTimeout', func => func());
@@ -279,10 +281,8 @@ function test_submit_settings_form(submit_form) {
         email_address_visibility: '1',
         add_emoji_by_admins_only: false,
         create_stream_policy: '2',
-        waiting_period_threshold: 10,
     };
     assert.deepEqual(data, expected_value);
-
 
     subsection = 'user-defaults';
     ev.currentTarget = `#org-submit-${subsection}`;
@@ -318,7 +318,6 @@ function test_submit_settings_form(submit_form) {
         default_twenty_four_hour_time: 'true',
     };
     assert.deepEqual(data, expected_value);
-
 
     // Testing only once for since callback is same for all cases
     success_callback();
@@ -421,7 +420,6 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     const domain_obj = $.create('domain object');
     domain_obj.text(domain);
 
-
     const elem_obj = $.create('<elem html>');
     const parents_obj = $.create('parents object');
 
@@ -477,9 +475,7 @@ function test_sync_realm_settings() {
         property_elem.attr('id', 'id_realm_invalid_settings_property');
         property_elem.length = 1;
 
-        blueslip.error = error_string => {
-            assert.equal(error_string, 'Element refers to unknown property realm_invalid_settings_property');
-        };
+        blueslip.expect('error', 'Element refers to unknown property realm_invalid_settings_property');
         settings_org.sync_realm_settings('invalid_settings_property');
     }
 
@@ -707,7 +703,6 @@ function test_discard_changes_button(discard_changes) {
     message_content_edit_limit_minutes.attr('id', 'id_realm_message_content_edit_limit_minutes');
     message_content_delete_limit_minutes.attr('id', 'id_realm_message_content_delete_limit_minutes');
 
-
     const discard_button_parent = $('.org-subsection-parent');
     discard_button_parent.find = () => [
         allow_edit_history,
@@ -795,7 +790,7 @@ run_test('set_up', () => {
     const stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
     settings_org.render_notifications_stream_ui = noop;
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
-    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limti parent>'));
+    $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limit parent>'));
     $("#message_content_in_email_notifications_label").set_parent($.create('<stub in-content setting checkbox>'));
     $("#enable_digest_emails_label").set_parent($.create('<stub digest setting checkbox>'));
     $("#id_realm_digest_weekday").set_parent($.create('<stub digest weekday setting dropdown>'));

@@ -7,6 +7,10 @@ import requests
 
 from typing import Any, Optional
 
+from zerver.lib.actions import (
+    do_create_user,
+)
+
 from zerver.lib.outgoing_webhook import (
     do_rest_call,
     GenericOutgoingWebhookService,
@@ -15,7 +19,15 @@ from zerver.lib.outgoing_webhook import (
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
-from zerver.models import get_realm, get_user, UserProfile, get_display_recipient
+from zerver.lib.users import add_service
+from zerver.models import (
+    get_display_recipient,
+    get_realm,
+    get_user,
+    Recipient,
+    Service,
+    UserProfile,
+)
 
 from version import ZULIP_VERSION
 
@@ -139,36 +151,103 @@ I'm a generic exception :(
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
 class TestOutgoingWebhookMessaging(ZulipTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.user_profile = self.example_user("othello")
-        self.bot_profile = self.create_test_bot('outgoing-webhook', self.user_profile,
-                                                full_name='Outgoing Webhook bot',
-                                                bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-                                                service_name='foo-service')
+    def create_outgoing_bot(self, bot_owner: UserProfile) -> UserProfile:
+        return self.create_test_bot(
+            'outgoing-webhook',
+            bot_owner,
+            full_name='Outgoing Webhook bot',
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            service_name='foo-service'
+        )
+
+    def test_multiple_services(self) -> None:
+        bot_owner = self.example_user("othello")
+
+        bot = do_create_user(
+            bot_owner=bot_owner,
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            full_name='Outgoing Webhook Bot',
+            email='whatever',
+            realm=bot_owner.realm,
+            short_name='',
+            password=None,
+        )
+
+        add_service(
+            'weather',
+            user_profile=bot,
+            interface=Service.GENERIC,
+            base_url='weather_url',
+            token='weather_token',
+        )
+
+        add_service(
+            'qotd',
+            user_profile=bot,
+            interface=Service.GENERIC,
+            base_url='qotd_url',
+            token='qotd_token',
+        )
+
+        sender = self.example_user("hamlet")
+
+        with mock.patch('zerver.worker.queue_processors.do_rest_call') as m:
+            self.send_personal_message(
+                sender,
+                bot,
+                content="some content"
+            )
+
+        url_token_tups = set()
+        for item in m.call_args_list:
+            args = item[0]
+            base_url = args[0]
+            request_data = ujson.loads(args[1])
+            tup = (base_url, request_data['token'])
+            url_token_tups.add(tup)
+            message_data = request_data['message']
+            self.assertEqual(message_data['content'], 'some content')
+            self.assertEqual(message_data['sender_id'], sender.id)
+
+        self.assertEqual(
+            url_token_tups,
+            {
+                ('weather_url', 'weather_token'),
+                ('qotd_url', 'qotd_token'),
+            }
+        )
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
     def test_pm_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
-        self.send_personal_message(self.user_profile, self.bot_profile,
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+        sender = self.example_user("hamlet")
+
+        self.send_personal_message(sender, bot,
                                    content="foo")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
-        self.assertEqual(last_message.sender_id, self.bot_profile.id)
-        display_recipient = get_display_recipient(last_message.recipient)
-        # The next two lines error on mypy because the display_recipient is of type Union[str, List[Dict[str, Any]]].
-        # In this case, we know that display_recipient will be of type List[Dict[str, Any]].
-        # Otherwise this test will error, which is wanted behavior anyway.
-        self.assert_length(display_recipient, 1)  # type: ignore
-        self.assertEqual(display_recipient[0]['email'], self.user_profile.email)   # type: ignore
+        self.assertEqual(last_message.sender_id, bot.id)
+        self.assertEqual(
+            last_message.recipient.type_id,
+            sender.id
+        )
+        self.assertEqual(
+            last_message.recipient.type,
+            Recipient.PERSONAL
+        )
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
     def test_stream_message_to_outgoing_webhook_bot(self, mock_requests_request: mock.Mock) -> None:
-        self.send_stream_message(self.user_profile, "Denmark",
-                                 content="@**{}** foo".format(self.bot_profile.full_name),
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        self.send_stream_message(bot_owner, "Denmark",
+                                 content="@**{}** foo".format(bot.full_name),
                                  topic_name="bar")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
-        self.assertEqual(last_message.sender_id, self.bot_profile.id)
+        self.assertEqual(last_message.sender_id, bot.id)
         self.assertEqual(last_message.topic_name(), "bar")
         display_recipient = get_display_recipient(last_message.recipient)
         self.assertEqual(display_recipient, "Denmark")

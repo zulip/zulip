@@ -216,7 +216,6 @@ run_test('initizalize', () => {
             };
         };
 
-
         operators = [];
         _setup('');
 
@@ -251,7 +250,6 @@ run_test('initizalize', () => {
         // No change on enter keyup event when using input tool
         assert(!is_blurred);
         assert(!search_button.prop('disabled'));
-
 
         _setup('ver');
         ev.which = 13;

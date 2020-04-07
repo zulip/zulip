@@ -716,10 +716,10 @@ exports.handle_keydown = function (event, textarea) {
             const position = textarea.caret();
             const txt = document.getElementById(textarea[0].id);
 
-            // Include selected text in between [] parantheses and insert '(url)'
+            // Include selected text in between [] parentheses and insert '(url)'
             // where "url" should be automatically selected.
             // Position of cursor depends on whether browser supports exec
-            // command or not. So set cursor position accrodingly.
+            // command or not. So set cursor position accordingly.
             if (range.length > 0) {
                 if (document.queryCommandEnabled('insertText')) {
                     txt.selectionStart = position - 4;
@@ -804,7 +804,7 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
             rendered_preview_html = rendered_content;
         }
 
-        preview_content_box.html(rendered_preview_html);
+        preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
         if (page_params.emojiset === "text") {
             preview_content_box.find(".emoji").replaceWith(function () {
                 const text = $(this).attr("title");
@@ -1070,7 +1070,7 @@ exports.initialize = function () {
         e.preventDefault();
 
         let target_textarea;
-        // The data-message-id atribute is only present in the video
+        // The data-message-id attribute is only present in the video
         // call icon present in the message edit form.  If present,
         // the request is for the edit UI; otherwise, it's for the
         // compose box.

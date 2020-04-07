@@ -4,7 +4,6 @@ zrequire('people');
 zrequire('message_store');
 
 const noop = function () {};
-const people = global.people;
 
 set_global('$', global.make_zjquery());
 set_global('document', 'document-stub');
@@ -25,8 +24,6 @@ set_global('page_params', {
     realm_allow_message_editing: true,
     is_admin: true,
 });
-
-set_global('blueslip', global.make_zblueslip());
 
 const me = {
     email: 'me@example.com',
@@ -58,13 +55,13 @@ const denise  = {
     full_name: 'Denise ',
 };
 
-people.add_in_realm(me);
-people.add_in_realm(alice);
-people.add_in_realm(bob);
-people.add_in_realm(cindy);
-people.add_in_realm(denise);
+people.add(me);
+people.add(alice);
+people.add(bob);
+people.add(cindy);
+people.add(denise);
 
-global.people.initialize_current_user(me.user_id);
+people.initialize_current_user(me.user_id);
 
 function convert_recipients(people) {
     // Display_recipient uses `id` for user_ids.
@@ -184,8 +181,8 @@ run_test('errors', () => {
         display_recipient: [{id: 92714}],
     };
 
-    blueslip.set_test_data('error', 'Unknown user_id in get_by_user_id: 92714');
-    blueslip.set_test_data('error', 'Unknown user id 92714'); // From person.js
+    blueslip.expect('error', 'Unknown user_id in get_by_user_id: 92714');
+    blueslip.expect('error', 'Unknown user id 92714'); // From person.js
 
     // Expect each to throw two blueslip errors
     // One from message_store.js, one from person.js
@@ -197,7 +194,7 @@ run_test('errors', () => {
     assert.equal(names, '?');
     assert.equal(blueslip.get_test_logs('error').length, 4);
 
-    blueslip.clear_test_data();
+    blueslip.reset();
 
     message = {
         type: 'stream',

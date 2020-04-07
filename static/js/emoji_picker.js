@@ -234,31 +234,6 @@ function filter_emojis() {
     }
 }
 
-function get_alias_to_be_used(message_id, emoji_name) {
-    // If the user has reacted to this message, then this function
-    // returns the alias of this emoji he used, otherwise, returns
-    // the passed name as it is.
-    const message = message_store.get(message_id);
-    let aliases = [emoji_name];
-    if (!emoji.active_realm_emojis.has(emoji_name)) {
-        if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
-            const codepoint = emoji_codes.name_to_codepoint[emoji_name];
-            aliases = emoji.default_emoji_aliases.get(codepoint);
-        } else {
-            blueslip.error("Invalid emoji name: " + emoji_name);
-            return;
-        }
-    }
-    const user_id = page_params.user_id;
-    const reaction = message.reactions.find(
-        reaction => reaction.user.id === user_id && aliases.includes(reaction.emoji_name)
-    );
-    if (reaction) {
-        return reaction.emoji_name;
-    }
-    return emoji_name;
-}
-
 function toggle_reaction(emoji_name) {
     const message_id = current_msg_list.selected_id();
     const message = message_store.get(message_id);
@@ -267,8 +242,7 @@ function toggle_reaction(emoji_name) {
         return;
     }
 
-    const alias = get_alias_to_be_used(message_id, emoji_name);
-    reactions.toggle_emoji_reaction(message_id, alias);
+    reactions.toggle_emoji_reaction(message_id, emoji_name);
 }
 
 function maybe_select_emoji(e) {
@@ -670,12 +644,12 @@ exports.register_click_handlers = function () {
     $("body").on("click", "#emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        // The data-message-id atribute is only present in the emoji icon present in
+        // The data-message-id attribute is only present in the emoji icon present in
         // the message edit form. So the following check will return false if this
         // event was not fired from message edit form.
         if ($(this).attr("data-message-id") !== undefined) {
             // Store data-message-id value in global variable edit_message_id so that
-            // its value can be further used to correclty find the message textarea element.
+            // its value can be further used to correctly find the message textarea element.
             edit_message_id = $(this).attr("data-message-id");
         } else {
             edit_message_id = null;

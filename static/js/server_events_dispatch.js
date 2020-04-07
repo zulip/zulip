@@ -129,17 +129,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             realm_settings[event.property]();
             settings_org.sync_realm_settings(event.property);
             if (event.property === 'create_stream_policy') {
-                if (!page_params.is_admin) {
-                    // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_create_streams =
-                        page_params.realm_create_stream_policy === 1;
-                }
+                // TODO: Add waiting_period_threshold logic here.
+                page_params.can_create_streams = page_params.is_admin ||
+                    page_params.realm_create_stream_policy === 1;
             } else if (event.property === 'invite_to_stream_policy') {
-                if (!page_params.is_admin) {
-                    // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_invite_to_stream =
-                        page_params.realm_invite_to_stream_policy === 1;
-                }
+                // TODO: Add waiting_period_threshold logic here.
+                page_params.can_invite_to_stream = page_params.is_admin ||
+                    page_params.realm_invite_to_stream_policy === 1;
             } else if (event.property === 'notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(
                     page_params.realm_notifications_stream_id, 'notifications');
@@ -185,6 +181,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             window.location.href = "/accounts/deactivated/";
         }
 
+        if (page_params.is_admin) {
+            // Update the UI notice about the user's profile being
+            // incomplete, as we might have filled in the missing field(s).
+            panels.check_profile_incomplete();
+        }
         break;
     }
 
@@ -250,7 +251,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'realm_user':
         if (event.op === 'add') {
-            people.add_in_realm(event.person);
+            people.add(event.person);
         } else if (event.op === 'remove') {
             people.deactivate(event.person);
             stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
@@ -289,7 +290,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (was_subscribed) {
                     stream_list.remove_sidebar_row(stream.stream_id);
                 }
-                settings_streams.remove_default_stream(stream.stream_id);
+                settings_streams.update_default_streams_table();
                 stream_data.remove_default_stream(stream.stream_id);
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {
                     page_params.realm_notifications_stream_id = -1;

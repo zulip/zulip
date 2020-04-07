@@ -83,7 +83,7 @@ class TestBasics(ZulipTestCase):
             sender=cordelia,
             stream_name=stream_name,
         )
-        self.login(cordelia.email)
+        self.login_user(cordelia)
 
         payload = dict(
             message_id=message_id,
@@ -114,7 +114,7 @@ class TestBasics(ZulipTestCase):
             sender=cordelia,
             stream_name=stream_name,
         )
-        self.login(cordelia.email)
+        self.login_user(cordelia)
 
         payload = dict(
             message_id=message_id,

@@ -9,7 +9,6 @@ set_global('sent_messages', {
     start_tracking_message: noop,
     report_server_ack: noop,
 });
-set_global('blueslip', global.make_zblueslip());
 
 zrequire('people');
 zrequire('transmit');
@@ -179,11 +178,11 @@ run_test('reply_message_errors', () => {
         type: 'bogus',
     };
 
-    blueslip.set_test_data('error', 'unknown message type: bogus');
+    blueslip.expect('error', 'unknown message type: bogus');
 
     transmit.reply_message({
         message: bogus_message,
     });
 
-    blueslip.clear_test_data();
+    blueslip.reset();
 });

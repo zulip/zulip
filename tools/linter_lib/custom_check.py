@@ -133,7 +133,7 @@ js_rules = RuleList(
         {'pattern': r'\+.*i18n\.t\(.+\)',
          'description': 'Do not concatenate i18n strings'},
         {'pattern': '[.]html[(]',
-         'exclude_pattern': r'''[.]html[(]("|'|render_|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|widget_elem|[$]error|[$][(]"<p>"[)])''',
+         'exclude_pattern': r'''\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|i18n\.t|rendered_|$|\)|error_text|widget_elem|\$error|\$\("<p>"\))''',
          'exclude': {'static/js/portico', 'static/js/lightbox.js', 'static/js/ui_report.js',
                      'static/js/confirm_dialog.js',
                      'frontend_tests/'},
@@ -415,9 +415,6 @@ python_rules = RuleList(
          'description': "Don't use datetime in backend code.\n"
          "See https://zulip.readthedocs.io/en/latest/contributing/code-style.html#naive-datetime-objects",
          },
-        {'pattern': r'render_to_response\(',
-         'description': "Use render() instead of render_to_response().",
-         },
         {'pattern': 'from os.path',
          'description': "Don't use from when importing from the standard library",
          },
@@ -543,7 +540,7 @@ css_rules = RuleList(
          'description': "Missing whitespace before '{' in CSS.",
          'good_lines': ["input {", "body {"],
          'bad_lines': ["input{", "body{"]},
-        {'pattern': 'https://',
+        {'pattern': r'^(?:(?!/\*).)*https?://',
          'description': "Zulip CSS should have no dependencies on external resources",
          'good_lines': ['background: url(/static/images/landing-page/pycon.jpg);'],
          'bad_lines': ['background: url(https://example.com/image.png);']},
@@ -838,7 +835,7 @@ help_markdown_rules = RuleList(
 )
 
 txt_rules = RuleList(
-    langs=['txt', 'text', 'yaml', 'rst'],
+    langs=['txt', 'text', 'yaml', 'rst', 'yml'],
     rules=whitespace_rules,
 )
 non_py_rules = [

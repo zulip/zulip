@@ -256,7 +256,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
     def test_internal_endpoint(self):
         # type: () -> None
-        self.login(self.user_profile.email)
+        self.login_user(self.user_profile)
 
         # Store some data.
         initial_dict = {'key 1': 'value 1', 'key 2': 'value 2', 'key 3': 'value 3'}

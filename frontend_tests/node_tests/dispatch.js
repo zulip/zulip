@@ -58,7 +58,11 @@ set_global('settings_exports', {
 });
 
 // page_params is highly coupled to dispatching now
-set_global('page_params', {test_suite: false});
+set_global('page_params', {
+    test_suite: false,
+    is_admin: true,
+    realm_description: 'already set description',
+});
 const page_params = global.page_params;
 
 // We access various msg_list object to rerender them
@@ -95,6 +99,7 @@ zrequire('subs');
 zrequire('stream_ui_updates');
 
 zrequire('server_events_dispatch');
+zrequire('panels');
 
 function dispatch(ev) {
     server_events_dispatch.dispatch_normal_event(ev);
@@ -761,7 +766,7 @@ with_overrides(function (override) {
 });
 
 with_overrides(function (override) {
-    // attachements
+    // attachments
     const event = event_fixtures.attachment;
     global.with_stub(function (stub) {
         override('attachments_ui.update_attachments', stub.f);
@@ -912,11 +917,32 @@ with_overrides(function (override) {
         assert.equal(page_params[parameter_name], true);
     }
 
+    function test_realm_integer(event, parameter_name) {
+        page_params[parameter_name] = 1;
+        event = {...event};
+        event.value = 2;
+        dispatch(event);
+        assert.equal(page_params[parameter_name], 2);
+
+        event = {...event};
+        event.value = 3;
+        dispatch(event);
+        assert.equal(page_params[parameter_name], 3);
+
+        event = {...event};
+        event.value = 1;
+        dispatch(event);
+        assert.equal(page_params[parameter_name], 1);
+    }
+
     let event = event_fixtures.realm__update__create_stream_policy;
-    test_realm_boolean(event, 'realm_create_stream_policy');
+    test_realm_integer(event, 'realm_create_stream_policy');
 
     event = event_fixtures.realm__update__invite_to_stream_policy;
-    test_realm_boolean(event, 'realm_invite_to_stream_policy');
+    test_realm_integer(event, 'realm_invite_to_stream_policy');
+
+    event = event_fixtures.realm__update__bot_creation_policy;
+    test_realm_integer(event, 'realm_bot_creation_policy');
 
     event = event_fixtures.realm__update__invite_required;
     test_realm_boolean(event, 'realm_invite_required');
@@ -1181,7 +1207,7 @@ with_overrides(function (override) {
     global.with_stub(function (stub) {
         override('subs.remove_stream', noop);
         override('stream_data.delete_sub', noop);
-        override('settings_streams.remove_default_stream', noop);
+        override('settings_streams.update_default_streams_table', noop);
         override('stream_data.remove_default_stream', noop);
 
         override('stream_data.get_sub_by_id', function (id) {
@@ -1519,7 +1545,7 @@ with_overrides(function (override) {
 });
 
 with_overrides(function (override) {
-    // attachements
+    // attachments
     let event = event_fixtures.user_status__set_away;
     global.with_stub(function (stub) {
         override('activity.on_set_away', stub.f);

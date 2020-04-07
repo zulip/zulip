@@ -564,36 +564,10 @@ i18n_urls = [
     # Terms of Service and privacy pages.
     url(r'^terms/$', zerver.views.portico.terms_view, name='terms'),
     url(r'^privacy/$', zerver.views.portico.privacy_view, name='privacy'),
+    url(r'^config-error/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view,
+        name='config_error'),
+    url(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view)
 
-    url(r'^config-error/google$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'backend_error': True, 'social_backend_name': 'google'},),
-    url(r'^config-error/github$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'backend_error': True, 'social_backend_name': 'github'},),
-    url(r'^config-error/gitlab$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'backend_error': True, 'social_backend_name': 'gitlab'},),
-    url(r'^config-error/smtp$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'smtp_error': True},),
-    url(r'^config-error/ldap$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'ldap_error_realm_is_none': True},
-        name='ldap_error_realm_is_none'),
-    url(r'^config-error/dev$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'dev_not_supported_error': True},
-        name='dev_not_supported'),
-    url(r'^config-error/saml$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'saml_error': True},),
-    url(r'^config-error/remoteuser/backend_disabled$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'remoteuser_error_backend_disabled': True},),
-    url(r'^config-error/remoteuser/remote_user_header_missing$', TemplateView.as_view(
-        template_name='zerver/config_error.html',),
-        {'remoteuser_error_remote_user_header_missing': True},),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -634,7 +608,7 @@ urls += [
                  {'override_api_url_scheme'})}),
 ]
 
-# This url serves as a way to recieve CSP violation reports from the users.
+# This url serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
 urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
             name='zerver.views.report.report_csp_violations'),
@@ -721,11 +695,6 @@ urls += [
 ]
 
 # Python Social Auth
-
-# This overrides the analogical entry in social_django.urls, because we want run our own code
-# at the beginning of social auth process. If deleting this override in the future,
-# it should be possible to remove urls.W003 from SILENCED_SYSTEM_CHECKS.
-urls += [url(r'^login/(?P<backend>[^/]+)/$', zerver.views.auth.social_auth, name='social:begin')]
 
 urls += [url(r'^', include('social_django.urls', namespace='social'))]
 urls += [url(r'^saml/metadata.xml$', zerver.views.auth.saml_sp_metadata)]

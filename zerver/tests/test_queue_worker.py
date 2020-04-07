@@ -13,7 +13,7 @@ from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.queue import MAX_REQUEST_RETRIES
-from zerver.lib.rate_limiter import RateLimiterLockingException, clear_history
+from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
@@ -77,6 +77,9 @@ class WorkerTest(ZulipTestCase):
             self.queue = []
 
             return events
+
+        def queue_size(self) -> int:
+            return len(self.queue)
 
     @override_settings(SLOW_QUERY_LOGS_STREAM="errors")
     def test_slow_queries_worker(self) -> None:
@@ -359,7 +362,7 @@ class WorkerTest(ZulipTestCase):
                                          mock_warn: MagicMock) -> None:
         fake_client = self.FakeClient()
         realm = get_realm('zulip')
-        clear_history(RateLimitedRealmMirror(realm))
+        RateLimitedRealmMirror(realm).clear_history()
         stream = get_stream('Denmark', realm)
         stream_to_address = encode_email_address(stream)
         data = [
@@ -406,12 +409,13 @@ class WorkerTest(ZulipTestCase):
                 self.assertEqual(mock_mirror_email.call_count, 4)
 
                 # If RateLimiterLockingException is thrown, we rate-limit the new message:
-                with patch('zerver.lib.rate_limiter.incr_ratelimit',
+                with patch('zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit',
                            side_effect=RateLimiterLockingException):
                     fake_client.queue.append(('email_mirror', data[0]))
                     worker.start()
                     self.assertEqual(mock_mirror_email.call_count, 4)
-                    expected_warn = "Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:zulip"
+                    expected_warn = "Deadlock trying to incr_ratelimit for RateLimitedRealmMirror:%s" % (
+                        realm.string_id,)
                     mock_warn.assert_called_with(expected_warn)
 
     def test_email_sending_worker_retries(self) -> None:

@@ -1,4 +1,3 @@
-set_global('blueslip', global.make_zblueslip());
 set_global('pm_conversations', {
     recent: {},
 });
@@ -177,12 +176,12 @@ run_test('fchain', () => {
         return;
     };
 
-    blueslip.set_test_data('error', 'Invalid generator returned.');
+    blueslip.expect('error', 'Invalid generator returned.');
     ints = tg.list_generator([29, 43]);
     gen = tg.fchain(ints, undef);
     gen.next();
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });
 
 run_test('streams', () => {
@@ -250,7 +249,6 @@ run_test('topics', () => {
                      {stream: 1, topic: '1a'});
     assert.deepEqual(next_topic(undefined, undefined),
                      {stream: 1, topic: '1a'});
-
 
     // Now test the deeper function that is wired up to
     // real functions stream_data/stream_sort/unread.

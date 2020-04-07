@@ -263,7 +263,7 @@ exports.get_frontfill_anchor = function (msg_list) {
 exports.maybe_load_older_messages = function (opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
-    // than what the browers originally fetched.
+    // than what the browsers originally fetched.
     const msg_list = opts.msg_list;
     if (!msg_list.fetch_status.can_load_older_messages()) {
         // We may already be loading old messages or already
@@ -301,7 +301,7 @@ exports.do_backfill = function (opts) {
 exports.maybe_load_newer_messages = function (opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages newer
-    // than what the browers originally fetched.
+    // than what the browsers originally fetched.
     const msg_list = opts.msg_list;
 
     if (!msg_list.fetch_status.can_load_newer_messages()) {

@@ -221,13 +221,12 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         user_profile.enable_online_push_notifications = False
         user_profile.save()
 
-        email = user_profile.email
         # Fetch the Denmark stream for testing
         stream = get_stream("Denmark", user_profile.realm)
         sub = Subscription.objects.get(user_profile=user_profile, recipient__type=Recipient.STREAM,
                                        recipient__type_id=stream.id)
 
-        self.login(email)
+        self.login_user(user_profile)
 
         def change_subscription_properties(user_profile: UserProfile, stream: Stream, sub: Subscription,
                                            properties: Dict[str, bool]) -> None:

@@ -13,7 +13,6 @@ const pills = {
 let create_item_handler;
 
 set_global('channel', {});
-set_global('blueslip', global.make_zblueslip());
 set_global('typeahead_helper', {});
 set_global('user_groups', {
     get_user_group_from_id: noop,
@@ -112,7 +111,7 @@ run_test('populate_user_groups', () => {
         full_name: 'Bob',
     };
 
-    people.get_realm_persons = function () {
+    people.get_realm_users = function () {
         return [iago, alice, bob];
     };
 
@@ -146,7 +145,7 @@ run_test('populate_user_groups', () => {
             return noop;
         }
         assert.equal(user_id, 4);
-        blueslip.set_test_data('warn', 'Undefined user in function append_user');
+        blueslip.expect('warn', 'Undefined user in function append_user');
         get_by_user_id_called = true;
     };
 
@@ -322,7 +321,7 @@ run_test('populate_user_groups', () => {
     assert(get_by_user_id_called);
     assert(input_typeahead_called);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
@@ -344,7 +343,7 @@ run_test('with_external_user', () => {
     };
 
     // We return noop because these are already tested, so we skip them
-    people.get_realm_persons = function () {
+    people.get_realm_users = function () {
         return noop;
     };
 

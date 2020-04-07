@@ -21,7 +21,7 @@ class DeskDotComHookTests(WebhookTestCase):
         expected_topic = u"static text notification"
         expected_message = u"This is a custom action."
 
-        self.api_stream_message(self.TEST_USER_EMAIL, 'static_text', expected_topic, expected_message,
+        self.api_stream_message(self.test_user, 'static_text', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def test_case_updated_message(self) -> None:
@@ -30,7 +30,7 @@ class DeskDotComHookTests(WebhookTestCase):
                             u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
                             u"I have a question</a>")
 
-        self.api_stream_message(self.TEST_USER_EMAIL, 'case_updated', expected_topic, expected_message,
+        self.api_stream_message(self.test_user, 'case_updated', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def test_unicode_text_italian(self) -> None:
@@ -40,7 +40,7 @@ class DeskDotComHookTests(WebhookTestCase):
                             u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
                             u"Il mio hovercraft è pieno di anguille.</a>")
 
-        self.api_stream_message(self.TEST_USER_EMAIL, 'unicode_text_italian', expected_topic, expected_message,
+        self.api_stream_message(self.test_user, 'unicode_text_italian', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def test_unicode_text_japanese(self) -> None:
@@ -50,7 +50,7 @@ class DeskDotComHookTests(WebhookTestCase):
                             u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
                             u"私のホバークラフトは鰻でいっぱいです</a>")
 
-        self.api_stream_message(self.TEST_USER_EMAIL, 'unicode_text_japanese', expected_topic, expected_message,
+        self.api_stream_message(self.test_user, 'unicode_text_japanese', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: str) -> str:

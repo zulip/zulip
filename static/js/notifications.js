@@ -1,5 +1,6 @@
 const render_compose_notification = require('../templates/compose_notification.hbs');
 const render_notification = require('../templates/notification.hbs');
+const settings_config = require("./settings_config");
 
 const notice_memory = new Map();
 
@@ -267,7 +268,7 @@ exports.notify_above_composebox = function (note, link_class, link_msg_id, link_
 
 if (window.electron_bridge !== undefined) {
     // The code below is for sending a message received from notification reply which
-    // is often refered to as inline reply feature. This is done so desktop app doesn't
+    // is often referred to as inline reply feature. This is done so desktop app doesn't
     // have to depend on channel.post for setting crsf_token and narrow.by_topic
     // to narrow to the message being sent.
     window.electron_bridge.send_notification_reply_message_supported = true;
@@ -749,15 +750,11 @@ exports.handle_global_notification_updates = function (notification_name, settin
     // Update the global settings checked when determining if we should notify
     // for a given message. These settings do not affect whether or not a
     // particular stream should receive notifications.
-    if (settings_notifications.all_notification_settings_labels.includes(notification_name)) {
+    if (settings_config.all_notification_settings.includes(notification_name)) {
         page_params[notification_name] = setting;
     }
 
-    if (
-        settings_notifications.all_notifications.settings.stream_notification_settings.includes(
-            notification_name
-        )
-    ) {
+    if (settings_config.stream_notification_settings.includes(notification_name)) {
         notification_name = notification_name.replace("enable_stream_", "");
         stream_ui_updates.update_notification_setting_checkbox(notification_name);
     }

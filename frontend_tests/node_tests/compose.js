@@ -1,10 +1,11 @@
-set_global('bridge', false);
+const { JSDOM } = require("jsdom");
 
-set_global('blueslip', global.make_zblueslip());
+set_global('bridge', false);
 
 const noop = function () {};
 
 set_global('$', global.make_zjquery());
+set_global('DOMParser', new JSDOM().window.DOMParser);
 
 const LazySet = zrequire('lazy_set.js').LazySet;
 
@@ -176,7 +177,6 @@ run_test('validate', () => {
         $("#sending-indicator").hide();
         $("#compose-textarea").select(noop);
 
-
         const pm_pill_container = $.create('fake-pm-pill-container');
         $('#private_message_recipient').set_parent(pm_pill_container);
         pm_pill_container.set_find_results('.input', $('#private_message_recipient'));
@@ -247,7 +247,7 @@ run_test('validate', () => {
 
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient', {}));
 
-    people.add_in_realm(bob);
+    people.add(bob);
     compose_state.private_message_recipient('bob@example.com');
     assert(compose.validate());
 
@@ -328,8 +328,8 @@ run_test('validate_stream_message', () => {
 });
 
 run_test('test_validate_stream_message_post_policy', () => {
-    // This test is in continuation with test_validate but it has been seperated out
-    // for better readabilty. Their relative position of execution should not be changed.
+    // This test is in continuation with test_validate but it has been separated out
+    // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
     // as `get_stream_post_policy` is reset at the end.
     page_params.is_admin = false;
@@ -877,7 +877,6 @@ run_test('warn_if_private_stream_is_linked', () => {
     for (const f of checks) { f(); }
 });
 
-
 run_test('initialize', () => {
     // In this test we mostly do the setup stuff in addition to testing the
     // normal workflow of the function. All the tests for the on functions are
@@ -1102,7 +1101,6 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
             return function () { assert(called); };
         }()),
 
-
         (function () {
             let called;
             global.stub_templates(function (template_name, context) {
@@ -1134,7 +1132,6 @@ run_test('warn_if_mentioning_unsubscribed_user', () => {
     assert.equal($('#compose_invite_users').visible(), true);
 
     for (const f of checks) { f(); }
-
 
     // Simulate that the row was added to the DOM.
     const warning_row = $('<warning row>');
@@ -1242,7 +1239,7 @@ run_test('on_events', () => {
         assert(!helper.container_was_removed());
 
         // !sub will result false here and we check the failure code path.
-        blueslip.set_test_data('warn', 'Stream no longer exists: no-stream');
+        blueslip.expect('warn', 'Stream no longer exists: no-stream');
         $('#stream_message_recipient_stream').val('no-stream');
         helper.container.data = function (field) {
             assert.equal(field, 'useremail');
@@ -1258,7 +1255,7 @@ run_test('on_events', () => {
         assert(!$("#compose_invite_users").visible());
         assert.equal($('#compose-error-msg').html(), "Stream no longer exists: no-stream");
         assert.equal(blueslip.get_test_logs('warn').length, 1);
-        blueslip.clear_test_data();
+        blueslip.reset();
 
         // !sub will result in true here and we check the success code path.
         stream_data.add_sub(subscription);
@@ -1617,13 +1614,12 @@ run_test('create_message_object', () => {
         return s;
     };
 
-
     let message = compose.create_message_object();
     assert.equal(message.to, sub.stream_id);
     assert.equal(message.topic, 'lunch');
     assert.equal(message.content, 'burrito');
 
-    blueslip.set_test_data('error', 'Trying to send message with bad stream name: BOGUS STREAM');
+    blueslip.expect('error', 'Trying to send message with bad stream name: BOGUS STREAM');
 
     page['#stream_message_recipient_stream'] = 'BOGUS STREAM';
     message = compose.create_message_object();

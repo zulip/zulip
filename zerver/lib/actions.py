@@ -5,7 +5,7 @@ from typing import (
 from typing_extensions import TypedDict
 
 import django.db.utils
-from django.db.models import Count
+from django.db.models import Count, Exists, OuterRef
 from django.contrib.contenttypes.models import ContentType
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
@@ -159,7 +159,7 @@ from zerver.lib.types import ProfileFieldData
 from analytics.models import StreamCount
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import update_license_ledger_if_needed
+    from corporate.lib.stripe import update_license_ledger_if_needed, downgrade_for_realm_deactivation
 
 import ujson
 import time
@@ -523,10 +523,10 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
     if settings.BILLING_ENABLED:
         update_license_ledger_if_needed(user_profile.realm, event_time)
 
+    # Note that for bots, the caller will send an additional event
+    # with bot-specific info like services.
     notify_created_user(user_profile)
-    if bot_type:
-        notify_created_bot(user_profile)
-    else:
+    if bot_type is None:
         process_new_human_user(user_profile, prereg_user=prereg_user,
                                newsletter_data=newsletter_data,
                                default_stream_groups=default_stream_groups,
@@ -705,6 +705,9 @@ def do_deactivate_realm(realm: Realm, acting_user: Optional[UserProfile]=None) -
     realm.deactivated = True
     realm.save(update_fields=["deactivated"])
 
+    if settings.BILLING_ENABLED:
+        downgrade_for_realm_deactivation(realm)
+
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, event_time=event_time,
@@ -823,7 +826,7 @@ def do_deactivate_stream(stream: Stream, log: bool=True) -> None:
     new_name = ("!DEACTIVATED:" + old_name)[:Stream.MAX_NAME_LENGTH]
     for i in range(20):
         if stream_name_in_use(new_name, stream.realm_id):
-            # This stream has alrady been deactivated, keep prepending !s until
+            # This stream has already been deactivated, keep prepending !s until
             # we have a unique stream name or you've hit a rename limit.
             new_name = ("!" + new_name)[:Stream.MAX_NAME_LENGTH]
         else:
@@ -1220,7 +1223,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
         # Mention triggers, for stream messages
         if is_stream and user_profile_id in mentioned_user_ids:
             trigger = 'mention'
-        # PM triggers for personal and huddle messsages
+        # PM triggers for personal and huddle messages
         elif (not is_stream) and (user_profile_id in active_user_ids):
             trigger = 'private_message'
         else:
@@ -2041,7 +2044,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
     # once we improve our documentation.
     if isinstance(data, list):
         if len(data) != 1:  # nocoverage
-            raise ValueError("Expected exactly one stream")
+            raise JsonableError(_("Expected exactly one stream"))
         data = data[0]
 
     if isinstance(data, str):
@@ -2052,7 +2055,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
         # We had a stream id.
         return data
 
-    raise ValueError("Invalid data type for stream")
+    raise JsonableError(_("Invalid data type for stream"))
 
 def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
     # We try to accept multiple incoming formats for recipients.
@@ -2067,7 +2070,7 @@ def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
         data = data.split(',')
 
     if not isinstance(data, list):
-        raise ValueError("Invalid data type for recipients")
+        raise JsonableError(_("Invalid data type for recipients"))
 
     if not data:
         # We don't complain about empty message recipients here
@@ -2077,21 +2080,21 @@ def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
         return get_validated_emails(data)
 
     if not isinstance(data[0], int):
-        raise ValueError("Invalid data type for recipients")
+        raise JsonableError(_("Invalid data type for recipients"))
 
     return get_validated_user_ids(data)
 
 def get_validated_user_ids(user_ids: Iterable[int]) -> List[int]:
     for user_id in user_ids:
         if not isinstance(user_id, int):
-            raise TypeError("Recipient lists may contain emails or user IDs, but not both.")
+            raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
 
     return list(set(user_ids))
 
 def get_validated_emails(emails: Iterable[str]) -> List[str]:
     for email in emails:
         if not isinstance(email, str):
-            raise TypeError("Recipient lists may contain emails or user IDs, but not both.")
+            raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
 
     return list(filter(bool, {email.strip() for email in emails}))
 
@@ -4598,15 +4601,15 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         event[TOPIC_LINKS] = bugdown.topic_links(message.sender.realm_id, topic_name)
         edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
 
-        if propagate_mode in ["change_later", "change_all"]:
-            messages_list = update_messages_for_topic_edit(
-                message=message,
-                propagate_mode=propagate_mode,
-                orig_topic_name=orig_topic_name,
-                topic_name=topic_name,
-            )
-
-            changed_messages += messages_list
+    if propagate_mode in ["change_later", "change_all"]:
+        assert topic_name is not None
+        messages_list = update_messages_for_topic_edit(
+            message=message,
+            propagate_mode=propagate_mode,
+            orig_topic_name=orig_topic_name,
+            topic_name=topic_name,
+        )
+        changed_messages += messages_list
 
     if message.edit_history is not None:
         edit_history = ujson.loads(message.edit_history)
@@ -4691,7 +4694,15 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         else:
             event['recipient_id'] = message.recipient_id
 
-        events_and_users_to_notify.append((event, message_id_to_notifiable_users[message.id]))
+        # In theory, it's possible for message_id_to_notifiable_users
+        # to not have a key for the message ID in some weird corner
+        # case where we've deleted the last user subscribed to the
+        # target stream before a bot sent a message to it, and thus
+        # there are no UserMessage objects associated with the
+        # message.
+        events_and_users_to_notify.append(
+            (event, message_id_to_notifiable_users.get(message.id, []))
+        )
 
     move_messages_to_archive(message_ids)
     for event, users_to_notify in events_and_users_to_notify:
@@ -5240,7 +5251,7 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     email = prereg_user.email
 
     # Delete both the confirmation objects and the prereg_user object.
-    # TODO: Probably we actaully want to set the confirmation objects
+    # TODO: Probably we actually want to set the confirmation objects
     # to a "revoked" status so that we can give the invited user a better
     # error message.
     content_type = ContentType.objects.get_for_model(PreregistrationUser)
@@ -5411,12 +5422,14 @@ def do_remove_realm_domain(realm_domain: RealmDomain) -> None:
 def get_occupied_streams(realm: Realm) -> QuerySet:
     # TODO: Make a generic stub for QuerySet
     """ Get streams with subscribers """
-    subs_filter = Subscription.objects.filter(active=True, user_profile__realm=realm,
-                                              user_profile__is_active=True).values('recipient_id')
-    stream_ids = Recipient.objects.filter(
-        type=Recipient.STREAM, id__in=subs_filter).values('type_id')
-
-    return Stream.objects.filter(id__in=stream_ids, realm=realm, deactivated=False)
+    exists_expression = Exists(
+        Subscription.objects.filter(active=True, user_profile__is_active=True,
+                                    user_profile__realm=realm,
+                                    recipient_id=OuterRef('recipient_id'))
+    )
+    occupied_streams = Stream.objects.filter(realm=realm, deactivated=False) \
+        .annotate(occupied=exists_expression).filter(occupied=True)
+    return occupied_streams
 
 def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:
     query = Stream.objects.filter(realm=realm, deactivated=False, is_web_public=True)

@@ -133,7 +133,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/en/history/', 'Cambridge, Massachusetts')
         self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Beautiful messaging')
-        self._test('/hello/', 'productive team chat', landing_missing_strings=["Login"])
+        self._test('/hello/', 'Chat for distributed teams', landing_missing_strings=["Login"])
         self._test('/why-zulip/', 'Why Zulip?')
         self._test('/for/open-source/', 'for open source projects')
         self._test('/for/companies/', 'in a company')
@@ -365,7 +365,7 @@ class PlansPageTest(ZulipTestCase):
         # Test root domain
         result = self.client_get("/plans/", subdomain="")
         self.assert_in_success_response(["Sign up now"], result)
-        # Test non-existant domain
+        # Test non-existent domain
         result = self.client_get("/plans/", subdomain="moo")
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("does not exist", result)
@@ -377,7 +377,7 @@ class PlansPageTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/accounts/login/?next=plans")
         # Test valid domain, with login
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan"], result)
         # Test root domain, with login on different domain
@@ -405,7 +405,7 @@ class PlansPageTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "https://zulipchat.com/plans")
 
-            self.login(self.example_email("iago"))
+            self.login('iago')
 
             # SELF_HOSTED should hide the local plans page, even if logged in
             result = self.client_get("/plans/", subdomain="zulip")

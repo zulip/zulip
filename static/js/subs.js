@@ -1,3 +1,4 @@
+const util = require('./util');
 const render_subscription = require('../templates/subscription.hbs');
 const render_subscription_settings = require('../templates/subscription_settings.hbs');
 const render_subscription_table_body = require('../templates/subscription_table_body.hbs');
@@ -103,16 +104,6 @@ exports.toggle_pin_to_top_stream = function (sub) {
     stream_edit.set_stream_property(sub, 'pin_to_top', !sub.pin_to_top);
 };
 
-exports.maybe_update_realm_default_stream_name  = function (stream_id, new_name) {
-    const idx = page_params.realm_default_streams.findIndex(
-        stream => stream.stream_id === stream_id
-    );
-    if (idx === -1) {
-        return;
-    }
-    page_params.realm_default_streams[idx].name = new_name;
-};
-
 exports.is_subscribed_stream_tab_active = function () {
     // Returns true if "Subscribed" tab in stream settings is open
     // otherwise false.
@@ -131,9 +122,6 @@ exports.update_stream_name = function (sub, new_name) {
 
     // Update the left sidebar.
     stream_list.rename_stream(sub, new_name);
-
-    // Update the default streams page in organization settings.
-    exports.maybe_update_realm_default_stream_name(stream_id, new_name);
 
     // Update the stream settings
     stream_edit.update_stream_name(sub, new_name);
@@ -160,7 +148,7 @@ exports.update_stream_description = function (sub, description, rendered_descrip
 
     // Update stream row
     const sub_row = exports.row_for_stream_id(sub.stream_id);
-    sub_row.find(".description").html(sub.rendered_description);
+    sub_row.find(".description").html(util.clean_user_content_links(sub.rendered_description));
 
     // Update stream settings
     stream_edit.update_stream_description(sub);

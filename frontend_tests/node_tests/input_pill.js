@@ -4,7 +4,6 @@ zrequire('input_pill');
 set_global('Handlebars', global.make_handlebars());
 zrequire('templates');
 
-set_global('blueslip', global.make_zblueslip());
 set_global('document', {});
 
 const noop = function () {};
@@ -31,7 +30,6 @@ run_test('set_up_ids', () => {
     };
 });
 
-
 function pill_html(value, data_id, img_src) {
     const has_image = img_src !== undefined;
 
@@ -51,26 +49,26 @@ function pill_html(value, data_id, img_src) {
 run_test('basics', () => {
     const config = {};
 
-    blueslip.set_test_data('error', 'Pill needs container.');
+    blueslip.expect('error', 'Pill needs container.');
     input_pill.create(config);
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 
     const pill_input = $.create('pill_input');
     const container = $.create('container');
     container.set_find_results('.input', pill_input);
 
-    blueslip.set_test_data('error', 'Pill needs create_item_from_text');
+    blueslip.expect('error', 'Pill needs create_item_from_text');
     config.container = container;
     input_pill.create(config);
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 
-    blueslip.set_test_data('error', 'Pill needs get_text_from_item');
+    blueslip.expect('error', 'Pill needs get_text_from_item');
     config.create_item_from_text = noop;
     input_pill.create(config);
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 
     config.get_text_from_item = noop;
     const widget = input_pill.create(config);
@@ -551,7 +549,7 @@ run_test('misc things', () => {
     assert(shake_class_removed);
 
     // bad data
-    blueslip.set_test_data('error', 'no display_value returned');
+    blueslip.expect('error', 'no display_value returned');
     widget.appendValidatedData('this-has-no-item-attribute');
 
     // click on container

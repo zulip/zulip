@@ -4,7 +4,7 @@ from zerver.lib.test_classes import (
 
 class LegacySubjectTest(ZulipTestCase):
     def test_legacy_subject(self) -> None:
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
 
         payload = dict(
             type='stream',

@@ -13,7 +13,6 @@ set_global('$', global.make_zjquery());
 set_global('compose_pm_pill', {
 });
 
-
 set_global('hash_util', {
 });
 
@@ -235,7 +234,7 @@ run_test('respond_to_message', () => {
         email: 'alice@example.com',
         full_name: 'Alice',
     };
-    people.add_in_realm(person);
+    people.add(person);
 
     let msg = {
         type: 'private',
@@ -296,13 +295,13 @@ run_test('reply_with_mention', () => {
         email: 'bob1@example.com',
         full_name: 'Bob Roberts',
     };
-    people.add_in_realm(bob_1);
+    people.add(bob_1);
     const bob_2 = {
         user_id: 40,
         email: 'bob2@example.com',
         full_name: 'Bob Roberts',
     };
-    people.add_in_realm(bob_2);
+    people.add(bob_2);
 
     reply_with_mention(opts);
     assert.equal($('#stream_message_recipient_stream').val(), 'devel');

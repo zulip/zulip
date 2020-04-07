@@ -1,5 +1,5 @@
-// In theory, this group of functions should apply the account-level
-// defaults, however, they are only called after a manual override, so
+// In theory, this function should apply the account-level defaults,
+// however, they are only called after a manual override, so
 // doing so is unnecessary with the current code.  Ideally, we'd do a
 // refactor to address that, however.
 function update_stream_setting(sub, value, setting) {
@@ -29,7 +29,9 @@ exports.update_property = function (stream_id, property, value, other_values) {
     case 'audible_notifications':
     case 'push_notifications':
     case 'email_notifications':
+    case 'wildcard_mentions_notify':
         update_stream_setting(sub, value, property);
+        settings_notifications.update_page();
         break;
     case 'name':
         subs.update_stream_name(sub, value);
@@ -49,9 +51,6 @@ exports.update_property = function (stream_id, property, value, other_values) {
             invite_only: value,
             history_public_to_subscribers: other_values.history_public_to_subscribers,
         });
-        break;
-    case 'wildcard_mentions_notify':
-        update_stream_setting(sub, value, property);
         break;
     case 'stream_post_policy':
         subs.update_stream_post_policy(sub, value);

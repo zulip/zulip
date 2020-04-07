@@ -32,7 +32,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
     def test_transfer_avatars_to_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
-        self.login(self.example_email("hamlet"))
+        self.login('hamlet')
         with get_test_image_file('img.png') as image_file:
             self.client_post("/json/users/me/avatar", {'file': image_file})
 

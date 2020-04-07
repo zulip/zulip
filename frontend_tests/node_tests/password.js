@@ -1,7 +1,6 @@
 set_global('zxcvbn', zrequire('zxcvbn', 'zxcvbn'));
 zrequire('common');
 
-
 run_test('basics', () => {
     let accepted;
     let password;

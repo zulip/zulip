@@ -22,13 +22,11 @@ The code we are testing lives here:
 
 */
 
-
 // The first thing we do to use zjquery is patch our global namespace
 // with zjquery as follows.  This call gives us our own instance of a
 // zjquery stub variable.  Like with real jQuery, the '$' function will
 // be the gateway to a bigger API.
 set_global('$', global.make_zjquery());
-
 
 run_test('basics', () => {
     // Let's create a sample piece of code to test:
@@ -167,7 +165,7 @@ run_test('events', () => {
         stopPropagation: function () {},
     };
 
-    // Now call the hander.
+    // Now call the handler.
     red_handler_func(stub_event);
 
     // And verify it did what it was supposed to do.

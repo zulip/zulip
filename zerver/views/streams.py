@@ -134,9 +134,12 @@ def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def remove_default_stream(request: HttpRequest,
                           user_profile: UserProfile,
-                          stream_name: str=REQ()) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name,
-                                                     allow_realm_admin=True)
+                          stream_id: int=REQ(validator=check_int)) -> HttpResponse:
+    (stream, recipient, sub) = access_stream_by_id(
+        user_profile,
+        stream_id,
+        allow_realm_admin=True
+    )
     do_remove_default_stream(stream)
     return json_success()
 
@@ -349,12 +352,12 @@ def add_subscriptions_backend(
         if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
             return json_error(_("You can only invite other Zephyr mirroring users to private streams."))
         if not user_profile.can_subscribe_other_users():
-            if user_profile.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_ADMINS:
+            if user_profile.realm.invite_to_stream_policy == Realm.POLICY_ADMINS_ONLY:
                 return json_error(_("Only administrators can modify other users' subscriptions."))
-            # Realm.INVITE_TO_STREAM_POLICY_MEMBERS only fails if the
+            # Realm.POLICY_MEMBERS_ONLY only fails if the
             # user is a guest, which happens in the decorator above.
             assert user_profile.realm.invite_to_stream_policy == \
-                Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD
+                Realm.POLICY_FULL_MEMBERS_ONLY
             return json_error(_("Your account is too new to modify other users' subscriptions."))
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:

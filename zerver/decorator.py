@@ -21,14 +21,14 @@ from zerver.lib.exceptions import UnexpectedWebhookEventType
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, is_remote_server, has_api_key_format
+from zerver.lib.utils import statsd, has_api_key_format
 from zerver.lib.exceptions import JsonableError, ErrorCode, \
     InvalidJSONError, InvalidAPIKeyError, InvalidAPIKeyFormatError, \
     OrganizationAdministratorRequired
 from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import to_non_negative_int
 
-from zerver.lib.rate_limiter import rate_limit_request_by_entity, RateLimitedUser
+from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
 
 from functools import wraps
@@ -186,7 +186,8 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
     if role is not None:
         role = role.strip()
 
-    if settings.ZILENCER_ENABLED and role is not None and is_remote_server(role):
+    # If `role` doesn't look like an email, it might be a uuid.
+    if settings.ZILENCER_ENABLED and role is not None and '@' not in role:
         try:
             remote_server = get_remote_server_by_uuid(role)
         except RemoteZulipServer.DoesNotExist:
@@ -743,8 +744,7 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
 
-    entity = RateLimitedUser(user, domain=domain)
-    rate_limit_request_by_entity(request, entity)
+    RateLimitedUser(user, domain=domain).rate_limit_request(request)
 
 def rate_limit(domain: str='api_by_user') -> Callable[[ViewFuncT], ViewFuncT]:
     """Rate-limits a view. Takes an optional 'domain' param if you wish to

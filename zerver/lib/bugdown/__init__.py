@@ -206,7 +206,11 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
 
     if db_data:
         realm_uri_prefix = db_data['realm_uri'] + "/"
-        if link.startswith(realm_uri_prefix):
+        if (
+            link.startswith(realm_uri_prefix)
+            and urllib.parse.urljoin(realm_uri_prefix, link[len(realm_uri_prefix):])
+            == link
+        ):
             return link[len(realm_uri_prefix):]
 
     return link
@@ -257,7 +261,7 @@ def list_of_tlds() -> List[str]:
     # HACK we manually blacklist a few domains
     blacklist = ['PY\n', "MD\n"]
 
-    # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+    # tlds-alpha-by-domain.txt comes from https://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
     tlds = [tld.lower().strip() for tld in open(tlds_file, 'r')
             if tld not in blacklist and not tld[0].startswith('#')]
@@ -549,7 +553,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         div.set("class", class_attr)
         a = markdown.util.etree.SubElement(div, "a")
         a.set("href", link)
-        a.set("target", "_blank")
         a.set("title", title)
         if data_id is not None:
             a.set("data-id", data_id)
@@ -621,7 +624,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         img = markdown.util.etree.SubElement(container, "a")
         img.set("style", "background-image: url(" + img_link + ")")
         img.set("href", link)
-        img.set("target", "_blank")
         img.set("class", "message_embed_image")
 
         data_container = markdown.util.etree.SubElement(container, "div")
@@ -633,7 +635,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             title_elm.set("class", "message_embed_title")
             a = markdown.util.etree.SubElement(title_elm, "a")
             a.set("href", link)
-            a.set("target", "_blank")
             a.set("title", title)
             a.text = title
         description = extracted_data.get('description')
@@ -664,7 +665,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if parsed_url.netloc == 'pasteboard.co':
             return False
 
-        # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
+        # List from https://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
             if parsed_url.path.lower().endswith(ext):
                 return True
@@ -735,7 +736,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def youtube_id(self, url: str) -> Optional[str]:
         if not self.markdown.image_preview_enabled:
             return None
-        # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
+        # Youtube video id extraction regular expression from https://pastebin.com/KyKAFv1s
         # Slightly modified to support URLs of the forms
         #   - youtu.be/<id>
         #   - youtube.com/playlist?v=<id>&list=<list-id>
@@ -910,7 +911,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             tweet.set("class", "twitter-tweet")
             img_a = markdown.util.etree.SubElement(tweet, 'a')
             img_a.set("href", url)
-            img_a.set("target", "_blank")
             profile_img = markdown.util.etree.SubElement(img_a, 'img')
             profile_img.set('class', 'twitter-avatar')
             # For some reason, for, e.g. tweet 285072525413724161,
@@ -951,7 +951,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 img_div.set('class', 'twitter-image')
                 img_a = markdown.util.etree.SubElement(img_div, 'a')
                 img_a.set('href', media_item['url'])
-                img_a.set('target', '_blank')
                 img_a.set('title', media_item['url'])
                 img = markdown.util.etree.SubElement(img_a, 'img')
                 img.set('src', media_url)
@@ -1319,22 +1318,6 @@ class Emoji(markdown.inlinepatterns.Pattern):
 def content_has_emoji_syntax(content: str) -> bool:
     return re.search(EMOJI_REGEX, content) is not None
 
-class ModalLink(markdown.inlinepatterns.Pattern):
-    """
-    A pattern that allows including in-app modal links in messages.
-    """
-
-    def handleMatch(self, match: Match[str]) -> Element:
-        relative_url = match.group('relative_url')
-        text = match.group('text')
-
-        a_tag = markdown.util.etree.Element("a")
-        a_tag.set("href", relative_url)
-        a_tag.set("title", relative_url)
-        a_tag.text = text
-
-        return a_tag
-
 class Tex(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Element:
         rendered = render_tex(match.group('body'), is_inline=True)
@@ -1366,10 +1349,8 @@ def url_filename(url: str) -> str:
     else:
         return url
 
-def fixup_link(link: markdown.util.etree.Element, target_blank: bool=True) -> None:
-    """Set certain attributes we want on every link."""
-    if target_blank:
-        link.set('target', '_blank')
+def fixup_link(link: markdown.util.etree.Element) -> None:
+    """Set title attributes we want on every link."""
     link.set('title', url_filename(link.get('href')))
 
 
@@ -1431,7 +1412,6 @@ def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> U
     a = markdown.util.etree.Element('a')
 
     href = sanitize_url(url)
-    target_blank = True
     if href is None:
         # Rejected by sanitize_url; render it as plain text.
         return url
@@ -1439,11 +1419,10 @@ def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> U
         text = markdown.util.AtomicString(url)
 
     href = rewrite_local_links_to_relative(db_data, href)
-    target_blank = not href.startswith("#narrow") and not href.startswith('mailto:')
 
     a.set('href', href)
     a.text = text
-    fixup_link(a, target_blank)
+    fixup_link(a)
     return a
 
 class CompiledPattern(markdown.inlinepatterns.Pattern):
@@ -1783,7 +1762,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
 
         # Make changes to <a> tag attributes
         el.set("href", href)
-        fixup_link(el, target_blank=(href[:1] != '#'))
+        fixup_link(el)
 
         # Show link href if title is empty
         if not el.text.strip():
@@ -1923,7 +1902,6 @@ class Bugdown(markdown.Markdown):
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), 'topic', 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 85)
         reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 80)
-        reg.register(ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'), 'modal_link', 75)
         # Note that !gravatar syntax should be deprecated long term.
         reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 70)
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
@@ -2091,7 +2069,7 @@ def privacy_clean_markdown(content: str) -> str:
 
 def log_bugdown_error(msg: str) -> None:
     """We use this unusual logging approach to log the bugdown error, in
-    order to prevent AdminNotifyHandler from sending the santized
+    order to prevent AdminNotifyHandler from sending the sanitized
     original markdown formatting into another Zulip message, which
     could cause an infinite exception loop."""
     bugdown_logger.error(msg)

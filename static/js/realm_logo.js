@@ -13,6 +13,10 @@ exports.build_realm_logo_widget = function (upload_function, is_night) {
         return file_input_elem.expectOne();
     };
 
+    if (!page_params.is_admin) {
+        return;
+    }
+
     if (page_params.realm_logo_source === 'D') {
         delete_button_elem.hide();
     } else {

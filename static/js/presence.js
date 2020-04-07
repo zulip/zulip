@@ -41,53 +41,108 @@ exports.get_user_ids = function () {
     return Array.from(exports.presence_info.keys());
 };
 
-function status_from_timestamp(baseline_time, info) {
-    let status = 'offline';
-    let last_active = 0;
+exports.status_from_raw = function (raw) {
+    /*
+        Example of `raw`:
 
-    for (const [device, device_presence] of Object.entries(info)) {
-        const age = baseline_time - device_presence.timestamp;
-        if (last_active < device_presence.timestamp) {
-            last_active = device_presence.timestamp;
+        {
+            active_timestamp: 1585745133
+            idle_timestamp: 1585745091
+            server_timestamp: 1585745140
         }
-        if (age < OFFLINE_THRESHOLD_SECS) {
-            switch (device_presence.status) {
-            case 'active':
-                status = device_presence.status;
-                break;
-            case 'idle':
-                if (status !== 'active') {
-                    status = device_presence.status;
-                }
-                break;
-            case 'offline':
-                if (status !== 'active' && status !== 'idle') {
-                    status = device_presence.status;
-                }
-                break;
-            default:
-                blueslip.error('Unexpected status', {presence_object: device_presence, device: device}, undefined);
+    */
+    function age(timestamp) {
+        return raw.server_timestamp - (timestamp || 0);
+    }
+
+    const active_timestamp = raw.active_timestamp;
+    const idle_timestamp = raw.idle_timestamp;
+
+    /*
+        If the server sends us `active_timestamp`, this
+        means at least one client was active at this time
+        (and hasn't changed since).
+
+        As long as the timestamp is current enough, we will
+        show the user as active (even if there's a newer
+        timestamp for idle).
+    */
+    if (age(active_timestamp) < OFFLINE_THRESHOLD_SECS) {
+        return {
+            status: 'active',
+            last_active: active_timestamp,
+        };
+    }
+
+    if (age(idle_timestamp) < OFFLINE_THRESHOLD_SECS) {
+        return {
+            status: 'idle',
+            last_active: active_timestamp,
+        };
+    }
+
+    return {
+        status: 'offline',
+        last_active: active_timestamp,
+    };
+};
+
+exports.update_info_from_event = function (user_id, info, server_timestamp) {
+    /*
+        Example of `info`:
+
+        {
+            website: {
+                client: 'website',
+                pushable: false,
+                status: 'active',
+                timestamp: 1585745225
+            }
+        }
+
+        Example of `raw`:
+
+        {
+            active_timestamp: 1585745133
+            idle_timestamp: 1585745091
+            server_timestamp: 1585745140
+        }
+    */
+    const raw = raw_info.get(user_id) || {};
+
+    raw.server_timestamp = server_timestamp;
+
+    for (const rec of Object.values(info)) {
+        if (rec.status === 'active') {
+            if (rec.timestamp > (raw.active_timestamp || 0)) {
+                raw.active_timestamp = rec.timestamp;
+            }
+        }
+
+        if (rec.status === 'idle') {
+            if (rec.timestamp > (raw.idle_timestamp || 0)) {
+                raw.idle_timestamp = rec.timestamp;
             }
         }
     }
-    return {status: status,
-            last_active: last_active };
-}
 
-// For testing
-exports._status_from_timestamp = status_from_timestamp;
+    raw_info.set(user_id, raw);
 
-exports.update_info_from_event = function (user_id, info, server_time) {
-    raw_info.set(user_id, {
-        info: info,
-        server_time: server_time,
-    });
-
-    const status = status_from_timestamp(server_time, info);
+    const status = exports.status_from_raw(raw);
     exports.presence_info.set(user_id, status);
 };
 
 exports.set_info = function (presences, server_timestamp) {
+    /*
+        Example `presences` data:
+
+        {
+            6: Object { idle_timestamp: 1585746028 },
+            7: Object { active_timestamp: 1585745774 },
+            8: Object { active_timestamp: 1585745578 }
+        }
+    */
+
     raw_info.clear();
     exports.presence_info.clear();
     for (const [user_id_str, info] of Object.entries(presences)) {
@@ -125,21 +180,22 @@ exports.set_info = function (presences, server_timestamp) {
             continue;
         }
 
-        raw_info.set(user_id, {
-            info: info,
-            server_time: server_timestamp,
-        });
+        const raw = {
+            server_timestamp: server_timestamp,
+            active_timestamp: info.active_timestamp || undefined,
+            idle_timestamp: info.idle_timestamp || undefined,
+        };
 
-        const status = status_from_timestamp(server_timestamp,
-                                             info);
+        raw_info.set(user_id, raw);
 
+        const status = exports.status_from_raw(raw);
         exports.presence_info.set(user_id, status);
     }
     exports.update_info_for_small_realm();
 };
 
 exports.update_info_for_small_realm = function () {
-    if (people.get_realm_count() >= BIG_REALM_COUNT) {
+    if (people.get_active_human_count() >= BIG_REALM_COUNT) {
         // For big realms, we don't want to bloat our buddy
         // lists with lots of long-time-inactive users.
         return;
@@ -147,7 +203,7 @@ exports.update_info_for_small_realm = function () {
 
     // For small realms, we create presence info for users
     // that the server didn't include in its presence update.
-    const persons = people.get_realm_persons();
+    const persons = people.get_realm_users();
 
     for (const person of persons) {
         const user_id = person.user_id;

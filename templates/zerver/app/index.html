@@ -49,6 +49,7 @@
     {% include "zerver/app/settings_overlay.html" %}
 </div>
 
+{% include "zerver/app/navbar_alerts.html" %}
 {% include "zerver/app/navbar.html" %}
 
 <div class="fixed-app">
@@ -166,7 +167,6 @@
         </div>
     </div>
     {% include "zerver/app/invite_user.html" %}
-    {% include "zerver/app/bankruptcy.html" %}
     {% include "zerver/app/logout.html" %}
     {% include "zerver/app/deprecation_notice.html" %}
     <div id="user-profile-modal-holder"></div>

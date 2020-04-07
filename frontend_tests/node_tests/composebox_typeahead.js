@@ -31,9 +31,6 @@ set_global('message_store', {
 const ct = composebox_typeahead;
 const noop = function () {};
 
-set_global('blueslip', {});
-blueslip.warn = noop;
-
 // Use a slightly larger value than what's user-facing
 // to facilitate testing different combinations of
 // broadcast-mentions/persons/groups.
@@ -145,6 +142,7 @@ const sweden_stream = {
     description: 'Cold, mountains and home decor.',
     stream_id: 1,
     subscribed: true,
+    can_access_subscribers: true,
 };
 const denmark_stream = {
     name: 'Denmark',
@@ -240,17 +238,18 @@ const harry = {
     email: 'harry@zulip.com',
 };
 
-global.people.add_in_realm(alice);
-global.people.add_in_realm(hamlet);
-global.people.add_in_realm(othello);
-global.people.add_in_realm(cordelia);
-global.people.add_in_realm(lear);
-global.people.add_in_realm(twin1);
-global.people.add_in_realm(twin2);
-global.people.add_in_realm(gael);
-global.people.add_in_realm(hal);
-global.people.add_in_realm(harry);
-global.people.add(deactivated_user);
+people.add(alice);
+people.add(hamlet);
+people.add(othello);
+people.add(cordelia);
+people.add(lear);
+people.add(twin1);
+people.add(twin2);
+people.add(gael);
+people.add(hal);
+people.add(harry);
+people.add(deactivated_user);
+people.deactivate(deactivated_user);
 
 const hamletcharacters = {
     name: "hamletcharacters",
@@ -350,8 +349,6 @@ run_test('content_typeahead_selected', () => {
     actual_value = ct.content_typeahead_selected.call(fake_this, item);
     expected_value = '{ :octopus: ';
     assert.equal(actual_value, expected_value);
-
-
 
     // mention
     fake_this.completing = 'mention';
@@ -991,7 +988,6 @@ run_test('initialize', () => {
     event.target.id = 'some_non_existing_id';
     $('form#send_message_form').keydown(event);
 
-
     // Setup jquery functions used in compose_textarea enter
     // handler.
     let range_length = 0;
@@ -1252,7 +1248,6 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("abc/po", false);
     assert_typeahead_equals("hello /poll", false);
     assert_typeahead_equals("\n/pol", false);
-
 
     assert_typeahead_equals("x/", false);
     assert_typeahead_equals("```", false);

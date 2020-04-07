@@ -1,4 +1,3 @@
-set_global('blueslip', global.make_zblueslip());
 const LazySet = zrequire('lazy_set').LazySet;
 
 /*
@@ -16,7 +15,7 @@ run_test('map', () => {
 });
 
 run_test('conversions', () => {
-    blueslip.set_test_data('error', 'not a number');
+    blueslip.expect('error', 'not a number');
     const ls = new LazySet([1, 2]);
     ls.add('3');
     assert(ls.has('3'));

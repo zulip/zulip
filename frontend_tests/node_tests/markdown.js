@@ -42,8 +42,6 @@ set_global('page_params', {
     translate_emoticons: false,
 });
 
-set_global('blueslip', global.make_zblueslip());
-
 set_global('Image', function () {
     return {};
 });
@@ -53,8 +51,6 @@ const doc = "";
 set_global('document', doc);
 
 set_global('$', global.make_zjquery());
-
-const people = global.people;
 
 const cordelia = {
     full_name: 'Cordelia Lear',
@@ -347,13 +343,13 @@ run_test('marked', () => {
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
         {input: 'This is a realm filter #1234 with text after it',
-         expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
+         expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
         {input: '#1234is not a realm filter.',
          expected: '<p>#1234is not a realm filter.</p>'},
         {input: 'A pattern written as #1234is not a realm filter.',
          expected: '<p>A pattern written as #1234is not a realm filter.</p>'},
         {input: 'This is a realm filter with ZGROUP_123:45 groups',
-         expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" target="_blank" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
+         expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
         {input: 'This is an !avatar(cordelia@zulip.com) of Cordelia Lear',
          expected: '<p>This is an <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
         {input: 'This is a !gravatar(cordelia@zulip.com) of Cordelia Lear',
@@ -582,22 +578,22 @@ run_test('python_to_js_filter', () => {
     expected_value = [/#cf([0-9]+)([A-Z][0-9A-Z]*)(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
-    blueslip.set_test_data('error', 'python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group');
+    blueslip.expect('error', 'python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group');
     markdown.update_realm_filter_rules([['!@#@(!#&((!&(@#(', 'http://google.com']]);
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     expected_value = [];
     assert.deepEqual(actual_value, expected_value);
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });
 
 run_test('katex_throws_unexpected_exceptions', () => {
     katex.renderToString = function () { throw new Error('some-exception'); };
-    blueslip.set_test_data('error', 'Error: some-exception');
+    blueslip.expect('error', 'Error: some-exception');
     const message = { raw_content: '$$a$$' };
     markdown.apply_markdown(message);
     assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });
 
 run_test('misc_helpers', () => {

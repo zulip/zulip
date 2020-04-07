@@ -58,8 +58,14 @@ else:
     RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
     RemoteRealmCount = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
+MAX_TIME_FOR_FULL_ANALYTICS_GENERATION = timedelta(days=1, minutes=30)
+
+def is_analytics_ready(realm: Realm) -> bool:
+    return (timezone_now() - realm.date_created) > MAX_TIME_FOR_FULL_ANALYTICS_GENERATION
+
 def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
-                 for_installation: bool=False, remote: bool=False) -> HttpRequest:
+                 for_installation: bool=False, remote: bool=False,
+                 analytics_ready: bool=True) -> HttpRequest:
     page_params = dict(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
@@ -69,7 +75,8 @@ def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
     return render(request,
                   'analytics/stats.html',
                   context=dict(target_name=target_name,
-                               page_params=page_params))
+                               page_params=page_params,
+                               analytics_ready=analytics_ready))
 
 @zulip_login_required
 def stats(request: HttpRequest) -> HttpResponse:
@@ -78,7 +85,8 @@ def stats(request: HttpRequest) -> HttpResponse:
         # TODO: Make @zulip_login_required pass the UserProfile so we
         # can use @require_member_or_admin
         raise JsonableError(_("Not allowed for guest users"))
-    return render_stats(request, '', realm.name or realm.string_id)
+    return render_stats(request, '', realm.name or realm.string_id,
+                        analytics_ready=is_analytics_ready(realm))
 
 @require_server_admin
 @has_request_variables
@@ -88,7 +96,8 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
     except Realm.DoesNotExist:
         return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
 
-    return render_stats(request, '/realm/%s' % (realm_str,), realm.name or realm.string_id)
+    return render_stats(request, '/realm/%s' % (realm_str,), realm.name or realm.string_id,
+                        analytics_ready=is_analytics_ready(realm))
 
 @require_server_admin
 @has_request_variables
@@ -244,7 +253,8 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         if end is None:
             end = max(last_successful_fill(stat.property) or
                       datetime.min.replace(tzinfo=timezone_utc) for stat in stats)
-        if start > end:
+
+        if start > end and (timezone_now() - start > MAX_TIME_FOR_FULL_ANALYTICS_GENERATION):
             logging.warning("User from realm %s attempted to access /stats, but the computed "
                             "start time: %s (creation of realm or installation) is later than the computed "
                             "end time: %s (last successful analytics update). Is the "

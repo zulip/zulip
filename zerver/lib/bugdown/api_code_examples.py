@@ -300,8 +300,6 @@ class APICodeExamplesPreprocessor(Preprocessor):
                     if key == 'fixture':
                         if argument:
                             text = self.render_fixture(function, name=argument)
-                        else:
-                            text = self.render_fixture(function)
                     elif key == 'example':
                         if argument == 'admin_config=True':
                             text = SUPPORTED_LANGUAGES[language]['render'](function, admin_config=True)
@@ -325,19 +323,12 @@ class APICodeExamplesPreprocessor(Preprocessor):
     def render_fixture(self, function: str, name: Optional[str]=None) -> List[str]:
         fixture = []
 
-        # We assume that if the function we're rendering starts with a slash
-        # it's a path in the endpoint and therefore it uses the new OpenAPI
-        # format.
-        if function.startswith('/'):
-            path, method = function.rsplit(':', 1)
-            fixture_dict = get_openapi_fixture(path, method, name)
-        else:
-            fixture_dict = zerver.openapi.python_examples.FIXTURES[function]
-
+        path, method = function.rsplit(':', 1)
+        fixture_dict = get_openapi_fixture(path, method, name)
         fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True,
                                   separators=(',', ': '))
 
-        fixture.append('```')
+        fixture.append('``` json')
         fixture.extend(fixture_json.splitlines())
         fixture.append('```')
 

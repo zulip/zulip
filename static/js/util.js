@@ -279,3 +279,43 @@ exports.convert_message_topic = function (message) {
         message.topic = message.subject;
     }
 };
+
+exports.clean_user_content_links = function (html) {
+    const content = new DOMParser().parseFromString(html, "text/html").body;
+    for (const elt of content.getElementsByTagName("a")) {
+        // Ensure that all external links have target="_blank"
+        // rel="opener noreferrer".  This ensures that external links
+        // never replace the Zulip webapp while also protecting
+        // against reverse tabnapping attacks, without relying on the
+        // correctness of how Zulip's markdown processor generates links.
+        //
+        // Fragment links, which we intend to only open within the
+        // Zulip webapp using our hashchange system, do not require
+        // these attributes.
+        let url;
+        try {
+            url = new URL(elt.getAttribute("href"), window.location.href);
+        } catch {
+            elt.removeAttribute("href");
+            continue;
+        }
+
+        if (
+            // eslint-disable-next-line no-script-url
+            ["data:", "javascript:", "vbscript:"].includes(url.protocol)
+        ) {
+            // Remove unsafe links completely.
+            elt.removeAttribute("href");
+        } else if (
+            // We detect URLs that are just fragments by comparing the URL
+            // against a new URL generated using only the hash.
+            url.hash === "" || url.href !== new URL(url.hash, window.location.href).href
+        ) {
+            elt.setAttribute("target", "_blank");
+            elt.setAttribute("rel", "noopener noreferrer");
+        } else {
+            elt.removeAttribute("target");
+        }
+    }
+    return content.innerHTML;
+};

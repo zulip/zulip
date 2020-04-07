@@ -135,13 +135,15 @@ function populate_users(realm_people_data) {
             // Convert bot type id to string for viewing to the users.
             user.bot_type = settings_bots.type_id_to_string(user.bot_type);
 
-            if (user.bot_owner_id !== null) {
-                user.bot_owner_full_name = people.get_by_user_id(
-                    user.bot_owner_id).full_name;
+            const bot_owner = people.get_bot_owner_user(user);
+
+            if (bot_owner) {
+                user.bot_owner_full_name = bot_owner.full_name;
             } else {
                 user.no_owner = true;
                 user.bot_owner_full_name = i18n.t("No owner");
             }
+
             bots.push(user);
         } else if (user.is_active) {
             user.last_active = get_last_active(user);
@@ -306,7 +308,7 @@ function open_user_info_form_modal(person) {
     if (person.is_bot) {
         // Dynamically add the owner select control in order to
         // avoid performance issues in case of large number of users.
-        const users_list = people.get_active_human_persons();
+        const users_list = people.get_active_humans();
         const owner_select = $(render_bot_owner_select({users_list: users_list}));
         owner_select.val(bot_data.get(person.user_id).owner || "");
         modal_container.find(".edit_bot_owner_container").append(owner_select);
@@ -451,7 +453,7 @@ exports.on_load_success = function (realm_people_data) {
             } else {
                 const new_profile_data = [];
                 $("#user-info-form-modal .custom_user_field_value").each(function () {
-                    // Remove duplicate datepicker input element genearted flatpicker library
+                    // Remove duplicate datepicker input element generated flatpicker library
                     if (!$(this).hasClass("form-control")) {
                         new_profile_data.push({
                             id: parseInt($(this).closest(".custom_user_field").attr("data-field-id"), 10),

@@ -69,7 +69,7 @@ Components
 
 Zulip is primarily implemented in the
 [Django](https://www.djangoproject.com/) Python web framework.  We
-also make use of [Tornado](http://www.tornadoweb.org) for the
+also make use of [Tornado](https://www.tornadoweb.org) for the
 real-time push system.
 
 Django is the main web application server; Tornado runs the
@@ -116,7 +116,7 @@ For more details on the frontend, see our documentation on
 [the static asset pipeline](../subsystems/html-css.html#static-asset-pipeline).
 
 [Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: http://handlebarsjs.com/
+[Handlebars]: https://handlebarsjs.com/
 
 ### nginx
 

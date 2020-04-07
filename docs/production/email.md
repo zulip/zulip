@@ -50,7 +50,7 @@ using a "transactional email" service like
 [Mailgun](https://documentation.mailgun.com/en/latest/quickstart-sending.html#send-via-smtp),
 [SendGrid](https://sendgrid.com/docs/API_Reference/SMTP_API/integrating_with_the_smtp_api.html),
 or, for AWS users,
-[Amazon SES](http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-smtp.html).
+[Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-smtp.html).
 These services are designed to send email from servers, and are by far
 the easiest way to get outgoing email working reliably (Mailgun has
 the best documentation).
@@ -197,6 +197,11 @@ aren't receiving emails from Zulip:
 * If attempting to send an email throws an exception, a traceback
   should be in `/var/log/zulip/errors.log`, along with any other
   exceptions Zulip encounters.
+
+* If your SMTP provider uses SSL on port 465 (and not TLS on port
+  587), you need to set `EMAIL_PORT = 465` as well as replacing
+  `EMAIL_USE_TLS = True` with `EMAIL_USE_SSL = True`; otherwise, Zulip
+  will try to use the TLS protocol on port 465, which won't work.
 
 * Zulip's email sending configuration is based on the standard Django
   [SMTP backend](https://docs.djangoproject.com/en/2.0/topics/email/#smtp-backend)

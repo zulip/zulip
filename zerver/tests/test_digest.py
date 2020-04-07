@@ -140,7 +140,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         RealmAuditLog.objects.all().delete()
 
         realm = othello.realm
-        stream_names = self.get_streams(othello.email, realm)
+        stream_names = self.get_streams(othello)
         stream_ids = {name: get_stream(name, realm).id for name in stream_names}
 
         # Unsubscribe and subscribe from a stream
@@ -280,6 +280,6 @@ class TestDigestEmailMessages(ZulipTestCase):
 
 class TestDigestContentInBrowser(ZulipTestCase):
     def test_get_digest_content_in_browser(self) -> None:
-        self.login(self.example_email('hamlet'))
+        self.login('hamlet')
         result = self.client_get("/digest/")
         self.assert_in_success_response(["Click here to log in to Zulip and catch up."], result)

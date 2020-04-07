@@ -1,5 +1,4 @@
 set_global('$', global.make_zjquery());
-set_global('blueslip', global.make_zblueslip());
 
 let filter_key_handlers;
 
@@ -121,15 +120,13 @@ const zoe = {
     full_name: 'Zoe Yang',
 };
 
-const people = global.people;
-
-people.add_in_realm(alice);
-people.add_in_realm(fred);
-people.add_in_realm(jill);
-people.add_in_realm(mark);
-people.add_in_realm(norbert);
-people.add_in_realm(zoe);
-people.add_in_realm(me);
+people.add(alice);
+people.add(fred);
+people.add(jill);
+people.add(mark);
+people.add(norbert);
+people.add(zoe);
+people.add(me);
 people.initialize_current_user(me.user_id);
 
 const real_update_huddles = activity.update_huddles;
@@ -160,10 +157,10 @@ run_test('get_status', () => {
 });
 
 run_test('reload_defaults', () => {
-    blueslip.set_test_data('warn', 'get_filter_text() is called before initialization');
+    blueslip.expect('warn', 'get_filter_text() is called before initialization');
     assert.equal(activity.get_filter_text(), '');
     assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
+    blueslip.reset();
 });
 
 run_test('sort_users', () => {
@@ -680,7 +677,6 @@ run_test('insert_unfiltered_user_with_filter', () => {
 
 run_test('realm_presence_disabled', () => {
     page_params.realm_presence_disabled = true;
-    unread.set_suppress_unread_counts(false);
 
     activity.redraw_user();
     activity.build_user_sidebar();

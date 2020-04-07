@@ -128,12 +128,12 @@ exports.initialize_kitchen_sink_stuff = function () {
         $("body").addClass("more_dense_mode");
     }
 
-    $("#main_div").on("mouseover", ".message_row", function () {
+    $("#main_div").on("mouseover", ".message_table .message_row", function () {
         const row = $(this).closest(".message_row");
         message_hover(row);
     });
 
-    $("#main_div").on("mouseleave", ".message_row", function () {
+    $("#main_div").on("mouseleave", ".message_table .message_row", function () {
         message_unhover();
     });
 
@@ -410,7 +410,8 @@ exports.initialize_everything = function () {
     const stream_data_params = pop_fields(
         'subscriptions',
         'unsubscribed',
-        'never_subscribed'
+        'never_subscribed',
+        'realm_default_streams'
     );
 
     const user_groups_params = pop_fields(

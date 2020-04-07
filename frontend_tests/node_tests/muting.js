@@ -1,7 +1,6 @@
 
 zrequire('muting');
 zrequire('stream_data');
-set_global('blueslip', global.make_zblueslip());
 set_global('page_params', {});
 
 run_test('edge_cases', () => {
@@ -69,7 +68,7 @@ run_test('get_and_set_muted_topics', () => {
         [office.stream_id, 'gossip'],
     ]);
 
-    blueslip.set_test_data('warn', 'Unknown stream in set_muted_topics: BOGUS STREAM');
+    blueslip.expect('warn', 'Unknown stream in set_muted_topics: BOGUS STREAM');
 
     page_params.muted_topics = [
         ['social', 'breakfast'],
@@ -78,8 +77,7 @@ run_test('get_and_set_muted_topics', () => {
     ];
     muting.initialize();
 
-    blueslip.clear_test_data();
-
+    blueslip.reset();
 
     assert.deepEqual(muting.get_muted_topics().sort(), [
         [design.stream_id, 'typography'],

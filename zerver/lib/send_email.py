@@ -29,6 +29,10 @@ class FromAddress:
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
 
+    support_placeholder = "SUPPORT"
+    no_reply_placeholder = 'NO_REPLY'
+    tokenized_no_reply_placeholder = 'TOKENIZED_NO_REPLY'
+
     # Generates an unpredictable noreply address.
     @staticmethod
     def tokenized_no_reply_address() -> str:
@@ -96,6 +100,13 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
         from_name = "Zulip"
     if from_address is None:
         from_address = FromAddress.NOREPLY
+    if from_address == FromAddress.tokenized_no_reply_placeholder:
+        from_address = FromAddress.tokenized_no_reply_address()
+    if from_address == FromAddress.no_reply_placeholder:
+        from_address = FromAddress.NOREPLY
+    if from_address == FromAddress.support_placeholder:
+        from_address = FromAddress.SUPPORT
+
     from_email = formataddr((from_name, from_address))
     reply_to = None
     if reply_to_email is not None:

@@ -178,34 +178,28 @@ class Realm(models.Model):
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
     avatar_changes_disabled = models.BooleanField(default=False)  # type: bool
 
-    # Who in the organization is allowed to create streams.
-    CREATE_STREAM_POLICY_MEMBERS = 1
-    CREATE_STREAM_POLICY_ADMINS = 2
-    CREATE_STREAM_POLICY_WAITING_PERIOD = 3
-    create_stream_policy = models.PositiveSmallIntegerField(
-        default=CREATE_STREAM_POLICY_MEMBERS)  # type: int
-    CREATE_STREAM_POLICY_TYPES = [
-        CREATE_STREAM_POLICY_MEMBERS,
-        CREATE_STREAM_POLICY_ADMINS,
-        CREATE_STREAM_POLICY_WAITING_PERIOD,
+    POLICY_MEMBERS_ONLY = 1
+    POLICY_ADMINS_ONLY = 2
+    POLICY_FULL_MEMBERS_ONLY = 3
+
+    COMMON_POLICY_TYPES = [
+        POLICY_MEMBERS_ONLY,
+        POLICY_ADMINS_ONLY,
+        POLICY_FULL_MEMBERS_ONLY,
     ]
 
+    # Who in the organization is allowed to create streams.
+    create_stream_policy = models.PositiveSmallIntegerField(
+        default=POLICY_MEMBERS_ONLY)  # type: int
+
     # Who in the organization is allowed to invite other users to streams.
-    INVITE_TO_STREAM_POLICY_MEMBERS = 1
-    INVITE_TO_STREAM_POLICY_ADMINS = 2
-    INVITE_TO_STREAM_POLICY_WAITING_PERIOD = 3
     invite_to_stream_policy = models.PositiveSmallIntegerField(
-        default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: int
-    INVITE_TO_STREAM_POLICY_TYPES = [
-        INVITE_TO_STREAM_POLICY_MEMBERS,
-        INVITE_TO_STREAM_POLICY_ADMINS,
-        INVITE_TO_STREAM_POLICY_WAITING_PERIOD,
-    ]
+        default=POLICY_MEMBERS_ONLY)  # type: int
 
     USER_GROUP_EDIT_POLICY_MEMBERS = 1
     USER_GROUP_EDIT_POLICY_ADMINS = 2
     user_group_edit_policy = models.PositiveSmallIntegerField(
-        default=INVITE_TO_STREAM_POLICY_MEMBERS)  # type: int
+        default=USER_GROUP_EDIT_POLICY_MEMBERS)  # type: int
     USER_GROUP_EDIT_POLICY_TYPES = [
         USER_GROUP_EDIT_POLICY_MEMBERS,
         USER_GROUP_EDIT_POLICY_ADMINS,
@@ -381,7 +375,7 @@ class Realm(models.Model):
                                    max_length=1)  # type: str
     icon_version = models.PositiveSmallIntegerField(default=1)  # type: int
 
-    # Logo is the horizonal logo we show in top-left of webapp navbar UI.
+    # Logo is the horizontal logo we show in top-left of webapp navbar UI.
     LOGO_DEFAULT = u'D'
     LOGO_UPLOADED = u'U'
     LOGO_SOURCES = (
@@ -799,7 +793,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # with EMAIL_ADDRESS_VISIBILITY_EVERYONE.  For other
     # organizations, it will be a unique value of the form
     # user1234@example.com.  This field exists for backwards
-    # compatibility in Zulip APIs where users are refered to by their
+    # compatibility in Zulip APIs where users are referred to by their
     # email address, not their ID; it should be used in all API use cases.
     #
     # Both fields are unique within a realm (in a case-insensitive fashion).
@@ -1145,27 +1139,27 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def can_create_streams(self) -> bool:
         if self.is_realm_admin:
             return True
-        if self.realm.create_stream_policy == Realm.CREATE_STREAM_POLICY_ADMINS:
+        if self.realm.create_stream_policy == Realm.POLICY_ADMINS_ONLY:
             return False
         if self.is_guest:
             return False
 
-        if self.realm.create_stream_policy == Realm.CREATE_STREAM_POLICY_MEMBERS:
+        if self.realm.create_stream_policy == Realm.POLICY_MEMBERS_ONLY:
             return True
         return not self.is_new_member
 
     def can_subscribe_other_users(self) -> bool:
         if self.is_realm_admin:
             return True
-        if self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_ADMINS:
+        if self.realm.invite_to_stream_policy == Realm.POLICY_ADMINS_ONLY:
             return False
         if self.is_guest:
             return False
 
-        if self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_MEMBERS:
+        if self.realm.invite_to_stream_policy == Realm.POLICY_MEMBERS_ONLY:
             return True
 
-        assert self.realm.invite_to_stream_policy == Realm.INVITE_TO_STREAM_POLICY_WAITING_PERIOD
+        assert self.realm.invite_to_stream_policy == Realm.POLICY_FULL_MEMBERS_ONLY
         return not self.is_new_member
 
     def can_access_public_streams(self) -> bool:
@@ -1181,7 +1175,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             return -1
 
     def format_requestor_for_logs(self) -> str:
-        return "{}/{}".format(self.realm.string_id, self.id)
+        return "{}@{}".format(self.id, self.realm.string_id or 'root')
 
     def set_password(self, password: Optional[str]) -> None:
         if password is None:
@@ -1551,13 +1545,6 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
                                      [stream_name.lower() for stream_name in stream_names],
                                      id_fetcher=stream_to_lower_name)
 
-def get_recipient_cache_key(type: int, type_id: int) -> str:
-    return u"%s:get_recipient:%s:%s" % (cache.KEY_PREFIX, type, type_id,)
-
-@cache_with_key(get_recipient_cache_key, timeout=3600*24*7)
-def get_recipient(type: int, type_id: int) -> Recipient:
-    return Recipient.objects.get(type_id=type_id, type=type)
-
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
 
     # The caller should ensure that user_profile_ids includes
@@ -1565,7 +1552,7 @@ def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
     # we hit another cache to get the recipient.  We may want to
     # unify our caching strategy here.
     huddle = get_huddle(list(user_profile_ids))
-    return get_recipient(Recipient.HUDDLE, huddle.id)
+    return huddle.recipient
 
 def get_huddle_user_ids(recipient: Recipient) -> List[int]:
     assert(recipient.type == Recipient.HUDDLE)
@@ -1679,7 +1666,7 @@ class Message(AbstractMessage):
         Find out whether a message is a stream message by
         looking up its recipient.type.  TODO: Make this
         an easier operation by denormalizing the message
-        type onto Message, either explicity (message.type)
+        type onto Message, either explicitly (message.type)
         or implicitly (message.stream_id is not None).
         '''
         return self.recipient.type == Recipient.STREAM
@@ -2072,7 +2059,7 @@ class Subscription(models.Model):
 
     # Whether the user has since unsubscribed.  We mark Subscription
     # objects as inactive, rather than deleting them, when a user
-    # unsubscribes, so we can preseve user customizations like
+    # unsubscribes, so we can preserve user customizations like
     # notification settings, stream color, etc., if the user later
     # resubscribes.
     active = models.BooleanField(default=True)  # type: bool
@@ -2200,14 +2187,6 @@ def get_user(email: str, realm: Realm) -> UserProfile:
     """
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
-def get_active_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
-    """Variant of get_user_by_delivery_email that excludes deactivated users.
-    See get_user_by_delivery_email docstring for important usage notes."""
-    user_profile = get_user_by_delivery_email(email, realm)
-    if not user_profile.is_active:
-        raise UserProfile.DoesNotExist()
-    return user_profile
-
 def get_active_user(email: str, realm: Realm) -> UserProfile:
     """Variant of get_user_by_email that excludes deactivated users.
     See get_user docstring for important usage notes."""
@@ -2291,6 +2270,8 @@ class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
     huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)  # type: str
+    # Foreign key to the Recipient object for this Huddle.
+    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
 def get_huddle_hash(id_list: List[int]) -> str:
     id_list = sorted(set(id_list))
@@ -2311,6 +2292,8 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
         if created:
             recipient = Recipient.objects.create(type_id=huddle.id,
                                                  type=Recipient.HUDDLE)
+            huddle.recipient = recipient
+            huddle.save(update_fields=["recipient"])
             subs_to_create = [Subscription(recipient=recipient,
                                            user_profile_id=user_profile_id)
                               for user_profile_id in id_list]

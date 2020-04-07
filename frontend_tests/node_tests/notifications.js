@@ -2,7 +2,6 @@
 set_global('$', global.make_zjquery({
     silent: true,
 }));
-set_global('blueslip', global.make_zblueslip());
 set_global('document', {
     hasFocus: function () {
         return true;
@@ -19,7 +18,6 @@ const _navigator = {
     userAgent: 'Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36',
 };
 set_global('navigator', _navigator);
-
 
 zrequire('alert_words');
 zrequire('muting');
@@ -78,7 +76,7 @@ run_test('message_is_notifiable', () => {
     // Not notifiable because it was sent by the current user
     assert.equal(notifications.message_is_notifiable(message), false);
 
-    // Case 2: If the user has already been sent a notificaton about this message,
+    // Case 2: If the user has already been sent a notification about this message,
     //  DO NOT notify the user
     // In this test, all other circumstances should trigger notification
     // EXCEPT notification_sent, which should trump them
@@ -248,7 +246,6 @@ run_test('message_is_notifiable', () => {
     assert.equal(notifications.should_send_audible_notification(message), false);
     assert.equal(notifications.message_is_notifiable(message), true);
 });
-
 
 run_test('basic_notifications', () => {
 

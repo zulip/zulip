@@ -68,6 +68,8 @@ TUTORIAL_ENABLED = True
 CASPER_TESTS = False
 # This is overridden in test_settings.py for the test suites
 RUNNING_OPENAPI_CURL_TEST = False
+# This is overridden in test_settings.py for the test suites
+GENERATE_STRIPE_FIXTURES = False
 
 # Google Compute Engine has an /etc/boto.cfg that is "nicely
 # configured" to work with GCE's storage service.  However, their
@@ -113,7 +115,7 @@ MANAGERS = ADMINS
 ########################################################################
 
 # Local time zone for this installation. Choices can be found here:
-# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
+# https://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
 TIME_ZONE = 'UTC'
@@ -223,10 +225,6 @@ SILENCED_SYSTEM_CHECKS = [
     # backends support the username not being unique; and they do.
     # See: https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
-    # urls.W003 warns against using colons in the name in url(..., name) because colons are used
-    # for namespaces. We need to override a url entry in the social: namespace, so we use
-    # the colon in this way intentionally.
-    "urls.W003",
 ]
 
 ########################################################################
@@ -658,6 +656,7 @@ EMAIL_CONTENT_LOG_PATH = zulip_path("/var/log/zulip/email_content.log")
 LDAP_LOG_PATH = zulip_path("/var/log/zulip/ldap.log")
 LDAP_SYNC_LOG_PATH = zulip_path("/var/log/zulip/sync_ldap_user_data.log")
 QUEUE_ERROR_DIR = zulip_path("/var/log/zulip/queue_error")
+QUEUE_STATS_DIR = zulip_path("/var/log/zulip/queue_stats")
 DIGEST_LOG_PATH = zulip_path("/var/log/zulip/digest.log")
 ANALYTICS_LOG_PATH = zulip_path("/var/log/zulip/analytics.log")
 ANALYTICS_LOCK_DIR = zulip_path("/home/zulip/deployments/analytics-lock-dir")

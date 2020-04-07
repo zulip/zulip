@@ -824,6 +824,11 @@ td.pointer {
     display: block;
 }
 
+.recipient_bar_icon {
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
 .summary_row .message_header {
     padding: 5px 0px 4px 5px;
 }
@@ -1082,7 +1087,6 @@ a.message_label_clickable:hover {
 }
 
 .on_hover_topic_mute {
-    padding-left: 3px;
     opacity: .1;
 }
 
@@ -1360,6 +1364,11 @@ div.focused_table {
     padding-bottom: 0px;
     margin-bottom: 0px;
     white-space: nowrap;
+}
+
+.top-navbar-border {
+    border-right: 1px solid hsl(0, 0%, 88%);
+    border-left: 1px solid hsl(0, 0%, 88%);
 }
 
 #tab_bar {
@@ -1656,8 +1665,6 @@ nav a .no-style {
     display: flex;
     width: 100%;
     height: 40px;
-    border-left: 1px solid hsl(0, 0%, 88%);
-    border-right: 1px solid hsl(0, 0%, 88%);
 
     .navbar-search {
         margin-top: 0px;

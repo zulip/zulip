@@ -40,7 +40,7 @@ def generate_sha1sum_node_modules(setup_dir=None, production=DEFAULT_PRODUCTION)
         # For backwards compatibility, we can't assume yarn.lock exists
         sha1sum.update(subprocess_text_output(['cat', YARN_LOCK_FILE_PATH]).encode('utf8'))
     with open(YARN_PACKAGE_JSON, "r") as f:
-        yarn_version = json.loads(f.read())['version']
+        yarn_version = json.load(f)['version']
         sha1sum.update(yarn_version.encode("utf8"))
     sha1sum.update(subprocess_text_output(['node', '--version']).encode('utf8'))
     yarn_args = get_yarn_args(production=production)

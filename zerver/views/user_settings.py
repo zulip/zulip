@@ -21,7 +21,8 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string, check_int
+from zerver.lib.validator import check_bool, check_string, check_int, check_int_in, \
+    check_string_in
 from zerver.lib.rate_limiter import RateLimited, get_rate_limit_result_from_request
 from zerver.lib.request import JsonableError
 from zerver.lib.timezone import get_all_timezones
@@ -141,6 +142,9 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 
     return json_success(result)
 
+all_timezones = set(get_all_timezones())
+emojiset_choices = set([emojiset['key'] for emojiset in UserProfile.emojiset_choices()])
+
 @human_users_only
 @has_request_variables
 def update_display_settings_backend(
@@ -154,25 +158,19 @@ def update_display_settings_backend(
         translate_emoticons: Optional[bool]=REQ(validator=check_bool, default=None),
         default_language: Optional[bool]=REQ(validator=check_string, default=None),
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
-        emojiset: Optional[str]=REQ(validator=check_string, default=None),
-        demote_inactive_streams: Optional[int]=REQ(validator=check_int, default=None),
-        timezone: Optional[str]=REQ(validator=check_string, default=None)) -> HttpResponse:
+        emojiset: Optional[str]=REQ(validator=check_string_in(
+            emojiset_choices), default=None),
+        demote_inactive_streams: Optional[int]=REQ(validator=check_int_in(
+            UserProfile.DEMOTE_STREAMS_CHOICES), default=None),
+        timezone: Optional[str]=REQ(validator=check_string_in(all_timezones),
+                                    default=None)) -> HttpResponse:
 
+    # We can't use REQ for this widget because
+    # get_available_language_codes requires provisioning to be
+    # complete.
     if (default_language is not None and
             default_language not in get_available_language_codes()):
-        raise JsonableError(_("Invalid language '%s'") % (default_language,))
-
-    if (timezone is not None and
-            timezone not in get_all_timezones()):
-        raise JsonableError(_("Invalid timezone '%s'") % (timezone,))
-
-    if (emojiset is not None and
-            emojiset not in [emojiset_choice['key'] for emojiset_choice in UserProfile.emojiset_choices()]):
-        raise JsonableError(_("Invalid emojiset '%s'") % (emojiset,))
-
-    if (demote_inactive_streams is not None and
-            demote_inactive_streams not in UserProfile.DEMOTE_STREAMS_CHOICES):
-        raise JsonableError(_("Invalid setting value '%s'") % (demote_inactive_streams,))
+        raise JsonableError(_("Invalid default_language"))
 
     request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
     result = {}  # type: Dict[str, Any]

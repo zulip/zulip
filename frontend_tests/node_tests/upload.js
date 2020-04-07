@@ -381,7 +381,6 @@ run_test('uppy_events', () => {
     let uppy_cancel_all_counter = 0;
     let state = {};
 
-
     function uppy_stub() {
         return {
             setMeta: () => {},

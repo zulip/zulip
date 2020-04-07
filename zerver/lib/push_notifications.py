@@ -291,7 +291,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
 
     # res.canonical will contain results when there are duplicate registrations for the same
     # device. The "canonical" registration is the latest registration made by the device.
-    # Ref: http://developer.android.com/google/gcm/adv.html#canonical
+    # Ref: https://developer.android.com/google/gcm/adv.html#canonical
     if 'canonical' in res:
         for reg_id, new_reg_id in res['canonical'].items():
             if reg_id == new_reg_id:
