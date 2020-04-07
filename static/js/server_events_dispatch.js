@@ -118,7 +118,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             message_content_allowed_in_email_notifications: noop,
             signup_notifications_stream_id: noop,
             emails_restricted_to_domains: noop,
-            video_chat_provider: noop,
+            video_chat_provider: compose.update_video_chat_button_display,
             waiting_period_threshold: noop,
             zoom_user_id: noop,
             zoom_api_key: noop,

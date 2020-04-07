@@ -234,6 +234,8 @@ function edit_message(row, raw_content) {
         file_upload_enabled = true;
     }
 
+    const show_video_chat_button = compose.compute_show_video_chat_button();
+
     const form = $(render_message_edit_form({
         is_stream: message.type === 'stream',
         message_id: message.id,
@@ -243,6 +245,7 @@ function edit_message(row, raw_content) {
         topic: message.topic,
         content: raw_content,
         file_upload_enabled: file_upload_enabled,
+        show_video_chat_button: show_video_chat_button,
         minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
     }));
 

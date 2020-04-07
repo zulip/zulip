@@ -48,6 +48,26 @@ function show_all_everyone_warnings() {
     user_acknowledged_all_everyone = false;
 }
 
+exports.compute_show_video_chat_button = function () {
+    const available_providers = page_params.realm_available_video_chat_providers;
+    if (page_params.realm_video_chat_provider === available_providers.disabled.id) {
+        return false;
+    }
+
+    if (page_params.realm_video_chat_provider === available_providers.jitsi_meet.id &&
+         !page_params.jitsi_server_url) {
+        return false;
+    }
+
+    return true;
+};
+
+exports.update_video_chat_button_display = function () {
+    const show_video_chat_button = exports.compute_show_video_chat_button();
+    $("#below-compose-content .video_link").toggle(show_video_chat_button);
+    $(".message-edit-feature-group .video_link").toggle(show_video_chat_button);
+};
+
 exports.clear_all_everyone_warnings = function () {
     $("#compose-all-everyone").hide();
     $("#compose-all-everyone").empty();
@@ -906,6 +926,7 @@ exports.warn_if_mentioning_unsubscribed_user = function (mentioned) {
 };
 
 exports.initialize = function () {
+    $("#below-compose-content .video_link").toggle(exports.compute_show_video_chat_button());
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('keyup', update_fade);
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('change', update_fade);
     $('#compose-textarea').on('keydown', function (event) {
@@ -1048,13 +1069,14 @@ exports.initialize = function () {
             target_textarea = $("#message_edit_content_" + edit_message_id);
         }
 
-        if (page_params.jitsi_server_url === null) {
-            return;
-        }
-
         let video_call_link;
         const video_call_id = util.random_int(100000000000000, 999999999999999);
         const available_providers = page_params.realm_available_video_chat_providers;
+        const show_video_chat_button = exports.compute_show_video_chat_button();
+
+        if (!show_video_chat_button) {
+            return;
+        }
 
         if (page_params.realm_video_chat_provider === available_providers.google_hangouts.id) {
             video_call_link = "https://hangouts.google.com/hangouts/_/" + page_params.realm_google_hangouts_domain + "/" + video_call_id;

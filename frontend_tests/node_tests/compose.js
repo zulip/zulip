@@ -79,6 +79,22 @@ people.small_avatar_url_for_person = function () {
     return 'http://example.com/example.png';
 };
 
+function stub_out_video_calls() {
+    const elem = $("#below-compose-content .video_link");
+    elem.toggle = (show) => {
+        if (show) {
+            elem.show();
+        } else {
+            elem.hide();
+        }
+    };
+}
+
+function reset_jquery() {
+    // Avoid leaks.
+    set_global('$', global.make_zjquery());
+}
+
 const new_user = {
     email: 'new_user@example.com',
     user_id: 101,
@@ -912,17 +928,35 @@ run_test('initialize', () => {
         };
     };
 
+    page_params.realm_available_video_chat_providers = {
+        disabled: {
+            id: 0,
+            name: "disabled",
+        },
+        jitsi_meet: {
+            id: 1,
+            name: "Jitsi Meet",
+        },
+        google_hangouts: {
+            id: 2,
+            name: "Google Hangouts",
+        },
+        zoom: {
+            id: 3,
+            name: "Zoom",
+        },
+    };
+
+    page_params.realm_video_chat_provider =
+        page_params.realm_available_video_chat_providers.disabled.id;
+
+    stub_out_video_calls();
     compose.initialize();
 
     assert(resize_watch_manual_resize_checked);
     assert(xmlhttprequest_checked);
     assert(!$("#compose #attach_files").hasClass("notdisplayed"));
     assert(setup_upload_called);
-
-    function reset_jquery() {
-        // Avoid leaks.
-        set_global('$', global.make_zjquery());
-    }
 
     let compose_actions_start_checked;
 
@@ -942,6 +976,7 @@ run_test('initialize', () => {
         page_params.narrow = true;
 
         reset_jquery();
+        stub_out_video_calls();
         set_up_compose_start_mock({});
 
         compose.initialize();
@@ -953,6 +988,7 @@ run_test('initialize', () => {
         page_params.narrow_topic = 'testing';
 
         reset_jquery();
+        stub_out_video_calls();
         set_up_compose_start_mock({topic: 'testing'});
 
         compose.initialize();
@@ -964,6 +1000,7 @@ run_test('initialize', () => {
         $("#compose-send-button").attr('disabled', 'disabled');
 
         reset_jquery();
+        stub_out_video_calls();
         compose.initialize();
 
         compose.abort_xhr();
@@ -1381,16 +1418,6 @@ run_test('on_events', () => {
                 to_$: () => textarea,
             },
         };
-        page_params.realm_available_video_chat_providers = {
-            google_hangouts: {
-                id: 2,
-                name: "Google Hangouts",
-            },
-            zoom: {
-                id: 3,
-                name: "Zoom",
-            },
-        };
 
         compose_ui.insert_syntax_and_focus = function (syntax) {
             syntax_to_insert = syntax;
@@ -1401,10 +1428,20 @@ run_test('on_events', () => {
         $('#compose-textarea').val('');
 
         handler(ev);
+        assert(!called);
+
+        page_params.realm_video_chat_provider =
+            page_params.realm_available_video_chat_providers.jitsi_meet.id;
+        handler(ev);
 
         // video link ids consist of 15 random digits
         let video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
         assert(video_link_regex.test(syntax_to_insert));
+
+        page_params.jitsi_server_url = null;
+        called = false;
+        handler(ev);
+        assert(!called);
 
         page_params.realm_video_chat_provider =
             page_params.realm_available_video_chat_providers.google_hangouts.id;
@@ -1430,11 +1467,6 @@ run_test('on_events', () => {
         video_link_regex = /\[Click to join video call\]\(example\.zoom\.com\)/;
         assert(video_link_regex.test(syntax_to_insert));
 
-        page_params.jitsi_server_url = null;
-        called = false;
-
-        handler(ev);
-        assert(!called);
     }());
 
     (function test_markdown_preview_compose_clicked() {
@@ -1671,4 +1703,34 @@ run_test('narrow_button_titles', () => {
     compose.update_closed_compose_buttons_for_stream();
     assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New topic"));
     assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
+});
+
+run_test('test_video_chat_button_toggle', () => {
+    reset_jquery();
+    stub_out_video_calls();
+
+    page_params.realm_video_chat_provider =
+        page_params.realm_available_video_chat_providers.disabled.id;
+    compose.initialize();
+    assert.equal($("#below-compose-content .video_link").visible(), false);
+
+    reset_jquery();
+    stub_out_video_calls();
+    page_params.realm_video_chat_provider =
+        page_params.realm_available_video_chat_providers.jitsi_meet.id;
+    compose.initialize();
+    assert.equal($("#below-compose-content .video_link").visible(), false);
+
+    reset_jquery();
+    stub_out_video_calls();
+    page_params.jitsi_server_url = 'https://meet.jit.si';
+    compose.initialize();
+    assert.equal($("#below-compose-content .video_link").visible(), true);
+
+    reset_jquery();
+    stub_out_video_calls();
+    page_params.realm_video_chat_provider =
+        page_params.realm_available_video_chat_providers.google_hangouts.id;
+    compose.initialize();
+    assert.equal($("#below-compose-content .video_link").visible(), true);
 });
