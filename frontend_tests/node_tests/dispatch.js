@@ -50,6 +50,10 @@ set_global('settings_bots', {
     update_bot_permissions_ui: noop,
 });
 
+set_global('compose', {
+    update_video_chat_button_display: noop,
+});
+
 set_global('settings_exports', {
     populate_exports_table: function (exports) {
         return exports;

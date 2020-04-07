@@ -305,6 +305,10 @@ class Realm(models.Model):
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
 
     VIDEO_CHAT_PROVIDERS = {
+        'disabled': {
+            'name': u"None",
+            'id': 0
+        },
         'jitsi_meet': {
             'name': u"Jitsi Meet",
             'id': 1

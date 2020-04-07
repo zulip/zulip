@@ -44,7 +44,9 @@
                     {{#if file_upload_enabled}}
                     <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files_{{message_id}}" href="#" title="{{t "Attach files" }}"></a>
                     {{/if}}
+                    {{#if show_video_chat_button}}
                     <a class="message-control-button fa fa-video-camera video_link" aria-hidden="true" href="#" data-message-id="{{message_id}}" title="{{t "Add video call" }}"></a>
+                    {{/if}}
                     <a id="undo_markdown_preview_{{message_id}}" class="message-control-button fa fa-edit" aria-hidden="true" style="display:none;" title="{{t 'Write' }}"></a>
                     <a id="markdown_preview_{{message_id}}" class="message-control-button fa fa-eye" aria-hidden="true" title="{{t 'Preview' }}"></a>
                 </div>
