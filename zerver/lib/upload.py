@@ -1,14 +1,19 @@
 from typing import Optional, Tuple, Any
 
+from datetime import timedelta
+
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.files import File
+from django.core.signing import TimestampSigner, BadSignature
 from django.http import HttpRequest
+from django.urls import reverse
 from jinja2 import Markup as mark_safe
 import unicodedata
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import JsonableError, ErrorCode
+from zerver.lib.utils import generate_random_token
 
 from boto.s3.bucket import Bucket
 from boto.s3.key import Key
@@ -19,10 +24,9 @@ from zerver.models import get_user_profile_by_id
 from zerver.models import Attachment
 from zerver.models import Realm, RealmEmoji, UserProfile, Message
 
-from zerver.lib.utils import generate_random_token
-
 import urllib
 import base64
+import binascii
 import os
 import re
 from PIL import Image, ImageOps, ExifTags
@@ -660,6 +664,23 @@ def get_local_file_path(path_id: str) -> Optional[str]:
         return local_path
     else:
         return None
+
+LOCAL_FILE_ACCESS_TOKEN_SALT = "local_file_"
+
+def generate_unauthed_file_access_url(path_id: str) -> str:
+    signed_data = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT).sign(path_id)
+    token = base64.b16encode(signed_data.encode('utf-8')).decode('utf-8')
+    return reverse('zerver.views.upload.serve_local_file_unauthed', args=[token, ])
+
+def get_local_file_path_id_from_token(token: str) -> Optional[str]:
+    signer = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT)
+    try:
+        signed_data = base64.b16decode(token).decode('utf-8')
+        path_id = signer.unsign(signed_data, max_age=timedelta(seconds=60))
+    except (BadSignature, binascii.Error):
+        return None
+
+    return path_id
 
 class LocalUploadBackend(ZulipUploadBackend):
     def upload_message_file(self, uploaded_file_name: str, uploaded_file_size: int,
