@@ -797,20 +797,32 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, 'stream_name1')
         do_change_is_admin(user_profile, False)
 
-        stream_id = get_stream('stream_name1', user_profile.realm).id
-        result = self.client_patch('/json/streams/%d' % (stream_id,),
-                                   {'stream_post_policy': ujson.dumps(
-                                       Stream.STREAM_POST_POLICY_ADMINS)})
-        self.assert_json_error(result, 'Must be an organization administrator')
-
         do_set_realm_property(user_profile.realm, 'waiting_period_threshold', 10)
-        self.assertTrue(user_profile.is_new_member)
 
-        stream_id = get_stream('stream_name1', user_profile.realm).id
-        result = self.client_patch('/json/streams/%d' % (stream_id,),
-                                   {'stream_post_policy': ujson.dumps(
-                                       Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)})
-        self.assert_json_error(result, 'Must be an organization administrator')
+        def test_non_admin(how_old: int, is_new: bool, policy: int) -> None:
+            user_profile.date_joined = timezone_now() - timedelta(days=how_old)
+            user_profile.save()
+            self.assertEqual(user_profile.is_new_member, is_new)
+            stream_id = get_stream('stream_name1', user_profile.realm).id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                       {'stream_post_policy': ujson.dumps(policy)})
+            self.assert_json_error(result, 'Must be an organization administrator')
+
+        policies = [Stream.STREAM_POST_POLICY_ADMINS, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS]
+
+        for policy in policies:
+            test_non_admin(how_old=15, is_new=False, policy=policy)
+            test_non_admin(how_old=5, is_new=True, policy=policy)
+
+        do_change_is_admin(user_profile, True)
+
+        for policy in policies:
+            stream_id = get_stream('stream_name1', user_profile.realm).id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                       {'stream_post_policy': ujson.dumps(policy)})
+            self.assert_json_success(result)
+            stream = get_stream('stream_name1', user_profile.realm)
+            self.assertEqual(stream.stream_post_policy, policy)
 
     def set_up_stream_for_deletion(self, stream_name: str, invite_only: bool=False,
                                    subscribed: bool=True) -> Stream:
