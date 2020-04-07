@@ -134,11 +134,11 @@ def main(options: argparse.Namespace) -> int:
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
 
-    update_authors_json_paths = ["tools/update-authors-json", "zerver/tests/fixtures/authors.json"]
+    update_authors_json_paths = ["tools/fetch-contributor-data", "zerver/tests/fixtures/authors.json"]
     if file_or_package_hash_updated(update_authors_json_paths, "update_authors_json_hash", options.is_force):
-        run(["tools/update-authors-json", "--use-fixture"])
+        run(["tools/fetch-contributor-data", "--use-fixture"])
     else:
-        print("No need to run `tools/update-authors-json`.")
+        print("No need to run `tools/fetch-contributor-data`.")
 
     email_source_paths = ["scripts/setup/inline-email-css", "templates/zerver/emails/email.css"]
     email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
