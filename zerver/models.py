@@ -2015,6 +2015,9 @@ def validate_attachment_request(user_profile: UserProfile, path_id: str) -> Opti
     if user_profile == attachment.owner:
         # If you own the file, you can access it.
         return True
+
+    # TODO: Add a rule similar to the next line for guest access to web-public streams.
+
     if (attachment.is_realm_public and attachment.realm == user_profile.realm and
             user_profile.can_access_public_streams()):
         # Any user in the realm can access realm-public files

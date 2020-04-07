@@ -272,6 +272,8 @@ def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) ->
     if user_profile is None:
         return False, False
 
+    # TODO: Check if there are any web-public streams, and if so, do is_guest.
+
     if user_profile.is_guest:
         return False, False
 

@@ -2273,6 +2273,10 @@ def validate_sender_can_write_to_stream(sender: UserProfile,
         elif sender.is_new_member:
             raise JsonableError(_("New members cannot send to this stream."))
 
+    if stream.is_web_public:
+        # Guest users can write to web_public streams
+        return
+
     if not (stream.invite_only or sender.is_guest):
         # This is a public stream and sender is not a guest user
         return
@@ -2647,6 +2651,10 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
         # We could put an AssertionError here; in that we don't have
         # any code paths that would allow a guest user to access other
         # streams in the first place.
+
+    # Even guest users can join web-public streams
+    if stream_dict["is_web_public"]:
+        return
 
     if not user_profile.can_access_public_streams() and not stream_dict["invite_only"]:
         raise JsonableError(_("Subscriber data is not available for this stream"))
@@ -4893,7 +4901,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         if stream["invite_only"] and not (sub["active"] or user_profile.is_realm_admin):
             subscribers = None
         # Guest users lose access to subscribers when they are unsubscribed.
-        if not sub["active"] and user_profile.is_guest:
+        if not sub["active"] and user_profile.is_guest and not sub["is_web_public"]:
             subscribers = None
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers
@@ -4905,6 +4913,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         else:
             unsubscribed.append(stream_dict)
 
+    # TODO: This function needs to provide a filtered subset of just
+    # web_public streams for guest users in organizations that have them.
     all_streams_id_set = set(all_streams_id)
     if user_profile.can_access_public_streams():
         never_subscribed_stream_ids = all_streams_id_set - sub_unsub_stream_ids
@@ -5432,6 +5442,7 @@ def do_get_streams(
     if include_all_active and not user_profile.is_api_super_user:
         raise JsonableError(_("User not authorized for this query"))
 
+    # TODO: include_public should work with web-public streams for guest users.
     include_public = include_public and user_profile.can_access_public_streams()
     # Start out with all streams in the realm with subscribers
     query = get_occupied_streams(user_profile.realm)

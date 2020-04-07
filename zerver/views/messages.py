@@ -592,6 +592,8 @@ def ok_to_include_history(narrow: OptionalNarrowListT, user_profile: UserProfile
                     include_history = can_access_stream_history_by_id(user_profile, operand)
             elif (term['operator'] == "streams" and term['operand'] == "public"
                     and not term.get('negated', False) and user_profile.can_access_public_streams()):
+                # TODO: Make streams:public work for guest users
+                # accessing web_public streams only.
                 include_history = True
         # Disable historical messages if the user is narrowing on anything
         # that's a property on the UserMessage table.  There cannot be

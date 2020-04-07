@@ -308,9 +308,9 @@ exports.get_updated_unsorted_subs = function () {
         exports.update_calculated_fields(sub);
     }
 
-    // We don't display unsubscribed streams to guest users.
+    // We don't display unsubscribed streams to guest users unless they are web_public.
     if (page_params.is_guest) {
-        all_subs = all_subs.filter(sub => sub.subscribed);
+        all_subs = all_subs.filter(sub => sub.subscribed || sub.is_web_public);
     }
 
     return all_subs;
@@ -450,15 +450,14 @@ exports.update_calculated_fields = function (sub) {
     // subscribed users can unsubscribe.
     // Guest users can't subscribe themselves to any stream.
     sub.should_display_subscription_button = sub.subscribed ||
-        !page_params.is_guest && !sub.invite_only;
+        !(page_params.is_guest && !sub.is_web_public) && !sub.invite_only;
     sub.should_display_preview_button = sub.subscribed || !sub.invite_only ||
                                         sub.previously_subscribed;
     sub.can_change_stream_permissions = page_params.is_admin && (
         !sub.invite_only || sub.subscribed);
     // User can add other users to stream if stream is public or user is subscribed to stream.
-    // Guest users can't access subscribers of any(public or private) non-subscribed streams.
-    sub.can_access_subscribers = page_params.is_admin || sub.subscribed || !page_params.is_guest &&
-                                 !sub.invite_only;
+    // Guest users can only access subscribers of web_public streams they can join.
+    sub.can_access_subscribers = page_params.is_admin || sub.should_display_preview_button;
     sub.preview_url = hash_util.by_stream_uri(sub.stream_id);
     sub.can_add_subscribers = !page_params.is_guest && (!sub.invite_only || sub.subscribed);
     if (sub.rendered_description !== undefined) {
