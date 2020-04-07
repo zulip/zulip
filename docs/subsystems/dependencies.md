@@ -323,15 +323,6 @@ comes from the [pygments][] package.  `tools/setup/build_pygments_data` is
 responsible for generating `static/generated/pygments_data.js` so that
 our JavaScript markdown processor has access to the supported list.
 
-### Authors data
-
-Zulip maintains data on the developers who have contributed the most to
-the current version of Zulip in the /about page.  These data are
-fetched using the GitHub API with `tools/fetch-contributor-data`.  In
-development, it just returns some basic test data to avoid adding load
-to GitHub's APIs unnecessarily; it's primarily run as part of building
-a release tarball.
-
 ## Modifying provisioning
 
 When making changes to Zulip's provisioning process or dependencies,

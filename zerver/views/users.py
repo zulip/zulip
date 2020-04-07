@@ -1,7 +1,7 @@
 from typing import Union, Optional, Dict, Any, List
 
 import ujson
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 from django.utils.translation import ugettext as _
 from django.shortcuts import redirect, render
@@ -23,7 +23,6 @@ from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
-from zerver.lib.storage import static_path
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.users import get_api_key
@@ -494,8 +493,14 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     return json_success(result)
 
 def team_view(request: HttpRequest) -> HttpResponse:
-    with open(static_path('generated/github-contributors.json')) as f:
-        data = ujson.load(f)
+    if not settings.ZILENCER_ENABLED:
+        return HttpResponseRedirect('https://zulipchat.com/team/', status=301)
+
+    try:
+        with open(settings.CONTRIBUTOR_DATA_FILE_PATH) as f:
+            data = ujson.load(f)
+    except FileNotFoundError:
+        data = {'contrib': {}, 'date': "Never ran."}
 
     return render(
         request,
