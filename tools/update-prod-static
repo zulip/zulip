@@ -55,7 +55,7 @@ run(['./tools/setup/build_pygments_data'], stdout=fp, stderr=fp)
 run(['./tools/webpack'], stdout=fp, stderr=fp)
 
 # Generate /team page markdown for authors
-authors_cmd = ['./tools/update-authors-json']
+authors_cmd = ['./tools/fetch-contributor-data']
 if os.environ.get("TRAVIS"):
     authors_cmd.append("--use-fixture")
 if args.authors_not_required:

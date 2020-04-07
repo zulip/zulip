@@ -340,7 +340,7 @@ class AboutPageTest(ZulipTestCase):
         if not os.path.exists(static_path('generated/github-contributors.json')):
             # Copy the fixture file in `zerver/tests/fixtures` to `static/generated`
             update_script = os.path.join(os.path.dirname(__file__),
-                                         '../../tools/update-authors-json')  # nocoverage
+                                         '../../tools/fetch-contributor-data')  # nocoverage
             subprocess.check_call([update_script, '--use-fixture'])  # nocoverage
 
     def test_endpoint(self) -> None:
