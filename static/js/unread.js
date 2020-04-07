@@ -393,8 +393,9 @@ exports.get_unread_messages = function (messages) {
 
 exports.update_unread_topics = function (msg, event) {
     const new_topic = util.get_edit_event_topic(event);
+    const {new_stream_id} = event;
 
-    if (new_topic === undefined) {
+    if (new_topic === undefined && new_stream_id === undefined) {
         return;
     }
 
@@ -407,8 +408,8 @@ exports.update_unread_topics = function (msg, event) {
     );
 
     exports.unread_topic_counter.add(
-        msg.stream_id,
-        new_topic,
+        new_stream_id || msg.stream_id,
+        new_topic || msg.topic,
         msg.id
     );
 };
