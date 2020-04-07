@@ -1247,6 +1247,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
                 ('email', check_string),
                 ('avatar_url', check_none_or(check_string)),
+                ('avatar_version', check_int),
                 ('full_name', check_string),
                 ('is_admin', check_bool),
                 ('is_bot', check_bool),
@@ -1273,6 +1274,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
                 ('email', check_string),
                 ('avatar_url', check_none_or(check_string)),
+                ('avatar_version', check_int),
                 ('full_name', check_string),
                 ('is_active', check_bool),
                 ('is_admin', check_bool),
@@ -1534,6 +1536,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user_id', check_int),
                 ('avatar_url', check_string),
                 ('avatar_url_medium', check_string),
+                ('avatar_version', check_int),
                 ('avatar_source', check_string),
             ])),
         ])
@@ -1547,11 +1550,12 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
-                ('email', check_string),
-                ('user_id', check_int),
+                ('avatar_source', check_string),
                 ('avatar_url', check_none_or(check_string)),
                 ('avatar_url_medium', check_none_or(check_string)),
-                ('avatar_source', check_string),
+                ('avatar_version', check_int),
+                ('email', check_string),
+                ('user_id', check_int),
             ])),
         ])
         events = self.do_test(
@@ -1589,9 +1593,10 @@ class EventsRegisterTest(ZulipTestCase):
             ('person', check_dict_only([
                 ('email', check_string),
                 ('user_id', check_int),
+                ('avatar_source', check_string),
                 ('avatar_url', check_string),
                 ('avatar_url_medium', check_string),
-                ('avatar_source', check_string),
+                ('avatar_version', check_int),
             ])),
         ])
         do_set_realm_property(self.user_profile.realm, "email_address_visibility",

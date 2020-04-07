@@ -672,14 +672,14 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         expected_keys_for_iago = {
             "delivery_email",
-            "email", "user_id", "avatar_url", "is_admin", "is_guest", "is_bot",
+            "email", "user_id", "avatar_url", "avatar_version", "is_admin", "is_guest", "is_bot",
             "full_name", "timezone", "is_active", "date_joined", "profile_data"}
         self.assertEqual(set(iago_raw_data.keys()), expected_keys_for_iago)
         self.assertNotEqual(iago_raw_data["profile_data"], {})
 
         expected_keys_for_test_bot = {
             "delivery_email",
-            "email", "user_id", "avatar_url", "is_admin", "is_guest", "is_bot", "full_name",
+            "email", "user_id", "avatar_url", "avatar_version", "is_admin", "is_guest", "is_bot", "full_name",
             "timezone", "is_active", "date_joined", "bot_type", "bot_owner_id"}
         self.assertEqual(set(test_bot_raw_data.keys()), expected_keys_for_test_bot)
         self.assertEqual(test_bot_raw_data["bot_type"], 1)

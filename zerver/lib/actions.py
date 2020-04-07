@@ -3263,10 +3263,11 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
                    bot_owner_user_ids(user_profile))
 
     payload = dict(
-        email=user_profile.email,
         avatar_source=user_profile.avatar_source,
         avatar_url=avatar_url(user_profile),
         avatar_url_medium=avatar_url(user_profile, medium=True),
+        avatar_version=user_profile.avatar_version,
+        email=user_profile.email,
         user_id=user_profile.id
     )
 

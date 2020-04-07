@@ -10,6 +10,15 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 6**
+* [`GET /events`](/api/get-events-from-queue): `realm_user` events to
+  update a user's avatar now include the `avatar_version` field, which
+  is important for correctly refetching medium-size avatar images when
+  the user's avatar changes.
+* [`GET /users`](/api/get-all-users) and [`GET
+  /users/{user_id}`](/api/get-user): User objects now contain the
+  `avatar_version` field as well.
+
 **Feature level 5**
 * [`GET /events`](/api/get-events-from-queue): `realm_bot` events,
   sent when changes are made to bot users, now contain an
