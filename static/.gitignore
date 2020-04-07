@@ -9,7 +9,7 @@
 /generated/emoji
 # From passing pygments data to the frontend
 /generated/pygments_data.js
-# From `tools/update-authors-json`
+# From `tools/fetch-contributor-data`
 /generated/github-contributors.json
 
 # Legacy emoji data directory
