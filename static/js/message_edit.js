@@ -460,9 +460,6 @@ exports.end = function (row) {
         currently_editing_messages.delete(message.id);
         current_msg_list.hide_edit_message(row);
     }
-    if (row !== undefined) {
-        current_msg_list.hide_edit_topic_on_recipient_row(row);
-    }
     condense.show_message_expander(row);
     row.find(".message_reactions").show();
 
@@ -481,10 +478,7 @@ exports.save = function (row, from_topic_edited_only) {
         message_id = rows.id(row);
     }
     const message = current_msg_list.get(message_id);
-    let changed = false;
-    let edit_locally_echoed = false;
 
-    const new_content = row.find(".message_edit_content").val();
     let topic_changed = false;
     let new_topic;
     const old_topic = message.topic;
@@ -495,8 +489,21 @@ exports.save = function (row, from_topic_edited_only) {
         } else {
             new_topic = row.find(".message_edit_topic").val();
         }
+
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
+
+        if (from_topic_edited_only && !topic_changed) {
+            // this means the inline_topic_edit was opened and submitted without
+            // changing anything, therefore, we should just close the inline topic edit.
+            current_msg_list.hide_edit_topic_on_recipient_row(row);
+            return;
+        }
     }
+
+    const new_content = row.find(".message_edit_content").val();
+    let changed = false;
+    let edit_locally_echoed = false;
+
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
     if (message.locally_echoed) {
@@ -523,6 +530,7 @@ exports.save = function (row, from_topic_edited_only) {
         request.content = new_content;
         changed = true;
     }
+
     if (!changed) {
         // If they didn't change anything, just cancel it.
         exports.end(row);
