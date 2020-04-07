@@ -118,22 +118,31 @@ function draft_notify() {
 
 exports.update_draft = function () {
     const draft = exports.snapshot_message();
+
+    if (draft === undefined) {
+        // The user cleared the compose box, which means
+        // there is nothing to save here.  Don't obliterate
+        // the existing draft yet--the user may have mistakenly
+        // hit delete after select-all or something.
+        // Just do nothing.
+        return;
+    }
+
     const draft_id = $("#compose-textarea").data("draft-id");
 
     if (draft_id !== undefined) {
-        if (draft !== undefined) {
-            draft_model.editDraft(draft_id, draft);
-            draft_notify();
-        } else {
-            draft_model.deleteDraft(draft_id);
-        }
-    } else {
-        if (draft !== undefined) {
-            const new_draft_id = draft_model.addDraft(draft);
-            $("#compose-textarea").data("draft-id", new_draft_id);
-            draft_notify();
-        }
+        // We don't save multiple drafts of the same message;
+        // just update the existing draft.
+        draft_model.editDraft(draft_id, draft);
+        draft_notify();
+        return;
     }
+
+    // We have never saved a draft for this message, so add
+    // one.
+    const new_draft_id = draft_model.addDraft(draft);
+    $("#compose-textarea").data("draft-id", new_draft_id);
+    draft_notify();
 };
 
 exports.delete_draft_after_send = function () {
