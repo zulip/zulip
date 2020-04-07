@@ -12,35 +12,34 @@ from typing import Any, Dict, List, Optional, Union
 from typing_extensions import TypedDict
 
 import os
-import shutil
 import sys
 import argparse
 from time import sleep
 from datetime import date
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from scripts.lib.setup_path import setup_path
+setup_path()
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+from django.conf import settings
+
 import requests
 import json
 
-FIXTURE_FILE = os.path.join(os.path.dirname(__file__), '../zerver/tests/fixtures/authors.json')
 duplicate_commits_file = os.path.join(os.path.dirname(__file__), 'duplicate_commits.json')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--max-retries', type=int, default=3,
                     help='Number of times to retry fetching data from Github')
-# In Travis CI and development environment, we use test fixture to avoid
-# fetching from Github constantly.
-parser.add_argument('--use-fixture', action='store_true', default=False,
-                    help='Use fixture data instead of fetching from Github')
 parser.add_argument('--not-required', action='store_true', default=False,
                     help='Consider failures to reach GitHub nonfatal')
 args = parser.parse_args()
-
 
 ContributorsJSON = TypedDict('ContributorsJSON', {
     'date': str,
     'contrib': List[Dict[str, Union[str, int]]],
 })
-
 
 def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]]]]:
     r = requests.get(repo_link, verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))  # type: requests.Response
@@ -54,8 +53,7 @@ def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
             print(e)
             sys.exit(1)
 
-
-def run_production() -> None:
+def update_contributor_data_file() -> None:
     """
     Get contributors data from Github and insert them into a temporary
     dictionary. Retry fetching each repository if responded with non HTTP 200
@@ -140,18 +138,7 @@ def run_production() -> None:
         contributor_data['name'] = contributor_name
         data['contrib'].append(contributor_data)
 
-    write_to_disk(data, 'static/generated/github-contributors.json')
+    write_to_disk(data, settings.CONTRIBUTOR_DATA_FILE_PATH)
 
-
-def copy_fixture() -> None:
-    """
-    Copy test fixture file from zerver/tests/fixtures. This is used to avoid
-    constantly fetching data from Github during testing.
-    """
-    shutil.copyfile(FIXTURE_FILE, 'static/generated/github-contributors.json')
-
-
-if args.use_fixture:
-    copy_fixture()
-else:
-    run_production()
+if __name__ == "__main__":
+    update_contributor_data_file()

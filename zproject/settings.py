@@ -904,6 +904,11 @@ LOGGING = {
     }
 }  # type: Dict[str, Any]
 
+if DEVELOPMENT:
+    CONTRIBUTOR_DATA_FILE_PATH = os.path.join(DEPLOY_ROOT, 'zerver/tests/fixtures/authors.json')
+else:
+    CONTRIBUTOR_DATA_FILE_PATH = '/var/lib/zulip/github-contributors.json'
+
 LOGIN_REDIRECT_URL = '/'
 
 # Client-side polling timeout for get_events, in milliseconds.

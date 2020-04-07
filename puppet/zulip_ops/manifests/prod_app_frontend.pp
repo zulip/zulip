@@ -29,6 +29,14 @@ class zulip_ops::prod_app_frontend {
     source  => 'puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror',
   }
 
+  file { '/etc/cron.d/fetch-contributor-data':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/cron.d/fetch-contributor-data',
+  }
+
   # Prod has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dist.pem
 }
