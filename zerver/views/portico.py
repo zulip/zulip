@@ -6,7 +6,6 @@ import ujson
 
 from zerver.context_processors import get_realm_from_request
 from zerver.decorator import redirect_to_login
-from zerver.lib.storage import static_path
 from zerver.models import Realm
 from version import LATEST_DESKTOP_VERSION
 
@@ -32,8 +31,14 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     return render(request, "zerver/plans.html", context={"realm_plan_type": realm_plan_type})
 
 def team_view(request: HttpRequest) -> HttpResponse:
-    with open(static_path('generated/github-contributors.json')) as f:
-        data = ujson.load(f)
+    if not settings.ZILENCER_ENABLED:
+        return HttpResponseRedirect('https://zulipchat.com/team/', status=301)
+
+    try:
+        with open(settings.CONTRIBUTOR_DATA_FILE_PATH) as f:
+            data = ujson.load(f)
+    except FileNotFoundError:
+        data = {'contrib': {}, 'date': "Never ran."}
 
     return render(
         request,

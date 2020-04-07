@@ -10,8 +10,5 @@
 /generated/emoji-styles
 # From passing pygments data to the frontend
 /generated/pygments_data.json
-# From `tools/fetch-contributor-data`
-/generated/github-contributors.json
-
 # Legacy emoji data directory
 /third/emoji-data

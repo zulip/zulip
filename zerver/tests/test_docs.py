@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-import subprocess
 import ujson
+import mock
 
 from django.conf import settings
 from django.test import TestCase, override_settings
@@ -10,7 +10,6 @@ from django.http import HttpResponse
 from typing import Any, Dict, List
 
 from zerver.lib.integrations import INTEGRATIONS
-from zerver.lib.storage import static_path
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
@@ -329,24 +328,22 @@ class IntegrationTest(TestCase):
             '<a target="_blank" href="/#streams">streams page</a>')
 
 class AboutPageTest(ZulipTestCase):
-    def setUp(self) -> None:
-        """ Manual installation which did not execute `tools/provision`
-        would not have the `static/generated/github-contributors.json` fixture
-        file.
-        """
-        super().setUp()
-        # This block has unreliable test coverage due to the implicit
-        # caching here, so we exclude it from coverage.
-        if not os.path.exists(static_path('generated/github-contributors.json')):
-            # Copy the fixture file in `zerver/tests/fixtures` to `static/generated`
-            update_script = os.path.join(os.path.dirname(__file__),
-                                         '../../tools/fetch-contributor-data')  # nocoverage
-            subprocess.check_call([update_script, '--use-fixture'])  # nocoverage
-
     def test_endpoint(self) -> None:
-        """ We can't check the contributors list since it is rendered client-side """
         result = self.client_get('/team/')
         self.assert_in_success_response(['Our amazing community'], result)
+        self.assert_in_success_response(['2017-11-20'], result)
+        self.assert_in_success_response(['timabbott', 'showell', 'gnprice', 'rishig'], result)
+
+        with mock.patch("zerver.views.portico.open", side_effect=FileNotFoundError) as m:
+            result = self.client_get('/team/')
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_success_response(['Never ran'], result)
+            m.called_once()
+
+        with self.settings(ZILENCER_ENABLED=False):
+            result = self.client_get('/team/')
+            self.assertEqual(result.status_code, 301)
+            self.assertEqual(result["Location"], "https://zulipchat.com/team/")
 
     def test_split_by(self) -> None:
         """Utility function primarily used in authors page"""
