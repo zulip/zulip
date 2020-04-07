@@ -44,6 +44,11 @@ DEFAULT_EMOJI_SIZE = 64
 MAX_EMOJI_GIF_SIZE = 128
 MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024 * 1024  # 128 kb
 
+# Duration that the signed upload URLs that we redirect to when
+# accessing uploaded files are available for clients to fetch before
+# they expire.
+SIGNED_UPLOAD_URL_DURATION = 60
+
 INLINE_MIME_TYPES = [
     "application/pdf",
     "image/gif",
@@ -323,7 +328,8 @@ def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Opti
 
 def get_signed_upload_url(path: str) -> str:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    return conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=path)
+    return conn.generate_url(SIGNED_UPLOAD_URL_DURATION, 'GET',
+                             bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=path)
 
 def get_realm_for_filename(path: str) -> Optional[int]:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
