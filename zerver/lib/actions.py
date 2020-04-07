@@ -3257,6 +3257,7 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
         email=user_profile.email,
         avatar_source=user_profile.avatar_source,
         avatar_url=avatar_url(user_profile),
+        avatar_version=user_profile.avatar_version,
         avatar_url_medium=avatar_url(user_profile, medium=True),
         user_id=user_profile.id
     )
