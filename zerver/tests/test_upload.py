@@ -1574,9 +1574,18 @@ class S3Test(ZulipTestCase):
         self.assertEqual(base, uri[:len(base)])
 
         response = self.client_get(uri)
+        self.assertEqual(response.status_code, 302)
         redirect_url = response['Location']
-
         self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())
+
+        # Now try the format that's supposed to return 200s
+        result = self.client_get(uri + "?url_only=true")
+        self.assert_json_success(result)
+        data = result.json()
+        url_only_url = data['url']
+        self.assertEqual(b"zulip!", urllib.request.urlopen(url_only_url).read().strip())
+        # Verify the URLs are different.
+        self.assertEqual(url_only_url, redirect_url)
 
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"

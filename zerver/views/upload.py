@@ -5,16 +5,21 @@ from django.utils.cache import patch_cache_control
 from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_success, json_error
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
     get_signed_upload_url, check_upload_within_quota, INLINE_MIME_TYPES
+from zerver.lib.validator import check_bool
 from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
 from django_sendfile import sendfile
 from mimetypes import guess_type
 
-def serve_s3(request: HttpRequest, url_path: str) -> HttpResponse:
-    uri = get_signed_upload_url(url_path)
-    return redirect(uri)
+def serve_s3(request: HttpRequest, url_path: str, url_only: bool) -> HttpResponse:
+    url = get_signed_upload_url(url_path)
+    if url_only:
+        return json_success(dict(url=url))
+
+    return redirect(url)
 
 def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
     local_path = get_local_file_path(path_id)
@@ -46,8 +51,17 @@ def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
     patch_cache_control(response, private=True, immutable=True)
     return response
 
+@has_request_variables
 def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
-                       realm_id_str: str, filename: str) -> HttpResponse:
+                       realm_id_str: str, filename: str,
+                       url_only: bool=REQ(validator=check_bool,
+                                          default=False)) -> HttpResponse:
+    """
+    If the client passes url_only, we should return a signed, short-lived URL
+    that the client can use for native mobile download, rather than serving a redirect.
+
+    TODO: Add support for this flow with the LOCAL_UPLOADS_DIR backend.
+    """
     path_id = "%s/%s" % (realm_id_str, filename)
     is_authorized = validate_attachment_request(user_profile, path_id)
 
@@ -58,7 +72,7 @@ def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
     if settings.LOCAL_UPLOADS_DIR is not None:
         return serve_local(request, path_id)
 
-    return serve_s3(request, path_id)
+    return serve_s3(request, path_id, url_only)
 
 def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if len(request.FILES) == 0:
