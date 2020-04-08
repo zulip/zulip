@@ -864,11 +864,9 @@ run_test('create_sub', () => {
     const new_sub = stream_data.create_sub_from_server_data('India', india); // make sure sub doesn't get created twice
     assert.equal(india_sub, new_sub);
 
-    blueslip.expect('fatal', 'We cannot create a sub without a stream_id');
-    const ok = stream_data.create_sub_from_server_data('Canada', canada);
-    assert.equal(ok, undefined);
-    assert.equal(blueslip.get_test_logs('fatal').length, 1);
-    blueslip.reset();
+    assert.throws(() => {
+        stream_data.create_sub_from_server_data('Canada', canada);
+    }, {message: 'We cannot create a sub without a stream_id'});
 
     const antarctica_sub = stream_data.create_sub_from_server_data('Antarctica', antarctica);
     assert(antarctica_sub);
