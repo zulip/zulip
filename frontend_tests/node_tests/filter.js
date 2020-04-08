@@ -1499,6 +1499,7 @@ run_test('navbar_helpers', () => {
         filter.generate_redirect_url(),
         complex_operators_test_case.redirect_url
     );
+    assert.equal(filter.is_common_narrow(), false);
 
     const stream_topic_search_operator = [
         {operator: 'stream', operand: 'foo'},
