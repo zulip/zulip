@@ -694,7 +694,6 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
     if (!attrs.stream_id) {
         // fail fast (blueslip.fatal will throw an error on our behalf)
         blueslip.fatal("We cannot create a sub without a stream_id");
-        return; // this line is never actually reached
     }
 
     // Our internal data structure for subscriptions is mostly plain dictionaries,

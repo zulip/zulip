@@ -9,9 +9,13 @@ exports.make_zblueslip = function () {
         // Check against expected error values for the following.
         warn: true,
         error: true,
-        fatal: true,
     };
     const names = Array.from(Object.keys(opts));
+
+    // For fatal messages, we should use assert.throws
+    lib.fatal = (msg) => {
+        throw Error(msg);
+    };
 
     // Store valid test data for options.
     lib.test_data = {};
@@ -25,6 +29,9 @@ exports.make_zblueslip = function () {
     }
 
     lib.expect = (name, message) => {
+        if (opts[name] === undefined) {
+            throw Error('unexpected arg for expect: ' + name);
+        }
         lib.test_data[name].push(message);
     };
 
