@@ -5,11 +5,19 @@ exports.task_data_holder = function () {
     const self = {};
 
     const all_tasks = [];
-    const pending_tasks = [];
-    const completed_tasks = [];
     let my_idx = 1;
 
     self.get_widget_data = function () {
+        const pending_tasks = [];
+        const completed_tasks = [];
+
+        for (const item of all_tasks) {
+            if (item.completed) {
+                completed_tasks.push(item);
+            } else {
+                pending_tasks.push(item);
+            }
+        }
 
         const widget_data = {
             pending_tasks: pending_tasks,
@@ -64,7 +72,6 @@ exports.task_data_holder = function () {
                 };
 
                 if (!self.check_task.task_exists(task)) {
-                    pending_tasks.push(task_data);
                     all_tasks.push(task_data);
 
                     if (my_idx <= idx) {
@@ -96,17 +103,6 @@ exports.task_data_holder = function () {
                 }
 
                 all_tasks[task_index].completed = !all_tasks[task_index].completed;
-
-                // toggle
-                if (task.completed) {
-                    index = pending_tasks.indexOf(task);
-                    pending_tasks.splice(index, 1);
-                    completed_tasks.unshift(task);
-                } else {
-                    index = completed_tasks.indexOf(task);
-                    completed_tasks.splice(index, 1);
-                    pending_tasks.push(task);
-                }
             },
         },
     };
