@@ -68,14 +68,27 @@ function copy_email_handler(e) {
 }
 
 function init_email_clipboard() {
+    /*
+        This shows (and enables) the copy-text icon for folks
+        who have names that would overflow past the right
+        edge of our user mention popup.
+    */
     $('.user_popover_email').each(function () {
         if (this.clientWidth < this.scrollWidth) {
             const email_el = $(this);
             const copy_email_icon = email_el.find('i');
-            copy_email_icon.removeClass('hide_copy_icon');
 
-            const copy_email_clipboard = new ClipboardJS(copy_email_icon[0]);
-            copy_email_clipboard.on('success', copy_email_handler);
+            /*
+                For deactivated users, the copy-email icon will
+                not even be present in the HTML, so we don't do
+                anything.  We don't reveal emails for deactivated
+                users.
+            */
+            if (copy_email_icon[0]) {
+                copy_email_icon.removeClass('hide_copy_icon');
+                const copy_email_clipboard = new ClipboardJS(copy_email_icon[0]);
+                copy_email_clipboard.on('success', copy_email_handler);
+            }
         }
     });
 }
