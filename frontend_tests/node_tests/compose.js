@@ -1254,7 +1254,6 @@ run_test('on_events', () => {
         assert(!helper.container_was_removed());
         assert(!$("#compose_invite_users").visible());
         assert.equal($('#compose-error-msg').html(), "Stream no longer exists: no-stream");
-        assert.equal(blueslip.get_test_logs('warn').length, 1);
         blueslip.reset();
 
         // !sub will result in true here and we check the success code path.

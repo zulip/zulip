@@ -210,7 +210,6 @@ run_test('sending', () => {
         blueslip.expect('warn', 'XHR Error Message.');
         global.channel.xhr_error_message = function () {return 'XHR Error Message.';};
         args.error();
-        assert.equal(blueslip.get_test_logs('warn').length, 1);
         blueslip.reset();
     });
     emoji_name = 'alien'; // not set yet
@@ -259,7 +258,6 @@ run_test('sending', () => {
     emoji_name = 'unknown-emoji';   // Test sending an emoji unknown to frontend.
     blueslip.expect('warn', 'Bad emoji name: ' + emoji_name);
     reactions.toggle_emoji_reaction(message_id, emoji_name);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.reset();
     reactions.add_reaction = orig_add_reaction;
     reactions.remove_reaction = orig_remove_reaction;
@@ -641,15 +639,12 @@ run_test('error_handling', () => {
     const original_func = reactions.current_user_has_reacted_to_emoji;
     reactions.current_user_has_reacted_to_emoji = function () { return true; };
     reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     reactions.current_user_has_reacted_to_emoji = original_func;
     blueslip.reset();
 
     reactions.add_reaction(bogus_event);
-    assert.equal(blueslip.get_test_logs('error').length, 0);
 
     reactions.remove_reaction(bogus_event);
-    assert.equal(blueslip.get_test_logs('error').length, 0);
 });
 
 message_store.get = () => message;

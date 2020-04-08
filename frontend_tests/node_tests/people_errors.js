@@ -20,14 +20,11 @@ people.initialize_current_user(me.user_id);
 run_test('report_late_add', () => {
     blueslip.expect('error', 'Added user late: user_id=55 email=foo@example.com');
     people.report_late_add(55, 'foo@example.com');
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 
     reload_state.is_in_progress = return_true;
     people.report_late_add(55, 'foo@example.com');
-    assert.equal(blueslip.get_test_logs('log').length, 1);
     assert.equal(blueslip.get_test_logs('log')[0].message, 'Added user late: user_id=55 email=foo@example.com');
-    assert.equal(blueslip.get_test_logs('error').length, 0);
     blueslip.reset();
 });
 
@@ -47,17 +44,14 @@ run_test('blueslip', () => {
 
     blueslip.expect('debug', 'User email operand unknown: ' + unknown_email);
     people.id_matches_email_operand(42, unknown_email);
-    assert.equal(blueslip.get_test_logs('debug').length, 1);
     blueslip.reset();
 
     blueslip.expect('error', 'Unknown user_id: 9999');
     people.get_actual_name_from_user_id(9999);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 
     blueslip.expect('error', 'Unknown email for get_user_id: ' + unknown_email);
     people.get_user_id(unknown_email);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 
     blueslip.expect('warn', 'No user_id provided for person@example.com');
@@ -67,23 +61,19 @@ run_test('blueslip', () => {
         full_name: 'Person Person',
     };
     people.add(person);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.reset();
 
     blueslip.expect('error', 'No user_id found for person@example.com');
     const user_id = people.get_user_id('person@example.com');
     assert.equal(user_id, undefined);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 
     blueslip.expect('warn', 'Unknown user ids: 1,2');
     people.user_ids_string_to_emails_string('1,2');
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.reset();
 
     blueslip.expect('warn', 'Unknown emails: ' + unknown_email);
     people.email_list_to_user_ids_string([unknown_email]);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.reset();
 
     let message = {
@@ -125,7 +115,6 @@ run_test('blueslip', () => {
     blueslip.expect('error', 'Unknown user id in message: 42');
     const reply_to = people.pm_reply_to(message);
     assert(reply_to.includes('?'));
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 
     people.pm_with_user_ids = function () { return [42]; };
@@ -133,7 +122,6 @@ run_test('blueslip', () => {
     blueslip.expect('error', 'Unknown people in message');
     const uri = people.pm_with_url({});
     assert.equal(uri.indexOf('unk'), uri.length - 3);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 
     blueslip.expect('error', 'Undefined field id');

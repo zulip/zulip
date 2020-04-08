@@ -41,7 +41,6 @@ run_test('pan_and_zoom', () => {
     $.stub_selector('.focused_table .message_inline_image img', []);
 
     lightbox.open(img);
-    assert.equal(blueslip.get_test_logs('error').length, 0);
 
     assert.equal(fetched_zid, 1234);
 });
@@ -76,5 +75,4 @@ run_test('youtube', () => {
 
     lightbox.open(img);
     assert.equal($('.image-actions .open').attr('href'), href);
-    assert.equal(blueslip.get_test_logs('error').length, 0);
 });
