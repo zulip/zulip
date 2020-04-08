@@ -8,6 +8,8 @@ exports.task_data_holder = function () {
     let my_idx = 1;
 
     self.get_widget_data = function () {
+        all_tasks.sort((a, b) => a.task.localeCompare(b.task));
+
         const pending_tasks = [];
         const completed_tasks = [];
 
