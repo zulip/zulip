@@ -97,9 +97,11 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str]=None)
         raise JsonableError(_("Must be an organization administrator or emoji author"))
 
 def check_valid_emoji_name(emoji_name: str) -> None:
-    if re.match(r'^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
-        return
-    raise JsonableError(_("Invalid characters in emoji name"))
+    if emoji_name:
+        if re.match(r'^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
+            return
+        raise JsonableError(_("Invalid characters in emoji name"))
+    raise JsonableError(_("Emoji name is missing"))
 
 def get_emoji_url(emoji_file_name: str, realm_id: int) -> str:
     return upload_backend.get_emoji_url(emoji_file_name, realm_id)
