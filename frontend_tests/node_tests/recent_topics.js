@@ -1,6 +1,15 @@
 let rt = zrequire('recent_topics');
 zrequire('message_util');
 
+set_global('$', global.make_zjquery());
+set_global('hashchange', {
+    exit_overlay: () => {},
+});
+set_global('overlays', {
+    open_overlay: (opts) => {
+        overlays.close_callback = opts.on_close;
+    },
+});
 set_global('people', {
     is_my_user_id: function (id) {
         return id === 1;
@@ -292,4 +301,14 @@ run_test('test_topic_edit', () => {
 
     assert.equal(all_topics.get(stream2 + ":" + topic1), undefined);
     verify_topic_data(all_topics, stream3, topic9, messages[0].id, true, 0);
+});
+
+run_test("test_recent_topics_launch", () => {
+
+    global.stub_templates(function (template_name) {
+        assert.equal(template_name, 'recent_topics_table');
+        return '<recent_topics table stub>';
+    });
+    rt.launch();
+    overlays.close_callback();
 });

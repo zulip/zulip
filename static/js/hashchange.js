@@ -63,7 +63,7 @@ const state = {
 
 function is_overlay_hash(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
-    const overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
+    const overlay_list = ["streams", "drafts", "settings", "organization", "invite", "recent_topics"];
     const main_hash = hash_util.get_hash_category(hash);
 
     return overlay_list.includes(main_hash);
@@ -122,6 +122,7 @@ function do_hashchange_normal(from_reload) {
     case "#streams":
     case "#organization":
     case "#settings":
+    case "#recent_topics":
         blueslip.error('overlay logic skipped for: ' + hash);
         break;
     }
@@ -223,6 +224,11 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "invite") {
         invite.launch();
+        return;
+    }
+
+    if (base === 'recent_topics') {
+        recent_topics.launch();
         return;
     }
 }
