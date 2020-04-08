@@ -436,6 +436,18 @@ $category-text: hsl(219, 23%, 33%);
         }
     }
 
+    .integration-request {
+        padding: 10px 0px;
+
+        p {
+            padding-bottom: 10px;
+        }
+
+        .button {
+            padding: 11px 25px 11px 25px;
+        }
+    }
+
     /* -- integration instructions -- */
 
     #integration-instructions-group {
