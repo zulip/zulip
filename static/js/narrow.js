@@ -264,7 +264,7 @@ exports.activate = function (raw_operators, opts) {
                 // by a potential spammer user.
                 if (!filter.contains_only_private_messages() &&
                     !filter.includes_full_stream_history() &&
-                    !filter.has_operand("is", "starred")) {
+                    !filter.is_personal_filter()) {
                     $(".all-messages-search-caution").show();
                     // Set the link to point to this search with streams:public added.
                     // It's a bit hacky to use the href, but
