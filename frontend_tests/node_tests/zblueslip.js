@@ -32,7 +32,6 @@ run_test('basics', () => {
     // throw an error.
     assert.throws(throw_an_error);
     // zblueslip logs all the calls made to it, and they can be used in asserts like:
-    assert.equal(blueslip.get_test_logs('error').length, 1);
 
     // Now, let's add our error to the list of expected errors.
     blueslip.expect('error', 'world');
@@ -49,7 +48,6 @@ run_test('basics', () => {
     // should be thrown directly by blueslip.
     blueslip.reset();
     assert.throws(throw_an_error);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 
     // Let's repeat the above procedue with warnings. Unlike errors,
@@ -68,6 +66,5 @@ run_test('basics', () => {
     // indeed had logged a warning, we can check the length of the warning logs
     blueslip.expect('warn', 'world');
     throw_a_warning();
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.reset();
 });

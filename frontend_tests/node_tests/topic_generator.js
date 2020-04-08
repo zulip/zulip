@@ -180,7 +180,6 @@ run_test('fchain', () => {
     ints = tg.list_generator([29, 43]);
     gen = tg.fchain(ints, undef);
     gen.next();
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 });
 
