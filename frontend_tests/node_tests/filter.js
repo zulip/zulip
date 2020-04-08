@@ -1233,6 +1233,11 @@ run_test('term_type', () => {
         ['stream', 'stream', 'topic']
     );
 
+    assert_term_sort(
+        ['search', 'streams-public'],
+        ['streams-public', 'search']
+    );
+
     const terms = [
         {operator: 'topic', operand: 'lunch'},
         {operator: 'sender', operand: 'steve@foo.com'},
