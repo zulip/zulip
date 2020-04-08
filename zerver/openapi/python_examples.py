@@ -212,7 +212,7 @@ def get_single_user(client: Client) -> None:
 
     # {code_example|start}
     # If you'd like data on custom profile fields, you can request them as follows:
-    result = client.get_user_by_id(user_id, {'include_custom_profile_fields': True})
+    result = client.get_user_by_id(user_id, include_custom_profile_fields=True)
     # {code_example|end}
     validate_against_openapi_schema(result, '/users/{user_id}', 'get', '200')
 
