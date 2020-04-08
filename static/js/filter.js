@@ -623,7 +623,7 @@ Filter.term_type = function (term) {
 Filter.sorted_term_types = function (term_types) {
     const levels = [
         'in',
-        'streams',
+        'streams-public',
         'stream', 'topic',
         'pm-with', 'group-pm-with', 'sender',
         'near', 'id',
