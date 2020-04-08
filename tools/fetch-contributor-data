@@ -16,12 +16,17 @@ import sys
 import argparse
 from time import sleep
 from datetime import date
+from random import randrange
+import logging
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from scripts.lib.setup_path import setup_path
 setup_path()
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+import django
+django.setup()
+
 from django.conf import settings
 
 import requests
@@ -30,16 +35,16 @@ import json
 duplicate_commits_file = os.path.join(os.path.dirname(__file__), 'duplicate_commits.json')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--max-retries', type=int, default=3,
+parser.add_argument('--max-retries', type=int, default=10,
                     help='Number of times to retry fetching data from Github')
-parser.add_argument('--not-required', action='store_true', default=False,
-                    help='Consider failures to reach GitHub nonfatal')
 args = parser.parse_args()
 
 ContributorsJSON = TypedDict('ContributorsJSON', {
     'date': str,
     'contrib': List[Dict[str, Union[str, int]]],
 })
+
+logger = logging.getLogger('zulip.fetch_contributors_json')
 
 def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]]]]:
     r = requests.get(repo_link, verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))  # type: requests.Response
@@ -50,7 +55,7 @@ def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
         try:
             f.write("{}\n".format(json.dumps(json_data, indent=2, sort_keys=True)))
         except IOError as e:
-            print(e)
+            logger.warning(e)
             sys.exit(1)
 
 def update_contributor_data_file() -> None:
@@ -77,8 +82,9 @@ def update_contributor_data_file() -> None:
 
     data = dict(date=str(date.today()), contrib=[])  # type: ContributorsJSON
     contribs_list = {}  # type: Dict[str, Dict[str, Union[str, int]]]
+    retry_attempts = 0
 
-    for _ in range(args.max_retries):
+    while True:
         repos_done = []
         for name, link in repositories.items():
             contribs = fetch_contributors(link)
@@ -108,6 +114,15 @@ def update_contributor_data_file() -> None:
                         contribs_list[username].update(contrib_data)
                     else:
                         contribs_list[username] = contrib_data
+                retry_attempts = 0
+            else:
+                retry_attempts += 1
+                if retry_attempts > args.max_retries:
+                    logger.warning("Failed retries fetching contributors data from Github.")
+                    sys.exit(1)
+
+                sleep_time = randrange(0, min(64, 2**retry_attempts))
+                sleep(sleep_time)
 
         # remove duplicate contributions count
         # find commits at the time of split and subtract from zulip-server
@@ -126,13 +141,6 @@ def update_contributor_data_file() -> None:
 
         if not repositories:
             break
-
-        # Wait before retrying failed requests for Github to aggregate data.
-        sleep(2)
-    else:
-        print("ERROR: Failed fetching contributors data from Github.")
-        if not args.not_required:
-            sys.exit(1)
 
     for contributor_name, contributor_data in contribs_list.items():
         contributor_data['name'] = contributor_name
