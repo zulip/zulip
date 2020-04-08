@@ -446,6 +446,15 @@ Filter.prototype = {
         return this.has_operator("stream") || this.has_operator("streams");
     },
 
+    is_personal_filter: function () {
+        // Whether the filter filters for user-specific data in the
+        // UserMessage table, such as stars or mentions.
+        //
+        // Such filters should not advertise "streams:public" as it
+        // will never add additional results.
+        return this.has_operand("is", "mentioned") || this.has_operand("is", "starred");
+    },
+
     can_apply_locally: function () {
         if (this.is_search()) {
             // The semantics for matching keywords are implemented

@@ -72,6 +72,7 @@ run_test('basics', () => {
     assert(!filter.allow_use_first_unread_when_narrowing());
     assert(filter.includes_full_stream_history());
     assert(filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'stream', operand: 'foo'},
@@ -85,6 +86,7 @@ run_test('basics', () => {
     assert(!filter.contains_only_private_messages());
     assert(!filter.allow_use_first_unread_when_narrowing());
     assert(!filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
     assert(filter.can_bucket_by('stream'));
     assert(filter.can_bucket_by('stream', 'topic'));
 
@@ -98,6 +100,7 @@ run_test('basics', () => {
     assert(!filter.contains_only_private_messages());
     assert(!filter.has_operator('stream'));
     assert(!filter.can_mark_messages_read());
+    assert(!filter.is_personal_filter());
 
     // Negated searches are just like positive searches for our purposes, since
     // the search logic happens on the back end and we need to have can_apply_locally()
@@ -110,6 +113,7 @@ run_test('basics', () => {
     assert(filter.has_operator('search'));
     assert(!filter.can_apply_locally());
     assert(!filter.can_mark_messages_read());
+    assert(!filter.is_personal_filter());
 
     // Similar logic applies to negated "has" searches.
     operators = [
@@ -120,6 +124,7 @@ run_test('basics', () => {
     assert(!filter.can_apply_locally());
     assert(!filter.includes_full_stream_history());
     assert(!filter.can_mark_messages_read());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'streams', operand: 'public', negated: true},
@@ -130,6 +135,7 @@ run_test('basics', () => {
     assert(!filter.can_mark_messages_read());
     assert(filter.has_negated_operand('streams', 'public'));
     assert(!filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'streams', operand: 'public'},
@@ -141,6 +147,7 @@ run_test('basics', () => {
     assert(!filter.has_negated_operand('streams', 'public'));
     assert(!filter.can_apply_locally());
     assert(filter.includes_full_stream_history());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'is', operand: 'private'},
@@ -150,6 +157,7 @@ run_test('basics', () => {
     assert(filter.can_mark_messages_read());
     assert(!filter.has_operator('search'));
     assert(filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'is', operand: 'mentioned'},
@@ -159,6 +167,17 @@ run_test('basics', () => {
     assert(filter.can_mark_messages_read());
     assert(!filter.has_operator('search'));
     assert(filter.can_apply_locally());
+    assert(filter.is_personal_filter());
+
+    operators = [
+        {operator: 'is', operand: 'starred'},
+    ];
+    filter = new Filter(operators);
+    assert(!filter.contains_only_private_messages());
+    assert(!filter.can_mark_messages_read());
+    assert(!filter.has_operator('search'));
+    assert(filter.can_apply_locally());
+    assert(filter.is_personal_filter());
 
     operators = [
         {operator: 'pm-with', operand: 'joe@example.com'},
@@ -167,6 +186,7 @@ run_test('basics', () => {
     assert(filter.contains_only_private_messages());
     assert(!filter.has_operator('search'));
     assert(filter.can_apply_locally());
+    assert(!filter.is_personal_filter());
 
     operators = [
         {operator: 'group-pm-with', operand: 'joe@example.com'},
