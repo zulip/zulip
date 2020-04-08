@@ -1,3 +1,4 @@
+const render_recent_topics_body = require('../templates/recent_topics_table.hbs');
 const topics = new Map(); // Key is stream-id:topic.
 
 exports.process_messages = function (messages) {
@@ -65,6 +66,19 @@ exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_
     new_stream_id = new_stream_id || old_stream_id;
     const new_topic_msgs = message_util.get_messages_in_topic(new_stream_id, new_topic);
     exports.process_messages(new_topic_msgs);
+};
+
+exports.launch = function () {
+    const rendered_body = render_recent_topics_body();
+    $('#recent_topics_table').html(rendered_body);
+
+    overlays.open_overlay({
+        name: 'recent_topics',
+        overlay: $('#recent_topics_overlay'),
+        on_close: function () {
+            hashchange.exit_overlay();
+        },
+    });
 };
 
 window.recent_topics = exports;
