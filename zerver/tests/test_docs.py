@@ -329,7 +329,8 @@ class IntegrationTest(TestCase):
 
 class AboutPageTest(ZulipTestCase):
     def test_endpoint(self) -> None:
-        result = self.client_get('/team/')
+        with self.settings(CONTRIBUTOR_DATA_FILE_PATH="zerver/tests/fixtures/authors.json"):
+            result = self.client_get('/team/')
         self.assert_in_success_response(['Our amazing community'], result)
         self.assert_in_success_response(['2017-11-20'], result)
         self.assert_in_success_response(['timabbott', 'showell', 'gnprice', 'rishig'], result)
