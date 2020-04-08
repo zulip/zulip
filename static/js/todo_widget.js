@@ -68,7 +68,6 @@ exports.task_data_holder = function () {
                 const task_data = {
                     task: task,
                     desc: desc,
-                    user_id: sender_id,
                     key: key,
                     completed: completed,
                 };
