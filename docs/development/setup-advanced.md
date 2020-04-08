@@ -3,6 +3,7 @@
 Contents:
 
 * [Installing directly on Ubuntu, Debian, Centos, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
+* [Installing directly on Windows 10](#installing-directly-on-windows-10-experimental)
 * [Installing manually on other Linux/UNIX](#installing-manually-on-unix)
 * [Installing directly on cloud9](#installing-on-cloud9)
 
@@ -54,6 +55,73 @@ Once you've done the above setup, you can pick up the [documentation
 on using the Zulip development
 environment](../development/setup-vagrant.html#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
+
+## Installing directly on Windows 10 (Experimental)
+
+We will be using Microsoft's new feature [WSL
+2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about) for
+installation.
+
+1. Install WSL 2 by following the instructions provided by Microsoft
+[here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
+
+1. Install the `Ubuntu 18.04` Linux distribution from the Microsoft
+Store.
+
+1. Launch the `Ubuntu 18.04` shell and run the following commands:
+
+   ```
+   sudo apt update && sudo apt upgrade
+   sudo apt install rabbitmq-server memcached redis-server postgresql
+   ```
+
+1. Open `/etc/rabbitmq/Rabbitmq.conf` using e.g.:
+
+   ```
+   sudo vim /etc/rabbitmq/Rabbitmq.conf
+   ```
+
+   Add the following lines at the end of your file and save:
+
+   ```
+   NODE_IP_ADDRESS=127.0.0.1
+   NODE_PORT=5672
+   ```
+
+1. [Clone your fork of the Zulip repository][zulip-rtd-git-cloning]
+   and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
+
+   ```
+   git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+   cd zulip
+   git remote add -f upstream https://github.com/zulip/zulip.git
+   ```
+
+1. Run the following to install the Zulip development environment and
+   start it (click `Allow access` if you get popups for Windows Firewall
+   blocking some services)
+
+   ```
+   # Start database, cache, and other services
+   ./tools/wsl/start_services
+   # Install/update the Zulip development environment
+   ./tools/provision
+   # Enter the Zulip Python environment
+   source /srv/zulip-py3-venv/bin/activate
+   # Start the development server
+   ./tools/run-dev.py
+   ```
+
+   ```eval_rst
+   .. note::
+       If you shutdown WSL, after starting it again, you will have to manually start
+       the services using ``./tools/wsl/start_services``.
+   ```
+
+1. You're done!  You can pick up the [documentation on using the
+   Zulip development
+   environment](../development/setup-vagrant.html#step-4-developing),
+   ignoring the parts about `vagrant` (since you're not using it).
 
 ## Installing manually on Unix
 
