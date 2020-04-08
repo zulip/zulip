@@ -3,6 +3,7 @@
 Contents:
 
 * [Installing directly on Ubuntu, Debian, Centos, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
+* [Installing directly on Windows 10](#installing-directly-on-windows-10-experimental)
 * [Installing manually on other Linux/UNIX](#installing-manually-on-unix)
 * [Installing directly on cloud9](#installing-on-cloud9)
 
@@ -54,6 +55,62 @@ Once you've done the above setup, you can pick up the [documentation
 on using the Zulip development
 environment](../development/setup-vagrant.html#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
+
+## Installing directly on Windows 10 (Experimental)
+
+We will be using Microsoft's new feature [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
+for installation. So, first install WSL 2 by following the instructions provided by Microsoft
+[here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install). Install `Ubuntu 18.04` as your linux
+distribution from the Microsoft Store.
+
+Launch `Ubuntu 18.04` shell and run the following commands:
+
+```
+sudo apt update && sudo apt upgrade
+sudo apt install rabbitmq-server memcached redis-server postgresql
+```
+
+Open `/etc/rabbitmq/Rabbitmq.conf` file using:
+
+```
+sudo vim /etc/rabbitmq/Rabbitmq.conf
+```
+
+Add the following lines at the end of your file:
+
+```
+NODE_IP_ADDRESS=127.0.0.1
+NODE_PORT=5672
+```
+
+Then start [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
+
+```
+git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+cd zulip
+git remote add -f upstream https://github.com/zulip/zulip.git
+```
+
+Start the servers using `./tools/wsl/start_services` and run:
+(click `Allow access` if you get popups for Windows Firewall blocking some services)
+
+```
+./tools/provision
+source /srv/zulip-py3-venv/bin/activate
+./tools/run-dev.py  # starts the development server
+```
+```eval_rst
+.. note::
+    If you shutdown WSL, you will have to manually start
+    the database services using ``./tools/wsl/start_services``.
+```
+
+Once you've done the above setup, you can pick up the [documentation
+on using the Zulip development
+environment](../development/setup-vagrant.html#step-4-developing),
+ignoring the parts about `vagrant` (since you're not using it).
+
 
 ## Installing manually on Unix
 
