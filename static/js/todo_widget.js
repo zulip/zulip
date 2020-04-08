@@ -5,7 +5,16 @@ exports.task_data_holder = function () {
     const self = {};
 
     const task_map = new Map();
-    let my_idx = 1;
+
+    function get_new_index() {
+        let idx = 0;
+
+        for (const item of task_map.values()) {
+            idx = Math.max(idx, item.idx);
+        }
+
+        return idx + 1;
+    }
 
     self.get_widget_data = function () {
         const all_tasks = Array.from(task_map.values());
@@ -45,12 +54,11 @@ exports.task_data_holder = function () {
             outbound: function (task, desc) {
                 const event = {
                     type: 'new_task',
-                    key: my_idx,
+                    key: get_new_index(),
                     task: task,
                     desc: desc,
                     completed: false,
                 };
-                my_idx += 1;
 
                 if (!self.name_in_use(task)) {
                     return event;
@@ -59,6 +67,8 @@ exports.task_data_holder = function () {
             },
 
             inbound: function (sender_id, data) {
+                // for legacy reasons, the inbound idx is
+                // called key in the event
                 const idx = data.key;
                 const key = idx + "," + sender_id;
                 const task = data.task;
@@ -68,16 +78,13 @@ exports.task_data_holder = function () {
                 const task_data = {
                     task: task,
                     desc: desc,
+                    idx: idx,
                     key: key,
                     completed: completed,
                 };
 
                 if (!self.name_in_use(task)) {
                     task_map.set(key, task_data);
-
-                    if (my_idx <= idx) {
-                        my_idx = idx + 1;
-                    }
                 }
             },
         },
