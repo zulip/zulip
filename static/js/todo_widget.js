@@ -4,10 +4,11 @@ const render_widgets_todo_widget_tasks = require('../templates/widgets/todo_widg
 exports.task_data_holder = function () {
     const self = {};
 
-    const all_tasks = [];
+    const task_map = new Map();
     let my_idx = 1;
 
     self.get_widget_data = function () {
+        const all_tasks = Array.from(task_map.values());
         all_tasks.sort((a, b) => a.task.localeCompare(b.task));
 
         const pending_tasks = [];
@@ -30,15 +31,13 @@ exports.task_data_holder = function () {
     };
 
     self.name_in_use = function (name) {
-        const task_exists = all_tasks.some(item => item.task === name);
-        return task_exists;
-    };
+        for (const item of task_map.values()) {
+            if (item.task === name) {
+                return true;
+            }
+        }
 
-
-    self.check_task = {
-        get_task_index: function (list, val) {
-            return Object.keys(list).find(index => list[index].key === val);
-        },
+        return false;
     };
 
     self.handle = {
@@ -75,7 +74,7 @@ exports.task_data_holder = function () {
                 };
 
                 if (!self.name_in_use(task)) {
-                    all_tasks.push(task_data);
+                    task_map.set(key, task_data);
 
                     if (my_idx <= idx) {
                         my_idx = idx + 1;
@@ -96,16 +95,14 @@ exports.task_data_holder = function () {
 
             inbound: function (sender_id, data) {
                 const key = data.key;
-                const task_index = self.check_task.get_task_index(all_tasks, key);
-                const task = all_tasks[task_index];
-                let index;
+                const item = task_map.get(key);
 
-                if (task === undefined) {
+                if (item === undefined) {
                     blueslip.error('unknown key for tasks: ' + key);
                     return;
                 }
 
-                all_tasks[task_index].completed = !all_tasks[task_index].completed;
+                item.completed = !item.completed;
             },
         },
     };
