@@ -29,12 +29,13 @@ exports.task_data_holder = function () {
         return widget_data;
     };
 
-    self.check_task = {
-        task_exists: function (task) {
-            const task_exists = all_tasks.some(item => item.task === task);
-            return task_exists;
-        },
+    self.name_in_use = function (name) {
+        const task_exists = all_tasks.some(item => item.task === name);
+        return task_exists;
+    };
 
+
+    self.check_task = {
         get_task_index: function (list, val) {
             return Object.keys(list).find(index => list[index].key === val);
         },
@@ -52,7 +53,7 @@ exports.task_data_holder = function () {
                 };
                 my_idx += 1;
 
-                if (!self.check_task.task_exists(task)) {
+                if (!self.name_in_use(task)) {
                     return event;
                 }
                 return;
@@ -73,7 +74,7 @@ exports.task_data_holder = function () {
                     completed: completed,
                 };
 
-                if (!self.check_task.task_exists(task)) {
+                if (!self.name_in_use(task)) {
                     all_tasks.push(task_data);
 
                     if (my_idx <= idx) {
@@ -142,7 +143,7 @@ exports.activate = function (opts) {
             elem.find(".add-task").val('').focus();
             elem.find(".add-desc").val('').focus();
 
-            const task_exists = task_data.check_task.task_exists(task);
+            const task_exists = task_data.name_in_use(task);
             if (task_exists) {
                 elem.find(".widget-error").text(i18n.t('Task already exists'));
                 return;
