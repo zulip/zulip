@@ -100,6 +100,29 @@ exports.populate_emoji = function (emoji_data) {
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };
 
+exports.build_emoji_upload_widget = function () {
+    const get_file_input = function () {
+        return $('#emoji_file_input');
+    };
+
+    const file_name_field = $('#emoji-file-name');
+    const input_error = $('#emoji_file_input_error');
+    const clear_button = $('#emoji_image_clear_button');
+    const upload_button = $('#emoji_upload_button');
+    const preview_text = $('#emoji_preview_text');
+    const preview_image = $('#emoji_preview_image');
+
+    return upload_widget.build_widget(
+        get_file_input,
+        file_name_field,
+        input_error,
+        clear_button,
+        upload_button,
+        preview_text,
+        preview_image
+    );
+};
+
 exports.set_up = function () {
     meta.loaded = true;
 
@@ -125,7 +148,7 @@ exports.set_up = function () {
         });
     });
 
-    const emoji_widget = emoji.build_emoji_upload_widget();
+    const emoji_widget = exports.build_emoji_upload_widget();
 
     $(".organization form.admin-emoji-form").off('submit').on('submit', function (e) {
         e.preventDefault();

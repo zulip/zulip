@@ -6,6 +6,7 @@ set_global('page_params', {
 set_global('upload_widget', {});
 
 zrequire('emoji');
+zrequire('settings_emoji');
 
 run_test('build_emoji_upload_widget', () => {
     let build_widget_stub = false;
@@ -23,7 +24,7 @@ run_test('build_emoji_upload_widget', () => {
         assert.deepEqual(upload_button, $('#emoji_upload_button'));
         build_widget_stub = true;
     };
-    emoji.build_emoji_upload_widget();
+    settings_emoji.build_emoji_upload_widget();
     assert(build_widget_stub);
 });
 
