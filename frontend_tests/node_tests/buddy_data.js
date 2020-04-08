@@ -282,6 +282,4 @@ run_test('error handling', () => {
     blueslip.expect('error', 'Unknown user_id in get_by_user_id: 42');
     blueslip.expect('warn', 'Got user_id in presence but not people: 42');
     buddy_data.get_filtered_and_sorted_user_ids();
-    assert.equal(blueslip.get_test_logs('error').length, 1);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
 });

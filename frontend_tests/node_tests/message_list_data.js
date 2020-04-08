@@ -213,5 +213,4 @@ run_test('errors', () => {
     blueslip.expect('error', 'Duplicate message added to MessageListData');
     mld._hash.set(1, 'taken');
     mld._add_to_hash(make_msgs([1]));
-    assert.equal(blueslip.get_test_logs('error').length, 1);
 });

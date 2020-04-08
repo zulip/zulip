@@ -234,7 +234,6 @@ run_test('unexpected_403_response', () => {
         check_ajax_options: function (options) {
             blueslip.expect('error', 'Unexpected 403 response from server');
             options.simulate_error();
-            assert.equal(blueslip.get_test_logs('error').length, 1);
             blueslip.reset();
         },
     });
@@ -265,7 +264,6 @@ run_test('retry', () => {
                 },
             });
 
-            assert.equal(blueslip.get_test_logs('log').length, 1);
             assert.equal(blueslip.get_test_logs('log')[0].message, 'Retrying idempotent[object Object]');
             blueslip.reset();
         },
@@ -284,7 +282,6 @@ run_test('too_many_pending', () => {
     _.times(50, function () {
         channel.post({});
     });
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.reset();
 });
 

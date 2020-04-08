@@ -285,7 +285,6 @@ run_test('error checking', () => {
     const ul = {opts: { attrs: [] }};
 
     vdom.update(replace_content, find, ul, ul);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
 
     blueslip.expect(
         'error',

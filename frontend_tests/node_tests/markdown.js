@@ -583,7 +583,6 @@ run_test('python_to_js_filter', () => {
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     expected_value = [];
     assert.deepEqual(actual_value, expected_value);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 });
 
@@ -592,7 +591,6 @@ run_test('katex_throws_unexpected_exceptions', () => {
     blueslip.expect('error', 'Error: some-exception');
     const message = { raw_content: '$$a$$' };
     markdown.apply_markdown(message);
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 });
 

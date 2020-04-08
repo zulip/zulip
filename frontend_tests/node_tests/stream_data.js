@@ -254,7 +254,6 @@ run_test('subscribers', () => {
 
     blueslip.expect('warn', 'Undefined user_id passed to function is_user_subscribed');
     assert.equal(stream_data.is_user_subscribed('Rome', undefined), undefined);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
 
     // Verify noop for bad stream when removing subscriber
     const bad_stream = 'UNKNOWN';
@@ -591,7 +590,6 @@ run_test('delete_sub', () => {
 
     blueslip.expect('warn', 'Failed to delete stream 99999');
     stream_data.delete_sub(99999);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.reset();
 });
 
@@ -605,7 +603,6 @@ run_test('get_subscriber_count', () => {
 
     blueslip.expect('warn', 'We got a get_subscriber_count count call for a non-existent stream.');
     assert.equal(stream_data.get_subscriber_count('India'), undefined);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.reset();
 
     stream_data.add_sub(india);

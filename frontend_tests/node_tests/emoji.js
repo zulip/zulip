@@ -45,7 +45,6 @@ run_test('get_canonical_name', () => {
 
     blueslip.expect('error', 'Invalid emoji name: non_existent');
     emoji.get_canonical_name('non_existent');
-    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.reset();
 });
 

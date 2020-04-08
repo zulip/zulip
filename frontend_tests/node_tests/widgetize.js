@@ -135,7 +135,6 @@ run_test('activate', () => {
     assert(!is_widget_elem_inserted);
     assert(!is_widget_activated);
     assert(!is_event_handled);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
     assert.equal(blueslip.get_test_logs('warn')[0].more_info, 'invalid_widget');
     blueslip.reset();
 
