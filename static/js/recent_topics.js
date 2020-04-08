@@ -1,4 +1,5 @@
 const util = require("./util");
+const render_recent_topics_body = require('../templates/recent_topics_list.hbs');
 
 const topics = new Map(); // Key is stream-id:topic.
 
@@ -69,6 +70,19 @@ exports.process_topic = function (stream_id, topic) {
     topics.delete(stream_id + ':' + topic);
     const msgs = util.get_messages_in_topic(stream_id, topic);
     exports.process_messages(msgs);
+};
+
+exports.launch = function () {
+    const rendered_body = render_recent_topics_body();
+    $('#recent_topics_table').html(rendered_body);
+
+    overlays.open_overlay({
+        name: 'recents',
+        overlay: $('#recent_overlay'),
+        on_close: function () {
+            hashchange.exit_overlay();
+        },
+    });
 };
 
 window.recent_topics = exports;
