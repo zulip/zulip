@@ -12,10 +12,12 @@ from zerver.models import ScheduledEmail, get_user_profile_by_id, \
 
 import datetime
 from email.utils import parseaddr, formataddr
+from email.parser import Parser
+from email.policy import default
+
 import logging
 import ujson
 import hashlib
-import shutil
 
 import os
 from typing import Any, Dict, List, Mapping, Optional, Tuple
@@ -53,6 +55,13 @@ class FromAddress:
         with override_language(language):
             return _("Zulip Account Security")
 
+def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
+    if option and header:
+        raise DoubledEmailArgumentException(name)
+    if not option and not header:
+        raise NoEmailArgumentException(name)
+    return str(option or header)
+
 def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None:
     """
     Can be used directly with from a management shell with
@@ -64,7 +73,9 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     """
 
     with open(options["markdown_template_path"]) as f:
-        email_template_hash = hashlib.sha256(f.read().encode('utf-8')).hexdigest()[0:32]
+        text = f.read()
+        parsed_email_template = Parser(policy=default).parsestr(text)
+        email_template_hash = hashlib.sha256(text.encode('utf-8')).hexdigest()[0:32]
 
     email_filename = "custom_email_%s.source.html" % (email_template_hash,)
     email_id = "zerver/emails/custom_email_%s" % (email_template_hash,)
@@ -75,7 +86,8 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
 
     # First, we render the markdown input file just like our
     # user-facing docs with render_markdown_path.
-    shutil.copyfile(options['markdown_template_path'], plain_text_template_path)
+    with open(plain_text_template_path, "w") as f:
+        f.write(parsed_email_template.get_payload())
 
     from zerver.templatetags.app_filters import render_markdown_path
     rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
@@ -90,10 +102,9 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
                                                  rendered_input))
 
     with open(subject_path, "w") as f:
-        f.write(options["subject"])
+        f.write(get_header(options.get("subject"),
+                           parsed_email_template.get("subject"), "subject"))
 
-    # Then, we compile the email template using inline_email_css to
-    # add our standard styling to the paragraph tags (etc.).
     inline_template(email_filename)
 
     # Finally, we send the actual emails.
@@ -105,7 +116,10 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
         send_email(email_id, to_user_ids=[user_profile.id],
                    from_address=FromAddress.SUPPORT,
                    reply_to_email=options.get("reply_to"),
-                   from_name=options["from_name"], context=context)
+                   from_name=get_header(options.get("from_name"),
+                                        parsed_email_template.get("from"),
+                                        "from_name"),
+                   context=context)
 
 def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                 to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
@@ -181,6 +195,18 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
 
 class EmailNotDeliveredException(Exception):
     pass
+
+class DoubledEmailArgumentException(Exception):
+    def __init__(self, argument_name: str) -> None:
+        msg = "Argument '%s' is ambiguously present in both options and email template." % (
+            argument_name)
+        super().__init__(msg)
+
+class NoEmailArgumentException(Exception):
+    def __init__(self, argument_name: str) -> None:
+        msg = "Argument '%s' is required in either options or email template." % (
+            argument_name)
+        super().__init__(msg)
 
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
