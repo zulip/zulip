@@ -263,6 +263,8 @@ function edit_message(row, raw_content) {
     if (editability === editability_types.NO) {
         message_edit_content.prop("readonly", "readonly");
         message_edit_topic.prop("readonly", "readonly");
+        message_edit_content.attr("disabled", "disabled");
+        message_edit_topic.attr("disabled", "disabled");
         new ClipboardJS(copy_message[0]);
     } else if (editability === editability_types.NO_LONGER) {
         // You can currently only reach this state in non-streams. If that
@@ -270,10 +272,12 @@ function edit_message(row, raw_content) {
         // in streams), then we'll need to disable
         // row.find('input.message_edit_topic') as well.
         message_edit_content.prop("readonly", "readonly");
+        message_edit_content.attr("disabled", "disabled");
         message_edit_countdown_timer.text(i18n.t("View source"));
         new ClipboardJS(copy_message[0]);
     } else if (editability === editability_types.TOPIC_ONLY) {
         message_edit_content.prop("readonly", "readonly");
+        message_edit_content.attr("disabled", "disabled");
         // Hint why you can edit the topic but not the message content
         message_edit_countdown_timer.text(i18n.t("Topic editing only"));
         new ClipboardJS(copy_message[0]);
