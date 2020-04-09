@@ -322,7 +322,7 @@ exports.send_message = function send_message(request) {
             return;
         }
 
-        echo.message_send_error(local_id, response);
+        echo.message_send_error(message.id, response);
     }
 
     transmit.send_message(request, success, error);

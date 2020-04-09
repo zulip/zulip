@@ -681,7 +681,7 @@ run_test('send_message', () => {
     let echo_error_msg_checked;
 
     echo.message_send_error = function (local_id, error_response) {
-        assert.equal(local_id, '123.04');
+        assert.equal(local_id, 123.04);
         assert.equal(error_response, 'Error sending message: Server says 408');
         echo_error_msg_checked = true;
     };
