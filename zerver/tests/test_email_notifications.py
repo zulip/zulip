@@ -15,13 +15,80 @@ from zerver.lib.email_notifications import fix_emojis, handle_missedmessage_emai
     enqueue_welcome_emails, relative_to_full_url
 from zerver.lib.actions import do_change_notification_settings
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.send_email import FromAddress
+from zerver.lib.send_email import FromAddress, send_custom_email
 from zerver.models import (
     get_realm,
     get_stream,
     UserProfile,
     ScheduledEmail
 )
+
+class TestCustomEmails(ZulipTestCase):
+    def test_send_custom_email_argument(self) -> None:
+        hamlet = self.example_user('hamlet')
+        email_subject = 'subject_test'
+        reply_to = 'reply_to_test'
+        from_name = "from_name_test"
+        markdown_template_path = "templates/zerver/emails/email_base_default.source.html"
+        send_custom_email([hamlet], {
+            "markdown_template_path": markdown_template_path,
+            "reply_to": reply_to,
+            "subject": email_subject,
+            "from_name": from_name
+        })
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, email_subject)
+        self.assertEqual(len(msg.reply_to), 1)
+        self.assertEqual(msg.reply_to[0], reply_to)
+        self.assertNotIn("{% block content %}", msg.body)
+
+    def test_send_custom_email_headers(self) -> None:
+        hamlet = self.example_user('hamlet')
+        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+        send_custom_email([hamlet], {
+            "markdown_template_path": markdown_template_path,
+        })
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, "Test Subject")
+        self.assertFalse(msg.reply_to)
+        self.assertEqual('Test body', msg.body)
+
+    def test_send_custom_email_no_argument(self) -> None:
+        hamlet = self.example_user('hamlet')
+        from_name = "from_name_test"
+        email_subject = 'subject_test'
+        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.source.html"
+
+        from zerver.lib.send_email import NoEmailArgumentException
+        self.assertRaises(NoEmailArgumentException, send_custom_email, [hamlet], {
+            "markdown_template_path": markdown_template_path,
+            "from_name": from_name
+        })
+
+        self.assertRaises(NoEmailArgumentException, send_custom_email, [hamlet], {
+            "markdown_template_path": markdown_template_path,
+            "subject": email_subject
+        })
+
+    def test_send_custom_email_doubled_arguments(self) -> None:
+        hamlet = self.example_user('hamlet')
+        from_name = "from_name_test"
+        email_subject = 'subject_test'
+        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+
+        from zerver.lib.send_email import DoubledEmailArgumentException
+        self.assertRaises(DoubledEmailArgumentException, send_custom_email, [hamlet], {
+            "markdown_template_path": markdown_template_path,
+            "subject": email_subject,
+        })
+
+        self.assertRaises(DoubledEmailArgumentException, send_custom_email, [hamlet], {
+            "markdown_template_path": markdown_template_path,
+            "from_name": from_name,
+        })
+
 
 class TestFollowupEmails(ZulipTestCase):
     def test_day1_email_context(self) -> None:
