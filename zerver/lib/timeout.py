@@ -1,7 +1,6 @@
 from types import TracebackType
 from typing import Any, Callable, Optional, Tuple, Type, TypeVar
 
-import six
 import sys
 import time
 import ctypes
@@ -37,7 +36,7 @@ def timeout(timeout: float, func: Callable[..., ResultT], *args: Any, **kwargs: 
         def __init__(self) -> None:
             threading.Thread.__init__(self)
             self.result = None  # type: Optional[ResultT]
-            self.exc_info = None  # type: Optional[Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]]]
+            self.exc_info = (None, None, None)  # type: Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]]
 
             # Don't block the whole program from exiting
             # if this is the only thread left.
@@ -82,9 +81,9 @@ def timeout(timeout: float, func: Callable[..., ResultT], *args: Any, **kwargs: 
                 break
         raise TimeoutExpired
 
-    if thread.exc_info:
+    if thread.exc_info[1] is not None:
         # Raise the original stack trace so our error messages are more useful.
         # from https://stackoverflow.com/a/4785766/90777
-        six.reraise(thread.exc_info[0], thread.exc_info[1], thread.exc_info[2])
+        raise thread.exc_info[1].with_traceback(thread.exc_info[2])
     assert thread.result is not None  # assured if above did not reraise
     return thread.result
