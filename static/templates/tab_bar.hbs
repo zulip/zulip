@@ -1,10 +1,10 @@
 <span id="tab_list">
-    <span {{#if extra_class}}class="{{extra_class}}"{{/if}} {{#if data}}data-name="{{data}}"{{/if}}>
+    <span {{#if stream_settings_link}}class="stream"{{/if}} {{#if data}}data-name="{{data}}"{{/if}}>
         {{#if icon}}
         <i class="fa fa-{{icon}}" aria-hidden="true"></i>
         {{/if}}
         {{#if stream_settings_link}}
-        <a class="settings_link" href="{{stream_settings_link}}">{{title}}</a>
+        <a href="{{stream_settings_link}}">{{title}}</a>
         {{else}}
         {{title}}
         {{/if}}

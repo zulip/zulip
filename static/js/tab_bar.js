@@ -20,8 +20,6 @@ function make_tab_data(filter) {
         return {
             title: 'All messages',
             icon: 'home',
-            // legacy attribute, TODO: should be purged
-            data: 'home',
         };
     }
     tab_data.title = filter.get_title();
@@ -31,9 +29,6 @@ function make_tab_data(filter) {
         const current_stream  = stream_data.get_sub_by_name(stream);
         if (current_stream) {
             tab_data.rendered_narrow_description = current_stream.rendered_description;
-            if (tab_data.rendered_narrow_description === '') {
-                tab_data.rendered_narrow_description = '(no description)';
-            }
             tab_data.sub_count = get_sub_count(current_stream);
             tab_data.formatted_sub_count = get_formatted_sub_count(current_stream);
             tab_data.stream_settings_link = "#streams/" + current_stream.stream_id + "/" + current_stream.name;
@@ -43,12 +38,6 @@ function make_tab_data(filter) {
             tab_data.formatted_sub_count = '0';
             tab_data.rendered_narrow_description = "This stream does not exist or is private.";
         }
-        // legacy attribute, TODO: should be purged
-        tab_data.extra_class = 'root';
-    }
-    if (tab_data.title === 'Private Messages') {
-        // legacy attribute, TODO: should be purged
-        tab_data.extra_class = 'private_message';
     }
     return tab_data;
 }
