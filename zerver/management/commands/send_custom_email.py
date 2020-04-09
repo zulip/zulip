@@ -1,6 +1,5 @@
 import hashlib
 import shutil
-import subprocess
 from argparse import ArgumentParser
 from typing import Any, Dict, List
 
@@ -8,6 +7,7 @@ from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.models import UserProfile
 from zerver.templatetags.app_filters import render_markdown_path
+from scripts.setup.inline_email_css import inline_template
 
 
 def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None:
@@ -22,6 +22,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
 
     with open(options["markdown_template_path"]) as f:
         email_template_hash = hashlib.sha256(f.read().encode('utf-8')).hexdigest()[0:32]
+    email_filename = "custom_email_%s.source.html" % (email_template_hash,)
     email_id = "zerver/emails/custom_email_%s" % (email_template_hash,)
     markdown_email_base_template_path = "templates/zerver/emails/custom_email_base.pre.html"
     html_source_template_path = "templates/%s.source.html" % (email_id,)
@@ -31,6 +32,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     # First, we render the markdown input file just like our
     # user-facing docs with render_markdown_path.
     shutil.copyfile(options['markdown_template_path'], plain_text_template_path)
+
     rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
 
     # And then extend it with our standard email headers.
@@ -47,10 +49,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
 
     # Then, we compile the email template using inline_email_css to
     # add our standard styling to the paragraph tags (etc.).
-    #
-    # TODO: Ideally, we'd just refactor inline-email-css to
-    # compile this one template, not all of them.
-    subprocess.check_call(["./scripts/setup/inline_email_css.py"])
+    inline_template(email_filename)
 
     # Finally, we send the actual emails.
     for user_profile in users:
