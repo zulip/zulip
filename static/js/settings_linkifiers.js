@@ -12,9 +12,6 @@ exports.maybe_disable_widgets = function () {
     if (page_params.is_admin) {
         return;
     }
-
-    $(".organization-box [data-name='filter-settings']")
-        .find("input, button, select").attr("disabled", true);
 };
 
 exports.populate_filters = function (filters_data) {
