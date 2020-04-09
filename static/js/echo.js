@@ -133,7 +133,7 @@ exports.insert_local_message = function (message_request, local_id_float) {
 
     message.display_recipient = echo.build_display_recipient(message);
     local_message.insert_message(message);
-    return message.local_id;
+    return message;
 };
 
 exports.is_slash_command = function (content) {
@@ -174,7 +174,8 @@ exports.try_deliver_locally = function (message_request) {
         return;
     }
 
-    return exports.insert_local_message(message_request, local_id_float);
+    const message = exports.insert_local_message(message_request, local_id_float);
+    return message;
 };
 
 exports.edit_locally = function (message, request) {
