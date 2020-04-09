@@ -181,6 +181,12 @@ class WebhookIntegration(Integration):
     def url_object(self) -> RegexPattern:
         return url(self.url, self.function)
 
+def split_fixture_path(path: str) -> Tuple[str, str]:
+    path, fixture_name = os.path.split(path)
+    fixture_name, _ = os.path.splitext(fixture_name)
+    integration_name = os.path.split(os.path.dirname(path))[-1]
+    return integration_name, fixture_name
+
 class HubotIntegration(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
 
