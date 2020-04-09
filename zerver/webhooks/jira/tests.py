@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from urllib.parse import quote, unquote
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -7,7 +6,7 @@ from zerver.lib.users import get_api_key
 
 class JiraHookTests(WebhookTestCase):
     STREAM_NAME = 'jira'
-    URL_TEMPLATE = u"/api/v1/external/jira?api_key={api_key}&stream={stream}"
+    URL_TEMPLATE = "/api/v1/external/jira?api_key={api_key}&stream={stream}"
 
     def test_custom_stream(self) -> None:
         api_key = get_api_key(self.test_user)
@@ -91,7 +90,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
         self.send_and_test_stream_message('created_v1', expected_topic, expected_message)
 
     def test_created_with_unicode(self) -> None:
-        expected_topic = u"BUG-15: New bug with à hook"
+        expected_topic = "BUG-15: New bug with à hook"
         expected_message = """
 Leo Franchià created [BUG-15: New bug with à hook](http://lfranchi.com:8080/browse/BUG-15):
 

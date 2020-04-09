@@ -20,7 +20,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     )
     """
 
-    with open(options["markdown_template_path"], "r") as f:
+    with open(options["markdown_template_path"]) as f:
         email_template_hash = hashlib.sha256(f.read().encode('utf-8')).hexdigest()[0:32]
     email_id = "zerver/emails/custom_email_%s" % (email_template_hash,)
     markdown_email_base_template_path = "templates/zerver/emails/custom_email_base.pre.html"
@@ -35,7 +35,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
 
     # And then extend it with our standard email headers.
     with open(html_source_template_path, "w") as f:
-        with open(markdown_email_base_template_path, "r") as base_template:
+        with open(markdown_email_base_template_path) as base_template:
             # Note that we're doing a hacky non-Jinja2 substitution here;
             # we do this because the normal render_markdown_path ordering
             # doesn't commute properly with inline-email-css.

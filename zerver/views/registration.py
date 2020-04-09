@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import List, Dict, Optional
 
 from django.utils.translation import ugettext as _

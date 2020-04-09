@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import re
 import sys
 import mock
@@ -162,7 +160,7 @@ class OpenAPIToolsTest(ZulipTestCase):
 class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
     checked_endpoints = set()  # type: Set[str]
-    pending_endpoints = set([
+    pending_endpoints = {
         #### TODO: These endpoints are a priority to document:
         '/messages/matches_narrow',
         '/realm/presence',
@@ -268,7 +266,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/user_groups/{user_group_id}/members',
         # Regex with an unnamed capturing group.
         '/users/(?!me/)(?P<email>[^/]*)/presence',
-    ])
+    }
 
     # Endpoints where the documentation is currently failing our
     # consistency tests.  We aim to keep this list empty.
@@ -612,9 +610,9 @@ so maybe we shouldn't include it in pending_endpoints.
                 # argument list matches what actually appears in the
                 # codebase.
 
-                openapi_parameter_names = set(
-                    [parameter['name'] for parameter in openapi_parameters]
-                )
+                openapi_parameter_names = {
+                    parameter['name'] for parameter in openapi_parameters
+                }
 
                 if len(accepted_arguments - openapi_parameter_names) > 0:  # nocoverage
                     print("Undocumented parameters for",

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.http import HttpResponse
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.actions import do_change_stream_web_public

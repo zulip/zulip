@@ -41,7 +41,7 @@ def get_config(section: str, key: str, default_value: Optional[str]=None) -> Opt
 
 def get_from_file_if_exists(path: str) -> str:
     if os.path.exists(path):
-        with open(path, "r") as f:
+        with open(path) as f:
             return f.read()
     else:
         return ''

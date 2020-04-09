@@ -278,7 +278,7 @@ class APICodeExamplesGenerator(Extension):
 
 class APICodeExamplesPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
-        super(APICodeExamplesPreprocessor, self).__init__(md)
+        super().__init__(md)
         self.api_url = config['api_url']
 
     def run(self, lines: List[str]) -> List[str]:

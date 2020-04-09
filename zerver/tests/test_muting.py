@@ -23,7 +23,7 @@ class MutedTopicsTests(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         cordelia  = self.example_user('cordelia')
         realm = hamlet.realm
-        stream = get_stream(u'Verona', realm)
+        stream = get_stream('Verona', realm)
         recipient = stream.recipient
         topic_name = 'teST topic'
 
@@ -89,7 +89,7 @@ class MutedTopicsTests(ZulipTestCase):
         realm = user.realm
         self.login_user(user)
 
-        stream = get_stream(u'Verona', realm)
+        stream = get_stream('Verona', realm)
         recipient = stream.recipient
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
@@ -125,7 +125,7 @@ class MutedTopicsTests(ZulipTestCase):
             user_profile=user,
             stream_id=stream.id,
             recipient_id=recipient.id,
-            topic_name=u'Verona3',
+            topic_name='Verona3',
             date_muted=timezone_now(),
         )
 

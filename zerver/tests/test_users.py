@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from email.utils import parseaddr
 
 from typing import (Any, Dict, Iterable, List, Mapping,
@@ -800,7 +798,7 @@ class UserProfileTest(ZulipTestCase):
         ]
 
         self.assertEqual(user_ids_to_users([], get_realm("zulip")), [])
-        self.assertEqual(set([user_profile.id for user_profile in user_ids_to_users(real_user_ids, get_realm("zulip"))]),
+        self.assertEqual({user_profile.id for user_profile in user_ids_to_users(real_user_ids, get_realm("zulip"))},
                          set(real_user_ids))
         with self.assertRaises(JsonableError):
             user_ids_to_users([1234], get_realm("zephyr"))
@@ -1084,7 +1082,7 @@ class ActivateTest(ZulipTestCase):
         self.assertEqual(len(outbox), 1)
         for message in outbox:
             to_fields = [parseaddr(to_field)[1] for to_field in message.to]
-            self.assertEqual(set([hamlet.delivery_email, iago.delivery_email]), set(to_fields))
+            self.assertEqual({hamlet.delivery_email, iago.delivery_email}, set(to_fields))
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
 class RecipientInfoTest(ZulipTestCase):

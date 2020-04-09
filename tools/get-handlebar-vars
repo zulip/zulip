@@ -15,7 +15,7 @@ def debug(obj):
 
 def parse_file(fn):
     # type: (str) -> Dict[str, Any]
-    with open(fn, 'r') as f:
+    with open(fn) as f:
         text = f.read()
     tags = re.findall(r'{+\s*(.*?)\s*}+', text)
     root = {}  # type: Dict[str, Any]

@@ -84,7 +84,7 @@ def untar_input_file(tar_file: str) -> str:
 def read_user_data(data_dir: str) -> List[ZerverFieldsT]:
     fn = 'users.json'
     data_file = os.path.join(data_dir, fn)
-    with open(data_file, "r") as fp:
+    with open(data_file) as fp:
         return ujson.load(fp)
 
 def convert_user_data(user_handler: UserHandler,
@@ -257,7 +257,7 @@ def convert_room_data(raw_data: List[ZerverFieldsT],
             users = set()
             if api_token is not None:
                 hc = hypchat.HypChat(api_token)
-                room_data = hc.fromurl('{0}/v2/room/{1}/member'.format(hc.endpoint, in_dict['id']))
+                room_data = hc.fromurl('{}/v2/room/{}/member'.format(hc.endpoint, in_dict['id']))
 
                 for item in room_data['items']:
                     hipchat_user_id = item['id']

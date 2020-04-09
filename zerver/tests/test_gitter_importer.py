@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.import_realm import (
     do_import_realm,
 )
@@ -65,11 +64,11 @@ class GitterImporter(ZulipTestCase):
         # test recipient
         exported_recipient_id = self.get_set(realm['zerver_recipient'], 'id')
         exported_recipient_type = self.get_set(realm['zerver_recipient'], 'type')
-        self.assertEqual(set([1, 2]), exported_recipient_type)
+        self.assertEqual({1, 2}, exported_recipient_type)
 
         # test subscription
         exported_subscription_userprofile = self.get_set(realm['zerver_subscription'], 'user_profile')
-        self.assertEqual(set([0, 1]), exported_subscription_userprofile)
+        self.assertEqual({0, 1}, exported_subscription_userprofile)
         exported_subscription_recipient = self.get_set(realm['zerver_subscription'], 'recipient')
         self.assertEqual(len(exported_subscription_recipient), 3)
         self.assertIn(realm['zerver_subscription'][1]['recipient'], exported_recipient_id)

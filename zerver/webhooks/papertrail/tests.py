@@ -9,7 +9,7 @@ class PapertrailHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'papertrail'
 
     def test_short_message(self) -> None:
-        expected_topic = u"logs"
+        expected_topic = "logs"
         expected_message = """
 [Search for "Important stuff"](https://papertrailapp.com/searches/42) found **2** matches:
 
@@ -27,7 +27,7 @@ A short event
                                           content_type="application/x-www-form-urlencoded")
 
     def test_long_message(self) -> None:
-        expected_topic = u"logs"
+        expected_topic = "logs"
         expected_message = """
 [Search for "Important stuff"](https://papertrailapp.com/searches/42) found **5** matches:
 

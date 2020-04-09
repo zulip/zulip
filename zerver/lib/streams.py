@@ -222,7 +222,7 @@ def filter_stream_authorization(user_profile: UserProfile,
             unauthorized_streams.append(stream)
 
     authorized_streams = [stream for stream in streams if
-                          stream.id not in set(stream.id for stream in unauthorized_streams)]
+                          stream.id not in {stream.id for stream in unauthorized_streams}]
     return authorized_streams, unauthorized_streams
 
 def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
@@ -243,7 +243,7 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
     """
     # Validate all streams, getting extant ones, then get-or-creating the rest.
 
-    stream_set = set(stream_dict["name"] for stream_dict in streams_raw)
+    stream_set = {stream_dict["name"] for stream_dict in streams_raw}
 
     for stream_name in stream_set:
         # Stream names should already have been stripped by the

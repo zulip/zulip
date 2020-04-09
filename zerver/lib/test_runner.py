@@ -575,8 +575,7 @@ def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
 def get_tests_from_suite(suite: unittest.TestSuite) -> TestCase:
     for test in suite:
         if isinstance(test, TestSuite):
-            for child in get_tests_from_suite(test):
-                yield child
+            yield from get_tests_from_suite(test)
         else:
             yield test
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from django.template.loader import get_template
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement

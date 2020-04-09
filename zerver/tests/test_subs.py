@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from typing import Any, Dict, List, Mapping, Optional, Set
 
 from django.conf import settings
@@ -111,8 +109,8 @@ class TestMiscStuff(ZulipTestCase):
 
 class TestCreateStreams(ZulipTestCase):
     def test_creating_streams(self) -> None:
-        stream_names = [u'new1', u'new2', u'new3']
-        stream_descriptions = [u'des1', u'des2', u'des3']
+        stream_names = ['new1', 'new2', 'new3']
+        stream_descriptions = ['des1', 'des2', 'des3']
         realm = get_realm('zulip')
 
         # Test stream creation events.
@@ -476,7 +474,7 @@ class StreamAdminTest(ZulipTestCase):
         do_change_is_admin(user_profile, True)
 
         result = self.client_delete('/json/streams/999999999')
-        self.assert_json_error(result, u'Invalid stream id')
+        self.assert_json_error(result, 'Invalid stream id')
 
     def test_deactivate_stream_backend_requires_realm_admin(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -593,10 +591,10 @@ class StreamAdminTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             stream_id = stream_name2_exists.id
             result = self.client_patch('/json/streams/%d' % (stream_id,),
-                                       {'new_name': ujson.dumps(u'नया नाम'.encode('utf-8'))})
+                                       {'new_name': ujson.dumps('नया नाम'.encode())})
         self.assert_json_success(result)
         # While querying, system can handle unicode strings.
-        stream_name_uni_exists = get_stream(u'नया नाम', realm)
+        stream_name_uni_exists = get_stream('नया नाम', realm)
         self.assertTrue(stream_name_uni_exists)
 
         # Test case to handle changing of unicode stream name to newer name
@@ -605,30 +603,30 @@ class StreamAdminTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             stream_id = stream_name_uni_exists.id
             result = self.client_patch('/json/streams/%d' % (stream_id,),
-                                       {'new_name': ujson.dumps(u'नाम में क्या रक्खा हे'.encode('utf-8'))})
+                                       {'new_name': ujson.dumps('नाम में क्या रक्खा हे'.encode())})
         self.assert_json_success(result)
         # While querying, system can handle unicode strings.
-        self.assertRaises(Stream.DoesNotExist, get_stream, u'नया नाम', realm)
+        self.assertRaises(Stream.DoesNotExist, get_stream, 'नया नाम', realm)
 
-        stream_name_new_uni_exists = get_stream(u'नाम में क्या रक्खा हे', realm)
+        stream_name_new_uni_exists = get_stream('नाम में क्या रक्खा हे', realm)
         self.assertTrue(stream_name_new_uni_exists)
 
         # Test case to change name from one language to other.
         with tornado_redirected_to_list(events):
             stream_id = stream_name_new_uni_exists.id
             result = self.client_patch('/json/streams/%d' % (stream_id,),
-                                       {'new_name': ujson.dumps(u'français'.encode('utf-8'))})
+                                       {'new_name': ujson.dumps('français'.encode())})
         self.assert_json_success(result)
-        stream_name_fr_exists = get_stream(u'français', realm)
+        stream_name_fr_exists = get_stream('français', realm)
         self.assertTrue(stream_name_fr_exists)
 
         # Test case to change name to mixed language name.
         with tornado_redirected_to_list(events):
             stream_id = stream_name_fr_exists.id
             result = self.client_patch('/json/streams/%d' % (stream_id,),
-                                       {'new_name': ujson.dumps(u'français name'.encode('utf-8'))})
+                                       {'new_name': ujson.dumps('français name'.encode())})
         self.assert_json_success(result)
-        stream_name_mixed_exists = get_stream(u'français name', realm)
+        stream_name_mixed_exists = get_stream('français name', realm)
         self.assertTrue(stream_name_mixed_exists)
 
         # Test case for notified users in private streams.
@@ -956,7 +954,7 @@ class StreamAdminTest(ZulipTestCase):
         self.login_user(user_profile)
 
         # Set up the stream.
-        stream_name = u"hümbüǵ"
+        stream_name = "hümbüǵ"
         self.make_stream(stream_name, invite_only=invite_only)
 
         # Set up the principal to be unsubscribed.
@@ -1178,7 +1176,7 @@ class StreamAdminTest(ZulipTestCase):
         self.login_user(admin)
         self.assertTrue(admin.is_realm_admin)
 
-        stream_name = u"hümbüǵ"
+        stream_name = "hümbüǵ"
         self.make_stream(stream_name)
 
         result = self.client_delete("/json/users/me/subscriptions",
@@ -1202,7 +1200,7 @@ class DefaultStreamTest(ZulipTestCase):
         do_add_default_stream(stream)
         new_stream_names = self.get_default_stream_names(realm)
         added_stream_names = new_stream_names - orig_stream_names
-        self.assertEqual(added_stream_names, set(['Added Stream']))
+        self.assertEqual(added_stream_names, {'Added Stream'})
         # idempotentcy--2nd call to add_default_stream should be a noop
         do_add_default_stream(stream)
         self.assertEqual(self.get_default_stream_names(realm), new_stream_names)
@@ -1517,7 +1515,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
                                   {"group_name": 'x'*100, "description": description,
                                    "stream_names": ujson.dumps(stream_names)})
         self.assert_json_error(result, "Default stream group name too long (limit: {} characters)"
-                               .format((DefaultStreamGroup.MAX_NAME_LENGTH)))
+                               .format(DefaultStreamGroup.MAX_NAME_LENGTH))
 
         result = self.client_post('/json/default_stream_groups/create',
                                   {"group_name": "abc\000", "description": description,
@@ -2095,7 +2093,7 @@ class SubscriptionAPITest(ZulipTestCase):
         are generated.
         """
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
-        add_streams = [u"Verona2", u"Denmark5"]
+        add_streams = ["Verona2", "Denmark5"]
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
@@ -2113,7 +2111,7 @@ class SubscriptionAPITest(ZulipTestCase):
         are generated.
         """
         self.assertNotEqual(len(self.streams), 0)
-        add_streams = [u"Verona2", u"Denmark5"]
+        add_streams = ["Verona2", "Denmark5"]
         self.assertNotEqual(len(add_streams), 0)
         events = []  # type: List[Mapping[str, Any]]
         other_params = {
@@ -2255,9 +2253,9 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Subscribing to a stream name with non-ASCII characters succeeds.
         """
-        self.helper_check_subs_before_and_after_add(self.streams + [u"hümbüǵ"], {},
-                                                    [u"hümbüǵ"], self.streams, self.test_email,
-                                                    self.streams + [u"hümbüǵ"], self.test_realm)
+        self.helper_check_subs_before_and_after_add(self.streams + ["hümbüǵ"], {},
+                                                    ["hümbüǵ"], self.streams, self.test_email,
+                                                    self.streams + ["hümbüǵ"], self.test_realm)
 
     def test_subscriptions_add_too_long(self) -> None:
         """
@@ -2412,7 +2410,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # verify that a welcome message was sent to the stream
         msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
-        self.assertEqual(msg.topic_name(), u'stream events')
+        self.assertEqual(msg.topic_name(), 'stream events')
         self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
         self.assertIn('Stream created by @_**', msg.content)
 
@@ -2438,7 +2436,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 self.assertEqual(ev['event']['op'], 'add')
                 self.assertEqual(
                     set(ev['event']['subscriptions'][0]['subscribers']),
-                    set([user1.id, user2.id])
+                    {user1.id, user2.id}
                 )
             else:
                 # Check "peer_add" events for streams users were
@@ -2467,7 +2465,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['users'], [get_user(self.test_email, self.test_realm).id])
         self.assertEqual(
             set(add_event['event']['subscriptions'][0]['subscribers']),
-            set([user1.id, user2.id, self.test_user.id])
+            {user1.id, user2.id, self.test_user.id}
         )
 
         self.assertNotIn(self.example_user('polonius').id, add_peer_event['users'])
@@ -2497,7 +2495,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['users'], [get_user(email3, realm3).id])
         self.assertEqual(
             set(add_event['event']['subscriptions'][0]['subscribers']),
-            set([user1.id, user2.id, user3.id, self.test_user.id])
+            {user1.id, user2.id, user3.id, self.test_user.id}
         )
 
         # We don't send a peer_add event to othello
@@ -2538,7 +2536,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['users'], [user_profile.id])
         self.assertEqual(
             set(add_event['event']['subscriptions'][0]['subscribers']),
-            set([user_profile.id, existing_user_profile.id])
+            {user_profile.id, existing_user_profile.id}
         )
 
         # We don't send a peer_add event to othello, but we do send peer_add event to
@@ -2877,7 +2875,7 @@ class SubscriptionAPITest(ZulipTestCase):
         non-ASCII characters.
         """
         iago = self.example_user('iago')
-        self.assert_adding_subscriptions_for_principal(iago.email, get_realm('zulip'), [u"hümbüǵ"])
+        self.assert_adding_subscriptions_for_principal(iago.email, get_realm('zulip'), ["hümbüǵ"])
 
     def test_subscription_add_invalid_principal(self) -> None:
         """
@@ -3093,7 +3091,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         with mock.patch('zerver.models.Recipient.__str__', return_value='recip'):
             self.assertEqual(str(subscription),
-                             u'<Subscription: '
+                             '<Subscription: '
                              '<UserProfile: %s %s> -> recip>' % (user_profile.email, user_profile.realm))
 
         self.assertIsNone(subscription.desktop_notifications)
@@ -3429,7 +3427,7 @@ class StreamIdTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.login_user(user)
         result = self.client_get("/json/get_stream_id?stream=wrongname")
-        self.assert_json_error(result, u"Invalid stream name 'wrongname'")
+        self.assert_json_error(result, "Invalid stream name 'wrongname'")
 
 class InviteOnlyStreamTest(ZulipTestCase):
     def test_must_be_subbed_to_send(self) -> None:
@@ -3856,7 +3854,7 @@ class GetSubscribersTest(ZulipTestCase):
         # Verify another user can't get the data.
         self.login('cordelia')
         result = self.client_get("/json/streams/%d/members" % (stream_id,))
-        self.assert_json_error(result, u'Invalid stream id')
+        self.assert_json_error(result, 'Invalid stream id')
 
         # But an organization administrator can
         self.login('iago')
@@ -3869,7 +3867,7 @@ class GetSubscribersTest(ZulipTestCase):
         """
         stream_id = 99999999
         result = self.client_get("/json/streams/%d/members" % (stream_id,))
-        self.assert_json_error(result, u'Invalid stream id')
+        self.assert_json_error(result, 'Invalid stream id')
 
     def test_json_get_subscribers(self) -> None:
         """

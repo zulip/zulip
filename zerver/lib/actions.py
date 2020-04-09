@@ -1158,11 +1158,11 @@ def get_recipient_info(recipient: Recipient,
     # direct recipient or were mentioned; for now, we're just making
     # sure we have the data we need for that without extra database
     # queries.
-    default_bot_user_ids = set([
+    default_bot_user_ids = {
         row['id']
         for row in rows
         if row['is_bot'] and row['bot_type'] == UserProfile.DEFAULT_BOT
-    ])
+    }
 
     service_bot_tuples = [
         (row['id'], row['bot_type'])
@@ -1946,7 +1946,7 @@ def get_recipient_from_user_profiles(recipient_profiles: Sequence[UserProfile],
     # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages
     recipient_profiles_map[sender.id] = sender
 
-    user_ids = set([user_id for user_id in recipient_profiles_map])  # type: Set[int]
+    user_ids = {user_id for user_id in recipient_profiles_map}  # type: Set[int]
     return get_huddle_recipient(user_ids)
 
 def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
@@ -2680,7 +2680,7 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
         for stream_id in stream_ids
     ])
 
-    result = dict((stream["id"], []) for stream in stream_dicts)  # type: Dict[int, List[int]]
+    result = {stream["id"]: [] for stream in stream_dicts}  # type: Dict[int, List[int]]
     if not recipient_ids:
         return result
 
@@ -2857,7 +2857,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                            acting_user: Optional[UserProfile]=None) -> SubT:
     users = list(users)
 
-    recipients_map = dict((stream.id, stream.recipient_id) for stream in streams)  # type: Dict[int, int]
+    recipients_map = {stream.id: stream.recipient_id for stream in streams}  # type: Dict[int, int]
     recipient_ids = [recipient_id for recipient_id in recipients_map.values()]  # type: List[int]
 
     stream_map = {}  # type: Dict[int, Stream]
@@ -4877,7 +4877,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     # Deactivated streams aren't in stream_hash.
     streams = [stream_hash[sub["stream_id"]] for sub in sub_dicts
                if sub["stream_id"] in stream_hash]
-    streams_subscribed_map = dict((sub["stream_id"], sub["active"]) for sub in sub_dicts)
+    streams_subscribed_map = {sub["stream_id"]: sub["active"] for sub in sub_dicts}
 
     # Add never subscribed streams to streams_subscribed_map
     streams_subscribed_map.update({stream['id']: False for stream in all_streams if stream not in streams})
@@ -5577,7 +5577,7 @@ def check_attachment_reference_change(message: Message) -> bool:
     # For a unsaved message edit (message.* has been updated, but not
     # saved to the database), adjusts Attachment data to correspond to
     # the new content.
-    prev_attachments = set([a.path_id for a in message.attachment_set.all()])
+    prev_attachments = {a.path_id for a in message.attachment_set.all()}
     new_attachments = set(message.potential_attachment_path_ids)
 
     if new_attachments == prev_attachments:
@@ -5652,7 +5652,7 @@ def try_update_realm_custom_profile_field(realm: Realm, field: CustomProfileFiel
     notify_realm_custom_profile_fields(realm, 'update')
 
 def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> None:
-    order_mapping = dict((_[1], _[0]) for _ in enumerate(order))
+    order_mapping = {_[1]: _[0] for _ in enumerate(order)}
     fields = CustomProfileField.objects.filter(realm=realm)
     for field in fields:
         if field.id not in order_mapping:

@@ -28,7 +28,7 @@ for zuliprc_path in zuliprc_paths_list:
     zuliprc = configparser.ConfigParser()
     result = ''
     try:
-        with open(zuliprc_path, 'r') as f:
+        with open(zuliprc_path) as f:
             zuliprc.read_file(f, zuliprc_path)
         api_details = zuliprc['api']
         email = api_details['email']
@@ -66,7 +66,7 @@ for zuliprc_path in zuliprc_paths_list:
                     zuliprc.write(w)
                 result = 'SUCCESS'
                 reason = 'API field updated for user %s' % (email,)
-            except (IOError, OSError):
+            except OSError:
                 result = 'FAILURE'
                 reason = 'Writing to file unsuccessful'
         else:

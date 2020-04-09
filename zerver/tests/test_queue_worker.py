@@ -340,7 +340,7 @@ class WorkerTest(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
         data = [
             dict(
-                message=u'\xf3test',
+                message='\xf3test',
                 time=time.time(),
                 rcpt_to=stream_to_address
             )
@@ -367,7 +367,7 @@ class WorkerTest(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
         data = [
             dict(
-                message=u'\xf3test',
+                message='\xf3test',
                 time=time.time(),
                 rcpt_to=stream_to_address
             )
@@ -394,7 +394,7 @@ class WorkerTest(ZulipTestCase):
                 with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
                     address = 'mm' + ('x' * 32) + '@example.com'
                     event = dict(
-                        message=u'\xf3test',
+                        message='\xf3test',
                         time=time.time(),
                         rcpt_to=address
                     )
@@ -580,7 +580,7 @@ class WorkerTest(ZulipTestCase):
                     "Problem handling data on queue unreliable_worker")
 
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             line = f.readline().strip()
         events = ujson.loads(line.split('\t')[1])
         self.assert_length(events, 1)
@@ -617,7 +617,7 @@ class WorkerTest(ZulipTestCase):
                     "Problem handling data on queue unreliable_loopworker")
 
         self.assertEqual(processed, ['good', 'fine'])
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             line = f.readline().strip()
         events = ujson.loads(line.split('\t')[1])
         self.assert_length(events, 4)

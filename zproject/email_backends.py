@@ -79,7 +79,7 @@ class EmailLogBackEnd(BaseEmailBackend):
         # Read in the pre-existing log, so that we can add the new entry
         # at the top.
         try:
-            with open(settings.EMAIL_CONTENT_LOG_PATH, "r") as f:
+            with open(settings.EMAIL_CONTENT_LOG_PATH) as f:
                 previous_emails = f.read()
         except FileNotFoundError:
             previous_emails = ""

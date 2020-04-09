@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import datetime
 from email.utils import parseaddr
 
@@ -672,7 +671,7 @@ class LoginTest(ZulipTestCase):
         You can log in even if your password contain non-ASCII characters.
         """
         email = self.nonreg_email('test')
-        password = u"hÃ¼mbÃ¼Çµ"
+        password = "hÃ¼mbÃ¼Çµ"
 
         # Registering succeeds.
         self.register(email, password)
@@ -1199,8 +1198,8 @@ earl-test@zulip.com""", ["Denmark"]))
         only sent to the new users.
         """
         self.login('hamlet')
-        existing = [self.example_email("hamlet"), u"othello@zulip.com"]
-        new = [u"foo-test@zulip.com", u"bar-test@zulip.com"]
+        existing = [self.example_email("hamlet"), "othello@zulip.com"]
+        new = ["foo-test@zulip.com", "bar-test@zulip.com"]
         invitee_emails = "\n".join(existing + new)
         self.assert_json_error(self.invite(invitee_emails, ["Denmark"]),
                                "Some of those addresses are already using Zulip, \
@@ -1365,7 +1364,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.login('hamlet')
         invitee = "alice-test@zulip.com"
 
-        stream_name = u"hÃ¼mbÃ¼Çµ"
+        stream_name = "hÃ¼mbÃ¼Çµ"
 
         # Make sure we're subscribed before inviting someone.
         self.subscribe(self.example_user("hamlet"), stream_name)
@@ -2200,7 +2199,7 @@ class UserSignUpTest(InviteUserBase):
         password = "newpassword"
         timezone = "US/Mountain"
         realm = get_realm('zulip')
-        do_set_realm_property(realm, 'default_language', u"de")
+        do_set_realm_property(realm, 'default_language', "de")
 
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)

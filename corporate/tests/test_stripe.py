@@ -105,7 +105,7 @@ def read_stripe_fixture(decorated_function_name: str,
     def _read_stripe_fixture(*args: Any, **kwargs: Any) -> Any:
         mock = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
         fixture_path = stripe_fixture_path(decorated_function_name, mocked_function_name, mock.call_count)
-        fixture = ujson.load(open(fixture_path, 'r'))
+        fixture = ujson.load(open(fixture_path))
         # Check for StripeError fixtures
         if "json_body" in fixture:
             requestor = stripe.api_requestor.APIRequestor()
@@ -151,7 +151,7 @@ def normalize_fixture_data(decorated_function: CallableT,
     normalized_values = {pattern: {}
                          for pattern in pattern_translations.keys()}  # type: Dict[str, Dict[str, str]]
     for fixture_file in fixture_files_for_function(decorated_function):
-        with open(fixture_file, "r") as f:
+        with open(fixture_file) as f:
             file_content = f.read()
         for pattern, translation in pattern_translations.items():
             for match in re.findall(pattern, file_content):
@@ -214,7 +214,7 @@ def mock_stripe(tested_timestamp_fields: List[str]=[],
 
 # A Kandra is a fictional character that can become anything. Used as a
 # wildcard when testing for equality.
-class Kandra(object):  # nocoverage: TODO
+class Kandra:  # nocoverage: TODO
     def __eq__(self, other: Any) -> bool:
         return True
 
@@ -288,7 +288,7 @@ class StripeTestCase(ZulipTestCase):
 
     # Upgrade without talking to Stripe
     def local_upgrade(self, *args: Any) -> None:
-        class StripeMock(object):
+        class StripeMock:
             def __init__(self, depth: int=1):
                 self.id = 'id'
                 self.created = '1000'
@@ -1045,8 +1045,8 @@ class RequiresBillingAccessTest(ZulipTestCase):
         # Make sure that we are testing all the JSON endpoints
         # Quite a hack, but probably fine for now
         string_with_all_endpoints = str(get_resolver('corporate.urls').reverse_dict)
-        json_endpoints = set([word.strip("\"'()[],$") for word in string_with_all_endpoints.split()
-                              if 'json' in word])
+        json_endpoints = {word.strip("\"'()[],$") for word in string_with_all_endpoints.split()
+                          if 'json' in word}
         # No need to test upgrade endpoint as it only requires user to be logged in.
         json_endpoints.remove("json/billing/upgrade")
 

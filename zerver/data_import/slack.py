@@ -205,7 +205,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         if not user.get('is_primary_owner', False):
             user_id_count += 1
 
-        logging.info(u"{} -> {}".format(user['name'], userprofile_dict['email']))
+        logging.info("{} -> {}".format(user['name'], userprofile_dict['email']))
 
     process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
     logging.info('######### IMPORTING USERS FINISHED #########\n')
@@ -397,7 +397,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int,
 
             stream_id_count += 1
             recipient_id_count += 1
-            logging.info(u"{} -> created".format(channel['name']))
+            logging.info("{} -> created".format(channel['name']))
 
             # TODO map Slack's pins to Zulip's stars
             # There is the security model that Slack's pins are known to the team owner
@@ -443,7 +443,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int,
 
             huddle_id_count += 1
             recipient_id_count += 1
-            logging.info(u"{} -> created".format(mpim['name']))
+            logging.info("{} -> created".format(mpim['name']))
 
     try:
         mpims = get_data_file(slack_data_dir + '/mpims.json')
@@ -649,8 +649,7 @@ def get_messages_iterator(slack_data_dir: str, added_channels: Dict[str, Any],
 
         # we sort the messages according to the timestamp to show messages with
         # the proper date order
-        for message in sorted(messages_for_one_day, key=lambda m: m['ts']):
-            yield message
+        yield from sorted(messages_for_one_day, key=lambda m: m['ts'])
 
 def channel_message_to_zerver_message(realm_id: int,
                                       users: List[ZerverFieldsT],
@@ -1095,7 +1094,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     logging.info("Zulip data dump created at %s" % (output_dir,))
 
 def get_data_file(path: str) -> Any:
-    with open(path, "r") as fp:
+    with open(path) as fp:
         data = ujson.load(fp)
         return data
 

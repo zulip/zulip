@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
@@ -23,6 +22,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='reaction',
-            unique_together=set([('user_profile', 'message', 'emoji_name')]),
+            unique_together={('user_profile', 'message', 'emoji_name')},
         ),
     ]

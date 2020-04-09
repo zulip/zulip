@@ -18,7 +18,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
         api_url=realm.uri + "/api")])
 
     for file_name in glob.glob("templates/zerver/api/*.md"):
-        documentation_lines = open(file_name, "r").readlines()
+        documentation_lines = open(file_name).readlines()
         for line in documentation_lines:
             # A typical example from the markdown source looks like this:
             #     {generate_code_example(curl, ...}

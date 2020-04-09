@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -10,8 +9,8 @@ class GiteaHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'gitea'
 
     def test_multiple_commits(self) -> None:
-        expected_topic = u"test / d"
-        expected_message = u"""kostekIV [pushed](https://try.gitea.io/kostekIV/test/compare/21138d2ca0ce18f8e037696fdbe1b3f0c211f630...2ec0c971d04723523aa20f2b378f8b419b47d4ec) 5 commits to branch d.
+        expected_topic = "test / d"
+        expected_message = """kostekIV [pushed](https://try.gitea.io/kostekIV/test/compare/21138d2ca0ce18f8e037696fdbe1b3f0c211f630...2ec0c971d04723523aa20f2b378f8b419b47d4ec) 5 commits to branch d.
 
 * commit ([2ec0c97](https://try.gitea.io/kostekIV/test/commit/2ec0c971d04723523aa20f2b378f8b419b47d4ec))
 * commit ([6cb1701](https://try.gitea.io/kostekIV/test/commit/6cb1701c8b0114ad716f4cd49153076e7109cb85))
@@ -21,78 +20,78 @@ class GiteaHookTests(WebhookTestCase):
         self.send_and_test_stream_message('push__5_commits', expected_topic, expected_message)
 
     def test_new_branch(self) -> None:
-        expected_topic = u"test / test-branch"
-        expected_message = u"kostekIV created [test-branch](https://try.gitea.io/kostekIV/test/src/test-branch) branch."
+        expected_topic = "test / test-branch"
+        expected_message = "kostekIV created [test-branch](https://try.gitea.io/kostekIV/test/src/test-branch) branch."
         self.send_and_test_stream_message('create__branch', expected_topic, expected_message)
 
     def test_pull_request_opened(self) -> None:
-        expected_topic = u"test / PR #1905 New pr"
-        expected_message = u"""kostekIV opened [PR #4](https://try.gitea.io/kostekIV/test/pulls/4) from `test-branch` to `master`."""
+        expected_topic = "test / PR #1905 New pr"
+        expected_message = """kostekIV opened [PR #4](https://try.gitea.io/kostekIV/test/pulls/4) from `test-branch` to `master`."""
         self.send_and_test_stream_message('pull_request__opened', expected_topic, expected_message)
 
     def test_pull_request_merged(self) -> None:
-        expected_topic = u"test / PR #1905 New pr"
-        expected_message = u"""kostekIV merged [PR #4](https://try.gitea.io/kostekIV/test/pulls/4) from `test-branch` to `master`."""
+        expected_topic = "test / PR #1905 New pr"
+        expected_message = """kostekIV merged [PR #4](https://try.gitea.io/kostekIV/test/pulls/4) from `test-branch` to `master`."""
         self.send_and_test_stream_message('pull_request__merged', expected_topic, expected_message)
 
     def test_pull_request_edited(self) -> None:
-        expected_topic = u"test / PR #1906 test 2"
-        expected_message = u"""kostekIV edited [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master`."""
+        expected_topic = "test / PR #1906 test 2"
+        expected_message = """kostekIV edited [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master`."""
         self.send_and_test_stream_message('pull_request__edited', expected_topic, expected_message)
 
     def test_pull_request_reopened(self) -> None:
-        expected_topic = u"test / PR #1906 test 2"
-        expected_message = u"""kostekIV reopened [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master`."""
+        expected_topic = "test / PR #1906 test 2"
+        expected_message = """kostekIV reopened [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master`."""
         self.send_and_test_stream_message('pull_request__reopened', expected_topic, expected_message)
 
     def test_pull_request_closed(self) -> None:
-        expected_topic = u"test / PR #1906 test 2"
-        expected_message = u"""kostekIV closed [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master`."""
+        expected_topic = "test / PR #1906 test 2"
+        expected_message = """kostekIV closed [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master`."""
         self.send_and_test_stream_message('pull_request__closed', expected_topic, expected_message)
 
     def test_pull_request_assigned(self) -> None:
-        expected_topic = u"test / PR #1906 test 2"
-        expected_message = u"""kostekIV assigned [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) (assigned to kostekIV) from `d` to `master`."""
+        expected_topic = "test / PR #1906 test 2"
+        expected_message = """kostekIV assigned [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) (assigned to kostekIV) from `d` to `master`."""
         self.send_and_test_stream_message('pull_request__assigned', expected_topic, expected_message)
 
     def test_issues_opened(self) -> None:
-        expected_topic = u"test / Issue #3 Test issue"
-        expected_message = u"""kostekIV opened [Issue #3](https://try.gitea.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest body\n~~~"""
+        expected_topic = "test / Issue #3 Test issue"
+        expected_message = """kostekIV opened [Issue #3](https://try.gitea.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest body\n~~~"""
         self.send_and_test_stream_message('issues__opened', expected_topic, expected_message)
 
     def test_issues_edited(self) -> None:
-        expected_topic = u"test / Issue #3 Test issue 2"
-        expected_message = u"""kostekIV edited [Issue #3](https://try.gitea.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest body\n~~~"""
+        expected_topic = "test / Issue #3 Test issue 2"
+        expected_message = """kostekIV edited [Issue #3](https://try.gitea.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest body\n~~~"""
         self.send_and_test_stream_message('issues__edited', expected_topic, expected_message)
 
     def test_issues_closed(self) -> None:
-        expected_topic = u"test / Issue #3 Test issue 2"
-        expected_message = u"""kostekIV closed [Issue #3](https://try.gitea.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest body\n~~~"""
+        expected_topic = "test / Issue #3 Test issue 2"
+        expected_message = """kostekIV closed [Issue #3](https://try.gitea.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest body\n~~~"""
         self.send_and_test_stream_message('issues__closed', expected_topic, expected_message)
 
     def test_issues_assigned(self) -> None:
-        expected_topic = u"test / Issue #3 Test issue"
-        expected_message = u"""kostekIV assigned [Issue #3](https://try.gitea.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest body\n~~~"""
+        expected_topic = "test / Issue #3 Test issue"
+        expected_message = """kostekIV assigned [Issue #3](https://try.gitea.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest body\n~~~"""
         self.send_and_test_stream_message('issues__assigned', expected_topic, expected_message)
 
     def test_issues_reopened(self) -> None:
-        expected_topic = u"test / Issue #3 Test issue 2"
-        expected_message = u"""kostekIV reopened [Issue #3](https://try.gitea.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest body\n~~~"""
+        expected_topic = "test / Issue #3 Test issue 2"
+        expected_message = """kostekIV reopened [Issue #3](https://try.gitea.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest body\n~~~"""
         self.send_and_test_stream_message('issues__reopened', expected_topic, expected_message)
 
     def test_issue_comment_new(self) -> None:
-        expected_topic = u"test / Issue #3 Test issue"
-        expected_message = u"""kostekIV [commented](https://try.gitea.io/kostekIV/test/issues/3#issuecomment-24400) on [Issue #3](https://try.gitea.io/kostekIV/test/issues/3):\n\n~~~ quote\ntest comment\n~~~"""
+        expected_topic = "test / Issue #3 Test issue"
+        expected_message = """kostekIV [commented](https://try.gitea.io/kostekIV/test/issues/3#issuecomment-24400) on [Issue #3](https://try.gitea.io/kostekIV/test/issues/3):\n\n~~~ quote\ntest comment\n~~~"""
         self.send_and_test_stream_message('issue_comment__new', expected_topic, expected_message)
 
     def test_issue_comment_in_pr(self) -> None:
-        expected_topic = u"test / Issue #1 dummy"
-        expected_message = u"""kostekIV [commented](https://try.gitea.io/kostekIV/test/pulls/1/files#issuecomment-24399) on [Issue #1](https://try.gitea.io/kostekIV/test/issues/1):\n\n~~~ quote\ntest comment\n~~~"""
+        expected_topic = "test / Issue #1 dummy"
+        expected_message = """kostekIV [commented](https://try.gitea.io/kostekIV/test/pulls/1/files#issuecomment-24399) on [Issue #1](https://try.gitea.io/kostekIV/test/issues/1):\n\n~~~ quote\ntest comment\n~~~"""
         self.send_and_test_stream_message('issue_comment__in_pr', expected_topic, expected_message)
 
     def test_issue_comment_edited(self) -> None:
-        expected_topic = u"test / Issue #3 Test issue 2"
-        expected_message = u"""kostekIV edited a [comment](https://try.gitea.io/kostekIV/test/issues/3#issuecomment-24400) on [Issue #3](https://try.gitea.io/kostekIV/test/issues/3):\n\n~~~ quote\nedit test comment\n~~~"""
+        expected_topic = "test / Issue #3 Test issue 2"
+        expected_message = """kostekIV edited a [comment](https://try.gitea.io/kostekIV/test/issues/3#issuecomment-24400) on [Issue #3](https://try.gitea.io/kostekIV/test/issues/3):\n\n~~~ quote\nedit test comment\n~~~"""
 
         self.send_and_test_stream_message('issue_comment__edited', expected_topic, expected_message)
 

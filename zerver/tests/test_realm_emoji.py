@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import mock
 
 from zerver.lib.actions import do_create_realm, do_create_user, \

@@ -309,7 +309,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     if not user_profile.enable_offline_email_notifications:
         return
 
-    recipients = set((msg['message'].recipient_id, msg['message'].topic_name()) for msg in missed_messages)
+    recipients = {(msg['message'].recipient_id, msg['message'].topic_name()) for msg in missed_messages}
     if len(recipients) != 1:
         raise ValueError(
             'All missed_messages must have the same recipient and topic %r' %
@@ -359,7 +359,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'narrow_url': narrow_url,
     })
 
-    senders = list(set(m['message'].sender for m in missed_messages))
+    senders = list({m['message'].sender for m in missed_messages})
     if (missed_messages[0]['message'].recipient.type == Recipient.HUDDLE):
         display_recipient = get_display_recipient(missed_messages[0]['message'].recipient)
         # Make sure that this is a list of strings, not a string.
@@ -383,9 +383,9 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     elif (context['mention'] or context['stream_email_notify']):
         # Keep only the senders who actually mentioned the user
         if context['mention']:
-            senders = list(set(m['message'].sender for m in missed_messages
-                               if m['trigger'] == 'mentioned' or
-                               m['trigger'] == 'wildcard_mentioned'))
+            senders = list({m['message'].sender for m in missed_messages
+                            if m['trigger'] == 'mentioned' or
+                            m['trigger'] == 'wildcard_mentioned'})
         message = missed_messages[0]['message']
         stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
         stream_header = "%s > %s" % (stream.name, message.topic_name())

@@ -247,8 +247,8 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                 type_structure['any'] = value_validator.type_structure  # type: ignore # monkey-patching
 
         if _allow_only_listed_keys:
-            required_keys_set = set(x[0] for x in required_keys)
-            optional_keys_set = set(x[0] for x in optional_keys)
+            required_keys_set = {x[0] for x in required_keys}
+            optional_keys_set = {x[0] for x in optional_keys}
             delta_keys = set(val.keys()) - required_keys_set - optional_keys_set
             if len(delta_keys) != 0:
                 return _("Unexpected arguments: %s") % (", ".join(list(delta_keys)),)

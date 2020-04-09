@@ -116,15 +116,15 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
     if settings.STATSD_HOST != '':
         # For statsd timer name
         if path == '/':
-            statsd_path = u'webreq'
+            statsd_path = 'webreq'
         else:
-            statsd_path = u"webreq.%s" % (path[1:].replace('/', '.'),)
+            statsd_path = "webreq.%s" % (path[1:].replace('/', '.'),)
             # Remove non-ascii chars from path (there should be none, if there are it's
             # because someone manually entered a nonexistent path), as UTF-8 chars make
             # statsd sad when it sends the key name over the socket
             statsd_path = statsd_path.encode('ascii', errors='ignore').decode("ascii")
         # TODO: This could probably be optimized to use a regular expression rather than a loop.
-        suppress_statsd = any((blacklisted in statsd_path for blacklisted in statsd_blacklisted_requests))
+        suppress_statsd = any(blacklisted in statsd_path for blacklisted in statsd_blacklisted_requests)
     else:
         suppress_statsd = True
         statsd_path = ''
@@ -227,13 +227,13 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         assert error_content_iter is not None
         error_content_list = list(error_content_iter)
         if not error_content_list:
-            error_data = u''
+            error_data = ''
         elif isinstance(error_content_list[0], str):
-            error_data = u''.join(error_content_list)
+            error_data = ''.join(error_content_list)
         elif isinstance(error_content_list[0], bytes):
             error_data = repr(b''.join(error_content_list))
         if len(error_data) > 200:
-            error_data = u"[content more than 200 characters]"
+            error_data = "[content more than 200 characters]"
         logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, requestor_for_logs))
 
 class LogRequests(MiddlewareMixin):

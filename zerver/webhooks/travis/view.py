@@ -14,9 +14,9 @@ GOOD_STATUSES = ['Passed', 'Fixed']
 BAD_STATUSES = ['Failed', 'Broken', 'Still Failing', 'Errored', 'Canceled']
 
 MESSAGE_TEMPLATE = (
-    u'Author: {}\n'
-    u'Build status: {} {}\n'
-    u'Details: [changes]({}), [build log]({})'
+    'Author: {}\n'
+    'Build status: {} {}\n'
+    'Details: [changes]({}), [build log]({})'
 )
 
 @api_key_only_webhook_view('Travis')

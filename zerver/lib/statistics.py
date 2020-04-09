@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from zerver.models import UserProfile, UserActivityInterval
 
 from datetime import datetime, timedelta

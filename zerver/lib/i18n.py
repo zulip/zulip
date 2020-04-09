@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import operator
 
 from django.conf import settings
@@ -27,7 +26,7 @@ def with_language(string: str, language: str) -> str:
 @lru_cache()
 def get_language_list() -> List[Dict[str, Any]]:
     path = os.path.join(settings.DEPLOY_ROOT, 'locale', 'language_name_map.json')
-    with open(path, 'r') as reader:
+    with open(path) as reader:
         languages = ujson.load(reader)
         return languages['name_map']
 
@@ -90,7 +89,7 @@ def get_language_translation_data(language: str) -> Dict[str, str]:
         language = 'id_ID'
     path = os.path.join(settings.DEPLOY_ROOT, 'locale', language, 'translations.json')
     try:
-        with open(path, 'r') as reader:
+        with open(path) as reader:
             return ujson.load(reader)
     except FileNotFoundError:
         print('Translation for {} not found at {}'.format(language, path))

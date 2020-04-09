@@ -18,7 +18,7 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: str) -> None:
         data_file = options['data_file']
         realm = self.get_realm(options)
-        with open(data_file, "r") as f:
+        with open(data_file) as f:
             for line in f:
                 email, new_name = line.strip().split(",", 1)
 

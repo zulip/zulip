@@ -17,7 +17,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         total_count = 0
         changed_count = 0
-        with open(options['dump1'], 'r') as dump1, open(options['dump2'], 'r') as dump2:
+        with open(options['dump1']) as dump1, open(options['dump2']) as dump2:
             for m1, m2 in zip(ijson.items(dump1, 'item'), ijson.items(dump2, 'item')):
                 total_count += 1
                 if m1['id'] != m2['id']:

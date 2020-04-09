@@ -15,7 +15,7 @@ class NestedCodeBlocksRenderer(Extension):
 
 class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocessor):
     def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
-        super(NestedCodeBlocksRendererTreeProcessor, self).__init__(md)
+        super().__init__(md)
 
     def run(self, root: Element) -> None:
         code_tags = walk_tree_with_family(root, self.get_code_tags)

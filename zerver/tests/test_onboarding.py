@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from zerver.models import Realm, UserProfile
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.test_classes import (

@@ -244,9 +244,9 @@ def check_line_coverage(fn, line_coverage, line_mapping, log=True):
 def read_coverage() -> Any:
     coverage_json = None
     try:
-        with open(NODE_COVERAGE_PATH, 'r') as f:
+        with open(NODE_COVERAGE_PATH) as f:
             coverage_json = ujson.load(f)
-    except IOError:
+    except OSError:
         print(NODE_COVERAGE_PATH + " doesn't exist. Cannot enforce fully covered files.")
         raise
     return coverage_json

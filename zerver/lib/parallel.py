@@ -29,7 +29,7 @@ def run_parallel(job: Callable[[JobData], int],
             except OSError as e:
                 if e.errno != errno.EBADF:
                     raise
-            sys.stdin = open("/dev/null", "r")
+            sys.stdin = open("/dev/null")
             os._exit(job(item))
 
         pids[pid] = item

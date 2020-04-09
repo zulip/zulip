@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -8,7 +7,7 @@ class RaygunHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'raygun'
 
     def test_status_changed_message(self) -> None:
-        expected_topic = u"test"
+        expected_topic = "test"
         expected_message = """
 [Error](https://app.raygun.com/error-url) status changed to **Ignored** by Emma Cat:
 * **Timestamp**: Wed Jan 28 01:49:36 1970
@@ -22,7 +21,7 @@ class RaygunHookTests(WebhookTestCase):
                                           "application/x-www-form-urlencoded")
 
     def test_comment_added_to_error_message(self) -> None:
-        expected_topic = u"test"
+        expected_topic = "test"
         expected_message = """
 Anita Peacock commented on [Error](https://app.raygun.com/error-url):
 
@@ -40,7 +39,7 @@ Ignoring these errors
                                           "application/x-www-form-urlencoded")
 
     def test_error_assigned_to_user_message(self) -> None:
-        expected_topic = u"test"
+        expected_topic = "test"
         expected_message = """
 Amy Loondon assigned [Error](https://app.raygun.com/error-url) to Kyle Kenny:
 * **Timestamp**: Wed Jan 28 01:49:36 1970
@@ -54,7 +53,7 @@ Amy Loondon assigned [Error](https://app.raygun.com/error-url) to Kyle Kenny:
                                           "application/x-www-form-urlencoded")
 
     def test_one_minute_followup_error_message(self) -> None:
-        expected_topic = u"test"
+        expected_topic = "test"
         expected_message = """
 One minute [follow-up error](http://app.raygun.io/error-url):
 * **First occurred**: Wed Jan 28 01:49:36 1970
@@ -70,7 +69,7 @@ One minute [follow-up error](http://app.raygun.io/error-url):
                                           "application/x-www-form-urlencoded")
 
     def test_hourly_followup_error_message(self) -> None:
-        expected_topic = u"test"
+        expected_topic = "test"
         expected_message = """
 Hourly [follow-up error](http://app.raygun.io/error-url):
 * **First occurred**: Wed Jan 28 01:49:36 1970
@@ -86,7 +85,7 @@ Hourly [follow-up error](http://app.raygun.io/error-url):
                                           "application/x-www-form-urlencoded")
 
     def test_new_error_message(self) -> None:
-        expected_topic = u"test"
+        expected_topic = "test"
         expected_message = """
 New [Error](http://app.raygun.io/error-url) occurred:
 * **First occurred**: Wed Jan 28 01:49:36 1970
@@ -106,7 +105,7 @@ New [Error](http://app.raygun.io/error-url) occurred:
                                           "application/x-www-form-urlencoded")
 
     def test_reoccurred_error_message(self) -> None:
-        expected_topic = u"test"
+        expected_topic = "test"
         expected_message = """
 [Error](http://app.raygun.io/error-url) reoccurred:
 * **First occurred**: Wed Jan 28 01:49:36 1970

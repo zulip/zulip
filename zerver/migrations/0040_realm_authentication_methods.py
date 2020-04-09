@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import bitfield.models
 from django.db import migrations
 
