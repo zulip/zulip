@@ -24,9 +24,13 @@ def configure_cssutils() -> None:
     profile.addProfiles([(Profiles.CSS_LEVEL_2, properties[Profiles.CSS_LEVEL_2],
                          macros[Profiles.CSS_LEVEL_2])])
 
-if __name__ == "__main__":
+def escape_jinja2_characters(text: str) -> str:
     escaped_jinja2_characters = [('%7B%7B%20', '{{ '), ('%20%7D%7D', ' }}'), ('&gt;', '>')]
+    for escaped, original in escaped_jinja2_characters:
+        text = text.replace(escaped, original)
+    return text
 
+if __name__ == "__main__":
     templates_to_inline = set()
     for f in os.listdir(os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails')):
         if f.endswith('.source.html'):
@@ -51,8 +55,7 @@ if __name__ == "__main__":
         output = Premailer(template_str,
                            external_styles=["email.css"]).transform()
 
-        for escaped, original in escaped_jinja2_characters:
-            output = output.replace(escaped, original)
+        output = escape_jinja2_characters(output)
 
         # Premailer.transform will try to complete the DOM tree,
         # adding html, head, and body tags if they aren't there.
