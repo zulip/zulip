@@ -47,6 +47,7 @@ from zerver.models import (
     MAX_MESSAGE_LENGTH,
     Message,
     Realm,
+    RealmFilter,
     realm_filters_for_realm,
     UserProfile,
     UserGroup,
@@ -1566,12 +1567,23 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     def __init__(self, source_pattern: str,
                  format_string: str,
                  markdown_instance: Optional[markdown.Markdown]=None) -> None:
+        self.source_pattern = source_pattern
         self.pattern = prepare_realm_pattern(source_pattern)
-        self.format_string = format_string
+        all_filters = RealmFilter.objects.filter(pattern=self.source_pattern)
+        self.data = {obj.stream_id: obj.url_format_string for obj in all_filters}
         markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
 
     def handleMatch(self, m: Match[str]) -> Union[Element, str]:
         db_data = self.markdown.zulip_db_data
+        msg = self.markdown.zulip_message
+        current_stream = msg.recipient.type_id
+        filter_list_streams = self.data.keys()
+        if current_stream in filter_list_streams:
+            self.format_string = self.data[current_stream]
+        elif 0 in filter_list_streams:
+            self.format_string = self.data[0]
+        else:
+            return None
         return url_to_a(db_data,
                         self.format_string % m.groupdict(),
                         m.group(OUTER_CAPTURE_GROUP))
@@ -1921,7 +1933,7 @@ class Bugdown(markdown.Markdown):
         return reg
 
     def register_realm_filters(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
-        for (pattern, format_string, id) in self.getConfig("realm_filters"):
+        for (pattern, format_string, stream_id, id) in self.getConfig("realm_filters"):
             inlinePatterns.register(RealmFilterPattern(pattern, format_string, self),
                                     'realm_filters/%s' % (pattern,), 45)
         return inlinePatterns
@@ -1968,7 +1980,7 @@ class Bugdown(markdown.Markdown):
             self.parser.blockprocessors = get_sub_registry(self.parser.blockprocessors, ['paragraph'])
 
 md_engines = {}  # type: Dict[Tuple[int, bool], markdown.Markdown]
-realm_filter_data = {}  # type: Dict[int, List[Tuple[str, str, int]]]
+realm_filter_data = {}  # type: Dict[int, List[Tuple[str, str, int, int]]]
 
 def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
     md_engine_key = (realm_filters_key, email_gateway)
@@ -1982,7 +1994,7 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
         email_gateway=email_gateway,
     )
 
-def build_engine(realm_filters: List[Tuple[str, str, int]],
+def build_engine(realm_filters: List[Tuple[str, str, int, int]],
                  realm_filters_key: int,
                  email_gateway: bool) -> markdown.Markdown:
     engine = Bugdown(

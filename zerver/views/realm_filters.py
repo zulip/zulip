@@ -6,8 +6,8 @@ from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
+from zerver.lib.streams import access_stream_by_name
 from zerver.models import realm_filters_for_realm, UserProfile, RealmFilter
-
 
 # Custom realm filters
 def list_filters(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -18,12 +18,19 @@ def list_filters(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
 @require_realm_admin
 @has_request_variables
 def create_filter(request: HttpRequest, user_profile: UserProfile, pattern: str=REQ(),
-                  url_format_string: str=REQ()) -> HttpResponse:
+                  url_format_string: str=REQ(),
+                  stream_name: str=REQ(default='')) -> HttpResponse:
     try:
+        if stream_name != '':
+            stream, _, _ = access_stream_by_name(user_profile, stream_name)
+            stream_id = stream.id
+        else:
+            stream_id = 0
         filter_id = do_add_realm_filter(
             realm=user_profile.realm,
             pattern=pattern,
-            url_format_string=url_format_string
+            url_format_string=url_format_string,
+            stream_id=stream_id
         )
         return json_success({'id': filter_id})
     except ValidationError as e:
