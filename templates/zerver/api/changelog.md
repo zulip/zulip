@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 2.2
 
+**Feature level 9**
+* [`POST users/me/subscriptions`](/api/add-subscriptions), [`DELETE
+  /users/me/subscriptions`](/api/remove-subscriptions): Other users to
+  subscribe/unsubscribe, declared in the `principals` parameter, can
+  now be referenced by user_id, rather than Zulip display email
+  address.
+
 **Feature level 8**
 * [`GET /users`](/api/get-all-users), [`GET /users/{user_id}`](/api/get-user)
   and [`GET /users/me`](/api/get-profile): User objects now contain the

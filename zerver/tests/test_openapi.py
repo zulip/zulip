@@ -466,6 +466,9 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                         subtypes.append(VARMAP[st])
                     self.assertTrue(len(subtypes) > 1)
                     sub_type = self.get_type_by_priority(subtypes)
+                elif "oneOf" in items.keys():
+                    sub_type = VARMAP[element["schema"]["items"]["oneOf"][0]["type"]]
+                    self.assertIsNotNone(sub_type)
                 else:
                     sub_type = VARMAP[schema["items"]["type"]]
                     self.assertIsNotNone(sub_type)

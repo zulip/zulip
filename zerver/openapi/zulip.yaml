@@ -4420,13 +4420,18 @@ components:
       name: principals
       in: query
       description: |
-        A list of email addresses of the users that will be subscribed/unsubscribed
-        to the streams specified in the `subscriptions` argument. If not provided, then
-        the requesting user/bot is subscribed.
+        A list of user ids (preferred) or Zulip display email
+        addresses of the users to be subscribed to or unsubscribed
+        from the streams specified in the `subscriptions` argument. If
+        not provided, then the requesting user/bot is subscribed.
+
+        **Changes**: The integer format is new in Zulip 2.2 (Feature level 9).
       schema:
         type: array
         items:
-          type: string
+          oneOf:
+            - type: string
+            - type: integer
         default: []
       example: ['ZOE@zulip.com']
     ReactionType:

@@ -2240,6 +2240,12 @@ def get_active_user(email: str, realm: Realm) -> UserProfile:
 def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(id=uid, realm=realm)
 
+def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
+    user_profile = get_user_profile_by_id_in_realm(uid, realm)
+    if not user_profile.is_active:
+        raise UserProfile.DoesNotExist()
+    return user_profile
+
 def get_user_including_cross_realm(email: str, realm: Optional[Realm]=None) -> UserProfile:
     if is_cross_realm_bot_email(email):
         return get_system_bot(email)

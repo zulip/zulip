@@ -30,7 +30,7 @@ from zerver.lib.validator import check_string, check_int, check_list, check_dict
     check_bool, check_variable_type, check_capped_string, check_color, check_dict_only, \
     check_int_in, to_non_negative_int
 from zerver.models import UserProfile, Stream, Realm, UserMessage, \
-    get_system_bot, get_active_user
+    get_system_bot, get_active_user, get_active_user_profile_by_id_in_realm
 
 from collections import defaultdict
 import ujson
@@ -40,16 +40,19 @@ class PrincipalError(JsonableError):
     data_fields = ['principal']
     http_status_code = 403
 
-    def __init__(self, principal: str) -> None:
-        self.principal: str = principal
+    def __init__(self, principal: Union[int, str]) -> None:
+        self.principal: Union[int, str] = principal
 
     @staticmethod
     def msg_format() -> str:
         return _("User not authorized to execute queries on behalf of '{principal}'")
 
-def principal_to_user_profile(agent: UserProfile, principal: str) -> UserProfile:
+def principal_to_user_profile(agent: UserProfile, principal: Union[str, int]) -> UserProfile:
     try:
-        return get_active_user(principal, agent.realm)
+        if isinstance(principal, str):
+            return get_active_user(principal, agent.realm)
+        else:
+            return get_active_user_profile_by_id_in_realm(principal, agent.realm)
     except UserProfile.DoesNotExist:
         # We have to make sure we don't leak information about which users
         # are registered for Zulip in a different realm.  We could do
@@ -249,11 +252,20 @@ def compose_views(
 def remove_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
         streams_raw: Iterable[str]=REQ("subscriptions", validator=check_list(check_string)),
-        principals: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
+        principals: Optional[Union[List[str], List[int]]]=REQ(validator=check_variable_type([
+            check_list(check_string), check_list(check_int)]), default=None),
 ) -> HttpResponse:
 
-    removing_someone_else = principals and \
-        set(principals) != {user_profile.email}
+    # TODO: Extract this as a function to improve readability
+    removing_someone_else = False
+    if principals is not None and len(principals) > 0:
+        if len(principals) == 1:
+            if isinstance(principals[0], int):
+                removing_someone_else = principals[0] != user_profile.id
+            else:
+                removing_someone_else = principals[0] != user_profile.email
+        else:
+            removing_someone_else = True
 
     if removing_someone_else and not user_profile.is_realm_admin:
         # You can only unsubscribe other people from a stream if you are a realm
@@ -315,7 +327,8 @@ def add_subscriptions_backend(
             Stream.STREAM_POST_POLICY_TYPES), default=Stream.STREAM_POST_POLICY_EVERYONE),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         announce: bool=REQ(validator=check_bool, default=False),
-        principals: List[str]=REQ(validator=check_list(check_string), default=[]),
+        principals: List[Union[str, int]]=REQ(validator=check_variable_type([
+            check_list(check_string), check_list(check_int)]), default=[]),
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
 ) -> HttpResponse:
     stream_dicts = []
