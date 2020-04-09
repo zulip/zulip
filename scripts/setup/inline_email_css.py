@@ -4,6 +4,7 @@ import os
 from premailer import Premailer
 from cssutils import profile
 from cssutils.profiles import Profiles, properties, macros
+from typing import Set
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 EMAIL_TEMPLATES_PATH = os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails')
@@ -43,12 +44,15 @@ def strip_unnecesary_tags(text: str) -> str:
     else:
         raise ValueError("Template does not have %s or %s" % (start_block, end_block))
 
-if __name__ == "__main__":
-    templates_to_inline = set()
-    for f in os.listdir(EMAIL_TEMPLATES_PATH):
+def get_all_templates_from_directory(directory: str) -> Set[str]:
+    result = set()
+    for f in os.listdir(directory):
         if f.endswith('.source.html'):
-            templates_to_inline.add(f.split('.source.html')[0])
+            result.add(f.split('.source.html')[0])
+    return result
 
+if __name__ == "__main__":
+    templates_to_inline = get_all_templates_from_directory(EMAIL_TEMPLATES_PATH)
     configure_cssutils()
 
     os.makedirs(COMPILED_EMAIL_TEMPLATES_PATH, exist_ok=True)
