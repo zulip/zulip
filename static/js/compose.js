@@ -285,12 +285,13 @@ exports.send_message = function send_message(request) {
     let local_id;
     let locally_echoed;
 
-    local_id = echo.try_deliver_locally(request);
-    if (local_id) {
+    const message = echo.try_deliver_locally(request);
+    if (message) {
         // We are rendering this message locally with an id
         // like 92l99.01 that corresponds to a reasonable
         // approximation of the id we'll get from the server
         // in terms of sorting messages.
+        local_id = message.local_id;
         locally_echoed = true;
     } else {
         // We are not rendering this message locally, but we
