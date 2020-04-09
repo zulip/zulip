@@ -23,7 +23,10 @@ from zerver.models import (UserProfile,
                            CustomProfileField, custom_profile_fields_for_realm)
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.users import validate_user_custom_profile_data
-from zerver.lib.external_accounts import validate_external_account_field_data
+from zerver.lib.external_accounts import (
+    validate_external_account_field_data,
+    DEFAULT_EXTERNAL_ACCOUNTS,
+)
 
 def list_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     fields = custom_profile_fields_for_realm(user_profile.realm_id)
@@ -91,14 +94,17 @@ def create_realm_custom_profile_field(request: HttpRequest,
                                       field_type: int=REQ(validator=check_int)) -> HttpResponse:
     validate_custom_profile_field(name, hint, field_type, field_data)
     try:
+        field_name = name  # type: str
         if is_default_external_field(field_type, field_data):
             field_subtype = ''  # type: str
             field_subtype = field_data['subtype']  # type: ignore # key for "Union[Dict[str, str], str]" can be str
+            field_name = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]['name']
             field = try_add_realm_default_custom_profile_field(
                 realm=user_profile.realm,
                 field_subtype=field_subtype,
             )
             return json_success({'id': field.id})
+
         else:
             field = try_add_realm_custom_profile_field(
                 realm=user_profile.realm,
@@ -109,7 +115,7 @@ def create_realm_custom_profile_field(request: HttpRequest,
             )
             return json_success({'id': field.id})
     except IntegrityError:
-        return json_error(_("A field with that label already exists."))
+        return json_error(_("A field with {} label already exists.").format(field_name))
 
 @require_realm_admin
 def delete_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
@@ -147,7 +153,7 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
         try_update_realm_custom_profile_field(realm, field, name, hint=hint,
                                               field_data=field_data)
     except IntegrityError:
-        return json_error(_('A field with that label already exists.'))
+        return json_error(_('A field with {} label already exists.').format(name))
     return json_success()
 
 @require_realm_admin
