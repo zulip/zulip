@@ -1410,7 +1410,6 @@ div.focused_table {
             margin: 0 -4px 0 0;
             text-overflow: ellipsis;
             padding: 12px 5px;
-            background: 0;
             @media (max-width: 500px) {
                 padding: 8px 5px;
             }
@@ -1514,9 +1513,8 @@ div.focused_table {
             text-overflow: ellipsis;
             white-space: nowrap;
             .emoji {
-                width: 15px;
-                height: 15px;
-                padding-bottom: 1px;
+                margin: 0;
+                padding: 0;
             }
         }
 
