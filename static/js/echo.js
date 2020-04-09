@@ -353,12 +353,12 @@ exports.initialize = function () {
             e.stopPropagation();
             popovers.hide_all();
             const row = $(this).closest(".message_row");
-            const message_id = rows.id(row);
+            const local_id = rows.local_echo_id(row);
             // Message should be waiting for ack and only have a local id,
             // otherwise send would not have failed
-            const message = waiting_for_ack.get(message_id);
+            const message = waiting_for_ack.get(local_id);
             if (message === undefined) {
-                blueslip.warn("Got resend or retry on failure request but did not find message in ack list " + message_id);
+                blueslip.warn("Got resend or retry on failure request but did not find message in ack list " + local_id);
                 return;
             }
             callback(message, row);
