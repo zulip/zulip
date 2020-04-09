@@ -1625,8 +1625,8 @@ class EventsRegisterTest(ZulipTestCase):
             google_hangouts_domain=["zulip.com", "zulip.org"],
             zoom_api_secret=["abc", "xyz"],
             zoom_api_key=["abc", "xyz"],
-            zoom_user_id=["example@example.com", "example@example.org"]
-            default_code_block_language=['python', 'javascript']
+            zoom_user_id=["example@example.com", "example@example.org"],
+            default_code_block_language=['python', 'javascript'],
         )  # type: Dict[str, Any]
 
         vals = test_values.get(name)
