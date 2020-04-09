@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from django.db import transaction
 from django.utils.translation import ugettext as _
 from zerver.lib.exceptions import JsonableError

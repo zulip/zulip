@@ -7,7 +7,7 @@ import os
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 
 def load_config() -> Dict[str, Any]:
-    with open("zerver/tests/fixtures/config.generate_data.json", "r") as infile:
+    with open("zerver/tests/fixtures/config.generate_data.json") as infile:
         config = ujson.load(infile)
 
     return config
@@ -47,7 +47,7 @@ def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -
 
     paragraphs = []  # type: List[str]
 
-    with open(corpus_file, "r") as infile:
+    with open(corpus_file) as infile:
         # OUR DATA: we need to separate the person talking and what they say
         paragraphs = remove_line_breaks(infile)
         paragraphs = add_flair(paragraphs, gens)

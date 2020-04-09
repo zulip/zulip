@@ -7,7 +7,7 @@ def show_all_branches(fns):
     # type: (List[str]) -> None
     for fn in fns:
         print(fn)
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             text = f.read()
         branches = html_branches(text, fn=fn)
         for branch in branches:
@@ -26,7 +26,7 @@ class Grepper:
         all_branches = []  # type: List[HtmlTreeBranch]
 
         for fn in fns:
-            with open(fn, 'r') as f:
+            with open(fn) as f:
                 text = f.read()
             branches = html_branches(text, fn=fn)
             all_branches += branches

@@ -3,24 +3,24 @@ from typing import Any, Dict, Mapping, Optional, Tuple
 from zerver.lib.exceptions import UnexpectedWebhookEventType
 
 SUPPORTED_BOARD_ACTIONS = [
-    u'removeMemberFromBoard',
-    u'addMemberToBoard',
-    u'createList',
-    u'updateBoard',
+    'removeMemberFromBoard',
+    'addMemberToBoard',
+    'createList',
+    'updateBoard',
 ]
 
-REMOVE_MEMBER = u'removeMemberFromBoard'
-ADD_MEMBER = u'addMemberToBoard'
-CREATE_LIST = u'createList'
-CHANGE_NAME = u'changeName'
+REMOVE_MEMBER = 'removeMemberFromBoard'
+ADD_MEMBER = 'addMemberToBoard'
+CREATE_LIST = 'createList'
+CHANGE_NAME = 'changeName'
 
-TRELLO_BOARD_URL_TEMPLATE = u'[{board_name}]({board_url})'
+TRELLO_BOARD_URL_TEMPLATE = '[{board_name}]({board_url})'
 
 ACTIONS_TO_MESSAGE_MAPPER = {
-    REMOVE_MEMBER: u'removed {member_name} from {board_url_template}.',
-    ADD_MEMBER: u'added {member_name} to {board_url_template}.',
-    CREATE_LIST: u'added {list_name} list to {board_url_template}.',
-    CHANGE_NAME: u'renamed the board from {old_name} to {board_url_template}.'
+    REMOVE_MEMBER: 'removed {member_name} from {board_url_template}.',
+    ADD_MEMBER: 'added {member_name} to {board_url_template}.',
+    CREATE_LIST: 'added {list_name} list to {board_url_template}.',
+    CHANGE_NAME: 'renamed the board from {old_name} to {board_url_template}.'
 }
 
 def process_board_action(payload: Mapping[str, Any],
@@ -48,7 +48,7 @@ def get_subject(payload: Mapping[str, Any]) -> str:
 def get_body(payload: Mapping[str, Any], action_type: str) -> str:
     message_body = ACTIONS_TO_FILL_BODY_MAPPER[action_type](payload, action_type)
     creator = payload['action']['memberCreator']['fullName']
-    return u'{full_name} {rest}'.format(full_name=creator, rest=message_body)
+    return '{full_name} {rest}'.format(full_name=creator, rest=message_body)
 
 def get_managed_member_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
@@ -85,7 +85,7 @@ def get_board_name(payload: Mapping[str, Any]) -> str:
     return get_action_data(payload)['board']['name']
 
 def get_board_url(payload: Mapping[str, Any]) -> str:
-    return u'https://trello.com/b/{}'.format(get_action_data(payload)['board']['shortLink'])
+    return 'https://trello.com/b/{}'.format(get_action_data(payload)['board']['shortLink'])
 
 def get_message_body(action_type: str) -> str:
     return ACTIONS_TO_MESSAGE_MAPPER[action_type]

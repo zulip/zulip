@@ -214,7 +214,7 @@ def validate(fn=None, text=None, check_indent=True):
         fn = '<in memory file>'
 
     if text is None:
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             text = f.read()
 
     tokens = tokenize(text)

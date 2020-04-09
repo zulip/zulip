@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from mock import patch
 
 from zerver.lib.bot_lib import EmbeddedBotQuitException

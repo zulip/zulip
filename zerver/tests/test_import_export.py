@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from django.conf import settings
 
 import os
@@ -290,7 +288,7 @@ class ImportExportTest(ZulipTestCase):
         realm = Realm.objects.get(string_id='zulip')
         message = Message.objects.all()[0]
         user_profile = message.sender
-        url = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        url = upload_message_file('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
         attachment_path_id = url.replace('/user_uploads/', '')
         claim_attachment(
             user_profile=user_profile,
@@ -346,7 +344,7 @@ class ImportExportTest(ZulipTestCase):
 
         # Test uploads
         fn = os.path.join(full_data['uploads_dir'], path_id)
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             self.assertEqual(f.read(), 'zulip!')
         records = full_data['uploads_dir_records']
         self.assertEqual(records[0]['path'], path_id)
@@ -409,7 +407,7 @@ class ImportExportTest(ZulipTestCase):
         # Test uploads
         fields = attachment_path_id.split('/')
         fn = os.path.join(full_data['uploads_dir'], os.path.join(fields[0], fields[1], fields[2]))
-        with open(fn, 'r') as f:
+        with open(fn) as f:
             self.assertEqual(f.read(), 'zulip!')
         records = full_data['uploads_dir_records']
         self.assertEqual(records[0]['path'], os.path.join(fields[0], fields[1], fields[2]))
@@ -478,7 +476,7 @@ class ImportExportTest(ZulipTestCase):
         exported_streams = self.get_set(data['zerver_stream'], 'name')
         self.assertEqual(
             exported_streams,
-            set([u'Denmark', u'Rome', u'Scotland', u'Venice', u'Verona'])
+            {'Denmark', 'Rome', 'Scotland', 'Venice', 'Verona'}
         )
 
         data = full_data['message']
@@ -500,7 +498,7 @@ class ImportExportTest(ZulipTestCase):
 
         cordelia = self.example_user('iago')
         hamlet = self.example_user('hamlet')
-        user_ids = set([cordelia.id, hamlet.id])
+        user_ids = {cordelia.id, hamlet.id}
 
         pm_a_msg_id = self.send_personal_message(self.example_user("AARON"), self.example_user("othello"))
         pm_b_msg_id = self.send_personal_message(self.example_user("cordelia"), self.example_user("iago"))
@@ -605,8 +603,8 @@ class ImportExportTest(ZulipTestCase):
         exported_streams = self.get_set(data['zerver_stream'], 'name')
         self.assertEqual(
             exported_streams,
-            set([u'Denmark', u'Rome', u'Scotland', u'Venice', u'Verona',
-                 u'Private A', u'Private B', u'Private C'])
+            {'Denmark', 'Rome', 'Scotland', 'Venice', 'Verona',
+             'Private A', 'Private B', 'Private C'}
         )
 
         data = full_data['message']
@@ -672,9 +670,9 @@ class ImportExportTest(ZulipTestCase):
         user = read_file('user.json')
 
         exported_user_id = self.get_set(user['zerver_userprofile'], 'id')
-        self.assertEqual(exported_user_id, set([cordelia.id]))
+        self.assertEqual(exported_user_id, {cordelia.id})
         exported_user_email = self.get_set(user['zerver_userprofile'], 'email')
-        self.assertEqual(exported_user_email, set([cordelia.email]))
+        self.assertEqual(exported_user_email, {cordelia.email})
 
         exported_recipient_type_id = self.get_set(user['zerver_recipient'], 'type_id')
         self.assertIn(cordelia.id, exported_recipient_type_id)
@@ -725,12 +723,12 @@ class ImportExportTest(ZulipTestCase):
         )
 
         # data to test import of muted topic
-        stream = get_stream(u'Verona', original_realm)
+        stream = get_stream('Verona', original_realm)
         add_topic_mute(
             user_profile=sample_user,
             stream_id=stream.id,
             recipient_id=stream.recipient.id,
-            topic_name=u'Verona2')
+            topic_name='Verona2')
 
         do_update_user_presence(sample_user, get_client("website"), timezone_now(), UserPresence.ACTIVE)
 
@@ -958,7 +956,7 @@ class ImportExportTest(ZulipTestCase):
         assert_realm_values(get_user_mention)
 
         def get_stream_mention(r: Realm) -> Set[Any]:
-            mentioned_stream = get_stream(u'Denmark', r)
+            mentioned_stream = get_stream('Denmark', r)
             data_stream_id = 'data-stream-id="{}"'.format(mentioned_stream.id)
             mention_message = get_stream_messages(r).get(rendered_content__contains=data_stream_id)
             return mention_message.content

@@ -1195,7 +1195,7 @@ def create_mirrored_message_users(request: HttpRequest, user_profile: UserProfil
         raise InvalidMirrorInput("No sender")
 
     sender_email = request.POST["sender"].strip().lower()
-    referenced_users = set([sender_email])
+    referenced_users = {sender_email}
     if request.POST['type'] == 'private':
         for email in recipients:
             referenced_users.add(email.lower())

@@ -238,7 +238,7 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
         raise Exception("Output directory should be empty!")
 
     # Read data from the gitter file
-    with open(gitter_data_file, "r") as fp:
+    with open(gitter_data_file) as fp:
         gitter_data = ujson.load(fp)
 
     realm, avatar_list, user_map = gitter_workspace_to_realm(

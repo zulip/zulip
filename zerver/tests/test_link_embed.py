@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import mock
 import ujson
 from typing import Any, Callable, Dict, Optional
@@ -253,7 +251,7 @@ class PreviewTestCase(ZulipTestCase):
         """
 
     def setUp(self) -> None:
-        super(PreviewTestCase, self).setUp()
+        super().setUp()
         Realm.objects.all().update(inline_url_embed_preview=True)
 
     @classmethod
@@ -291,7 +289,7 @@ class PreviewTestCase(ZulipTestCase):
             with mock.patch('requests.get', mocked_response):
                 FetchLinksEmbedData().consume(event)
 
-        embedded_link = '<a href="{0}" title="The Rock">The Rock</a>'.format(url)
+        embedded_link = '<a href="{}" title="The Rock">The Rock</a>'.format(url)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertIn(embedded_link, msg.rendered_content)
 
@@ -319,7 +317,7 @@ class PreviewTestCase(ZulipTestCase):
         # Verify the initial message doesn't have the embedded links rendered
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertNotIn(
-            '<a href="{0}" title="The Rock">The Rock</a>'.format(url),
+            '<a href="{}" title="The Rock">The Rock</a>'.format(url),
             msg.rendered_content)
 
         # Mock the network request result so the test can be fast without Internet
@@ -359,7 +357,7 @@ class PreviewTestCase(ZulipTestCase):
             msg = Message.objects.select_related("sender").get(id=msg_id)
             # The content of the message has changed since the event for original_url has been created,
             # it should not be rendered. Another, up-to-date event will have been sent (edited_url).
-            self.assertNotIn('<a href="{0}" title="The Rock">The Rock</a>'.format(original_url),
+            self.assertNotIn('<a href="{}" title="The Rock">The Rock</a>'.format(original_url),
                              msg.rendered_content)
             mocked_response_edited.assert_not_called()
 
@@ -369,7 +367,7 @@ class PreviewTestCase(ZulipTestCase):
                     # up-to-date event for edited_url.
                     queue_json_publish(*args, **kwargs)
                     msg = Message.objects.select_related("sender").get(id=msg_id)
-                    self.assertIn('<a href="{0}" title="The Rock">The Rock</a>'.format(edited_url),
+                    self.assertIn('<a href="{}" title="The Rock">The Rock</a>'.format(edited_url),
                                   msg.rendered_content)
 
         with mock.patch('zerver.views.messages.queue_json_publish', wraps=wrapped_queue_json_publish) as patched:
@@ -380,7 +378,7 @@ class PreviewTestCase(ZulipTestCase):
 
     def test_get_link_embed_data(self) -> None:
         url = 'http://test.org/'
-        embedded_link = '<a href="{0}" title="The Rock">The Rock</a>'.format(url)
+        embedded_link = '<a href="{}" title="The Rock">The Rock</a>'.format(url)
 
         # When humans send, we should get embedded content.
         msg = self._send_message_with_test_org_url(sender=self.example_user('hamlet'))
@@ -450,7 +448,7 @@ class PreviewTestCase(ZulipTestCase):
     def test_invalid_link(self) -> None:
         with self.settings(INLINE_URL_EMBED_PREVIEW=True, TEST_SUITE=False, CACHES=TEST_CACHES):
             self.assertIsNone(get_link_embed_data('com.notvalidlink'))
-            self.assertIsNone(get_link_embed_data(u'μένει.com.notvalidlink'))
+            self.assertIsNone(get_link_embed_data('μένει.com.notvalidlink'))
 
     def test_link_embed_data_from_cache(self) -> None:
         url = 'http://test.org/'
@@ -651,8 +649,8 @@ class PreviewTestCase(ZulipTestCase):
             'message_realm_id': msg.sender.realm_id,
             'message_content': url}
 
-        mocked_data = {'html': '<iframe src="{0}"></iframe>'.format(url),
-                       'oembed': True, 'type': 'video', 'image': '{0}/image.png'.format(url)}
+        mocked_data = {'html': '<iframe src="{}"></iframe>'.format(url),
+                       'oembed': True, 'type': 'video', 'image': '{}/image.png'.format(url)}
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with mock.patch('requests.get', mocked_response):

@@ -66,7 +66,7 @@ now_struct = time.gmtime(now)
 # queues can get backed up; don't alert on those. Additionally, certain workers
 # (slow_queries and digest_emails) have a polling algorithm that means it's
 # normal for them to accumulate items.
-if not set(warn_queues) - set(("digest_emails", "slow_queries")) and \
+if not set(warn_queues) - {"digest_emails", "slow_queries"} and \
         now_struct.tm_hour == 18 and now_struct.tm_min < 25:
     status = 0
     print("%s|%s|%s|processing digests, not alerting on elevated mail queues" % (

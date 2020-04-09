@@ -54,7 +54,7 @@ def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
     with open(out_file, 'w') as f:
         try:
             f.write("{}\n".format(json.dumps(json_data, indent=2, sort_keys=True)))
-        except IOError as e:
+        except OSError as e:
             logger.warning(e)
             sys.exit(1)
 
@@ -126,7 +126,7 @@ def update_contributor_data_file() -> None:
 
         # remove duplicate contributions count
         # find commits at the time of split and subtract from zulip-server
-        with open(duplicate_commits_file, 'r') as f:
+        with open(duplicate_commits_file) as f:
             duplicate_commits = json.load(f)
             for committer in duplicate_commits:
                 if committer in contribs_list and contribs_list[committer].get('server'):

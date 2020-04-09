@@ -12,10 +12,10 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 MESSAGE_TEMPLATE = (
-    u'Author: {}\n'
-    u'Build status: {} {}\n'
-    u'Details: [build log]({})\n'
-    u'Comment: {}'
+    'Author: {}\n'
+    'Build status: {} {}\n'
+    'Details: [build log]({})\n'
+    'Comment: {}'
 )
 
 @api_key_only_webhook_view('Gocd')
@@ -35,7 +35,7 @@ def api_gocd_webhook(request: HttpRequest, user_profile: UserProfile,
 
     build_details_file = os.path.join(os.path.dirname(__file__), 'fixtures/build_details.json')
 
-    with open(build_details_file, 'r') as f:
+    with open(build_details_file) as f:
         contents = json.load(f)
         build_link = contents["build_details"]["_links"]["pipeline"]["href"]
 

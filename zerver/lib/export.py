@@ -274,7 +274,7 @@ def sanity_check_output(data: TableData) -> None:
         list(apps.get_app_config('two_factor').get_models(include_auto_created=True)) +
         list(apps.get_app_config('zerver').get_models(include_auto_created=True))
     )
-    all_tables_db = set(model._meta.db_table for model in target_models)
+    all_tables_db = {model._meta.db_table for model in target_models}
 
     # These assertion statements will fire when we add a new database
     # table that is not included in Zulip's data exports.  Generally,
@@ -783,9 +783,9 @@ def sanity_check_stream_data(response: TableData, config: Config, context: Conte
         # complex to have a sanity check.
         return
 
-    actual_streams = set([stream.name for stream in Stream.objects.filter(
-        realm=response["zerver_realm"][0]['id'])])
-    streams_in_response = set([stream['name'] for stream in response['zerver_stream']])
+    actual_streams = {stream.name for stream in Stream.objects.filter(
+        realm=response["zerver_realm"][0]['id'])}
+    streams_in_response = {stream['name'] for stream in response['zerver_stream']}
 
     if len(streams_in_response - actual_streams) > 0:
         print("Error: Streams not present in the realm were exported:")
@@ -893,12 +893,12 @@ def fetch_huddle_objects(response: TableData, config: Config, context: Context) 
     realm = context['realm']
     assert config.parent is not None
     assert config.parent.table is not None
-    user_profile_ids = set(r['id'] for r in response[config.parent.table])
+    user_profile_ids = {r['id'] for r in response[config.parent.table]}
 
     # First we get all huddles involving someone in the realm.
     realm_huddle_subs = Subscription.objects.select_related("recipient").filter(
         recipient__type=Recipient.HUDDLE, user_profile__in=user_profile_ids)
-    realm_huddle_recipient_ids = set(sub.recipient_id for sub in realm_huddle_subs)
+    realm_huddle_recipient_ids = {sub.recipient_id for sub in realm_huddle_subs}
 
     # Mark all Huddles whose recipient ID contains a cross-realm user.
     unsafe_huddle_recipient_ids = set()
@@ -914,8 +914,8 @@ def fetch_huddle_objects(response: TableData, config: Config, context: Context) 
     # exporting the users from this realm), at the cost of losing
     # some of these cross-realm messages.
     huddle_subs = [sub for sub in realm_huddle_subs if sub.recipient_id not in unsafe_huddle_recipient_ids]
-    huddle_recipient_ids = set(sub.recipient_id for sub in huddle_subs)
-    huddle_ids = set(sub.recipient.type_id for sub in huddle_subs)
+    huddle_recipient_ids = {sub.recipient_id for sub in huddle_subs}
+    huddle_ids = {sub.recipient.type_id for sub in huddle_subs}
 
     huddle_subscription_dicts = make_raw(huddle_subs)
     huddle_recipients = make_raw(Recipient.objects.filter(id__in=huddle_recipient_ids))
@@ -953,7 +953,7 @@ def export_usermessages_batch(input_path: Path, output_path: Path,
     batch of Message objects and adds the corresponding UserMessage
     objects. (This is called by the export_usermessage_batch
     management command)."""
-    with open(input_path, "r") as input_file:
+    with open(input_path) as input_file:
         output = ujson.load(input_file)
     message_ids = [item['id'] for item in output['zerver_message']]
     user_profile_ids = set(output['zerver_userprofile_ids'])
@@ -979,7 +979,7 @@ def export_partial_message_files(realm: Realm,
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
 
     def get_ids(records: List[Record]) -> Set[int]:
-        return set(x['id'] for x in records)
+        return {x['id'] for x in records}
 
     # Basic security rule: You can export everything either...
     #   - sent by someone in your exportable_user_ids
@@ -1095,7 +1095,7 @@ def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_
     while True:
         actual_query = message_query.filter(id__gt=min_id)[0:chunk_size]
         message_chunk = make_raw(actual_query)
-        message_ids = set(m['id'] for m in message_chunk)
+        message_ids = {m['id'] for m in message_chunk}
         assert len(message_ids.intersection(all_message_ids)) == 0
 
         all_message_ids.update(message_ids)
@@ -1431,7 +1431,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     with open(stats_file, 'w') as f:
         for fn in fns:
             f.write(os.path.basename(fn) + '\n')
-            with open(fn, 'r') as filename:
+            with open(fn) as filename:
                 data = ujson.load(filename)
             for k in sorted(data):
                 f.write('%5d %s\n' % (len(data[k]), k))
@@ -1442,7 +1442,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
 
         for fn in [avatar_file, uploads_file]:
             f.write(fn+'\n')
-            with open(fn, 'r') as filename:
+            with open(fn) as filename:
                 data = ujson.load(filename)
             f.write('%5d records\n' % (len(data),))
             f.write('\n')
@@ -1652,7 +1652,7 @@ def export_messages_single_user(user_profile: UserProfile, output_dir: Path,
         actual_query = user_message_query.select_related(
             "message", "message__sending_client").filter(id__gt=min_id)[0:chunk_size]
         user_message_chunk = [um for um in actual_query]
-        user_message_ids = set(um.id for um in user_message_chunk)
+        user_message_ids = {um.id for um in user_message_chunk}
 
         if len(user_message_chunk) == 0:
             break

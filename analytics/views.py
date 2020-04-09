@@ -261,7 +261,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
                             "analytics cron job running?" % (realm.string_id, start, end))
             raise JsonableError(_("No analytics data available. Please contact your server administrator."))
 
-    assert len(set([stat.frequency for stat in stats])) == 1
+    assert len({stat.frequency for stat in stats}) == 1
     end_times = time_range(start, end, stats[0].frequency, min_length)
     data = {'end_times': end_times, 'frequency': stats[0].frequency}  # type: Dict[str, Any]
 

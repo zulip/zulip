@@ -289,7 +289,7 @@ def get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days):
 
 def purge_unused_caches(caches_dir, caches_in_use, cache_type, args):
     # type: (str, Set[str], str, argparse.Namespace) -> None
-    all_caches = set([os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)])
+    all_caches = {os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)}
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
     caches_to_keep = all_caches - caches_to_purge
 
@@ -313,7 +313,7 @@ def generate_sha1sum_emoji(zulip_path):
     # Take into account the version of `emoji-datasource-google` package
     # while generating success stamp.
     PACKAGE_FILE_PATH = os.path.join(zulip_path, 'package.json')
-    with open(PACKAGE_FILE_PATH, 'r') as fp:
+    with open(PACKAGE_FILE_PATH) as fp:
         parsed_package_file = json.load(fp)
     dependency_data = parsed_package_file['dependencies']
 
@@ -366,7 +366,7 @@ def parse_os_release():
     we avoid using it, as it is not available on RHEL-based platforms.
     """
     distro_info = {}  # type: Dict[str, str]
-    with open('/etc/os-release', 'r') as fp:
+    with open('/etc/os-release') as fp:
         for line in fp:
             line = line.strip()
             if not line or line.startswith('#'):

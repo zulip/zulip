@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import ujson
 import mock
@@ -454,8 +452,8 @@ class PrivacyTermsTest(ZulipTestCase):
     def test_custom_tos_template(self) -> None:
         response = self.client_get("/terms/")
 
-        self.assert_in_success_response([u"Thanks for using our products and services (\"Services\"). ",
-                                         u"By using our Services, you are agreeing to these terms"],
+        self.assert_in_success_response(["Thanks for using our products and services (\"Services\"). ",
+                                         "By using our Services, you are agreeing to these terms"],
                                         response)
 
     def test_custom_terms_of_service_template(self) -> None:

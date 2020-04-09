@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import cast, Any, Dict
 
 import mock
@@ -111,9 +110,9 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         wide_message_dict = MessageDict.wide_dict(message)
 
         event = {
-            u'command': '@**test**',
-            u'message': wide_message_dict,
-            u'trigger': 'mention',
+            'command': '@**test**',
+            'message': wide_message_dict,
+            'trigger': 'mention',
         }
 
         request_data = self.handler.build_bot_request(event)
@@ -155,11 +154,11 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.stream_message_event = {
-            u'command': '@**test**',
-            u'user_profile_id': 12,
-            u'service_name': 'test-service',
-            u'trigger': 'mention',
-            u'message': {
+            'command': '@**test**',
+            'user_profile_id': 12,
+            'service_name': 'test-service',
+            'trigger': 'mention',
+            'message': {
                 'content': 'test_content',
                 'type': 'stream',
                 'sender_realm_str': 'zulip',
@@ -173,11 +172,11 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         }
 
         self.private_message_event = {
-            u'user_profile_id': 24,
-            u'service_name': 'test-service',
-            u'command': 'test content',
-            u'trigger': 'private_message',
-            u'message': {
+            'user_profile_id': 24,
+            'service_name': 'test-service',
+            'command': 'test content',
+            'trigger': 'private_message',
+            'message': {
                 'sender_id': 3,
                 'sender_realm_str': 'zulip',
                 'timestamp': 1529821610,

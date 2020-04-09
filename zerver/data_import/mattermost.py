@@ -681,7 +681,7 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> Dict[str, Any]:
     mattermost_data["emoji"] = []
     mattermost_data["direct_channel"] = []
 
-    with open(mattermost_data_file, "r") as fp:
+    with open(mattermost_data_file) as fp:
         for line in fp:
             row = ujson.loads(line.rstrip("\n"))
             data_type = row["type"]

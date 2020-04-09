@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import ujson
 import mock
 
@@ -35,8 +34,8 @@ class UserGroupTestCase(ZulipTestCase):
         self.create_user_group_for_test('support')
         user_groups = user_groups_in_realm(realm)
         self.assertEqual(len(user_groups), 2)
-        names = set([ug.name for ug in user_groups])
-        self.assertEqual(names, set(['hamletcharacters', 'support']))
+        names = {ug.name for ug in user_groups}
+        self.assertEqual(names, {'hamletcharacters', 'support'})
 
     def test_user_groups_in_realm_serialized(self) -> None:
         realm = get_realm('zulip')

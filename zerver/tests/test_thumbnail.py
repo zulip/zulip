@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.conf import settings
 
 from zerver.lib.test_classes import ZulipTestCase

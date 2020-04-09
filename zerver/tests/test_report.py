@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from typing import Any, Callable, Dict, Iterable, List, Tuple
 
 from django.test import override_settings
@@ -121,7 +119,7 @@ class TestReport(ZulipTestCase):
         self.assert_json_success(result)
 
         report = m.call_args[0][1]['report']
-        for k in set(params) - set(['ui_message', 'more_info']):
+        for k in set(params) - {'ui_message', 'more_info'}:
             self.assertEqual(report[k], params[k])
 
         self.assertEqual(report['more_info'], dict(foo='bar', draft_content="'**xxxxx**'"))

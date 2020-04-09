@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
 
 class HerokuHookTests(WebhookTestCase):
     STREAM_NAME = 'heroku'
-    URL_TEMPLATE = u"/api/v1/external/heroku?stream={stream}&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/heroku?stream={stream}&api_key={api_key}"
 
     def test_deployment(self) -> None:
         expected_topic = "sample-project"
@@ -20,7 +19,7 @@ user@example.com deployed version 3eb5f44 of [sample-project](http://sample-proj
 
     def test_deployment_multiple_commits(self) -> None:
         expected_topic = "sample-project"
-        expected_message = u"""user@example.com deployed version 3eb5f44 of \
+        expected_message = """user@example.com deployed version 3eb5f44 of \
 [sample-project](http://sample-project.herokuapp.com)
 ``` quote
   * Example User: Test commit for Deploy Hook

@@ -76,14 +76,14 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
     # Zulip user mention. We don't know the email, just the JIRA username,
     # so we naively guess at their Zulip account using this
     if realm:
-        mention_re = re.compile(u'\\[~(.*?)\\]')
+        mention_re = re.compile('\\[~(.*?)\\]')
         for username in mention_re.findall(content):
             # Try to look up username
             user_profile = guess_zulip_user_from_jira(username, realm)
             if user_profile:
-                replacement = u"**{}**".format(user_profile.full_name)
+                replacement = "**{}**".format(user_profile.full_name)
             else:
-                replacement = u"**{}**".format(username)
+                replacement = "**{}**".format(username)
 
             content = content.replace("[~{}]".format(username,), replacement)
 
@@ -111,7 +111,7 @@ def get_issue_string(payload: Dict[str, Any], issue_id: Optional[str]=None, with
 
     base_url = re.match(r"(.*)\/rest\/api/.*", get_in(payload, ['issue', 'self']))
     if base_url and len(base_url.groups()):
-        return u"[{}]({}/browse/{})".format(text, base_url.group(1), issue_id)
+        return "[{}]({}/browse/{})".format(text, base_url.group(1), issue_id)
     else:
         return text
 
@@ -121,7 +121,7 @@ def get_assignee_mention(assignee_email: str, realm: Realm) -> str:
             assignee_name = get_user_by_delivery_email(assignee_email, realm).full_name
         except UserProfile.DoesNotExist:
             assignee_name = assignee_email
-        return u"**{}**".format(assignee_name)
+        return "**{}**".format(assignee_name)
     return ''
 
 def get_issue_author(payload: Dict[str, Any]) -> str:
@@ -152,7 +152,7 @@ def get_issue_title(payload: Dict[str, Any]) -> str:
     return get_in(payload, ['issue', 'fields', 'summary'])
 
 def get_issue_subject(payload: Dict[str, Any]) -> str:
-    return u"{}: {}".format(get_issue_id(payload), get_issue_title(payload))
+    return "{}: {}".format(get_issue_id(payload), get_issue_title(payload))
 
 def get_sub_event_for_update_issue(payload: Dict[str, Any]) -> str:
     sub_event = payload.get('issue_event_type_name', '')
@@ -170,11 +170,11 @@ def get_event_type(payload: Dict[str, Any]) -> Optional[str]:
     return event
 
 def add_change_info(content: str, field: str, from_field: str, to_field: str) -> str:
-    content += u"* Changed {}".format(field)
+    content += "* Changed {}".format(field)
     if from_field:
-        content += u" from **{}**".format(from_field)
+        content += " from **{}**".format(from_field)
     if to_field:
-        content += u" to {}\n".format(to_field)
+        content += " to {}\n".format(to_field)
     return content
 
 def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -188,7 +188,7 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
     assignee_mention = get_assignee_mention(assignee_email, user_profile.realm)
 
     if assignee_mention != '':
-        assignee_blurb = u" (assigned to {})".format(assignee_mention)
+        assignee_blurb = " (assigned to {})".format(assignee_mention)
     else:
         assignee_blurb = ''
 
@@ -206,15 +206,15 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
         else:
             author = get_issue_author(payload)
 
-        content = u"{} {} {}{}".format(author, verb, issue, assignee_blurb)
+        content = "{} {} {}{}".format(author, verb, issue, assignee_blurb)
         comment = get_in(payload, ['comment', 'body'])
         if comment:
             comment = convert_jira_markup(comment, user_profile.realm)
-            content = u"{}:\n\n``` quote\n{}\n```".format(content, comment)
+            content = "{}:\n\n``` quote\n{}\n```".format(content, comment)
         else:
             content = "{}.".format(content)
     else:
-        content = u"{} updated {}{}:\n\n".format(get_issue_author(payload), issue, assignee_blurb)
+        content = "{} updated {}{}:\n\n".format(get_issue_author(payload), issue, assignee_blurb)
         changelog = get_in(payload, ['changelog'])
 
         if changelog != '':
@@ -227,7 +227,7 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
                     target_field_string = assignee_mention
                 else:
                     # Convert a user's target to a @-mention if possible
-                    target_field_string = u"**{}**".format(item.get('toString'))
+                    target_field_string = "**{}**".format(item.get('toString'))
 
                 from_field_string = item.get('fromString')
                 if target_field_string or from_field_string:
@@ -235,7 +235,7 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
 
         elif sub_event == 'issue_transited':
             from_field_string = get_in(payload, ['transition', 'from_status'])
-            target_field_string = u'**{}**'.format(get_in(payload, ['transition', 'to_status']))
+            target_field_string = '**{}**'.format(get_in(payload, ['transition', 'to_status']))
             if target_field_string or from_field_string:
                 content = add_change_info(content, 'status', from_field_string, target_field_string)
 

@@ -37,16 +37,16 @@ from typing import Any, List, Optional, Dict, Tuple
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 
-MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
-                       u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
-                       u'If you want to sign up an alias for Zulip, ' + \
-                       u'<a href="mailto:support@zulipchat.com">contact us</a>.'
+MIT_VALIDATION_ERROR = 'That user does not exist at MIT or is a ' + \
+                       '<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
+                       'If you want to sign up an alias for Zulip, ' + \
+                       '<a href="mailto:support@zulipchat.com">contact us</a>.'
 WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "organization associated with this subdomain.  " + \
                         "Please contact your organization administrator with any questions."
-DEACTIVATED_ACCOUNT_ERROR = u"Your account is no longer active. " + \
-                            u"Please contact your organization administrator to reactivate it."
-PASSWORD_TOO_WEAK_ERROR = u"The password is too weak."
+DEACTIVATED_ACCOUNT_ERROR = "Your account is no longer active. " + \
+                            "Please contact your organization administrator to reactivate it."
+PASSWORD_TOO_WEAK_ERROR = "The password is too weak."
 AUTHENTICATION_RATE_LIMITED_ERROR = "You're making too many attempts to sign in. " + \
                                     "Try again in %s seconds or contact your organization administrator " + \
                                     "for help."

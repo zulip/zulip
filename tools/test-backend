@@ -143,9 +143,9 @@ FAILED_TEST_PATH = 'var/last_test_failure.json'
 
 def get_failed_tests() -> List[str]:
     try:
-        with open(FAILED_TEST_PATH, 'r') as f:
+        with open(FAILED_TEST_PATH) as f:
             return ujson.load(f)
-    except IOError:
+    except OSError:
         print("var/last_test_failure.json doesn't exist; running all tests.")
         return []
 

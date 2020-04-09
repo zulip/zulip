@@ -171,7 +171,7 @@ def get_venv_packages(venv_path):
     package index file.
     """
     with open(get_index_filename(venv_path)) as reader:
-        return set(p.strip() for p in reader.read().split('\n') if p.strip())
+        return {p.strip() for p in reader.read().split('\n') if p.strip()}
 
 def try_to_copy_venv(venv_path, new_packages):
     # type: (str, Set[str]) -> bool
@@ -281,7 +281,7 @@ def do_patch_activate_script(venv_path):
     # venv_path should be what we want to have in VIRTUAL_ENV after patching
     script_path = os.path.join(venv_path, "bin", "activate")
 
-    with open(script_path, 'r') as f:
+    with open(script_path) as f:
         lines = f.readlines()
     for i, line in enumerate(lines):
         if line.startswith('VIRTUAL_ENV='):

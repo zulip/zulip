@@ -488,7 +488,7 @@ class Command(BaseCommand):
         # in the config.generate_data.json data set.  This makes it
         # possible for populate_db to run happily without Internet
         # access.
-        with open("zerver/tests/fixtures/docs_url_preview_data.json", "r") as f:
+        with open("zerver/tests/fixtures/docs_url_preview_data.json") as f:
             urls_with_preview_data = ujson.load(f)
             for url in urls_with_preview_data:
                 cache_set(url, urls_with_preview_data[url], PREVIEW_CACHE_NAME)
@@ -616,7 +616,7 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
     random.seed(random_seed)
 
     with open(os.path.join(get_or_create_dev_uuid_var_path('test-backend'),
-                           "test_messages.json"), "r") as infile:
+                           "test_messages.json")) as infile:
         dialog = ujson.load(infile)
     random.shuffle(dialog)
     texts = itertools.cycle(dialog)

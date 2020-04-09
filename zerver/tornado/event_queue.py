@@ -462,7 +462,7 @@ def load_event_queues(port: int) -> None:
     start = time.time()
 
     try:
-        with open(persistent_queue_filename(port), "r") as stored_queues:
+        with open(persistent_queue_filename(port)) as stored_queues:
             data = ujson.load(stored_queues)
     except FileNotFoundError:
         pass

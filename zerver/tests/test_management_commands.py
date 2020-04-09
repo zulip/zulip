@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import glob
 import os
 import re
@@ -261,7 +259,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
         # Get realm creation page
         result = self.client_get(generated_link)
-        self.assert_in_success_response([u"Create a new Zulip organization"], result)
+        self.assert_in_success_response(["Create a new Zulip organization"], result)
 
         # Enter email
         with self.assertRaises(Realm.DoesNotExist):

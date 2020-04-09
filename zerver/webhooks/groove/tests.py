@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -9,7 +8,7 @@ class GrooveHookTests(WebhookTestCase):
 
     # This test simulates the condition when a new ticket comes.
     def test_groove_ticket_started(self) -> None:
-        expected_topic = u"notifications"
+        expected_topic = "notifications"
         expected_message = """
 Test Name submitted new ticket [#9: Test Subject](https://ghostfox.groovehq.com/groove_client/tickets/68659446):
 
@@ -24,7 +23,7 @@ The content of the body goes here.
     # This simulates the condition when a ticket
     # is assigned to an agent.
     def test_groove_ticket_assigned_agent_only(self) -> None:
-        expected_topic = u"notifications"
+        expected_topic = "notifications"
         expected_message = "[#9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446) (open) assigned to agent@example.com."
         self.send_and_test_stream_message('ticket_assigned__agent_only', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
@@ -32,7 +31,7 @@ The content of the body goes here.
     # This simulates the condition when a ticket
     # is assigned to an agent in a group.
     def test_groove_ticket_assigned_agent_and_group(self) -> None:
-        expected_topic = u"notifications"
+        expected_topic = "notifications"
         expected_message = "[#9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446) (open) assigned to agent@example.com from group2."
 
         self.send_and_test_stream_message('ticket_assigned__agent_and_group', expected_topic, expected_message,
@@ -41,7 +40,7 @@ The content of the body goes here.
     # This simulates the condition when a ticket
     # is assigned to a group.
     def test_groove_ticket_assigned_group_only(self) -> None:
-        expected_topic = u"notifications"
+        expected_topic = "notifications"
         expected_message = "[#9: Test Subject](https://testteam.groovehq.com/groove_client/tickets/68659446) (pending) assigned to group2."
         self.send_and_test_stream_message('ticket_assigned__group_only', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
@@ -57,7 +56,7 @@ The content of the body goes here.
 
     # This simulates the notification when an agent replied to a ticket.
     def test_groove_agent_replied(self) -> None:
-        expected_topic = u"notifications"
+        expected_topic = "notifications"
         expected_message = """
 agent@example.com replied to [ticket #776](https://ghostfox.groovehq.com/groove_client/tickets/68667295):
 
@@ -71,7 +70,7 @@ Hello , This is a reply from an agent to a ticket
 
     # This simulates the condition when a customer replied to a ticket.
     def test_groove_customer_replied(self) -> None:
-        expected_topic = u"notifications"
+        expected_topic = "notifications"
         expected_message = """
 rambo@example.com replied to [ticket #440](https://ghostfox.groovehq.com/groove_client/tickets/68666538):
 
@@ -85,7 +84,7 @@ Hello agent, thanks for getting back. This is how a reply from customer looks li
 
     # This simulates the condition when an agent left a note.
     def test_groove_note_added(self) -> None:
-        expected_topic = u"notifications"
+        expected_topic = "notifications"
         expected_message = """
 anotheragent@example.com left a note on [ticket #776](https://ghostfox.groovehq.com/groove_client/tickets/68667295):
 

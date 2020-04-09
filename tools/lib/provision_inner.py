@@ -41,7 +41,7 @@ def setup_shell_profile(shell_profile):
     def write_command(command):
         # type: (str) -> None
         if os.path.exists(shell_profile_path):
-            with open(shell_profile_path, 'r') as shell_profile_file:
+            with open(shell_profile_path) as shell_profile_file:
                 lines = [line.strip() for line in shell_profile_file.readlines()]
             if command not in lines:
                 with open(shell_profile_path, 'a+') as shell_profile_file:
@@ -77,7 +77,7 @@ def setup_bash_profile() -> None:
 
         if os.path.exists(DOT_PROFILE):
             try:
-                with open(BASH_PROFILE, "r") as f:
+                with open(BASH_PROFILE) as f:
                     profile_contents = f.read()
                 if profile_contents == OLD_PROFILE_TEXT:
                     os.unlink(BASH_PROFILE)

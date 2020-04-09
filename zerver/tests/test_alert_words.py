@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from zerver.lib.alert_words import (
     add_user_alert_words,
     alert_words_in_realm,
@@ -23,7 +21,7 @@ from zerver.models import (
 import ujson
 
 class AlertWordTests(ZulipTestCase):
-    interesting_alert_word_list = ['alert', 'multi-word word', u'☃']
+    interesting_alert_word_list = ['alert', 'multi-word word', '☃']
 
     def test_internal_endpoint(self) -> None:
         user_name = "cordelia"

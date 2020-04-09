@@ -505,13 +505,13 @@ class MessageDict:
 
     @staticmethod
     def bulk_hydrate_recipient_info(objs: List[Dict[str, Any]]) -> None:
-        recipient_tuples = set(  # We use set to eliminate duplicate tuples.
+        recipient_tuples = {  # We use set to eliminate duplicate tuples.
             (
                 obj['recipient_id'],
                 obj['recipient_type'],
                 obj['recipient_type_id']
             ) for obj in objs
-        )
+        }
         display_recipients = bulk_fetch_display_recipients(recipient_tuples)
 
         for obj in objs:

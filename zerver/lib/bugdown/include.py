@@ -1,4 +1,3 @@
-from __future__ import print_function
 import re
 import os
 from typing import Any, Dict, List
@@ -42,7 +41,7 @@ class IncludeCustomPreprocessor(IncludePreprocessor):
                             os.path.join(self.base_path, filename)
                         )
                     try:
-                        with open(filename, 'r', encoding=self.encoding) as r:
+                        with open(filename, encoding=self.encoding) as r:
                             text = r.readlines()
                     except Exception as e:
                         print('Warning: could not find file {}. Error: {}'.format(filename, e))

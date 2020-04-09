@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-AA
-
 from typing import Any, List, Mapping
 
 from django.db import connection

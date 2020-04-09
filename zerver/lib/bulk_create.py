@@ -88,7 +88,7 @@ def bulk_set_users_or_streams_recipient_fields(model: Model,
         object_ids = [obj.id for obj in objects]
         recipients = Recipient.objects.filter(type=recipient_type, type_id__in=object_ids)
 
-    objects_dict = dict((obj.id, obj) for obj in objects)
+    objects_dict = {obj.id: obj for obj in objects}
 
     for recipient in recipients:
         assert recipient.type == recipient_type

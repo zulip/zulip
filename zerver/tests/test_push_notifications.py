@@ -625,7 +625,7 @@ class PushNotificationTest(BouncerTestCase):
             yield mock_apns
 
     def setup_apns_tokens(self) -> None:
-        self.tokens = [u'aaaa', u'bbbb']
+        self.tokens = ['aaaa', 'bbbb']
         for token in self.tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.APNS,
@@ -633,7 +633,7 @@ class PushNotificationTest(BouncerTestCase):
                 user=self.user_profile,
                 ios_app_id=settings.ZULIP_IOS_APP_ID)
 
-        self.remote_tokens = [u'cccc']
+        self.remote_tokens = ['cccc']
         for token in self.remote_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
@@ -643,7 +643,7 @@ class PushNotificationTest(BouncerTestCase):
             )
 
     def setup_gcm_tokens(self) -> None:
-        self.gcm_tokens = [u'1111', u'2222']
+        self.gcm_tokens = ['1111', '2222']
         for token in self.gcm_tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.GCM,
@@ -651,7 +651,7 @@ class PushNotificationTest(BouncerTestCase):
                 user=self.user_profile,
                 ios_app_id=None)
 
-        self.remote_gcm_tokens = [u'dddd']
+        self.remote_gcm_tokens = ['dddd']
         for token in self.remote_gcm_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.GCM,
@@ -1682,8 +1682,8 @@ class GCMSendTest(PushNotificationTest):
     def test_canonical_pushdevice_not_present(self, mock_warning: mock.MagicMock,
                                               mock_gcm: mock.MagicMock) -> None:
         res = {}
-        t1 = hex_to_b64(u'1111')
-        t2 = hex_to_b64(u'3333')
+        t1 = hex_to_b64('1111')
+        t2 = hex_to_b64('3333')
         res['canonical'] = {t1: t2}
         mock_gcm.json_request.return_value = res
 
@@ -1692,8 +1692,8 @@ class GCMSendTest(PushNotificationTest):
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
-        self.assertEqual(get_count(u'1111'), 1)
-        self.assertEqual(get_count(u'3333'), 0)
+        self.assertEqual(get_count('1111'), 1)
+        self.assertEqual(get_count('3333'), 0)
 
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
@@ -1702,15 +1702,15 @@ class GCMSendTest(PushNotificationTest):
                "registered! Updating.")
         mock_warning.assert_called_once_with(msg % (t2, t1))
 
-        self.assertEqual(get_count(u'1111'), 0)
-        self.assertEqual(get_count(u'3333'), 1)
+        self.assertEqual(get_count('1111'), 0)
+        self.assertEqual(get_count('3333'), 1)
 
     @mock.patch('zerver.lib.push_notifications.logger.info')
     def test_canonical_pushdevice_different(self, mock_info: mock.MagicMock,
                                             mock_gcm: mock.MagicMock) -> None:
         res = {}
-        old_token = hex_to_b64(u'1111')
-        new_token = hex_to_b64(u'2222')
+        old_token = hex_to_b64('1111')
+        new_token = hex_to_b64('2222')
         res['canonical'] = {old_token: new_token}
         mock_gcm.json_request.return_value = res
 
@@ -1719,21 +1719,21 @@ class GCMSendTest(PushNotificationTest):
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
-        self.assertEqual(get_count(u'1111'), 1)
-        self.assertEqual(get_count(u'2222'), 1)
+        self.assertEqual(get_count('1111'), 1)
+        self.assertEqual(get_count('2222'), 1)
 
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
         mock_info.assert_called_once_with(
             "GCM: Got canonical ref %s, dropping %s" % (new_token, old_token))
 
-        self.assertEqual(get_count(u'1111'), 0)
-        self.assertEqual(get_count(u'2222'), 1)
+        self.assertEqual(get_count('1111'), 0)
+        self.assertEqual(get_count('2222'), 1)
 
     @mock.patch('zerver.lib.push_notifications.logger.info')
     def test_not_registered(self, mock_info: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
-        token = hex_to_b64(u'1111')
+        token = hex_to_b64('1111')
         res['errors'] = {'NotRegistered': [token]}
         mock_gcm.json_request.return_value = res
 
@@ -1742,17 +1742,17 @@ class GCMSendTest(PushNotificationTest):
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
-        self.assertEqual(get_count(u'1111'), 1)
+        self.assertEqual(get_count('1111'), 1)
 
         data = self.get_gcm_data()
         send_android_push_notification_to_user(self.user_profile, data, {})
         mock_info.assert_called_once_with("GCM: Removing %s" % (token,))
-        self.assertEqual(get_count(u'1111'), 0)
+        self.assertEqual(get_count('1111'), 0)
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     def test_failure(self, mock_warn: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
-        token = hex_to_b64(u'1111')
+        token = hex_to_b64('1111')
         res['errors'] = {'Failed': [token]}
         mock_gcm.json_request.return_value = res
 
@@ -1792,7 +1792,7 @@ class TestClearOnRead(ZulipTestCase):
         for g in groups[:-1]:
             self.assertEqual(len(g), 1)
         self.assertEqual(sum(len(g) for g in groups), len(message_ids))
-        self.assertEqual(set(id for g in groups for id in g), set(message_ids))
+        self.assertEqual({id for g in groups for id in g}, set(message_ids))
 
 class TestReceivesNotificationsFunctions(ZulipTestCase):
     def setUp(self) -> None:

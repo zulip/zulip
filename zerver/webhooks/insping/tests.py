@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -8,7 +7,7 @@ class InspingHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'insping'
 
     def test_website_state_available_message(self) -> None:
-        expected_topic = u"insping"
+        expected_topic = "insping"
         expected_message = """
 State changed to **Available**:
 * **URL**: http://privisus.zulipdev.org:9991
@@ -21,7 +20,7 @@ State changed to **Available**:
                                           content_type="application/x-www-form-urlencoded")
 
     def test_website_state_not_responding_message(self) -> None:
-        expected_topic = u"insping"
+        expected_topic = "insping"
         expected_message = """
 State changed to **Not Responding**:
 * **URL**: http://privisus.zulipdev.org:9991

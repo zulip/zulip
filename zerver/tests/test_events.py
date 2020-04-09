@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
@@ -768,7 +767,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(
             lambda: do_update_embedded_data(self.user_profile, message,
-                                            u"embed_content", "<p>embed_content</p>"),
+                                            "embed_content", "<p>embed_content</p>"),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
@@ -1607,11 +1606,11 @@ class EventsRegisterTest(ZulipTestCase):
     def do_set_realm_property_test(self, name: str) -> None:
         bool_tests = [True, False, True]  # type: List[bool]
         test_values = dict(
-            default_language=[u'es', u'de', u'en'],
-            description=[u'Realm description', u'New description'],
+            default_language=['es', 'de', 'en'],
+            description=['Realm description', 'New description'],
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],
-            name=[u'Zulip', u'New Name'],
+            name=['Zulip', 'New Name'],
             waiting_period_threshold=[10, 20],
             create_stream_policy=[3, 2, 1],
             invite_to_stream_policy=[3, 2, 1],
@@ -1623,10 +1622,10 @@ class EventsRegisterTest(ZulipTestCase):
                 Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'],
                 Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']
             ],
-            google_hangouts_domain=[u"zulip.com", u"zulip.org"],
-            zoom_api_secret=[u"abc", u"xyz"],
-            zoom_api_key=[u"abc", u"xyz"],
-            zoom_user_id=[u"example@example.com", u"example@example.org"]
+            google_hangouts_domain=["zulip.com", "zulip.org"],
+            zoom_api_secret=["abc", "xyz"],
+            zoom_api_key=["abc", "xyz"],
+            zoom_user_id=["example@example.com", "example@example.org"]
         )  # type: Dict[str, Any]
 
         vals = test_values.get(name)
@@ -1841,9 +1840,9 @@ class EventsRegisterTest(ZulipTestCase):
         """Test updating each setting in UserProfile.property_types dict."""
 
         test_changes = dict(
-            emojiset = [u'twitter'],
-            default_language = [u'es', u'de', u'en'],
-            timezone = [u'US/Mountain', u'US/Samoa', u'Pacific/Galapogos', u''],
+            emojiset = ['twitter'],
+            default_language = ['es', 'de', 'en'],
+            timezone = ['US/Mountain', 'US/Samoa', 'Pacific/Galapogos', ''],
             demote_inactive_streams = [2, 3, 1],
         )  # type: Dict[str, Any]
 
@@ -2401,7 +2400,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_rename_stream(self) -> None:
         stream = self.make_stream('old_name')
-        new_name = u'stream with a brand new name'
+        new_name = 'stream with a brand new name'
         self.subscribe(self.user_profile, stream.name)
         notification = '<p><span class="user-mention silent" data-user-id="{user_id}">King Hamlet</span> renamed stream <strong>old_name</strong> to <strong>stream with a brand new name</strong>.</p>'
         notification = notification.format(user_id=self.user_profile.id)
@@ -2472,7 +2471,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
-        action = lambda: self.subscribe(self.example_user("othello"), u"test_stream")
+        action = lambda: self.subscribe(self.example_user("othello"), "test_stream")
         events = self.do_test(action, num_events=2)
         peer_add_schema_checker = self.check_events_dict([
             ('type', equals('subscription')),
@@ -2635,7 +2634,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
-        action = lambda: do_change_stream_description(stream, u'new description')
+        action = lambda: do_change_stream_description(stream, 'new description')
         events = self.do_test(action,
                               include_subscribers=include_subscribers)
         error = stream_update_schema_checker('events[0]', events[0])
@@ -3737,20 +3736,20 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
     def test_use_passed_narrow_no_default(self) -> None:
         self.user_profile.default_events_register_stream_id = None
         self.user_profile.save()
-        result = _default_narrow(self.user_profile, [[u'stream', u'my_stream']])
-        self.assertEqual(result, [[u'stream', u'my_stream']])
+        result = _default_narrow(self.user_profile, [['stream', 'my_stream']])
+        self.assertEqual(result, [['stream', 'my_stream']])
 
     def test_use_passed_narrow_with_default(self) -> None:
         self.user_profile.default_events_register_stream_id = self.stream.id
         self.user_profile.save()
-        result = _default_narrow(self.user_profile, [[u'stream', u'my_stream']])
-        self.assertEqual(result, [[u'stream', u'my_stream']])
+        result = _default_narrow(self.user_profile, [['stream', 'my_stream']])
+        self.assertEqual(result, [['stream', 'my_stream']])
 
     def test_use_default_if_narrow_is_empty(self) -> None:
         self.user_profile.default_events_register_stream_id = self.stream.id
         self.user_profile.save()
         result = _default_narrow(self.user_profile, [])
-        self.assertEqual(result, [[u'stream', u'Verona']])
+        self.assertEqual(result, [['stream', 'Verona']])
 
     def test_use_narrow_if_default_is_none(self) -> None:
         self.user_profile.default_events_register_stream_id = None

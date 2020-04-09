@@ -263,7 +263,7 @@ def list_of_tlds() -> List[str]:
 
     # tlds-alpha-by-domain.txt comes from https://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
-    tlds = [tld.lower().strip() for tld in open(tlds_file, 'r')
+    tlds = [tld.lower().strip() for tld in open(tlds_file)
             if tld not in blacklist and not tld[0].startswith('#')]
     tlds.sort(key=len, reverse=True)
     return tlds
@@ -563,10 +563,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # We strip leading '/' from relative URLs here to ensure
             # consistency in what gets passed to /thumbnail
             url = url.lstrip('/')
-            img.set("src", "/thumbnail?url={0}&size=thumbnail".format(
+            img.set("src", "/thumbnail?url={}&size=thumbnail".format(
                 urllib.parse.quote(url, safe='')
             ))
-            img.set('data-src-fullsize', "/thumbnail?url={0}&size=full".format(
+            img.set('data-src-fullsize', "/thumbnail?url={}&size=full".format(
                 urllib.parse.quote(url, safe='')
             ))
         else:
@@ -1187,7 +1187,7 @@ class Avatar(markdown.inlinepatterns.Pattern):
                 profile_id = user_dict['id']
 
         img.set('class', 'message_body_gravatar')
-        img.set('src', '/avatar/{0}?s=30'.format(profile_id or email))
+        img.set('src', '/avatar/{}?s=30'.format(profile_id or email))
         img.set('title', email)
         img.set('alt', email)
         return img
@@ -1713,9 +1713,9 @@ def possible_linked_stream_names(content: str) -> Set[str]:
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 
-    allowed_before_punctuation = set([' ', '\n', '(', '"', '.', ',', '\'', ';', '[', '*', '`', '>'])
-    allowed_after_punctuation = set([' ', '\n', ')', '",', '?', ':', '.', ',', '\'', ';', ']', '!',
-                                     '*', '`'])
+    allowed_before_punctuation = {' ', '\n', '(', '"', '.', ',', '\'', ';', '[', '*', '`', '>'}
+    allowed_after_punctuation = {' ', '\n', ')', '",', '?', ':', '.', ',', '\'', ';', ']', '!',
+                                 '*', '`'}
 
     def check_valid_start_position(self, content: str, index: int) -> bool:
         if index <= 0 or content[index] in self.allowed_before_punctuation:
