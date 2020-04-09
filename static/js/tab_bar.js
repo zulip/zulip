@@ -29,10 +29,20 @@ function make_tab_data(filter) {
     if (tab_data.icon === 'hashtag' || tab_data.icon === 'lock') {
         const stream = filter.operands("stream")[0];
         const current_stream  = stream_data.get_sub_by_name(stream);
-        tab_data.rendered_narrow_description = current_stream.rendered_description;
-        tab_data.sub_count = get_sub_count(current_stream);
-        tab_data.formatted_sub_count = get_formatted_sub_count(current_stream);
-        tab_data.stream_settings_link = "#streams/" + current_stream.stream_id + "/" + current_stream.name;
+        if (current_stream) {
+            tab_data.rendered_narrow_description = current_stream.rendered_description;
+            if (tab_data.rendered_narrow_description === '') {
+                tab_data.rendered_narrow_description = '(no description)';
+            }
+            tab_data.sub_count = get_sub_count(current_stream);
+            tab_data.formatted_sub_count = get_formatted_sub_count(current_stream);
+            tab_data.stream_settings_link = "#streams/" + current_stream.stream_id + "/" + current_stream.name;
+        } else {
+            tab_data.title = 'Unknown Stream';
+            tab_data.sub_count = '0';
+            tab_data.formatted_sub_count = '0';
+            tab_data.rendered_narrow_description = "This stream does not exist or is private.";
+        }
         // legacy attribute, TODO: should be purged
         tab_data.extra_class = 'root';
     }
