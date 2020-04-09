@@ -141,7 +141,7 @@ exports.is_slash_command = function (content) {
 };
 
 
-exports.try_deliver_locally = function try_deliver_locally(message_request) {
+exports.try_deliver_locally = function (message_request) {
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return;
     }
@@ -177,7 +177,7 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
     return exports.insert_local_message(message_request, local_id_float);
 };
 
-exports.edit_locally = function edit_locally(message, request) {
+exports.edit_locally = function (message, request) {
     // Responsible for doing the rendering work of locally editing the
     // content ofa message.  This is used in several code paths:
     // * Editing a message where a message was locally echoed but
@@ -247,7 +247,7 @@ exports.edit_locally = function edit_locally(message, request) {
     pm_list.update_private_messages();
 };
 
-exports.reify_message_id = function reify_message_id(local_id, server_id) {
+exports.reify_message_id = function (local_id, server_id) {
     const message = waiting_for_id.get(local_id);
     waiting_for_id.delete(local_id);
 
@@ -267,7 +267,7 @@ exports.reify_message_id = function reify_message_id(local_id, server_id) {
     notifications.reify_message_id(opts);
 };
 
-exports.process_from_server = function process_from_server(messages) {
+exports.process_from_server = function (messages) {
     const msgs_to_rerender = [];
     const non_echo_messages = [];
 
@@ -327,12 +327,12 @@ exports.process_from_server = function process_from_server(messages) {
     return non_echo_messages;
 };
 
-exports._patch_waiting_for_ack = function _patch_waiting_for_ack(data) {
+exports._patch_waiting_for_ack = function (data) {
     // Only for testing
     waiting_for_ack = data;
 };
 
-exports.message_send_error = function message_send_error(local_id, error_response) {
+exports.message_send_error = function (local_id, error_response) {
     // Error sending message, show inline
     message_store.get(local_id).failed_request = true;
     ui.show_message_failed(local_id, error_response);
