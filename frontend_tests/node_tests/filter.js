@@ -1319,6 +1319,11 @@ function make_private_sub(name, stream_id) {
 }
 
 run_test('navbar_helpers', () => {
+    // make sure title has names separated with correct delimiters
+    function properly_separated_names(names) {
+        return names.join(', ');
+    }
+
     function test_redirect_url_with_search(test_case) {
         test_case.operator.push({ operator: 'search', operand: 'fizzbuzz'});
         const filter = new Filter(test_case.operator);
@@ -1436,21 +1441,21 @@ run_test('navbar_helpers', () => {
             operator: pm_with,
             is_common_narrow: true,
             icon: 'envelope',
-            title: [joe.full_name],
+            title: properly_separated_names([joe.full_name]),
             redirect_url_with_search: '/#narrow/pm-with/' + joe.user_id + '-' + joe.email.split('@')[0],
         },
         {
             operator: group_pm,
             is_common_narrow: true,
             icon: 'envelope',
-            title: [joe.full_name, steve.full_name],
+            title: properly_separated_names([joe.full_name, steve.full_name]),
             redirect_url_with_search: '/#narrow/pm-with/' + joe.user_id + ',' + steve.user_id + '-group',
         },
         {
             operator: group_pm_including_missing_person,
             is_common_narrow: true,
             icon: 'envelope',
-            title: [joe.full_name, steve.full_name, 'sally@doesnotexist.com'],
+            title: properly_separated_names([joe.full_name, steve.full_name, 'sally@doesnotexist.com']),
             redirect_url_with_search: '/#narrow/pm-with/undefined',
         },
     ];
