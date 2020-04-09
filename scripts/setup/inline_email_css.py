@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import os
-import errno
 
 from premailer import Premailer
 from cssutils import profile
 from cssutils.profiles import Profiles, properties, macros
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
+EMAIL_TEMPLATES_PATH = os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails')
+COMPILED_EMAIL_TEMPLATES_PATH = os.path.join(EMAIL_TEMPLATES_PATH, 'compiled')
+CSS_SOURCE_PATH = os.path.join(EMAIL_TEMPLATES_PATH, "email.css")
 
 def configure_cssutils() -> None:
     # These properties are not supported by cssutils by default and will
@@ -43,28 +45,24 @@ def strip_unnecesary_tags(text: str) -> str:
 
 if __name__ == "__main__":
     templates_to_inline = set()
-    for f in os.listdir(os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails')):
+    for f in os.listdir(EMAIL_TEMPLATES_PATH):
         if f.endswith('.source.html'):
             templates_to_inline.add(f.split('.source.html')[0])
 
     configure_cssutils()
 
-    os.chdir(os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails'))
+    os.makedirs(COMPILED_EMAIL_TEMPLATES_PATH, exist_ok=True)
 
-    try:
-        os.makedirs("compiled")
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
+    for template_name in templates_to_inline:
+        template_html_source = template_name + ".source.html"
+        compiled_template_path = os.path.join(COMPILED_EMAIL_TEMPLATES_PATH,
+                                              template_name + ".html")
+        template_path = os.path.join(EMAIL_TEMPLATES_PATH, template_html_source)
 
-    for template in templates_to_inline:
-        template_html_source = template + ".source.html"
-        compiled_template_path = os.path.join(os.getcwd(), "compiled", template + ".html")
-
-        with open(template_html_source) as template_source_file:
+        with open(template_path) as template_source_file:
             template_str = template_source_file.read()
         output = Premailer(template_str,
-                           external_styles=["email.css"]).transform()
+                           external_styles=[CSS_SOURCE_PATH]).transform()
 
         output = escape_jinja2_characters(output)
 
@@ -75,7 +73,7 @@ if __name__ == "__main__":
         # template, since we'll end up with 2 copipes of those tags.
         # Thus, we strip this stuff out if the template extends
         # another template.
-        if template != 'email_base_default':
+        if template_name != 'email_base_default':
             output = strip_unnecesary_tags(output)
 
         if ('zerver/emails/compiled/email_base_default.html' in output or
