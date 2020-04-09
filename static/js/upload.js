@@ -165,6 +165,7 @@ exports.setup_upload = function (config) {
     $("body").on("change", exports.get_item("file_input_identifier", config), (event) => {
         const files = event.target.files;
         exports.upload_files(uppy, config, files);
+        event.target.value = "";
     });
 
     const drag_drop_container = exports.get_item("drag_drop_container", config);
