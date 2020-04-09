@@ -15,6 +15,7 @@ import requests
 import atexit
 import sys
 import signal
+import traceback
 import tornado.ioloop
 import random
 from zerver.models import UserProfile, Client, Realm
@@ -25,7 +26,7 @@ from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
 from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.request import JsonableError
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
@@ -1083,6 +1084,20 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_event(event, cast(Iterable[int], users))
     logging.debug("Tornado: Event %s for %s users took %sms" % (
         event['type'], len(users), int(1000 * (time.time() - start_time))))
+
+def get_wrapped_process_notification(queue_name: str) -> Callable[[Dict[str, Any]], None]:
+    def failure_processor(notice: Dict[str, Any]) -> None:
+        logging.error(
+            "Maximum retries exceeded for Tornado notice:%s\nStack trace:\n%s\n" % (
+                notice, traceback.format_exc()))
+
+    def wrapped_process_notification(notice: Dict[str, Any]) -> None:
+        try:
+            process_notification(notice)
+        except Exception:
+            retry_event(queue_name, notice, failure_processor)
+
+    return wrapped_process_notification
 
 # Runs in the Django process to send a notification to Tornado.
 #

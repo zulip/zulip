@@ -23,7 +23,7 @@ from zerver.tornado.application import create_tornado_application, \
     setup_tornado_rabbitmq
 from zerver.tornado.autoreload import start as zulip_autoreload_start
 from zerver.tornado.event_queue import add_client_gc_hook, \
-    missedmessage_hook, process_notification, setup_event_queue
+    missedmessage_hook, get_wrapped_process_notification, setup_event_queue
 from zerver.tornado.sharding import notify_tornado_queue_name
 
 if settings.USING_RABBITMQ:
@@ -89,8 +89,9 @@ class Command(BaseCommand):
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()
                 # Process notifications received via RabbitMQ
-                queue_client.register_json_consumer(notify_tornado_queue_name(int(port)),
-                                                    process_notification)
+                queue_name = notify_tornado_queue_name(int(port))
+                queue_client.register_json_consumer(queue_name,
+                                                    get_wrapped_process_notification(queue_name))
 
             try:
                 # Application is an instance of Django's standard wsgi handler.
