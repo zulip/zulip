@@ -1,8 +1,15 @@
-function send_message_ajax(request, success, error) {
+exports.send_message = function (request, on_success, error) {
     channel.post({
         url: '/json/messages',
         data: request,
-        success: success,
+        success: function success(data) {
+            // Call back to our callers to do things like closing the compose
+            // box and turning off spinners and reifying locally echoed messages.
+            on_success(data);
+
+            // Once everything is done, get ready to report times to the server.
+            sent_messages.report_server_ack(request.local_id);
+        },
         error: function (xhr, error_type) {
             if (error_type !== 'timeout' && reload_state.is_pending()) {
                 // The error might be due to the server changing
@@ -18,19 +25,6 @@ function send_message_ajax(request, success, error) {
             error(response);
         },
     });
-}
-
-exports.send_message = function (request, on_success, error) {
-    function success(data) {
-        // Call back to our callers to do things like closing the compose
-        // box and turning off spinners and reifying locally echoed messages.
-        on_success(data);
-
-        // Once everything is done, get ready to report times to the server.
-        sent_messages.report_server_ack(request.local_id);
-    }
-
-    send_message_ajax(request, success, error);
 };
 
 exports.reply_message = function (opts) {
