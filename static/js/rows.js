@@ -96,6 +96,21 @@ exports.id = function (message_row) {
     return parseFloat(zid);
 };
 
+exports.local_echo_id = function (message_row) {
+    const zid = message_row.attr('zid');
+
+    if (zid === undefined) {
+        blueslip.error("Calling code passed rows.local_id a row with no zid attr.");
+        return;
+    }
+
+    if (!zid.includes('.0')) {
+        blueslip.error('Trying to get local_id from row that has reified message id: ' + zid);
+    }
+
+    return zid;
+};
+
 const valid_table_names = {
     zhome: true,
     zfilt: true,
