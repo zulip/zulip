@@ -30,6 +30,17 @@ def escape_jinja2_characters(text: str) -> str:
         text = text.replace(escaped, original)
     return text
 
+def strip_unnecesary_tags(text: str) -> str:
+    end_block = '</body>\n</html>'
+    start_block = '{% extends'
+    start = text.find(start_block)
+    end = text.rfind(end_block)
+    if start != -1 and end != -1:
+        text = text[start:end]
+        return text
+    else:
+        raise ValueError("Template does not have %s or %s" % (start_block, end_block))
+
 if __name__ == "__main__":
     templates_to_inline = set()
     for f in os.listdir(os.path.join(ZULIP_PATH, 'templates', 'zerver', 'emails')):
@@ -64,14 +75,8 @@ if __name__ == "__main__":
         # template, since we'll end up with 2 copipes of those tags.
         # Thus, we strip this stuff out if the template extends
         # another template.
-        end_block = '</body>\n</html>'
-        start = output.find('{% extends')
-        end = output.rfind(end_block)
-        if start != -1 and end != -1:
-            output = output[start:end]
-        else:
-            # Only the base-default template should not be using this system.
-            assert template == 'email_base_default'
+        if template != 'email_base_default':
+            output = strip_unnecesary_tags(output)
 
         if ('zerver/emails/compiled/email_base_default.html' in output or
                 'zerver/emails/email_base_messages.html' in output):
