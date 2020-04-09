@@ -45,9 +45,9 @@ set_global('reminder', _reminder);
 set_global('resize', _resize);
 set_global('sent_messages', _sent_messages);
 
+set_global('local_message', {});
 set_global('transmit', {});
 set_global('channel', {});
-set_global('echo', {});
 set_global('stream_edit', {});
 set_global('markdown', {});
 set_global('loading', {});
@@ -72,6 +72,7 @@ zrequire('people');
 zrequire('input_pill');
 zrequire('user_pill');
 zrequire('compose_pm_pill');
+zrequire('echo');
 zrequire('compose');
 zrequire('upload');
 
@@ -606,9 +607,18 @@ run_test('send_message', () => {
             return 'alice@example.com';
         };
 
-        echo.try_deliver_locally = function () {
+        const fake_now = 555;
+        local_message.insert_message = (message) => {
+            assert.equal(message.timestamp, fake_now);
+        };
+        local_message.now = () => fake_now;
+        markdown.apply_markdown = () => {};
+        markdown.add_topic_links = () => {};
+
+        echo.try_deliver_locally = function (message_request) {
             stub_state.local_id_counter += 1;
-            return stub_state.local_id_counter.toString();
+            const local_id_float = stub_state.local_id_counter;
+            return echo.insert_local_message(message_request, local_id_float);
         };
         transmit.send_message = function (payload, success) {
             const single_msg = {
