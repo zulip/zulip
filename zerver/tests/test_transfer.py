@@ -56,8 +56,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
 
-        upload_message_file(u'dummy1.txt', len(b'zulip1!'), u'text/plain', b'zulip1!', hamlet)
-        upload_message_file(u'dummy2.txt', len(b'zulip2!'), u'text/plain', b'zulip2!', othello)
+        upload_message_file('dummy1.txt', len(b'zulip1!'), 'text/plain', b'zulip1!', hamlet)
+        upload_message_file('dummy2.txt', len(b'zulip2!'), 'text/plain', b'zulip2!', othello)
 
         transfer_message_files_to_s3(1)
 

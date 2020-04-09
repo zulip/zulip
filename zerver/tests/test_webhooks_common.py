@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from types import SimpleNamespace
 from mock import MagicMock, patch
 from typing import Dict

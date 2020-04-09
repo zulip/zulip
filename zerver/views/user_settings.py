@@ -142,7 +142,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
     return json_success(result)
 
 all_timezones = set(get_all_timezones())
-emojiset_choices = set([emojiset['key'] for emojiset in UserProfile.emojiset_choices()])
+emojiset_choices = {emojiset['key'] for emojiset in UserProfile.emojiset_choices()}
 
 @human_users_only
 @has_request_variables

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # zulip-contributor-docs documentation build configuration file, created by
 # sphinx-quickstart on Mon Aug 17 16:24:04 2015.

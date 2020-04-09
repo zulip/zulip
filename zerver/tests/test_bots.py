@@ -553,15 +553,15 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login_user(user)
 
         bot_info = {
-            'full_name': u'The Bot of Hamlet',
-            'short_name': u'hambot',
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
 
         bot_info = {
-            'full_name': u'The Another Bot of Hamlet',
-            'short_name': u'hambot-another',
+            'full_name': 'The Another Bot of Hamlet',
+            'short_name': 'hambot-another',
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -884,8 +884,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         othello = self.example_user('othello')
 
         bot_info = {
-            'full_name': u'The Bot of Hamlet',
-            'short_name': u'hambot',
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -977,8 +977,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_num_bots_equal(1)
 
         bot_info = {
-            'full_name': u'Another Bot of Hamlet',
-            'short_name': u'hamelbot',
+            'full_name': 'Another Bot of Hamlet',
+            'short_name': 'hamelbot',
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1364,8 +1364,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_outgoing_webhook_bot(self) -> None:
         self.login('hamlet')
         bot_info = {
-            'full_name': u'The Bot of Hamlet',
-            'short_name': u'hambot',
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
             'bot_type': UserProfile.OUTGOING_WEBHOOK_BOT,
             'payload_url': ujson.dumps("http://foo.bar.com"),
             'service_interface': Service.GENERIC,
@@ -1389,7 +1389,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     @patch('zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config')
     def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot('test', self.example_user("hamlet"),
-                             full_name=u'Bot with config data',
+                             full_name='Bot with config data',
                              bot_type=UserProfile.EMBEDDED_BOT,
                              service_name='giphy',
                              config_data=ujson.dumps({'key': '12345678'}))

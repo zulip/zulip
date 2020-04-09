@@ -8,8 +8,8 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-GCI_MESSAGE_TEMPLATE = u'**{actor}** {action} the task [{task_name}]({task_url}).'
-GCI_TOPIC_TEMPLATE = u'{student_name}'
+GCI_MESSAGE_TEMPLATE = '**{actor}** {action} the task [{task_name}]({task_url}).'
+GCI_TOPIC_TEMPLATE = '{student_name}'
 
 
 def build_instance_url(instance_id: str) -> str:
@@ -95,7 +95,7 @@ def get_unassign_event_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_outoftime_event_body(payload: Dict[str, Any]) -> str:
-    return u'The deadline for the task [{task_name}]({task_url}) has passed.'.format(
+    return 'The deadline for the task [{task_name}]({task_url}) has passed.'.format(
         task_name=payload['task_definition_name'],
         task_url=build_instance_url(payload['task_instance']),
     )
@@ -132,7 +132,7 @@ def get_event(payload: Dict[str, Any]) -> Optional[str]:
     if event in EVENTS_FUNCTION_MAPPER:
         return event
 
-    raise UnknownEventType(u"Event '{}' is unknown and cannot be handled".format(event))  # nocoverage
+    raise UnknownEventType("Event '{}' is unknown and cannot be handled".format(event))  # nocoverage
 
 def get_body_based_on_event(event: str) -> Any:
     return EVENTS_FUNCTION_MAPPER[event]

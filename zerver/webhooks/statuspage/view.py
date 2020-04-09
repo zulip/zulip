@@ -17,7 +17,7 @@ INCIDENT_TEMPLATE = """
 
 COMPONENT_TEMPLATE = "**{name}** has changed status from **{old_status}** to **{new_status}**."
 
-TOPIC_TEMPLATE = u'{name}: {description}'
+TOPIC_TEMPLATE = '{name}: {description}'
 
 def get_incident_events_body(payload: Dict[str, Any]) -> str:
     return INCIDENT_TEMPLATE.format(

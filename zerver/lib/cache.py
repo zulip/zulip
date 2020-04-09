@@ -87,7 +87,7 @@ def get_or_create_key_prefix() -> str:
         # The file already exists
         tries = 1
         while tries < 10:
-            with open(filename, 'r') as f:
+            with open(filename) as f:
                 prefix = f.readline()[:-1]
             if len(prefix) == 33:
                 break
@@ -244,7 +244,7 @@ def cache_get_many(keys: List[str], cache_name: Optional[str]=None) -> Dict[str,
     remote_cache_stats_start()
     ret = get_cache_backend(cache_name).get_many(keys)
     remote_cache_stats_finish()
-    return dict([(key[len(KEY_PREFIX):], value) for key, value in ret.items()])
+    return {key[len(KEY_PREFIX):]: value for key, value in ret.items()}
 
 def safe_cache_get_many(keys: List[str], cache_name: Optional[str]=None) -> Dict[str, Any]:
     """Variant of cache_get_many that drops any keys that fail
@@ -290,7 +290,7 @@ def safe_cache_set_many(items: Dict[str, Any], cache_name: Optional[str]=None,
         good_keys, bad_keys = filter_good_and_bad_keys(list(items.keys()))
         log_invalid_cache_keys(stack_trace, bad_keys)
 
-        good_items = dict((key, items[key]) for key in good_keys)
+        good_items = {key: items[key] for key in good_keys}
         return cache_set_many(good_items, cache_name, timeout)
 
 def cache_delete(key: str, cache_name: Optional[str]=None) -> None:
@@ -404,8 +404,8 @@ def generic_bulk_cached_fetch(
         cached_objects[key] = item
     if len(items_for_remote_cache) > 0:
         safe_cache_set_many(items_for_remote_cache)
-    return dict((object_id, cached_objects[cache_keys[object_id]]) for object_id in object_ids
-                if cache_keys[object_id] in cached_objects)
+    return {object_id: cached_objects[cache_keys[object_id]] for object_id in object_ids
+            if cache_keys[object_id] in cached_objects}
 
 def preview_url_cache_key(url: str) -> str:
     return "preview_url:%s" % (make_safe_digest(url),)
@@ -425,7 +425,7 @@ def user_profile_by_email_cache_key(email: str) -> str:
     return 'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
 
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
-    return u"user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
+    return "user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
 
 def user_profile_cache_key(email: str, realm: 'Realm') -> str:
     return user_profile_cache_key_id(email, realm.id)
@@ -451,7 +451,7 @@ def realm_user_dicts_cache_key(realm_id: int) -> str:
     return "realm_user_dicts:%s" % (realm_id,)
 
 def get_realm_used_upload_space_cache_key(realm: 'Realm') -> str:
-    return u'realm_used_upload_space:%s' % (realm.id,)
+    return 'realm_used_upload_space:%s' % (realm.id,)
 
 def active_user_ids_cache_key(realm_id: int) -> str:
     return "active_user_ids:%s" % (realm_id,)

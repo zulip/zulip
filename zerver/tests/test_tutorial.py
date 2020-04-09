@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.conf import settings
 
 from zerver.lib.actions import internal_send_private_message

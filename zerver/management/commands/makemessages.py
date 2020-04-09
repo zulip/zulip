@@ -72,7 +72,7 @@ class Command(makemessages.Command):
         xgettext_options += ['--keyword={}:1,"{}"'.format(func, tag)]
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument('--frontend-source', type=str,
                             default='static/templates',
                             help='Name of the Handlebars template directory')
@@ -165,7 +165,7 @@ class Command(makemessages.Command):
             for filename in [f for f in filenames if f.endswith(".hbs")]:
                 if filename.startswith('.'):
                     continue
-                with open(os.path.join(dirpath, filename), 'r') as reader:
+                with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
                     translation_strings.extend(self.extract_strings(data))
 
@@ -240,9 +240,9 @@ class Command(makemessages.Command):
         for locale, output_path in zip(self.get_locales(), self.get_output_paths()):
             self.stdout.write("[frontend] processing locale {}".format(locale))
             try:
-                with open(output_path, 'r') as reader:
+                with open(output_path) as reader:
                     old_strings = json.load(reader)
-            except (IOError, ValueError):
+            except (OSError, ValueError):
                 old_strings = {}
 
             new_strings = {

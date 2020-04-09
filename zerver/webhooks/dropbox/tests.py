@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.users import get_api_key
 
@@ -9,8 +8,8 @@ class DropboxHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'dropbox'
 
     def test_file_updated(self) -> None:
-        expected_topic = u"Dropbox"
-        expected_message = u"File has been updated on Dropbox!"
+        expected_topic = "Dropbox"
+        expected_message = "File has been updated on Dropbox!"
 
         self.send_and_test_stream_message('file_updated', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")

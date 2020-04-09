@@ -49,7 +49,6 @@ incorrectly.
 # Tornado would crash itself by auto-reloading into a version of the
 # code that didn't work.
 
-from __future__ import absolute_import, division, print_function
 
 import os
 import sys

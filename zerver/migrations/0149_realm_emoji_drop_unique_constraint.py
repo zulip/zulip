@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import shutil
 
@@ -98,7 +97,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterUniqueTogether(
             name='realmemoji',
-            unique_together=set([]),
+            unique_together=set(),
         ),
         migrations.AlterField(
             model_name='realmemoji',

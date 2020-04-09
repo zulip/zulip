@@ -112,7 +112,7 @@ You can use the command list_realms to find ID of the realms in this server."""
 
         if options["users"] is None:
             return []
-        emails = set([email.strip() for email in options["users"].split(",")])
+        emails = {email.strip() for email in options["users"].split(",")}
         user_profiles = []
         for email in emails:
             user_profiles.append(self.get_user(email, realm))

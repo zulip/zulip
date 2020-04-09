@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -3922,7 +3921,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
 
         result = self.client_get(result.url)
         self.assert_in_response('action="/accounts/register/"', result)
-        self.assert_in_response('value="{0}" name="key"'.format(confirmation_key), result)
+        self.assert_in_response('value="{}" name="key"'.format(confirmation_key), result)
 
     def test_sso_only_when_preregistration_user_exists(self) -> None:
         rf = RequestFactory()
@@ -3957,7 +3956,7 @@ class TestAdminSetBackends(ZulipTestCase):
         # Log in as admin
         self.login('iago')
         result = self.client_patch("/json/realm", {
-            'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True})})
+            'authentication_methods': ujson.dumps({'Email': False, 'Dev': True})})
         self.assert_json_success(result)
         realm = get_realm('zulip')
         self.assertFalse(password_auth_enabled(realm))
@@ -3967,7 +3966,7 @@ class TestAdminSetBackends(ZulipTestCase):
         # Log in as admin
         self.login('iago')
         result = self.client_patch("/json/realm", {
-            'authentication_methods': ujson.dumps({u'Email': False, u'Dev': False})})
+            'authentication_methods': ujson.dumps({'Email': False, 'Dev': False})})
         self.assert_json_error(result, 'At least one authentication method must be enabled.')
         realm = get_realm('zulip')
         self.assertTrue(password_auth_enabled(realm))
@@ -3978,7 +3977,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.login('iago')
         # Set some supported and unsupported backends
         result = self.client_patch("/json/realm", {
-            'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True, u'GitHub': False})})
+            'authentication_methods': ujson.dumps({'Email': False, 'Dev': True, 'GitHub': False})})
         self.assert_json_success(result)
         realm = get_realm('zulip')
         # Check that unsupported backend is not enabled
@@ -3992,7 +3991,7 @@ class EmailValidatorTestCase(ZulipTestCase):
 
     def test_invalid_email(self) -> None:
         with self.assertRaises(JsonableError):
-            validate_login_email(u'hamlet')
+            validate_login_email('hamlet')
 
     def test_validate_email(self) -> None:
         inviter = self.example_user('hamlet')

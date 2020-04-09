@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name
@@ -25,7 +24,7 @@ class SlackMessageConversion(ZulipTestCase):
     def load_slack_message_conversion_tests(self) -> Dict[Any, Any]:
         test_fixtures = {}
         with open(os.path.join(os.path.dirname(__file__),
-                               'fixtures/slack_message_conversion.json'), 'r') as f:
+                               'fixtures/slack_message_conversion.json')) as f:
             data = ujson.load(f)
         for test in data['regular_tests']:
             test_fixtures[test['name']] = test
@@ -35,7 +34,7 @@ class SlackMessageConversion(ZulipTestCase):
     @slow("Aggregate of runs of individual slack message conversion tests")
     def test_message_conversion_fixtures(self) -> None:
         format_tests = self.load_slack_message_conversion_tests()
-        valid_keys = set(['name', "input", "conversion_output"])
+        valid_keys = {'name', "input", "conversion_output"}
 
         for name, test in format_tests.items():
             # Check that there aren't any unexpected keys as those are often typos

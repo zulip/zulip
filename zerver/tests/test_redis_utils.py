@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import mock
 
 from zerver.lib.test_classes import ZulipTestCase

@@ -10,8 +10,8 @@ from typing import Dict, Iterable, List
 def alert_words_in_realm(realm: Realm) -> Dict[int, List[str]]:
     users_query = UserProfile.objects.filter(realm=realm, is_active=True)
     alert_word_data = users_query.filter(~Q(alert_words=ujson.dumps([]))).values('id', 'alert_words')
-    all_user_words = dict((elt['id'], ujson.loads(elt['alert_words'])) for elt in alert_word_data)
-    user_ids_with_words = dict((user_id, w) for (user_id, w) in all_user_words.items() if len(w))
+    all_user_words = {elt['id']: ujson.loads(elt['alert_words']) for elt in alert_word_data}
+    user_ids_with_words = {user_id: w for (user_id, w) in all_user_words.items() if len(w)}
     return user_ids_with_words
 
 @cache_with_key(realm_alert_words_automaton_cache_key, timeout=3600*24)
@@ -25,7 +25,7 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
                 (key, user_ids_for_alert_word) = alert_word_automaton.get(alert_word_lower)
                 user_ids_for_alert_word.add(user_id)
             else:
-                alert_word_automaton.add_word(alert_word_lower, (alert_word_lower, set([user_id])))
+                alert_word_automaton.add_word(alert_word_lower, (alert_word_lower, {user_id}))
     alert_word_automaton.make_automaton()
     # If the kind is not AHOCORASICK after calling make_automaton, it means there is no key present
     # and hence we cannot call items on the automaton yet. To avoid it we return None for such cases

@@ -90,7 +90,7 @@ class UploadSerializeMixin(SerializeMixin):
             with open(cls.lockfile, 'w'):  # nocoverage - rare locking case
                 pass
 
-        super(UploadSerializeMixin, cls).setUpClass(*args, **kwargs)
+        super().setUpClass(*args, **kwargs)
 
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
@@ -813,7 +813,7 @@ class ZulipTestCase(TestCase):
         return output_dir
 
     def get_set(self, data: List[Dict[str, Any]], field: str) -> Set[str]:
-        values = set(r[field] for r in data)
+        values = {r[field] for r in data}
         return values
 
     def find_by_id(self, data: List[Dict[str, Any]], db_id: int) -> Dict[str, Any]:

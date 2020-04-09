@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from unittest import mock

@@ -84,7 +84,7 @@ class TabbedSectionsGenerator(Extension):
 
 class TabbedSectionsPreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
-        super(TabbedSectionsPreprocessor, self).__init__(md)
+        super().__init__(md)
 
     def run(self, lines: List[str]) -> List[str]:
         tab_section = self.parse_tabs(lines)

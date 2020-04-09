@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from typing import Any, Dict, Mapping, Union
 
 import mock

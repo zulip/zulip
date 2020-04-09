@@ -78,7 +78,7 @@ parameters, or specify no parameters for interactive user creation.""")
 
         try:
             if options['password_file']:
-                with open(options['password_file'], 'r') as f:
+                with open(options['password_file']) as f:
                     pw = f.read()
             elif options['password']:
                 pw = options['password']

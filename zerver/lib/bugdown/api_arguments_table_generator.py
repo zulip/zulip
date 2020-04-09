@@ -30,7 +30,7 @@ class MarkdownArgumentsTableGenerator(Extension):
 
 class APIArgumentsTablePreprocessor(Preprocessor):
     def __init__(self, md: markdown.Markdown, config: Dict[str, Any]) -> None:
-        super(APIArgumentsTablePreprocessor, self).__init__(md)
+        super().__init__(md)
         self.base_path = config['base_path']
 
     def run(self, lines: List[str]) -> List[str]:
@@ -66,7 +66,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                         if e.args != ('parameters',):
                             raise e
                 else:
-                    with open(filename, 'r') as fp:
+                    with open(filename) as fp:
                         json_obj = json.load(fp)
                         arguments = json_obj[doc_name]
 

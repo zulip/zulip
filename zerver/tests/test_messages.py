@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.db import IntegrityError
 from django.db.models import Q
 from django.conf import settings
@@ -1204,15 +1203,15 @@ class StreamMessagesTest(ZulipTestCase):
         self.login('hamlet')
 
         # Subscribe everyone to a stream with non-ASCII characters.
-        non_ascii_stream_name = u"hümbüǵ"
+        non_ascii_stream_name = "hümbüǵ"
         realm = get_realm("zulip")
         stream = self.make_stream(non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(is_active=True, is_bot=False,
                                                        realm=realm)[0:3]:
             self.subscribe(user_profile, stream.name)
 
-        self.assert_stream_message(non_ascii_stream_name, topic_name=u"hümbüǵ",
-                                   content=u"hümbüǵ")
+        self.assert_stream_message(non_ascii_stream_name, topic_name="hümbüǵ",
+                                   content="hümbüǵ")
 
     def test_get_raw_unread_data_for_huddle_messages(self) -> None:
         users = [
@@ -1238,8 +1237,8 @@ class StreamMessagesTest(ZulipTestCase):
         recent_conversations = get_recent_private_conversations(users[1])
         self.assertEqual(len(recent_conversations), 1)
         recent_conversation = list(recent_conversations.values())[0]
-        self.assertEqual(set(recent_conversation['user_ids']), set(user.id for user in users if
-                                                                   user != users[1]))
+        self.assertEqual(set(recent_conversation['user_ids']), {user.id for user in users if
+                                                                user != users[1]})
         self.assertEqual(recent_conversation['max_message_id'], message2_id)
 
 class MessageDictTest(ZulipTestCase):
@@ -1364,7 +1363,7 @@ class MessageDictTest(ZulipTestCase):
         sender = self.example_user('othello')
         receiver = self.example_user('hamlet')
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        stream_name = u'Çiğdem'
+        stream_name = 'Çiğdem'
         stream = self.make_stream(stream_name)
         stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         sending_client = make_client(name="test suite")
@@ -1556,7 +1555,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
         sender = self.example_user('othello')
         receiver = self.example_user('hamlet')
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        stream_name = u'Çiğdem'
+        stream_name = 'Çiğdem'
         stream = self.make_stream(stream_name)
         stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         sending_client = make_client(name="test suite")
@@ -1846,7 +1845,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(len(recent_conversations), 1)
         recent_conversation = list(recent_conversations.values())[0]
         recipient_id = list(recent_conversations.keys())[0]
-        self.assertEqual(set(recent_conversation['user_ids']), set([othello.id]))
+        self.assertEqual(set(recent_conversation['user_ids']), {othello.id})
         self.assertEqual(recent_conversation['max_message_id'], message_id)
 
         # Now send a message to yourself and see how that interacts with the data structure
@@ -1860,14 +1859,14 @@ class MessagePOSTTest(ZulipTestCase):
         recent_conversations = get_recent_private_conversations(user_profile)
         self.assertEqual(len(recent_conversations), 2)
         recent_conversation = recent_conversations[recipient_id]
-        self.assertEqual(set(recent_conversation['user_ids']), set([othello.id]))
+        self.assertEqual(set(recent_conversation['user_ids']), {othello.id})
         self.assertEqual(recent_conversation['max_message_id'], message_id)
 
         # Now verify we have the appropriate self-pm data structure
         del recent_conversations[recipient_id]
         recent_conversation = list(recent_conversations.values())[0]
         recipient_id = list(recent_conversations.keys())[0]
-        self.assertEqual(set(recent_conversation['user_ids']), set([]))
+        self.assertEqual(set(recent_conversation['user_ids']), set())
         self.assertEqual(recent_conversation['max_message_id'], self_message_id)
 
     def test_personal_message_by_id(self) -> None:
@@ -2122,7 +2121,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login('hamlet')
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
-                     "content": u"  I like null bytes \x00 in my content", "topic": "Test topic"}
+                     "content": "  I like null bytes \x00 in my content", "topic": "Test topic"}
         result = self.client_post("/json/messages", post_data)
         self.assert_json_error(result, "Message must not contain null bytes")
 
@@ -2966,8 +2965,8 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(history[0]['prev_content'], 'content 1')
         self.assertEqual(history[0]['user_id'], hamlet.id)
         self.assertEqual(set(history[0].keys()),
-                         {u'timestamp', u'prev_content', u'user_id',
-                          u'prev_rendered_content', u'prev_rendered_content_version'})
+                         {'timestamp', 'prev_content', 'user_id',
+                          'prev_rendered_content', 'prev_rendered_content_version'})
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
@@ -3030,7 +3029,7 @@ class EditMessageTest(ZulipTestCase):
         message_history = list(reversed(json_response['message_history']))
         i = 0
         for entry in message_history:
-            expected_entries = {u'content', u'rendered_content', u'topic', u'timestamp', u'user_id'}
+            expected_entries = {'content', 'rendered_content', 'topic', 'timestamp', 'user_id'}
             if i in {0, 2, 3}:
                 expected_entries.add('prev_topic')
             if i in {1, 2, 4}:
@@ -4299,7 +4298,7 @@ class CheckMessageTest(ZulipTestCase):
     def test_basic_check_message_call(self) -> None:
         sender = self.example_user('othello')
         client = make_client(name="test suite")
-        stream_name = u'España y Francia'
+        stream_name = 'España y Francia'
         self.make_stream(stream_name)
         topic_name = 'issue'
         message_content = 'whatever'
@@ -4324,7 +4323,7 @@ class CheckMessageTest(ZulipTestCase):
 
         sender = bot
         client = make_client(name="test suite")
-        stream_name = u'Россия'
+        stream_name = 'Россия'
         topic_name = 'issue'
         addressee = Addressee.for_stream_name(stream_name, topic_name)
         message_content = 'whatever'

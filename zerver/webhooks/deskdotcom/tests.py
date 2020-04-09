@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
 # Tests for the Desk.com webhook integration.
@@ -18,37 +17,37 @@ class DeskDotComHookTests(WebhookTestCase):
 
     def test_static_text_message(self) -> None:
 
-        expected_topic = u"static text notification"
-        expected_message = u"This is a custom action."
+        expected_topic = "static text notification"
+        expected_message = "This is a custom action."
 
         self.api_stream_message(self.test_user, 'static_text', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def test_case_updated_message(self) -> None:
-        expected_topic = u"case updated notification"
-        expected_message = (u"Case 2 updated. "
-                            u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
-                            u"I have a question</a>")
+        expected_topic = "case updated notification"
+        expected_message = ("Case 2 updated. "
+                            "Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
+                            "I have a question</a>")
 
         self.api_stream_message(self.test_user, 'case_updated', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def test_unicode_text_italian(self) -> None:
 
-        expected_topic = u"case updated notification"
-        expected_message = (u"Case 2 updated. "
-                            u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
-                            u"Il mio hovercraft è pieno di anguille.</a>")
+        expected_topic = "case updated notification"
+        expected_message = ("Case 2 updated. "
+                            "Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
+                            "Il mio hovercraft è pieno di anguille.</a>")
 
         self.api_stream_message(self.test_user, 'unicode_text_italian', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
     def test_unicode_text_japanese(self) -> None:
 
-        expected_topic = u"case updated notification"
-        expected_message = (u"Case 2 updated. "
-                            u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
-                            u"私のホバークラフトは鰻でいっぱいです</a>")
+        expected_topic = "case updated notification"
+        expected_message = ("Case 2 updated. "
+                            "Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
+                            "私のホバークラフトは鰻でいっぱいです</a>")
 
         self.api_stream_message(self.test_user, 'unicode_text_japanese', expected_topic, expected_message,
                                 content_type="application/x-www-form-urlencoded")

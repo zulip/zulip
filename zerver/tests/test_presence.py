@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from datetime import timedelta
 from django.utils.timezone import now as timezone_now
 import mock

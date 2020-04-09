@@ -66,7 +66,7 @@ def get_fixtures(request: HttpResponse,
 
     for fixture in os.listdir(fixtures_dir):
         fixture_path = os.path.join(fixtures_dir, fixture)
-        with open(fixture_path, 'r') as f:
+        with open(fixture_path) as f:
             body = f.read()
         try:
             body = ujson.loads(body)
@@ -127,7 +127,7 @@ def send_all_webhook_fixture_messages(request: HttpRequest,
     responses = []
     for fixture in os.listdir(fixtures_dir):
         fixture_path = os.path.join(fixtures_dir, fixture)
-        with open(fixture_path, 'r') as f:
+        with open(fixture_path) as f:
             content = f.read()
         x = fixture.split(".")
         fixture_name, fixture_format = "".join(_ for _ in x[:-1]), x[-1]

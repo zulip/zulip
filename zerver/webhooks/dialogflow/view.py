@@ -22,14 +22,14 @@ def api_dialogflow_webhook(request: HttpRequest, user_profile: UserProfile,
         if not result:
             alternate_result = payload["alternateResult"]["fulfillment"]["speech"]
             if not alternate_result:
-                body = u"DialogFlow couldn't process your query."
+                body = "DialogFlow couldn't process your query."
             else:
                 body = alternate_result
         else:
             body = result
     else:
         error_status = payload["status"]["errorDetails"]
-        body = u"{} - {}".format(status, error_status)
+        body = "{} - {}".format(status, error_status)
 
     profile = get_user_profile_by_email(email)
     check_send_private_message(user_profile, request.client, profile, body)

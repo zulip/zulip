@@ -193,7 +193,7 @@ def pretty_print_html(html, num_spaces=4):
 
 def validate_indent_html(fn, fix):
     # type: (str, bool) -> int
-    with open(fn, 'r') as f:
+    with open(fn) as f:
         html = f.read()
     phtml = pretty_print_html(html)
     if not html.split('\n') == phtml.split('\n'):

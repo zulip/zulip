@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import Any, Dict, List
 
 from django.core.management.base import BaseCommand

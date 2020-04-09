@@ -250,7 +250,7 @@ def remove_subscriptions_backend(
 ) -> HttpResponse:
 
     removing_someone_else = principals and \
-        set(principals) != set((user_profile.email,))
+        set(principals) != {user_profile.email}
 
     if removing_someone_else and not user_profile.is_realm_admin:
         # You can only unsubscribe other people from a stream if you are a realm
@@ -264,10 +264,10 @@ def remove_subscriptions_backend(
     streams, __ = list_to_streams(streams_as_dict, user_profile)
 
     if principals:
-        people_to_unsub = set(principal_to_user_profile(
-            user_profile, principal) for principal in principals)
+        people_to_unsub = {principal_to_user_profile(
+            user_profile, principal) for principal in principals}
     else:
-        people_to_unsub = set([user_profile])
+        people_to_unsub = {user_profile}
 
     result = dict(removed=[], not_removed=[])  # type: Dict[str, List[str]]
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
@@ -359,9 +359,9 @@ def add_subscriptions_backend(
             assert user_profile.realm.invite_to_stream_policy == \
                 Realm.POLICY_FULL_MEMBERS_ONLY
             return json_error(_("Your account is too new to modify other users' subscriptions."))
-        subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
+        subscribers = {principal_to_user_profile(user_profile, principal) for principal in principals}
     else:
-        subscribers = set([user_profile])
+        subscribers = {user_profile}
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
                                                               acting_user=user_profile, color_map=color_map)
@@ -377,7 +377,7 @@ def add_subscriptions_backend(
     for (subscriber, stream) in already_subscribed:
         result["already_subscribed"][subscriber.email].append(stream.name)
 
-    bots = dict((subscriber.email, subscriber.is_bot) for subscriber in subscribers)
+    bots = {subscriber.email: subscriber.is_bot for subscriber in subscribers}
 
     newly_created_stream_names = {s.name for s in created_streams}
 

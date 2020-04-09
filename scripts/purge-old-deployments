@@ -36,8 +36,8 @@ def parse_args():
 
 def get_deployments_to_be_purged(recent_deployments):
     # type: (Set[str]) -> Set[str]
-    all_deployments = set([os.path.join(DEPLOYMENTS_DIR, deployment)
-                           for deployment in os.listdir(DEPLOYMENTS_DIR)])
+    all_deployments = {os.path.join(DEPLOYMENTS_DIR, deployment)
+                       for deployment in os.listdir(DEPLOYMENTS_DIR)}
     deployments_to_purge = set()
     for deployment in all_deployments:
         # Deployments whose name is not in the format of a timestamp are

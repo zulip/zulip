@@ -119,7 +119,7 @@ def make_dot_file(graph):
 
 def test():
     # type: () -> None
-    graph = Graph(set([
+    graph = Graph({
         ('x', 'a'),
         ('a', 'b'),
         ('b', 'c'),
@@ -128,7 +128,7 @@ def test():
         ('d', 'e'),
         ('e', 'f'),
         ('e', 'g'),
-    ]))
+    })
     graph.remove_exterior_nodes()
 
     s = make_dot_file(graph)

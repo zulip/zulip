@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import base64
 import binascii
 import logging
@@ -276,7 +274,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
                                       priority=priority,
                                       data=data,
                                       retries=10)
-    except IOError as e:
+    except OSError as e:
         logger.warning(str(e))
         return
 

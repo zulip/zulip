@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 import os
 import re
@@ -289,7 +288,7 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     databases_in_use = set()  # type: Set[str]
     for file in files:
         if round(time.time()) - os.path.getmtime(file) < expiry_time:
-            with open(file, "r") as f:
+            with open(file) as f:
                 for line in f:
                     databases_in_use.add('zulip_test_template_{}'.format(line).rstrip())
         else:

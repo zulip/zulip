@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import ujson
 from django.http import HttpResponse
 from typing import Any, Dict, List, Mapping
@@ -356,7 +354,7 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(result)
         pm_id = result.json()['id']
 
-        expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
+        expected_recipient_ids = {pm_sender.id, pm_recipient.id}
 
         reaction_info = {
             'emoji_name': 'smile'
@@ -396,7 +394,7 @@ class ReactionEventTest(ZulipTestCase):
         content = result.json()
         pm_id = content['id']
 
-        expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
+        expected_recipient_ids = {pm_sender.id, pm_recipient.id}
 
         reaction_info = {
             'emoji_name': 'smile'
@@ -815,7 +813,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         pm_recipient = self.example_user('othello')
         reaction_sender = pm_recipient
         pm_id = self.send_personal_message(pm_sender, pm_recipient)
-        expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
+        expected_recipient_ids = {pm_sender.id, pm_recipient.id}
         reaction_info = {
             'emoji_name': 'hamburger',
             'emoji_code': '1f354',
@@ -852,7 +850,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         pm_recipient = self.example_user('othello')
         reaction_sender = pm_recipient
         pm_id = self.send_personal_message(pm_sender, pm_recipient)
-        expected_recipient_ids = set([pm_sender.id, pm_recipient.id])
+        expected_recipient_ids = {pm_sender.id, pm_recipient.id}
         reaction_info = {
             'emoji_name': 'hamburger',
             'emoji_code': '1f354',

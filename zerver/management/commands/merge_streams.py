@@ -53,7 +53,7 @@ class Command(ZulipBaseCommand):
         # preserve any stream settings/colors/etc. from the stream
         # being destroyed, but it's convenient.
         existing_subs = Subscription.objects.filter(recipient=recipient_to_keep)
-        users_already_subscribed = dict((sub.user_profile_id, sub.active) for sub in existing_subs)
+        users_already_subscribed = {sub.user_profile_id: sub.active for sub in existing_subs}
 
         subs_to_deactivate = Subscription.objects.filter(recipient=recipient_to_destroy, active=True)
         users_to_activate = [

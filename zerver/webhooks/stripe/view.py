@@ -198,7 +198,7 @@ def amount_string(amount: int, currency: str) -> str:
     if currency in zero_decimal_currencies:
         decimal_amount = str(amount)  # nocoverage
     else:
-        decimal_amount = '{0:.02f}'.format(float(amount) * 0.01)
+        decimal_amount = '{:.02f}'.format(float(amount) * 0.01)
 
     if currency == 'usd':  # nocoverage
         return '$' + decimal_amount

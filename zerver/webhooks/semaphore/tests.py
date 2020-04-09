@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import ujson
 from mock import patch
 from zerver.lib.test_classes import WebhookTestCase
@@ -14,7 +13,7 @@ class SemaphoreHookTests(WebhookTestCase):
 
     # Tests for Semaphore Classic
     def test_semaphore_build(self) -> None:
-        expected_topic = u"knighthood/master"  # repo/branch
+        expected_topic = "knighthood/master"  # repo/branch
         expected_message = """
 [Build 314](https://semaphoreci.com/donquixote/knighthood/branches/master/builds/314) passed:
 * **Commit**: [a490b8d: Create user account for Rocinante](https://github.com/donquixote/knighthood/commit/a490b8d508ebbdab1d77a5c2aefa35ceb2d62daf)
@@ -24,7 +23,7 @@ class SemaphoreHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def test_semaphore_deploy(self) -> None:
-        expected_topic = u"knighthood/master"
+        expected_topic = "knighthood/master"
         expected_message = """
 [Deploy 17](https://semaphoreci.com/donquixote/knighthood/servers/lamancha-271/deploys/17) of [build 314](https://semaphoreci.com/donquixote/knighthood/branches/master/builds/314) passed:
 * **Commit**: [a490b8d: Create user account for Rocinante](https://github.com/donquixote/knighthood/commit/a490b8d508ebbdab1d77a5c2aefa35ceb2d62daf)
@@ -37,7 +36,7 @@ class SemaphoreHookTests(WebhookTestCase):
     # Tests For Semaphore 2.0
 
     def test_semaphore2_push(self) -> None:
-        expected_topic = u"notifications/rw/webhook_impl"  # repo/branch
+        expected_topic = "notifications/rw/webhook_impl"  # repo/branch
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/acabe58e-4bcc-4d39-be06-e98d71917703) pipeline **stopped**:
 * **Commit**: [(2d9f5fc)](https://github.com/renderedtext/notifications/commit/2d9f5fcec1ca7c68fa7bd44dd58ec4ff65814563) Implement webhooks for SemaphoreCI
@@ -48,7 +47,7 @@ class SemaphoreHookTests(WebhookTestCase):
                                           content_type="application/json")
 
     def test_semaphore2_push_non_gh_repo(self) -> None:
-        expected_topic = u"notifications/rw/webhook_impl"  # repo/branch
+        expected_topic = "notifications/rw/webhook_impl"  # repo/branch
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/acabe58e-4bcc-4d39-be06-e98d71917703) pipeline **stopped**:
 * **Commit**: (2d9f5fc) Implement webhooks for SemaphoreCI
@@ -60,7 +59,7 @@ class SemaphoreHookTests(WebhookTestCase):
                                               content_type="application/json")
 
     def test_semaphore_pull_request(self) -> None:
-        expected_topic = u"notifications/test-notifications"
+        expected_topic = "notifications/test-notifications"
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/84383f37-d025-4811-b719-61c6acc92a1e) pipeline **failed**:
 * **Pull Request**: [Testing PR notifications](https://github.com/renderedtext/notifications/pull/3)
@@ -71,7 +70,7 @@ class SemaphoreHookTests(WebhookTestCase):
                                           content_type="application/json")
 
     def test_semaphore_pull_request_non_gh_repo(self) -> None:
-        expected_topic = u"notifications/test-notifications"
+        expected_topic = "notifications/test-notifications"
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/84383f37-d025-4811-b719-61c6acc92a1e) pipeline **failed**:
 * **Pull Request**: Testing PR notifications (#3)
@@ -83,7 +82,7 @@ class SemaphoreHookTests(WebhookTestCase):
                                               content_type="application/json")
 
     def test_semaphore_tag(self) -> None:
-        expected_topic = u"notifications"
+        expected_topic = "notifications"
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/a8704319-2422-4828-9b11-6b2afa3554e6) pipeline **stopped**:
 * **Tag**: [v1.0.1](https://github.com/renderedtext/notifications/tree/v1.0.1)
@@ -93,7 +92,7 @@ class SemaphoreHookTests(WebhookTestCase):
                                           content_type="application/json")
 
     def test_semaphore_tag_non_gh_repo(self) -> None:
-        expected_topic = u"notifications"
+        expected_topic = "notifications"
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/a8704319-2422-4828-9b11-6b2afa3554e6) pipeline **stopped**:
 * **Tag**: v1.0.1
@@ -104,7 +103,7 @@ class SemaphoreHookTests(WebhookTestCase):
                                               content_type="application/json")
 
     def test_semaphore_unknown_event(self) -> None:
-        expected_topic = u"notifications"
+        expected_topic = "notifications"
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/a8704319-2422-4828-9b11-6b2afa3554e6) pipeline **stopped** for unknown event
 """.strip()

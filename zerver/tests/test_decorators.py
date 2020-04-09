@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import base64
 import mock
 import re
@@ -582,7 +581,7 @@ body:
                                   HTTP_AUTHORIZATION=api_auth)
         self.assert_json_error(result, "This endpoint requires HTTP basic authentication.")
 
-        api_auth = 'Basic ' + base64.b64encode("foo".encode('utf-8')).decode('utf-8')
+        api_auth = 'Basic ' + base64.b64encode(b"foo").decode('utf-8')
         result = self.client_post('/api/v1/external/zendesk', {},
                                   HTTP_AUTHORIZATION=api_auth)
         self.assert_json_error(result, "Invalid authorization header for basic auth",
@@ -1653,11 +1652,11 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
         @return_success_on_head_request
         def test_function(request: HttpRequest) -> HttpResponse:
-            return json_response(msg=u'from_test_function')  # nocoverage. isn't meant to be called
+            return json_response(msg='from_test_function')  # nocoverage. isn't meant to be called
 
         response = test_function(request)
         self.assert_json_success(response)
-        self.assertNotEqual(ujson.loads(response.content).get('msg'), u'from_test_function')
+        self.assertNotEqual(ujson.loads(response.content).get('msg'), 'from_test_function')
 
     def test_returns_normal_response_if_request_method_is_not_head(self) -> None:
         class HeadRequest:
@@ -1667,10 +1666,10 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
         @return_success_on_head_request
         def test_function(request: HttpRequest) -> HttpResponse:
-            return json_response(msg=u'from_test_function')
+            return json_response(msg='from_test_function')
 
         response = test_function(request)
-        self.assertEqual(ujson.loads(response.content).get('msg'), u'from_test_function')
+        self.assertEqual(ujson.loads(response.content).get('msg'), 'from_test_function')
 
 class RestAPITest(ZulipTestCase):
     def test_method_not_allowed(self) -> None:

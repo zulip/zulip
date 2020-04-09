@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import ujson
 from django.conf import settings
 from django.db import close_old_connections

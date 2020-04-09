@@ -94,7 +94,7 @@ def random_name(bytes: int=60) -> str:
 class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
 
-name_to_tag_num = dict((name, num) for num, name in ExifTags.TAGS.items())
+name_to_tag_num = {name: num for num, name in ExifTags.TAGS.items()}
 
 # https://stackoverflow.com/a/6218425
 def exif_rotate(image: Image) -> Image:
@@ -121,7 +121,7 @@ def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
         im = Image.open(io.BytesIO(image_data))
         im = exif_rotate(im)
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
-    except IOError:
+    except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
     except DecompressionBombError:
         raise BadImageError(_("Image size exceeds limit."))
@@ -136,7 +136,7 @@ def resize_logo(image_data: bytes) -> bytes:
         im = Image.open(io.BytesIO(image_data))
         im = exif_rotate(im)
         im.thumbnail((8*DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE), Image.ANTIALIAS)
-    except IOError:
+    except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
     except DecompressionBombError:
         raise BadImageError(_("Image size exceeds limit."))
@@ -188,7 +188,7 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
             out = io.BytesIO()
             im.save(out, format=image_format)
             return out.getvalue()
-    except IOError:
+    except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
     except DecompressionBombError:
         raise BadImageError(_("Image size exceeds limit."))

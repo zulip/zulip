@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.test import TestCase
 from unittest.mock import patch
@@ -257,7 +256,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1_attachment = Attachment.objects.get(path_id = d1_path_id)
         d1_attachment.create_time = two_week_ago
         d1_attachment.save()
-        self.assertEqual(str(d1_attachment), u'<Attachment: dummy_1.txt>')
+        self.assertEqual(str(d1_attachment), '<Attachment: dummy_1.txt>')
         d2_attachment = Attachment.objects.get(path_id = d2_path_id)
         d2_attachment.create_time = two_week_ago
         d2_attachment.save()
@@ -476,7 +475,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://{}/user_uploads/".format(host) + fp_path_id + ")"
-        with self.settings(CROSS_REALM_BOT_EMAILS = set((user_2.email, user_3.email))):
+        with self.settings(CROSS_REALM_BOT_EMAILS = {user_2.email, user_3.email}):
             internal_send_private_message(
                 realm=r1,
                 sender=get_system_bot(user_2.email),
@@ -1418,7 +1417,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_file_upload_local(self) -> None:
         user_profile = self.example_user('hamlet')
-        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_file('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
@@ -1513,7 +1512,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user('hamlet')
-        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_file('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
@@ -1534,7 +1533,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user('hamlet')
-        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), None, b'zulip!', user_profile)
+        uri = upload_message_file('dummy.txt', len(b'zulip!'), None, b'zulip!', user_profile)
 
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertEqual(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
@@ -1546,7 +1545,7 @@ class S3Test(ZulipTestCase):
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
-        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_file('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
 
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertTrue(delete_message_image(path_id))
@@ -1689,7 +1688,7 @@ class S3Test(ZulipTestCase):
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
-        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_file('dummy.txt', len(b'zulip!'), 'text/plain', b'zulip!', user_profile)
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertEqual(user_profile.realm_id, get_realm_for_filename(path_id))
 
@@ -1813,16 +1812,16 @@ class UploadTitleTests(TestCase):
 
 class SanitizeNameTests(TestCase):
     def test_file_name(self) -> None:
-        self.assertEqual(sanitize_name(u'test.txt'), u'test.txt')
-        self.assertEqual(sanitize_name(u'.hidden'), u'.hidden')
-        self.assertEqual(sanitize_name(u'.hidden.txt'), u'.hidden.txt')
-        self.assertEqual(sanitize_name(u'tarball.tar.gz'), u'tarball.tar.gz')
-        self.assertEqual(sanitize_name(u'.hidden_tarball.tar.gz'), u'.hidden_tarball.tar.gz')
-        self.assertEqual(sanitize_name(u'Testing{}*&*#().ta&&%$##&&r.gz'), u'Testing.tar.gz')
-        self.assertEqual(sanitize_name(u'*testingfile?*.txt'), u'testingfile.txt')
-        self.assertEqual(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
-        self.assertEqual(sanitize_name(u'테스트.txt'), u'테스트.txt')
-        self.assertEqual(sanitize_name(u'~/."\\`\\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')
+        self.assertEqual(sanitize_name('test.txt'), 'test.txt')
+        self.assertEqual(sanitize_name('.hidden'), '.hidden')
+        self.assertEqual(sanitize_name('.hidden.txt'), '.hidden.txt')
+        self.assertEqual(sanitize_name('tarball.tar.gz'), 'tarball.tar.gz')
+        self.assertEqual(sanitize_name('.hidden_tarball.tar.gz'), '.hidden_tarball.tar.gz')
+        self.assertEqual(sanitize_name('Testing{}*&*#().ta&&%$##&&r.gz'), 'Testing.tar.gz')
+        self.assertEqual(sanitize_name('*testingfile?*.txt'), 'testingfile.txt')
+        self.assertEqual(sanitize_name('snowman☃.txt'), 'snowman.txt')
+        self.assertEqual(sanitize_name('테스트.txt'), '테스트.txt')
+        self.assertEqual(sanitize_name('~/."\\`\\?*"u0`000ssh/test.t**{}ar.gz'), '.u0000sshtest.tar.gz')
 
 
 class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
@@ -1837,14 +1836,14 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(0, cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
 
         data = b'zulip!'
-        upload_message_file(u'dummy.txt', len(data), u'text/plain', data, self.user_profile)
+        upload_message_file('dummy.txt', len(data), 'text/plain', data, self.user_profile)
         # notify_attachment_update function calls currently_used_upload_space_bytes which
         # updates the cache.
         self.assertEqual(len(data), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
         self.assertEqual(len(data), self.realm.currently_used_upload_space_bytes())
 
         data2 = b'more-data!'
-        upload_message_file(u'dummy2.txt', len(data2), u'text/plain', data2, self.user_profile)
+        upload_message_file('dummy2.txt', len(data2), 'text/plain', data2, self.user_profile)
         self.assertEqual(len(data) + len(data2), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
         self.assertEqual(len(data) + len(data2), self.realm.currently_used_upload_space_bytes())
 

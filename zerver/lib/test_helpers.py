@@ -399,7 +399,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         find_patterns(v1_api_and_json_patterns, ['api/v1/', 'json/'])
 
         assert len(pattern_cnt) > 100
-        untested_patterns = set([p for p in pattern_cnt if pattern_cnt[p] == 0])
+        untested_patterns = {p for p in pattern_cnt if pattern_cnt[p] == 0}
 
         exempt_patterns = set([
             # We exempt some patterns that are called via Tornado.
