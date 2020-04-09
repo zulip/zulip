@@ -40,6 +40,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/lib/send_email.py',
     'zerver/tests/test_new_users.py',
     'zerver/tests/test_email_mirror.py',
+    'zerver/tests/test_email_notifications.py',
 
     # These are tied more to our API than our DB model.
     'zerver/openapi/python_examples.py',
