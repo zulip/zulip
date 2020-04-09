@@ -27,6 +27,41 @@ def configure_cssutils() -> None:
     profile.addProfiles([(Profiles.CSS_LEVEL_2, properties[Profiles.CSS_LEVEL_2],
                          macros[Profiles.CSS_LEVEL_2])])
 
+def inline_template(template_name: str) -> None:
+    os.makedirs(COMPILED_EMAIL_TEMPLATES_PATH, exist_ok=True)
+
+    template_html_source = template_name + ".source.html"
+    compiled_template_path = os.path.join(COMPILED_EMAIL_TEMPLATES_PATH,
+                                          template_name + ".html")
+    template_path = os.path.join(EMAIL_TEMPLATES_PATH, template_html_source)
+
+    with open(template_path) as template_source_file:
+        template_str = template_source_file.read()
+    output = Premailer(template_str,
+                       external_styles=[CSS_SOURCE_PATH]).transform()
+
+    output = escape_jinja2_characters(output)
+
+    # Premailer.transform will try to complete the DOM tree,
+    # adding html, head, and body tags if they aren't there.
+    # While this is correct for the email_base_default template,
+    # it is wrong for the other templates that extend this
+    # template, since we'll end up with 2 copipes of those tags.
+    # Thus, we strip this stuff out if the template extends
+    # another template.
+    if template_name != 'email_base_default':
+        output = strip_unnecesary_tags(output)
+
+    if ('zerver/emails/compiled/email_base_default.html' in output or
+            'zerver/emails/email_base_messages.html' in output):
+        assert output.count('<html>') == 0
+        assert output.count('<body>') == 0
+        assert output.count('</html>') == 0
+        assert output.count('</body>') == 0
+
+    with open(compiled_template_path, 'w') as final_template_file:
+        final_template_file.write(output)
+
 def escape_jinja2_characters(text: str) -> str:
     escaped_jinja2_characters = [('%7B%7B%20', '{{ '), ('%20%7D%7D', ' }}'), ('&gt;', '>')]
     for escaped, original in escaped_jinja2_characters:
@@ -55,37 +90,5 @@ if __name__ == "__main__":
     templates_to_inline = get_all_templates_from_directory(EMAIL_TEMPLATES_PATH)
     configure_cssutils()
 
-    os.makedirs(COMPILED_EMAIL_TEMPLATES_PATH, exist_ok=True)
-
     for template_name in templates_to_inline:
-        template_html_source = template_name + ".source.html"
-        compiled_template_path = os.path.join(COMPILED_EMAIL_TEMPLATES_PATH,
-                                              template_name + ".html")
-        template_path = os.path.join(EMAIL_TEMPLATES_PATH, template_html_source)
-
-        with open(template_path) as template_source_file:
-            template_str = template_source_file.read()
-        output = Premailer(template_str,
-                           external_styles=[CSS_SOURCE_PATH]).transform()
-
-        output = escape_jinja2_characters(output)
-
-        # Premailer.transform will try to complete the DOM tree,
-        # adding html, head, and body tags if they aren't there.
-        # While this is correct for the email_base_default template,
-        # it is wrong for the other templates that extend this
-        # template, since we'll end up with 2 copipes of those tags.
-        # Thus, we strip this stuff out if the template extends
-        # another template.
-        if template_name != 'email_base_default':
-            output = strip_unnecesary_tags(output)
-
-        if ('zerver/emails/compiled/email_base_default.html' in output or
-                'zerver/emails/email_base_messages.html' in output):
-            assert output.count('<html>') == 0
-            assert output.count('<body>') == 0
-            assert output.count('</html>') == 0
-            assert output.count('</body>') == 0
-
-        with open(compiled_template_path, 'w') as final_template_file:
-            final_template_file.write(output)
+        inline_template(template_name)
