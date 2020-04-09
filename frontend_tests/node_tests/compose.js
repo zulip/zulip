@@ -597,7 +597,6 @@ run_test('send_message', () => {
     let stub_state;
     function initialize_state_stub_dict() {
         stub_state = {};
-        stub_state.local_id_counter = 0;
         stub_state.send_msg_called = 0;
         stub_state.get_events_running_called = 0;
         stub_state.reify_message_id_checked = 0;
@@ -623,17 +622,18 @@ run_test('send_message', () => {
             return 'alice@example.com';
         };
 
+        const server_message_id = 127;
         const fake_now = 555;
         local_message.insert_message = (message) => {
             assert.equal(message.timestamp, fake_now);
         };
         local_message.now = () => fake_now;
+
         markdown.apply_markdown = () => {};
         markdown.add_topic_links = () => {};
 
         echo.try_deliver_locally = function (message_request) {
-            stub_state.local_id_counter += 1;
-            const local_id_float = stub_state.local_id_counter;
+            const local_id_float = 123.04;
             return echo.insert_local_message(message_request, local_id_float);
         };
         transmit.send_message = function (payload, success) {
@@ -648,18 +648,19 @@ run_test('send_message', () => {
                 reply_to: 'alice@example.com',
                 private_message_recipient: 'alice@example.com',
                 to_user_ids: '31',
-                local_id: '1',
+                local_id: '123.04',
                 locally_echoed: true,
             };
 
             assert.deepEqual(payload, single_msg);
-            payload.id = stub_state.local_id_counter;
+            payload.id = server_message_id;
             success(payload);
             stub_state.send_msg_called += 1;
         };
         echo.reify_message_id = function (local_id, message_id) {
             assert.equal(typeof local_id, 'string');
             assert.equal(typeof message_id, 'number');
+            assert.equal(message_id, server_message_id);
             stub_state.reify_message_id_checked += 1;
         };
 
@@ -675,7 +676,6 @@ run_test('send_message', () => {
         compose.send_message();
 
         const state = {
-            local_id_counter: 1,
             get_events_running_called: 1,
             reify_message_id_checked: 1,
             send_msg_called: 1,
@@ -697,7 +697,7 @@ run_test('send_message', () => {
     let echo_error_msg_checked;
 
     echo.message_send_error = function (local_id, error_response) {
-        assert.equal(local_id, '1');
+        assert.equal(local_id, '123.04');
         assert.equal(error_response, 'Error sending message: Server says 408');
         echo_error_msg_checked = true;
     };
@@ -709,7 +709,6 @@ run_test('send_message', () => {
         compose.send_message();
 
         const state = {
-            local_id_counter: 1,
             get_events_running_called: 1,
             reify_message_id_checked: 0,
             send_msg_called: 1,
@@ -738,7 +737,6 @@ run_test('send_message', () => {
         compose.send_message();
 
         const state = {
-            local_id_counter: 0,
             get_events_running_called: 1,
             reify_message_id_checked: 0,
             send_msg_called: 1,
