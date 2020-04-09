@@ -306,7 +306,7 @@ class Realm(models.Model):
 
     VIDEO_CHAT_PROVIDERS = {
         'disabled': {
-            'name': u"None",
+            'name': "None",
             'id': 0
         },
         'jitsi_meet': {
