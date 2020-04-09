@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Mapping, Optional, Set
+from typing import Any, Dict, List, Mapping, Optional, Set, Union
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -43,7 +43,7 @@ from zerver.models import (
     Realm, Recipient, Stream, Subscription,
     DefaultStream, UserProfile, get_user_profile_by_id, active_non_guest_user_ids,
     get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup,
-    get_client, get_realm, get_user, Message, UserMessage
+    get_client, get_realm, get_user, get_user_profile_by_id_in_realm, Message, UserMessage
 )
 
 from zerver.lib.actions import (
@@ -967,7 +967,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def attempt_unsubscribe_of_principal(self, query_count: int, is_admin: bool=False,
                                          is_subbed: bool=True, invite_only: bool=False,
-                                         other_user_subbed: bool=True,
+                                         other_user_subbed: bool=True, using_user_ids: bool=False,
                                          other_sub_users: Optional[List[UserProfile]]=None) -> HttpResponse:
 
         # Set up the main user, who is in most cases an admin.
@@ -984,7 +984,10 @@ class StreamAdminTest(ZulipTestCase):
 
         # Set up the principal to be unsubscribed.
         other_user_profile = self.example_user('cordelia')
-        other_email = other_user_profile.email
+        if using_user_ids:
+            principal = other_user_profile.id
+        else:
+            principal = other_user_profile.email
 
         # Subscribe the admin and/or principal as specified in the flags.
         if is_subbed:
@@ -999,7 +1002,7 @@ class StreamAdminTest(ZulipTestCase):
             result = self.client_delete(
                 "/json/users/me/subscriptions",
                 {"subscriptions": ujson.dumps([stream_name]),
-                 "principals": ujson.dumps([other_email])})
+                 "principals": ujson.dumps([principal])})
         self.assert_length(queries, query_count)
 
         # If the removal succeeded, then assert that Cordelia is no longer subscribed.
@@ -1051,6 +1054,21 @@ class StreamAdminTest(ZulipTestCase):
         result = self.attempt_unsubscribe_of_principal(
             query_count=21, is_admin=True, is_subbed=False, invite_only=True,
             other_user_subbed=True, other_sub_users=[self.example_user("othello")])
+        json = self.assert_json_success(result)
+        self.assertEqual(len(json["removed"]), 1)
+        self.assertEqual(len(json["not_removed"]), 0)
+
+    def test_cant_remove_others_from_stream_using_ids(self) -> None:
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=3, is_admin=False, is_subbed=True, invite_only=False,
+            other_user_subbed=True, using_user_ids=True)
+        self.assert_json_error(
+            result, "This action requires administrative rights")
+
+    def test_admin_remove_others_from_stream_using_ids(self) -> None:
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=21, is_admin=True, is_subbed=True, invite_only=False,
+            other_user_subbed=True, using_user_ids=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
         self.assertEqual(len(json["not_removed"]), 0)
@@ -1944,7 +1962,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             'principals': ujson.dumps([{}]),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, 'principals[0] is not a string')
+        self.assert_json_error(result, 'principals is not an allowed_type')
 
     def test_bad_delete_parameters(self) -> None:
         user = self.example_user('hamlet')
@@ -2412,7 +2430,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_json_error(result,
                                "Invalid stream name '%s'" % (invalid_stream_name,))
 
-    def assert_adding_subscriptions_for_principal(self, invitee_email: str, invitee_realm: Realm,
+    def assert_adding_subscriptions_for_principal(self, invitee_data: Union[str, int], invitee_realm: Realm,
                                                   streams: List[str], invite_only: bool=False) -> None:
         """
         Calling POST /json/users/me/subscriptions on behalf of another principal (for
@@ -2420,7 +2438,10 @@ class SubscriptionAPITest(ZulipTestCase):
         those subscriptions and send a message to the subscribee notifying
         them.
         """
-        other_profile = get_user(invitee_email, invitee_realm)
+        if isinstance(invitee_data, str):
+            other_profile = get_user(invitee_data, invitee_realm)
+        else:
+            other_profile = get_user_profile_by_id_in_realm(invitee_data, invitee_realm)
         current_streams = self.get_streams(other_profile)
         self.assertIsInstance(other_profile, UserProfile)
         self.assertNotEqual(len(current_streams), 0)  # necessary for full test coverage
@@ -2428,8 +2449,8 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = streams[:1]  # just add one, to make the message easier to check
         streams_to_sub.extend(current_streams)
         self.helper_check_subs_before_and_after_add(streams_to_sub,
-                                                    {"principals": ujson.dumps([invitee_email])}, streams[:1],
-                                                    current_streams, invitee_email, streams_to_sub,
+                                                    {"principals": ujson.dumps([invitee_data])}, streams[:1],
+                                                    current_streams, other_profile.email, streams_to_sub,
                                                     invitee_realm, invite_only=invite_only)
 
         # verify that a welcome message was sent to the stream
@@ -2866,6 +2887,12 @@ class SubscriptionAPITest(ZulipTestCase):
         invite_streams = self.make_random_stream_names(current_streams)
         self.assert_adding_subscriptions_for_principal(invitee.email, invitee.realm, invite_streams)
 
+    def test_subscriptions_add_for_principal_user_ids(self) -> None:
+        invitee = self.example_user("iago")
+        current_streams = self.get_streams(invitee)
+        invite_streams = self.make_random_stream_names(current_streams)
+        self.assert_adding_subscriptions_for_principal(invitee.id, invitee.realm, invite_streams)
+
     def test_subscriptions_add_for_principal_deactivated(self) -> None:
         """
         You can't subscribe deactivated people to streams.
@@ -2912,6 +2939,16 @@ class SubscriptionAPITest(ZulipTestCase):
         # verify that invalid_principal actually doesn't exist
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user(invalid_principal, invalid_principal_realm)
+        result = self.common_subscribe_to_streams(self.test_user, self.streams,
+                                                  {"principals": ujson.dumps([invalid_principal])})
+        self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
+                               % (invalid_principal,), status_code=403)
+
+    def test_subscription_add_invalid_principal_using_ids(self) -> None:
+        invalid_principal = 999
+        invalid_principal_realm = get_realm("zulip")
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_profile_by_id_in_realm(invalid_principal, invalid_principal_realm)
         result = self.common_subscribe_to_streams(self.test_user, self.streams,
                                                   {"principals": ujson.dumps([invalid_principal])})
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"

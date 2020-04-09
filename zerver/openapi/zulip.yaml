@@ -3767,13 +3767,15 @@ components:
       name: principals
       in: query
       description: |
-        A list of email addresses of the users that will be subscribed/unsubscribed
+        A list of email addresses or user ids of the users that will be subscribed/unsubscribed
         to the streams specified in the `subscriptions` argument. If not provided, then
         the requesting user/bot is subscribed.
       schema:
         type: array
         items:
-          type: string
+          oneOf:
+            - type: string
+            - type: integer
         default: []
       example: ['ZOE@zulip.com']
     ReactionType:
