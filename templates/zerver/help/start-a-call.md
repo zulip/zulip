@@ -28,7 +28,7 @@ change the organization's video chat provider.
 Note that both the Google Hangouts and Zoom integrations require paid
 accounts with their respective providers.
 
-### Change your video chat provider
+### Change your organization's video chat provider
 
 {start_tabs}
 
@@ -60,5 +60,8 @@ accounts with their respective providers.
 
 If you're running both Zulip and Jitsi Meet on-premise, just set
 `JITSI_SERVER_URL` in `/etc/zulip/settings.py`.
+
+You can also disable the video call button for your community by
+setting the provider to "None".
 
 {end_tabs}
