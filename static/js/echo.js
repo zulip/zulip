@@ -29,7 +29,7 @@ function resend_message(message, row) {
     }
 
     function on_error(response) {
-        exports.message_send_error(local_id, response);
+        exports.message_send_error(message.id, response);
         setTimeout(function () {
             retry_spinner.toggleClass('rotating', false);
         }, 300);
@@ -333,10 +333,10 @@ exports._patch_waiting_for_ack = function (data) {
     waiting_for_ack = data;
 };
 
-exports.message_send_error = function (local_id, error_response) {
+exports.message_send_error = function (message_id, error_response) {
     // Error sending message, show inline
-    message_store.get(local_id).failed_request = true;
-    ui.show_message_failed(local_id, error_response);
+    message_store.get(message_id).failed_request = true;
+    ui.show_message_failed(message_id, error_response);
 };
 
 function abort_message(message) {
