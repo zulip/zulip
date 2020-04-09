@@ -275,7 +275,8 @@ exports.process_from_server = function (messages) {
     for (const message of messages) {
         // In case we get the sent message before we get the send ACK, reify here
 
-        const client_message = waiting_for_ack.get(message.local_id);
+        const local_id = message.local_id;
+        const client_message = waiting_for_ack.get(local_id);
         if (client_message === undefined) {
             // For messages that weren't locally echoed, we go through
             // the "main" codepath that doesn't have to id reconciliation.
@@ -284,11 +285,11 @@ exports.process_from_server = function (messages) {
             continue;
         }
 
-        exports.reify_message_id(message.local_id, message.id);
+        exports.reify_message_id(local_id, message.id);
 
         if (client_message.content !== message.content) {
             client_message.content = message.content;
-            sent_messages.mark_disparity(message.local_id);
+            sent_messages.mark_disparity(local_id);
         }
 
         message_store.update_booleans(client_message, message.flags);
@@ -311,7 +312,7 @@ exports.process_from_server = function (messages) {
         client_message.submessages = message.submessages;
 
         msgs_to_rerender.push(client_message);
-        waiting_for_ack.delete(client_message.id);
+        waiting_for_ack.delete(local_id);
     }
 
     if (msgs_to_rerender.length > 0) {
