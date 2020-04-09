@@ -96,7 +96,12 @@ run_test('add_message_metadata', () => {
     assert.equal(message.alerted, true);
     assert.equal(message.is_me_message, false);
 
-    const retrieved_message = message_store.get(2067);
+    let retrieved_message = message_store.get(2067);
+    assert.equal(retrieved_message, message);
+
+    blueslip.expect('error', 'message_store got non-number: 2067');
+    retrieved_message = message_store.get('2067');
+    blueslip.reset();
     assert.equal(retrieved_message, message);
 
     // access cached previous message, and test match subject/content
@@ -296,4 +301,10 @@ run_test('message_id_change', () => {
         assert.equal(msg_id.new, 402);
     });
 
+});
+
+run_test('errors', () => {
+    blueslip.expect('error', 'message_store.get got bad value: undefined');
+    message_store.get(undefined);
+    blueslip.reset();
 });
