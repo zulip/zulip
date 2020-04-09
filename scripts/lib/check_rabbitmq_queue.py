@@ -190,7 +190,7 @@ def check_rabbitmq_queues() -> None:
             queue_stats[queue] = {}
             continue
 
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             try:
                 queue_stats[queue] = json.load(f)
             except json.decoder.JSONDecodeError:
