@@ -1070,7 +1070,7 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
     elif event['type'] == "update_message":
         process_message_update_event(event, cast(Iterable[Mapping[str, Any]], users))
-    elif event['type'] == "delete_message" and isinstance(users[0], dict):
+    elif event['type'] == "delete_message" and len(users) > 0 and isinstance(users[0], dict):
         # do_delete_messages used to send events with users in dict format {"id": <int>}
         # This block is here for compatibility with events in that format still in the queue
         # at the time of upgrade.
