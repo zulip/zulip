@@ -316,7 +316,7 @@ exports.set_up = function () {
         $("#download_zuliprc").on("click", function () {
             const bot_object = {
                 user_id: people.my_current_user_id(),
-                email: people.my_current_email(),
+                email: page_params.delivery_email,
                 api_key: $("#api_key_value").text(),
             };
             const data = settings_bots.generate_zuliprc_content(bot_object);
