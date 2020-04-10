@@ -602,24 +602,20 @@ function save_discard_widget_status_handler(subsection) {
     exports.change_save_button_state(save_btn_controls, button_state);
 }
 
-exports.default_code_language_widget = (function (element_id) {
+exports.DropdownListWidget = function (opts) {
+    opts.container_id = `${opts.setting_name}_widget`;
+    opts.value_id = `id_${opts.setting_name}`;
 
-    const render_language_list = require("../templates/settings/admin_realm_dropdown_code_languages_list.hbs");
-    const language_list = Object.keys(pygments_data.langs).map(x => {
-        return {
-            name: x,
-            priority: pygments_data.langs[x],
-        };
-    });
+    const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
 
     const setup = () => {
         // populate the dropdown
-        const dropdown_list_body = $(`#${element_id} .dropdown-list-body`).expectOne();
-        const search_input = $(`#${element_id} .dropdown-search > input[type=text]`);
-        list_render.create(dropdown_list_body, language_list, {
-            name: "admin-realm-default-code-language-dropdown-list",
+        const dropdown_list_body = $(`#${opts.container_id} .dropdown-list-body`).expectOne();
+        const search_input = $(`#${opts.container_id} .dropdown-search > input[type=text]`);
+        list_render.create(dropdown_list_body, opts.data, {
+            name: `${opts.setting_name}_list`,
             modifier: function (item) {
-                return render_language_list({ language: item });
+                return render_dropdown_list({ item: item });
             },
             filter: {
                 element: search_input,
@@ -628,41 +624,41 @@ exports.default_code_language_widget = (function (element_id) {
                 },
             },
         }).init();
-        $(`#${element_id} .dropdown-search`).click(function (e) {
+        $(`#${opts.container_id} .dropdown-search`).click(function (e) {
             e.stopPropagation();
         });
 
-        $(`#${element_id} .dropdown-toggle`).click(function () {
+        $(`#${opts.container_id} .dropdown-toggle`).click(function () {
             search_input.val("").trigger("input");
         });
     };
 
     const render = (name) => {
-        $(`#${element_id} #id_realm_default_code_block_language`).data("language", name);
+        $(`#${opts.container_id} #${opts.value_id}`).data("value", name);
 
-        const elem = $(`#${element_id} #realm_default_code_block_language_name`);
+        const elem = $(`#${opts.container_id} #${opts.setting_name}_name`);
 
         if (!name) {
-            elem.text(i18n.t("No language set"));
+            elem.text(opts.default_text);
             elem.addClass("text-warning");
-            elem.closest('.input-group').find('.default_code_block_language_unset').hide();
+            elem.closest('.input-group').find('.dropdown_list_reset_button').hide();
             return;
         }
 
         // Happy path
         elem.text(name);
         elem.removeClass('text-warning');
-        elem.closest('.input-group').find('.default_code_block_language_unset').show();
+        elem.closest('.input-group').find('.dropdown_list_reset_button').show();
     };
 
-    const update = (lang) => {
-        render(lang);
-        save_discard_widget_status_handler($('#org-other-settings'));
+    const update = (item) => {
+        render(item);
+        save_discard_widget_status_handler($(`#org-${opts.subsection}`));
     };
 
     const register_event_handlers = () => {
-        $(`#${element_id} .dropdown-list-body`).on("click keypress", ".lang_name", function (e) {
-            const setting_elem = $(this).closest(".realm_default_code_block_language_setting");
+        $(`#${opts.container_id} .dropdown-list-body`).on("click keypress", ".list_item", function (e) {
+            const setting_elem = $(this).closest(`.${opts.setting_name}_setting`);
             if (e.type === "keypress") {
                 if (e.which === 13) {
                     setting_elem.find(".dropdown-menu").dropdown("toggle");
@@ -670,16 +666,16 @@ exports.default_code_language_widget = (function (element_id) {
                     return;
                 }
             }
-            const lang = $(this).attr('data-language');
-            update(lang);
+            const item = $(this).attr('data-value');
+            update(item);
         });
-        $(`#${element_id} .default_code_block_language_unset`).click(function () {
+        $(`#${opts.container_id} .dropdown_list_reset_button`).click(function () {
             update(null);
         });
     };
 
     const value = () => {
-        let val = $(`#${element_id} #id_realm_default_code_block_language`).data('language');
+        let val = $(`#${opts.container_id} #${opts.value_id}`).data('value');
         if (val === null) {
             val = '';
         }
@@ -692,7 +688,19 @@ exports.default_code_language_widget = (function (element_id) {
         register_event_handlers,
         value,
     };
-}('realm_default_code_block_language_widget'));
+};
+
+exports.default_code_language_widget = exports.DropdownListWidget({
+    setting_name: 'realm_default_code_block_language',
+    data: Object.keys(pygments_data.langs).map(x => {
+        return {
+            name: x,
+            value: x,
+        };
+    }),
+    subsection: 'other-settings',
+    default_text: i18n.t("No language set"),
+});
 
 exports.build_page = function () {
     meta.loaded = true;
