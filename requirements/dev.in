@@ -32,6 +32,7 @@ lp37
 
 # For running pyflakes and pycodestyle linters
 flake8
+flake8-commas
 
 # Needed for watching file changes
 pyinotify
