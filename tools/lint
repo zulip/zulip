@@ -9,7 +9,6 @@ sanity_check.check_venv(__file__)
 
 from linter_lib.custom_check import python_rules, non_py_rules
 from zulint.command import add_default_linter_arguments, LinterConfig
-import random
 
 def run() -> None:
     parser = argparse.ArgumentParser()
@@ -27,8 +26,6 @@ def run() -> None:
     sys.path.insert(0, root_dir)
 
     from tools.linter_lib.exclude import EXCLUDED_FILES, PUPPET_CHECK_RULES_TO_EXCLUDE
-    from tools.linter_lib.pyflakes import check_pyflakes
-    from tools.linter_lib.pep8 import check_pep8
 
     from tools.lib.test_script import (
         assert_provisioning_status_ok,
@@ -80,6 +77,8 @@ def run() -> None:
         command.append('--force')
     linter_config.external_linter('mypy', command, ['py'], pass_targets=False,
                                   description="Static type checker for Python (config: mypy.ini)")
+    linter_config.external_linter('flake8', ['flake8'], ['py'],
+                                  description="Standard Python linter (config: setup.cfg)")
     linter_config.external_linter('tsc', ['tools/run-tsc'], ['ts'], pass_targets=False,
                                   description="TypeScript compiler (config: tsconfig.json)")
     linter_config.external_linter('yarn-deduplicate', ['tools/run-yarn-deduplicate'], ['lock'],
@@ -119,27 +118,6 @@ def run() -> None:
         failed = False
         for rule in non_py_rules:
             failed = failed or rule.check(by_lang, verbose=args.verbose)
-        return 1 if failed else 0
-
-    @linter_config.lint
-    def pyflakes() -> int:
-        """Standard Python bug and code smell linter (config: tools/linter_lib/pyflakes.py)"""
-        failed = check_pyflakes(by_lang['py'], args)
-        return 1 if failed else 0
-
-    python_part1 = {x for x in by_lang['py'] if random.randint(0, 1) == 0}
-    python_part2 = {y for y in by_lang['py'] if y not in python_part1}
-
-    @linter_config.lint
-    def pep8_1of2() -> int:
-        """Standard Python style linter on 50% of files (config: tools/linter_lib/pep8.py)"""
-        failed = check_pep8(list(python_part1))
-        return 1 if failed else 0
-
-    @linter_config.lint
-    def pep8_2of2() -> int:
-        """Standard Python style linter on other 50% of files (config: tools/linter_lib/pep8.py)"""
-        failed = check_pep8(list(python_part2))
         return 1 if failed else 0
 
     linter_config.do_lint()

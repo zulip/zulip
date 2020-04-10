@@ -30,11 +30,8 @@ isort
 # line_profiler: https://github.com/rkern/line_profiler/issues/127)
 lp37
 
-# for pep8 linter
-pycodestyle
-
-# Needed to run pyflakes linter
-pyflakes
+# For running pyflakes and pycodestyle linters
+flake8
 
 # Needed for watching file changes
 pyinotify

@@ -14,6 +14,8 @@ from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
 
 
+UnexpectedWebhookEventType  # This is exported but not used here.
+
 MISSING_EVENT_HEADER_MESSAGE = """
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
 is missing the HTTP {header_name} header.  Because this header is how

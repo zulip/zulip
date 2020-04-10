@@ -45,7 +45,7 @@ The Vagrant setup process runs this for you.
 `lint` runs many lint checks in parallel, including
 
 -   JavaScript ([ESLint](https://eslint.org/))
--   Python ([Pyflakes](https://pypi.python.org/pypi/pyflakes))
+-   Python ([Flake8](https://flake8.pycqa.org/))
 -   templates
 -   Puppet configuration
 -   custom checks (e.g. trailing whitespace and spaces-not-tabs)

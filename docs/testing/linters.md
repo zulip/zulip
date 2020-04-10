@@ -21,7 +21,7 @@ below will direct you to the official documentation for these projects.
 - [mypy](http://mypy-lang.org/)
 - [puppet](https://puppet.com/) (puppet provides its own mechanism for
   validating manifests)
-- [pyflakes](https://pypi.python.org/pypi/pyflakes)
+- [Flake8](https://flake8.pycqa.org/)
 - [stylelint](https://github.com/stylelint/stylelint)
 
 Zulip also uses some home-grown code to perform tasks like validating
@@ -98,7 +98,7 @@ describes our test system in detail.
 Most of our lint checks get performed by `./tools/lint`.  These include the
 following checks:
 
-- Check Python code with pyflakes.
+- Check Python code with Flake8.
 - Check JavaScript and TypeScript code with eslint.
 - Check Python code for custom Zulip rules.
 - Check non-Python code for custom Zulip rules.
@@ -118,7 +118,7 @@ The rest of this document pertains to the checks that occur in `./tools/lint`.
 
 Zulip has a script called `lint` that lives in our "tools" directory.
 It is the workhorse of our linting system, although in some cases it
-dispatches the heavy lifting to other components such as pyflakes,
+dispatches the heavy lifting to other components such as Flake8,
 eslint, and other home grown tools.
 
 You can find the source code [here](https://github.com/zulip/zulip/blob/master/tools/lint).
@@ -128,8 +128,7 @@ script performs several lint checks in parallel by forking out subprocesses.  Th
 is still evolving, but you can look at the method `run_parallel` to get the
 gist of how it works.
 
-Note that our project does custom regex-based checks on the code, and we
-also customize how we call pyflakes and pycodestyle (pep8).  The code for these
+Note that our project does custom regex-based checks on the code.  The code for these
 types of checks mostly lives [here](https://github.com/zulip/zulip/blob/master/tools/linter_lib).
 
 ### Special options
@@ -166,12 +165,8 @@ sense (e.g. a link in a comment to an extremely long URL).
 
 #### Python code
 
-The bulk of our Python linting gets outsourced to the "pyflakes" tool.  We
-call "pyflakes" in a fairly vanilla fashion, and then we post-process its
-output to exclude certain types of errors that Zulip is comfortable
-ignoring.  (One notable class of error that Zulip currently tolerates is
-unused imports--because of the way mypy type annotations work in Python 2,
-it would be inconvenient to enforce this too strictly.)
+The bulk of our Python linting gets outsourced to the Flake8 tool, with
+some errors ignored in the `setup.cfg` configuration file.
 
 Zulip also has custom regex-based rules that it applies to Python code.
 Look for `python_rules` in the source code for `lint`.  Note that we
