@@ -713,9 +713,7 @@ input[type=checkbox].inline-block {
     border: none;
 }
 
-#realm_default_code_block_language_widget button,
-#realm_notifications_stream_label > button,
-#realm_signup_notifications_stream_label > button {
+.dropdown-list-widget button {
     margin: 0px 5px;
 }
 
@@ -1669,15 +1667,11 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     top: 5px;
 }
 
-#realm_default_code_block_language_widget .dropdown-search > input[type=text],
-#id_realm_notifications_stream .dropdown-search > input[type=text],
-#id_realm_signup_notifications_stream .dropdown-search > input[type=text] {
+.dropdown-list-widget .dropdown-search > input[type=text] {
     margin: 9px;
 }
 
-#realm_default_code_block_language_widget .dropdown-list-body,
-#id_realm_notifications_stream .dropdown-list-body,
-#id_realm_signup_notifications_stream .dropdown-list-body {
+.dropdown-list-widget .dropdown-list-body {
     position: relative;
     height: auto;
     max-height: 200px;
