@@ -28,13 +28,13 @@ def configure_cssutils() -> None:
                          macros[Profiles.CSS_LEVEL_2])])
 configure_cssutils()
 
-def inline_template(template_name: str) -> None:
+def inline_template(template_source_name: str) -> None:
     os.makedirs(COMPILED_EMAIL_TEMPLATES_PATH, exist_ok=True)
 
-    template_html_source = template_name + ".source.html"
+    template_name = template_source_name.split('.source.html')[0]
     compiled_template_path = os.path.join(COMPILED_EMAIL_TEMPLATES_PATH,
                                           template_name + ".html")
-    template_path = os.path.join(EMAIL_TEMPLATES_PATH, template_html_source)
+    template_path = os.path.join(EMAIL_TEMPLATES_PATH, template_source_name)
 
     with open(template_path) as template_source_file:
         template_str = template_source_file.read()
@@ -84,11 +84,11 @@ def get_all_templates_from_directory(directory: str) -> Set[str]:
     result = set()
     for f in os.listdir(directory):
         if f.endswith('.source.html'):
-            result.add(f.split('.source.html')[0])
+            result.add(f)
     return result
 
 if __name__ == "__main__":
     templates_to_inline = get_all_templates_from_directory(EMAIL_TEMPLATES_PATH)
 
-    for template_name in templates_to_inline:
-        inline_template(template_name)
+    for template_source_name in templates_to_inline:
+        inline_template(template_source_name)
