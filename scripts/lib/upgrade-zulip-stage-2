@@ -6,6 +6,7 @@
 # effect on the very next upgrade.
 import argparse
 import configparser
+import glob
 import hashlib
 import subprocess
 import os
@@ -59,6 +60,13 @@ except (configparser.NoSectionError, configparser.NoOptionError):
 
 # Handle issues around upstart on Ubuntu Xenial
 subprocess.check_call(["./scripts/lib/check-upstart"])
+
+if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
+    # Remove legacy tsearch_extras package references
+    subprocess.check_call([
+        "su", "postgres", "-c",
+        'psql -v ON_ERROR_STOP=1 zulip -c "DROP EXTENSION IF EXISTS tsearch_extras;"'])
+    subprocess.check_call(["apt-get", "remove", "-y", "postgresql-*-tsearch-extras"])
 
 if not args.skip_puppet:
     logging.info("Upgrading system packages...")
