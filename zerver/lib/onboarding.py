@@ -96,35 +96,58 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # Make sure each stream created in the realm creation process has at least one message below
     # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
     # view slightly less overwhelming
+    content_of_private_streams_topic = (
+        _("This is a private stream, as indicated by the lock icon next to the stream name.") +
+        " " +
+        _("Private streams are only visible to stream members.") +
+        "\n"
+        "\n" +
+        _("To manage this stream, go to [Stream settings]({stream_settings_url}) "
+          "and click on `{initial_private_stream_name}`.")
+    ).format(stream_settings_url="#streams/subscribed",
+             initial_private_stream_name=Realm.INITIAL_PRIVATE_STREAM_NAME)
+
+    content1_of_topic_demonstration_topic = (
+        _("This is a message on stream #**{default_notification_stream_name}** with the "
+          "topic `topic demonstration`.")
+    ).format(default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
+
+    content2_of_topic_demonstration_topic = (
+        _("Topics are a lightweight tool to keep conversations organized.") +
+        " " +
+        _("You can learn more about topics at [Streams and topics]({about_topics_help_url}).")
+    ).format(about_topics_help_url="/help/about-streams-and-topics")
+
+    content_of_swimming_turtles_topic = (
+        _("This is a message on stream #**{default_notification_stream_name}** with the "
+          "topic `swimming turtles`.") +
+        "\n"
+        "\n"
+        "[](/static/images/cute/turtle.png)"
+        "\n"
+        "\n" +
+        _("[Start a new topic]({start_topic_help_url}) any time you're not replying to a \
+        previous message.")
+    ).format(default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+             start_topic_help_url="/help/start-a-new-topic")
+
     welcome_messages: List[Dict[str, str]] = [
         {'stream': Realm.INITIAL_PRIVATE_STREAM_NAME,
          'topic': "private streams",
-         'content': "This is a private stream, as indicated by the "
-         "lock icon next to the stream name. Private streams are only visible to stream members. "
-         "\n\nTo manage this stream, go to [Stream settings](#streams/subscribed) and click on "
-         "`%(initial_private_stream_name)s`."},
+         'content': content_of_private_streams_topic},
         {'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
          'topic': "topic demonstration",
-         'content': "This is a message on stream #**%(default_notification_stream_name)s** with the "
-         "topic `topic demonstration`."},
+         'content': content1_of_topic_demonstration_topic},
         {'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
          'topic': "topic demonstration",
-         'content': "Topics are a lightweight tool to keep conversations organized. "
-         "You can learn more about topics at [Streams and topics](/help/about-streams-and-topics). "},
+         'content': content2_of_topic_demonstration_topic},
         {'stream': realm.DEFAULT_NOTIFICATION_STREAM_NAME,
          'topic': "swimming turtles",
-         'content': "This is a message on stream #**%(default_notification_stream_name)s** with the "
-         "topic `swimming turtles`. "
-         "\n\n[](/static/images/cute/turtle.png)"
-         "\n\n[Start a new topic](/help/start-a-new-topic) any time you're not replying to a "
-         "previous message."},
+         'content': content_of_swimming_turtles_topic},
     ]
+
     messages = [internal_prep_stream_message_by_name(
-        realm, welcome_bot, message['stream'], message['topic'],
-        message['content'] % {
-            'initial_private_stream_name': Realm.INITIAL_PRIVATE_STREAM_NAME,
-            'default_notification_stream_name': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-        }
+        realm, welcome_bot, message['stream'], message['topic'], message['content']
     ) for message in welcome_messages]
     message_ids = do_send_messages(messages)
 
