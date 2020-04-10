@@ -1551,11 +1551,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(result.url, "/login/")
 
     def test_social_auth_saml_multiple_idps_configured(self) -> None:
-        """
-        Using multiple IdPs is not supported right now, and having multiple configured
-        should lead to misconfiguration page.
-        """
-
         # Setup a new SOCIAL_AUTH_SAML_ENABLED_IDPS dict with two idps.
         # We deepcopy() dictionaries around for the sake of brevity,
         # to avoid having to spell them out explicitly here.
