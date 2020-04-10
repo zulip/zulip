@@ -627,16 +627,20 @@ urls += [
 
 # This url serves as a way to receive CSP violation reports from the users.
 # We use this endpoint to just log these reports.
-urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
-            name='zerver.views.report.report_csp_violations'),
+urls += [
+    url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
+        name='zerver.views.report.report_csp_violations'),
+]
 
 # This url serves as a way to provide backward compatibility to messages
 # rendered at the time Zulip used camo for doing http -> https conversion for
 # such links with images previews. Now thumbor can be used for serving such
 # images.
-urls += url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)$',
-            zerver.views.camo.handle_camo_url,
-            name='zerver.views.camo.handle_camo_url'),
+urls += [
+    url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)$',
+        zerver.views.camo.handle_camo_url,
+        name='zerver.views.camo.handle_camo_url'),
+]
 
 # Incoming webhook URLs
 # We don't create urls for particular git integrations here
