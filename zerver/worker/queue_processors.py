@@ -154,7 +154,9 @@ class QueueProcessingWorker(ABC):
         with lockfile(fn + '.lock'):
             tmp_fn = fn + '.tmp'
             with open(tmp_fn, 'w') as f:
-                ujson.dump(stats_dict, f, indent=2)
+                serialized_dict = ujson.dumps(stats_dict, indent=2)
+                serialized_dict += '\n'
+                f.write(serialized_dict)
             os.rename(tmp_fn, fn)
 
     @abstractmethod
