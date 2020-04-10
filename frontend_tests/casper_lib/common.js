@@ -444,3 +444,26 @@ exports.un_narrow = function () {
     }
     common.keypress(27); // Esc
 };
+
+exports.manage_organization = function () {
+    casper.then(function () {
+        var menu_selector = '#settings-dropdown';
+        casper.waitUntilVisible(menu_selector, function () {
+            casper.click(menu_selector);
+        });
+    });
+
+    casper.then(function () {
+        casper.test.info('Organization page');
+        casper.click('a[href^="#organization"]');
+    });
+
+    casper.waitForSelector('#settings_overlay_container.show', function () {
+        casper.test.info('Organization page is active');
+        casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, 'URL suggests we are on organization page');
+    });
+
+    casper.then(function () {
+        casper.click("li[data-section='organization-settings']");
+    });
+};
