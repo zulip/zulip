@@ -93,6 +93,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             bot_creation_policy: settings_bots.update_bot_permissions_ui,
             create_stream_policy: noop,
             invite_to_stream_policy: noop,
+            default_code_block_language: noop,
             default_language: noop,
             default_twenty_four_hour_time: noop,
             description: noop,
@@ -137,11 +138,14 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 page_params.can_invite_to_stream = page_params.is_admin ||
                     page_params.realm_invite_to_stream_policy === 1;
             } else if (event.property === 'notifications_stream_id') {
-                settings_org.render_notifications_stream_ui(
-                    page_params.realm_notifications_stream_id, 'notifications');
+                settings_org.notifications_stream_widget.render(
+                    page_params.realm_notifications_stream_id);
             } else if (event.property === 'signup_notifications_stream_id') {
-                settings_org.render_notifications_stream_ui(
-                    page_params.realm_signup_notifications_stream_id, 'signup_notifications');
+                settings_org.signup_notifications_stream_widget.render(
+                    page_params.realm_signup_notifications_stream_id);
+            } else if (event.property === 'default_code_block_language') {
+                settings_org.default_code_language_widget.render(
+                    page_params.realm_default_code_block_language);
             }
 
             if (event.property === 'name' && window.electron_bridge !== undefined) {
