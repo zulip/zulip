@@ -192,8 +192,11 @@
                     </div>
                 </div>
 
-                {{> default_code_language_settings_widget
-                  label=admin_settings_label.realm_default_code_language }}
+                {{> dropdown_list_widget
+                  setting_name="realm_default_code_block_language"
+                  list_placeholder=(t 'Filter languages')
+                  reset_button_text=(t '[Unset]')
+                  label=admin_settings_label.realm_default_code_block_language }}
 
                 {{> settings_checkbox
                   setting_name="realm_message_content_allowed_in_email_notifications"
