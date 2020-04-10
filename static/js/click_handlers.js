@@ -85,20 +85,23 @@ exports.initialize = function () {
             return;
         }
 
-        if (!(document.getSelection().type === "Range")) {
-            const row = $(this).closest(".message_row");
-            const id = rows.id(row);
-
-            if (message_edit.is_editing(id)) {
-                // Clicks on a message being edited shouldn't trigger a reply.
-                return;
-            }
-
-            current_msg_list.select_id(id);
-            compose_actions.respond_to_message({trigger: 'message click'});
-            e.stopPropagation();
-            popovers.hide_all();
+        if (document.getSelection().type === "Range") {
+            // Drags on the message(to copy message text) shouldn't trigger a reply.
+            return;
         }
+
+        const row = $(this).closest(".message_row");
+        const id = rows.id(row);
+
+        if (message_edit.is_editing(id)) {
+            // Clicks on a message being edited shouldn't trigger a reply.
+            return;
+        }
+
+        current_msg_list.select_id(id);
+        compose_actions.respond_to_message({trigger: 'message click'});
+        e.stopPropagation();
+        popovers.hide_all();
     };
 
     // if on normal non-mobile experience, a `click` event should run the message
