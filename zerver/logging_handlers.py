@@ -30,9 +30,9 @@ def add_request_metadata(report: Dict[str, Any], request: HttpRequest) -> None:
 
     report['path'] = request.path
     report['method'] = request.method
-    report['remote_addr'] = request.META.get('REMOTE_ADDR', None),
-    report['query_string'] = request.META.get('QUERY_STRING', None),
-    report['server_name'] = request.META.get('SERVER_NAME', None),
+    report['remote_addr'] = request.META.get('REMOTE_ADDR', None)
+    report['query_string'] = request.META.get('QUERY_STRING', None)
+    report['server_name'] = request.META.get('SERVER_NAME', None)
     try:
         from django.contrib.auth.models import AnonymousUser
         user_profile = request.user
