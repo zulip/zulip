@@ -6,51 +6,6 @@ const render_buddy_list_tooltip_content = require('../templates/buddy_list_toolt
 
 exports.initialize = function () {
 
-    // MOUSE MOVING VS DRAGGING FOR SELECTION DATA TRACKING
-
-    const drag = (function () {
-        let start;
-        let time;
-
-        return {
-            start: function (e) {
-                start = { x: e.offsetX, y: e.offsetY };
-                time = new Date().getTime();
-            },
-
-            end: function (e) {
-                const end = { x: e.offsetX, y: e.offsetY };
-
-                let dist;
-                if (start) {
-                    // get the linear difference between two coordinates on the screen.
-                    dist = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
-                } else {
-                    // this usually happens if someone started dragging from outside of
-                    // a message and finishes their drag inside the message. The intent
-                    // in that case is clearly to select an area, not click a message;
-                    // setting dist to Infinity here will ensure that.
-                    dist = Infinity;
-                }
-
-                this.val = dist;
-                this.time = new Date().getTime() - time;
-
-                start = undefined;
-
-                return dist;
-            },
-            val: null,
-        };
-    }());
-
-    $("#main_div").on("mousedown", ".messagebox", function (e) {
-        drag.start(e);
-    });
-    $("#main_div").on("mouseup", ".messagebox", function (e) {
-        drag.end(e);
-    });
-
     // MESSAGE CLICKING
 
     function is_clickable_message_element(target) {
@@ -130,16 +85,7 @@ exports.initialize = function () {
             return;
         }
 
-        // A tricky issue here is distinguishing hasty clicks (where
-        // the mouse might still move a few pixels between mouseup and
-        // mousedown) from selecting-for-copy.  We handle this issue
-        // by treating it as a click if distance is very small
-        // (covering the long-click case), or fairly small and over a
-        // short time (covering the hasty click case).  This seems to
-        // work nearly perfectly.  Once we no longer need to support
-        // older browsers, we may be able to use the window.selection
-        // API instead.
-        if (drag.val < 5 && drag.time < 150 || drag.val < 2) {
+        if (!(document.getSelection().type === "Range")) {
             const row = $(this).closest(".message_row");
             const id = rows.id(row);
 
