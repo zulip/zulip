@@ -160,8 +160,8 @@ def tokenize(text: str) -> List[Token]:
                     e.message,
                     state.line,
                     state.col,
-                    e.line_content
-                )
+                    e.line_content,
+                ),
             )
 
         line_span = len(s.split('\n'))
@@ -171,7 +171,7 @@ def tokenize(text: str) -> List[Token]:
             tag=tag.strip(),
             line=state.line,
             col=state.col,
-            line_span=line_span
+            line_span=line_span,
         )
         tokens.append(token)
         advance(len(s))
@@ -183,7 +183,7 @@ def tokenize(text: str) -> List[Token]:
                 tag=tag,
                 line=state.line,
                 col=state.col,
-                line_span=1
+                line_span=1,
             )
             tokens.append(token)
 

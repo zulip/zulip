@@ -30,11 +30,11 @@ def api_crashlytics_webhook(request: HttpRequest, user_profile: UserProfile,
         issue_body = payload['payload']
         subject = CRASHLYTICS_TOPIC_TEMPLATE.format(
             display_id=issue_body['display_id'],
-            title=issue_body['title']
+            title=issue_body['title'],
         )
         body = CRASHLYTICS_MESSAGE_TEMPLATE.format(
             impacted_devices_count=issue_body['impacted_devices_count'],
-            url=issue_body['url']
+            url=issue_body['url'],
         )
 
     check_send_webhook_message(request, user_profile, subject, body)

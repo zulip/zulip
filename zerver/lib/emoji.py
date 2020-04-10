@@ -17,7 +17,7 @@ if not os.path.exists(emoji_codes_path):  # nocoverage
     # prod-static/serve/generated/emoji won't exist yet.
     emoji_codes_path = os.path.join(
         os.path.dirname(__file__),
-        "../../static/generated/emoji/emoji_codes.json"
+        "../../static/generated/emoji/emoji_codes.json",
     )
 
 with open(emoji_codes_path) as fp:

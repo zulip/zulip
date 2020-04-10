@@ -29,7 +29,7 @@ class Command(ZulipBaseCommand):
     def fix_all_users(self, realm: Realm) -> None:
         user_profiles = list(UserProfile.objects.filter(
             realm=realm,
-            is_bot=False
+            is_bot=False,
         ))
         for user_profile in user_profiles:
             fix(user_profile)

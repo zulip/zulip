@@ -5,7 +5,7 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
     create_s3_buckets,
     override_settings,
-    get_test_image_file
+    get_test_image_file,
 )
 from zerver.lib.upload import upload_backend, upload_emoji_image
 from zerver.lib.users import get_api_key

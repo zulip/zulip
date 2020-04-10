@@ -32,8 +32,8 @@ class Command(ZulipBaseCommand):
         print("{} has {} active bots that will also be deactivated.".format(
             user_profile.delivery_email,
             UserProfile.objects.filter(
-                is_bot=True, is_active=True, bot_owner=user_profile
-            ).count()
+                is_bot=True, is_active=True, bot_owner=user_profile,
+            ).count(),
         ))
 
         if not options["for_real"]:

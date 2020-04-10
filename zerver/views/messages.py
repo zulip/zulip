@@ -93,7 +93,7 @@ TS_START = "<ts-match>"
 TS_STOP = "</ts-match>"
 
 def ts_locs_array(
-    config: ColumnElement, text: ColumnElement, tsquery: ColumnElement
+    config: ColumnElement, text: ColumnElement, tsquery: ColumnElement,
 ) -> ColumnElement:
     options = f"HighlightAll = TRUE, StartSel = {TS_START}, StopSel = {TS_STOP}"
     delimited = func.ts_headline(config, text, tsquery, options)
@@ -106,7 +106,7 @@ def ts_locs_array(
         select([postgresql.array([match_pos, match_len])])
         .select_from(parts)
         .offset(1)
-        .as_scalar()
+        .as_scalar(),
     )
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
@@ -350,7 +350,7 @@ class NarrowBuilder:
                 email_list = operand.split(",")
                 user_profiles = get_user_profiles(
                     emails=email_list,
-                    realm=self.user_realm
+                    realm=self.user_realm,
                 )
             else:
                 """
@@ -359,7 +359,7 @@ class NarrowBuilder:
                 """
                 user_profiles = get_user_profiles_by_ids(
                     user_ids=operand,
-                    realm=self.user_realm
+                    realm=self.user_realm,
                 )
 
             recipient = recipient_for_user_profiles(user_profiles=user_profiles,
@@ -417,13 +417,13 @@ class NarrowBuilder:
             recipient_tuple['recipient_id'] for recipient_tuple
             in Subscription.objects.filter(
                 user_profile=self.user_profile,
-                recipient__type=Recipient.HUDDLE
+                recipient__type=Recipient.HUDDLE,
             ).values("recipient_id")]
         narrow_recipient_ids = [
             recipient_tuple['recipient_id'] for recipient_tuple
             in Subscription.objects.filter(
                 user_profile=narrow_profile,
-                recipient__type=Recipient.HUDDLE
+                recipient__type=Recipient.HUDDLE,
             ).values("recipient_id")]
 
         recipient_ids = set(self_recipient_ids) & set(narrow_recipient_ids)
@@ -632,7 +632,7 @@ def exclude_muting_conditions(user_profile: UserProfile,
             user_profile=user_profile,
             active=True,
             is_muted=True,
-            recipient__type=Recipient.STREAM
+            recipient__type=Recipient.STREAM,
         ).values('recipient_id')
         muted_recipient_ids = [row['recipient_id'] for row in rows]
         if len(muted_recipient_ids) > 0:
@@ -698,7 +698,7 @@ def add_narrow_conditions(user_profile: UserProfile,
         query = query.column(topic_column_sa()).column(column("rendered_content"))
         search_term = dict(
             operator='search',
-            operand=' '.join(search_operands)
+            operand=' '.join(search_operands),
         )
         query = builder.add_term(query, search_term)
 
@@ -1325,7 +1325,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          defer_until: Optional[str]=REQ('deliver_at', default=None,
                                                         documentation_pending=True),
                          tz_guess: Optional[str]=REQ('tz_guess', default=None,
-                                                     documentation_pending=True)
+                                                     documentation_pending=True),
                          ) -> HttpResponse:
 
     # If req_to is None, then we default to an
@@ -1344,7 +1344,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             # a Union[Sequence[int], Sequence[str]].
             message_to = cast(
                 Union[Sequence[int], Sequence[str]],
-                [stream_indicator]
+                [stream_indicator],
             )
         else:
             message_to = extract_private_recipients(req_to)
@@ -1683,7 +1683,7 @@ def render_message_backend(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
                                msg_ids: List[int]=REQ(validator=check_list(check_int)),
-                               narrow: OptionalNarrowListT=REQ(converter=narrow_parameter)
+                               narrow: OptionalNarrowListT=REQ(converter=narrow_parameter),
                                ) -> HttpResponse:
 
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)

@@ -21,7 +21,7 @@ def get_active_subscriptions_for_stream_ids(stream_ids: List[int]) -> QuerySet:
     return Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
-        active=True
+        active=True,
     )
 
 def get_subscribed_stream_ids_for_user(user_profile: UserProfile) -> QuerySet:

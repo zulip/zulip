@@ -83,7 +83,7 @@ def create_preregistration_user(email: str, request: HttpRequest, realm_creation
         password_required=password_required,
         realm=realm,
         full_name=full_name,
-        full_name_validated=full_name_validated
+        full_name_validated=full_name_validated,
     )
 
 def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str='',
@@ -164,7 +164,7 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
                 email, request,
                 password_required=password_required,
                 full_name=full_name,
-                full_name_validated=full_name_validated
+                full_name_validated=full_name_validated,
             )
 
         if multiuse_obj is not None:
@@ -367,7 +367,7 @@ def remote_user_sso(
         email=email,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
-        redirect_to=next
+        redirect_to=next,
     )
     if realm:
         data_dict["subdomain"] = realm.subdomain
@@ -483,7 +483,7 @@ def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
     return redirect(add_query_to_redirect_url(reverse('login-sso'), query))
 
 @handle_desktop_flow
-def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
+def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None,
                        ) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params: Dict[str, str] = {}
@@ -510,7 +510,7 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
     return oauth_redirect_to_root(request, backend_url, 'social', extra_url_params=extra_url_params)
 
 @handle_desktop_flow
-def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
+def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[str]=None,
                         ) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params: Dict[str, str] = {}
@@ -995,7 +995,7 @@ def config_error_view(request: HttpRequest, error_category_name: str) -> HttpRes
         'saml': {'social_backend_name': 'saml'},
         'smtp': {'error_name': 'smtp_error'},
         'backend_disabled': {'error_name': 'remoteuser_error_backend_disabled'},
-        'remote_user_header_missing': {'error_name': 'remoteuser_error_remote_user_header_missing'}
+        'remote_user_header_missing': {'error_name': 'remoteuser_error_remote_user_header_missing'},
     }
 
     return TemplateView.as_view(template_name='zerver/config_error.html',

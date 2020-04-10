@@ -467,7 +467,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             # we want to return. Otherwise, raise an exception.
             error_message = "No ldap user matching django_to_ldap_username result: {}. Input username: {}"
             raise ZulipLDAPExceptionNoMatchingLDAPUser(
-                error_message.format(result, username)
+                error_message.format(result, username),
             )
 
         return result
@@ -870,7 +870,7 @@ def query_ldap(email: str) -> List[str]:
         ldap_attrs = _LDAPUser(backend, ldap_username).attrs
 
         for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
-            value = ldap_attrs.get(ldap_field, ["LDAP field not present", ])[0]
+            value = ldap_attrs.get(ldap_field, ["LDAP field not present"])[0]
             if django_field == "avatar":
                 if isinstance(value, bytes):
                     value = "(An avatar image file)"
@@ -1316,7 +1316,7 @@ def social_auth_finish(backend: Any,
         multiuse_object_key=multiuse_object_key,
         full_name_validated=full_name_validated,
         mobile_flow_otp=mobile_flow_otp,
-        desktop_flow_otp=desktop_flow_otp
+        desktop_flow_otp=desktop_flow_otp,
     )
     if user_profile is None:
         data_dict.update(dict(full_name=full_name, email=email_address))
@@ -1461,7 +1461,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         if team_id is None and org_name is None:
             # I believe this can't raise AuthFailed, so we don't try to catch it here.
             return super().user_data(
-                access_token, *args, **kwargs
+                access_token, *args, **kwargs,
             )
         elif team_id is not None:
             backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
@@ -1885,7 +1885,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             settings.SOCIAL_AUTH_SAML_ORG_INFO,
             settings.SOCIAL_AUTH_SAML_TECHNICAL_CONTACT,
             settings.SOCIAL_AUTH_SAML_SUPPORT_CONTACT,
-            settings.SOCIAL_AUTH_SAML_ENABLED_IDPS
+            settings.SOCIAL_AUTH_SAML_ENABLED_IDPS,
         ]
         if any(not setting for setting in obligatory_saml_settings_list):
             return redirect_to_config_error("saml")

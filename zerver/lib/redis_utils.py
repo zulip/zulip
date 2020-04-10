@@ -42,7 +42,7 @@ def put_dict_in_redis(redis_client: redis.StrictRedis, key_format: str,
 
     return key
 
-def get_dict_from_redis(redis_client: redis.StrictRedis, key_format: str, key: str
+def get_dict_from_redis(redis_client: redis.StrictRedis, key_format: str, key: str,
                         ) -> Optional[Dict[str, Any]]:
     # This function requires inputting the intended key_format to validate
     # that the key fits it, as an additionally security measure. This protects

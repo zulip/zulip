@@ -26,7 +26,7 @@ def update_storage(request: HttpRequest, user_profile: UserProfile,
 def get_storage(
         request: HttpRequest,
         user_profile: UserProfile,
-        keys: Optional[List[str]]=REQ(validator=check_list(check_string), default=None)
+        keys: Optional[List[str]]=REQ(validator=check_list(check_string), default=None),
 ) -> HttpResponse:
     keys = keys or get_keys_in_bot_storage(user_profile)
     try:
@@ -39,7 +39,7 @@ def get_storage(
 def remove_storage(
         request: HttpRequest,
         user_profile: UserProfile,
-        keys: Optional[List[str]]=REQ(validator=check_list(check_string), default=None)
+        keys: Optional[List[str]]=REQ(validator=check_list(check_string), default=None),
 ) -> HttpResponse:
     keys = keys or get_keys_in_bot_storage(user_profile)
     try:

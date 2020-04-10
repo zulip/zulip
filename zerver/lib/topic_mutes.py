@@ -8,14 +8,14 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     get_stream,
     MutedTopic,
-    UserProfile
+    UserProfile,
 )
 from sqlalchemy.sql import (
     and_,
     column,
     not_,
     or_,
-    Selectable
+    Selectable,
 )
 
 from django.utils.timezone import now as timezone_now
@@ -26,7 +26,7 @@ def get_topic_mutes(user_profile: UserProfile) -> List[List[Union[str, float]]]:
     ).values(
         'stream__name',
         'topic_name',
-        'date_muted'
+        'date_muted',
     )
     return [
         [row['stream__name'], row['topic_name'], datetime_to_timestamp(row['date_muted'])]
@@ -73,7 +73,7 @@ def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str
     row = MutedTopic.objects.get(
         user_profile=user_profile,
         stream_id=stream_id,
-        topic_name__iexact=topic_name
+        topic_name__iexact=topic_name,
     )
     row.delete()
 
@@ -99,7 +99,7 @@ def exclude_topic_mutes(conditions: List[Selectable],
 
     query = query.values(
         'recipient_id',
-        'topic_name'
+        'topic_name',
     )
     rows = list(query)
 
@@ -121,7 +121,7 @@ def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], 
         user_profile=user_profile,
     ).values(
         'recipient_id',
-        'topic_name'
+        'topic_name',
     )
     rows = list(rows)
 

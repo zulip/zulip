@@ -31,7 +31,7 @@ Changelog:
 @has_request_variables
 def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
                          alert: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
-                         deployment: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
+                         deployment: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
                          ) -> HttpResponse:
     if alert:
         # Use the message as the subject because it stays the same for

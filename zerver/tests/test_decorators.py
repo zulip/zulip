@@ -38,7 +38,7 @@ from zerver.decorator import (
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key,
     return_success_on_head_request,
-    zulip_login_required
+    zulip_login_required,
 )
 from zerver.lib.cache import ignore_unhashable_lru_cache, dict_to_items_tuple, items_tuple_to_dict
 from zerver.lib.validator import (
@@ -46,7 +46,7 @@ from zerver.lib.validator import (
     check_variable_type, equals, check_none_or, check_url, check_short_string,
     check_string_fixed_length, check_capped_string, check_color, to_non_negative_int,
     check_string_or_int_list, check_string_or_int, check_int_in, check_string_in,
-    to_positive_or_allowed_int
+    to_positive_or_allowed_int,
 )
 from zerver.models import \
     get_realm, get_user, UserProfile, Realm
@@ -847,27 +847,27 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(error, 'names key is missing from x')
 
         x = {
-            'names': ['alice', 'bob', {}]
+            'names': ['alice', 'bob', {}],
         }
         error = check_dict(keys)('x', x)
         self.assertEqual(error, 'x["names"][2] is not a string')
 
         x = {
             'names': ['alice', 'bob'],
-            'city': 5
+            'city': 5,
         }
         error = check_dict(keys)('x', x)
         self.assertEqual(error, 'x["city"] is not a string')
 
         x = {
             'names': ['alice', 'bob'],
-            'city': 'Boston'
+            'city': 'Boston',
         }
         error = check_dict(value_validator=check_string)('x', x)
         self.assertEqual(error, 'x contains a value that is not a string')
 
         x = {
-            'city': 'Boston'
+            'city': 'Boston',
         }
         error = check_dict(value_validator=check_string)('x', x)
         self.assertEqual(error, None)
@@ -891,13 +891,13 @@ class ValidatorTestCase(TestCase):
         # Test optional keys
         optional_keys = [
             ('food', check_list(check_string)),
-            ('year', check_int)
+            ('year', check_int),
         ]
 
         x = {
             'names': ['alice', 'bob'],
             'city': 'Boston',
-            'food': ['Lobster Spaghetti']
+            'food': ['Lobster Spaghetti'],
         }
 
         error = check_dict(keys)('x', x)
@@ -912,7 +912,7 @@ class ValidatorTestCase(TestCase):
         x = {
             'names': ['alice', 'bob'],
             'city': 'Boston',
-            'food': 'Lobster Spaghetti'
+            'food': 'Lobster Spaghetti',
         }
         error = check_dict_only(keys, optional_keys)('x', x)
         self.assertEqual(error, 'x["food"] is not a list')
@@ -1432,7 +1432,7 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/settings",
             "/api/v1/settings/display",
             "/api/v1/settings/notifications",
-            "/api/v1/users/me/profile_data"
+            "/api/v1/users/me/profile_data",
         ]
         for endpoint in patch_endpoints:
             result = self.api_patch(default_bot, endpoint)

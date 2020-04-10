@@ -20,7 +20,7 @@ State changed to **{state}**:
 @has_request_variables
 def api_insping_webhook(
         request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body')
+        payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body'),
 ) -> HttpResponse:
 
     data = payload['webhook_event_data']
@@ -35,7 +35,7 @@ def api_insping_webhook(
 
     body = MESSAGE_TEMPLATE.format(
         state=state_name, url=url_tested,
-        response_time=response_time, timestamp=time_formatted
+        response_time=response_time, timestamp=time_formatted,
     )
 
     topic = 'insping'

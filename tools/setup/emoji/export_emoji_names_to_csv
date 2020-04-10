@@ -89,7 +89,7 @@ def main() -> None:
 
     args = parser.parse_args()
     prepare_sorting_info()
-    output_data = [column_names, ]
+    output_data = [column_names]
     explanation_lines: List[str] = []
     with open(args.input_file_path) as fp:
         for line in fp.readlines():

@@ -26,5 +26,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(remove_name_illegal_chars, elidable=True)
+        migrations.RunPython(remove_name_illegal_chars, elidable=True),
     ]

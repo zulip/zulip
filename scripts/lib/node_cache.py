@@ -23,7 +23,7 @@ def get_yarn_args(production: bool) -> List[str]:
     return yarn_args
 
 def generate_sha1sum_node_modules(
-    setup_dir: Optional[str] = None, production: bool = DEFAULT_PRODUCTION
+    setup_dir: Optional[str] = None, production: bool = DEFAULT_PRODUCTION,
 ) -> str:
     if setup_dir is None:
         setup_dir = os.path.realpath(os.getcwd())
@@ -69,7 +69,7 @@ def setup_node_modules(
 def do_yarn_install(
     target_path: str,
     yarn_args: List[str],
-    success_stamp: str
+    success_stamp: str,
 ) -> None:
     os.makedirs(target_path, exist_ok=True)
     shutil.copy('package.json', target_path)

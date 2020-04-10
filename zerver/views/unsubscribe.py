@@ -44,7 +44,7 @@ email_unsubscribers = {
     "missed_messages": ("missed messages", do_missedmessage_unsubscribe),
     "welcome": ("welcome", do_welcome_unsubscribe),
     "digest": ("digest", do_digest_unsubscribe),
-    "login": ("login", do_login_unsubscribe)
+    "login": ("login", do_login_unsubscribe),
 }
 
 # Login NOT required. These are for one-click unsubscribes.

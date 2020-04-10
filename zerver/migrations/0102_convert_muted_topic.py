@@ -38,7 +38,7 @@ def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
     user_query = UserProfile.objects.values(
         'id',
         'realm_id',
-        'muted_topics'
+        'muted_topics',
     )
 
     for row in user_query:

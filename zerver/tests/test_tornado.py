@@ -53,7 +53,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
             self.get_url(path),
             self.stop,
             method=method,
-            **kwargs
+            **kwargs,
         )
 
     def client_get_async(self, path: str, **kwargs: Any) -> None:
@@ -66,7 +66,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         session_cookie = settings.SESSION_COOKIE_NAME
         session_key = self.client.session.session_key
         self.session_cookie = {
-            "Cookie": f"{session_cookie}={session_key}"
+            "Cookie": f"{session_cookie}={session_key}",
         }
 
     def get_session_cookie(self) -> Dict[str, str]:

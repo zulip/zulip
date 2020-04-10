@@ -44,7 +44,7 @@ def api_gocd_webhook(request: HttpRequest, user_profile: UserProfile,
         result,
         emoji,
         build_link,
-        modifications['comment']
+        modifications['comment'],
     )
     branch = material['description'].split(",")
     topic = branch[0].split(" ")[1]

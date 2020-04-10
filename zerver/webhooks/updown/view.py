@@ -58,7 +58,7 @@ def get_body_for_down_event(event: Dict[str, Any]) -> str:
 @has_request_variables
 def api_updown_webhook(
         request: HttpRequest, user_profile: UserProfile,
-        payload: List[Dict[str, Any]]=REQ(argument_type='body')
+        payload: List[Dict[str, Any]]=REQ(argument_type='body'),
 ) -> HttpResponse:
     for event in payload:
         send_message_for_event(request, user_profile, event)
@@ -66,7 +66,7 @@ def api_updown_webhook(
 
 EVENT_TYPE_BODY_MAPPER = {
     'up': get_body_for_up_event,
-    'down': get_body_for_down_event
+    'down': get_body_for_down_event,
 }
 
 def get_event_type(event: Dict[str, Any]) -> str:

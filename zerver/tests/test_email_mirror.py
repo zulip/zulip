@@ -77,7 +77,7 @@ class TestEncodeDecode(ZulipTestCase):
 
         # The default form of the email address (with an option - "include-footer"):
         token, options = decode_email_address(
-            f"dev-help.{stream.email_token}.include-footer@testserver"
+            f"dev-help.{stream.email_token}.include-footer@testserver",
         )
         self._assert_options(options, include_footer=True)
         self.assertEqual(token, stream.email_token)
@@ -85,7 +85,7 @@ class TestEncodeDecode(ZulipTestCase):
         # Using + instead of . as the separator is also supported for backwards compatibility,
         # since that was the original form of addresses that we used:
         token, options = decode_email_address(
-            f"dev-help+{stream.email_token}+include-footer@testserver"
+            f"dev-help+{stream.email_token}+include-footer@testserver",
         )
         self._assert_options(options, include_footer=True)
         self.assertEqual(token, stream.email_token)
@@ -1108,7 +1108,7 @@ class TestScriptMTA(ZulipTestCase):
         except subprocess.CalledProcessError as e:
             self.assertEqual(
                 e.output,
-                b'5.1.1 Bad destination mailbox address: No missed message email address.\n'
+                b'5.1.1 Bad destination mailbox address: No missed message email address.\n',
             )
             self.assertEqual(e.returncode, 67)
             success_call = False
@@ -1127,7 +1127,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
                 "type": "private",
                 "content": "test_receive_missed_message_email_messages",
                 "client": "test suite",
-                "to": ujson.dumps([cordelia.id, iago.id])
+                "to": ujson.dumps([cordelia.id, iago.id]),
             })
         self.assert_json_success(result)
 
@@ -1154,11 +1154,11 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         mock_queue_json_publish.side_effect = check_queue_json_publish
         request_data = {
             "recipient": to_address,
-            "msg_text": mail
+            "msg_text": mail,
         }
         post_data = dict(
             data=ujson.dumps(request_data),
-            secret=settings.SHARED_SECRET
+            secret=settings.SHARED_SECRET,
         )
         return self.client_post('/email_mirror_message', post_data)
 
@@ -1364,7 +1364,7 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
                 "type": "private",
                 "content": "test_redact_email_message",
                 "client": "test suite",
-                "to": ujson.dumps([cordelia.email, iago.email])
+                "to": ujson.dumps([cordelia.email, iago.email]),
             })
         self.assert_json_success(result)
 

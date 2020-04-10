@@ -155,7 +155,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             bot_owner,
             full_name='Outgoing Webhook bot',
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            service_name='foo-service'
+            service_name='foo-service',
         )
 
     def test_multiple_services(self) -> None:
@@ -193,7 +193,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             self.send_personal_message(
                 sender,
                 bot,
-                content="some content"
+                content="some content",
             )
 
         url_token_tups = set()
@@ -212,7 +212,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             {
                 ('weather_url', 'weather_token'),
                 ('qotd_url', 'qotd_token'),
-            }
+            },
         )
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))
@@ -228,11 +228,11 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.sender_id, bot.id)
         self.assertEqual(
             last_message.recipient.type_id,
-            sender.id
+            sender.id,
         )
         self.assertEqual(
             last_message.recipient.type,
-            Recipient.PERSONAL
+            Recipient.PERSONAL,
         )
 
     @mock.patch('requests.request', return_value=ResponseMock(200, {"response_string": "Hidley ho, I'm a webhook responding!"}))

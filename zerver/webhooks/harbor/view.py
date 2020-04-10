@@ -17,7 +17,7 @@ IGNORED_EVENTS = [
     "uploadChart",
     "pullImage",
     "deleteImage",
-    "scanningFailed"
+    "scanningFailed",
 ]
 
 
@@ -75,7 +75,7 @@ def handle_scanning_completed_event(payload: Dict[str, Any],
     return SCANNING_COMPLETED_TEMPLATE.format(
         image_name=payload["event_data"]["repository"]["repo_full_name"],
         image_tag=payload["event_data"]["resources"][0]["tag"],
-        scan_results=scan_results
+        scan_results=scan_results,
     )
 
 

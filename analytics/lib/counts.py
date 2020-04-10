@@ -325,9 +325,9 @@ def sql_data_collector(
 def do_pull_minutes_active(property: str, start_time: datetime, end_time: datetime,
                            realm: Optional[Realm] = None) -> int:
     user_activity_intervals = UserActivityInterval.objects.filter(
-        end__gt=start_time, start__lt=end_time
+        end__gt=start_time, start__lt=end_time,
     ).select_related(
-        'user_profile'
+        'user_profile',
     ).values_list(
         'user_profile_id', 'user_profile__realm_id', 'start', 'end')
 
@@ -660,7 +660,7 @@ def get_count_stats(realm: Optional[Realm]=None) -> Dict[str, CountStat]:
                            sql_data_collector(
                                RealmCount, count_realm_active_humans_query(realm), None),
                            CountStat.DAY,
-                           dependencies=['active_users_audit:is_bot:day', '15day_actives::day'])
+                           dependencies=['active_users_audit:is_bot:day', '15day_actives::day']),
     ]
 
     return OrderedDict([(stat.property, stat) for stat in count_stats_])

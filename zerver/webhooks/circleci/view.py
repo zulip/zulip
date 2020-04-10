@@ -33,7 +33,7 @@ def get_body(payload: Dict[str, Any]) -> str:
         'build_url': payload['build_url'],
         'username': payload['username'],
         'branch': payload['branch'],
-        'status': get_status(payload)
+        'status': get_status(payload),
     }
     return CIRCLECI_MESSAGE_TEMPLATE.format(**data)
 

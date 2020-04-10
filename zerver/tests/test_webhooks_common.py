@@ -48,7 +48,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
             request_path=request.path,
             header_name='X_CUSTOM_HEADER',
             integration_name='test_webhook',
-            support_email=FromAddress.SUPPORT
+            support_email=FromAddress.SUPPORT,
         ).rstrip()
         self.assertEqual(msg.sender.email, notification_bot.email)
         self.assertEqual(msg.content, expected_message)
@@ -110,7 +110,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
     @patch("zerver.lib.webhooks.common.importlib.import_module")
     def test_get_fixture_http_headers_with_no_fixtures_to_headers_function(
         self,
-        import_module_mock: MagicMock
+        import_module_mock: MagicMock,
     ) -> None:
 
         fake_module = SimpleNamespace()
@@ -118,7 +118,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
         self.assertEqual(
             get_fixture_http_headers("some_integration", "simple_fixture"),
-            {}
+            {},
         )
 
     def test_standardize_headers(self) -> None:
@@ -150,7 +150,7 @@ class MissingEventHeaderTestCase(WebhookTestCase):
             request_path='/api/v1/external/groove',
             header_name='X_GROOVE_EVENT',
             integration_name='Groove',
-            support_email=FromAddress.SUPPORT
+            support_email=FromAddress.SUPPORT,
         ).rstrip()
         if msg.sender.email != notification_bot.email:  # nocoverage
             # This block seems to fire occasionally; debug output:

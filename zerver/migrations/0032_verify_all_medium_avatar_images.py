@@ -37,5 +37,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(verify_medium_avatar_image, elidable=True)
+        migrations.RunPython(verify_medium_avatar_image, elidable=True),
     ]

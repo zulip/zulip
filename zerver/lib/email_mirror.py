@@ -69,7 +69,7 @@ def report_to_zulip(error_message: str) -> None:
         error_bot,
         error_stream,
         "email mirror error",
-        f"""~~~\n{error_message}\n~~~"""
+        f"""~~~\n{error_message}\n~~~""",
     )
 
 def log_and_report(email_message: EmailMessage, error_message: str, to: Optional[str]) -> None:
@@ -114,7 +114,7 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
     try:
         mm_address = MissedMessageEmailAddress.objects.select_related().get(
             email_token=token,
-            timestamp__gt=timezone_now() - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS)
+            timestamp__gt=timezone_now() - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS),
         )
     except MissedMessageEmailAddress.DoesNotExist:
         raise ZulipEmailForwardError("Missed message address expired or doesn't exist.")
@@ -371,7 +371,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
         internal_send_stream_message(
             user_profile.realm, user_profile, stream,
-            topic, body
+            topic, body,
         )
         recipient_str = stream.name
     elif recipient.type == Recipient.PERSONAL:
@@ -429,15 +429,15 @@ def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
     except ZulipEmailForwardError as e:
         return {
             "status": "error",
-            "msg": f"5.1.1 Bad destination mailbox address: {e}"
+            "msg": f"5.1.1 Bad destination mailbox address: {e}",
         }
 
     queue_json_publish(
         "email_mirror",
         {
             "message": data['msg_text'],
-            "rcpt_to": rcpt_to
-        }
+            "rcpt_to": rcpt_to,
+        },
     )
     return {"status": "success"}
 

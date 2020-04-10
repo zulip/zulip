@@ -17,7 +17,7 @@ states = {
     0: "OK",
     1: "WARNING",
     2: "CRITICAL",
-    3: "UNKNOWN"
+    3: "UNKNOWN",
 }
 
 if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:

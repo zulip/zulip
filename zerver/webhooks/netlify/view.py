@@ -18,7 +18,7 @@ fixture_to_headers = get_http_headers_from_filename("HTTP_X_NETLIFY_EVENT")
 @has_request_variables
 def api_netlify_webhook(
         request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body')
+        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
 ) -> HttpResponse:
 
     message_template = get_template(request, payload)

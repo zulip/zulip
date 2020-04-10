@@ -56,7 +56,7 @@ try:
         os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
     os.symlink(
         os.path.join(ZULIP_PATH, 'README.md'),
-        os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')
+        os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'),
     )
     os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
 except OSError:
@@ -131,7 +131,7 @@ COMMON_DEPENDENCIES = [
     "libxss1",
     "fonts-freefont-ttf",
     "libappindicator1",
-    "xdg-utils"
+    "xdg-utils",
     # Puppeteer dependencies end here.
 ]
 
@@ -153,7 +153,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "freetype",
     "freetype-devel",
     "fontconfig-devel",
-    "libstdc++"
+    "libstdc++",
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
 BUILD_PGROONGA_FROM_SOURCE = False
@@ -169,7 +169,7 @@ if vendor == 'debian' and os_version in [] or vendor == 'ubuntu' and os_version 
             "libgroonga-dev",
             "libmsgpack-dev",
             "clang-9",
-            "llvm-9-dev"
+            "llvm-9-dev",
         ]
     ] + VENV_DEPENDENCIES
 elif "debian" in os_families():
@@ -245,7 +245,7 @@ def install_apt_deps(deps_to_install: List[str]) -> None:
             "env", "DEBIAN_FRONTEND=noninteractive",
             "apt-get", "-y", "install", "--no-install-recommends",
         ]
-        + deps_to_install
+        + deps_to_install,
     )
 
 def install_yum_deps(deps_to_install: List[str]) -> None:
@@ -412,7 +412,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
             provision_inner,
             *(["--force"] if options.is_force else []),
             *(["--build-release-tarball-only"] if options.is_build_release_tarball_only else []),
-        ]
+        ],
     )
 
 if __name__ == "__main__":

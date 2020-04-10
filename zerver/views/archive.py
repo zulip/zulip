@@ -30,7 +30,7 @@ def archive(request: HttpRequest,
                 'message_list': rendered_message_list,
                 'stream': stream_name,
                 'topic': topic_name,
-            }
+            },
         )
 
     try:
@@ -45,7 +45,7 @@ def archive(request: HttpRequest,
         messages_for_topic(
             stream_recipient_id=stream.recipient_id,
             topic_name=topic_name,
-        ).select_related('sender').order_by('date_sent')
+        ).select_related('sender').order_by('date_sent'),
     )
 
     if not all_messages:

@@ -46,7 +46,7 @@ test summary'''
             'unsupported_object',
             expected_topic,
             expected_message,
-            content_type='application/json'
+            content_type='application/json',
         )
 
     def test_error_fixed(self) -> None:

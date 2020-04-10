@@ -425,7 +425,7 @@ class GitlabHookTests(WebhookTestCase):
             'build_created',
             expected_topic,
             expected_message,
-            HTTP_X_GITLAB_EVENT="Job Hook"
+            HTTP_X_GITLAB_EVENT="Job Hook",
         )
 
     def test_build_started_event_message(self) -> None:
@@ -436,7 +436,7 @@ class GitlabHookTests(WebhookTestCase):
             'build_started',
             expected_topic,
             expected_message,
-            HTTP_X_GITLAB_EVENT="Job Hook"
+            HTTP_X_GITLAB_EVENT="Job Hook",
         )
 
     def test_build_succeeded_event_message(self) -> None:
@@ -447,7 +447,7 @@ class GitlabHookTests(WebhookTestCase):
             'build_succeeded',
             expected_topic,
             expected_message,
-            HTTP_X_GITLAB_EVENT="Job Hook"
+            HTTP_X_GITLAB_EVENT="Job Hook",
         )
 
     def test_build_created_event_message_legacy_event_name(self) -> None:
@@ -458,7 +458,7 @@ class GitlabHookTests(WebhookTestCase):
             'build_created',
             expected_topic,
             expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook"
+            HTTP_X_GITLAB_EVENT="Build Hook",
         )
 
     def test_build_started_event_message_legacy_event_name(self) -> None:
@@ -469,7 +469,7 @@ class GitlabHookTests(WebhookTestCase):
             'build_started',
             expected_topic,
             expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook"
+            HTTP_X_GITLAB_EVENT="Build Hook",
         )
 
     def test_build_succeeded_event_message_legacy_event_name(self) -> None:
@@ -480,7 +480,7 @@ class GitlabHookTests(WebhookTestCase):
             'build_succeeded',
             expected_topic,
             expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook"
+            HTTP_X_GITLAB_EVENT="Build Hook",
         )
 
     def test_pipeline_succeeded_with_artifacts_event_message(self) -> None:
@@ -490,7 +490,7 @@ class GitlabHookTests(WebhookTestCase):
         self.send_and_test_stream_message(
             'pipeline_hook__pipline_succeeded_with_artifacts',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_pipeline_succeeded_event_message(self) -> None:
@@ -500,7 +500,7 @@ class GitlabHookTests(WebhookTestCase):
         self.send_and_test_stream_message(
             'pipeline_hook__pipeline_succeeded',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_pipeline_started_event_message(self) -> None:
@@ -510,7 +510,7 @@ class GitlabHookTests(WebhookTestCase):
         self.send_and_test_stream_message(
             'pipeline_hook__pipeline_started',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_pipeline_pending_event_message(self) -> None:
@@ -520,7 +520,7 @@ class GitlabHookTests(WebhookTestCase):
         self.send_and_test_stream_message(
             'pipeline_hook__pipeline_pending',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     def test_issue_type_test_payload(self) -> None:
@@ -530,7 +530,7 @@ class GitlabHookTests(WebhookTestCase):
         self.send_and_test_stream_message(
             'test_hook__issue_test_payload',
             expected_topic,
-            expected_message
+            expected_message,
         )
 
     @patch('zerver.lib.webhooks.common.check_send_webhook_message')

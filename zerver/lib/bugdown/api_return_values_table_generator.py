@@ -15,7 +15,7 @@ class MarkdownReturnValuesTableGenerator(Extension):
 
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.preprocessors.add(
-            'generate_return_values', APIReturnValuesTablePreprocessor(md, self.getConfigs()), '_begin'
+            'generate_return_values', APIReturnValuesTablePreprocessor(md, self.getConfigs()), '_begin',
         )
 
 

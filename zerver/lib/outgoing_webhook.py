@@ -54,7 +54,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             event['message'],
             apply_markdown=False,
             client_gravatar=False,
-            keep_rendered_content=True
+            keep_rendered_content=True,
         )
 
         request_data = {"data": event['command'],
@@ -325,7 +325,7 @@ def do_rest_call(base_url: str,
     except requests.exceptions.RequestException as e:
         response_message = ("An exception of type *%s* occurred for message `%s`! "
                             "See the Zulip server logs for more information." % (
-                                type(e).__name__, event["command"],))
+                                type(e).__name__, event["command"]))
         logging.exception(f"Outhook trigger failed:\n {e}")
         fail_with_message(event, response_message)
         notify_bot_owner(event, exception=e)

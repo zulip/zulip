@@ -534,7 +534,7 @@ def get_hipchat_sender_id(realm_id: int,
             return None
         mirror_user = user_handler.get_mirror_user(
             realm_id=realm_id,
-            name=message_dict['sender']['name']
+            name=message_dict['sender']['name'],
         )
         sender_id = mirror_user['id']
         return sender_id
@@ -544,7 +544,7 @@ def get_hipchat_sender_id(realm_id: int,
             return None
         mirror_user = user_handler.get_mirror_user(
             realm_id=realm_id,
-            name=message_dict['sender']['id']
+            name=message_dict['sender']['id'],
         )
         sender_id = mirror_user['id']
         return sender_id

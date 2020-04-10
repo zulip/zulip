@@ -51,7 +51,7 @@ def get_user_name(payload: Dict[str, Any]) -> str:
                                          url=payload["actor"]["links"]["self"][0]["href"])
     return user_name
 
-def ping_handler(payload: Dict[str, Any], include_title: Optional[str]=None
+def ping_handler(payload: Dict[str, Any], include_title: Optional[str]=None,
                  ) -> List[Dict[str, str]]:
     if include_title:
         subject = include_title
@@ -74,7 +74,7 @@ def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str,
         action=action,
         commit_url=commit_url,
         sha=sha,
-        message=message
+        message=message,
     )
     return [{"subject": subject, "body": body}]
 
@@ -85,7 +85,7 @@ def repo_forked_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
         display_name=payload["actor"]["displayName"],
         username=get_user_name(payload),
         fork_name=payload["repository"]["name"],
-        fork_url=payload["repository"]["links"]["self"][0]["href"]
+        fork_url=payload["repository"]["links"]["self"][0]["href"],
     )
     return [{"subject": subject, "body": body}]
 
@@ -97,7 +97,7 @@ def repo_modified_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
         change="name",
         repo_name=payload["old"]["name"],
         old=payload["old"]["name"],
-        new=new_name
+        new=new_name,
     )  # As of writing this, the only change we'd be notified about is a name change.
     punctuation = '.' if new_name[-1] not in string.punctuation else ''
     body = f"{body}{punctuation}"
@@ -114,13 +114,13 @@ def repo_push_branch_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Di
         body = get_create_branch_event_message(
             user_name=user_name,
             url=None,
-            branch_name=branch_name
+            branch_name=branch_name,
         )
     elif event_type == "UPDATE":
         body = BRANCH_UPDATED_MESSAGE_TEMPLATE.format(
             user_name=user_name,
             branch_name=branch_name,
-            head=branch_head
+            head=branch_head,
         )
     elif event_type == "DELETE":
         body = get_remove_branch_event_message(user_name, branch_name)
@@ -148,7 +148,7 @@ def repo_push_tag_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[
     body = get_push_tag_event_message(get_user_name(payload), tag_name, action=action)
     return {"subject": subject, "body": body}
 
-def repo_push_handler(payload: Dict[str, Any], branches: Optional[str]=None
+def repo_push_handler(payload: Dict[str, Any], branches: Optional[str]=None,
                       ) -> List[Dict[str, str]]:
     data = []
     for change in payload["changes"]:
@@ -190,7 +190,7 @@ def get_simple_pr_body(payload: Dict[str, Any], action: str, include_title: Opti
         action=action,
         url=pr["links"]["self"][0]["href"],
         number=pr["id"],
-        title=pr["title"] if include_title else None
+        title=pr["title"] if include_title else None,
     )
 
 def get_pr_opened_or_modified_body(payload: Dict[str, Any], action: str,
@@ -212,7 +212,7 @@ def get_pr_opened_or_modified_body(payload: Dict[str, Any], action: str,
                       "title": pr["title"] if include_title else None}
         if include_title:
             body = PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS_WITH_TITLE.format(
-                **parameters
+                **parameters,
             )
         else:
             body = PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS.format(**parameters)
@@ -230,7 +230,7 @@ def get_pr_opened_or_modified_body(payload: Dict[str, Any], action: str,
         base_branch=pr["toRef"]["displayId"],
         message=pr.get("description"),
         assignee=assignees_string if assignees_string else None,
-        title=pr["title"] if include_title else None
+        title=pr["title"] if include_title else None,
     )
 
 def get_pr_needs_work_body(payload: Dict[str, Any], include_title: Optional[bool]) -> str:
@@ -239,13 +239,13 @@ def get_pr_needs_work_body(payload: Dict[str, Any], include_title: Optional[bool
         return PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE.format(
             user_name=get_user_name(payload),
             number=pr["id"],
-            url=pr["links"]["self"][0]["href"]
+            url=pr["links"]["self"][0]["href"],
         )
     return PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE_WITH_TITLE.format(
         user_name=get_user_name(payload),
         number=pr["id"],
         url=pr["links"]["self"][0]["href"],
-        title=pr["title"]
+        title=pr["title"],
     )
 
 def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[bool]) -> str:
@@ -256,14 +256,14 @@ def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[bool
             return PULL_REQUEST_REASSIGNED_TO_NONE_TEMPLATE.format(
                 user_name=get_user_name(payload),
                 number=pr["id"],
-                url=pr["links"]["self"][0]["href"]
+                url=pr["links"]["self"][0]["href"],
             )
         punctuation = '.' if pr['title'][-1] not in string.punctuation else ''
         message = PULL_REQUEST_REASSIGNED_TO_NONE_TEMPLATE_WITH_TITLE.format(
             user_name=get_user_name(payload),
             number=pr["id"],
             url=pr["links"]["self"][0]["href"],
-            title=pr["title"]
+            title=pr["title"],
         )
         message = f"{message}{punctuation}"
         return message
@@ -272,14 +272,14 @@ def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[bool
             user_name=get_user_name(payload),
             number=pr["id"],
             url=pr["links"]["self"][0]["href"],
-            assignees=assignees_string
+            assignees=assignees_string,
         )
     return PULL_REQUEST_REASSIGNED_TEMPLATE_WITH_TITLE.format(
         user_name=get_user_name(payload),
         number=pr["id"],
         url=pr["links"]["self"][0]["href"],
         assignees=assignees_string,
-        title=pr["title"]
+        title=pr["title"],
     )
 
 def pr_handler(payload: Dict[str, Any], action: str,
@@ -312,7 +312,7 @@ def pr_comment_handler(payload: Dict[str, Any], action: str,
         url=pr["links"]["self"][0]["href"],
         number=pr["id"],
         message=message,
-        title=pr["title"] if include_title else None
+        title=pr["title"] if include_title else None,
     )
 
     return [{"subject": subject, "body": body}]
@@ -351,7 +351,7 @@ def get_event_handler(eventkey: str) -> Callable[..., List[Dict[str, str]]]:
 def api_bitbucket3_webhook(request: HttpRequest, user_profile: UserProfile,
                            payload: Dict[str, Any]=REQ(argument_type="body"),
                            branches: Optional[str]=REQ(default=None),
-                           user_specified_topic: Optional[str]=REQ("topic", default=None)
+                           user_specified_topic: Optional[str]=REQ("topic", default=None),
                            ) -> HttpResponse:
     try:
         eventkey = payload["eventKey"]

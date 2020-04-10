@@ -132,7 +132,7 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
         if emoji_code in reverse_unified_reactions_map:
             reverse_unified_reactions_map[emoji_code].append(name)
         else:
-            reverse_unified_reactions_map[emoji_code] = [name, ]
+            reverse_unified_reactions_map[emoji_code] = [name]
 
     for emoji_code in reverse_unified_reactions_map:
         emoji_code_to_gemoji_names[emoji_code] = ", ".join(reverse_unified_reactions_map[emoji_code])
@@ -146,7 +146,7 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
     for emoji_code in EMOJI_NAME_MAPS:
         canonical_name = EMOJI_NAME_MAPS[emoji_code]["canonical_name"]
         aliases = EMOJI_NAME_MAPS[emoji_code]["aliases"]
-        names = [canonical_name, ]
+        names = [canonical_name]
         names.extend(aliases)
         emoji_code_to_zulip_names[emoji_code] = ", ".join(names)
 

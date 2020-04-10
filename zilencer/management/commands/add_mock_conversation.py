@@ -79,7 +79,7 @@ From image editing program:
 
         messages = [internal_prep_stream_message(
             realm, message['sender'], stream,
-            'message formatting', message['content']
+            'message formatting', message['content'],
         ) for message in staged_messages]
 
         message_ids = do_send_messages(messages)

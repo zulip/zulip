@@ -44,7 +44,7 @@ settings.TORNADO_SERVER = None
 # from `run-dev.py`.
 default_cache = settings.CACHES['default']
 settings.CACHES['default'] = {
-    'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+    'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
 }
 
 def clear_database() -> None:
@@ -312,7 +312,7 @@ class Command(BaseCommand):
             aaron = get_user_by_delivery_email("AARON@zulip.com", zulip_realm)
 
             zulip_outgoing_bots = [
-                ("Outgoing Webhook", "outgoing-webhook@zulip.com")
+                ("Outgoing Webhook", "outgoing-webhook@zulip.com"),
             ]
             create_users(zulip_realm, zulip_outgoing_bots,
                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
@@ -330,7 +330,7 @@ class Command(BaseCommand):
                 "Denmark": {"description": "A Scandinavian country"},
                 "Scotland": {"description": "Located in the United Kingdom"},
                 "Venice": {"description": "A northeastern Italian city"},
-                "Rome": {"description": "Yet another Italian city", "is_web_public": True}
+                "Rome": {"description": "Yet another Italian city", "is_web_public": True},
             }
 
             bulk_create_streams(zulip_realm, stream_dict)
@@ -543,7 +543,7 @@ class Command(BaseCommand):
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
-                    "sales": {"description": "For sales discussion"}
+                    "sales": {"description": "For sales discussion"},
                 }
 
                 # Calculate the maximum number of digits in any extra stream's

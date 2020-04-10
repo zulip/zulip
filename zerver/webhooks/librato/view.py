@@ -60,11 +60,11 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         super().__init__(payload, attachments)
         self.payload_available_types = {
             ALERT_CLEAR: self.handle_alert_clear_message,
-            ALERT_VIOLATION: self.handle_alert_violation_message
+            ALERT_VIOLATION: self.handle_alert_violation_message,
         }
 
         self.attachments_available_types = {
-            SNAPSHOT: self.handle_snapshots
+            SNAPSHOT: self.handle_snapshots,
         }
 
     def find_handle_method(self) -> Callable[[], str]:

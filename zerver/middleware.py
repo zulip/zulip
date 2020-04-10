@@ -98,7 +98,7 @@ statsd_blacklisted_requests = [
     'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
     'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
     'accounts.unsubscribe', 'apple-touch-icon', 'emoji', 'json.bots',
-    'upload_file', 'realm_activity', 'user_activity'
+    'upload_file', 'realm_activity', 'user_activity',
 ]
 
 def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str,
@@ -368,7 +368,7 @@ class RateLimitMiddleware(MiddlewareMixin):
             resp = json_error(
                 _("API usage exceeded rate limit"),
                 data={'retry-after': secs_to_freedom},
-                status=429
+                status=429,
             )
             resp['Retry-After'] = secs_to_freedom
             return resp

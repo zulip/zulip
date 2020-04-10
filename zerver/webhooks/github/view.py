@@ -43,7 +43,7 @@ def get_opened_or_update_pull_request_body(payload: Dict[str, Any],
         message=pull_request['body'],
         assignee=assignee,
         number=pull_request['number'],
-        title=pull_request['title'] if include_title else None
+        title=pull_request['title'] if include_title else None,
     )
 
 def get_assigned_or_unassigned_pull_request_body(payload: Dict[str, Any],
@@ -58,7 +58,7 @@ def get_assigned_or_unassigned_pull_request_body(payload: Dict[str, Any],
         payload['action'],
         pull_request['html_url'],
         number=pull_request['number'],
-        title=pull_request['title'] if include_title else None
+        title=pull_request['title'] if include_title else None,
     )
     if assignee is not None:
         return f"{base_message[:-1]} to {assignee}."
@@ -73,7 +73,7 @@ def get_closed_pull_request_body(payload: Dict[str, Any],
         action,
         pull_request['html_url'],
         number=pull_request['number'],
-        title=pull_request['title'] if include_title else None
+        title=pull_request['title'] if include_title else None,
     )
 
 def get_membership_body(payload: Dict[str, Any]) -> str:
@@ -87,7 +87,7 @@ def get_membership_body(payload: Dict[str, Any]) -> str:
         username=member['login'],
         html_url=member['html_url'],
         preposition='from' if action == 'removed' else 'to',
-        team_name=team_name
+        team_name=team_name,
     )
 
 def get_member_body(payload: Dict[str, Any]) -> str:
@@ -97,7 +97,7 @@ def get_member_body(payload: Dict[str, Any]) -> str:
         payload['member']['login'],
         payload['member']['html_url'],
         get_repository_name(payload),
-        payload['repository']['html_url']
+        payload['repository']['html_url'],
     )
 
 def get_issue_body(payload: Dict[str, Any],
@@ -112,7 +112,7 @@ def get_issue_body(payload: Dict[str, Any],
         issue['number'],
         issue['body'],
         assignee=assignee['login'] if assignee else None,
-        title=issue['title'] if include_title else None
+        title=issue['title'] if include_title else None,
     )
 
 def get_issue_comment_body(payload: Dict[str, Any],
@@ -133,7 +133,7 @@ def get_issue_comment_body(payload: Dict[str, Any],
         issue['html_url'],
         issue['number'],
         comment['body'],
-        title=issue['title'] if include_title else None
+        title=issue['title'] if include_title else None,
     )
 
 def get_fork_body(payload: Dict[str, Any]) -> str:
@@ -141,7 +141,7 @@ def get_fork_body(payload: Dict[str, Any]) -> str:
     return "{} forked [{}]({}).".format(
         get_sender_name(payload),
         forkee['name'],
-        forkee['html_url']
+        forkee['html_url'],
     )
 
 def get_deployment_body(payload: Dict[str, Any]) -> str:
@@ -158,7 +158,7 @@ def get_create_or_delete_body(payload: Dict[str, Any], action: str) -> str:
         get_sender_name(payload),
         action,
         ref_type,
-        payload['ref']
+        payload['ref'],
     ).rstrip()
 
 def get_commit_comment_body(payload: Dict[str, Any]) -> str:
@@ -178,7 +178,7 @@ def get_push_tags_body(payload: Dict[str, Any]) -> str:
     return get_push_tag_event_message(
         get_sender_name(payload),
         get_tag_name_from_ref(payload['ref']),
-        action='pushed' if payload.get('created') else 'removed'
+        action='pushed' if payload.get('created') else 'removed',
     )
 
 def get_push_commits_body(payload: Dict[str, Any]) -> str:
@@ -187,14 +187,14 @@ def get_push_commits_body(payload: Dict[str, Any]) -> str:
                  commit.get('author').get('name')),
         'sha': commit['id'],
         'url': commit['url'],
-        'message': commit['message']
+        'message': commit['message'],
     } for commit in payload['commits']]
     return get_push_commits_event_message(
         get_sender_name(payload),
         payload['compare'],
         get_branch_name_from_ref(payload['ref']),
         commits_data,
-        deleted=payload['deleted']
+        deleted=payload['deleted'],
     )
 
 def get_public_body(payload: Dict[str, Any]) -> str:
@@ -217,20 +217,20 @@ def get_wiki_pages_body(payload: Dict[str, Any]) -> str:
 def get_watch_body(payload: Dict[str, Any]) -> str:
     return "{} starred [the repository]({}).".format(
         get_sender_name(payload),
-        payload['repository']['html_url']
+        payload['repository']['html_url'],
     )
 
 def get_repository_body(payload: Dict[str, Any]) -> str:
     return "{} {} [the repository]({}).".format(
         get_sender_name(payload),
         payload.get('action'),
-        payload['repository']['html_url']
+        payload['repository']['html_url'],
     )
 
 def get_add_team_body(payload: Dict[str, Any]) -> str:
     return "[The repository]({}) was added to team {}.".format(
         payload['repository']['html_url'],
-        payload['team']['name']
+        payload['team']['name'],
     )
 
 def get_team_body(payload: Dict[str, Any]) -> str:
@@ -256,7 +256,7 @@ def get_release_body(payload: Dict[str, Any]) -> str:
         'tagname': payload['release']['tag_name'],
         # Not every GitHub release has a "name" set; if not there, use the tag name.
         'release_name': payload['release']['name'] or payload['release']['tag_name'],
-        'url': payload['release']['html_url']
+        'url': payload['release']['html_url'],
     }
 
     return get_release_event_message(**data)
@@ -273,26 +273,26 @@ def get_page_build_body(payload: Dict[str, Any]) -> str:
 
     action = actions.get(status, f'is {status}')
     action.format(
-        CONTENT_MESSAGE_TEMPLATE.format(message=build['error']['message'])
+        CONTENT_MESSAGE_TEMPLATE.format(message=build['error']['message']),
     )
 
     return "Github Pages build, triggered by {}, {}.".format(
         payload['build']['pusher']['login'],
-        action
+        action,
     )
 
 def get_status_body(payload: Dict[str, Any]) -> str:
     if payload['target_url']:
         status = '[{}]({})'.format(
             payload['state'],
-            payload['target_url']
+            payload['target_url'],
         )
     else:
         status = payload['state']
     return "[{}]({}) changed its status to {}.".format(
         payload['sha'][:7],  # TODO
         payload['commit']['html_url'],
-        status
+        status,
     )
 
 def get_pull_request_ready_for_review_body(payload: Dict[str, Any],
@@ -302,21 +302,21 @@ def get_pull_request_ready_for_review_body(payload: Dict[str, Any],
     return message.format(
         sender = get_sender_name(payload),
         pr_number = payload['pull_request']['number'],
-        pr_url = payload['pull_request']['html_url']
+        pr_url = payload['pull_request']['html_url'],
     )
 
 def get_pull_request_review_body(payload: Dict[str, Any],
                                  include_title: Optional[bool]=False) -> str:
     title = "for #{} {}".format(
         payload['pull_request']['number'],
-        payload['pull_request']['title']
+        payload['pull_request']['title'],
     )
     return get_pull_request_event_message(
         get_sender_name(payload),
         'submitted',
         payload['review']['html_url'],
         type='PR Review',
-        title=title if include_title else None
+        title=title if include_title else None,
     )
 
 def get_pull_request_review_comment_body(payload: Dict[str, Any],
@@ -328,7 +328,7 @@ def get_pull_request_review_comment_body(payload: Dict[str, Any],
 
     title = "on #{} {}".format(
         payload['pull_request']['number'],
-        payload['pull_request']['title']
+        payload['pull_request']['title'],
     )
 
     return get_pull_request_event_message(
@@ -337,7 +337,7 @@ def get_pull_request_review_comment_body(payload: Dict[str, Any],
         payload['comment']['html_url'],
         message=message,
         type='PR Review Comment',
-        title=title if include_title else None
+        title=title if include_title else None,
     )
 
 def get_pull_request_review_requested_body(payload: Dict[str, Any],
@@ -375,7 +375,7 @@ def get_pull_request_review_requested_body(payload: Dict[str, Any],
         reviewers=reviewers,
         pr_number=pr_number,
         pr_url=pr_url,
-        title=payload['pull_request']['title'] if include_title else None
+        title=payload['pull_request']['title'] if include_title else None,
     )
 
 def get_check_run_body(payload: Dict[str, Any]) -> str:
@@ -390,9 +390,9 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
         'short_hash': payload['check_run']['head_sha'][:7],
         'commit_url': "{}/commit/{}".format(
             payload['repository']['html_url'],
-            payload['check_run']['head_sha']
+            payload['check_run']['head_sha'],
         ),
-        'conclusion': payload['check_run']['conclusion']
+        'conclusion': payload['check_run']['conclusion'],
     }
 
     return template.format(**kwargs)
@@ -401,7 +401,7 @@ def get_star_body(payload: Dict[str, Any]) -> str:
     template = "{user} {action} the repository."
     return template.format(
         user=payload['sender']['login'],
-        action='starred' if payload['action'] == 'created' else 'unstarred'
+        action='starred' if payload['action'] == 'created' else 'unstarred',
     )
 
 def get_ping_body(payload: Dict[str, Any]) -> str:
@@ -431,19 +431,19 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
             repo=get_repository_name(payload),
             type='PR',
             id=payload['pull_request']['number'],
-            title=payload['pull_request']['title']
+            title=payload['pull_request']['title'],
         )
     elif event.startswith('issue'):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
             type='Issue',
             id=payload['issue']['number'],
-            title=payload['issue']['title']
+            title=payload['issue']['title'],
         )
     elif event.startswith('deployment'):
         return "{} / Deployment on {}".format(
             get_repository_name(payload),
-            payload['deployment']['environment']
+            payload['deployment']['environment'],
         )
     elif event == 'membership':
         return "{} organization".format(payload['organization']['login'])
@@ -452,12 +452,12 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     elif event == 'push_commits':
         return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload),
-            branch=get_branch_name_from_ref(payload['ref'])
+            branch=get_branch_name_from_ref(payload['ref']),
         )
     elif event == 'gollum':
         return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload),
-            branch='Wiki Pages'
+            branch='Wiki Pages',
         )
     elif event == 'ping':
         if payload.get('repository') is None:
@@ -525,7 +525,7 @@ def api_github_webhook(
         if 'include_title' in signature(body_function).parameters:
             body = body_function(
                 payload,
-                include_title=user_specified_topic is not None
+                include_title=user_specified_topic is not None,
             )
         else:
             body = body_function(payload)

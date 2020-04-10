@@ -18,7 +18,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
         name = 'LDAP User %d' % (i,)
         email = 'ldapuser%d@zulip.com' % (i,)
         phone_number = '999999999%d' % (i,)
-        birthdate = '19%02d-%02d-%02d' % (i, i, i,)
+        birthdate = '19%02d-%02d-%02d' % (i, i, i)
         ldap_data.append((name, email, phone_number, birthdate))
 
     profile_images = [open(path, "rb").read() for path in
@@ -28,26 +28,26 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
         email = user_data[1].lower()
         email_username = email.split('@')[0]
         common_data = {
-            'cn': [user_data[0], ],
-            'userPassword': [email_username, ],
-            'phoneNumber': [user_data[2], ],
-            'birthDate': [user_data[3], ],
+            'cn': [user_data[0]],
+            'userPassword': [email_username],
+            'phoneNumber': [user_data[2]],
+            'birthDate': [user_data[3]],
         }
         if mode == 'a':
             ldap_dir['uid=' + email + ',ou=users,dc=zulip,dc=com'] = dict(
-                uid=[email, ],
-                thumbnailPhoto=[profile_images[i % len(profile_images)], ],
-                userAccountControl=[LDAP_USER_ACCOUNT_CONTROL_NORMAL, ],
+                uid=[email],
+                thumbnailPhoto=[profile_images[i % len(profile_images)]],
+                userAccountControl=[LDAP_USER_ACCOUNT_CONTROL_NORMAL],
                 **common_data)
         elif mode == 'b':
             ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = dict(
-                uid=[email_username, ],
-                jpegPhoto=[profile_images[i % len(profile_images)], ],
+                uid=[email_username],
+                jpegPhoto=[profile_images[i % len(profile_images)]],
                 **common_data)
         elif mode == 'c':
             ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = dict(
-                uid=[email_username, ],
-                email=[email, ],
+                uid=[email_username],
+                email=[email],
                 **common_data)
 
     return ldap_dir

@@ -685,7 +685,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
-            message=message
+            message=message,
         )
 
         missed_message = {
@@ -739,7 +739,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
-            message=message
+            message=message,
         )
 
         missed_message = {
@@ -782,7 +782,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         UserMessage.objects.create(
             user_profile=user_profile,
             flags=UserMessage.flags.read,
-            message=message
+            message=message,
         )
 
         missed_message = {
@@ -799,7 +799,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         UserMessage.objects.create(
             user_profile=user_profile,
             flags=UserMessage.flags.read,
-            message=message
+            message=message,
         )
         missed_message = {
             'message_id': message.id,
@@ -824,7 +824,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         UserMessage.objects.create(
             user_profile=user_profile,
             flags=UserMessage.flags.read,
-            message=message
+            message=message,
         )
         missed_message = {
             'message_id': message.id,
@@ -848,7 +848,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=user_profile,
-            message=message
+            message=message,
         )
 
         missed_message = {
@@ -875,7 +875,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
-            message=message
+            message=message,
         )
 
         android_devices = list(
@@ -1180,8 +1180,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
 
@@ -1216,8 +1216,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
         mock_push_notifications.assert_called()
@@ -1248,8 +1248,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": self.sender.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
 
@@ -1280,8 +1280,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
 
@@ -1312,8 +1312,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
 
@@ -1348,8 +1348,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'realm_id': self.sender.realm.id,
                     'realm_uri': self.sender.realm.uri,
                     "user_id": user_profile.id,
-                }
-            }
+                },
+            },
         }
         self.assertDictEqual(payload, expected)
 
@@ -1436,7 +1436,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "topic": "Test Topic",
-            "stream": "Denmark"
+            "stream": "Denmark",
         })
         self.assertDictEqual(gcm_options, {
             "priority": "high",
@@ -1466,7 +1466,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "topic": "Test Topic",
-            "stream": "Denmark"
+            "stream": "Denmark",
         })
         self.assertDictEqual(gcm_options, {
             "priority": "high",

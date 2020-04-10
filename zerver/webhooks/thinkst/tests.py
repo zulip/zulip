@@ -19,7 +19,7 @@ class ThinkstHookTests(WebhookTestCase):
             'canary_alert',
             'canary alert - 0000000testnode',
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_canary_alert_no_reverse_dns(self) -> None:
@@ -35,7 +35,7 @@ class ThinkstHookTests(WebhookTestCase):
             'canary_alert_no_reverse_dns',
             'canary alert - 0000000testnode',
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_canary_alert_with_specific_topic(self) -> None:
@@ -52,7 +52,7 @@ class ThinkstHookTests(WebhookTestCase):
             'canary_alert',
             'foo',
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_canarytoken_new(self) -> None:
@@ -67,7 +67,7 @@ class ThinkstHookTests(WebhookTestCase):
             'canarytoken_new',
             'canarytoken alert',
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_canarytoken_real(self) -> None:
@@ -82,7 +82,7 @@ class ThinkstHookTests(WebhookTestCase):
             'canarytoken_real',
             'canarytoken alert',
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_canarytoken_with_specific_topic(self) -> None:
@@ -98,5 +98,5 @@ class ThinkstHookTests(WebhookTestCase):
             'canarytoken_real',
             'foo',
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )

@@ -8,7 +8,7 @@ from tc_aws.loaders import s3_loader
 from thumbor.context import Context
 from .helpers import (
     separate_url_and_source_type,
-    THUMBOR_S3_TYPE, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_EXTERNAL_TYPE
+    THUMBOR_S3_TYPE, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_EXTERNAL_TYPE,
 )
 
 from typing import Any, Callable

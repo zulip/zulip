@@ -43,7 +43,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         event = dict(
             user_profile_id=99,
-            message=dict(type='private')
+            message=dict(type='private'),
         )
         service_handler = self.handler
 
@@ -63,7 +63,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             process_success_response(
                 event=event,
                 service_handler=service_handler,
-                response=response
+                response=response,
             )
         self.assertTrue(m.called)
 
@@ -73,7 +73,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         message_id = self.send_stream_message(
             othello,
             stream.name,
-            content="@**test**"
+            content="@**test**",
         )
 
         message = Message.objects.get(id=message_id)
@@ -168,7 +168,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
                 'timestamp': 123456,
                 'sender_id': 21,
                 'sender_full_name': 'Sample User',
-            }
+            },
         }
 
         self.private_message_event = {
@@ -186,7 +186,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
                 'id': 219,
                 TOPIC_NAME: 'test',
                 'content': 'test content',
-            }
+            },
         }
 
         service_class = get_service_interface_class(SLACK_INTERFACE)

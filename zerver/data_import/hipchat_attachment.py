@@ -42,7 +42,7 @@ class AttachmentHandler:
         target_path = os.path.join(
             str(realm_id),
             'HipChatImportAttachment',
-            path
+            path,
         )
 
         if target_path in self.info_dict:
@@ -130,7 +130,7 @@ class AttachmentHandler:
         os.makedirs(os.path.join(uploads_folder, str(realm_id)), exist_ok=True)
 
         attachment = dict(
-            zerver_attachment=attachments
+            zerver_attachment=attachments,
         )
 
         create_converted_data_files(uploads_records, output_dir, '/uploads/records.json')

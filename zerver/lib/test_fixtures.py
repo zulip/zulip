@@ -69,7 +69,7 @@ class Database:
         self.migration_status_file = 'migration_status_' + platform
         self.migration_status_path = os.path.join(
             UUID_VAR_DIR,
-            self.migration_status_file
+            self.migration_status_file,
         )
         self.migration_digest_file = "migrations_hash_" + database_name
 
@@ -290,7 +290,7 @@ def get_migration_status(**options: Any) -> str:
     app_label = options['app_label'] if options.get('app_label') else None
     db = options.get('database', DEFAULT_DB_ALIAS)
     out = StringIO()
-    command_args = ['--list', ]
+    command_args = ['--list']
     if app_label:
         command_args.append(app_label)
 

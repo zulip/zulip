@@ -101,10 +101,10 @@ def render_markdown_path(markdown_file_path: str,
             markdown.extensions.admonition.makeExtension(),
             markdown.extensions.codehilite.makeExtension(
                 linenums=False,
-                guess_lang=False
+                guess_lang=False,
             ),
             zerver.lib.bugdown.fenced_code.makeExtension(
-                run_content_validators=context.get('run_content_validators', False)
+                run_content_validators=context.get('run_content_validators', False),
             ),
             zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
                 base_path='templates/zerver/api/'),

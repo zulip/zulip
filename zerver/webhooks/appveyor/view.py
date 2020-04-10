@@ -45,6 +45,6 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
         "commit_message": event_data['commitMessage'],
         "commit_id": event_data['commitId'],
         "started": event_data['started'],
-        "finished": event_data['finished']
+        "finished": event_data['finished'],
     }
     return APPVEYOR_MESSAGE_TEMPLATE.format(**data)

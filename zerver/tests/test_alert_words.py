@@ -31,7 +31,7 @@ class AlertWordTests(ZulipTestCase):
         self.login(user_name)
 
         params = {
-            'alert_words': ujson.dumps(['milk', 'cookies'])
+            'alert_words': ujson.dumps(['milk', 'cookies']),
         }
         result = self.client_post('/json/users/me/alert_words', params)
         self.assert_json_success(result)

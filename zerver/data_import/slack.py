@@ -231,8 +231,8 @@ def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: 
             customprofilefield = CustomProfileField(
                 id=custom_profile_field_id,
                 name=field_name,
-                field_type=1  # For now this is defaulted to 'SHORT_TEXT'
-                              # Processing is done in the function 'process_customprofilefields'
+                field_type=1,  # For now this is defaulted to 'SHORT_TEXT'
+                               # Processing is done in the function 'process_customprofilefields'
             )
 
             customprofilefield_dict = model_to_dict(customprofilefield,
@@ -699,7 +699,7 @@ def channel_message_to_zerver_message(realm_id: int,
                 # Slack's channel join/leave notices are spammy
                 "channel_join",
                 "channel_leave",
-                "channel_name"
+                "channel_name",
         ]:
             continue
 
@@ -885,7 +885,7 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
                                   # in sync with 'exports.py' function 'import_message_data'
         format(random.randint(0, 255), 'x'),
         random_name(18),
-        sanitize_name(fileinfo['name'])
+        sanitize_name(fileinfo['name']),
     ])
     attachment_path = f'/user_uploads/{s3_path}'
     content = '[{}]({})'.format(fileinfo['title'], attachment_path)

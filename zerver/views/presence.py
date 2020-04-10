@@ -80,7 +80,7 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
                                  status: str=REQ(),
                                  ping_only: bool=REQ(validator=check_bool, default=False),
                                  new_user_input: bool=REQ(validator=check_bool, default=False),
-                                 slim_presence: bool=REQ(validator=check_bool, default=False)
+                                 slim_presence: bool=REQ(validator=check_bool, default=False),
                                  ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
     if status_val is None:

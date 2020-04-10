@@ -12,7 +12,7 @@ class TestVideoCall(ZulipTestCase):
         with self.settings(VIDEO_ZOOM_CLIENT_ID=None):
             response = self.client_get("/calls/zoom/register")
             self.assert_json_error(
-                response, "Zoom credentials have not been configured"
+                response, "Zoom credentials have not been configured",
             )
 
     def test_register_video_request(self) -> None:
@@ -47,10 +47,10 @@ class TestVideoCall(ZulipTestCase):
 
         response = self.client_post("/json/calls/zoom/create")
         self.assertEqual(
-            responses.calls[-1].request.url, "https://api.zoom.us/v2/users/me/meetings"
+            responses.calls[-1].request.url, "https://api.zoom.us/v2/users/me/meetings",
         )
         self.assertEqual(
-            responses.calls[-1].request.headers["Authorization"], "Bearer newtoken"
+            responses.calls[-1].request.headers["Authorization"], "Bearer newtoken",
         )
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "example.com")
@@ -115,7 +115,7 @@ class TestVideoCall(ZulipTestCase):
         )
 
         responses.add(
-            responses.POST, "https://api.zoom.us/v2/users/me/meetings", status=400
+            responses.POST, "https://api.zoom.us/v2/users/me/meetings", status=400,
         )
 
         response = self.client_get(
@@ -128,7 +128,7 @@ class TestVideoCall(ZulipTestCase):
         self.assert_json_error(response, "Failed to create Zoom call")
 
         responses.replace(
-            responses.POST, "https://api.zoom.us/v2/users/me/meetings", status=401
+            responses.POST, "https://api.zoom.us/v2/users/me/meetings", status=401,
         )
 
         response = self.client_post("/json/calls/zoom/create")

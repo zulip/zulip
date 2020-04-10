@@ -33,7 +33,7 @@ def _check_string(var_name: str, val: object) -> Optional[str]:
 
 stripe_sample_config_options = [
     WebhookIntegration('stripe', ['financial'], display_name='Stripe',
-                       config_options=[("Stripe API Key", "stripe_api_key", _check_string)])
+                       config_options=[("Stripe API Key", "stripe_api_key", _check_string)]),
 ]
 
 class BotTest(ZulipTestCase, UploadSerializeMixin):
@@ -134,7 +134,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             bot_info = dict(
                 full_name=full_name,
                 short_name=short_name,
-                bot_type=1
+                bot_type=1,
             )
             result = self.client_post("/json/bots", bot_info)
             self.assert_json_success(result)
@@ -184,7 +184,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     owner_id=hamlet.id,
                 ),
             ),
-            event['event']
+            event['event'],
         )
 
         users_result = self.client_get('/json/users')
@@ -314,9 +314,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                          default_events_register_stream=None,
                          default_all_public_streams=False,
                          services=[],
-                         owner_id=user.id)
+                         owner_id=user.id),
             ),
-            event['event']
+            event['event'],
         )
 
         users_result = self.client_get('/json/users')
@@ -342,7 +342,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # Normal user i.e. not a bot.
         request_data = {
-            'principals': '["' + iago.email + '"]'
+            'principals': '["' + iago.email + '"]',
         }
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
@@ -359,7 +359,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # A bot
         bot_request_data = {
-            'principals': '["hambot-bot@zulip.testserver"]'
+            'principals': '["hambot-bot@zulip.testserver"]',
         }
         events_bot: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events_bot):
@@ -417,9 +417,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     owner_id=user_profile.id,
                 ),
             ),
-            event['event']
+            event['event'],
         )
-        self.assertEqual(event['users'], {user_profile.id, })
+        self.assertEqual(event['users'], {user_profile.id})
 
     def test_add_bot_with_default_sending_stream_private_denied(self) -> None:
         self.login('hamlet')
@@ -492,9 +492,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     owner_id=user_profile.id,
                 ),
             ),
-            event['event']
+            event['event'],
         )
-        self.assertEqual(event['users'], {user_profile.id, })
+        self.assertEqual(event['users'], {user_profile.id})
 
     def test_add_bot_with_default_events_register_stream_private_denied(self) -> None:
         self.login('hamlet')
@@ -1333,7 +1333,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_success(result)
         bot_info = {
             'full_name': 'Fred',
-            'method': 'PATCH'
+            'method': 'PATCH',
         }
         email = 'hambot-bot@zulip.testserver'
         # Important: We intentionally use the wrong method, post, here.
@@ -1524,7 +1524,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             'short_name': 'embeddedservicebot3',
             'bot_type': UserProfile.EMBEDDED_BOT,
             'service_name': 'giphy',
-            'config_data': ujson.dumps(incorrect_bot_config_info)
+            'config_data': ujson.dumps(incorrect_bot_config_info),
         }
         bot_info.update(extras)
         with patch('zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config', side_effect=ConfigValidationError):
@@ -1548,7 +1548,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripe",
-            "config_data": ujson.dumps({"stripe_api_key": "sample-api-key"})
+            "config_data": ujson.dumps({"stripe_api_key": "sample-api-key"}),
         }
         self.create_bot(**bot_metadata)
         new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
@@ -1564,7 +1564,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripe",
-            "config_data": ujson.dumps({"stripe_api_key": "_invalid_key"})
+            "config_data": ujson.dumps({"stripe_api_key": "_invalid_key"}),
         }
         response = self.client_post("/json/bots", bot_metadata)
         self.assertEqual(response.status_code, 400)

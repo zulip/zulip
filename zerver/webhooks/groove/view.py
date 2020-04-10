@@ -39,7 +39,7 @@ def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[str]:
         'state': 'open' if state == 'opened' else state,
         'number': payload['number'],
         'title': payload['title'],
-        'app_url': payload['app_url']
+        'app_url': payload['app_url'],
     }
 
     assignee = payload['assignee']
@@ -67,7 +67,7 @@ def replied_body(payload: Dict[str, Any], actor: str, action: str) -> str:
         action=action,
         number=number,
         app_ticket_url=payload['app_ticket_url'],
-        plain_text_body=payload['plain_text_body']
+        plain_text_body=payload['plain_text_body'],
     )
 
     return body
@@ -100,7 +100,7 @@ EVENTS_FUNCTION_MAPPER = {
     'ticket_assigned': ticket_assigned_body,
     'agent_replied': partial(replied_body, actor='agent', action='replied to'),
     'customer_replied': partial(replied_body, actor='customer', action='replied to'),
-    'note_added': partial(replied_body, actor='agent', action='left a note on')
+    'note_added': partial(replied_body, actor='agent', action='left a note on'),
 }
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GROOVE_EVENT")

@@ -60,13 +60,13 @@ shebang_rules: List["Rule"] = [
      'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo`"
      " for interpreters other than sh."},
     {'pattern': '^#!/usr/bin/env python$',
-     'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}
+     'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."},
 ]
 
 trailing_whitespace_rule: "Rule" = {
     'pattern': r'\s+$',
     'strip': '\n',
-    'description': 'Fix trailing whitespace'
+    'description': 'Fix trailing whitespace',
 }
 whitespace_rules: List["Rule"] = [
     # This linter should be first since bash_rules depends on it.
@@ -446,8 +446,8 @@ bash_rules = RuleList(
          'include_only': {'scripts/'},
          'exclude': {
              'scripts/lib/install',
-             'scripts/setup/configure-rabbitmq'
-         }, },
+             'scripts/setup/configure-rabbitmq',
+         }},
         *whitespace_rules[0:1],
     ],
     shebang_rules=shebang_rules,
@@ -554,7 +554,7 @@ html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
     {'pattern': r'title="[^{\:]',
      'exclude_line': {
          ('templates/zerver/app/markdown_help.html',
-             '<td class="rendered_markdown"><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
+             '<td class="rendered_markdown"><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>'),
      },
      'exclude': {"templates/zerver/emails", "templates/analytics/realm_details.html", "templates/analytics/support.html"},
      'description': "`title` value should be translatable."},
@@ -691,7 +691,7 @@ json_rules = RuleList(
         {'pattern': r'":["\[\{]',
          'exclude': {'zerver/webhooks/', 'zerver/tests/fixtures/'},
          'description': 'Require space after : in JSON'},
-    ]
+    ],
 )
 
 markdown_docs_length_exclude = {
@@ -737,7 +737,7 @@ markdown_rules = RuleList(
     ],
     max_length=120,
     length_exclude=markdown_docs_length_exclude,
-    exclude_files_in='templates/zerver/help/'
+    exclude_files_in='templates/zerver/help/',
 )
 
 help_markdown_rules = RuleList(

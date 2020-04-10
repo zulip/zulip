@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from importlib import import_module
 from typing import (
-    Any, Callable, Dict, Iterable, Optional, Sequence, Set
+    Any, Callable, Dict, Iterable, Optional, Sequence, Set,
 )
 
 session_engine = import_module(settings.SESSION_ENGINE)
@@ -56,7 +56,7 @@ from zerver.models import (
     Client, Message, Realm, UserProfile, UserMessage,
     realm_filters_for_realm,
     custom_profile_fields_for_realm, get_realm_domains,
-    get_default_stream_groups, CustomProfileField, Stream
+    get_default_stream_groups, CustomProfileField, Stream,
 )
 from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION, API_FEATURE_LEVEL
@@ -255,7 +255,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         for integration in WEBHOOK_INTEGRATIONS:
             realm_incoming_webhook_bots.append({
                 'name': integration.name,
-                'config': {c[1]: c[0] for c in integration.config_options}
+                'config': {c[1]: c[0] for c in integration.config_options},
             })
         state['realm_incoming_webhook_bots'] = realm_incoming_webhook_bots
 
@@ -375,7 +375,7 @@ def apply_event(state: Dict[str, Any],
                     conversations[recipient_id] = dict(
                         user_ids=sorted([user_dict['id'] for user_dict in
                                          event['message']['display_recipient'] if
-                                         user_dict['id'] != user_profile.id])
+                                         user_dict['id'] != user_profile.id]),
                     )
                 conversations[recipient_id]['max_message_id'] = event['message']['id']
             return
@@ -482,11 +482,11 @@ def apply_event(state: Dict[str, Any],
                         if 'rendered_value' in person['custom_profile_field']:
                             p['profile_data'][custom_field_id] = {
                                 'value': custom_field_new_value,
-                                'rendered_value': person['custom_profile_field']['rendered_value']
+                                'rendered_value': person['custom_profile_field']['rendered_value'],
                             }
                         else:
                             p['profile_data'][custom_field_id] = {
-                                'value': custom_field_new_value
+                                'value': custom_field_new_value,
                             }
 
     elif event['type'] == 'realm_bot':
@@ -926,7 +926,7 @@ def post_process_state(user_profile: UserProfile, ret: Dict[str, Any],
         # Reformat recent_private_conversations to be a list of dictionaries, rather than a dict.
         ret['recent_private_conversations'] = sorted([
             dict(
-                **value
+                **value,
             ) for (recipient_id, value) in ret['raw_recent_private_conversations'].items()
         ], key = lambda x: -x["max_message_id"])
         del ret['raw_recent_private_conversations']

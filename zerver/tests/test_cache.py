@@ -273,7 +273,7 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
         result: Dict[str, UserProfile] = generic_bulk_cached_fetch(
             cache_key_function=user_profile_by_email_cache_key,
             query_function=query_function,
-            object_ids=[self.example_email("hamlet")]
+            object_ids=[self.example_email("hamlet")],
         )
         self.assertEqual(result, {hamlet.delivery_email: hamlet})
 
@@ -283,7 +283,7 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             generic_bulk_cached_fetch(
                 cache_key_function=user_profile_by_email_cache_key,
                 query_function=query_function,
-                object_ids=[self.example_email("hamlet")]
+                object_ids=[self.example_email("hamlet")],
             )
 
     def test_empty_object_ids_list(self) -> None:
@@ -301,6 +301,6 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
         result: Dict[str, UserProfile] = generic_bulk_cached_fetch(
             cache_key_function=cache_key_function,
             query_function=query_function,
-            object_ids=[]
+            object_ids=[],
         )
         self.assertEqual(result, {})

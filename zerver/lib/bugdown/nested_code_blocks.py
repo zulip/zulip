@@ -10,7 +10,7 @@ class NestedCodeBlocksRenderer(Extension):
         md.treeprocessors.add(
             'nested_code_blocks',
             NestedCodeBlocksRendererTreeProcessor(md, self.getConfigs()),
-            '_end'
+            '_end',
         )
 
 class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocessor):
@@ -33,7 +33,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
         return None
 
     def get_nested_code_blocks(
-        self, code_tags: List[ResultWithFamily[Tuple[str, Optional[str]]]]
+        self, code_tags: List[ResultWithFamily[Tuple[str, Optional[str]]]],
     ) -> List[ResultWithFamily[Tuple[str, Optional[str]]]]:
         nested_code_blocks = []
         for code_tag in code_tags:
@@ -59,7 +59,7 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
     def replace_element(
             self, parent: Optional[Element],
             replacement: Element,
-            element_to_replace: Element
+            element_to_replace: Element,
     ) -> None:
         if parent is None:
             return

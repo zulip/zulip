@@ -42,7 +42,7 @@ class SlowQueryTest(ZulipTestCase):
             logged_line = mock_slow_query_logger.info.call_args_list[0][0][0]
             self.assertRegex(
                 logged_line,
-                r"123\.456\.789\.012 GET     200 10\.\ds .* \(unknown via \?\)"
+                r"123\.456\.789\.012 GET     200 10\.\ds .* \(unknown via \?\)",
             )
 
 class OpenGraphTest(ZulipTestCase):
@@ -73,7 +73,7 @@ class OpenGraphTest(ZulipTestCase):
              "users can view the edit history of a message. | To remove the",
              "best to delete the message entirely. "],
             ["Disable message edit history", "feature is only available", "Related articles",
-             "Restrict message editing"]
+             "Restrict message editing"],
         )
 
     def test_double_quotes(self) -> None:
@@ -83,7 +83,7 @@ class OpenGraphTest(ZulipTestCase):
             "Night mode (Zulip Help Center)",
             ['By default, Zulip has a white background. ',
              'Zulip also provides a "night mode", which is great for working in a dark space.'],
-            []
+            [],
         )
 
     def test_settings_tab(self) -> None:

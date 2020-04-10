@@ -134,7 +134,7 @@ Amount due: 0.00 INR
             'invoiceitem_created',
             expected_topic,
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_invoice_paid(self) -> None:
@@ -144,7 +144,7 @@ Amount due: 0.00 INR
             'invoice_updated__paid',
             expected_topic,
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_refund_event(self) -> None:

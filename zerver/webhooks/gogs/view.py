@@ -32,7 +32,7 @@ def format_push_event(payload: Dict[str, Any]) -> str:
         'user_name': payload['sender']['username'],
         'compare_url': payload['compare_url'],
         'branch_name': payload['ref'].replace('refs/heads/', ''),
-        'commits_data': payload['commits']
+        'commits_data': payload['commits'],
     }
 
     return get_push_commits_event_message(**data)
@@ -45,7 +45,7 @@ def format_new_branch_event(payload: Dict[str, Any]) -> str:
     data = {
         'user_name': payload['sender']['username'],
         'url': url,
-        'branch_name': branch_name
+        'branch_name': branch_name,
     }
     return get_create_branch_event_message(**data)
 
@@ -59,7 +59,7 @@ def format_pull_request_event(payload: Dict[str, Any],
         'number': payload['pull_request']['number'],
         'target_branch': payload['pull_request']['head_branch'],
         'base_branch': payload['pull_request']['base_branch'],
-        'title': payload['pull_request']['title'] if include_title else None
+        'title': payload['pull_request']['title'] if include_title else None,
     }
 
     if payload['pull_request']['merged']:
@@ -78,7 +78,7 @@ def format_issues_event(payload: Dict[str, Any], include_title: Optional[bool]=F
         issue_nr,
         payload['issue']['body'],
         assignee=assignee['login'] if assignee else None,
-        title=payload['issue']['title'] if include_title else None
+        title=payload['issue']['title'] if include_title else None,
     )
 
 def format_issue_comment_event(payload: Dict[str, Any], include_title: Optional[bool]=False) -> str:
@@ -98,7 +98,7 @@ def format_issue_comment_event(payload: Dict[str, Any], include_title: Optional[
         get_issue_url(payload['repository']['html_url'], issue['number']),
         issue['number'],
         comment['body'],
-        title=issue['title'] if include_title else None
+        title=issue['title'] if include_title else None,
     )
 
 def format_release_event(payload: Dict[str, Any], include_title: Optional[bool]=False) -> str:
@@ -107,7 +107,7 @@ def format_release_event(payload: Dict[str, Any], include_title: Optional[bool]=
         'action': payload['action'],
         'tagname': payload['release']['tag_name'],
         'release_name': payload['release']['name'],
-        'url': payload['repository']['html_url']
+        'url': payload['repository']['html_url'],
     }
 
     return get_release_event_message(**data)
@@ -136,56 +136,56 @@ def gogs_webhook_main(integration_name: str, http_header_name: str,
         body = format_push_event(payload)
         topic = TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=repo,
-            branch=branch
+            branch=branch,
         )
     elif event == 'create':
         body = format_new_branch_event(payload)
         topic = TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=repo,
-            branch=payload['ref']
+            branch=payload['ref'],
         )
     elif event == 'pull_request':
         body = format_pull_request_event(
             payload,
-            include_title=user_specified_topic is not None
+            include_title=user_specified_topic is not None,
         )
         topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
             type='PR',
             id=payload['pull_request']['id'],
-            title=payload['pull_request']['title']
+            title=payload['pull_request']['title'],
         )
     elif event == 'issues':
         body = format_issues_event(
             payload,
-            include_title=user_specified_topic is not None
+            include_title=user_specified_topic is not None,
         )
         topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
             type='Issue',
             id=payload['issue']['number'],
-            title=payload['issue']['title']
+            title=payload['issue']['title'],
         )
     elif event == 'issue_comment':
         body = format_issue_comment_event(
             payload,
-            include_title=user_specified_topic is not None
+            include_title=user_specified_topic is not None,
         )
         topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
             type='Issue',
             id=payload['issue']['number'],
-            title=payload['issue']['title']
+            title=payload['issue']['title'],
         )
     elif event == 'release':
         body = format_release_event(
             payload,
-            include_title=user_specified_topic is not None
+            include_title=user_specified_topic is not None,
         )
         topic = TOPIC_WITH_RELEASE_TEMPLATE.format(
             repo=repo,
             tag=payload['release']['tag_name'],
-            title=payload['release']['name']
+            title=payload['release']['name'],
         )
 
     else:

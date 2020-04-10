@@ -99,13 +99,13 @@ EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
 def verbose_compile(pattern: str) -> Any:
     return re.compile(
         "^(.*?)%s(.*?)$" % (pattern,),
-        re.DOTALL | re.UNICODE | re.VERBOSE
+        re.DOTALL | re.UNICODE | re.VERBOSE,
     )
 
 def normal_compile(pattern: str) -> Any:
     return re.compile(
         r"^(.*?)%s(.*)$" % (pattern,),
-        re.DOTALL | re.UNICODE
+        re.DOTALL | re.UNICODE,
     )
 
 STREAM_LINK_REGEX = r"""
@@ -317,7 +317,7 @@ class ElementPair:
         self.value = value
 
 def walk_tree_with_family(root: Element,
-                          processor: Callable[[Element], Optional[_T]]
+                          processor: Callable[[Element], Optional[_T]],
                           ) -> List[ResultWithFamily[_T]]:
     results = []
 
@@ -338,12 +338,12 @@ def walk_tree_with_family(root: Element,
                     grandparent=grandparent,
                     parent=currElementPair.value,
                     child=child,
-                    in_blockquote=has_blockquote_ancestor(currElementPair)
+                    in_blockquote=has_blockquote_ancestor(currElementPair),
                 )
 
                 results.append(ResultWithFamily(
                     family=family,
-                    result=result
+                    result=result,
                 ))
 
     return results
@@ -546,7 +546,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             class_attr: str="message_inline_image",
             data_id: Optional[str]=None,
             insertion_index: Optional[int]=None,
-            already_thumbnailed: Optional[bool]=False
+            already_thumbnailed: Optional[bool]=False,
     ) -> None:
         desc = desc if desc is not None else ""
 
@@ -575,10 +575,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # consistency in what gets passed to /thumbnail
             url = url.lstrip('/')
             img.set("src", "/thumbnail?url={}&size=thumbnail".format(
-                urllib.parse.quote(url, safe='')
+                urllib.parse.quote(url, safe=''),
             ))
             img.set('data-src-fullsize', "/thumbnail?url={}&size=full".format(
-                urllib.parse.quote(url, safe='')
+                urllib.parse.quote(url, safe=''),
             ))
         else:
             img.set("src", url)
@@ -1132,7 +1132,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if image_source is not None:
                     found_url = ResultWithFamily(
                         family=found_url.family,
-                        result=(image_source, image_source)
+                        result=(image_source, image_source),
                     )
                 self.handle_image_inlining(root, found_url)
                 continue
@@ -1821,7 +1821,7 @@ class Bugdown(markdown.Markdown):
                               "Realm-specific filters for realm_filters_key %s" % (kwargs['realm'],)],
             "realm": [kwargs['realm'], "Realm id"],
             "code_block_processor_disabled": [kwargs['code_block_processor_disabled'],
-                                              "Disabled for email gateway"]
+                                              "Disabled for email gateway"],
         }
 
         super().__init__(*args, **kwargs)
@@ -2013,7 +2013,7 @@ def build_engine(realm_filters: List[Tuple[str, str, int]],
             tables.makeExtension(),
             codehilite.makeExtension(
                 linenums=False,
-                guess_lang=False
+                guess_lang=False,
             ),
         ])
     return engine
@@ -2103,7 +2103,7 @@ def get_email_info(realm_id: int, emails: Set[str]) -> Dict[str, FullNameInfo]:
     }
 
     rows = UserProfile.objects.filter(
-        realm_id=realm_id
+        realm_id=realm_id,
     ).filter(
         functools.reduce(lambda a, b: a | b, q_list),
     ).values(

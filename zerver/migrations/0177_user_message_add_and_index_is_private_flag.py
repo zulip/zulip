@@ -69,7 +69,7 @@ class Migration(migrations.Migration):
                 ON zerver_usermessage (user_profile_id, message_id)
                 WHERE (flags & 2048) != 0;
             ''',
-            reverse_sql='DROP INDEX zerver_usermessage_is_private_message_id;'
+            reverse_sql='DROP INDEX zerver_usermessage_is_private_message_id;',
         ),
         migrations.RunPython(reset_is_private_flag,
                              reverse_code=migrations.RunPython.noop,

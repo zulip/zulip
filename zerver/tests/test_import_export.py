@@ -48,7 +48,7 @@ from zerver.lib.bot_lib import (
     StateHandler,
 )
 from zerver.lib.bot_config import (
-    set_bot_config
+    set_bot_config,
 )
 from zerver.lib.actions import (
     do_create_user,
@@ -108,7 +108,7 @@ class QueryUtilTest(ZulipTestCase):
             queries = [
                 Message.objects.filter(sender_id=cordelia.id),
                 Message.objects.filter(sender_id=hamlet.id),
-                Message.objects.exclude(sender_id__in=[cordelia.id, hamlet.id])
+                Message.objects.exclude(sender_id__in=[cordelia.id, hamlet.id]),
             ]
             return queries
 
@@ -149,7 +149,7 @@ class QueryUtilTest(ZulipTestCase):
         list(chunker)  # exhaust the iterator
         self.assertEqual(
             len(all_msg_ids),
-            len(Message.objects.filter(sender_id__in=[cordelia.id, hamlet.id]))
+            len(Message.objects.filter(sender_id__in=[cordelia.id, hamlet.id])),
         )
 
         # Try just a single query to validate chunking.
@@ -165,7 +165,7 @@ class QueryUtilTest(ZulipTestCase):
         list(chunker)  # exhaust the iterator
         self.assertEqual(
             len(all_msg_ids),
-            len(Message.objects.exclude(sender_id=cordelia.id))
+            len(Message.objects.exclude(sender_id=cordelia.id)),
         )
         self.assertTrue(len(all_msg_ids) > 15)
 
@@ -290,7 +290,7 @@ class ImportExportTest(ZulipTestCase):
             user_profile=user_profile,
             path_id=attachment_path_id,
             message=message,
-            is_message_realm_public=True
+            is_message_realm_public=True,
         )
         avatar_path_id = user_avatar_path(user_profile)
         original_avatar_path_id = avatar_path_id + ".original"
@@ -472,7 +472,7 @@ class ImportExportTest(ZulipTestCase):
         exported_streams = self.get_set(data['zerver_stream'], 'name')
         self.assertEqual(
             exported_streams,
-            {'Denmark', 'Rome', 'Scotland', 'Venice', 'Verona'}
+            {'Denmark', 'Rome', 'Scotland', 'Venice', 'Verona'},
         )
 
         data = full_data['message']
@@ -600,7 +600,7 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(
             exported_streams,
             {'Denmark', 'Rome', 'Scotland', 'Venice', 'Verona',
-             'Private A', 'Private B', 'Private C'}
+             'Private A', 'Private B', 'Private C'},
         )
 
         data = full_data['message']
@@ -694,10 +694,10 @@ class ImportExportTest(ZulipTestCase):
         # data to test import of huddles
         huddle = [
             self.example_user('hamlet'),
-            self.example_user('othello')
+            self.example_user('othello'),
         ]
         self.send_huddle_message(
-            self.example_user('cordelia'), huddle, 'test huddle message'
+            self.example_user('cordelia'), huddle, 'test huddle message',
         )
 
         user_mention_message = '@**King Hamlet** Hello'
@@ -716,7 +716,7 @@ class ImportExportTest(ZulipTestCase):
 
         # data to test import of hotspots
         UserHotspot.objects.create(
-            user=sample_user, hotspot='intro_streams'
+            user=sample_user, hotspot='intro_streams',
         )
 
         # data to test import of muted topic
@@ -770,16 +770,16 @@ class ImportExportTest(ZulipTestCase):
 
         # test users
         assert_realm_values(
-            lambda r: {user.email for user in r.get_admin_users_and_bots()}
+            lambda r: {user.email for user in r.get_admin_users_and_bots()},
         )
 
         assert_realm_values(
-            lambda r: {user.email for user in r.get_active_users()}
+            lambda r: {user.email for user in r.get_active_users()},
         )
 
         # test stream
         assert_realm_values(
-            lambda r: {stream.name for stream in get_active_streams(r)}
+            lambda r: {stream.name for stream in get_active_streams(r)},
         )
 
         # test recipients
@@ -799,11 +799,11 @@ class ImportExportTest(ZulipTestCase):
             return users
 
         assert_realm_values(
-            lambda r: get_subscribers(get_recipient_stream(r))
+            lambda r: get_subscribers(get_recipient_stream(r)),
         )
 
         assert_realm_values(
-            lambda r: get_subscribers(get_recipient_user(r))
+            lambda r: get_subscribers(get_recipient_user(r)),
         )
 
         # test custom profile fields
@@ -893,7 +893,7 @@ class ImportExportTest(ZulipTestCase):
 
         # test usergroups
         assert_realm_values(
-            lambda r: {group.name for group in UserGroup.objects.filter(realm=r)}
+            lambda r: {group.name for group in UserGroup.objects.filter(realm=r)},
         )
 
         def get_user_membership(r: str) -> Set[str]:
@@ -987,7 +987,7 @@ class ImportExportTest(ZulipTestCase):
             original_msg.rendered_content,
             ('<div class="codehilite"><pre><span></span><code>&#39;\n</code></pre></div>\n\n\n'
              '<p><span class="user-mention" data-user-id="%s">@Polonius</span></p>' %
-             (orig_polonius_user.id,))
+             (orig_polonius_user.id,)),
         )
         imported_polonius_user = UserProfile.objects.get(delivery_email=self.example_email("polonius"),
                                                          realm=imported_realm)
@@ -996,7 +996,7 @@ class ImportExportTest(ZulipTestCase):
             imported_msg.rendered_content,
             ('<div class="codehilite"><pre><span></span><code>\'\n</code></pre></div>\n'
              '<p><span class="user-mention" data-user-id="%s">@Polonius</span></p>' %
-             (imported_polonius_user.id,))
+             (imported_polonius_user.id,)),
         )
 
         # Check recipient_id was generated correctly for the imported users and streams.

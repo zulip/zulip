@@ -165,7 +165,7 @@ RB_MESSAGE_FUNCTIONS = {
 @has_request_variables
 def api_reviewboard_webhook(
         request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body')
+        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
 ) -> HttpResponse:
     event_type = validate_extract_webhook_http_header(
         request, 'X_REVIEWBOARD_EVENT', 'ReviewBoard')

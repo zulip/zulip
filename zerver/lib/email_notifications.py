@@ -305,7 +305,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     if len(recipients) != 1:
         raise ValueError(
             'All missed_messages must have the same recipient and topic %r' %
-            (recipients,)
+            (recipients,),
         )
 
     # This link is no longer a part of the email, but keeping the code in case
@@ -495,7 +495,7 @@ def handle_missedmessage_emails(user_profile_id: int,
         for m in messages_by_bucket[bucket_tup]:
             unique_messages[m.id] = dict(
                 message=m,
-                trigger=message_ids.get(m.id)
+                trigger=message_ids.get(m.id),
             )
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,

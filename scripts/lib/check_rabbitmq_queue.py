@@ -36,7 +36,7 @@ states = {
     0: "OK",
     1: "WARNING",
     2: "CRITICAL",
-    3: "UNKNOWN"
+    3: "UNKNOWN",
 }
 
 MAX_SECONDS_TO_CLEAR_FOR_BURSTS: DefaultDict[str, int] = defaultdict(

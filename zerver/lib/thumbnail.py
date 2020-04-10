@@ -12,7 +12,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 sys.path.append(ZULIP_PATH)
 
 from zthumbor.loaders.helpers import (
-    THUMBOR_S3_TYPE, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_EXTERNAL_TYPE
+    THUMBOR_S3_TYPE, THUMBOR_LOCAL_FILE_TYPE, THUMBOR_EXTERNAL_TYPE,
 )
 from zerver.lib.camo import get_camo_url
 
@@ -63,7 +63,7 @@ def generate_thumbnail_url(path: str,
         height=height,
         smart=smart_crop_enabled,
         filters=apply_filters,
-        image_url=image_url
+        image_url=image_url,
     )
 
     if settings.THUMBOR_URL == 'http://127.0.0.1:9995':

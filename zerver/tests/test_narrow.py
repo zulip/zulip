@@ -8,7 +8,7 @@ from sqlalchemy.sql.elements import ClauseElement
 from zerver.models import (
     Realm, Subscription, Recipient, Stream,
     get_display_recipient, get_realm, get_stream,
-    UserMessage, Message
+    UserMessage, Message,
 )
 from zerver.lib.actions import (
     do_set_realm_property,
@@ -124,19 +124,19 @@ class NarrowBuilderTest(ZulipTestCase):
         stream_dicts: List[Mapping[str, Any]] = [
             {
                 "name": "publicstream",
-                "description": "Public stream with public history"
+                "description": "Public stream with public history",
             },
             {
                 "name": "privatestream",
                 "description": "Private stream with non-public history",
-                "invite_only": True
+                "invite_only": True,
             },
             {
                 "name": "privatewithhistory",
                 "description": "Private stream with public history",
                 "invite_only": True,
-                "history_public_to_subscribers": True
-            }
+                "history_public_to_subscribers": True,
+            },
         ]
         realm = get_realm('zulip')
         created, existing = create_streams_if_needed(realm, stream_dicts)
@@ -154,19 +154,19 @@ class NarrowBuilderTest(ZulipTestCase):
         stream_dicts: List[Mapping[str, Any]] = [
             {
                 "name": "publicstream",
-                "description": "Public stream with public history"
+                "description": "Public stream with public history",
             },
             {
                 "name": "privatestream",
                 "description": "Private stream with non-public history",
-                "invite_only": True
+                "invite_only": True,
             },
             {
                 "name": "privatewithhistory",
                 "description": "Private stream with public history",
                 "invite_only": True,
-                "history_public_to_subscribers": True
-            }
+                "history_public_to_subscribers": True,
+            },
         ]
         realm = get_realm('zulip')
         created, existing = create_streams_if_needed(realm, stream_dicts)
@@ -201,7 +201,7 @@ class NarrowBuilderTest(ZulipTestCase):
         where_clause = 'WHERE (flags & %(flags_1)s) = %(param_1)s'
         params = dict(
             flags_1=UserMessage.flags.starred.mask,
-            param_1=0
+            param_1=0,
         )
         self._do_add_term_test(term, where_clause, params)
 
@@ -209,7 +209,7 @@ class NarrowBuilderTest(ZulipTestCase):
         where_clause = 'WHERE (flags & %(flags_1)s) = %(param_1)s'
         params = dict(
             flags_1=UserMessage.flags.has_alert_word.mask,
-            param_1=0
+            param_1=0,
         )
         self._do_add_term_test(term, where_clause, params)
 
@@ -219,7 +219,7 @@ class NarrowBuilderTest(ZulipTestCase):
             flags_1=UserMessage.flags.mentioned.mask,
             param_1=0,
             flags_2=UserMessage.flags.wildcard_mentioned.mask,
-            param_2=0
+            param_2=0,
         )
         self._do_add_term_test(term, where_clause, params)
 
@@ -1003,7 +1003,7 @@ class PostProcessTest(ZulipTestCase):
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[1000],
             found_anchor=True, found_oldest=False,
-            found_newest=False, history_limited=False
+            found_newest=False, history_limited=False,
         )
         verify(
             in_ids=[1000],
@@ -1012,7 +1012,7 @@ class PostProcessTest(ZulipTestCase):
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[1000],
             found_anchor=True, found_oldest=False,
-            found_newest=False, history_limited=False
+            found_newest=False, history_limited=False,
         )
         verify(
             in_ids=[1000],
@@ -1033,7 +1033,7 @@ class PostProcessTest(ZulipTestCase):
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[],
             found_anchor=False, found_oldest=False,
-            found_newest=False, history_limited=False
+            found_newest=False, history_limited=False,
         )
 
 class GetOldMessagesTest(ZulipTestCase):
@@ -1140,7 +1140,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login('othello')
         reaction_name = 'thumbs_up'
         reaction_info = {
-            'emoji_name': reaction_name
+            'emoji_name': reaction_name,
         }
 
         url = f'/json/messages/{message_id}/reactions'
@@ -1174,17 +1174,17 @@ class GetOldMessagesTest(ZulipTestCase):
         self.get_and_check_messages(
             dict(
                 narrow=ujson.dumps(
-                    [['pm-with', othello_email]]
-                )
-            )
+                    [['pm-with', othello_email]],
+                ),
+            ),
         )
 
         self.get_and_check_messages(
             dict(
                 narrow=ujson.dumps(
-                    [dict(operator='pm-with', operand=othello_email)]
-                )
-            )
+                    [dict(operator='pm-with', operand=othello_email)],
+                ),
+            ),
         )
 
     def test_client_avatar(self) -> None:
@@ -1295,14 +1295,14 @@ class GetOldMessagesTest(ZulipTestCase):
         matching_message_ids.append(
             self.send_huddle_message(
                 me,
-                [iago, cordelia, othello]
+                [iago, cordelia, othello],
             ),
         )
 
         matching_message_ids.append(
             self.send_huddle_message(
                 me,
-                [cordelia, othello]
+                [cordelia, othello],
             ),
         )
 
@@ -1315,7 +1315,7 @@ class GetOldMessagesTest(ZulipTestCase):
         non_matching_message_ids.append(
             self.send_huddle_message(
                 me,
-                [iago, othello]
+                [iago, othello],
             ),
         )
 
@@ -1382,7 +1382,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.login_user(hamlet)
         narrow = [
-            dict(operator='stream', operand=stream_name)
+            dict(operator='stream', operand=stream_name),
         ]
 
         req = dict(
@@ -1870,7 +1870,7 @@ class GetOldMessagesTest(ZulipTestCase):
             # This bug is a pgroonga regression and according to one of
             # the author, this should be fixed in its next release.
             ['<p>I want to go to <span class="highlight">日本</span>!</p>',  # This is correct.
-             '<p>I want to go to<span class="highlight"> 日本</span>!</p>', ])
+             '<p>I want to go to<span class="highlight"> 日本</span>!</p>'])
 
         # Should not crash when multiple search operands are present
         multi_search_narrow = [
@@ -2291,7 +2291,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 # parameter, one at a time.
                 post_params = dict(other_params + [(param, type)] +
                                    [(other_param, 0) for other_param in
-                                    int_params[:idx] + int_params[idx + 1:]]
+                                    int_params[:idx] + int_params[idx + 1:]],
                                    )
                 result = self.client_get("/json/messages", post_params)
                 self.assert_json_error(result,
@@ -2488,7 +2488,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor="first_unread",
             num_before=10,
             num_after=10,
-            narrow='[["stream", "England"]]'
+            narrow='[["stream", "England"]]',
         )
         request = POSTRequestMock(query_params, user_profile)
 
@@ -2501,7 +2501,7 @@ class GetOldMessagesTest(ZulipTestCase):
         messages = result['messages']
         self.assertEqual(
             {msg['id'] for msg in messages},
-            {unsub_message_id, muted_message_id, first_message_id, extra_message_id}
+            {unsub_message_id, muted_message_id, first_message_id, extra_message_id},
         )
 
     def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
@@ -2524,7 +2524,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor="first_unread",
             num_before=10,
             num_after=10,
-            narrow='[]'
+            narrow='[]',
         )
         request = POSTRequestMock(query_params, user_profile)
 
@@ -2571,7 +2571,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor="first_unread",
             num_before=10,
             num_after=10,
-            narrow='[]'
+            narrow='[]',
         )
         request = POSTRequestMock(query_params, user_profile)
 
@@ -2586,11 +2586,11 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertNotIn(f'AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}', sql)
         self.assertIn('ORDER BY message_id ASC', sql)
         cond = 'WHERE user_profile_id = %d AND message_id <= %d' % (
-            user_profile.id, first_unread_message_id - 1
+            user_profile.id, first_unread_message_id - 1,
         )
         self.assertIn(cond, sql)
         cond = 'WHERE user_profile_id = %d AND message_id >= %d' % (
-            user_profile.id, first_visible_message_id
+            user_profile.id, first_visible_message_id,
         )
         self.assertIn(cond, sql)
 
@@ -2601,7 +2601,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor="first_unread",
             num_before=10,
             num_after=10,
-            narrow='[]'
+            narrow='[]',
         )
         request = POSTRequestMock(query_params, user_profile)
 
@@ -2645,7 +2645,7 @@ class GetOldMessagesTest(ZulipTestCase):
         muted_topics = [
             ['Scotland', 'golf'],
             ['web stuff', 'css'],
-            ['bogus', 'bogus']
+            ['bogus', 'bogus'],
         ]
         set_topic_mutes(user_profile, muted_topics)
 
@@ -2653,7 +2653,7 @@ class GetOldMessagesTest(ZulipTestCase):
             anchor="first_unread",
             num_before=0,
             num_after=0,
-            narrow='[["stream", "Scotland"]]'
+            narrow='[["stream", "Scotland"]]',
         )
         request = POSTRequestMock(query_params, user_profile)
 
@@ -2686,7 +2686,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Test the do-nothing case first.
         muted_topics = [
-            ['irrelevant_stream', 'irrelevant_topic']
+            ['irrelevant_stream', 'irrelevant_topic'],
         ]
         set_topic_mutes(user_profile, muted_topics)
 
@@ -2700,7 +2700,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Also test that passing stream ID works
         narrow = [
-            dict(operator='stream', operand=get_stream('Scotland', realm).id)
+            dict(operator='stream', operand=get_stream('Scotland', realm).id),
         ]
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
         self.assertEqual(muting_conditions, [])

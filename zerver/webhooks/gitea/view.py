@@ -24,7 +24,7 @@ def format_pull_request_event(payload: Dict[str, Any],
         'target_branch': payload['pull_request']['head']['ref'],
         'base_branch': payload['pull_request']['base']['ref'],
         'title': payload['pull_request']['title'] if include_title else None,
-        'assignee': assignee['login'] if assignee else None
+        'assignee': assignee['login'] if assignee else None,
     }
 
     if payload['pull_request']['merged']:

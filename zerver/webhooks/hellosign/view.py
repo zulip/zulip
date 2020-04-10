@@ -25,12 +25,12 @@ def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
     recipients_text = ""
     if recipients.get('awaiting_signature'):
         recipients_text += IS_AWAITING_SIGNATURE.format(
-            awaiting_recipients=get_recipients_text(recipients['awaiting_signature'])
+            awaiting_recipients=get_recipients_text(recipients['awaiting_signature']),
         )
 
     if recipients.get('signed'):
         text = WAS_JUST_SIGNED_BY.format(
-            signed_recipients=get_recipients_text(recipients['signed'])
+            signed_recipients=get_recipients_text(recipients['signed']),
         )
 
         if recipients_text:

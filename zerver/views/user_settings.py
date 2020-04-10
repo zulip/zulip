@@ -83,7 +83,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
         except RateLimited as e:
             secs_to_freedom = int(float(str(e)))
             return json_error(
-                _("You're making too many attempts! Try again in %s seconds.") % (secs_to_freedom,)
+                _("You're making too many attempts! Try again in %s seconds.") % (secs_to_freedom,),
             )
 
         if not check_password_strength(new_password):
@@ -236,7 +236,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     user_avatar_url = avatar_url(user_profile)
 
     json_result = dict(
-        avatar_url = user_avatar_url
+        avatar_url = user_avatar_url,
     )
     return json_success(json_result)
 
@@ -248,7 +248,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
     gravatar_url = avatar_url(user_profile)
 
     json_result = dict(
-        avatar_url = gravatar_url
+        avatar_url = gravatar_url,
     )
     return json_success(json_result)
 
@@ -258,7 +258,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
 def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     new_api_key = do_regenerate_api_key(user_profile, user_profile)
     json_result = dict(
-        api_key = new_api_key
+        api_key = new_api_key,
     )
     return json_success(json_result)
 

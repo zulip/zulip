@@ -38,7 +38,7 @@ def notify_bot_owner_about_invalid_json(user_profile: UserProfile,
                                         webhook_client_name: str) -> None:
     send_rate_limited_pm_notification_to_bot_owner(
         user_profile, user_profile.realm,
-        INVALID_JSON_MESSAGE.format(webhook_name=webhook_client_name).strip()
+        INVALID_JSON_MESSAGE.format(webhook_name=webhook_client_name).strip(),
     )
 
 class MissingHTTPEventHeader(JsonableError):
@@ -57,7 +57,7 @@ def check_send_webhook_message(
         request: HttpRequest, user_profile: UserProfile,
         topic: str, body: str, stream: Optional[str]=REQ(default=None),
         user_specified_topic: Optional[str]=REQ("topic", default=None),
-        unquote_url_parameters: Optional[bool]=False
+        unquote_url_parameters: Optional[bool]=False,
 ) -> None:
 
     if stream is None:

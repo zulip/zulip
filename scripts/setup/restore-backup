@@ -70,7 +70,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         assert not any("|" in name or "|" in path for name, path in paths)
         transform_args = [
             r"--transform=s|^zulip-backup/{}(/.*)?$|{}\1|x".format(
-                re.escape(name), path.replace("\\", r"\\")
+                re.escape(name), path.replace("\\", r"\\"),
             )
             for name, path in paths
         ]
@@ -89,12 +89,12 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         run(
             [
                 os.path.join(
-                    settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions"
+                    settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions",
                 ),
                 "zulip",
                 "zulip",
                 "zulip_base",
-            ]
+            ],
         )
         as_postgres = ["su", "-s", "/usr/bin/env", "-", "--", POSTGRES_USER]
         run(as_postgres + ["dropdb", "--if-exists", "--", db_name])
@@ -130,7 +130,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
                 [
                     os.path.join(settings.DEPLOY_ROOT, "scripts", "zulip-puppet-apply"),
                     "-f",
-                ]
+                ],
             )
 
         # Now, restore the the database backup using pg_restore.  This

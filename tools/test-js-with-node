@@ -279,7 +279,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
         glob.glob('static/js/*.ts') +
         glob.glob('static/shared/js/*.js') +
         glob.glob('static/shared/js/*.ts') +
-        glob.glob('static/js/billing/*.js')
+        glob.glob('static/js/billing/*.js'),
     )
     enforce_fully_covered = all_js_files - EXEMPT_FILES
 

@@ -266,7 +266,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'zulip-contributor-docs', 'Zulip Documentation',
-     [author], 1)
+     [author], 1),
 ]
 
 # If true, show URL addresses after external links.

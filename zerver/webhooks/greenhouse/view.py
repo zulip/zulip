@@ -50,7 +50,7 @@ def api_greenhouse_webhook(request: HttpRequest, user_profile: UserProfile,
         candidate_id=str(candidate['id']),
         role=application['jobs'][0]['name'],
         emails=dict_list_to_string(application['candidate']['email_addresses']),
-        attachments=dict_list_to_string(application['candidate']['attachments'])
+        attachments=dict_list_to_string(application['candidate']['attachments']),
     )
 
     topic = "{} - {}".format(action, str(candidate['id']))

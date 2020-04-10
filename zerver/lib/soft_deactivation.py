@@ -228,7 +228,7 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
                     realm=user.realm,
                     modified_user=user,
                     event_type=RealmAuditLog.USER_SOFT_DEACTIVATED,
-                    event_time=event_time
+                    event_time=event_time,
                 )
                 realm_logs.append(log)
                 users_soft_deactivated.append(user)
@@ -265,7 +265,7 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[User
             realm=user_profile.realm,
             modified_user=user_profile,
             event_type=RealmAuditLog.USER_SOFT_ACTIVATED,
-            event_time=timezone_now()
+            event_time=timezone_now(),
         )
         logger.info('Soft Reactivated user %s', user_profile.id)
         return user_profile
@@ -309,6 +309,6 @@ def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> List[UserProf
         long_term_idle=True,
         is_active=True,
         is_bot=False,
-        **filter_kwargs
+        **filter_kwargs,
     )
     return users_to_catch_up

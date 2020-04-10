@@ -128,7 +128,7 @@ def need_to_run_build_pygments_data() -> bool:
     return is_digest_obsolete(
         "build_pygments_data_hash",
         build_pygments_data_paths(),
-        [pygments_version]
+        [pygments_version],
     )
 
 def need_to_run_compilemessages() -> bool:
@@ -155,7 +155,7 @@ def need_to_run_configure_rabbitmq(settings_list: List[str]) -> bool:
     obsolete = is_digest_obsolete(
         'last_configure_rabbitmq_hash',
         configure_rabbitmq_paths(),
-        settings_list
+        settings_list,
     )
 
     if obsolete:
@@ -204,7 +204,7 @@ def main(options: argparse.Namespace) -> int:
         write_new_digest(
             'build_pygments_data_hash',
             build_pygments_data_paths(),
-            [pygments_version]
+            [pygments_version],
         )
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
@@ -240,7 +240,7 @@ def main(options: argparse.Namespace) -> int:
             write_new_digest(
                 'last_configure_rabbitmq_hash',
                 configure_rabbitmq_paths(),
-                [settings.RABBITMQ_PASSWORD]
+                [settings.RABBITMQ_PASSWORD],
             )
         else:
             print("No need to run `scripts/setup/configure-rabbitmq.")

@@ -53,7 +53,7 @@ from zerver.models import (
     Reaction,
     get_usermessage_by_message_id,
     MAX_MESSAGE_LENGTH,
-    MAX_TOPIC_NAME_LENGTH
+    MAX_TOPIC_NAME_LENGTH,
 )
 
 from typing import Any, Dict, List, Optional, Set, Tuple, Sequence
@@ -236,7 +236,7 @@ class MessageDict:
             new_obj,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
-            keep_rendered_content=keep_rendered_content
+            keep_rendered_content=keep_rendered_content,
         )
         return new_obj
 
@@ -532,7 +532,7 @@ class MessageDict:
             (
                 obj['recipient_id'],
                 obj['recipient_type'],
-                obj['recipient_type_id']
+                obj['recipient_type_id'],
             ) for obj in objs
         }
         display_recipients = bulk_fetch_display_recipients(recipient_tuples)
@@ -732,13 +732,13 @@ def do_render_markdown(message: Message,
         sent_by_bot=sent_by_bot,
         translate_emoticons=translate_emoticons,
         mention_data=mention_data,
-        email_gateway=email_gateway
+        email_gateway=email_gateway,
     )
     return rendered_content
 
 def huddle_users(recipient_id: int) -> str:
     display_recipient: DisplayRecipientT = get_display_recipient_by_id(
-        recipient_id, Recipient.HUDDLE, None
+        recipient_id, Recipient.HUDDLE, None,
     )
 
     # str is for streams.
@@ -814,7 +814,7 @@ def get_inactive_recipient_ids(user_profile: UserProfile) -> List[int]:
     rows = get_stream_subscriptions_for_user(user_profile).filter(
         active=False,
     ).values(
-        'recipient_id'
+        'recipient_id',
     )
     inactive_recipient_ids = [
         row['recipient_id']
@@ -826,7 +826,7 @@ def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
         active=True,
         is_muted=True,
     ).values(
-        'recipient__type_id'
+        'recipient__type_id',
     )
     muted_stream_ids = [
         row['recipient__type_id']
@@ -837,9 +837,9 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     return list(UserMessage.objects.filter(
         user_profile=user_profile,
     ).extra(
-        where=[UserMessage.where_starred()]
+        where=[UserMessage.where_starred()],
     ).order_by(
-        'message_id'
+        'message_id',
     ).values_list('message_id', flat=True)[0:10000])
 
 def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
@@ -847,11 +847,11 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
     user_msgs = UserMessage.objects.filter(
-        user_profile=user_profile
+        user_profile=user_profile,
     ).exclude(
-        message__recipient_id__in=excluded_recipient_ids
+        message__recipient_id__in=excluded_recipient_ids,
     ).extra(
-        where=[UserMessage.where_unread()]
+        where=[UserMessage.where_unread()],
     ).values(
         'message_id',
         'message__sender_id',

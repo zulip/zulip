@@ -65,6 +65,6 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
         "status": status,
         "item": item,
         "trigger": trigger,
-        "link": link
+        "link": link,
     }
     return ZABBIX_MESSAGE_TEMPLATE.format(**data)

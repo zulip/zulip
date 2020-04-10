@@ -14,9 +14,9 @@ def populate_is_zephyr(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> 
 
     for realm in realms:
         Stream.objects.filter(
-            realm_id=realm.id
+            realm_id=realm.id,
         ).update(
-            is_in_zephyr_realm=True
+            is_in_zephyr_realm=True,
         )
 
 class Migration(migrations.Migration):

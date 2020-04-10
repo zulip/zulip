@@ -18,7 +18,7 @@ def environment(**options: Any) -> Environment:
         'default_page_params': {
             'debug_mode': False,
             'webpack_public_path': staticfiles_storage.url(
-                settings.WEBPACK_LOADER['DEFAULT']['BUNDLE_DIR_NAME']
+                settings.WEBPACK_LOADER['DEFAULT']['BUNDLE_DIR_NAME'],
             ),
         },
         'static': staticfiles_storage.url,

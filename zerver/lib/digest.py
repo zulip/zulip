@@ -173,7 +173,7 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
 
     # Start building email template data.
     context.update({
-        'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
+        'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest"),
     })
 
     home_view_streams = Subscription.objects.filter(
@@ -225,7 +225,7 @@ def exclude_subscription_modified_streams(user_profile: UserProfile,
     events = [
         RealmAuditLog.SUBSCRIPTION_CREATED,
         RealmAuditLog.SUBSCRIPTION_ACTIVATED,
-        RealmAuditLog.SUBSCRIPTION_DEACTIVATED
+        RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
     ]
 
     # Streams where the user's subscription was changed

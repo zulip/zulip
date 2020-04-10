@@ -69,7 +69,7 @@ def transfer_emoji_to_s3(processes: int) -> None:
             return 0  # nocoverage
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=realm_emoji.realm.id,
-            emoji_file_name=realm_emoji.file_name
+            emoji_file_name=realm_emoji.file_name,
         )
         emoji_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path) + ".original"
         try:

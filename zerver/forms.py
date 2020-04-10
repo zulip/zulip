@@ -240,7 +240,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
              from_email: Optional[str]=None,
              request: HttpRequest=None,
              html_email_template_name: Optional[str]=None,
-             extra_email_context: Optional[Dict[str, Any]]=None
+             extra_email_context: Optional[Dict[str, Any]]=None,
              ) -> None:
         """
         If the email address has an account in the target realm,

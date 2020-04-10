@@ -428,7 +428,7 @@ def build_stream(date_created: Any, realm_id: int, name: str,
 
 def build_huddle(huddle_id: int) -> ZerverFieldsT:
     huddle = Huddle(
-        id=huddle_id
+        id=huddle_id,
     )
     return model_to_dict(huddle)
 
@@ -635,7 +635,7 @@ def build_realm_emoji(realm_id: int,
             name=name,
             id=id,
             file_name=file_name,
-        )
+        ),
     )
 
 def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,

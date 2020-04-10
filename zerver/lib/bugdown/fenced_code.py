@@ -133,8 +133,8 @@ class FencedCodeExtension(markdown.Extension):
         self.config = {
             'run_content_validators': [
                 config.get('run_content_validators', False),
-                'Boolean specifying whether to run content validation code in CodeHandler'
-            ]
+                'Boolean specifying whether to run content validation code in CodeHandler',
+            ],
         }
 
         for key, value in config.items():

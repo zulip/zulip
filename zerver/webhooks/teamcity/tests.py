@@ -46,7 +46,7 @@ class TeamcityHookTests(WebhookTestCase):
     def test_non_generic_payload_ignore_pm_notification(self) -> None:
         expected_message = MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE.format(
             bot_name=get_user_by_delivery_email('webhook-bot@zulip.com', get_realm('zulip')).full_name,
-            support_email=FromAddress.SUPPORT
+            support_email=FromAddress.SUPPORT,
         ).strip()
         payload = self.get_body('slack_non_generic_payload')
         self.client_post(self.url, payload, content_type="application/json")

@@ -111,7 +111,7 @@ def update_default_stream_group_info(request: HttpRequest, user_profile: UserPro
     if not new_group_name and not new_description:
         return json_error(_('You must pass "new_description" or "new_group_name".'))
 
-    group = access_default_stream_group_by_id(user_profile.realm, group_id,)
+    group = access_default_stream_group_by_id(user_profile.realm, group_id)
     if new_group_name is not None:
         do_change_default_stream_group_name(user_profile.realm, group, new_group_name)
     if new_description is not None:
@@ -124,7 +124,7 @@ def update_default_stream_group_streams(request: HttpRequest, user_profile: User
                                         group_id: int, op: str=REQ(),
                                         stream_names: List[str]=REQ(
                                             validator=check_list(check_string))) -> None:
-    group = access_default_stream_group_by_id(user_profile.realm, group_id,)
+    group = access_default_stream_group_by_id(user_profile.realm, group_id)
     streams = []
     for stream_name in stream_names:
         (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
@@ -154,7 +154,7 @@ def remove_default_stream(request: HttpRequest,
     (stream, recipient, sub) = access_stream_by_id(
         user_profile,
         stream_id,
-        allow_realm_admin=True
+        allow_realm_admin=True,
     )
     do_remove_default_stream(stream)
     return json_success()
@@ -215,7 +215,7 @@ def list_subscriptions_backend(
     include_subscribers: bool=REQ(validator=check_bool, default=False),
 ) -> HttpResponse:
     subscribed, _ = gather_subscriptions(
-        user_profile, include_subscribers=include_subscribers
+        user_profile, include_subscribers=include_subscribers,
     )
     return json_success({"subscriptions": subscribed})
 
@@ -233,7 +233,7 @@ def update_subscriptions_backend(
 
     method_kwarg_pairs: List[FuncKwargPair] = [
         (add_subscriptions_backend, dict(streams_raw=add)),
-        (remove_subscriptions_backend, dict(streams_raw=delete))
+        (remove_subscriptions_backend, dict(streams_raw=delete)),
     ]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
@@ -324,7 +324,7 @@ def add_subscriptions_backend(
                 [('name', check_string)], optional_keys=[
                     ('color', check_color),
                     ('description', check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
-                ])
+                ]),
             )),
         invite_only: bool=REQ(validator=check_bool, default=False),
         stream_post_policy: int=REQ(validator=check_int_in(
@@ -455,7 +455,7 @@ def add_subscriptions_backend(
                     stream=notifications_stream,
                     topic=topic,
                     content=content,
-                )
+                ),
             )
 
     if not user_profile.realm.is_zephyr_mirror_realm and len(created_streams) > 0:
@@ -469,8 +469,8 @@ def add_subscriptions_backend(
                     topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
                     content=_('Stream created by @_**%(user_name)s|%(user_id)d**.') % {
                         'user_name': user_profile.full_name,
-                        'user_id': user_profile.id}
-                )
+                        'user_id': user_profile.id},
+                ),
             )
 
     if len(notifications) > 0:
@@ -500,7 +500,7 @@ def get_streams_backend(
         include_subscribed: bool=REQ(validator=check_bool, default=True),
         include_all_active: bool=REQ(validator=check_bool, default=False),
         include_default: bool=REQ(validator=check_bool, default=False),
-        include_owner_subscribed: bool=REQ(validator=check_bool, default=False)
+        include_owner_subscribed: bool=REQ(validator=check_bool, default=False),
 ) -> HttpResponse:
 
     streams = do_get_streams(user_profile, include_public=include_public,
@@ -593,8 +593,8 @@ def update_subscription_properties_backend(
             validator=check_list(
                 check_dict([("stream_id", check_int),
                             ("property", check_string),
-                            ("value", check_variable_type([check_string, check_bool]))])
-            )
+                            ("value", check_variable_type([check_string, check_bool]))]),
+            ),
         ),
 ) -> HttpResponse:
     """

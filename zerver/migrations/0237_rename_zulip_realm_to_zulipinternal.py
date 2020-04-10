@@ -39,5 +39,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(rename_zulip_realm_to_zulipinternal, elidable=True)
+        migrations.RunPython(rename_zulip_realm_to_zulipinternal, elidable=True),
     ]

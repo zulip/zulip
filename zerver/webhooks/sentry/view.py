@@ -94,7 +94,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
         "title": subject,
         "level": event["level"],
         "web_link": event["web_url"],
-        "datetime": event["datetime"].split(".")[0].replace("T", " ")
+        "datetime": event["datetime"].split(".")[0].replace("T", " "),
     }
 
     if "exception" in event:
@@ -131,7 +131,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
                     "filename": filename,
                     "pre_context": pre_context,
                     "context_line": context_line,
-                    "post_context": post_context
+                    "post_context": post_context,
                 })
 
                 body = EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK.format(**context)
@@ -170,14 +170,14 @@ def handle_issue_payload(action: str, issue: Dict[str, Any], actor: Dict[str, An
             "title": subject,
             "level": issue["level"],
             "datetime": datetime,
-            "assignee": assignee
+            "assignee": assignee,
         }
         body = ISSUE_CREATED_MESSAGE_TEMPLATE.format(**context)
 
     elif action == "resolved":
         context = {
             "title": subject,
-            "actor": actor["name"]
+            "actor": actor["name"],
         }
         body = ISSUE_RESOLVED_MESSAGE_TEMPLATE.format(**context)
 
@@ -185,14 +185,14 @@ def handle_issue_payload(action: str, issue: Dict[str, Any], actor: Dict[str, An
         context = {
             "title": subject,
             "assignee": assignee,
-            "actor": actor["name"]
+            "actor": actor["name"],
         }
         body = ISSUE_ASSIGNED_MESSAGE_TEMPLATE.format(**context)
 
     elif action == "ignored":
         context = {
             "title": subject,
-            "actor": actor["name"]
+            "actor": actor["name"],
         }
         body = ISSUE_IGNORED_MESSAGE_TEMPLATE.format(**context)
 
@@ -207,7 +207,7 @@ def handle_deprecated_payload(payload: Dict[str, Any]) -> Tuple[str, str]:
     body = DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE.format(
         level=payload['level'].upper(),
         url=payload.get('url'),
-        message=payload.get('message')
+        message=payload.get('message'),
     )
     return (subject, body)
 

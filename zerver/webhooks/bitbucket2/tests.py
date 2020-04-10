@@ -109,14 +109,14 @@ class Bitbucket2HookTests(WebhookTestCase):
     def test_bitbucket2_on_pull_request_created_event(self) -> None:
         expected_message = "kolaszek created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to tkolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:created'
+            "HTTP_X_EVENT_KEY": 'pullrequest:created',
         }
         self.send_and_test_stream_message('pull_request_created_or_updated', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
 
     def test_bitbucket2_on_pull_request_created_without_reviewer_username_event(self) -> None:
         expected_message = "kolaszek created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:created'
+            "HTTP_X_EVENT_KEY": 'pullrequest:created',
         }
         self.send_and_test_stream_message('pull_request_created_or_updated_without_username',
                                           self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
@@ -126,21 +126,21 @@ class Bitbucket2HookTests(WebhookTestCase):
         expected_topic = "notifications"
         expected_message = "kolaszek created [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to tkolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:created'
+            "HTTP_X_EVENT_KEY": 'pullrequest:created',
         }
         self.send_and_test_stream_message('pull_request_created_or_updated', expected_topic, expected_message, **kwargs)
 
     def test_bitbucket2_on_pull_request_updated_event(self) -> None:
         expected_message = "kolaszek updated [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to tkolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:updated'
+            "HTTP_X_EVENT_KEY": 'pullrequest:updated',
         }
         self.send_and_test_stream_message('pull_request_created_or_updated', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
 
     def test_bitbucket2_on_pull_request_approved_event(self) -> None:
         expected_message = "kolaszek approved [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:approved'
+            "HTTP_X_EVENT_KEY": 'pullrequest:approved',
         }
         self.send_and_test_stream_message('pull_request_approved_or_unapproved', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
 
@@ -149,35 +149,35 @@ class Bitbucket2HookTests(WebhookTestCase):
         expected_topic = "notifications"
         expected_message = "kolaszek approved [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:approved'
+            "HTTP_X_EVENT_KEY": 'pullrequest:approved',
         }
         self.send_and_test_stream_message('pull_request_approved_or_unapproved', expected_topic, expected_message, **kwargs)
 
     def test_bitbucket2_on_pull_request_unapproved_event(self) -> None:
         expected_message = "kolaszek unapproved [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:unapproved'
+            "HTTP_X_EVENT_KEY": 'pullrequest:unapproved',
         }
         self.send_and_test_stream_message('pull_request_approved_or_unapproved', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
 
     def test_bitbucket2_on_pull_request_declined_event(self) -> None:
         expected_message = "kolaszek rejected [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:rejected'
+            "HTTP_X_EVENT_KEY": 'pullrequest:rejected',
         }
         self.send_and_test_stream_message('pull_request_fulfilled_or_rejected', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
 
     def test_bitbucket2_on_pull_request_fulfilled_event(self) -> None:
         expected_message = "kolaszek merged [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:fulfilled'
+            "HTTP_X_EVENT_KEY": 'pullrequest:fulfilled',
         }
         self.send_and_test_stream_message('pull_request_fulfilled_or_rejected', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
 
     def test_bitbucket2_on_pull_request_comment_created_event(self) -> None:
         expected_message = "kolaszek [commented](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:comment_created'
+            "HTTP_X_EVENT_KEY": 'pullrequest:comment_created',
         }
         self.send_and_test_stream_message('pull_request_comment_action', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
 
@@ -186,14 +186,14 @@ class Bitbucket2HookTests(WebhookTestCase):
         expected_topic = "notifications"
         expected_message = "kolaszek [commented](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:comment_created'
+            "HTTP_X_EVENT_KEY": 'pullrequest:comment_created',
         }
         self.send_and_test_stream_message('pull_request_comment_action', expected_topic, expected_message, **kwargs)
 
     def test_bitbucket2_on_pull_request_comment_updated_event(self) -> None:
         expected_message = "kolaszek updated a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:comment_updated'
+            "HTTP_X_EVENT_KEY": 'pullrequest:comment_updated',
         }
         self.send_and_test_stream_message('pull_request_comment_action', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
 
@@ -202,14 +202,14 @@ class Bitbucket2HookTests(WebhookTestCase):
         expected_topic = "notifications"
         expected_message = "kolaszek updated a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:comment_updated'
+            "HTTP_X_EVENT_KEY": 'pullrequest:comment_updated',
         }
         self.send_and_test_stream_message('pull_request_comment_action', expected_topic, expected_message, **kwargs)
 
     def test_bitbucket2_on_pull_request_comment_deleted_event(self) -> None:
         expected_message = "kolaszek deleted a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:comment_deleted'
+            "HTTP_X_EVENT_KEY": 'pullrequest:comment_deleted',
         }
         self.send_and_test_stream_message('pull_request_comment_action', self.EXPECTED_TOPIC_PR_EVENTS, expected_message, **kwargs)
 
@@ -223,21 +223,21 @@ class Bitbucket2HookTests(WebhookTestCase):
     def test_bitbucket2_on_push_one_tag_event(self) -> None:
         expected_message = "kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+            "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
         self.send_and_test_stream_message('push_one_tag', self.EXPECTED_TOPIC, expected_message, **kwargs)
 
     def test_bitbucket2_on_push_remove_tag_event(self) -> None:
         expected_message = "kolaszek removed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+            "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
         self.send_and_test_stream_message('push_remove_tag', self.EXPECTED_TOPIC, expected_message, **kwargs)
 
     def test_bitbucket2_on_push_more_than_one_tag_event(self) -> None:
         expected_message = "kolaszek pushed tag [{name}](https://bitbucket.org/kolaszek/repository-name/commits/tag/{name})."
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+            "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
         self.send_and_test_stream_message('push_more_than_one_tag', **kwargs)
         msg = self.get_last_message()
@@ -249,7 +249,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_more_than_one_push_event(self) -> None:
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+            "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
         self.send_and_test_stream_message('more_than_one_push_event', **kwargs)
         msg = self.get_second_to_last_message()
@@ -262,7 +262,7 @@ class Bitbucket2HookTests(WebhookTestCase):
     def test_bitbucket2_on_more_than_one_push_event_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+            "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
         self.send_and_test_stream_message('more_than_one_push_event', **kwargs)
         msg = self.get_second_to_last_message()
@@ -275,7 +275,7 @@ class Bitbucket2HookTests(WebhookTestCase):
     def test_bitbucket2_on_more_than_one_push_event_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+            "HTTP_X_EVENT_KEY": 'pullrequest:push',
         }
         expected_message = "kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
         self.send_and_test_stream_message('more_than_one_push_event',

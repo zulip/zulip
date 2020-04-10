@@ -236,5 +236,5 @@ else:
     parser.error(
         "Could not find configuration for integration. "
         "You can specify a fixture file to use, using the --fixture flag. "
-        "Or add a configuration to zerver.lib.integrations.DOC_SCREENSHOT_CONFIG"
+        "Or add a configuration to zerver.lib.integrations.DOC_SCREENSHOT_CONFIG",
     )

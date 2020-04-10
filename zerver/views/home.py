@@ -123,7 +123,7 @@ def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]
         bot_types.append({
             'type_id': type_id,
             'name': name,
-            'allowed': type_id in user_profile.allowed_bot_types
+            'allowed': type_id in user_profile.allowed_bot_types,
         })
     return bot_types
 
@@ -159,7 +159,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             'zerver/insecure_desktop_app.html',
             context={
                 "auto_update_broken": auto_update_broken,
-            }
+            },
         )
     (unsupported_browser, browser_name) = is_unsupported_browser(client_user_agent)
     if unsupported_browser:
@@ -168,7 +168,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             'zerver/unsupported_browser.html',
             context={
                 "browser_name": browser_name,
-            }
+            },
         )
 
     # We need to modify the session object every two weeks or it will expire.
@@ -339,7 +339,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'embedded': narrow_stream is not None,
                                'invite_as': PreregistrationUser.INVITE_AS,
                                'max_file_upload_size_mib': settings.MAX_FILE_UPLOAD_SIZE,
-                               },)
+                               })
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response
 

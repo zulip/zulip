@@ -36,7 +36,7 @@ def get_display_recipient_remote_cache(recipient_id: int, recipient_type: int,
     # Right now, we order by ID, which matches the ordering of user
     # names in the left sidebar.
     user_profile_list = UserProfile.objects.filter(
-        subscription__recipient_id=recipient_id
+        subscription__recipient_id=recipient_id,
     ).order_by('id').values(*display_recipient_fields)
     return list(user_profile_list)
 
@@ -52,10 +52,10 @@ def bulk_get_user_profile_by_id(uids: List[int]) -> Dict[int, UserDisplayRecipie
         query_function=lambda ids: list(
             UserProfile.objects.filter(id__in=ids).values(*display_recipient_fields)),
         object_ids=uids,
-        id_fetcher=user_dict_id_fetcher
+        id_fetcher=user_dict_id_fetcher,
     )
 
-def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
+def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]],
                                   ) -> Dict[int, DisplayRecipientT]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
@@ -102,7 +102,7 @@ def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
     # Now we have to create display_recipients for personal and huddle messages.
     # We do this via generic_bulk_cached_fetch, supplying apprioprate functions to it.
 
-    def personal_and_huddle_query_function(recipient_ids: List[int]
+    def personal_and_huddle_query_function(recipient_ids: List[int],
                                            ) -> List[Tuple[int, List[UserDisplayRecipient]]]:
         """
         Return a list of tuples of the form (recipient_id, [list of UserProfiles])
@@ -116,7 +116,7 @@ def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
         recipients = [Recipient(
             id=recipient_id,
             type=recipient_id_to_type_pair_dict[recipient_id][0],
-            type_id=recipient_id_to_type_pair_dict[recipient_id][1]
+            type_id=recipient_id_to_type_pair_dict[recipient_id][1],
         ) for recipient_id in recipient_ids]
 
         # Find all user ids whose UserProfiles we will need to fetch:
@@ -144,7 +144,7 @@ def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
 
         return result
 
-    def personal_and_huddle_cache_transformer(db_object: Tuple[int, List[UserDisplayRecipient]]
+    def personal_and_huddle_cache_transformer(db_object: Tuple[int, List[UserDisplayRecipient]],
                                               ) -> List[UserDisplayRecipient]:
         """
         Takes an element of the list returned by the query_function, maps it to the final
@@ -167,7 +167,7 @@ def bulk_fetch_display_recipients(recipient_tuples: Set[Tuple[int, int, int]]
         query_function=personal_and_huddle_query_function,
         object_ids=[recipient[0] for recipient in personal_and_huddle_recipients],
         id_fetcher=personal_and_huddle_id_fetcher,
-        cache_transformer=personal_and_huddle_cache_transformer
+        cache_transformer=personal_and_huddle_cache_transformer,
     )
 
     # Glue the dicts together and return:

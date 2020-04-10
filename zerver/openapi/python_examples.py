@@ -54,9 +54,9 @@ def add_subscriptions(client: Client) -> None:
         streams=[
             {
                 'name': 'new stream',
-                'description': 'New stream for testing'
-            }
-        ]
+                'description': 'New stream for testing',
+            },
+        ],
     )
     # {code_example|end}
 
@@ -69,9 +69,9 @@ def add_subscriptions(client: Client) -> None:
     user_id = 25
     result = client.add_subscriptions(
         streams=[
-            {'name': 'new stream', 'description': 'New stream for testing'}
+            {'name': 'new stream', 'description': 'New stream for testing'},
         ],
-        principals=[user_id]
+        principals=[user_id],
     )
     # {code_example|end}
     assert result['result'] == 'success'
@@ -80,9 +80,9 @@ def add_subscriptions(client: Client) -> None:
 def test_add_subscriptions_already_subscribed(client: Client) -> None:
     result = client.add_subscriptions(
         streams=[
-            {'name': 'new stream', 'description': 'New stream for testing'}
+            {'name': 'new stream', 'description': 'New stream for testing'},
         ],
-        principals=['newbie@zulip.com']
+        principals=['newbie@zulip.com'],
     )
 
     validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
@@ -91,7 +91,7 @@ def test_add_subscriptions_already_subscribed(client: Client) -> None:
 def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> None:
     client.add_subscriptions(
         streams=[
-            {'name': 'private_stream'}
+            {'name': 'private_stream'},
         ],
     )
 
@@ -99,12 +99,12 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
     client.call_endpoint(
         f'streams/{stream_id}',
         method='PATCH',
-        request={'is_private': True}
+        request={'is_private': True},
     )
 
     result = nonadmin_client.add_subscriptions(
         streams=[
-            {'name': 'private_stream'}
+            {'name': 'private_stream'},
         ],
         authorization_errors_fatal=False,
     )
@@ -114,7 +114,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
 
     result = nonadmin_client.add_subscriptions(
         streams=[
-            {'name': 'private_stream'}
+            {'name': 'private_stream'},
         ],
         authorization_errors_fatal=True,
     )
@@ -137,7 +137,7 @@ def update_presence(client: Client) -> None:
     request = {
         'status': 'active',
         'ping_only': False,
-        'new_user_input': False
+        'new_user_input': False,
     }
 
     result = client.update_presence(request)
@@ -153,7 +153,7 @@ def create_user(client: Client) -> None:
         'email': 'newbie@zulip.com',
         'password': 'temp',
         'full_name': 'New User',
-        'short_name': 'newbie'
+        'short_name': 'newbie',
     }
     result = client.create_user(request)
     # {code_example|end}
@@ -328,9 +328,9 @@ def delete_stream(client: Client, stream_id: int) -> None:
         streams=[
             {
                 'name': 'stream to be deleted',
-                'description': 'New stream for testing'
-            }
-        ]
+                'description': 'New stream for testing',
+            },
+        ],
     )
 
     # {code_example|start}
@@ -431,7 +431,7 @@ def remove_subscriptions(client: Client) -> None:
     # {code_example|start}
     # Unsubscribe from the stream "new stream"
     result = client.remove_subscriptions(
-        ['new stream']
+        ['new stream'],
     )
     # {code_example|end}
 
@@ -448,7 +448,7 @@ def remove_subscriptions(client: Client) -> None:
     # Unsubscribe another user from the stream "new stream"
     result = client.remove_subscriptions(
         ['new stream'],
-        principals=['newbie@zulip.com']
+        principals=['newbie@zulip.com'],
     )
     # {code_example|end}
 
@@ -462,12 +462,12 @@ def toggle_mute_topic(client: Client) -> None:
     message = {
         'type': 'stream',
         'to': 'Denmark',
-        'topic': 'boat party'
+        'topic': 'boat party',
     }
     client.call_endpoint(
         url='messages',
         method='POST',
-        request=message
+        request=message,
     )
 
     # {code_example|start}
@@ -475,7 +475,7 @@ def toggle_mute_topic(client: Client) -> None:
     request = {
         'stream': 'Denmark',
         'topic': 'boat party',
-        'op': 'add'
+        'op': 'add',
     }
     result = client.mute_topic(request)
     # {code_example|end}
@@ -489,7 +489,7 @@ def toggle_mute_topic(client: Client) -> None:
     request = {
         'stream': 'Denmark',
         'topic': 'boat party',
-        'op': 'remove'
+        'op': 'remove',
     }
 
     result = client.mute_topic(request)
@@ -541,11 +541,11 @@ def update_subscription_settings(client: Client) -> None:
     request = [{
         'stream_id': 1,
         'property': 'pin_to_top',
-        'value': True
+        'value': True,
     }, {
         'stream_id': 3,
         'property': 'color',
-        'value': '#f00f00'
+        'value': '#f00f00',
     }]
     result = client.update_subscription_settings(request)
     # {code_example|end}
@@ -560,7 +560,7 @@ def render_message(client: Client) -> None:
     # {code_example|start}
     # Render a message
     request = {
-        'content': '**foo**'
+        'content': '**foo**',
     }
     result = client.render_message(request)
     # {code_example|end}
@@ -609,7 +609,7 @@ def send_message(client: Client) -> int:
         "type": "stream",
         "to": "Denmark",
         "topic": "Castle",
-        "content": "I come not, friends, to steal away your hearts."
+        "content": "I come not, friends, to steal away your hearts.",
     }
     result = client.send_message(request)
     # {code_example|end}
@@ -621,7 +621,7 @@ def send_message(client: Client) -> int:
     url = 'messages/' + str(message_id)
     result = client.call_endpoint(
         url=url,
-        method='GET'
+        method='GET',
     )
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
@@ -634,7 +634,7 @@ def send_message(client: Client) -> int:
     request = {
         "type": "private",
         "to": [user_id],
-        "content": "With mirth and laughter let old wrinkles come."
+        "content": "With mirth and laughter let old wrinkles come.",
     }
     result = client.send_message(request)
     # {code_example|end}
@@ -646,7 +646,7 @@ def send_message(client: Client) -> int:
     url = 'messages/' + str(message_id)
     result = client.call_endpoint(
         url=url,
-        method='GET'
+        method='GET',
     )
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
@@ -684,7 +684,7 @@ def test_nonexistent_stream_error(client: Client) -> None:
         "type": "stream",
         "to": "nonexistent_stream",
         "topic": "Castle",
-        "content": "I come not, friends, to steal away your hearts."
+        "content": "I come not, friends, to steal away your hearts.",
     }
     result = client.send_message(request)
 
@@ -695,7 +695,7 @@ def test_private_message_invalid_recipient(client: Client) -> None:
     request = {
         "type": "private",
         "to": "eeshan@zulip.com",
-        "content": "With mirth and laughter let old wrinkles come."
+        "content": "With mirth and laughter let old wrinkles come.",
     }
     result = client.send_message(request)
 
@@ -713,7 +713,7 @@ def update_message(client: Client, message_id: int) -> None:
     # message you wish to update)
     request = {
         "message_id": message_id,
-        "content": "New content"
+        "content": "New content",
     }
     result = client.update_message(request)
     # {code_example|end}
@@ -725,7 +725,7 @@ def update_message(client: Client, message_id: int) -> None:
     url = 'messages/' + str(message_id)
     result = client.call_endpoint(
         url=url,
-        method='GET'
+        method='GET',
     )
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
@@ -735,13 +735,13 @@ def test_update_message_edit_permission_error(client: Client, nonadmin_client: C
         "type": "stream",
         "to": "Denmark",
         "topic": "Castle",
-        "content": "I come not, friends, to steal away your hearts."
+        "content": "I come not, friends, to steal away your hearts.",
     }
     result = client.send_message(request)
 
     request = {
         "message_id": result["id"],
-        "content": "New content"
+        "content": "New content",
     }
     result = nonadmin_client.update_message(request)
 
@@ -763,7 +763,7 @@ def test_delete_message_edit_permission_error(client: Client, nonadmin_client: C
         "type": "stream",
         "to": "Denmark",
         "topic": "Castle",
-        "content": "I come not, friends, to steal away your hearts."
+        "content": "I come not, friends, to steal away your hearts.",
     }
     result = client.send_message(request)
 
@@ -800,7 +800,7 @@ def update_message_flags(client: Client) -> None:
         "type": "stream",
         "to": "Denmark",
         "topic": "Castle",
-        "content": "I come not, friends, to steal away your hearts."
+        "content": "I come not, friends, to steal away your hearts.",
     }
     message_ids = []
     for i in range(0, 3):
@@ -811,7 +811,7 @@ def update_message_flags(client: Client) -> None:
     request = {
         'messages': message_ids,
         'op': 'add',
-        'flag': 'read'
+        'flag': 'read',
     }
     result = client.update_message_flags(request)
     # {code_example|end}
@@ -824,7 +824,7 @@ def update_message_flags(client: Client) -> None:
     request = {
         'messages': message_ids,
         'op': 'remove',
-        'flag': 'starred'
+        'flag': 'starred',
     }
     result = client.update_message_flags(request)
     # {code_example|end}
@@ -838,7 +838,7 @@ def register_queue(client: Client) -> str:
     # {code_example|start}
     # Register the queue
     result = client.register(
-        event_types=['message', 'realm_emoji']
+        event_types=['message', 'realm_emoji'],
     )
     # {code_example|end}
 
@@ -894,14 +894,14 @@ def upload_file(client: Client) -> None:
         result = client.call_endpoint(
             'user_uploads',
             method='POST',
-            files=[fp]
+            files=[fp],
         )
 
     client.send_message({
         "type": "stream",
         "to": "Denmark",
         "topic": "Castle",
-        "content": "Check out [this picture]({}) of my castle!".format(result['uri'])
+        "content": "Check out [this picture]({}) of my castle!".format(result['uri']),
     })
     # {code_example|end}
 
@@ -960,7 +960,7 @@ def upload_custom_emoji(client: Client) -> None:
         result = client.call_endpoint(
             f'realm/emoji/{emoji_name}',
             method='POST',
-            files=[fp]
+            files=[fp],
         )
     # {code_example|end}
 
@@ -1036,7 +1036,7 @@ def update_user_group_members(client: Client, group_id: int) -> None:
     request = {
         'group_id': group_id,
         'delete': [8, 10],
-        'add': [11]
+        'add': [11],
     }
 
     result = client.update_user_group_members(request)
@@ -1096,7 +1096,7 @@ def assertLength(result: Dict[str, Any], fixture: Dict[str, Any]) -> None:
 def assertIn(key: str, result: Dict[str, Any]) -> None:
     if key not in result.keys():
         raise AssertionError(
-            f"The actual output does not contain the the key `{key}`."
+            f"The actual output does not contain the the key `{key}`.",
         )
     else:
         assert key in result

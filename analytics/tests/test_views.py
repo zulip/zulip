@@ -403,7 +403,7 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(['<span class="label">user</span>\n', '<h3>King Hamlet</h3>',
                                              '<b>Email</b>: hamlet@zulip.com', '<b>Is active</b>: True<br>',
                                              '<b>Admins</b>: desdemona@zulip.com, iago@zulip.com\n',
-                                             'class="copy-button" data-copytext="desdemona@zulip.com, iago@zulip.com"'
+                                             'class="copy-button" data-copytext="desdemona@zulip.com, iago@zulip.com"',
                                              ], result)
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
@@ -448,19 +448,19 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(['<span class="label">preregistration user</span>\n',
                                              '<span class="label">realm creation</span>\n',
                                              '<b>Link</b>: http://zulip.testserver/accounts/do_confirm/',
-                                             '<b>Expires in</b>: 1\xa0day<br>\n'
+                                             '<b>Expires in</b>: 1\xa0day<br>\n',
                                              ], result)
 
         def check_multiuse_invite_link_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<span class="label">multiuse invite</span>\n',
                                              '<b>Link</b>: http://zulip.testserver/join/',
-                                             '<b>Expires in</b>: 1\xa0week, 3'
+                                             '<b>Expires in</b>: 1\xa0week, 3',
                                              ], result)
 
         def check_realm_reactivation_link_query_result(result: HttpResponse) -> None:
             self.assert_in_success_response(['<span class="label">realm reactivation</span>\n',
                                              '<b>Link</b>: http://zulip.testserver/reactivate/',
-                                             '<b>Expires in</b>: 1\xa0day'
+                                             '<b>Expires in</b>: 1\xa0day',
                                              ], result)
 
         self.login('cordelia')

@@ -165,7 +165,7 @@ def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dic
     for canonical_topic, (max_message_id, topic_name) in canonical_topic_names.items():
         history.append(dict(
             name=topic_name,
-            max_id=max_message_id)
+            max_id=max_message_id),
         )
     return sorted(history, key=lambda x: -x['max_id'])
 

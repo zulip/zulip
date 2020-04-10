@@ -62,7 +62,7 @@ def api_bitbucket2_webhook(request: HttpRequest, user_profile: UserProfile,
     if 'include_title' in signature(body_function).parameters:
         body = body_function(
             payload,
-            include_title=user_specified_topic is not None
+            include_title=user_specified_topic is not None,
         )
     else:
         body = body_function(payload)
@@ -81,7 +81,7 @@ def get_subject_for_branch_specified_events(payload: Dict[str, Any],
                                             branch_name: Optional[str]=None) -> str:
     return TOPIC_WITH_BRANCH_TEMPLATE.format(
         repo=get_repository_name(payload['repository']),
-        branch=get_branch_name_for_push_event(payload) if branch_name is None else branch_name
+        branch=get_branch_name_for_push_event(payload) if branch_name is None else branch_name,
     )
 
 def get_push_subjects(payload: Dict[str, Any]) -> List[str]:
@@ -108,14 +108,14 @@ def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> Any:
             repo=get_repository_name(payload['repository']),
             type='PR',
             id=payload['pullrequest']['id'],
-            title=payload['pullrequest']['title']
+            title=payload['pullrequest']['title'],
         )
     if type.startswith('issue'):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload['repository']),
             type='Issue',
             id=payload['issue']['id'],
-            title=payload['issue']['title']
+            title=payload['issue']['title'],
         )
     if type == 'push':
         return get_push_subjects(payload)
@@ -184,7 +184,7 @@ def get_force_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
         get_user_username(payload),
         change['links']['html']['href'],
         change['new']['name'],
-        change['new']['target']['hash']
+        change['new']['target']['hash'],
     )
 
 def get_commit_author_name(commit: Dict[str, Any]) -> str:
@@ -205,7 +205,7 @@ def get_normal_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str
         change['links']['html']['href'],
         change['new']['name'],
         commits_data,
-        is_truncated=change['truncated']
+        is_truncated=change['truncated'],
     )
 
 def get_fork_body(payload: Dict[str, Any]) -> str:
@@ -213,7 +213,7 @@ def get_fork_body(payload: Dict[str, Any]) -> str:
         display_name=get_user_display_name(payload),
         username=get_user_username(payload),
         fork_name=get_repository_full_name(payload['fork']),
-        fork_url=get_repository_url(payload['fork'])
+        fork_url=get_repository_url(payload['fork']),
     )
 
 def get_commit_comment_body(payload: Dict[str, Any]) -> str:
@@ -234,14 +234,14 @@ def get_commit_status_changed_body(payload: Dict[str, Any]) -> str:
     commit_info = "[{short_commit_id}]({repo_url}/commits/{commit_id})".format(
         repo_url=get_repository_url(payload['repository']),
         short_commit_id=commit_id[:7],
-        commit_id=commit_id
+        commit_id=commit_id,
     )
 
     return BITBUCKET_COMMIT_STATUS_CHANGED_BODY.format(
         key=payload['commit_status']['key'],
         system_url=payload['commit_status']['url'],
         commit_info=commit_info,
-        status=payload['commit_status']['state']
+        status=payload['commit_status']['state'],
     )
 
 def get_issue_commented_body(payload: Dict[str, Any],
@@ -266,7 +266,7 @@ def get_issue_action_body(payload: Dict[str, Any], action: str,
         issue['id'],
         message,
         assignee,
-        title=issue['title'] if include_title else None
+        title=issue['title'] if include_title else None,
     )
 
 def get_pull_request_action_body(payload: Dict[str, Any], action: str,
@@ -277,7 +277,7 @@ def get_pull_request_action_body(payload: Dict[str, Any], action: str,
         action,
         get_pull_request_url(pull_request),
         pull_request.get('id'),
-        title=pull_request['title'] if include_title else None
+        title=pull_request['title'] if include_title else None,
     )
 
 def get_pull_request_created_or_updated_body(payload: Dict[str, Any], action: str,
@@ -300,26 +300,26 @@ def get_pull_request_created_or_updated_body(payload: Dict[str, Any], action: st
         base_branch=pull_request['destination']['branch']['name'],
         message=pull_request['description'],
         assignee=assignee,
-        title=pull_request['title'] if include_title else None
+        title=pull_request['title'] if include_title else None,
     )
 
 def get_pull_request_comment_created_action_body(
         payload: Dict[str, Any],
-        include_title: Optional[bool]=False
+        include_title: Optional[bool]=False,
 ) -> str:
     action = '[commented]({})'.format(payload['comment']['links']['html']['href'])
     return get_pull_request_comment_action_body(payload, action, include_title)
 
 def get_pull_request_deleted_or_updated_comment_action_body(
         payload: Dict[str, Any], action: str,
-        include_title: Optional[bool]=False
+        include_title: Optional[bool]=False,
 ) -> str:
     action = "{} a [comment]({})".format(action, payload['comment']['links']['html']['href'])
     return get_pull_request_comment_action_body(payload, action, include_title)
 
 def get_pull_request_comment_action_body(
         payload: Dict[str, Any], action: str,
-        include_title: Optional[bool]=False
+        include_title: Optional[bool]=False,
 ) -> str:
     action += ' on'
     return get_pull_request_event_message(
@@ -328,7 +328,7 @@ def get_pull_request_comment_action_body(
         payload['pullrequest']['links']['html']['href'],
         payload['pullrequest']['id'],
         message=payload['comment']['content']['raw'],
-        title=payload['pullrequest']['title'] if include_title else None
+        title=payload['pullrequest']['title'] if include_title else None,
     )
 
 def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
@@ -343,7 +343,7 @@ def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
         get_user_username(payload),
         tag.get('name'),
         tag_url=tag['links']['html'].get('href'),
-        action=action
+        action=action,
     )
 
 def append_punctuation(title: str, message: str) -> str:
@@ -366,13 +366,13 @@ def get_repo_updated_body(payload: Dict[str, Any]) -> str:
         if new and old:
             message = BITBUCKET_REPO_UPDATED_CHANGED.format(
                 actor=actor, change=change, repo_name=repo_name,
-                old=old, new=new
+                old=old, new=new,
             )
             message = append_punctuation(new, message) + '\n'
             body += message
         elif new and not old:
             message = BITBUCKET_REPO_UPDATED_ADDED.format(
-                actor=actor, change=change, repo_name=repo_name, new=new
+                actor=actor, change=change, repo_name=repo_name, new=new,
             )
             message = append_punctuation(new, message) + '\n'
             body += message

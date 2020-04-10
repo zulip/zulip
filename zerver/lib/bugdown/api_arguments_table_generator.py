@@ -24,7 +24,7 @@ class MarkdownArgumentsTableGenerator(Extension):
 
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.preprocessors.add(
-            'generate_api_arguments', APIArgumentsTablePreprocessor(md, self.getConfigs()), '_begin'
+            'generate_api_arguments', APIArgumentsTablePreprocessor(md, self.getConfigs()), '_begin',
         )
 
 
