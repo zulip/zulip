@@ -198,7 +198,7 @@ def check_rabbitmq_queues() -> None:
 
     results = []
     for queue_name, stats in queue_stats.items():
-        results.append(analyze_queue_stats(queue_name, stats, queue_counts_rabbitmqctl[queue]))
+        results.append(analyze_queue_stats(queue_name, stats, queue_counts_rabbitmqctl[queue_name]))
 
     results.extend(check_other_queues(queue_counts_rabbitmqctl))
 
