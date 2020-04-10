@@ -112,7 +112,7 @@ class TestReport(ZulipTestCase):
         publish_mock = mock.patch('zerver.views.report.queue_json_publish')
         subprocess_mock = mock.patch(
             'zerver.views.report.subprocess.check_output',
-            side_effect=KeyError('foo')
+            side_effect=KeyError('foo'),
         )
         with publish_mock as m, subprocess_mock:
             result = self.client_post("/json/report/error", params)

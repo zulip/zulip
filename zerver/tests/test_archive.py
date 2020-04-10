@@ -15,7 +15,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
     def test_non_web_public_stream(self) -> None:
         test_stream = self.make_stream('Test Public Archives')
         result = self.client_get(
-            "/archive/streams/" + str(test_stream.id) + "/topics/notpublicglobalstream"
+            "/archive/streams/" + str(test_stream.id) + "/topics/notpublicglobalstream",
         )
         self.assert_in_success_response(["This stream does not exist."], result)
 
@@ -23,7 +23,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
         test_stream = self.make_stream('Test Public Archives')
         do_change_stream_web_public(test_stream, True)
         result = self.client_get(
-            "/archive/streams/" + str(test_stream.id) + "/topics/nonexistenttopic"
+            "/archive/streams/" + str(test_stream.id) + "/topics/nonexistenttopic",
         )
         self.assert_in_success_response(["This topic does not exist."], result)
 
@@ -36,10 +36,10 @@ class GlobalPublicStreamTest(ZulipTestCase):
                 self.example_user("iago"),
                 "Test Public Archives",
                 msg,
-                'TopicGlobal'
+                'TopicGlobal',
             )
             return self.client_get(
-                "/archive/streams/" + str(test_stream.id) + "/topics/TopicGlobal"
+                "/archive/streams/" + str(test_stream.id) + "/topics/TopicGlobal",
             )
 
         result = send_msg_and_get_result('Test Message 1')
@@ -94,11 +94,11 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
             self.example_user("iago"),
             "Test Public Archives",
             'Test Message',
-            'TopicGlobal'
+            'TopicGlobal',
         )
 
         result = self.client_get(
-            "/archive/streams/" + str(test_stream.id) + "/topics"
+            "/archive/streams/" + str(test_stream.id) + "/topics",
         )
         self.assert_json_success(result)
         history = result.json()['topics']
@@ -112,35 +112,35 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
             self.example_user("iago"),
             "Test Public Archives",
             'Test Message 3',
-            topic_name='first_topic'
+            topic_name='first_topic',
         )
         self.send_stream_message(
             self.example_user("iago"),
             "Test Public Archives",
             'Test Message',
-            topic_name='TopicGlobal'
+            topic_name='TopicGlobal',
         )
         self.send_stream_message(
             self.example_user("iago"),
             "Test Public Archives",
             'Test Message 2',
-            topic_name='topicglobal'
+            topic_name='topicglobal',
         )
         self.send_stream_message(
             self.example_user("iago"),
             "Test Public Archives",
             'Test Message 3',
-            topic_name='second_topic'
+            topic_name='second_topic',
         )
         self.send_stream_message(
             self.example_user("iago"),
             "Test Public Archives",
             'Test Message 4',
-            topic_name='TopicGlobal'
+            topic_name='TopicGlobal',
         )
 
         result = self.client_get(
-            "/archive/streams/" + str(test_stream.id) + "/topics"
+            "/archive/streams/" + str(test_stream.id) + "/topics",
         )
         self.assert_json_success(result)
         history = result.json()['topics']

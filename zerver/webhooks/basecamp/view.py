@@ -97,7 +97,7 @@ def get_questions_answer_body(event: str, payload: Dict[str, Any]) -> str:
         verb=verb,
         answer_url=get_subject_url(payload),
         question_title=title,
-        question_url=question['app_url']
+        question_url=question['app_url'],
     )
 
 def get_comment_body(event: str, payload: Dict[str, Any]) -> str:
@@ -110,7 +110,7 @@ def get_comment_body(event: str, payload: Dict[str, Any]) -> str:
         verb=verb,
         answer_url=get_subject_url(payload),
         task_title=task['title'],
-        task_url=task['app_url']
+        task_url=task['app_url'],
     )
 
 def get_questions_body(event: str, payload: Dict[str, Any]) -> str:

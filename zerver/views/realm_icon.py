@@ -27,7 +27,7 @@ def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse
     icon_url = realm_icon_url(user_profile.realm)
 
     json_result = dict(
-        icon_url=icon_url
+        icon_url=icon_url,
     )
     return json_success(json_result)
 
@@ -40,7 +40,7 @@ def delete_icon_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     do_change_icon_source(user_profile.realm, user_profile.realm.ICON_FROM_GRAVATAR)
     gravatar_url = realm_icon_url(user_profile.realm)
     json_result = dict(
-        icon_url=gravatar_url
+        icon_url=gravatar_url,
     )
     return json_success(json_result)
 

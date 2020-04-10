@@ -124,7 +124,7 @@ def bulk_create_streams(realm: Realm,
                     history_public_to_subscribers=options["history_public_to_subscribers"],
                     is_web_public=options.get("is_web_public", False),
                     is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
-                )
+                ),
             )
     # Sort streams by name before creating them so that we can have a
     # reliable ordering of `stream_id` across different python versions.

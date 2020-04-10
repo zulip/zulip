@@ -18,7 +18,7 @@ from django.db.models.query import QuerySet
 def get_default_value_for_history_public_to_subscribers(
         realm: Realm,
         invite_only: bool,
-        history_public_to_subscribers: Optional[bool]
+        history_public_to_subscribers: Optional[bool],
 ) -> bool:
     if invite_only:
         if history_public_to_subscribers is None:
@@ -63,8 +63,8 @@ def create_stream_if_needed(realm: Realm,
             invite_only=invite_only,
             stream_post_policy=stream_post_policy,
             history_public_to_subscribers=history_public_to_subscribers,
-            is_in_zephyr_realm=realm.is_zephyr_mirror_realm
-        )
+            is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
+        ),
     )
 
     if created:
@@ -95,7 +95,7 @@ def create_streams_if_needed(realm: Realm,
             invite_only=stream_dict.get("invite_only", False),
             stream_post_policy=stream_dict.get("stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE),
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
-            stream_description=stream_dict.get("description", "")
+            stream_description=stream_dict.get("description", ""),
         )
 
         if created:

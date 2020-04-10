@@ -297,7 +297,7 @@ class MatterMostImporter(ZulipTestCase):
             realm_id=3,
             custom_emoji_data=mattermost_data["emoji"],
             data_dir=self.fixture_file_name("", "mattermost_fixtures"),
-            output_dir = output_dir
+            output_dir = output_dir,
         )
         self.assertEqual(len(zerver_realm_emoji), 2)
         self.assertEqual(zerver_realm_emoji[0]["file_name"], "peerdium")
@@ -327,72 +327,72 @@ class MatterMostImporter(ZulipTestCase):
         harry_id = user_id_mapper.get("harry")
 
         raw_message = {
-            "content": "Hello @harry"
+            "content": "Hello @harry",
         }
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [harry_id])
 
         raw_message = {
-            "content": "Hello"
+            "content": "Hello",
         }
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [])
 
         raw_message = {
-            "content": "@harry How are you?"
+            "content": "@harry How are you?",
         }
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [harry_id])
 
         raw_message = {
-            "content": "@harry @ron Where are you folks?"
+            "content": "@harry @ron Where are you folks?",
         }
         ron_id = user_id_mapper.get("ron")
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [harry_id, ron_id])
 
         raw_message = {
-            "content": "@harry.com How are you?"
+            "content": "@harry.com How are you?",
         }
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [])
 
         raw_message = {
-            "content": "hello@harry.com How are you?"
+            "content": "hello@harry.com How are you?",
         }
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [])
 
         harry_id = user_id_mapper.get("harry_")
         raw_message = {
-            "content": "Hello @harry_"
+            "content": "Hello @harry_",
         }
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [harry_id])
 
         harry_id = user_id_mapper.get("harry.")
         raw_message = {
-            "content": "Hello @harry."
+            "content": "Hello @harry.",
         }
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [harry_id])
 
         harry_id = user_id_mapper.get("ha_rry.")
         raw_message = {
-            "content": "Hello @ha_rry."
+            "content": "Hello @ha_rry.",
         }
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [harry_id])
 
         ron_id = user_id_mapper.get("ron")
         raw_message = {
-            "content": "Hello @ron."
+            "content": "Hello @ron.",
         }
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [])
 
         raw_message = {
-            "content": "Hello @ron_"
+            "content": "Hello @ron_",
         }
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [])
@@ -444,14 +444,14 @@ class MatterMostImporter(ZulipTestCase):
             {"user": "harry", "create_at": 1553165521410, "emoji_name": "tick"},
             {"user": "ron", "create_at": 1553166530805, "emoji_name": "smile"},
             {"user": "ron", "create_at": 1553166540953, "emoji_name": "world_map"},
-            {"user": "harry", "create_at": 1553166540957, "emoji_name": "world_map"}
+            {"user": "harry", "create_at": 1553166540957, "emoji_name": "world_map"},
         ]
 
         zerver_realmemoji = write_emoticon_data(
             realm_id=3,
             custom_emoji_data=mattermost_data["emoji"],
             data_dir=self.fixture_file_name("", "mattermost_fixtures"),
-            output_dir=self.make_import_output_dir("mattermost")
+            output_dir=self.make_import_output_dir("mattermost"),
         )
 
         # Make sure tick is present in fixture data
@@ -468,7 +468,7 @@ class MatterMostImporter(ZulipTestCase):
             reactions=reactions,
             message_id=5,
             user_id_mapper=user_id_mapper,
-            zerver_realmemoji=zerver_realmemoji
+            zerver_realmemoji=zerver_realmemoji,
         )
 
         smile_emoji_code = name_to_codepoint["smile"]
@@ -498,7 +498,7 @@ class MatterMostImporter(ZulipTestCase):
         do_convert_data(
             mattermost_data_dir=mattermost_data_dir,
             output_dir=output_dir,
-            masking_content=False
+            masking_content=False,
         )
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
@@ -552,7 +552,7 @@ class MatterMostImporter(ZulipTestCase):
 
         do_import_realm(
             import_dir=harry_team_output_dir,
-            subdomain='gryffindor'
+            subdomain='gryffindor',
         )
         realm = get_realm('gryffindor')
 
@@ -571,7 +571,7 @@ class MatterMostImporter(ZulipTestCase):
         do_convert_data(
             mattermost_data_dir=mattermost_data_dir,
             output_dir=output_dir,
-            masking_content=False
+            masking_content=False,
         )
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
@@ -625,7 +625,7 @@ class MatterMostImporter(ZulipTestCase):
 
         do_import_realm(
             import_dir=harry_team_output_dir,
-            subdomain='gryffindor'
+            subdomain='gryffindor',
         )
         realm = get_realm('gryffindor')
 
@@ -662,7 +662,7 @@ class MatterMostImporter(ZulipTestCase):
         do_convert_data(
             mattermost_data_dir=mattermost_data_dir,
             output_dir=output_dir,
-            masking_content=True
+            masking_content=True,
         )
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
@@ -677,14 +677,14 @@ class MatterMostImporter(ZulipTestCase):
         do_convert_data(
             mattermost_data_dir=mattermost_data_dir,
             output_dir=output_dir,
-            masking_content=True
+            masking_content=True,
         )
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
 
         do_import_realm(
             import_dir=harry_team_output_dir,
-            subdomain='gryffindor'
+            subdomain='gryffindor',
         )
         realm = get_realm('gryffindor')
 

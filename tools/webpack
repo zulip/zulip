@@ -39,7 +39,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
         # We add the hot flag using the cli because it takes care
         # of addition to entry points and adding the plugin
         # automatically
-        '--hot'
+        '--hot',
     ]
     if minify:
         webpack_args.append('--optimize-minimize')
@@ -99,7 +99,7 @@ def build_for_most_tests() -> None:
             entries[entry] = [{
                 "name": f"{entry}.js",
                 "publicPath": f"http://localhost:3000/webpack-stub/{entry}-stubentry.js",
-                "path": f"/stubfolder/{entry}-stubfile.js"
+                "path": f"/stubfolder/{entry}-stubfile.js",
             }]
     stat_data = {
         "status": "done",

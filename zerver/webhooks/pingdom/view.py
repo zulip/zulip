@@ -65,7 +65,7 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
         'service_url': payload['check_params']['hostname'],
         'previous_state': previous_state,
         'current_state': current_state,
-        'type': get_check_type(payload)
+        'type': get_check_type(payload),
     }
     body = MESSAGE_TEMPLATE.format(**data)
     if current_state == 'DOWN' and previous_state == 'UP':

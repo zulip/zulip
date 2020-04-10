@@ -4,7 +4,7 @@ from zerver.lib.bot_lib import EmbeddedBotQuitException
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     UserProfile, get_display_recipient,
-    get_service_profile, get_user, get_realm
+    get_service_profile, get_user, get_realm,
 )
 
 import ujson

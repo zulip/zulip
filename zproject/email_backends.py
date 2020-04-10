@@ -71,7 +71,7 @@ class EmailLogBackEnd(BaseEmailBackend):
             'from_email': email.from_email,
             'recipients': email.to,
             'body': email.body,
-            'html_message': html_message
+            'html_message': html_message,
         }
 
         new_email = loader.render_to_string('zerver/email.html', context)

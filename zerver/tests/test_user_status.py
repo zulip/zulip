@@ -147,7 +147,7 @@ class UserStatusTest(ZulipTestCase):
 
         self.assertEqual(
             user_info(hamlet),
-            dict(status_text='in a meeting')
+            dict(status_text='in a meeting'),
         )
 
         away_user_ids = get_away_user_ids(realm_id=realm_id)

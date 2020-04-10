@@ -99,7 +99,7 @@ def get_display_recipient(recipient: 'Recipient') -> DisplayRecipientT:
     return get_display_recipient_by_id(
         recipient.id,
         recipient.type,
-        recipient.type_id
+        recipient.type_id,
     )
 
 def get_realm_emoji_cache_key(realm: 'Realm') -> str:
@@ -155,7 +155,7 @@ class Realm(models.Model):
     _max_invites: Optional[int] = models.IntegerField(null=True, db_column='max_invites')
     disallow_disposable_email_addresses: bool = models.BooleanField(default=True)
     authentication_methods: BitHandler = BitField(
-        flags=AUTHENTICATION_FLAGS, default=2**31 - 1
+        flags=AUTHENTICATION_FLAGS, default=2**31 - 1,
     )
 
     # Whether the organization has enabled inline image and URL previews.
@@ -220,7 +220,7 @@ class Realm(models.Model):
     EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
     EMAIL_ADDRESS_VISIBILITY_NOBODY = 4
     email_address_visibility: int = models.PositiveSmallIntegerField(
-        default=EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        default=EMAIL_ADDRESS_VISIBILITY_EVERYONE,
     )
     EMAIL_ADDRESS_VISIBILITY_TYPES = [
         EMAIL_ADDRESS_VISIBILITY_EVERYONE,
@@ -237,13 +237,13 @@ class Realm(models.Model):
     allow_message_deleting: bool = models.BooleanField(default=False)
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = 600  # if changed, also change in admin.js, setting_org.js
     message_content_delete_limit_seconds: int = models.IntegerField(
-        default=DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS
+        default=DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS,
     )
 
     allow_message_editing: bool = models.BooleanField(default=True)
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600  # if changed, also change in admin.js, setting_org.js
     message_content_edit_limit_seconds: int = models.IntegerField(
-        default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS
+        default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS,
     )
 
     # Whether users have access to message edit history
@@ -260,10 +260,10 @@ class Realm(models.Model):
     INITIAL_PRIVATE_STREAM_NAME = 'core team'
     STREAM_EVENTS_NOTIFICATION_TOPIC = _('stream events')
     notifications_stream: Optional["Stream"] = models.ForeignKey(
-        "Stream", related_name="+", null=True, blank=True, on_delete=CASCADE
+        "Stream", related_name="+", null=True, blank=True, on_delete=CASCADE,
     )
     signup_notifications_stream: Optional["Stream"] = models.ForeignKey(
-        "Stream", related_name="+", null=True, blank=True, on_delete=CASCADE
+        "Stream", related_name="+", null=True, blank=True, on_delete=CASCADE,
     )
 
     RETAIN_MESSAGE_FOREVER = -1
@@ -312,21 +312,21 @@ class Realm(models.Model):
     VIDEO_CHAT_PROVIDERS = {
         'disabled': {
             'name': "None",
-            'id': 0
+            'id': 0,
         },
         'jitsi_meet': {
             'name': "Jitsi Meet",
-            'id': 1
+            'id': 1,
         },
         'google_hangouts': {
             'name': "Google Hangouts",
-            'id': 2
+            'id': 2,
         },
     }
     if settings.VIDEO_ZOOM_CLIENT_ID is not None and settings.VIDEO_ZOOM_CLIENT_SECRET is not None:
         VIDEO_CHAT_PROVIDERS['zoom'] = {
             'name': "Zoom",
-            'id': 3
+            'id': 3,
         }
     video_chat_provider = models.PositiveSmallIntegerField(default=VIDEO_CHAT_PROVIDERS['jitsi_meet']['id'])
     google_hangouts_domain = models.TextField(default="")
@@ -379,7 +379,7 @@ class Realm(models.Model):
         (ICON_UPLOADED, 'Uploaded by administrator'),
     )
     icon_source: str = models.CharField(
-        default=ICON_FROM_GRAVATAR, choices=ICON_SOURCES, max_length=1
+        default=ICON_FROM_GRAVATAR, choices=ICON_SOURCES, max_length=1,
     )
     icon_version: int = models.PositiveSmallIntegerField(default=1)
 
@@ -391,12 +391,12 @@ class Realm(models.Model):
         (LOGO_UPLOADED, 'Uploaded by administrator'),
     )
     logo_source: str = models.CharField(
-        default=LOGO_DEFAULT, choices=LOGO_SOURCES, max_length=1
+        default=LOGO_DEFAULT, choices=LOGO_SOURCES, max_length=1,
     )
     logo_version: int = models.PositiveSmallIntegerField(default=1)
 
     night_logo_source: str = models.CharField(
-        default=LOGO_DEFAULT, choices=LOGO_SOURCES, max_length=1
+        default=LOGO_DEFAULT, choices=LOGO_SOURCES, max_length=1,
     )
     night_logo_version: int = models.PositiveSmallIntegerField(default=1)
 
@@ -599,7 +599,7 @@ def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
 
 class RealmEmoji(models.Model):
     author: Optional["UserProfile"] = models.ForeignKey(
-        "UserProfile", blank=True, null=True, on_delete=CASCADE
+        "UserProfile", blank=True, null=True, on_delete=CASCADE,
     )
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     name: str = models.TextField(validators=[
@@ -946,10 +946,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     # Default streams for some deprecated/legacy classes of bot users.
     default_sending_stream: Optional["Stream"] = models.ForeignKey(
-        "zerver.Stream", null=True, related_name="+", on_delete=CASCADE
+        "zerver.Stream", null=True, related_name="+", on_delete=CASCADE,
     )
     default_events_register_stream: Optional["Stream"] = models.ForeignKey(
-        "zerver.Stream", null=True, related_name="+", on_delete=CASCADE
+        "zerver.Stream", null=True, related_name="+", on_delete=CASCADE,
     )
     default_all_public_streams: bool = models.BooleanField(default=False)
 
@@ -977,7 +977,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     DEMOTE_STREAMS_CHOICES = [
         DEMOTE_STREAMS_AUTOMATIC,
         DEMOTE_STREAMS_ALWAYS,
-        DEMOTE_STREAMS_NEVER
+        DEMOTE_STREAMS_NEVER,
     ]
     demote_inactive_streams = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
 
@@ -1416,7 +1416,7 @@ class Stream(models.Model):
     # e-mail length of 254, and our max stream length is 30, so we
     # have plenty of room for the token.
     email_token: str = models.CharField(
-        max_length=32, default=generate_email_token_for_stream, unique=True
+        max_length=32, default=generate_email_token_for_stream, unique=True,
     )
 
     # For old messages being automatically deleted.
@@ -1535,7 +1535,7 @@ def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
 def stream_name_in_use(stream_name: str, realm_id: int) -> bool:
     return Stream.objects.filter(
         name__iexact=stream_name.strip(),
-        realm_id=realm_id
+        realm_id=realm_id,
     ).exists()
 
 def get_active_streams(realm: Optional[Realm]) -> QuerySet:
@@ -1597,7 +1597,7 @@ def get_huddle_user_ids(recipient: Recipient) -> List[int]:
     assert(recipient.type == Recipient.HUDDLE)
 
     return Subscription.objects.filter(
-        recipient=recipient
+        recipient=recipient,
     ).order_by('user_profile_id').values_list('user_profile_id', flat=True)
 
 def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]]:
@@ -1610,7 +1610,7 @@ def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]
         return {}
 
     subscriptions = Subscription.objects.filter(
-        recipient__in=recipients
+        recipient__in=recipients,
     ).order_by('user_profile_id')
 
     result_dict: Dict[int, List[int]] = {}
@@ -1677,7 +1677,7 @@ class ArchiveTransaction(models.Model):
             id=self.id,
             type="MANUAL" if self.type == self.MANUAL else "RETENTION_POLICY_BASED",
             realm=self.realm.string_id if self.realm else None,
-            timestamp=self.timestamp
+            timestamp=self.timestamp,
         )
 
 class ArchivedMessage(AbstractMessage):
@@ -1999,7 +1999,7 @@ class AbstractAttachment(models.Model):
     realm: Optional[Realm] = models.ForeignKey(Realm, blank=True, null=True, on_delete=CASCADE)
 
     create_time: datetime.datetime = models.DateTimeField(
-        default=timezone_now, db_index=True
+        default=timezone_now, db_index=True,
     )
     size: Optional[int] = models.IntegerField(null=True)
 
@@ -2041,8 +2041,8 @@ class Attachment(AbstractAttachment):
             'create_time': time.mktime(self.create_time.timetuple()) * 1000,
             'messages': [{
                 'id': m.id,
-                'name': time.mktime(m.date_sent.timetuple()) * 1000
-            } for m in self.messages.all()]
+                'name': time.mktime(m.date_sent.timetuple()) * 1000,
+            } for m in self.messages.all()],
         }
 
 post_save.connect(flush_used_upload_space_cache, sender=Attachment)
@@ -2254,7 +2254,7 @@ def get_system_bot(email: str) -> UserProfile:
 
 def get_user_by_id_in_realm_including_cross_realm(
         uid: int,
-        realm: Optional[Realm]
+        realm: Optional[Realm],
 ) -> UserProfile:
     user_profile = get_user_profile_by_id(uid)
     if user_profile.realm == realm:
@@ -2277,7 +2277,7 @@ def get_realm_user_dicts(realm_id: int) -> List[Dict[str, Any]]:
 def active_user_ids(realm_id: int) -> List[int]:
     query = UserProfile.objects.filter(
         realm_id=realm_id,
-        is_active=True
+        is_active=True,
     ).values_list('id', flat=True)
     return list(query)
 
@@ -2285,9 +2285,9 @@ def active_user_ids(realm_id: int) -> List[int]:
 def active_non_guest_user_ids(realm_id: int) -> List[int]:
     query = UserProfile.objects.filter(
         realm_id=realm_id,
-        is_active=True
+        is_active=True,
     ).exclude(
-        role=UserProfile.ROLE_GUEST
+        role=UserProfile.ROLE_GUEST,
     ).values_list('id', flat=True)
     return list(query)
 
@@ -2372,7 +2372,7 @@ class UserPresence(models.Model):
     class Meta:
         unique_together = ("user_profile", "client")
         index_together = [
-            ("realm", "timestamp")
+            ("realm", "timestamp"),
         ]
 
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
@@ -2426,7 +2426,7 @@ class UserPresence(models.Model):
         return UserPresence.to_presence_dict(
             self.client.name,
             self.status,
-            self.timestamp
+            self.timestamp,
         )
 
     @staticmethod
@@ -2551,7 +2551,7 @@ class ScheduledMessage(models.Model):
     )
 
     delivery_type: int = models.PositiveSmallIntegerField(
-        choices=DELIVERY_TYPES, default=SEND_LATER
+        choices=DELIVERY_TYPES, default=SEND_LATER,
     )
 
     def topic_name(self) -> str:
@@ -2658,13 +2658,13 @@ class RealmAuditLog(AbstractRealmAuditLog):
     """
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     acting_user: Optional[UserProfile] = models.ForeignKey(
-        UserProfile, null=True, related_name="+", on_delete=CASCADE
+        UserProfile, null=True, related_name="+", on_delete=CASCADE,
     )
     modified_user: Optional[UserProfile] = models.ForeignKey(
-        UserProfile, null=True, related_name="+", on_delete=CASCADE
+        UserProfile, null=True, related_name="+", on_delete=CASCADE,
     )
     modified_stream: Optional[Stream] = models.ForeignKey(
-        Stream, null=True, on_delete=CASCADE
+        Stream, null=True, on_delete=CASCADE,
     )
     event_last_message_id: Optional[int] = models.IntegerField(null=True)
 
@@ -2766,7 +2766,7 @@ class CustomProfileField(models.Model):
     }
 
     field_type: int = models.PositiveSmallIntegerField(
-        choices=FIELD_TYPE_CHOICES, default=SHORT_TEXT
+        choices=FIELD_TYPE_CHOICES, default=SHORT_TEXT,
     )
 
     # A JSON blob of any additional data needed to define the field beyond

@@ -41,7 +41,7 @@ def events_register_backend(
         event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         fetch_event_types: Optional[Iterable[str]]=REQ(validator=check_list(check_string), default=None),
         narrow: NarrowT=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
-        queue_lifespan_secs: int=REQ(converter=int, default=0, documentation_pending=True)
+        queue_lifespan_secs: int=REQ(converter=int, default=0, documentation_pending=True),
 ) -> HttpResponse:
     all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
     narrow = _default_narrow(user_profile, narrow)

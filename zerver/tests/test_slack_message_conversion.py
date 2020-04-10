@@ -1,6 +1,6 @@
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
-    get_user_full_name
+    get_user_full_name,
 )
 from zerver.lib.test_classes import (
     ZulipTestCase,

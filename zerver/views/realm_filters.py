@@ -23,7 +23,7 @@ def create_filter(request: HttpRequest, user_profile: UserProfile, pattern: str=
         filter_id = do_add_realm_filter(
             realm=user_profile.realm,
             pattern=pattern,
-            url_format_string=url_format_string
+            url_format_string=url_format_string,
         )
         return json_success({'id': filter_id})
     except ValidationError as e:

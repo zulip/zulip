@@ -21,7 +21,7 @@ from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
     write_instrumentation_reports,
-    append_instrumentation_data
+    append_instrumentation_data,
 )
 
 import os

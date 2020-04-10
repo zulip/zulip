@@ -224,7 +224,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
         "displayname": "Example, Inc. Zulip",
         "name": "zulip",
         "url": "%s%s" % ('https://', EXTERNAL_HOST),
-    }
+    },
 }
 SOCIAL_AUTH_SAML_ENABLED_IDPS = {
     # The fields are explained in detail here:
@@ -259,7 +259,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         # If you want this IdP to only be enabled for authentication
         # to certain subdomains, uncomment and edit the setting below.
         # "limit_to_subdomains": ["subdomain1", "subdomain2"],
-    }
+    },
 }
 
 SOCIAL_AUTH_SAML_SECURITY_CONFIG = {

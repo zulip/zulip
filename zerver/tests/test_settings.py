@@ -13,7 +13,7 @@ from zerver.lib.users import get_all_api_keys
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.models import (
     UserProfile,
-    get_user_profile_by_api_key
+    get_user_profile_by_api_key,
 )
 
 class ChangeSettingsTest(ZulipTestCase):
@@ -88,8 +88,8 @@ class ChangeSettingsTest(ZulipTestCase):
             self.client.login(
                 username=user.delivery_email,
                 password='foobar1',
-                realm=user.realm
-            )
+                realm=user.realm,
+            ),
         )
         self.assert_logged_in_user_id(user.id)
 
@@ -314,7 +314,7 @@ class ChangeSettingsTest(ZulipTestCase):
         """
         self.login('hamlet')
         result = self.client_patch("/json/settings",
-                                   dict(old_password='ignored',))
+                                   dict(old_password='ignored'))
         self.assert_json_error(result, "Please fill out all fields.")
 
     def do_test_change_user_display_setting(self, setting_name: str) -> None:

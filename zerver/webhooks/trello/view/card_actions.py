@@ -61,7 +61,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     ADD_ATTACHMENT: 'added [{attachment_name}]({attachment_url}) to {card_url_template}.',
     ADD_CHECKLIST: 'added the {checklist_name} checklist to {card_url_template}.',
     COMMENT: 'commented on {card_url_template}:\n~~~ quote\n{text}\n~~~\n',
-    UPDATE_CHECK_ITEM_STATE: '{action} **{item_name}** in **{checklist_name}** ({card_url_template}).'
+    UPDATE_CHECK_ITEM_STATE: '{action} **{item_name}** in **{checklist_name}** ({card_url_template}).',
 }
 
 def prettify_date(date_string: str) -> str:
@@ -164,7 +164,7 @@ def get_added_label_body(payload: Mapping[str, Any], action_type: str) -> str:
 
 def get_managed_member_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
-        'member_name': payload['action']['member'].get('fullName')
+        'member_name': payload['action']['member'].get('fullName'),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
@@ -176,27 +176,27 @@ def get_comment_body(payload: Mapping[str, Any], action_type: str) -> str:
 
 def get_managed_due_date_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
-        'due_date': prettify_date(get_action_data(payload)['card'].get('due'))
+        'due_date': prettify_date(get_action_data(payload)['card'].get('due')),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_changed_due_date_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
         'due_date': prettify_date(get_action_data(payload)['card'].get('due')),
-        'old_due_date': prettify_date(get_action_data(payload)['old'].get('due'))
+        'old_due_date': prettify_date(get_action_data(payload)['old'].get('due')),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_managed_desc_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
-        'desc': prettify_date(get_action_data(payload)['card']['desc'])
+        'desc': prettify_date(get_action_data(payload)['card']['desc']),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_changed_desc_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
         'desc': prettify_date(get_action_data(payload)['card']['desc']),
-        'old_desc': prettify_date(get_action_data(payload)['old']['desc'])
+        'old_desc': prettify_date(get_action_data(payload)['old']['desc']),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 

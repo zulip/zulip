@@ -10,7 +10,7 @@ if ZULIP_PATH not in sys.path:
 
 from scripts.lib.zulip_tools import os_families, run, parse_os_release
 from scripts.lib.setup_venv import (
-    setup_virtualenv, THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES
+    setup_virtualenv, THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES,
 )
 
 parser = argparse.ArgumentParser(description="Create a thumbor virtualenv with caching")

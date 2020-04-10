@@ -430,7 +430,7 @@ def process_posts(num_teams: int,
             sender_id=sender_id,
             content=content,
             date_sent=int(post_dict['create_at'] / 1000),
-            reactions=reactions
+            reactions=reactions,
         )
         if "channel" in post_dict:
             message_dict["channel_name"] = post_dict["channel"]

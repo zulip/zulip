@@ -117,7 +117,7 @@ def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
 
 def get_cache_with_key(
         keyfunc: Callable[..., str],
-        cache_name: Optional[str]=None
+        cache_name: Optional[str]=None,
 ) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """
     The main goal of this function getting value from the cache like in the "cache_with_key".
@@ -145,7 +145,7 @@ def get_cache_with_key(
 
 def cache_with_key(
         keyfunc: Callable[..., str], cache_name: Optional[str]=None,
-        timeout: Optional[int]=None, with_statsd_key: Optional[str]=None
+        timeout: Optional[int]=None, with_statsd_key: Optional[str]=None,
 ) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """Decorator which applies Django caching to a function.
 
@@ -382,7 +382,7 @@ def generic_bulk_cached_fetch(
         cache_keys[object_id] = cache_key_function(object_id)
 
     cached_objects_compressed: Dict[str, Tuple[CompressedItemT]] = safe_cache_get_many(
-        [cache_keys[object_id] for object_id in object_ids]
+        [cache_keys[object_id] for object_id in object_ids],
     )
 
     cached_objects: Dict[str, CacheItemT] = {}
@@ -445,7 +445,7 @@ realm_user_dict_fields: List[str] = [
     'avatar_source', 'avatar_version', 'is_active',
     'role', 'is_bot', 'realm_id', 'timezone',
     'date_joined', 'bot_owner_id', 'delivery_email',
-    'bot_type'
+    'bot_type',
 ]
 
 def realm_user_dicts_cache_key(realm_id: int) -> str:

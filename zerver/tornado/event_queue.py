@@ -142,7 +142,7 @@ class ClientDescriptor:
             d['slim_presence'],
             d['all_public_streams'],
             d['queue_timeout'],
-            d.get('narrow', [])
+            d.get('narrow', []),
         )
         ret.last_connection_time = d['last_connection_time']
         return ret
@@ -629,7 +629,7 @@ def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int
             'dont_block': 'true',
             'user_profile_id': user_profile.id,
             'secret': settings.SHARED_SECRET,
-            'client': 'internal'
+            'client': 'internal',
         }
         resp = requests_client.post(tornado_uri + '/api/v1/events/internal',
                                     data=post_data)
@@ -798,7 +798,7 @@ def get_client_info_for_message_event(event_template: Mapping[str, Any],
             send_to_clients[client.event_queue.id] = dict(
                 client=client,
                 flags=[],
-                is_sender=is_sender_client(client)
+                is_sender=is_sender_client(client),
             )
 
     for user_data in users:
@@ -809,7 +809,7 @@ def get_client_info_for_message_event(event_template: Mapping[str, Any],
             send_to_clients[client.event_queue.id] = dict(
                 client=client,
                 flags=flags,
-                is_sender=is_sender_client(client)
+                is_sender=is_sender_client(client),
             )
 
     return send_to_clients
@@ -844,7 +844,7 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         return MessageDict.finalize_payload(
             wide_dict,
             apply_markdown=apply_markdown,
-            client_gravatar=client_gravatar
+            client_gravatar=client_gravatar,
         )
 
     # Extra user-specific data to include

@@ -35,7 +35,7 @@ def get_normal_push_event_body(payload: Dict[str, Any]) -> str:
     compare_url = '{}/compare/{}...{}'.format(
         get_project_homepage(payload),
         payload['before'],
-        payload['after']
+        payload['after'],
     )
 
     commits = [
@@ -43,7 +43,7 @@ def get_normal_push_event_body(payload: Dict[str, Any]) -> str:
             'name': commit.get('author').get('name'),
             'sha': commit.get('id'),
             'message': commit.get('message'),
-            'url': commit.get('url')
+            'url': commit.get('url'),
         }
         for commit in payload['commits']
     ]
@@ -52,20 +52,20 @@ def get_normal_push_event_body(payload: Dict[str, Any]) -> str:
         get_user_name(payload),
         compare_url,
         get_branch_name(payload),
-        commits
+        commits,
     )
 
 def get_remove_branch_event_body(payload: Dict[str, Any]) -> str:
     return get_remove_branch_event_message(
         get_user_name(payload),
-        get_branch_name(payload)
+        get_branch_name(payload),
     )
 
 def get_tag_push_event_body(payload: Dict[str, Any]) -> str:
     return get_push_tag_event_message(
         get_user_name(payload),
         get_tag_name(payload),
-        action="pushed" if payload.get('checkout_sha') else "removed"
+        action="pushed" if payload.get('checkout_sha') else "removed",
     )
 
 def get_issue_created_event_body(payload: Dict[str, Any],
@@ -84,7 +84,7 @@ def get_issue_created_event_body(payload: Dict[str, Any],
         description,
         get_objects_assignee(payload),
         payload.get('assignees'),
-        title=payload['object_attributes'].get('title') if include_title else None
+        title=payload['object_attributes'].get('title') if include_title else None,
     )
 
 def get_issue_event_body(payload: Dict[str, Any], action: str,
@@ -94,7 +94,7 @@ def get_issue_event_body(payload: Dict[str, Any], action: str,
         action,
         get_object_url(payload),
         payload['object_attributes'].get('iid'),
-        title=payload['object_attributes'].get('title') if include_title else None
+        title=payload['object_attributes'].get('title') if include_title else None,
     )
 
 def get_merge_request_updated_event_body(payload: Dict[str, Any],
@@ -102,12 +102,12 @@ def get_merge_request_updated_event_body(payload: Dict[str, Any],
     if payload['object_attributes'].get('oldrev'):
         return get_merge_request_event_body(
             payload, "added commit(s) to",
-            include_title=include_title
+            include_title=include_title,
         )
 
     return get_merge_request_open_or_updated_body(
         payload, "updated",
-        include_title=include_title
+        include_title=include_title,
     )
 
 def get_merge_request_event_body(payload: Dict[str, Any], action: str,
@@ -119,7 +119,7 @@ def get_merge_request_event_body(payload: Dict[str, Any], action: str,
         pull_request.get('url'),
         pull_request.get('iid'),
         type='MR',
-        title=payload['object_attributes'].get('title') if include_title else None
+        title=payload['object_attributes'].get('title') if include_title else None,
     )
 
 def get_merge_request_open_or_updated_body(payload: Dict[str, Any], action: str,
@@ -135,7 +135,7 @@ def get_merge_request_open_or_updated_body(payload: Dict[str, Any], action: str,
         pull_request.get('description'),
         get_objects_assignee(payload),
         type='MR',
-        title=payload['object_attributes'].get('title') if include_title else None
+        title=payload['object_attributes'].get('title') if include_title else None,
     )
 
 def get_objects_assignee(payload: Dict[str, Any]) -> Optional[str]:
@@ -167,7 +167,7 @@ def get_commented_merge_request_event_body(payload: Dict[str, Any],
     action = '[commented]({}) on'.format(comment['url'])
     url = '{}/merge_requests/{}'.format(
         payload['project'].get('web_url'),
-        payload['merge_request'].get('iid')
+        payload['merge_request'].get('iid'),
     )
 
     return get_pull_request_event_message(
@@ -177,7 +177,7 @@ def get_commented_merge_request_event_body(payload: Dict[str, Any],
         payload['merge_request'].get('iid'),
         message=comment['note'],
         type='MR',
-        title=payload.get('merge_request').get('title') if include_title else None
+        title=payload.get('merge_request').get('title') if include_title else None,
     )
 
 def get_commented_issue_event_body(payload: Dict[str, Any],
@@ -186,7 +186,7 @@ def get_commented_issue_event_body(payload: Dict[str, Any],
     action = '[commented]({}) on'.format(comment['url'])
     url = '{}/issues/{}'.format(
         payload['project'].get('web_url'),
-        payload['issue'].get('iid')
+        payload['issue'].get('iid'),
     )
 
     return get_pull_request_event_message(
@@ -196,7 +196,7 @@ def get_commented_issue_event_body(payload: Dict[str, Any],
         payload['issue'].get('iid'),
         message=comment['note'],
         type='Issue',
-        title=payload.get('issue').get('title') if include_title else None
+        title=payload.get('issue').get('title') if include_title else None,
     )
 
 def get_commented_snippet_event_body(payload: Dict[str, Any],
@@ -205,7 +205,7 @@ def get_commented_snippet_event_body(payload: Dict[str, Any],
     action = '[commented]({}) on'.format(comment['url'])
     url = '{}/snippets/{}'.format(
         payload['project'].get('web_url'),
-        payload['snippet'].get('id')
+        payload['snippet'].get('id'),
     )
 
     return get_pull_request_event_message(
@@ -215,7 +215,7 @@ def get_commented_snippet_event_body(payload: Dict[str, Any],
         payload['snippet'].get('id'),
         message=comment['note'],
         type='Snippet',
-        title=payload.get('snippet').get('title') if include_title else None
+        title=payload.get('snippet').get('title') if include_title else None,
     )
 
 def get_wiki_page_event_body(payload: Dict[str, Any], action: str) -> str:
@@ -237,7 +237,7 @@ def get_build_hook_event_body(payload: Dict[str, Any]) -> str:
     return "Build {} from {} stage {}.".format(
         payload.get('build_name'),
         payload.get('build_stage'),
-        action
+        action,
     )
 
 def get_test_event_body(payload: Dict[str, Any]) -> str:
@@ -255,14 +255,14 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
     project_homepage = get_project_homepage(payload)
     pipeline_url = '{}/pipelines/{}'.format(
         project_homepage,
-        payload['object_attributes'].get('id')
+        payload['object_attributes'].get('id'),
     )
 
     builds_status = ""
     for build in payload['builds']:
         build_url = '{}/-/jobs/{}'.format(
             project_homepage,
-            build.get('id')
+            build.get('id'),
         )
         artifact_filename = build.get('artifacts_file', {}).get('filename', None)
         if artifact_filename:
@@ -275,13 +275,13 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
             build.get('name'),
             build_url,
             build.get('status'),
-            artifact_string
+            artifact_string,
         )
     return "[Pipeline ({})]({}) {} with build(s):\n{}.".format(
         payload['object_attributes'].get('id'),
         pipeline_url,
         action,
-        builds_status[:-1]
+        builds_status[:-1],
     )
 
 def get_repo_name(payload: Dict[str, Any]) -> str:
@@ -356,7 +356,7 @@ def api_gitlab_webhook(request: HttpRequest, user_profile: UserProfile,
         if 'include_title' in signature(event_body_function).parameters:
             body = event_body_function(
                 payload,
-                include_title=user_specified_topic is not None
+                include_title=user_specified_topic is not None,
             )
         else:
             body = event_body_function(payload)
@@ -387,28 +387,28 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
             repo=get_repo_name(payload),
             type='MR',
             id=payload['object_attributes'].get('iid'),
-            title=payload['object_attributes'].get('title')
+            title=payload['object_attributes'].get('title'),
         )
     elif event.startswith('Issue Hook') or event.startswith('Confidential Issue Hook'):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='Issue',
             id=payload['object_attributes'].get('iid'),
-            title=payload['object_attributes'].get('title')
+            title=payload['object_attributes'].get('title'),
         )
     elif event == 'Note Hook Issue' or event == 'Confidential Note Hook Issue':
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='Issue',
             id=payload['issue'].get('iid'),
-            title=payload['issue'].get('title')
+            title=payload['issue'].get('title'),
         )
     elif event == 'Note Hook MergeRequest':
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='MR',
             id=payload['merge_request'].get('iid'),
-            title=payload['merge_request'].get('title')
+            title=payload['merge_request'].get('title'),
         )
 
     elif event == 'Note Hook Snippet':
@@ -416,7 +416,7 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
             repo=get_repo_name(payload),
             type='Snippet',
             id=payload['snippet'].get('id'),
-            title=payload['snippet'].get('title')
+            title=payload['snippet'].get('title'),
         )
     return get_repo_name(payload)
 

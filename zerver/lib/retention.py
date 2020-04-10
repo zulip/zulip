@@ -27,19 +27,19 @@ models_with_message_key: List[Dict[str, Any]] = [
         'class': Reaction,
         'archive_class': ArchivedReaction,
         'table_name': 'zerver_reaction',
-        'archive_table_name': 'zerver_archivedreaction'
+        'archive_table_name': 'zerver_archivedreaction',
     },
     {
         'class': SubMessage,
         'archive_class': ArchivedSubMessage,
         'table_name': 'zerver_submessage',
-        'archive_table_name': 'zerver_archivedsubmessage'
+        'archive_table_name': 'zerver_archivedsubmessage',
     },
     {
         'class': UserMessage,
         'archive_class': ArchivedUserMessage,
         'table_name': 'zerver_usermessage',
-        'archive_table_name': 'zerver_archivedusermessage'
+        'archive_table_name': 'zerver_archivedusermessage',
     },
 ]
 
@@ -68,7 +68,7 @@ def move_rows(
     sql_args.update(kwargs)
     with connection.cursor() as cursor:
         cursor.execute(
-            raw_query.format(**sql_args)
+            raw_query.format(**sql_args),
         )
         if returning_id:
             return [id for (id,) in cursor.fetchall()]  # return list of row ids
@@ -153,7 +153,7 @@ def move_expired_messages_to_archive_by_recipient(recipient: Recipient,
     )
 
 def move_expired_personal_and_huddle_messages_to_archive(realm: Realm,
-                                                         chunk_size: int=MESSAGE_BATCH_SIZE
+                                                         chunk_size: int=MESSAGE_BATCH_SIZE,
                                                          ) -> int:
     # This function will archive appropriate messages and their related objects.
     cross_realm_bot_ids = [
@@ -324,7 +324,7 @@ def archive_stream_messages(realm: Realm, streams: List[Stream], chunk_size: int
     message_count = 0
     for recipient in recipients:
         message_count += archive_messages_by_recipient(
-            recipient, retention_policy_dict[recipient.type_id], realm, chunk_size
+            recipient, retention_policy_dict[recipient.type_id], realm, chunk_size,
         )
 
     logger.info("Done. Archived %s messages.", message_count)
@@ -521,7 +521,7 @@ def restore_all_data_from_archive(restore_manual_transactions: bool=True) -> Non
 
     if restore_manual_transactions:
         restore_data_from_archive_by_transactions(
-            ArchiveTransaction.objects.exclude(restored=True).filter(type=ArchiveTransaction.MANUAL)
+            ArchiveTransaction.objects.exclude(restored=True).filter(type=ArchiveTransaction.MANUAL),
         )
 
 def clean_archived_data() -> None:

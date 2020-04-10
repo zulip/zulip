@@ -69,7 +69,7 @@ WORD_SET = {
     'testing', 'tested',  # 'tests' excluded to reduce false negative
     'truncates', 'truncating', 'truncated',
     'updates', 'updating', 'updated',
-    'uses', 'using', 'used'
+    'uses', 'using', 'used',
 }
 
 imperative_forms = sorted([
@@ -135,7 +135,7 @@ class ImperativeMood(LineRule):
             violation = RuleViolation(self.id, self.error_msg.format(
                 word=first_word,
                 imperative=imperative,
-                title=commit.message.title
+                title=commit.message.title,
             ))
 
             violations.append(violation)

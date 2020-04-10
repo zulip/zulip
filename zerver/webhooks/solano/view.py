@@ -57,7 +57,7 @@ def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
     body = MESSAGE_TEMPLATE.format(
         author=author, build_log_url=build_log,
         commit_id=commit_id[:7], commit_url=commit_url,
-        status=status, emoji=emoji
+        status=status, emoji=emoji,
     )
 
     check_send_webhook_message(request, user_profile, topic, body)

@@ -140,13 +140,13 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
     android_devices = list(RemotePushDeviceToken.objects.filter(
         user_id=user_id,
         kind=RemotePushDeviceToken.GCM,
-        server=server
+        server=server,
     ))
 
     apple_devices = list(RemotePushDeviceToken.objects.filter(
         user_id=user_id,
         kind=RemotePushDeviceToken.APNS,
-        server=server
+        server=server,
     ))
 
     if android_devices:

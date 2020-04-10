@@ -245,14 +245,14 @@ class StripeTestCase(ZulipTestCase):
         # sanity check our 8 expected users are active
         self.assertEqual(
             UserProfile.objects.filter(realm=realm, is_active=True).count(),
-            8
+            8,
         )
 
         # Make sure we have active users outside our realm (to make
         # sure relevant queries restrict on realm).
         self.assertEqual(
             UserProfile.objects.exclude(realm=realm).filter(is_active=True).count(),
-            10
+            10,
         )
 
         # Our seat count excludes our guest user and bot, and
@@ -633,14 +633,14 @@ class StripeTest(StripeTestCase):
                 update_license_ledger_if_needed(realm, self.now)
             self.assertEqual(
                 LicenseLedger.objects.order_by('-id').values_list('licenses', 'licenses_at_next_renewal').first(),
-                (12, 12)
+                (12, 12),
             )
 
             with patch('corporate.lib.stripe.get_latest_seat_count', return_value=15):
                 update_license_ledger_if_needed(realm, self.next_month)
             self.assertEqual(
                 LicenseLedger.objects.order_by('-id').values_list('licenses', 'licenses_at_next_renewal').first(),
-                (15, 15)
+                (15, 15),
             )
 
             invoice_plans_as_needed(self.next_month)
@@ -662,7 +662,7 @@ class StripeTest(StripeTestCase):
                 "amount_due": 15 * 80 * 100, "amount_paid": 0, "amount_remaining": 15 * 80 * 100,
                 "auto_advance": True, "billing": "charge_automatically", "collection_method": "charge_automatically",
                 "customer_email": self.example_email("hamlet"), "discount": None, "paid": False, "status": "open",
-                "total": 15 * 80 * 100
+                "total": 15 * 80 * 100,
             }
             for key, value in invoice_params.items():
                 self.assertEqual(invoices[0].get(key), value)
@@ -673,7 +673,7 @@ class StripeTest(StripeTestCase):
                 "plan": None, "quantity": 15, "subscription": None, "discountable": False,
                 "period": {
                     "start": datetime_to_timestamp(free_trial_end_date),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12))
+                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
                 },
             }
             for key, value in invoice_item_params.items():
@@ -687,14 +687,14 @@ class StripeTest(StripeTestCase):
                 update_license_ledger_if_needed(realm, add_months(free_trial_end_date, 10))
             self.assertEqual(
                 LicenseLedger.objects.order_by('-id').values_list('licenses', 'licenses_at_next_renewal').first(),
-                (19, 19)
+                (19, 19),
             )
             invoice_plans_as_needed(add_months(free_trial_end_date, 10))
             invoices = [invoice for invoice in stripe.Invoice.list(customer=stripe_customer.id)]
             self.assertEqual(len(invoices), 2)
             invoice_params = {
                 "amount_due": 5172, "auto_advance": True,  "billing": "charge_automatically",
-                "collection_method": "charge_automatically", "customer_email": "hamlet@zulip.com"
+                "collection_method": "charge_automatically", "customer_email": "hamlet@zulip.com",
             }
             invoice_items = [invoice_item for invoice_item in invoices[0].get("lines")]
             self.assertEqual(len(invoice_items), 1)
@@ -703,8 +703,8 @@ class StripeTest(StripeTestCase):
                 "discountable": False, "quantity": 4,
                 "period": {
                     "start": datetime_to_timestamp(add_months(free_trial_end_date, 10)),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12))
-                }
+                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
+                },
             }
 
             invoice_plans_as_needed(add_months(free_trial_end_date, 12))
@@ -774,7 +774,7 @@ class StripeTest(StripeTestCase):
                     'Zulip Standard', 'Free Trial', str(self.seat_count),
                     'You are using', f'{self.seat_count} of {123} licenses',
                     'Your plan will be upgraded to', 'March 2, 2012',
-                    f'{80 * 123:,.2f}', 'Billed by invoice'
+                    f'{80 * 123:,.2f}', 'Billed by invoice',
             ]:
                 self.assert_in_response(substring, response)
 
@@ -798,7 +798,7 @@ class StripeTest(StripeTestCase):
                 "amount_due": 123 * 80 * 100, "amount_paid": 0, "amount_remaining": 123 * 80 * 100,
                 "auto_advance": True, "billing": "send_invoice", "collection_method": "send_invoice",
                 "customer_email": self.example_email("hamlet"), "discount": None, "paid": False, "status": "open",
-                "total": 123 * 80 * 100
+                "total": 123 * 80 * 100,
             }
             for key, value in invoice_params.items():
                 self.assertEqual(invoices[0].get(key), value)
@@ -809,7 +809,7 @@ class StripeTest(StripeTestCase):
                 "plan": None, "quantity": 123, "subscription": None, "discountable": False,
                 "period": {
                     "start": datetime_to_timestamp(free_trial_end_date),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12))
+                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
                 },
             }
             for key, value in invoice_item_params.items():

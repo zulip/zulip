@@ -20,7 +20,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     REMOVE_MEMBER: 'removed {member_name} from {board_url_template}.',
     ADD_MEMBER: 'added {member_name} to {board_url_template}.',
     CREATE_LIST: 'added {list_name} list to {board_url_template}.',
-    CHANGE_NAME: 'renamed the board from {old_name} to {board_url_template}.'
+    CHANGE_NAME: 'renamed the board from {old_name} to {board_url_template}.',
 }
 
 def process_board_action(payload: Mapping[str, Any],
@@ -64,7 +64,7 @@ def get_create_list_body(payload: Mapping[str, Any], action_type: str) -> str:
 
 def get_change_name_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
-        'old_name': get_action_data(payload)['old']['name']
+        'old_name': get_action_data(payload)['old']['name'],
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
@@ -97,5 +97,5 @@ ACTIONS_TO_FILL_BODY_MAPPER = {
     REMOVE_MEMBER: get_managed_member_body,
     ADD_MEMBER: get_managed_member_body,
     CREATE_LIST: get_create_list_body,
-    CHANGE_NAME: get_change_name_body
+    CHANGE_NAME: get_change_name_body,
 }

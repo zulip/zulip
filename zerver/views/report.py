@@ -27,7 +27,7 @@ def get_js_source_map() -> Optional[SourceMap]:
     global js_source_map
     if not js_source_map and not (settings.DEVELOPMENT or settings.TEST_SUITE):
         js_source_map = SourceMap([
-            static_path('webpack-bundles')
+            static_path('webpack-bundles'),
         ])
     return js_source_map
 
@@ -90,7 +90,7 @@ def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
 def report_error(request: HttpRequest, user_profile: UserProfile, message: str=REQ(),
                  stacktrace: str=REQ(), ui_message: bool=REQ(validator=check_bool),
                  user_agent: str=REQ(), href: str=REQ(), log: str=REQ(),
-                 more_info: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
+                 more_info: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
                  ) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
     actual error reports are later handled by do_report_error"""
@@ -143,7 +143,7 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
             stacktrace = stacktrace,
             log = log,
             more_info = more_info,
-        )
+        ),
     ))
 
     return json_success()

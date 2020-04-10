@@ -10,12 +10,12 @@ from unittest.mock import patch
 import urllib
 from typing import Any, Dict
 from zerver.lib.actions import (
-    do_create_user, do_change_logo_source
+    do_create_user, do_change_logo_source,
 )
 from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
-    queries_captured, get_user_messages
+    queries_captured, get_user_messages,
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_runner import slow
@@ -23,7 +23,7 @@ from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.models import (
     get_realm, get_stream, get_user, UserProfile,
     flush_per_request_caches, DefaultStream, Realm,
-    get_system_bot, UserActivity
+    get_system_bot, UserActivity,
 )
 from zerver.views.home import compute_navbar_logo_url, get_furthest_read_time
 from corporate.models import Customer, CustomerPlan
@@ -334,7 +334,7 @@ class HomeTest(ZulipTestCase):
             stream = self.make_stream(stream_name)
             DefaultStream.objects.create(
                 realm_id=realm_id,
-                stream_id=stream.id
+                stream_id=stream.id,
             )
             for user in [main_user, other_user]:
                 self.subscribe(user, stream_name)
@@ -411,7 +411,7 @@ class HomeTest(ZulipTestCase):
         unsupported_user_agents = [
             "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2)",
             "Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko",
-            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)"
+            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)",
         ]
         for user_agent in unsupported_user_agents:
             result = self.client_get('/',
@@ -488,7 +488,7 @@ class HomeTest(ZulipTestCase):
             full_name=bot_name,
             short_name=bot_name,
             bot_type=UserProfile.DEFAULT_BOT,
-            bot_owner=owner
+            bot_owner=owner,
         )
         return user
 
@@ -614,7 +614,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 is_owner=False,
                 is_cross_realm_bot=True,
-                is_guest=False
+                is_guest=False,
             ),
             dict(
                 avatar_version=email_gateway_bot.avatar_version,
@@ -628,7 +628,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 is_owner=False,
                 is_cross_realm_bot=True,
-                is_guest=False
+                is_guest=False,
             ),
             dict(
                 avatar_version=email_gateway_bot.avatar_version,
@@ -642,7 +642,7 @@ class HomeTest(ZulipTestCase):
                 is_admin=False,
                 is_owner=False,
                 is_cross_realm_bot=True,
-                is_guest=False
+                is_guest=False,
             ),
         ], key=by_email))
 

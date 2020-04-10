@@ -62,14 +62,14 @@ def get_push_commits_event_message(user_name: str, compare_url: Optional[str],
         return PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE.format(
             user_name=user_name,
             compare_url=compare_url,
-            branch_name=branch_name
+            branch_name=branch_name,
         )
 
     if not commits_data and not deleted:
         return PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE.format(
             user_name=user_name,
             compare_url=compare_url,
-            branch_name=branch_name
+            branch_name=branch_name,
         )
 
     pushed_message_template = PUSH_PUSHED_TEXT_WITH_URL if compare_url else PUSH_PUSHED_TEXT_WITHOUT_URL
@@ -109,7 +109,7 @@ def get_force_push_commits_event_message(user_name: str, url: str, branch_name: 
         user_name=user_name,
         url=url,
         branch_name=branch_name,
-        head=head
+        head=head,
     )
 
 def get_create_branch_event_message(user_name: str, url: Optional[str], branch_name: str) -> str:
@@ -172,7 +172,7 @@ def get_pull_request_event_message(user_name: str, action: str, url: str, number
     if target_branch and base_branch:
         branch_info = PULL_REQUEST_BRANCH_INFO_TEMPLATE.format(
             target=target_branch,
-            base=base_branch
+            base=base_branch,
         )
         main_message = f"{main_message} {branch_info}"
 
@@ -228,7 +228,7 @@ def get_push_tag_event_message(user_name: str,
     message = PUSH_TAGS_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         action=action,
-        tag=tag_part
+        tag=tag_part,
     )
 
     if tag_name[-1] not in string.punctuation:
@@ -245,13 +245,13 @@ def get_commits_comment_action_message(user_name: str,
         user_name=user_name,
         action=action,
         sha=get_short_sha(sha),
-        url=commit_url
+        url=commit_url,
     )
     punctuation = ':' if message else '.'
     content = f'{content}{punctuation}'
     if message:
         content += CONTENT_MESSAGE_TEMPLATE.format(
-            message=message
+            message=message,
         )
 
     return content
@@ -262,16 +262,16 @@ def get_commits_content(commits_data: List[Dict[str, Any]], is_truncated: Option
         commits_content += COMMIT_ROW_TEMPLATE.format(
             commit_short_sha=get_short_sha(commit['sha']),
             commit_url=commit.get('url'),
-            commit_msg=commit['message'].partition('\n')[0]
+            commit_msg=commit['message'].partition('\n')[0],
         )
 
     if len(commits_data) > COMMITS_LIMIT:
         commits_content += COMMITS_MORE_THAN_LIMIT_TEMPLATE.format(
-            commits_number=len(commits_data) - COMMITS_LIMIT
+            commits_number=len(commits_data) - COMMITS_LIMIT,
         )
     elif is_truncated:
         commits_content += COMMITS_MORE_THAN_LIMIT_TEMPLATE.format(
-            commits_number=''
+            commits_number='',
         ).replace('  ', ' ')
     return commits_content.rstrip()
 
@@ -282,7 +282,7 @@ def get_release_event_message(user_name: str, action: str,
         action=action,
         tagname=tagname,
         release_name=release_name,
-        url=url
+        url=url,
     )
 
     return content
@@ -298,7 +298,7 @@ def get_all_committers(commits_data: List[Dict[str, Any]]) -> List[Tuple[str, in
 
     # Sort by commit count, breaking ties alphabetically.
     committers_items: List[Tuple[str, int]] = sorted(
-        list(committers.items()), key=lambda item: (-item[1], item[0])
+        list(committers.items()), key=lambda item: (-item[1], item[0]),
     )
     committers_values: List[int] = [c_i[1] for c_i in committers_items]
 

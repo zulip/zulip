@@ -108,7 +108,7 @@ def api_gci_webhook(request: HttpRequest, user_profile: UserProfile,
     if event is not None:
         body = get_body_based_on_event(event)(payload)
         subject = GCI_TOPIC_TEMPLATE.format(
-            student_name=payload['task_claimed_by']
+            student_name=payload['task_claimed_by'],
         )
         check_send_webhook_message(request, user_profile, subject, body)
 

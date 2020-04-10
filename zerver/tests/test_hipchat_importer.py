@@ -32,7 +32,7 @@ class HipChatImporter(ZulipTestCase):
         normal_message: Dict[str, Any] = dict(
             sender=dict(
                 id=1,
-            )
+            ),
         )
 
         sender_id = get_hipchat_sender_id(

@@ -59,7 +59,7 @@ class FromAddress:
 def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                 to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                 from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
-                language: Optional[str]=None, context: Optional[Dict[str, Any]]=None
+                language: Optional[str]=None, context: Optional[Dict[str, Any]]=None,
                 ) -> EmailMultiAlternatives:
     # Callers should pass exactly one of to_user_id and to_email.
     assert (to_user_ids is None) ^ (to_emails is None)

@@ -119,7 +119,7 @@ class TestBasics(ZulipTestCase):
         payload = dict(
             message_id=message_id,
             msg_type='whatever',
-            content='{"name": "alice", "salary": 20}'
+            content='{"name": "alice", "salary": 20}',
         )
         with mock.patch('zerver.lib.actions.send_event') as m:
             result = self.client_post('/json/submessage', payload)

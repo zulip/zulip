@@ -35,7 +35,7 @@ from zerver.lib.actions import (
     do_change_logo_source,
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
-    do_set_realm_property
+    do_set_realm_property,
 )
 from zerver.lib.cache import get_realm_used_upload_space_cache_key, cache_get
 from zerver.lib.create_user import copy_user_settings
@@ -424,7 +424,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                     "[f2.txt](http://{}/user_uploads/".format(host) + f2_path_id + ")")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'content': new_body
+            'content': new_body,
         })
         self.assert_json_success(result)
 
@@ -441,7 +441,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         new_body = "(deleted)"
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'content': new_body
+            'content': new_body,
         })
         self.assert_json_success(result)
 
@@ -809,7 +809,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         self.assertEqual(
             url,
-            '/user_avatars/5/fc2b9f1a81f4508a4df2d95451a2a77e0524ca0e-medium.png?x=x&version=2'
+            '/user_avatars/5/fc2b9f1a81f4508a4df2d95451a2a77e0524ca0e-medium.png?x=x&version=2',
         )
 
         url = get_avatar_field(
@@ -824,7 +824,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         self.assertEqual(
             url,
-            'https://secure.gravatar.com/avatar/b48def645758b95537d4424c84d1a9ff?d=identicon&s=500&version=2'
+            'https://secure.gravatar.com/avatar/b48def645758b95537d4424c84d1a9ff?d=identicon&s=500&version=2',
         )
 
         url = get_avatar_field(
@@ -901,7 +901,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
         ('img.tif', 'tif_resized.png'),
-        ('cmyk.jpg', None)
+        ('cmyk.jpg', None),
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
@@ -1220,7 +1220,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
         ('img.tif', 'tif_resized.png'),
-        ('cmyk.jpg', None)
+        ('cmyk.jpg', None),
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
@@ -1354,7 +1354,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
         ('img.tif', 'tif_resized.png'),
-        ('cmyk.jpg', None)
+        ('cmyk.jpg', None),
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 

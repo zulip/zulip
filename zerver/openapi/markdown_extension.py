@@ -322,13 +322,13 @@ SUPPORTED_LANGUAGES: Dict[str, Any] = {
         'render': render_python_code_example,
     },
     'curl': {
-        'render': render_curl_example
+        'render': render_curl_example,
     },
     'javascript': {
         'client_config': JS_CLIENT_CONFIG,
         'admin_config': JS_CLIENT_ADMIN_CONFIG,
         'render': render_javascript_code_example,
-    }
+    },
 }
 
 class APIMarkdownExtension(Extension):
@@ -336,16 +336,16 @@ class APIMarkdownExtension(Extension):
         self.config = {
             'api_url': [
                 api_url,
-                'API URL to use when rendering curl examples'
-            ]
+                'API URL to use when rendering curl examples',
+            ],
         }
 
     def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
         md.preprocessors.add(
-            'generate_code_example', APICodeExamplesPreprocessor(md, self.getConfigs()), '_begin'
+            'generate_code_example', APICodeExamplesPreprocessor(md, self.getConfigs()), '_begin',
         )
         md.preprocessors.add(
-            'generate_api_description', APIDescriptionPreprocessor(md, self.getConfigs()), '_begin'
+            'generate_api_description', APIDescriptionPreprocessor(md, self.getConfigs()), '_begin',
         )
 
 class APICodeExamplesPreprocessor(Preprocessor):

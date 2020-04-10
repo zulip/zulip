@@ -50,7 +50,7 @@ class RateLimitedObject(ABC):
             entity=self,
             secs_to_freedom=time,
             remaining=0,
-            over_limit=ratelimited
+            over_limit=ratelimited,
         ))
         # Abort this request if the user is over their rate limits
         if ratelimited:
@@ -95,7 +95,7 @@ class RateLimitedObject(ABC):
         for "no rules".
         """
         rules_list = self.rules()
-        return rules_list or [(1, 9999), ]
+        return rules_list or [(1, 9999)]
 
     @abstractmethod
     def key(self) -> str:

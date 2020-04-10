@@ -24,7 +24,7 @@ def analyze_activity(options: Dict[str, Any]) -> None:
             continue
 
         total_duration += duration
-        print("%-*s%s" % (37, user_profile.email, duration,))
+        print("%-*s%s" % (37, user_profile.email, duration))
 
     print(f"\nTotal Duration:                      {total_duration}")
     print(f"\nTotal Duration in minutes:           {total_duration.total_seconds() / 60.}")

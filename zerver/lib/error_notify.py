@@ -83,7 +83,7 @@ def zulip_browser_error(report: Dict[str, Any]) -> None:
         error_bot,
         errors_stream,
         format_email_subject(email_subject),
-        body
+        body,
     )
 
 def notify_server_error(report: Dict[str, Any], skip_error_zulip: Optional[bool]=False) -> None:
@@ -125,7 +125,7 @@ def zulip_server_error(report: Dict[str, Any]) -> None:
         error_bot,
         errors_stream,
         format_email_subject(email_subject),
-        message
+        message,
     )
 
 def email_server_error(report: Dict[str, Any]) -> None:

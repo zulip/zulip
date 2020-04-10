@@ -210,7 +210,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         elif 'full_name' in request.POST:
             form = RegistrationForm(
                 initial={'full_name': request.POST.get('full_name')},
-                realm_creation=realm_creation
+                realm_creation=realm_creation,
             )
         else:
             form = RegistrationForm(realm_creation=realm_creation)
@@ -394,8 +394,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
                  'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
-                 'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH)
-                 }
+                 'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+                 },
     )
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -595,7 +595,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
     return render(request,
                   'zerver/find_account.html',
                   context={'form': form, 'current_url': lambda: url,
-                           'emails': emails},)
+                           'emails': emails})
 
 def realm_redirect(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':

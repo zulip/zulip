@@ -124,7 +124,7 @@ def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str]:
             commit_hash=commit_id[:7],
             commit_message=message,
             commit_url=commit_url,
-            email=author_email
+            email=author_email,
         )
 
     elif event == "deploy":
@@ -143,7 +143,7 @@ def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str]:
             commit_message=message,
             commit_url=commit_url,
             email=author_email,
-            server_name=server_name
+            server_name=server_name,
         )
 
     else:  # should never get here
@@ -162,7 +162,7 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         author_url=GITHUB_URL_TEMPLATES['user'].format(repo_url=repo_url, username=author_name),
         pipeline_name=payload["pipeline"]["name"],
         pipeline_result=payload["pipeline"]["result"],
-        workflow_url=f'https://{organization_name}.semaphoreci.com/workflows/{workflow_id}'
+        workflow_url=f'https://{organization_name}.semaphoreci.com/workflows/{workflow_id}',
     )
 
     if payload["revision"]["reference_type"] == "branch":  # push event

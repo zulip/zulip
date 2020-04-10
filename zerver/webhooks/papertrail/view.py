@@ -32,7 +32,7 @@ def api_papertrail_webhook(request: HttpRequest, user_profile: UserProfile,
     matches = MATCHES_TEMPLATE.format(
         name=payload["saved_search"]["name"],
         url=payload["saved_search"]["html_search_url"],
-        number=str(len(payload["events"]))
+        number=str(len(payload["events"])),
     )
     message = [matches]
 
@@ -41,7 +41,7 @@ def api_papertrail_webhook(request: HttpRequest, user_profile: UserProfile,
             timestamp=event["display_received_at"],
             source=event["source_name"],
             query=payload["saved_search"]["query"],
-            message=event["message"]
+            message=event["message"],
         )
 
         message.append(event_text)

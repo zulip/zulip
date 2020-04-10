@@ -580,7 +580,7 @@ i18n_urls = [
     url(r'^privacy/$', zerver.views.portico.privacy_view, name='privacy'),
     url(r'^config-error/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view,
         name='config_error'),
-    url(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view)
+    url(r'^config-error/remoteuser/(?P<error_category_name>[\w,-]+)$', zerver.views.auth.config_error_view),
 
 ]
 

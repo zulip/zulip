@@ -15,7 +15,7 @@ from zerver.lib.actions import (
     do_create_realm,
     do_scrub_realm,
     do_change_plan_type,
-    do_send_realm_reactivation_email
+    do_send_realm_reactivation_email,
 )
 
 from confirmation.models import create_confirmation_link, Confirmation
@@ -521,7 +521,7 @@ class RealmTest(ZulipTestCase):
             "Invalid %(field_name)s" % dict(field_name=val_name),
             "Bad value for '%(field_name)s'" % dict(field_name=val_name),
             "Bad value for '%(field_name)s': %(value)s" % dict(field_name=val_name, value=invalid_val),
-            "Invalid %(field_name)s %(value)s" % dict(field_name=val_name, value=invalid_val)
+            "Invalid %(field_name)s %(value)s" % dict(field_name=val_name, value=invalid_val),
         }
 
         req = {val_name: invalid_val}
@@ -711,11 +711,11 @@ class RealmAPITest(ZulipTestCase):
             video_chat_provider=[
                 dict(
                     video_chat_provider=ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['google_hangouts']['id']),
-                    google_hangouts_domain=ujson.dumps('zulip.com')
+                    google_hangouts_domain=ujson.dumps('zulip.com'),
                 ),
                 dict(
                     video_chat_provider=ujson.dumps(Realm.VIDEO_CHAT_PROVIDERS['jitsi_meet']['id']),
-                )
+                ),
             ],
             google_hangouts_domain=['zulip.com', 'zulip.org'],
         )

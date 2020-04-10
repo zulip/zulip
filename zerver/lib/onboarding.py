@@ -32,7 +32,7 @@ def setup_realm_internal_bots(realm: Realm) -> None:
     bots = UserProfile.objects.filter(
         realm=realm,
         email__in=[bot_info[1] for bot_info in internal_bots],
-        bot_owner__isnull=True
+        bot_owner__isnull=True,
     )
     for bot in bots:
         bot.bot_owner = bot
@@ -147,7 +147,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
     ]
 
     messages = [internal_prep_stream_message_by_name(
-        realm, welcome_bot, message['stream'], message['topic'], message['content']
+        realm, welcome_bot, message['stream'], message['topic'], message['content'],
     ) for message in welcome_messages]
     message_ids = do_send_messages(messages)
 

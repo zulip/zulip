@@ -60,7 +60,7 @@ def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dic
                 'name': name,
                 'code': lang['code'],
                 'percent': percent,
-                'selected': selected
+                'selected': selected,
             }
 
         formatted_list.append(item)

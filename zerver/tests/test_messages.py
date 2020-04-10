@@ -102,7 +102,7 @@ from zerver.models import (
     get_stream, get_system_bot, get_user, Reaction,
     flush_per_request_caches, ScheduledMessage, get_huddle_recipient,
     bulk_get_huddle_user_ids, get_huddle_user_ids,
-    get_display_recipient, RealmFilter
+    get_display_recipient, RealmFilter,
 )
 
 
@@ -129,7 +129,7 @@ class MiscMessageTest(ZulipTestCase):
     def test_get_last_message_id(self) -> None:
         self.assertEqual(
             get_last_message_id(),
-            Message.objects.latest('id').id
+            Message.objects.latest('id').id,
         )
 
         Message.objects.all().delete()
@@ -277,7 +277,7 @@ class TopicHistoryTest(ZulipTestCase):
         # out of realm
         bad_stream = self.make_stream(
             'mit_stream',
-            realm=get_realm('zephyr')
+            realm=get_realm('zephyr'),
         )
         endpoint = f'/json/users/me/{bad_stream.id}/topics'
         result = self.client_get(endpoint, dict())
@@ -286,7 +286,7 @@ class TopicHistoryTest(ZulipTestCase):
         # private stream to which I am not subscribed
         private_stream = self.make_stream(
             'private_stream',
-            invite_only=True
+            invite_only=True,
         )
         endpoint = f'/json/users/me/{private_stream.id}/topics'
         result = self.client_get(endpoint, dict())
@@ -311,7 +311,7 @@ class TopicDeleteTest(ZulipTestCase):
         self.login_user(user_profile)
         endpoint = '/json/streams/' + str(stream.id) + '/delete_topic'
         result = self.client_post(endpoint, {
-            "topic_name": topic_name
+            "topic_name": topic_name,
         })
         self.assert_json_error(result, "Must be an organization administrator")
         self.assertEqual(self.get_last_message().id, last_msg_id)
@@ -330,7 +330,7 @@ class TopicDeleteTest(ZulipTestCase):
         # delete new_last_msg_id, i.e. the one sent since they joined.
         self.assertEqual(self.get_last_message().id, new_last_msg_id)
         result = self.client_post(endpoint, {
-            "topic_name": topic_name
+            "topic_name": topic_name,
         })
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, last_msg_id)
@@ -338,7 +338,7 @@ class TopicDeleteTest(ZulipTestCase):
         # Try to delete all messages in the topic again. There are no messages accessible
         # to the administrator, so this should do nothing.
         result = self.client_post(endpoint, {
-            "topic_name": topic_name
+            "topic_name": topic_name,
         })
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, last_msg_id)
@@ -348,14 +348,14 @@ class TopicDeleteTest(ZulipTestCase):
                                      history_public_to_subscribers=True)
         # Delete the topic should now remove all messages
         result = self.client_post(endpoint, {
-            "topic_name": topic_name
+            "topic_name": topic_name,
         })
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, initial_last_msg_id)
 
         # Delete again, to test the edge case of deleting an empty topic.
         result = self.client_post(endpoint, {
-            "topic_name": topic_name
+            "topic_name": topic_name,
         })
         self.assert_json_success(result)
         self.assertEqual(self.get_last_message().id, initial_last_msg_id)
@@ -501,7 +501,7 @@ class TestAddressee(ZulipTestCase):
         result = Addressee.legacy_build(
             sender=self.example_user('hamlet'), message_type_name='private',
             message_to=user_ids, topic_name='random_topic',
-            realm=realm
+            realm=realm,
         )
         user_profiles = result.user_profiles()
         result_user_ids = [user_profiles[0].id, user_profiles[1].id]
@@ -518,7 +518,7 @@ class TestAddressee(ZulipTestCase):
         result = Addressee.legacy_build(
             sender=sender, message_type_name='stream',
             message_to=[stream.id], topic_name='random_topic',
-            realm=realm
+            realm=realm,
         )
 
         stream_id = result.stream_id()
@@ -567,7 +567,7 @@ class InternalPrepTest(ZulipTestCase):
                 sender=cordelia,
                 topic='whatever',
                 content=bad_content,
-                stream=stream
+                stream=stream,
             )
 
         arg = m.call_args_list[0][0][0]
@@ -579,7 +579,7 @@ class InternalPrepTest(ZulipTestCase):
                 sender=cordelia,
                 stream_name=stream.name,
                 topic='whatever',
-                content=bad_content
+                content=bad_content,
             )
 
         arg = m.call_args_list[0][0][0]
@@ -796,7 +796,7 @@ class PersonalMessagesTest(ZulipTestCase):
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(
                 str(user_message),
-                f'<UserMessage: recip / {user_profile.email} ([])>'
+                f'<UserMessage: recip / {user_profile.email} ([])>',
             )
 
     @slow("checks several profiles")
@@ -865,7 +865,7 @@ class PersonalMessagesTest(ZulipTestCase):
         self.login('hamlet')
         self.assert_personal(
             sender=self.example_user("hamlet"),
-            receiver=self.example_user("othello")
+            receiver=self.example_user("othello"),
         )
 
     def test_private_message_policy(self) -> None:
@@ -892,7 +892,7 @@ class PersonalMessagesTest(ZulipTestCase):
         self.assert_personal(
             sender=self.example_user("hamlet"),
             receiver=self.example_user("othello"),
-            content="hümbüǵ"
+            content="hümbüǵ",
         )
 
 class StreamMessagesTest(ZulipTestCase):
@@ -972,7 +972,7 @@ class StreamMessagesTest(ZulipTestCase):
             )
             Subscription.objects.create(
                 user_profile=user,
-                recipient=recipient
+                recipient=recipient,
             )
 
         def send_test_message() -> None:
@@ -1085,7 +1085,7 @@ class StreamMessagesTest(ZulipTestCase):
             self.send_stream_message(
                 user,
                 stream_name,
-                content=content
+                content=content,
             )
         self.assertEqual(m.call_count, 1)
         users = m.call_args[0][2]
@@ -1101,7 +1101,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(hamlet, stream_name)
 
         UserMessage.objects.filter(
-            user_profile=cordelia
+            user_profile=cordelia,
         ).delete()
 
         def mention_cordelia() -> Set[int]:
@@ -1110,13 +1110,13 @@ class StreamMessagesTest(ZulipTestCase):
             user_ids = self._send_stream_message(
                 user=hamlet,
                 stream_name=stream_name,
-                content=content
+                content=content,
             )
             return user_ids
 
         def num_cordelia_messages() -> int:
             return UserMessage.objects.filter(
-                user_profile=cordelia
+                user_profile=cordelia,
             ).count()
 
         user_ids = mention_cordelia()
@@ -1155,7 +1155,7 @@ class StreamMessagesTest(ZulipTestCase):
         user_ids = self._send_stream_message(
             user=hamlet,
             stream_name=stream_name,
-            content=content
+            content=content,
         )
 
         self.assertIn(normal_bot.id, user_ids)
@@ -1331,7 +1331,7 @@ class MessageDictTest(ZulipTestCase):
                 hamlet,
                 "Scotland",
                 topic_name="editing",
-                content="before edit"
+                content="before edit",
             )
             return msg_id
 
@@ -1381,7 +1381,7 @@ class MessageDictTest(ZulipTestCase):
                     date_sent=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
-                    edit_history='[]'
+                    edit_history='[]',
                 )
                 message.set_topic_name('whatever')
                 message.save()
@@ -1426,7 +1426,7 @@ class MessageDictTest(ZulipTestCase):
             date_sent=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
-            edit_history='[]'
+            edit_history='[]',
         )
         message.set_topic_name('whatever')
         message.save()
@@ -1456,7 +1456,7 @@ class MessageDictTest(ZulipTestCase):
             date_sent=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
-            edit_history='[]'
+            edit_history='[]',
         )
         message.set_topic_name('whatever')
         message.save()
@@ -1516,7 +1516,7 @@ class MessageDictTest(ZulipTestCase):
             date_sent=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
-            edit_history='[]'
+            edit_history='[]',
         )
         message.set_topic_name('whatever')
         message.save()
@@ -1572,7 +1572,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
                     date_sent=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
-                    edit_history='[]'
+                    edit_history='[]',
                 )
                 message.set_topic_name('whatever')
                 message.save()
@@ -1642,8 +1642,8 @@ class MessagePOSTTest(ZulipTestCase):
                 "to": ujson.dumps([99999]),
                 "client": "test suite",
                 "content": "Stream message by ID.",
-                "topic": "Test topic for stream ID message"
-            }
+                "topic": "Test topic for stream ID message",
+            },
         )
         self.assert_json_error(result, "Stream with ID '99999' does not exist")
 
@@ -1882,8 +1882,8 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "private",
                 "content": "Test message",
                 "client": "test suite",
-                "to": ujson.dumps([self.example_user("othello").id])
-            }
+                "to": ujson.dumps([self.example_user("othello").id]),
+            },
         )
         self.assert_json_success(result)
 
@@ -1903,8 +1903,8 @@ class MessagePOSTTest(ZulipTestCase):
                 "content": "Test message",
                 "client": "test suite",
                 "to": ujson.dumps([self.example_user("othello").id,
-                                   self.example_user("cordelia").id])
-            }
+                                   self.example_user("cordelia").id]),
+            },
         )
         self.assert_json_success(result)
 
@@ -1913,7 +1913,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(msg.recipient_id, get_huddle_recipient(
             {self.example_user("hamlet").id,
              self.example_user("othello").id,
-             self.example_user("cordelia").id}).id
+             self.example_user("cordelia").id}).id,
         )
 
     def test_personal_message_copying_self(self) -> None:
@@ -2650,21 +2650,21 @@ class EditMessageTest(ZulipTestCase):
 
         self.assertEqual(
             fetch_message_dict[TOPIC_NAME],
-            msg.topic_name()
+            msg.topic_name(),
         )
         self.assertEqual(
             fetch_message_dict['content'],
-            msg.content
+            msg.content,
         )
         self.assertEqual(
             fetch_message_dict['sender_id'],
-            msg.sender_id
+            msg.sender_id,
         )
 
         if msg.edit_history:
             self.assertEqual(
                 fetch_message_dict['edit_history'],
-                ujson.loads(msg.edit_history)
+                ujson.loads(msg.edit_history),
             )
 
     def test_query_count_on_to_dict_uncached(self) -> None:
@@ -2710,14 +2710,14 @@ class EditMessageTest(ZulipTestCase):
                                           topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'content': 'after edit'
+            'content': 'after edit',
         })
         self.assert_json_success(result)
         self.check_message(msg_id, topic_name="editing", content="after edit")
 
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'topic': 'edited'
+            'topic': 'edited',
         })
         self.assert_json_success(result)
         self.check_topic(msg_id, topic_name="edited")
@@ -2798,7 +2798,7 @@ class EditMessageTest(ZulipTestCase):
                                           topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'topic': ' '
+            'topic': ' ',
         })
         self.assert_json_error(result, "Topic can't be empty")
 
@@ -2808,7 +2808,7 @@ class EditMessageTest(ZulipTestCase):
                                           topic_name="editing", content="before edit")
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
-            'content': ' '
+            'content': ' ',
         })
         self.assert_json_success(result)
         content = Message.objects.filter(id=msg_id).values_list('content', flat = True)[0]
@@ -2827,7 +2827,7 @@ class EditMessageTest(ZulipTestCase):
 
         new_content_1 = 'content after edit'
         result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
-            'message_id': msg_id_1, 'content': new_content_1
+            'message_id': msg_id_1, 'content': new_content_1,
         })
         self.assert_json_success(result_1)
 
@@ -2856,7 +2856,7 @@ class EditMessageTest(ZulipTestCase):
             content="content before edit")
         new_content_1 = 'content after edit'
         result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
-            'message_id': msg_id_1, 'content': new_content_1
+            'message_id': msg_id_1, 'content': new_content_1,
         })
         self.assert_json_success(result_1)
 
@@ -2892,7 +2892,7 @@ class EditMessageTest(ZulipTestCase):
                          'content after edit, line 2\n'
                          'content before edit, line 3')
         result_2 = self.client_patch("/json/messages/" + str(msg_id_2), {
-            'message_id': msg_id_2, 'content': new_content_2
+            'message_id': msg_id_2, 'content': new_content_2,
         })
         self.assert_json_success(result_2)
 
@@ -2927,7 +2927,7 @@ class EditMessageTest(ZulipTestCase):
             content="Here is a link to [zulip](www.zulip.org).")
         new_content_1 = 'Here is a link to [zulip](www.zulipchat.com).'
         result_1 = self.client_patch("/json/messages/" + str(msg_id_1), {
-            'message_id': msg_id_1, 'content': new_content_1
+            'message_id': msg_id_1, 'content': new_content_1,
         })
         self.assert_json_success(result_1)
 
@@ -3281,13 +3281,13 @@ class EditMessageTest(ZulipTestCase):
             if um.user_profile_id == user_id:
                 return {
                     "id": user_id,
-                    "flags": um.flags_list()
+                    "flags": um.flags_list(),
                 }
 
             else:
                 return {
                     "id": user_id,
-                    "flags": ["read"]
+                    "flags": ["read"],
                 }
 
         users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id]))
@@ -3331,7 +3331,7 @@ class EditMessageTest(ZulipTestCase):
         def notify(user_id: int) -> Dict[str, Any]:
             return {
                 "id": user_id,
-                "flags": ["wildcard_mentioned"]
+                "flags": ["wildcard_mentioned"],
             }
 
         users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
@@ -3369,7 +3369,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(id1), {
             'message_id': id1,
             'topic': 'edited',
-            'propagate_mode': 'change_later'
+            'propagate_mode': 'change_later',
         })
         self.assert_json_success(result)
 
@@ -3397,7 +3397,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(id2), {
             'message_id': id2,
             'topic': 'edited',
-            'propagate_mode': 'change_all'
+            'propagate_mode': 'change_all',
         })
         self.assert_json_success(result)
 
@@ -3451,7 +3451,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'stream_id': new_stream.id,
-            'propagate_mode': 'change_all'
+            'propagate_mode': 'change_all',
         })
 
         self.assert_json_success(result)
@@ -3471,7 +3471,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(msg_id_later), {
             'message_id': msg_id_later,
             'stream_id': new_stream.id,
-            'propagate_mode': 'change_later'
+            'propagate_mode': 'change_later',
         })
         self.assert_json_success(result)
 
@@ -3492,7 +3492,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'stream_id': new_stream.id,
-            'propagate_mode': 'change_all'
+            'propagate_mode': 'change_all',
         })
         self.assert_json_error(result, "You don't have permission to move this message")
 
@@ -3510,7 +3510,7 @@ class EditMessageTest(ZulipTestCase):
             'message_id': msg_id,
             'stream_id': new_stream.id,
             'propagate_mode': 'change_all',
-            'content': 'Not allowed'
+            'content': 'Not allowed',
         })
         self.assert_json_error(result, "Cannot change message content while changing stream")
 
@@ -3529,7 +3529,7 @@ class EditMessageTest(ZulipTestCase):
                 'message_id': msg_id,
                 'stream_id': new_stream.id,
                 'propagate_mode': 'change_all',
-                'topic': 'new topic'
+                'topic': 'new topic',
             })
         self.assertEqual(len(queries), 49)
 
@@ -3864,7 +3864,7 @@ class MessageAccessTests(ZulipTestCase):
             self.send_personal_message(
                 self.example_user("hamlet"),
                 self.example_user("cordelia"),
-                "test_received"
+                "test_received",
             ),
         ]
 
@@ -3985,7 +3985,7 @@ class MessageAccessTests(ZulipTestCase):
                                  content=content)
 
         sent_message = UserMessage.objects.filter(
-            user_profile=self.example_user('hamlet')
+            user_profile=self.example_user('hamlet'),
         ).order_by("id").reverse()[0]
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
@@ -3999,7 +3999,7 @@ class MessageAccessTests(ZulipTestCase):
         self.login_user(normal_user)
 
         message_id = [
-            self.send_stream_message(normal_user, stream_name, "test 1")
+            self.send_stream_message(normal_user, stream_name, "test 1"),
         ]
 
         guest_user = self.example_user('polonius')
@@ -4015,7 +4015,7 @@ class MessageAccessTests(ZulipTestCase):
         # And messages sent after they join
         self.login_user(normal_user)
         message_id = [
-            self.send_stream_message(normal_user, stream_name, "test 2")
+            self.send_stream_message(normal_user, stream_name, "test 2"),
         ]
         self.login_user(guest_user)
         result = self.change_star(message_id)
@@ -4030,7 +4030,7 @@ class MessageAccessTests(ZulipTestCase):
         self.login_user(normal_user)
 
         message_id = [
-            self.send_stream_message(normal_user, stream_name, "test 1")
+            self.send_stream_message(normal_user, stream_name, "test 1"),
         ]
 
         guest_user = self.example_user('polonius')
@@ -4054,7 +4054,7 @@ class MessageAccessTests(ZulipTestCase):
         do_change_stream_invite_only(stream, True, history_public_to_subscribers=False)
         self.login_user(normal_user)
         message_id = [
-            self.send_stream_message(normal_user, stream_name, "test 2")
+            self.send_stream_message(normal_user, stream_name, "test 2"),
         ]
         self.login_user(guest_user)
         result = self.change_star(message_id)
@@ -4146,7 +4146,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
         dummy_files = [
             ('zulip.txt', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
             ('temp_file.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
-            ('abc.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size)
+            ('abc.py', f'{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size),
         ]
 
         for file_name, path_id, size in dummy_files:
@@ -4416,7 +4416,7 @@ class CheckMessageTest(ZulipTestCase):
             full_name='',
             short_name='',
             bot_type=UserProfile.DEFAULT_BOT,
-            bot_owner=parent
+            bot_owner=parent,
         )
         bot.last_reminder = None
 
@@ -4496,7 +4496,7 @@ class DeleteMessageTest(ZulipTestCase):
             self.login('iago')
             result = self.client_patch("/json/realm", {
                 'allow_message_deleting': ujson.dumps(allow_message_deleting),
-                'message_content_delete_limit_seconds': message_content_delete_limit_seconds
+                'message_content_delete_limit_seconds': message_content_delete_limit_seconds,
             })
             self.assert_json_success(result)
 
@@ -4600,7 +4600,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         def last_realm_audit_log_entry(event_type: int) -> RealmAuditLog:
             return RealmAuditLog.objects.filter(
-                event_type=event_type
+                event_type=event_type,
             ).order_by('-event_time')[0]
 
         long_term_idle_user = self.example_user('hamlet')
@@ -4834,7 +4834,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         recipient_list  = [
             self.example_user("hamlet"),
             self.example_user("iago"),
-            self.example_user('cordelia')
+            self.example_user('cordelia'),
         ]
         for user_profile in recipient_list:
             self.subscribe(user_profile, "Denmark")
@@ -5004,7 +5004,7 @@ class MessageHydrationTest(ZulipTestCase):
                 full_name='Aaron Smith',
                 short_name='Aaron',
                 id=999,
-                is_mirror_dummy=False
+                is_mirror_dummy=False,
             ),
         ]
 
@@ -5028,7 +5028,7 @@ class MessageHydrationTest(ZulipTestCase):
                     full_name='Aaron Smith',
                     short_name='Aaron',
                     id=999,
-                    is_mirror_dummy=False
+                    is_mirror_dummy=False,
                 ),
                 dict(
                     email=cordelia.email,
@@ -5151,7 +5151,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         othello = self.example_user('othello')
         message_ids = [
             self.send_personal_message(hamlet, cordelia, 'test'),
-            self.send_personal_message(cordelia, othello, 'test')
+            self.send_personal_message(cordelia, othello, 'test'),
         ]
 
         messages = messages_for_ids(
@@ -5170,7 +5170,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         message_ids = [
             self.send_stream_message(cordelia, "Verona", content='test'),
-            self.send_stream_message(cordelia, "Denmark", content='test')
+            self.send_stream_message(cordelia, "Denmark", content='test'),
         ]
 
         messages = messages_for_ids(
@@ -5192,7 +5192,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         iago = self.example_user('iago')
         message_ids = [
             self.send_huddle_message(hamlet, [cordelia, othello], 'test'),
-            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test')
+            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test'),
         ]
 
         messages = messages_for_ids(
@@ -5218,7 +5218,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             self.send_personal_message(hamlet, cordelia, 'test'),
             self.send_stream_message(cordelia, "Denmark", content='test'),
             self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test'),
-            self.send_personal_message(cordelia, othello, 'test')
+            self.send_personal_message(cordelia, othello, 'test'),
         ]
 
         messages = messages_for_ids(
@@ -5303,7 +5303,7 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
         iago = self.example_user('iago')
         message_ids = [
             self.send_huddle_message(hamlet, [cordelia, othello], 'test'),
-            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test')
+            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test'),
         ]
 
         messages = Message.objects.filter(id__in=message_ids).order_by("id")

@@ -48,7 +48,7 @@ def api_travis_webhook(request: HttpRequest, user_profile: UserProfile,
         message_status,
         emoji,
         message['compare_url'],
-        message['build_url']
+        message['build_url'],
     )
     topic = 'builds'
 

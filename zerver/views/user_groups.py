@@ -37,7 +37,7 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
 @has_request_variables
 def edit_user_group(request: HttpRequest, user_profile: UserProfile,
                     user_group_id: int=REQ(validator=check_int),
-                    name: str=REQ(default=""), description: str=REQ(default="")
+                    name: str=REQ(default=""), description: str=REQ(default=""),
                     ) -> HttpResponse:
     if not (name or description):
         return json_error(_("No new data supplied"))
@@ -65,7 +65,7 @@ def delete_user_group(request: HttpRequest, user_profile: UserProfile,
 def update_user_group_backend(request: HttpRequest, user_profile: UserProfile,
                               user_group_id: int=REQ(validator=check_int),
                               delete: List[int]=REQ(validator=check_list(check_int), default=[]),
-                              add: List[int]=REQ(validator=check_list(check_int), default=[])
+                              add: List[int]=REQ(validator=check_list(check_int), default=[]),
                               ) -> HttpResponse:
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
@@ -74,7 +74,7 @@ def update_user_group_backend(request: HttpRequest, user_profile: UserProfile,
         (add_members_to_group_backend,
          dict(user_group_id=user_group_id, members=add)),
         (remove_members_from_group_backend,
-         dict(user_group_id=user_group_id, members=delete))
+         dict(user_group_id=user_group_id, members=delete)),
     ]
     return compose_views(request, user_profile, method_kwarg_pairs)
 

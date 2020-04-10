@@ -65,7 +65,7 @@ class WorkerDeclarationException(Exception):
 ConcreteQueueWorker = TypeVar('ConcreteQueueWorker', bound='QueueProcessingWorker')
 
 def assign_queue(
-        queue_name: str, enabled: bool=True, queue_type: str="consumer"
+        queue_name: str, enabled: bool=True, queue_type: str="consumer",
 ) -> Callable[[Type[ConcreteQueueWorker]], Type[ConcreteQueueWorker]]:
     def decorate(clazz: Type[ConcreteQueueWorker]) -> Type[ConcreteQueueWorker]:
         clazz.queue_name = queue_name
@@ -100,7 +100,7 @@ def check_and_send_restart_signal() -> None:
         pass
 
 def retry_send_email_failures(
-        func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None]
+        func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None],
 ) -> Callable[['QueueProcessingWorker', Dict[str, Any]], None]:
 
     @wraps(func)
@@ -560,7 +560,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             return
         if message.content is not None:
             query = UserMessage.objects.filter(
-                message=message.id
+                message=message.id,
             )
             message_user_ids = set(query.values_list('user_profile_id', flat=True))
 
@@ -627,7 +627,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                     assert message['content'] is not None
                 bot_handler.handle_message(
                     message=message,
-                    bot_handler=self.get_bot_api_client(user_profile)
+                    bot_handler=self.get_bot_api_client(user_profile),
                 )
             except EmbeddedBotQuitException as e:
                 logging.warning(str(e))
@@ -668,7 +668,7 @@ class DeferredWorker(QueueProcessingWorker):
                                                   delete_after_upload=True)
             except Exception:
                 export_event.extra_data = ujson.dumps(dict(
-                    failed_timestamp=timezone_now().timestamp()
+                    failed_timestamp=timezone_now().timestamp(),
                 ))
                 export_event.save(update_fields=['extra_data'])
                 logging.error(
@@ -693,7 +693,7 @@ class DeferredWorker(QueueProcessingWorker):
                 realm=user_profile.realm,
                 sender=get_system_bot(settings.NOTIFICATION_BOT),
                 recipient_user=user_profile,
-                content=content
+                content=content,
             )
 
             # For future frontend use, also notify administrator

@@ -104,7 +104,7 @@ EVENT_FUNCTION_MAPPER = {
     'trash': get_conversation_deleted_body,
     'restore': get_conversation_restored_body,
     'tag': get_conversation_tagged_body,
-    'untag': get_conversation_untagged_body
+    'untag': get_conversation_untagged_body,
 }
 
 def get_body_based_on_event(event: str) -> Any:

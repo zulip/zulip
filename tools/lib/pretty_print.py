@@ -85,7 +85,7 @@ def pretty_print_html(html: str, num_spaces: int = 4) -> str:
                         adjustment=adjustment,
                         indenting=True,
                         adjust_offset_until=token.line,
-                        ignore_lines=[]
+                        ignore_lines=[],
                     )
                     if token.kind in ('handlebars_start', 'django_start'):
                         info.update(dict(depth=new_depth - 1, indenting=False))
@@ -98,7 +98,7 @@ def pretty_print_html(html: str, num_spaces: int = 4) -> str:
                         tag=token.tag,
                         token_kind=token.kind,
                         extra_indent=stack[-1]['extra_indent'],
-                        ignore_lines=[]
+                        ignore_lines=[],
                     )
                 stack.append(info)
         elif (token.kind in ('html_end', 'handlebars_end', 'html_singleton_end',

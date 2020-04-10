@@ -34,7 +34,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.streams import (
     create_stream_if_needed,
-    get_default_value_for_history_public_to_subscribers
+    get_default_value_for_history_public_to_subscribers,
 )
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
@@ -61,7 +61,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserProfile,
-    get_realm_stream
+    get_realm_stream,
 )
 from zilencer.models import get_remote_server_by_uuid
 from zerver.decorator import do_two_factor_login
@@ -251,7 +251,7 @@ class ZulipTestCase(TestCase):
         webhook_bot='webhook-bot@zulip.com',
         welcome_bot='welcome-bot@zulip.com',
         outgoing_webhook_bot='outgoing-webhook@zulip.com',
-        default_bot='default-bot@zulip.com'
+        default_bot='default-bot@zulip.com',
     )
 
     mit_user_map = dict(
@@ -262,7 +262,7 @@ class ZulipTestCase(TestCase):
 
     lear_user_map = dict(
         cordelia="cordelia@zulip.com",
-        king="king@lear.org"
+        king="king@lear.org",
     )
 
     # Non-registered test users
@@ -367,7 +367,7 @@ class ZulipTestCase(TestCase):
                 username=email,
                 password=password,
                 realm=realm,
-            )
+            ),
         )
 
     def assert_login_failure(self,
@@ -379,7 +379,7 @@ class ZulipTestCase(TestCase):
                 username=email,
                 password=password,
                 realm=realm,
-            )
+            ),
         )
 
     def login_user(self, user_profile: UserProfile) -> None:
@@ -530,7 +530,7 @@ class ZulipTestCase(TestCase):
 
         return check_send_message(
             from_user, sending_client, 'private', recipient_list, None,
-            content
+            content,
         )
 
     def send_huddle_message(self,
@@ -545,7 +545,7 @@ class ZulipTestCase(TestCase):
 
         return check_send_message(
             from_user, sending_client, 'private', to_user_ids, None,
-            content
+            content,
         )
 
     def send_stream_message(self, sender: UserProfile, stream_name: str, content: str="test content",
@@ -663,14 +663,14 @@ class ZulipTestCase(TestCase):
     def webhook_fixture_data(self, type: str, action: str, file_type: str='json') -> str:
         fn = os.path.join(
             os.path.dirname(__file__),
-            f"../webhooks/{type}/fixtures/{action}.{file_type}"
+            f"../webhooks/{type}/fixtures/{action}.{file_type}",
         )
         return open(fn).read()
 
     def fixture_file_name(self, file_name: str, type: str='') -> str:
         return os.path.join(
             os.path.dirname(__file__),
-            f"../tests/fixtures/{type}/{file_name}"
+            f"../tests/fixtures/{type}/{file_name}",
         )
 
     def fixture_data(self, file_name: str, type: str='') -> str:
@@ -840,7 +840,7 @@ class ZulipTestCase(TestCase):
         for dn, attrs in directory.items():
             if 'uid' in attrs:
                 # Generate a password for the ldap account:
-                attrs['userPassword'] = [self.ldap_password(attrs['uid'][0]), ]
+                attrs['userPassword'] = [self.ldap_password(attrs['uid'][0])]
 
             # Load binary attributes. If in "directory", an attribute as its value
             # has a string starting with "file:", the rest of the string is assumed
@@ -849,7 +849,7 @@ class ZulipTestCase(TestCase):
             for attr, value in attrs.items():
                 if isinstance(value, str) and value.startswith("file:"):
                     with open(value[5:], 'rb') as f:
-                        attrs[attr] = [f.read(), ]
+                        attrs[attr] = [f.read()]
 
         ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
         self.mock_initialize = ldap_patcher.start()
@@ -873,7 +873,7 @@ class ZulipTestCase(TestCase):
         else:
             data = attr_value
 
-        self.mock_ldap.directory[dn][attr_name] = [data, ]
+        self.mock_ldap.directory[dn][attr_name] = [data]
 
     def ldap_username(self, username: str) -> str:
         """

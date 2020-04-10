@@ -17,8 +17,8 @@ def apps_view(request: HttpRequest, _: str) -> HttpResponse:
             context={
                 "page_params": {
                     'electron_app_version': LATEST_DESKTOP_VERSION,
-                }
-            }
+                },
+            },
         )
     return HttpResponseRedirect('https://zulip.com/apps/', status=301)
 

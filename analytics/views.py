@@ -401,7 +401,7 @@ def make_table(title: str, cols: List[str], rows: List[Any], has_row_class: bool
 
     content = loader.render_to_string(
         'analytics/ad_hoc_query.html',
-        dict(data=data)
+        dict(data=data),
     )
 
     return content
@@ -590,7 +590,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     realm_admins: Dict[str, List[str]] = defaultdict(list)
     for up in UserProfile.objects.select_related("realm").filter(
         role=UserProfile.ROLE_REALM_ADMINISTRATOR,
-        is_active=True
+        is_active=True,
     ):
         realm_admins[up.realm.string_id].append(up.delivery_email)
 
@@ -674,7 +674,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     content = loader.render_to_string(
         'analytics/realm_summary_table.html',
         dict(rows=rows, num_active_sites=num_active_sites,
-             now=now.strftime('%Y-%m-%dT%H:%M:%SZ'))
+             now=now.strftime('%Y-%m-%dT%H:%M:%SZ')),
     )
     return content
 
@@ -688,18 +688,18 @@ def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
 
     all_intervals = UserActivityInterval.objects.filter(
         end__gte=day_start,
-        start__lte=day_end
+        start__lte=day_end,
     ).select_related(
         'user_profile',
-        'user_profile__realm'
+        'user_profile__realm',
     ).only(
         'start',
         'end',
         'user_profile__delivery_email',
-        'user_profile__realm__string_id'
+        'user_profile__realm__string_id',
     ).order_by(
         'user_profile__realm__string_id',
-        'user_profile__delivery_email'
+        'user_profile__delivery_email',
     )
 
     by_string_id = lambda row: row.user_profile.realm.string_id
@@ -735,7 +735,7 @@ def sent_messages_report(realm: str) -> str:
     cols = [
         'Date',
         'Humans',
-        'Bots'
+        'Bots',
     ]
 
     query = SQL('''
@@ -833,7 +833,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 
         return dict(
             content=content,
-            title=title
+            title=title,
         )
 
     pages = []
@@ -868,7 +868,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
             'User id',
             'Name',
             'Hits',
-            'Last time'
+            'Last time',
         ]
 
         pages.append(get_page(query, cols, title))
@@ -898,7 +898,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         'Realm',
         'Client',
         'Hits',
-        'Last time'
+        'Last time',
     ]
 
     pages.append(get_page(query, cols, title))
@@ -936,7 +936,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         'Realm',
         'Client',
         'Hits',
-        'Last time'
+        'Last time',
     ]
 
     pages.append(get_page(query, cols, title))
@@ -974,7 +974,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         'Client',
         'Realm',
         'Hits',
-        'Last time'
+        'Last time',
     ]
 
     pages.append(get_page(query, cols, title))
@@ -1184,7 +1184,7 @@ def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
     records = UserActivity.objects.filter(
         user_profile__realm__string_id=realm,
         user_profile__is_active=True,
-        user_profile__is_bot=is_bot
+        user_profile__is_bot=is_bot,
     )
     records = records.order_by("user_profile__delivery_email", "-last_visit")
     records = records.select_related('user_profile', 'client').only(*fields)
@@ -1196,11 +1196,11 @@ def get_user_activity_records_for_email(email: str) -> List[QuerySet]:
         'query',
         'client__name',
         'count',
-        'last_visit'
+        'last_visit',
     ]
 
     records = UserActivity.objects.filter(
-        user_profile__delivery_email=email
+        user_profile__delivery_email=email,
     )
     records = records.order_by("-last_visit")
     records = records.select_related('user_profile', 'client').only(*fields)
@@ -1211,7 +1211,7 @@ def raw_user_activity_table(records: List[QuerySet]) -> str:
         'query',
         'client',
         'count',
-        'last_visit'
+        'last_visit',
     ]
 
     def row(record: QuerySet) -> List[Any]:
@@ -1219,7 +1219,7 @@ def raw_user_activity_table(records: List[QuerySet]) -> str:
             record.query,
             record.client.name,
             record.count,
-            format_date_for_activity_reports(record.last_visit)
+            format_date_for_activity_reports(record.last_visit),
         ]
 
     rows = list(map(row, records))
@@ -1238,13 +1238,13 @@ def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, An
         if action not in summary:
             summary[action] = dict(
                 count=record.count,
-                last_visit=record.last_visit
+                last_visit=record.last_visit,
             )
         else:
             summary[action]['count'] += record.count
             summary[action]['last_visit'] = max(
                 summary[action]['last_visit'],
-                record.last_visit
+                record.last_visit,
             )
 
     if records:

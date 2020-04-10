@@ -94,7 +94,7 @@ def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
 
     get_timing(
         'get recipients',
-        find_recipients
+        find_recipients,
     )
 
     if not recipient_ids:
@@ -129,7 +129,7 @@ def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
 
     get_timing(
         'finding unread messages for non-active streams',
-        find
+        find,
     )
 
     if not user_message_ids:
@@ -140,7 +140,7 @@ def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
 
     get_timing(
         'fixing unread messages for non-active streams',
-        fix
+        fix,
     )
 
 def fix_pre_pointer(cursor: CursorObj, user_profile: UserProfile) -> None:
@@ -176,7 +176,7 @@ def fix_pre_pointer(cursor: CursorObj, user_profile: UserProfile) -> None:
 
     get_timing(
         'find_non_muted_recipients',
-        find_non_muted_recipients
+        find_non_muted_recipients,
     )
 
     if not recipient_ids:
@@ -218,7 +218,7 @@ def fix_pre_pointer(cursor: CursorObj, user_profile: UserProfile) -> None:
 
     get_timing(
         'finding pre-pointer messages that are not muted',
-        find_old_ids
+        find_old_ids,
     )
 
     if not user_message_ids:
@@ -229,7 +229,7 @@ def fix_pre_pointer(cursor: CursorObj, user_profile: UserProfile) -> None:
 
     get_timing(
         'fixing unread messages for pre-pointer non-muted messages',
-        fix
+        fix,
     )
 
 def fix(user_profile: UserProfile) -> None:

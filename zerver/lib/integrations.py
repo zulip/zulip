@@ -74,7 +74,7 @@ class Integration:
             if category not in CATEGORIES:
                 raise KeyError(  # nocoverage
                     'INTEGRATIONS: ' + name + ' - category \'' +
-                    category + '\' is not a key in CATEGORIES.'
+                    category + '\' is not a key in CATEGORIES.',
                 )
         self.categories = list(map((lambda c: CATEGORIES[c]), categories))
 
@@ -172,7 +172,7 @@ class WebhookIntegration(Integration):
             display_name=display_name,
             stream_name=stream_name,
             legacy=legacy,
-            config_options=config_options
+            config_options=config_options,
         )
 
         if function is None:
@@ -242,7 +242,7 @@ class HubotIntegration(Integration):
             name, name, categories,
             logo=logo, display_name=display_name,
             doc = 'zerver/integrations/hubot_common.md',
-            legacy=legacy
+            legacy=legacy,
         )
 
 class EmbeddedBotIntegration(Integration):
@@ -273,7 +273,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         'alertmanager',
         ['monitoring'],
         display_name='Prometheus AlertManager',
-        logo='images/integrations/logos/prometheus.svg'
+        logo='images/integrations/logos/prometheus.svg',
     ),
     WebhookIntegration('ansibletower', ['deployment'], display_name='Ansible Tower'),
     WebhookIntegration('appfollow', ['customer-support'], display_name='AppFollow'),
@@ -286,14 +286,14 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         ['version-control'],
         logo='images/integrations/logos/bitbucket.svg',
         display_name='Bitbucket Server',
-        stream_name='bitbucket'
+        stream_name='bitbucket',
     ),
     WebhookIntegration(
         'bitbucket2',
         ['version-control'],
         logo='images/integrations/logos/bitbucket.svg',
         display_name='Bitbucket',
-        stream_name='bitbucket'
+        stream_name='bitbucket',
     ),
     WebhookIntegration(
         'bitbucket',
@@ -301,7 +301,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         display_name='Bitbucket',
         secondary_line_text='(Enterprise)',
         stream_name='commits',
-        legacy=True
+        legacy=True,
     ),
     WebhookIntegration('buildbot', ['continuous-integration'], display_name='Buildbot'),
     WebhookIntegration('circleci', ['continuous-integration'], display_name='CircleCI'),
@@ -315,7 +315,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         ['customer-support'],
         logo='images/integrations/logos/deskcom.png',
         display_name='Desk.com',
-        stream_name='desk'
+        stream_name='desk',
     ),
     WebhookIntegration('dropbox', ['productivity'], display_name='Dropbox'),
     WebhookIntegration('errbit', ['monitoring'], display_name='Errbit'),
@@ -329,7 +329,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         display_name='GitHub',
         logo='images/integrations/logos/github.svg',
         function='zerver.webhooks.github.view.api_github_webhook',
-        stream_name='github'
+        stream_name='github',
     ),
     WebhookIntegration('gitlab', ['version-control'], display_name='GitLab'),
     WebhookIntegration('gocd', ['continuous-integration'], display_name='GoCD'),
@@ -347,7 +347,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         'ifttt',
         ['meta-integration'],
         function='zerver.webhooks.ifttt.view.api_iftt_app_webhook',
-        display_name='IFTTT'
+        display_name='IFTTT',
     ),
     WebhookIntegration('insping', ['monitoring'], display_name='Insping'),
     WebhookIntegration('intercom', ['customer-support'], display_name='Intercom'),
@@ -361,7 +361,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         ['monitoring'],
         display_name='Opbeat',
         stream_name='opbeat',
-        function='zerver.webhooks.opbeat.view.api_opbeat_webhook'
+        function='zerver.webhooks.opbeat.view.api_opbeat_webhook',
     ),
     WebhookIntegration('opsgenie', ['meta-integration', 'monitoring']),
     WebhookIntegration('pagerduty', ['monitoring'], display_name='PagerDuty'),
@@ -394,7 +394,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         'yo',
         ['communication'],
         function='zerver.webhooks.yo.view.api_yo_app_webhook',
-        display_name='Yo App'
+        display_name='Yo App',
     ),
     WebhookIntegration('wordpress', ['marketing'], display_name='WordPress'),
     WebhookIntegration('zapier', ['meta-integration']),
@@ -411,7 +411,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         'capistrano',
         ['deployment'],
         display_name='Capistrano',
-        doc='zerver/integrations/capistrano.md'
+        doc='zerver/integrations/capistrano.md',
     ),
     'codebase': Integration('codebase', 'codebase', ['version-control'],
                             doc='zerver/integrations/codebase.md'),
@@ -428,7 +428,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         'google-calendar',
         ['productivity'],
         display_name='Google Calendar',
-        doc='zerver/integrations/google-calendar.md'
+        doc='zerver/integrations/google-calendar.md',
     ),
     'hubot': Integration('hubot', 'hubot', ['meta-integration', 'bots'], doc='zerver/integrations/hubot.md'),
     'irc': Integration('irc', 'irc', ['communication'], display_name='IRC',
@@ -438,7 +438,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         'jenkins',
         ['continuous-integration'],
         secondary_line_text='(or Hudson)',
-        doc='zerver/integrations/jenkins.md'
+        doc='zerver/integrations/jenkins.md',
     ),
     'jira-plugin': Integration(
         'jira-plugin',
@@ -449,7 +449,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         display_name='JIRA',
         doc='zerver/integrations/jira-plugin.md',
         stream_name='jira',
-        legacy=True
+        legacy=True,
     ),
     'matrix': Integration('matrix', 'matrix', ['communication'],
                           doc='zerver/integrations/matrix.md'),
@@ -490,7 +490,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         display_name='Trello',
         doc='zerver/integrations/trello-plugin.md',
         stream_name='trello',
-        legacy=True
+        legacy=True,
     ),
     'twitter': Integration('twitter', 'twitter', ['customer-support', 'marketing'],
                            # _ needed to get around adblock plus

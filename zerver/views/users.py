@@ -164,7 +164,7 @@ def patch_bot_backend(
         service_interface: Optional[int]=REQ(validator=check_int, default=1),
         default_sending_stream: Optional[str]=REQ(default=None),
         default_events_register_stream: Optional[str]=REQ(default=None),
-        default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool)
+        default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool),
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
@@ -244,7 +244,7 @@ def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_
 
     new_api_key = do_regenerate_api_key(bot, user_profile)
     json_result = dict(
-        api_key=new_api_key
+        api_key=new_api_key,
     )
     return json_success(json_result)
 
@@ -262,7 +262,7 @@ def add_bot_backend(
         default_sending_stream_name: Optional[str]=REQ('default_sending_stream', default=None),
         default_events_register_stream_name: Optional[str]=REQ('default_events_register_stream',
                                                                default=None),
-        default_all_public_streams: Optional[bool]=REQ(validator=check_bool, default=None)
+        default_all_public_streams: Optional[bool]=REQ(validator=check_bool, default=None),
 ) -> HttpResponse:
     short_name = check_short_name(short_name_raw)
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
@@ -393,7 +393,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 def get_members_backend(request: HttpRequest, user_profile: UserProfile, user_id: Optional[int]=None,
                         include_custom_profile_fields: bool=REQ(validator=check_bool,
                                                                 default=False),
-                        client_gravatar: bool=REQ(validator=check_bool, default=False)
+                        client_gravatar: bool=REQ(validator=check_bool, default=False),
                         ) -> HttpResponse:
     '''
     The client_gravatar field here is set to True if clients can compute
@@ -475,7 +475,7 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
 @has_request_variables
 def get_subscription_backend(request: HttpRequest, user_profile: UserProfile,
                              user_id: int=REQ(validator=check_int, path_only=True),
-                             stream_id: int=REQ(validator=check_int, path_only=True)
+                             stream_id: int=REQ(validator=check_int, path_only=True),
                              ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, read_only=True)
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)

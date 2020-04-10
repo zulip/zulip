@@ -84,7 +84,7 @@ def parse_cache_script_args(description: str) -> argparse.Namespace:
 
 def get_deploy_root() -> str:
     return os.path.realpath(
-        os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..")),
     )
 
 def get_deployment_version(extract_path: str) -> str:
@@ -271,7 +271,7 @@ def get_caches_to_be_purged(caches_dir: str, caches_in_use: Set[str], threshold_
     return caches_to_purge
 
 def purge_unused_caches(
-    caches_dir: str, caches_in_use: Set[str], cache_type: str, args: argparse.Namespace
+    caches_dir: str, caches_in_use: Set[str], cache_type: str, args: argparse.Namespace,
 ) -> None:
     all_caches = {os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)}
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)

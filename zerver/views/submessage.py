@@ -12,7 +12,7 @@ from zerver.lib.message import access_message
 from zerver.lib.validator import check_int
 from zerver.lib.response import (
     json_error,
-    json_success
+    json_success,
 )
 from zerver.models import UserProfile
 

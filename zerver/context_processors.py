@@ -188,7 +188,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     # by the desktop client. We expand it with IDs of the <button> elements corresponding
     # to the authentication methods.
     context['page_params'] = dict(
-        external_authentication_methods = get_external_method_dicts(realm)
+        external_authentication_methods = get_external_method_dicts(realm),
     )
     for auth_dict in context['page_params']['external_authentication_methods']:
         auth_dict['button_id_suffix'] = "auth_button_{}".format(auth_dict['name'])

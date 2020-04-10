@@ -51,7 +51,7 @@ def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> 
 
 @contextmanager
 def test_server_running(force: bool=False, external_host: str='testserver',
-                        log_file: Optional[str]=None, dots: bool=False, use_db: bool=True
+                        log_file: Optional[str]=None, dots: bool=False, use_db: bool=True,
                         ) -> Iterator[None]:
     log = sys.stdout
     if log_file:

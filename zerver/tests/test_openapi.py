@@ -16,7 +16,7 @@ from zerver.openapi.openapi import (
     get_openapi_fixture, get_openapi_parameters,
     validate_against_openapi_schema, to_python_type,
     SchemaError, openapi_spec, get_openapi_paths,
-    OpenAPISpec, OPENAPI_SPEC_PATH
+    OpenAPISpec, OPENAPI_SPEC_PATH,
 )
 from zerver.lib.request import arguments_map
 
@@ -49,7 +49,7 @@ class OpenAPIToolsTest(ZulipTestCase):
         expected = {
             'code': 'BAD_REQUEST',
             'msg': 'You don\'t have permission to edit this message',
-            'result': 'error'
+            'result': 'error',
         }
         self.assertEqual(actual, expected)
 
@@ -62,7 +62,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 'The target message\'s ID.\n',
             'example': 42,
             'required': True,
-            'schema': {'type': 'integer'}
+            'schema': {'type': 'integer'},
         }
         assert(expected_item in actual)
 
@@ -73,7 +73,7 @@ class OpenAPIToolsTest(ZulipTestCase):
             bad_content: Dict[str, object] = {
                 'msg': '',
                 'result': 'success',
-                'foo': 'bar'
+                'foo': 'bar',
             }
             validate_against_openapi_schema(bad_content,
                                             TEST_ENDPOINT,
@@ -117,14 +117,14 @@ class OpenAPIToolsTest(ZulipTestCase):
         openapi.EXCLUDE_PROPERTIES = {
             TEST_ENDPOINT: {
                 TEST_METHOD: {
-                    TEST_RESPONSE_SUCCESS: ['foo']
-                }
-            }
+                    TEST_RESPONSE_SUCCESS: ['foo'],
+                },
+            },
         }
         good_content = {
             'msg': '',
             'result': 'success',
-            'foo': 'bar'
+            'foo': 'bar',
         }
         validate_against_openapi_schema(good_content,
                                         TEST_ENDPOINT,
@@ -138,7 +138,7 @@ class OpenAPIToolsTest(ZulipTestCase):
             'integer': int,
             'boolean': bool,
             'array': list,
-            'object': dict
+            'object': dict,
         }
 
         for oa_type, py_type in TYPES.items():
@@ -693,32 +693,32 @@ class TestCurlExampleGeneration(ZulipTestCase):
                             "in": "query",
                             "description": "The ID of the stream whose messages should be marked as read.",
                             "schema": {
-                                "type": "integer"
+                                "type": "integer",
                             },
-                            "required": True
+                            "required": True,
                         },
                         {
                             "name": "bool_param",
                             "in": "query",
                             "description": "Just a boolean parameter.",
                             "schema": {
-                                "type": "boolean"
+                                "type": "boolean",
                             },
-                            "required": True
-                        }
+                            "required": True,
+                        },
                     ],
-                }
-            }
-        }
+                },
+            },
+        },
     }
 
     spec_mock_with_invalid_method: Dict[str, object] = {
         "security": [{"basicAuth": []}],
         "paths": {
             "/endpoint": {
-                "brew": {}  # the data is irrelevant as is should be rejected.
-            }
-        }
+                "brew": {},  # the data is irrelevant as is should be rejected.
+            },
+        },
     }
 
     spec_mock_using_object = {
@@ -733,17 +733,17 @@ class TestCurlExampleGeneration(ZulipTestCase):
                             "in": "query",
                             "description": "An object",
                             "schema": {
-                                "type": "object"
+                                "type": "object",
                             },
                             "example": {
-                                "key": "value"
+                                "key": "value",
                             },
-                            "required": True
-                        }
-                    ]
-                }
-            }
-        }
+                            "required": True,
+                        },
+                    ],
+                },
+            },
+        },
     }
 
     spec_mock_using_param_in_path = {
@@ -758,27 +758,27 @@ class TestCurlExampleGeneration(ZulipTestCase):
                             "in": "path",
                             "description": "Param in path",
                             "schema": {
-                                "type": "integer"
+                                "type": "integer",
                             },
                             "example": 35,
-                            "required": True
+                            "required": True,
                         },
                         {
                             "name": "param2",
                             "in": "query",
                             "description": "An object",
                             "schema": {
-                                "type": "object"
+                                "type": "object",
                             },
                             "example": {
-                                "key": "value"
+                                "key": "value",
                             },
-                            "required": True
-                        }
-                    ]
-                }
-            }
-        }
+                            "required": True,
+                        },
+                    ],
+                },
+            },
+        },
     }
 
     spec_mock_using_object_without_example = {
@@ -793,14 +793,14 @@ class TestCurlExampleGeneration(ZulipTestCase):
                             "in": "query",
                             "description": "An object",
                             "schema": {
-                                "type": "object"
+                                "type": "object",
                             },
-                            "required": True
-                        }
-                    ]
-                }
-            }
-        }
+                            "required": True,
+                        },
+                    ],
+                },
+            },
+        },
     }
 
     spec_mock_using_array_without_example = {
@@ -815,14 +815,14 @@ class TestCurlExampleGeneration(ZulipTestCase):
                             "in": "query",
                             "description": "An array",
                             "schema": {
-                                "type": "array"
+                                "type": "array",
                             },
-                            "required": True
-                        }
-                    ]
-                }
-            }
-        }
+                            "required": True,
+                        },
+                    ],
+                },
+            },
+        },
     }
 
     def curl_example(self, endpoint: str, method: str, *args: Any, **kwargs: Any) -> List[str]:
@@ -836,7 +836,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "curl -sSX GET -G http://localhost:9991/api/v1/get_stream_id \\",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    -d 'stream=Denmark'",
-            "```"
+            "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -852,7 +852,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "```curl",
             "curl -sSX POST http://localhost:9991/api/v1/dev_fetch_api_key \\",
             "    -d 'username=iago@zulip.com'",
-            "```"
+            "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -866,7 +866,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
             "    -d 'stream_id=1' \\",
             "    -d 'bool_param=false'",
-            "```"
+            "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -889,7 +889,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    -d 'client_gravatar=true' \\",
             "    -d 'apply_markdown=false' \\",
             "    -d 'use_first_unread_anchor=true'",
-            '```'
+            '```',
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -902,7 +902,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             'curl -sSX GET -G http://localhost:9991/api/v1/endpoint \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             '    --data-urlencode param1=\'{"key": "value"}\'',
-            '```'
+            '```',
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -927,7 +927,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             'curl -sSX GET -G http://localhost:9991/api/v1/endpoint/35 \\',
             '    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\',
             '    --data-urlencode param2=\'{"key": "value"}\'',
-            '```'
+            '```',
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -939,7 +939,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "curl -sSX GET -G https://zulip.example.com/api/v1/get_stream_id \\",
             "    -u email:key \\",
             "    -d 'stream=Denmark'",
-            "```"
+            "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
@@ -955,7 +955,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    -d 'num_after=8' \\",
             '    --data-urlencode narrow=\'[{"operand": "Denmark", "operator": "stream"}]\' \\',
             "    -d 'use_first_unread_anchor=true'",
-            '```'
+            '```',
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 

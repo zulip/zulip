@@ -628,7 +628,7 @@ class PermissionTest(ZulipTestCase):
         # non-existent field and no data
         invalid_profile_data = [{
             'id': 9001,
-            'value': ''
+            'value': '',
         }]
         result = self.client_patch(f'/json/users/{cordelia.id}',
                                    {'profile_data': ujson.dumps(invalid_profile_data)})
@@ -637,7 +637,7 @@ class PermissionTest(ZulipTestCase):
         # non-existent field and data
         invalid_profile_data = [{
             'id': 9001,
-            'value': 'some data'
+            'value': 'some data',
         }]
         result = self.client_patch(f'/json/users/{cordelia.id}',
                                    {'profile_data': ujson.dumps(invalid_profile_data)})
@@ -725,7 +725,7 @@ class BulkCreateUserTest(ZulipTestCase):
         fred = get_user_by_delivery_email('fred@zulip.com', realm)
         self.assertEqual(
             fred.email,
-            f'user{fred.id}@zulip.testserver'
+            f'user{fred.id}@zulip.testserver',
         )
 
         lisa = get_user_by_delivery_email('lisa@zulip.com', realm)
@@ -939,7 +939,7 @@ class UserProfileTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         result = bulk_get_users(
             [hamlet.email, cordelia.email],
-            get_realm("zulip")
+            get_realm("zulip"),
         )
         self.assertEqual(result[hamlet.email].email, hamlet.email)
         self.assertEqual(result[cordelia.email].email, cordelia.email)
@@ -947,7 +947,7 @@ class UserProfileTest(ZulipTestCase):
         result = bulk_get_users(
             [hamlet.email, cordelia.email, webhook_bot.email],
             None,
-            base_query=UserProfile.objects.all()
+            base_query=UserProfile.objects.all(),
         )
         self.assertEqual(result[hamlet.email].email, hamlet.email)
         self.assertEqual(result[cordelia.email].email, cordelia.email)
@@ -1418,7 +1418,7 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possibly_mentioned_user_ids={service_bot.id}
+            possibly_mentioned_user_ids={service_bot.id},
         )
         self.assertEqual(info['service_bot_tuples'], [
             (service_bot.id, UserProfile.EMBEDDED_BOT),
@@ -1438,7 +1438,7 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possibly_mentioned_user_ids={service_bot.id, normal_bot.id}
+            possibly_mentioned_user_ids={service_bot.id, normal_bot.id},
         )
         self.assertEqual(info['default_bot_user_ids'], {normal_bot.id})
 
@@ -1481,7 +1481,7 @@ class BulkUsersTest(ZulipTestCase):
 
         self.assertEqual(
             get_hamlet_avatar(client_gravatar=True),
-            None
+            None,
         )
 
         '''

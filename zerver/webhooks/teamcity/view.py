@@ -92,7 +92,7 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
         build_id=build_number,
         status=status,
         changes_url=changes_url,
-        log_url=build_url
+        log_url=build_url,
     )
 
     if 'branchDisplayName' in message:

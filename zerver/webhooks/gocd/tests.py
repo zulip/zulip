@@ -18,7 +18,7 @@ class GocdHookTests(WebhookTestCase):
             'pipeline',
             self.TOPIC,
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def test_failed_message(self) -> None:
@@ -32,7 +32,7 @@ class GocdHookTests(WebhookTestCase):
             'pipeline_failed',
             self.TOPIC,
             expected_message,
-            content_type="application/x-www-form-urlencoded"
+            content_type="application/x-www-form-urlencoded",
         )
 
     def get_body(self, fixture_name: str) -> str:

@@ -57,7 +57,7 @@ class InstallationCount(BaseCount):
             UniqueConstraint(
                 fields=["property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_installation_count_null_subgroup')
+                name='unique_installation_count_null_subgroup'),
         ]
 
     def __str__(self) -> str:
@@ -76,7 +76,7 @@ class RealmCount(BaseCount):
             UniqueConstraint(
                 fields=["realm", "property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_realm_count_null_subgroup')
+                name='unique_realm_count_null_subgroup'),
         ]
         index_together = ["property", "end_time"]
 
@@ -97,7 +97,7 @@ class UserCount(BaseCount):
             UniqueConstraint(
                 fields=["user", "property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_user_count_null_subgroup')
+                name='unique_user_count_null_subgroup'),
         ]
         # This index dramatically improves the performance of
         # aggregating from users to realms
@@ -120,7 +120,7 @@ class StreamCount(BaseCount):
             UniqueConstraint(
                 fields=["stream", "property", "end_time"],
                 condition=Q(subgroup__isnull=True),
-                name='unique_stream_count_null_subgroup')
+                name='unique_stream_count_null_subgroup'),
         ]
         # This index dramatically improves the performance of
         # aggregating from streams to realms

@@ -32,7 +32,7 @@ class TypingValidateOperatorTest(ZulipTestCase):
         sender = self.example_user("hamlet")
         params = dict(
             to=ujson.dumps([sender.id]),
-            op='foo'
+            op='foo',
         )
         result = self.api_post(sender, '/api/v1/typing', params)
         self.assert_json_error(result, 'Invalid \'op\' value (should be start or stop)')
@@ -163,8 +163,8 @@ class TypingHappyPathTest(ZulipTestCase):
                 '/api/v1/typing',
                 {
                     'to': ujson.dumps([user.id]),
-                    'op': 'start'
-                }
+                    'op': 'start',
+                },
             )
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
@@ -194,7 +194,7 @@ class TypingHappyPathTest(ZulipTestCase):
 
         params = dict(
             to=ujson.dumps([recipient.id]),
-            op='start'
+            op='start',
         )
 
         events: List[Mapping[str, Any]] = []
@@ -230,7 +230,7 @@ class TypingHappyPathTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             params = dict(
                 to=ujson.dumps([user.id]),
-                op='stop'
+                op='stop',
             )
             result = self.api_post(user, '/api/v1/typing', params)
 
@@ -264,7 +264,7 @@ class TypingHappyPathTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             params = dict(
                 to=ujson.dumps([recipient.id]),
-                op='stop'
+                op='stop',
             )
             result = self.api_post(sender, '/api/v1/typing', params)
 

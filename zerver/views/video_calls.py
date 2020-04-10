@@ -75,7 +75,7 @@ def register_zoom_user(request: HttpRequest) -> HttpResponse:
     authorization_url, state = oauth.authorization_url(
         "https://zoom.us/oauth/authorize",
         state=json.dumps(
-            {"realm": get_subdomain(request), "sid": get_zoom_sid(request)}
+            {"realm": get_subdomain(request), "sid": get_zoom_sid(request)},
         ),
     )
     return redirect(authorization_url)

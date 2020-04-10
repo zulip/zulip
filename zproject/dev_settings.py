@@ -29,7 +29,7 @@ if external_host_env is None:
         # Serve the main dev realm at the literal name "localhost",
         # so it works out of the box even when not on the Internet.
         REALM_HOSTS = {
-            'zulip': 'localhost:9991'
+            'zulip': 'localhost:9991',
         }
 else:
     EXTERNAL_HOST = external_host_env

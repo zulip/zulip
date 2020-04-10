@@ -292,7 +292,7 @@ def upload_image_to_s3(
     key = bucket.Object(file_name)
     metadata = {
         "user_profile_id": str(user_profile.id),
-        "realm_id": str(user_profile.realm_id)
+        "realm_id": str(user_profile.realm_id),
     }
 
     content_disposition = ''
@@ -378,7 +378,7 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_file_name = "/".join([
             str(target_realm.id),
             random_name(18),
-            sanitize_name(uploaded_file_name)
+            sanitize_name(uploaded_file_name),
         ])
         url = f"/user_uploads/{s3_file_name}"
 
@@ -387,7 +387,7 @@ class S3UploadBackend(ZulipUploadBackend):
             s3_file_name,
             content_type,
             user_profile,
-            file_data
+            file_data,
         )
 
         create_attachment(uploaded_file_name, s3_file_name, user_profile, uploaded_file_size)
@@ -415,7 +415,7 @@ class S3UploadBackend(ZulipUploadBackend):
             s3_file_name + "-medium.png",
             "image/png",
             target_user_profile,
-            resized_medium
+            resized_medium,
         )
 
         resized_data = resize_avatar(image_data)
@@ -565,7 +565,7 @@ class S3UploadBackend(ZulipUploadBackend):
             s3_file_name + "-medium.png",
             "image/png",
             user_profile,
-            resized_medium
+            resized_medium,
         )
 
     def ensure_basic_avatar_image(self, user_profile: UserProfile) -> None:  # nocoverage
@@ -585,7 +585,7 @@ class S3UploadBackend(ZulipUploadBackend):
             s3_file_name,
             "image/png",
             user_profile,
-            resized_avatar
+            resized_avatar,
         )
 
     def upload_emoji_image(self, emoji_file: File, emoji_file_name: str,
@@ -594,7 +594,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket_name = settings.S3_AVATAR_BUCKET
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
-            emoji_file_name=emoji_file_name
+            emoji_file_name=emoji_file_name,
         )
 
         image_data = emoji_file.read()
@@ -640,9 +640,9 @@ class S3UploadBackend(ZulipUploadBackend):
             'get_object',
             Params={
                 'Bucket': bucket.name,
-                'Key': key.key
+                'Key': key.key,
             },
-            ExpiresIn=0
+            ExpiresIn=0,
         )
         return public_url
 
@@ -710,7 +710,7 @@ class LocalUploadBackend(ZulipUploadBackend):
             str(user_profile.realm_id),
             format(random.randint(0, 255), 'x'),
             random_name(18),
-            sanitize_name(uploaded_file_name)
+            sanitize_name(uploaded_file_name),
         ])
 
         write_local_file('files', path, file_data)
@@ -832,7 +832,7 @@ class LocalUploadBackend(ZulipUploadBackend):
                            user_profile: UserProfile) -> None:
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id= user_profile.realm_id,
-            emoji_file_name=emoji_file_name
+            emoji_file_name=emoji_file_name,
         )
 
         image_data = emoji_file.read()

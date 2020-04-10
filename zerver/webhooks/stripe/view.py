@@ -103,7 +103,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                 resource=linkified_id(object_['id'], lower=True),
                 charge=linkified_id(object_['charge'], lower=True),
                 amount=object_['amount'],
-                currency=object_['currency'].upper()
+                currency=object_['currency'].upper(),
             )
     if category == 'checkout_beta':  # nocoverage
         # Not sure what this is
@@ -127,7 +127,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
             body = 'Discount {verbed} ([{coupon_name}]({coupon_url})).'.format(
                 verbed=event.replace('_', ' '),
                 coupon_name=object_['coupon']['name'],
-                coupon_url='https://dashboard.stripe.com/{}/{}'.format('coupons', object_['coupon']['id'])
+                coupon_url='https://dashboard.stripe.com/{}/{}'.format('coupons', object_['coupon']['id']),
             )
         if resource == 'source':  # nocoverage
             body = default_body()

@@ -9,7 +9,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.models import (
     get_stream,
     UserProfile,
-    MutedTopic
+    MutedTopic,
 )
 
 from zerver.lib.topic_mutes import (

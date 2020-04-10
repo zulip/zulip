@@ -39,7 +39,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.test_helpers import (
-    get_test_image_file
+    get_test_image_file,
 )
 from zerver.lib.topic import (
     EXPORT_TOPIC_NAME,
@@ -95,17 +95,17 @@ class SlackImporter(ZulipTestCase):
         token = 'xoxp-invalid-token'
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_user_list_url, "members", token=token)
-        self.assertEqual(invalid.exception.args, ('Error accessing Slack API: invalid_auth',),)
+        self.assertEqual(invalid.exception.args, ('Error accessing Slack API: invalid_auth',))
 
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_user_list_url, "members")
-        self.assertEqual(invalid.exception.args, ('Slack token missing in kwargs',),)
+        self.assertEqual(invalid.exception.args, ('Slack token missing in kwargs',))
 
         token = 'xoxp-status404'
         wrong_url = "https://slack.com/api/wrong"
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(wrong_url, "members", token=token)
-        self.assertEqual(invalid.exception.args, ('HTTP error accessing the Slack API.',),)
+        self.assertEqual(invalid.exception.args, ('HTTP error accessing the Slack API.',))
 
     def test_build_zerver_realm(self) -> None:
         realm_id = 2
@@ -163,9 +163,9 @@ class SlackImporter(ZulipTestCase):
         data_file_mock.side_effect = [
             [
                 {"name": "general", "members": ["U061A1R2R", "U061A5N1G"]},
-                {"name": "sharedchannel", "members": ["U061A1R2R", "U061A3E0G"]}
+                {"name": "sharedchannel", "members": ["U061A1R2R", "U061A3E0G"]},
             ],
-            []
+            [],
         ]
         api_mock.side_effect = [
             {"id": "U061A3E0G", "team_id": "T6LARQE2Z"},
@@ -201,7 +201,7 @@ class SlackImporter(ZulipTestCase):
             call("https://slack.com/api/users.info", "user", token="token", user="U061A3E0G"),
             call("https://slack.com/api/team.info", "team", token="token", team="T6LARQE2Z"),
             call("https://slack.com/api/users.info", "user", token="token", user="U061A8H1G"),
-            call("https://slack.com/api/team.info", "team", token="token", team="T7KJRQE8Y")
+            call("https://slack.com/api/team.info", "team", token="token", team="T7KJRQE8Y"),
         ]
         api_mock.assert_has_calls(api_calls, any_order=True)
 

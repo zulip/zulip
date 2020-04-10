@@ -17,7 +17,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "url": url,
             "body": body,
             "custom_headers": "{}",
-            "is_json": "true"
+            "is_json": "true",
         }
 
         response = self.client_post(target_url, data)
@@ -37,7 +37,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "url": url,
             "body": body,
             "custom_headers": "{}",
-            "is_json": "true"
+            "is_json": "true",
         }
 
         response = self.client_post(target_url, data)
@@ -64,7 +64,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "url": url,
             "body": body,
             "custom_headers": ujson.dumps({"X_GITHUB_EVENT": "ping"}),
-            "is_json": "true"
+            "is_json": "true",
         }
 
         response = self.client_post(target_url, data)
@@ -143,13 +143,13 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             {
                 "fixture_name": "sample.json",
                 "status_code": 200,
-                "message": {"msg": "", "result": "success"}
+                "message": {"msg": "", "result": "success"},
             },
             {
                 "fixture_name": "review.json",
                 "status_code": 200,
-                "message": {"msg": "", "result": "success"}
-            }
+                "message": {"msg": "", "result": "success"},
+            },
         ]
         responses = ujson.loads(response.content)["responses"]
         for r in responses:
@@ -187,43 +187,43 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             {
                 "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
                 "fixture_name": "user_register.txt",
-                "status_code": 400
+                "status_code": 400,
             },
             {
                 "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
                 "fixture_name": "publish_post_no_data_provided.txt",
-                "status_code": 400
+                "status_code": 400,
             },
             {
                 "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
                 "fixture_name": "unknown_action_no_data.txt",
-                "status_code": 400
+                "status_code": 400,
             },
             {
                 "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
                 "fixture_name": "publish_page.txt",
-                "status_code": 400
+                "status_code": 400,
             },
             {
                 "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
                 "fixture_name": "unknown_action_no_hook_provided.txt",
-                "status_code": 400
+                "status_code": 400,
             },
             {
                 "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
                 "fixture_name": "publish_post_type_not_provided.txt",
-                "status_code": 400
+                "status_code": 400,
             },
             {
                 "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
                 "fixture_name": "wp_login.txt",
-                "status_code": 400
+                "status_code": 400,
             },
             {
                 "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
                 "fixture_name": "publish_post.txt",
-                "status_code": 400
-            }
+                "status_code": 400,
+            },
         ]
         responses = ujson.loads(response.content)["responses"]
         for r in responses:

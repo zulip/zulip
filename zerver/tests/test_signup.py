@@ -34,7 +34,7 @@ from zerver.models import (
     CustomProfileFieldValue, DefaultStream, PreregistrationUser,
     Realm, Recipient, Message, ScheduledEmail, UserProfile, UserMessage,
     Stream, Subscription, flush_per_request_caches, get_system_bot,
-    get_user_by_delivery_email
+    get_user_by_delivery_email,
 )
 from zerver.lib.actions import (
     do_change_user_role,
@@ -105,7 +105,7 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
                                     # the email has an account at the subdomain,
                                     # so is_signup get overridden to False:
                                     'is_signup': False,
-                                    'multiuse_object_key': 'key'
+                                    'multiuse_object_key': 'key',
                                     })
 
         data_dict = ExternalAuthDataDict(email=self.nonreg_email("alice"),
@@ -121,7 +121,7 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
                                     'full_name_validated': True,
                                     'subdomain': realm.subdomain,
                                     'is_signup': True,
-                                    'multiuse_object_key': 'key'
+                                    'multiuse_object_key': 'key',
                                     })
 
 class DeactivationNoticeTestCase(ZulipTestCase):
@@ -196,7 +196,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         # that weren't the race message are marked as unread.
         latest_messages = UserMessage.objects.filter(
             user_profile=user_profile,
-            message__recipient__type=Recipient.STREAM
+            message__recipient__type=Recipient.STREAM,
         ).exclude(message_id=race_message_id).order_by('-message_id')[0:ONBOARDING_UNREAD_MESSAGES]
         self.assertEqual(len(latest_messages), 2)
         for msg in latest_messages:
@@ -205,7 +205,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         # Verify that older messages are correctly marked as read.
         older_messages = UserMessage.objects.filter(
             user_profile=user_profile,
-            message__recipient__type=Recipient.STREAM
+            message__recipient__type=Recipient.STREAM,
         ).exclude(message_id=race_message_id).order_by(
             '-message_id')[ONBOARDING_UNREAD_MESSAGES:ONBOARDING_UNREAD_MESSAGES + 1]
         self.assertTrue(len(older_messages) > 0)
@@ -1090,7 +1090,7 @@ class InviteUserTest(InviteUserBase):
         second_msg = last_3_messages[1]
         self.assertEqual(second_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(second_msg.content.startswith(
-            f"alice_zulip.com <`{invitee_profile.email}`> accepted your"
+            f"alice_zulip.com <`{invitee_profile.email}`> accepted your",
         ))
 
         # The second, from welcome-bot to the user who was invited.
@@ -1189,7 +1189,7 @@ earl-test@zulip.com""", ["Denmark"]))
         self.assert_json_error(result, "We weren't able to invite anyone.")
 
         self.assertFalse(
-            PreregistrationUser.objects.filter(email__iexact=hamlet_email).exists()
+            PreregistrationUser.objects.filter(email__iexact=hamlet_email).exists(),
         )
         self.check_sent_emails([])
 
@@ -2456,7 +2456,7 @@ class UserSignUpTest(InviteUserBase):
 
         smtp_mock = patch(
             'zerver.views.registration.send_confirm_registration_email',
-            side_effect=smtplib.SMTPException('uh oh')
+            side_effect=smtplib.SMTPException('uh oh'),
         )
 
         error_mock = patch('logging.error')
@@ -2479,7 +2479,7 @@ class UserSignUpTest(InviteUserBase):
 
         smtp_mock = patch(
             'zerver.views.registration.send_confirm_registration_email',
-            side_effect=smtplib.SMTPException('uh oh')
+            side_effect=smtplib.SMTPException('uh oh'),
         )
 
         error_mock = patch('logging.error')
@@ -4050,7 +4050,7 @@ class ConfirmationKeyTest(ZulipTestCase):
     def test_confirmation_key(self) -> None:
         request = MagicMock()
         request.session = {
-            'confirmation_key': {'confirmation_key': 'xyzzy'}
+            'confirmation_key': {'confirmation_key': 'xyzzy'},
         }
         result = confirmation_key(request)
         self.assert_json_success(result)

@@ -253,7 +253,7 @@ def handle_created_issue_event(payload: Dict[str, Any], user_profile: UserProfil
         author=get_issue_author(payload),
         issue_string=get_issue_string(payload, with_title=True),
         priority=get_in(payload, ['issue', 'fields', 'priority', 'name']),
-        assignee=get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one')
+        assignee=get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one'),
     )
 
 def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -263,7 +263,7 @@ def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfil
     return template.format(
         author=get_issue_author(payload),
         issue_string=get_issue_string(payload, with_title=True),
-        punctuation=punctuation
+        punctuation=punctuation,
     )
 
 def normalize_comment(comment: str) -> str:
@@ -279,7 +279,7 @@ def handle_comment_created_event(payload: Dict[str, Any], user_profile: UserProf
 *\n``` quote\n{comment}\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
         title = title,
-        comment = normalize_comment(payload["comment"]["body"])
+        comment = normalize_comment(payload["comment"]["body"]),
     )
 
 def handle_comment_updated_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -288,7 +288,7 @@ def handle_comment_updated_event(payload: Dict[str, Any], user_profile: UserProf
 *\n``` quote\n{comment}\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
         title = title,
-        comment = normalize_comment(payload["comment"]["body"])
+        comment = normalize_comment(payload["comment"]["body"]),
     )
 
 def handle_comment_deleted_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
@@ -297,7 +297,7 @@ def handle_comment_deleted_event(payload: Dict[str, Any], user_profile: UserProf
 *\n``` quote\n~~{comment}~~\n```\n".format(
         author = payload["comment"]["author"]["displayName"],
         title = title,
-        comment = normalize_comment(payload["comment"]["body"])
+        comment = normalize_comment(payload["comment"]["body"]),
     )
 
 JIRA_CONTENT_FUNCTION_MAPPER = {

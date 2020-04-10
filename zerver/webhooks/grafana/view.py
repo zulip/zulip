@@ -16,7 +16,7 @@ GRAFANA_MESSAGE_TEMPLATE = '[{rule_name}]({rule_url})\n\n{alert_message}{eval_ma
 @has_request_variables
 def api_grafana_webhook(
         request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Any]=REQ(argument_type='body')
+        payload: Dict[str, Any]=REQ(argument_type='body'),
 ) -> HttpResponse:
 
     topic = GRAFANA_TOPIC_TEMPLATE.format(alert_title=payload['title'])

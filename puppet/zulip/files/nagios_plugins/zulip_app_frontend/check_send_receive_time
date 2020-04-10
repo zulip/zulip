@@ -82,7 +82,7 @@ states = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
-    "UNKNOWN": 3
+    "UNKNOWN": 3,
 }
 
 def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> None:

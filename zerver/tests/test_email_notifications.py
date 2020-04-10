@@ -20,7 +20,7 @@ from zerver.models import (
     get_realm,
     get_stream,
     UserProfile,
-    ScheduledEmail
+    ScheduledEmail,
 )
 
 class TestCustomEmails(ZulipTestCase):
@@ -34,7 +34,7 @@ class TestCustomEmails(ZulipTestCase):
             "markdown_template_path": markdown_template_path,
             "reply_to": reply_to,
             "subject": email_subject,
-            "from_name": from_name
+            "from_name": from_name,
         })
         self.assertEqual(len(mail.outbox), 1)
         msg = mail.outbox[0]
@@ -64,12 +64,12 @@ class TestCustomEmails(ZulipTestCase):
         from zerver.lib.send_email import NoEmailArgumentException
         self.assertRaises(NoEmailArgumentException, send_custom_email, [hamlet], {
             "markdown_template_path": markdown_template_path,
-            "from_name": from_name
+            "from_name": from_name,
         })
 
         self.assertRaises(NoEmailArgumentException, send_custom_email, [hamlet], {
             "markdown_template_path": markdown_template_path,
-            "subject": email_subject
+            "subject": email_subject,
         })
 
     def test_send_custom_email_doubled_arguments(self) -> None:
@@ -98,7 +98,7 @@ class TestCustomEmails(ZulipTestCase):
         markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
         send_custom_email([admin_user, non_admin_user], {
             "markdown_template_path": markdown_template_path,
-            "admins_only": True
+            "admins_only": True,
         })
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(admin_user.delivery_email, mail.outbox[0].to[0])
@@ -279,7 +279,7 @@ class TestMissedMessages(ZulipTestCase):
         if show_message_content:
             verify_body_include = [
                 "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 @**King Hamlet** -- ",
-                "You are receiving this because you were mentioned in Zulip Dev."
+                "You are receiving this because you were mentioned in Zulip Dev.",
             ]
             email_subject = '#Denmark > test'
             verify_body_does_not_include: List[str] = []
@@ -289,7 +289,7 @@ class TestMissedMessages(ZulipTestCase):
                 "This email does not include message content because you have disabled message ",
                 "http://zulip.testserver/help/pm-mention-alert-notifications ",
                 "View or reply in Zulip",
-                " Manage email preferences: http://zulip.testserver/#settings/notifications"
+                " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
 
             email_subject = 'New missed messages'
@@ -315,7 +315,7 @@ class TestMissedMessages(ZulipTestCase):
         if show_message_content:
             verify_body_include = [
                 "Othello, the Moor of Venice: 1 2 3 4 5 @**all** -- ",
-                "You are receiving this because you were mentioned in Zulip Dev."
+                "You are receiving this because you were mentioned in Zulip Dev.",
             ]
             email_subject = '#Denmark > test'
             verify_body_does_not_include: List[str] = []
@@ -325,7 +325,7 @@ class TestMissedMessages(ZulipTestCase):
                 "This email does not include message content because you have disabled message ",
                 "http://zulip.testserver/help/pm-mention-alert-notifications ",
                 "View or reply in Zulip",
-                " Manage email preferences: http://zulip.testserver/#settings/notifications"
+                " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Denmark > test', 'Othello, the Moor of Venice',
@@ -347,7 +347,7 @@ class TestMissedMessages(ZulipTestCase):
             '12')
         verify_body_include = [
             "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 12 -- ",
-            "You are receiving this because you have email notifications enabled for this stream."
+            "You are receiving this because you have email notifications enabled for this stream.",
         ]
         email_subject = '#Denmark > test'
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user, trigger='stream_email_notify')
@@ -360,7 +360,7 @@ class TestMissedMessages(ZulipTestCase):
             '@**King Hamlet**')
         verify_body_include = [
             "Cordelia Lear: 0 1 2 Othello, the Moor of Venice: @**King Hamlet** -- ",
-            "You are receiving this because you were mentioned in Zulip Dev."
+            "You are receiving this because you were mentioned in Zulip Dev.",
         ]
         email_subject = '#Denmark > test'
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user, trigger='mentioned')
@@ -385,14 +385,14 @@ class TestMissedMessages(ZulipTestCase):
                     "This email does not include message content because your organization has disabled",
                     "http://zulip.testserver/help/hide-message-content-in-emails",
                     "View or reply in Zulip",
-                    " Manage email preferences: http://zulip.testserver/#settings/notifications"
+                    " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
             elif message_content_disabled_by_user:
                 verify_body_include = [
                     "This email does not include message content because you have disabled message ",
                     "http://zulip.testserver/help/pm-mention-alert-notifications ",
                     "View or reply in Zulip",
-                    " Manage email preferences: http://zulip.testserver/#settings/notifications"
+                    " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Othello, the Moor of Venice', 'Extremely personal message!',
@@ -441,7 +441,7 @@ class TestMissedMessages(ZulipTestCase):
                 "This email does not include message content because you have disabled message ",
                 "http://zulip.testserver/help/pm-mention-alert-notifications ",
                 "View or reply in Zulip",
-                " Manage email preferences: http://zulip.testserver/#settings/notifications"
+                " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
             email_subject = 'New missed messages'
             verify_body_does_not_include = ['Iago', 'Othello, the Moor of Venice Othello, the Moor of Venice',

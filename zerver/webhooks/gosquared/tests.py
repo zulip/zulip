@@ -20,7 +20,7 @@ class GoSquaredHookTests(WebhookTestCase):
         expected_message = CHAT_MESSAGE_TEMPLATE.format(
             status='visitor',
             name='John Smith',
-            content='Zulip is awesome!'
+            content='Zulip is awesome!',
         )
 
         self.send_and_test_stream_message('chat_message', expected_topic, expected_message,

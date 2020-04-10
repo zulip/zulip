@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
                 ON zerver_usermessage (user_profile_id, message_id)
                 WHERE (flags & 8) != 0 OR (flags & 16) != 0;
             ''',
-            reverse_sql='DROP INDEX zerver_usermessage_wilcard_mentioned_message_id;'
+            reverse_sql='DROP INDEX zerver_usermessage_wilcard_mentioned_message_id;',
         ),
     ]

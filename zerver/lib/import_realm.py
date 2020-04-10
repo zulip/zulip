@@ -653,7 +653,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
             relative_path = "/".join([
                 str(record['realm_id']),
                 random_name(18),
-                sanitize_name(os.path.basename(record['path']))
+                sanitize_name(os.path.basename(record['path'])),
             ])
             path_maps['attachment_path'][record['s3_path']] = relative_path
 
@@ -1038,7 +1038,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         #
         # Longer-term, the plan is to eliminate pointer as a concept.
         first_unread_message = UserMessage.objects.filter(user_profile=user_profile).extra(
-            where=[UserMessage.where_unread()]
+            where=[UserMessage.where_unread()],
         ).order_by("message_id").first()
         if first_unread_message is not None:
             user_profile.pointer = first_unread_message.message_id

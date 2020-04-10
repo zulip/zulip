@@ -203,7 +203,7 @@ def fetch_request(url: str, callback: Any, **kwargs: Any) -> "Generator[Callable
         connect_timeout=240.0,
         request_timeout=240.0,
         decompress_response=False,
-        **kwargs
+        **kwargs,
     )
     client = httpclient.AsyncHTTPClient()
     # wait for response
@@ -218,7 +218,7 @@ class BaseHandler(web.RequestHandler):
     target_port: int
 
     def _add_request_headers(
-        self, exclude_lower_headers_list: Optional[List[str]] = None
+        self, exclude_lower_headers_list: Optional[List[str]] = None,
     ) -> httputil.HTTPHeaders:
         exclude_lower_headers_list = exclude_lower_headers_list or []
         headers = httputil.HTTPHeaders()
@@ -284,7 +284,7 @@ class BaseHandler(web.RequestHandler):
                 headers=self._add_request_headers(["upgrade-insecure-requests"]),
                 follow_redirects=False,
                 body=getattr(self.request, 'body'),
-                allow_nonstandard_methods=True
+                allow_nonstandard_methods=True,
             )
         except httpclient.HTTPError as e:
             if hasattr(e, 'response') and e.response:
@@ -329,7 +329,7 @@ class Application(web.Application):
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
             (r"/thumbor.*", ThumborHandler if using_thumbor() else ErrorHandler),
-            (r"/.*", DjangoHandler)
+            (r"/.*", DjangoHandler),
         ]
         super().__init__(handlers, enable_logging=enable_logging)
 

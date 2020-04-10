@@ -463,7 +463,7 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
         config.custom_fetch(
             response=response,
             config=config,
-            context=context
+            context=context,
         )
         if config.custom_tables:
             for t in config.custom_tables:
@@ -533,7 +533,7 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
         config.post_process_data(
             response=response,
             config=config,
-            context=context
+            context=context,
         )
 
     # Now walk our children.  It's extremely important to respect
@@ -551,7 +551,7 @@ def get_realm_config() -> Config:
 
     realm_config = Config(
         table='zerver_realm',
-        is_seeded=True
+        is_seeded=True,
     )
 
     Config(
@@ -593,7 +593,7 @@ def get_realm_config() -> Config:
         table='zerver_client',
         model=Client,
         virtual_parent=realm_config,
-        use_all=True
+        use_all=True,
     )
 
     user_profile_config = Config(
@@ -740,7 +740,7 @@ def get_realm_config() -> Config:
         id_source=('_stream_recipient', 'type_id'),
         source_filter=lambda r: r['type'] == Recipient.STREAM,
         exclude=['email_token'],
-        post_process_data=sanity_check_stream_data
+        post_process_data=sanity_check_stream_data,
     )
 
     #
@@ -773,7 +773,7 @@ def get_realm_config() -> Config:
             '_user_subscription',
             '_stream_subscription',
             '_huddle_subscription',
-        ]
+        ],
     )
 
     return realm_config
@@ -999,7 +999,7 @@ def export_partial_message_files(realm: Realm,
     # were specified as being allowed to be exported.  "Them"
     # refers to other users.
     user_ids_for_us = get_ids(
-        response['zerver_userprofile']
+        response['zerver_userprofile'],
     )
     ids_of_our_possible_senders = get_ids(
         response['zerver_userprofile'] +
@@ -1408,7 +1408,7 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
     for realm_emoji in RealmEmoji.objects.filter(realm_id=realm.id):
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=realm.id,
-            emoji_file_name=realm_emoji.file_name
+            emoji_file_name=realm_emoji.file_name,
         )
 
         # Use 'mark_sanitized' to work around false positive caused by Pysa
@@ -1490,7 +1490,7 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
         response=response,
         config=realm_config,
         seed_object=realm,
-        context=dict(realm=realm, exportable_user_ids=exportable_user_ids)
+        context=dict(realm=realm, exportable_user_ids=exportable_user_ids),
     )
     logging.info('...DONE with get_realm_config() data')
 
@@ -1584,7 +1584,7 @@ def launch_user_message_subprocesses(threads: int, output_dir: Path,
             os.path.join(settings.DEPLOY_ROOT, "manage.py"),
             'export_usermessage_batch',
             '--path', str(output_dir),
-            '--thread', str(shard_id)
+            '--thread', str(shard_id),
         ]
         if consent_message_id is not None:
             arguments.extend(['--consent-message-id', str(consent_message_id)])

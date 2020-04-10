@@ -176,7 +176,7 @@ class DocPageTest(ZulipTestCase):
                        'And hundreds more through',
                        'Hubot',
                        'Zapier',
-                       'IFTTT'
+                       'IFTTT',
                    ])
 
         for integration in INTEGRATIONS.keys():

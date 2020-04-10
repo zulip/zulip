@@ -181,7 +181,7 @@ def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
     user_profiles_by_id: Dict[int, UserProfile] = generic_bulk_cached_fetch(
         cache_key_function=user_profile_by_id_cache_key,
         query_function=fetch_users_by_id,
-        object_ids=user_ids
+        object_ids=user_ids,
     )
 
     found_user_ids = user_profiles_by_id.keys()
@@ -307,7 +307,7 @@ def format_user_row(realm: Realm, acting_user: UserProfile, row: Dict[str, Any],
                                   avatar_source=row['avatar_source'],
                                   avatar_version=row['avatar_version'],
                                   medium=False,
-                                  client_gravatar=client_gravatar,)
+                                  client_gravatar=client_gravatar)
 
     is_admin = is_administrator_role(row['role'])
     is_owner = row['role'] == UserProfile.ROLE_REALM_OWNER
@@ -398,11 +398,11 @@ def get_custom_profile_field_values(custom_profile_field_values:
         if profile_field.field.is_renderable():
             profiles_by_user_id[user_id][profile_field.field_id] = {
                 "value": profile_field.value,
-                "rendered_value": profile_field.rendered_value
+                "rendered_value": profile_field.rendered_value,
             }
         else:
             profiles_by_user_id[user_id][profile_field.field_id] = {
-                "value": profile_field.value
+                "value": profile_field.value,
             }
     return profiles_by_user_id
 
@@ -440,6 +440,6 @@ def get_raw_user_data(realm: Realm, acting_user: UserProfile, client_gravatar: b
                                             acting_user = acting_user,
                                             row=row,
                                             client_gravatar= client_gravatar,
-                                            custom_profile_field_data = custom_profile_field_data
+                                            custom_profile_field_data = custom_profile_field_data,
                                             )
     return result

@@ -13,14 +13,14 @@ OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
 EXCLUDE_PROPERTIES = {
     '/register': {
         'post': {
-            '200': ['max_message_id', 'realm_emoji']
-        }
+            '200': ['max_message_id', 'realm_emoji'],
+        },
     },
     '/zulip-outgoing-webhook': {
         'post': {
-            '200': ['result', 'msg', 'message']
-        }
-    }
+            '200': ['result', 'msg', 'message'],
+        },
+    },
 }
 
 class OpenAPISpec():
@@ -221,7 +221,7 @@ def to_python_type(py_type: str) -> type:
         'integer': int,
         'boolean': bool,
         'array': list,
-        'object': dict
+        'object': dict,
     }
 
     return TYPES[py_type]

@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from typing import (
     Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-    Optional, Tuple, Union, IO, TypeVar, TYPE_CHECKING
+    Optional, Tuple, Union, IO, TypeVar, TYPE_CHECKING,
 )
 
 from django.urls import URLResolver
@@ -555,7 +555,7 @@ def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocove
             UserHotspot=UserHotspot,
             UserMessage=UserMessage,
             UserPresence=UserPresence,
-            UserProfile=UserProfile
+            UserProfile=UserProfile,
         )
         zerver_test_helpers_patch = mock.patch.multiple(
             'zerver.lib.test_helpers',

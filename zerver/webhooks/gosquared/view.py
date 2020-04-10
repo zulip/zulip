@@ -51,7 +51,7 @@ def api_gosquared_webhook(request: HttpRequest, user_profile: UserProfile,
             body = CHAT_MESSAGE_TEMPLATE.format(
                 status=payload['person']['status'],
                 name=payload['person']['_anon']['name'],
-                content=payload['message']['content']
+                content=payload['message']['content'],
             )
             check_send_webhook_message(request, user_profile, topic, body)
     else:
