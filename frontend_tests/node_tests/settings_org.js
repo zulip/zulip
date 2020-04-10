@@ -787,8 +787,11 @@ run_test('set_up', () => {
         upload_realm_icon = f;
     };
 
-    const stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
-    settings_org.render_notifications_stream_ui = noop;
+    settings_org.init_dropdown_widgets();
+    const stub_notif_stream_render = settings_org.notifications_stream_widget.render;
+    settings_org.notifications_stream_widget.render = noop;
+    const stub_signup_notif_render = settings_org.signup_notifications_stream_widget.render;
+    settings_org.signup_notifications_stream_widget.render = noop;
     const stub_language_render = settings_org.default_code_language_widget.render;
     settings_org.default_code_language_widget.render = noop;
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
@@ -827,7 +830,8 @@ run_test('set_up', () => {
     test_parse_time_limit();
     test_discard_changes_button(discard_changes);
 
-    settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
+    settings_org.notifications_stream_widget.render = stub_notif_stream_render;
+    settings_org.signup_notifications_stream_widget.render = stub_signup_notif_render;
     settings_org.default_code_language_widget.render = stub_language_render;
 });
 
@@ -935,7 +939,7 @@ run_test('misc', () => {
     page_params.is_admin = false;
 
     const stub_notification_disable_parent = $.create('<stub notification_disable parent');
-    stub_notification_disable_parent.set_find_results('.notification-disable',
+    stub_notification_disable_parent.set_find_results('.dropdown_list_reset_button',
                                                       $.create('<disable link>'));
 
     page_params.realm_name_changes_disabled = false;
@@ -1003,7 +1007,16 @@ run_test('misc', () => {
     settings_account.update_email_change_display();
     assert.equal($("#change_email .button").attr('disabled'), false);
 
-    let elem = $('#realm_notifications_stream_name');
+    stream_data.get_streams_for_settings_page = () => {
+        const arr = [];
+        arr.push({name: "some_stream", stream_id: 75});
+        arr.push({name: "some_stream", stream_id: 42});
+        return arr;
+    };
+    settings_org.init_dropdown_widgets();
+
+    let setting_name = 'realm_notifications_stream_id';
+    let elem = $(`#${setting_name}_widget #${setting_name}_name`);
     elem.closest = function () {
         return stub_notification_disable_parent;
     };
@@ -1011,16 +1024,17 @@ run_test('misc', () => {
         assert.equal(stream_id, 42);
         return { name: 'some_stream' };
     };
-    settings_org.render_notifications_stream_ui(42, "notifications");
+    settings_org.notifications_stream_widget.render(42);
     assert.equal(elem.text(), '#some_stream');
     assert(!elem.hasClass('text-warning'));
 
     stream_data.get_sub_by_id = noop;
-    settings_org.render_notifications_stream_ui(undefined, "notifications");
+    settings_org.notifications_stream_widget.render(undefined);
     assert.equal(elem.text(), 'translated: Disabled');
     assert(elem.hasClass('text-warning'));
 
-    elem = $('#realm_signup_notifications_stream_name');
+    setting_name = 'realm_signup_notifications_stream_id';
+    elem = $(`#${setting_name}_widget #${setting_name}_name`);
     elem.closest = function () {
         return stub_notification_disable_parent;
     };
@@ -1028,12 +1042,12 @@ run_test('misc', () => {
         assert.equal(stream_id, 75);
         return { name: 'some_stream' };
     };
-    settings_org.render_notifications_stream_ui(75, "signup_notifications");
+    settings_org.signup_notifications_stream_widget.render(75);
     assert.equal(elem.text(), '#some_stream');
     assert(!elem.hasClass('text-warning'));
 
     stream_data.get_sub_by_id = noop;
-    settings_org.render_notifications_stream_ui(undefined, "signup_notifications");
+    settings_org.signup_notifications_stream_widget.render(undefined);
     assert.equal(elem.text(), 'translated: Disabled');
     assert(elem.hasClass('text-warning'));
 
