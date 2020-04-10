@@ -9,98 +9,6 @@ const meta = {
     loaded: false,
 };
 
-exports.default_code_language_widget = (function (element_id) {
-
-    const render_language_list = require("../templates/settings/admin_realm_dropdown_code_languages_list.hbs");
-    const language_list = Object.keys(pygments_data.langs).map(x => {
-        return {
-            name: x,
-            priority: pygments_data.langs[x],
-        };
-    });
-
-    const setup = () => {
-        // populate the dropdown
-        const dropdown_list_body = $(`#${element_id} .dropdown-list-body`).expectOne();
-        const search_input = $(`#${element_id} .dropdown-search > input[type=text]`);
-        list_render.create(dropdown_list_body, language_list, {
-            name: "admin-realm-default-code-language-dropdown-list",
-            modifier: function (item) {
-                return render_language_list({ language: item });
-            },
-            filter: {
-                element: search_input,
-                predicate: function (item, value) {
-                    return item.name.toLowerCase().includes(value);
-                },
-            },
-        }).init();
-        $(`#${element_id} .dropdown-search`).click(function (e) {
-            e.stopPropagation();
-        });
-
-        $(`#${element_id} .dropdown-toggle`).click(function () {
-            search_input.val("").trigger("input");
-        });
-    };
-
-    const render = (name) => {
-        $(`#${element_id} #id_realm_default_code_block_language`).data("language", name);
-
-        const elem = $(`#${element_id} #realm_default_code_block_language_name`);
-
-        if (!name) {
-            elem.text(i18n.t("No language set"));
-            elem.addClass("text-warning");
-            elem.closest('.input-group').find('.default_code_block_language_unset').hide();
-            return;
-        }
-
-        // Happy path
-        elem.text(name);
-        elem.removeClass('text-warning');
-        elem.closest('.input-group').find('.default_code_block_language_unset').show();
-    };
-
-    const update = (lang, save_discard_widget_status_handler) => {
-        render(lang);
-        save_discard_widget_status_handler($('#org-other-settings'));
-    };
-
-    const register_event_handlers = (save_discard_widget_status_handler) => {
-        $(`#${element_id} .dropdown-list-body`).on("click keypress", ".lang_name", function (e) {
-            const setting_elem = $(this).closest(".realm_default_code_block_language_setting");
-            if (e.type === "keypress") {
-                if (e.which === 13) {
-                    setting_elem.find(".dropdown-menu").dropdown("toggle");
-                } else {
-                    return;
-                }
-            }
-            const lang = $(this).attr('data-language');
-            update(lang, save_discard_widget_status_handler);
-        });
-        $(`#${element_id} .default_code_block_language_unset`).click(function () {
-            update(null, save_discard_widget_status_handler);
-        });
-    };
-
-    const value = () => {
-        let val = $(`#${element_id} #id_realm_default_code_block_language`).data('language');
-        if (val === null) {
-            val = '';
-        }
-        return val;
-    };
-
-    return {
-        setup,
-        render,
-        register_event_handlers,
-        value,
-    };
-}('realm_default_code_block_language_widget'));
-
 exports.reset = function () {
     meta.loaded = false;
 };
@@ -642,6 +550,150 @@ exports.set_up = function () {
     exports.maybe_disable_widgets();
 };
 
+function get_auth_method_table_data() {
+    const new_auth_methods = {};
+    const auth_method_rows = $("#id_realm_authentication_methods").find('tr.method_row');
+
+    for (const method_row of auth_method_rows) {
+        new_auth_methods[$(method_row).data('method')] = $(method_row).find('input').prop('checked');
+    }
+
+    return new_auth_methods;
+}
+
+function check_property_changed(elem) {
+    elem = $(elem);
+    const property_name = exports.extract_property_name(elem);
+    let changed_val;
+    let current_val = get_property_value(property_name);
+
+    if (property_name === 'realm_authentication_methods') {
+        current_val = sort_object_by_key(current_val);
+        current_val = JSON.stringify(current_val);
+        changed_val = get_auth_method_table_data();
+        changed_val = JSON.stringify(changed_val);
+    } else if (property_name === 'realm_notifications_stream') {
+        changed_val = parseInt($("#id_realm_notifications_stream").data('stream-id'), 10);
+    } else if (property_name === 'realm_signup_notifications_stream') {
+        changed_val = parseInt($("#id_realm_signup_notifications_stream").data('stream-id'), 10);
+    } else if (property_name === 'realm_default_code_block_language') {
+        changed_val = exports.default_code_language_widget.value();
+    } else if (typeof current_val === 'boolean') {
+        changed_val = elem.prop('checked');
+    } else if (typeof current_val === 'string') {
+        changed_val = elem.val().trim();
+    } else if (typeof current_val === 'number') {
+        current_val = current_val.toString();
+        changed_val = elem.val().trim();
+    } else {
+        blueslip.error('Element refers to unknown property ' + property_name);
+    }
+    return current_val !== changed_val;
+}
+
+function save_discard_widget_status_handler(subsection) {
+    subsection.find('.subsection-failed-status p').hide();
+    subsection.find('.save-button').show();
+    const properties_elements = get_subsection_property_elements(subsection);
+    const show_change_process_button = properties_elements.some(check_property_changed);
+
+    const save_btn_controls = subsection.find('.subsection-header .save-button-controls');
+    const button_state = show_change_process_button ? "unsaved" : "discarded";
+    exports.change_save_button_state(save_btn_controls, button_state);
+}
+
+exports.default_code_language_widget = (function (element_id) {
+
+    const render_language_list = require("../templates/settings/admin_realm_dropdown_code_languages_list.hbs");
+    const language_list = Object.keys(pygments_data.langs).map(x => {
+        return {
+            name: x,
+            priority: pygments_data.langs[x],
+        };
+    });
+
+    const setup = () => {
+        // populate the dropdown
+        const dropdown_list_body = $(`#${element_id} .dropdown-list-body`).expectOne();
+        const search_input = $(`#${element_id} .dropdown-search > input[type=text]`);
+        list_render.create(dropdown_list_body, language_list, {
+            name: "admin-realm-default-code-language-dropdown-list",
+            modifier: function (item) {
+                return render_language_list({ language: item });
+            },
+            filter: {
+                element: search_input,
+                predicate: function (item, value) {
+                    return item.name.toLowerCase().includes(value);
+                },
+            },
+        }).init();
+        $(`#${element_id} .dropdown-search`).click(function (e) {
+            e.stopPropagation();
+        });
+
+        $(`#${element_id} .dropdown-toggle`).click(function () {
+            search_input.val("").trigger("input");
+        });
+    };
+
+    const render = (name) => {
+        $(`#${element_id} #id_realm_default_code_block_language`).data("language", name);
+
+        const elem = $(`#${element_id} #realm_default_code_block_language_name`);
+
+        if (!name) {
+            elem.text(i18n.t("No language set"));
+            elem.addClass("text-warning");
+            elem.closest('.input-group').find('.default_code_block_language_unset').hide();
+            return;
+        }
+
+        // Happy path
+        elem.text(name);
+        elem.removeClass('text-warning');
+        elem.closest('.input-group').find('.default_code_block_language_unset').show();
+    };
+
+    const update = (lang) => {
+        render(lang);
+        save_discard_widget_status_handler($('#org-other-settings'));
+    };
+
+    const register_event_handlers = () => {
+        $(`#${element_id} .dropdown-list-body`).on("click keypress", ".lang_name", function (e) {
+            const setting_elem = $(this).closest(".realm_default_code_block_language_setting");
+            if (e.type === "keypress") {
+                if (e.which === 13) {
+                    setting_elem.find(".dropdown-menu").dropdown("toggle");
+                } else {
+                    return;
+                }
+            }
+            const lang = $(this).attr('data-language');
+            update(lang);
+        });
+        $(`#${element_id} .default_code_block_language_unset`).click(function () {
+            update(null);
+        });
+    };
+
+    const value = () => {
+        let val = $(`#${element_id} #id_realm_default_code_block_language`).data('language');
+        if (val === null) {
+            val = '';
+        }
+        return val;
+    };
+
+    return {
+        setup,
+        render,
+        register_event_handlers,
+        value,
+    };
+}('realm_default_code_block_language_widget'));
+
 exports.build_page = function () {
     meta.loaded = true;
 
@@ -674,58 +726,6 @@ exports.build_page = function () {
     set_org_join_restrictions_dropdown();
     set_message_content_in_email_notifications_visiblity();
     set_digest_emails_weekday_visibility();
-
-    function get_auth_method_table_data() {
-        const new_auth_methods = {};
-        const auth_method_rows = $("#id_realm_authentication_methods").find('tr.method_row');
-
-        for (const method_row of auth_method_rows) {
-            new_auth_methods[$(method_row).data('method')] = $(method_row).find('input').prop('checked');
-        }
-
-        return new_auth_methods;
-    }
-
-    function check_property_changed(elem) {
-        elem = $(elem);
-        const property_name = exports.extract_property_name(elem);
-        let changed_val;
-        let current_val = get_property_value(property_name);
-
-        if (property_name === 'realm_authentication_methods') {
-            current_val = sort_object_by_key(current_val);
-            current_val = JSON.stringify(current_val);
-            changed_val = get_auth_method_table_data();
-            changed_val = JSON.stringify(changed_val);
-        } else if (property_name === 'realm_notifications_stream') {
-            changed_val = parseInt($("#id_realm_notifications_stream").data('stream-id'), 10);
-        } else if (property_name === 'realm_signup_notifications_stream') {
-            changed_val = parseInt($("#id_realm_signup_notifications_stream").data('stream-id'), 10);
-        } else if (property_name === 'realm_default_code_block_language') {
-            changed_val = exports.default_code_language_widget.value();
-        } else if (typeof current_val === 'boolean') {
-            changed_val = elem.prop('checked');
-        } else if (typeof current_val === 'string') {
-            changed_val = elem.val().trim();
-        } else if (typeof current_val === 'number') {
-            current_val = current_val.toString();
-            changed_val = elem.val().trim();
-        } else {
-            blueslip.error('Element refers to unknown property ' + property_name);
-        }
-        return current_val !== changed_val;
-    }
-
-    function save_discard_widget_status_handler(subsection) {
-        subsection.find('.subsection-failed-status p').hide();
-        subsection.find('.save-button').show();
-        const properties_elements = get_subsection_property_elements(subsection);
-        const show_change_process_button = properties_elements.some(check_property_changed);
-
-        const save_btn_controls = subsection.find('.subsection-header .save-button-controls');
-        const button_state = show_change_process_button ? "unsaved" : "discarded";
-        exports.change_save_button_state(save_btn_controls, button_state);
-    }
 
     $('.admin-realm-form').on('change input', 'input, select, textarea', function (e) {
         e.preventDefault();
@@ -1062,8 +1062,7 @@ exports.build_page = function () {
         save_discard_widget_status_handler($('#org-notifications'));
     }
 
-    exports.default_code_language_widget.register_event_handlers(
-        save_discard_widget_status_handler);
+    exports.default_code_language_widget.register_event_handlers();
 
     $(".notifications-stream-setting .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
         const notifications_stream_setting_elem = $(this).closest(".notifications-stream-setting");
