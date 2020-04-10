@@ -1472,7 +1472,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                     mock.patch('zproject.backends.logging.info') as m:
                 # This mock causes AuthFailed to be raised.
                 saml_response = self.generate_saml_response(self.email, self.name)
-                relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp"})
+                relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp", "subdomain": "zulip"})
                 post_params = {"SAMLResponse": saml_response, "RelayState": relay_state}
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
@@ -1485,7 +1485,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                             side_effect=AuthStateForbidden('State forbidden')), \
                     mock.patch('zproject.backends.logging.warning') as m:
                 saml_response = self.generate_saml_response(self.email, self.name)
-                relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp"})
+                relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp", "subdomain": "zulip"})
                 post_params = {"SAMLResponse": saml_response, "RelayState": relay_state}
                 result = self.client_post('/complete/saml/',  post_params)
                 self.assertEqual(result.status_code, 302)
@@ -1505,7 +1505,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         # Check that POSTing the RelayState, but with missing SAMLResponse,
         # doesn't cause errors either:
         with mock.patch('zproject.backends.logging.info') as m:
-            relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp"})
+            relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp", "subdomain": "zulip"})
             post_params = {"RelayState": relay_state}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
@@ -1516,13 +1516,23 @@ class SAMLAuthBackendTest(SocialAuthBase):
             )
 
         with mock.patch('zproject.backends.logging.info') as m:
-            relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp"})
+            relay_state = SAMLAuthBackend.put_data_in_redis({"idp": "test_idp", "subdomain": "zulip"})
             relay_state = relay_state[:-1]  # Break the token by removing the last character
             post_params = {"RelayState": relay_state}
             result = self.client_post('/complete/saml/',  post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
             m.assert_called_with("SAML authentication failed: bad RelayState token.")
+
+    def test_social_auth_complete_no_idp_and_subdomain(self) -> None:
+        with mock.patch('zproject.backends.logging.info') as m:
+            relay_state = SAMLAuthBackend.put_data_in_redis({})
+            post_params = {"RelayState": relay_state}
+            result = self.client_post('/complete/saml/',  post_params)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual('/login/', result.url)
+            self.assertIn("Missing idp or subdomain value in relayed_params",
+                          m.call_args.args[0])
 
     def test_social_auth_saml_bad_idp_param_on_login_page(self) -> None:
         with mock.patch('zproject.backends.logging.info') as m:
@@ -1555,11 +1565,14 @@ class SAMLAuthBackendTest(SocialAuthBase):
         # We deepcopy() dictionaries around for the sake of brevity,
         # to avoid having to spell them out explicitly here.
         # The second idp's configuration is a copy of the first one,
-        # with name test_idp2 and altered url.
+        # with name test_idp2 and altered url. It is also configured to be
+        # limited to the zulip realm, so that we get to test both types
+        # of configs here.
         idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
         idps_dict['test_idp2'] = copy.deepcopy(idps_dict['test_idp'])
         idps_dict['test_idp2']['url'] = 'https://idp2.example.com/idp/profile/SAML2/Redirect/SSO'
         idps_dict['test_idp2']['display_name'] = 'Second Test IdP'
+        idps_dict['test_idp2']['limit_to_subdomains'] = ['zulip', ]
 
         # Run tests with multiple idps configured:
         with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
@@ -1590,6 +1603,25 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 self.LOGIN_URL = original_LOGIN_URL
                 self.SIGNUP_URL = original_SIGNUP_URL
                 self.AUTHORIZATION_URL = original_AUTHORIZATION_URL
+
+    def test_social_auth_saml_idp_limited_to_subdomains_success(self) -> None:
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict['test_idp']['limit_to_subdomains'] = ['zulip', ]
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
+            self.test_social_auth_success()
+
+    def test_social_auth_saml_idp_limited_to_subdomains_attempt_wrong_realm(self) -> None:
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict['test_idp']['limit_to_subdomains'] = ['zulip', ]
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            with mock.patch('zproject.backends.logging.info') as m:
+                result = self.social_auth_test(account_data_dict, subdomain='zephyr')
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual('/login/', result.url)
+        m.assert_called_with(
+            "User authenticated with IdP test_idp but this provider is not enabled for this realm zephyr."
+        )
 
     def test_social_auth_saml_login_bad_idp_arg(self) -> None:
         for action in ['login', 'register']:
@@ -2445,6 +2477,36 @@ class ExternalMethodDictsTests(ZulipTestCase):
             result = self.client_get("/register/")
             self.assert_in_success_response([string.format("register") for string in expected_button_id_strings],
                                             result)
+
+    def test_get_external_method_dicts_multiple_saml_idps(self) -> None:
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        # Create another IdP config, by copying the original one and changing some details.idps_dict['test_idp'])
+        idps_dict['test_idp2'] = copy.deepcopy(idps_dict['test_idp'])
+        idps_dict['test_idp2']['url'] = 'https://idp2.example.com/idp/profile/SAML2/Redirect/SSO'
+        idps_dict['test_idp2']['display_name'] = 'Second Test IdP'
+        idps_dict['test_idp2']['limit_to_subdomains'] = ['zephyr', ]
+        with self.settings(
+            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
+            AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',
+                                     'zproject.backends.GitHubAuthBackend',
+                                     'zproject.backends.SAMLAuthBackend')
+        ):
+            # Calling get_external_method_dicts without a realm returns all methods configured on the server:
+            external_auth_methods = get_external_method_dicts()
+            self.assert_length(external_auth_methods, 3)  # 2 IdP + a dict for github auth
+            self.assertEqual(set([external_auth_methods[0]['name'], external_auth_methods[1]['name']]),
+                             set(['saml:test_idp', 'saml:test_idp2']))
+
+            external_auth_methods = get_external_method_dicts(get_realm("zulip"))
+            # Only test_idp enabled for the zulip realm, + github auth.
+            self.assert_length(external_auth_methods, 2)
+            self.assertEqual(external_auth_methods[0]['name'], 'saml:test_idp')
+
+            external_auth_methods = get_external_method_dicts(get_realm("zephyr"))
+            # Both idps enabled for the zephyr realm, + github auth.
+            self.assert_length(external_auth_methods, 3)
+            self.assertEqual(set([external_auth_methods[0]['name'], external_auth_methods[1]['name']]),
+                             set(['saml:test_idp', 'saml:test_idp2']))
 
 class FetchAuthBackends(ZulipTestCase):
     def assert_on_error(self, error: Optional[str]) -> None:

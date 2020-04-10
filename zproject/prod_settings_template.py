@@ -254,6 +254,10 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         # the left end of the login/register buttons for this IDP.
         # The default of None results in a text-only button.
         # "display_icon": "/path/to/icon.png",
+
+        # If you want this IdP to only be enabled for authentication
+        # to certain subdomains, uncomment and edit the setting below.
+        # "limit_to_subdomains": ["subdomain1", "subdomain2"],
     }
 }
 
