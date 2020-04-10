@@ -325,6 +325,10 @@ exports.launch = function () {
 
     function setup_event_handlers() {
         $(".restore-draft").on("click", function (e) {
+            if (document.getSelection().type === "Range") {
+                return;
+            }
+
             e.stopPropagation();
 
             const draft_row = $(this).closest(".draft-row");
