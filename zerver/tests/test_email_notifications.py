@@ -755,7 +755,36 @@ class TestMissedMessages(ZulipTestCase):
         email_subject = 'PMs with Iago'
         self.assertEqual(mail.outbox[1].subject, email_subject)
 
+    def test_topic_follow_multiple_messages(self) -> None:
+        """Subject should be stream name and topic as usual.
+        But the missed message content should refer to the enabled topic follow notification.
+        Note: We assume this setting is already enabled for the user as we pass
+              topic_follow_email_notify in the trigger"""
+
+        hamlet = self.example_user('hamlet')
+        msg_id_1 = self.send_stream_message(self.example_user('othello'),
+                                            "Denmark",
+                                            'Message1')
+        msg_id_2 = self.send_stream_message(self.example_user('iago'),
+                                            "Denmark",
+                                            'Message2')
+
+        handle_missedmessage_emails(hamlet.id, [
+            {'message_id': msg_id_1, "trigger": "topic_follow_email_notify"},
+            {'message_id': msg_id_2, "trigger": "topic_follow_email_notify"},
+        ])
+        self.assertEqual(len(mail.outbox), 1)
+        email_subject = '#Denmark > test'
+        email_text = mail.outbox[0].message().as_string()
+        self.assertEqual(mail.outbox[0].subject, email_subject)
+        self.assertIn('You are receiving this because you contributed to this topic.',
+                      email_text)
+
     def test_multiple_stream_messages(self) -> None:
+        """Subject should be stream name and topic as usual.
+        The missed message content should refer to the enabled stream notification.
+        Note: We assume this setting is already enabled for the user as we pass
+              stream_email_notify in the trigger"""
         hamlet = self.example_user('hamlet')
         msg_id_1 = self.send_stream_message(self.example_user('othello'),
                                             "Denmark",
@@ -770,10 +799,38 @@ class TestMissedMessages(ZulipTestCase):
         ])
         self.assertEqual(len(mail.outbox), 1)
         email_subject = '#Denmark > test'
+        email_text = mail.outbox[0].message().as_string()
         self.assertEqual(mail.outbox[0].subject, email_subject)
+        self.assertIn('You are receiving this because you have email notifications enabled for this stream.',
+                      email_text)
+
+    def test_topic_follow_multiple_messages_and_mentions(self) -> None:
+        """Subject should be stream name and topic as usual.
+        The missed message content should refer to the mention."""
+        hamlet = self.example_user('hamlet')
+        msg_id_1 = self.send_stream_message(self.example_user('iago'),
+                                            "Denmark",
+                                            'Regular message',
+                                            'Denmark1')
+        msg_id_2 = self.send_stream_message(self.example_user('othello'),
+                                            "Denmark",
+                                            '@**King Hamlet**',
+                                            'Denmark1')
+
+        handle_missedmessage_emails(hamlet.id, [
+            {'message_id': msg_id_1, "trigger": "topic_follow_email_notify"},
+            {'message_id': msg_id_2, "trigger": "mentioned"},
+        ])
+        self.assertEqual(len(mail.outbox), 1)
+        email_subject = '#Denmark > Denmark1'
+        email_text = mail.outbox[0].message().as_string()
+        self.assertEqual(mail.outbox[0].subject, email_subject)
+        self.assertIn('You are receiving this because you were mentioned in Zulip Dev.',
+                      email_text)
 
     def test_multiple_stream_messages_and_mentions(self) -> None:
-        """Subject should be stream name and topic as usual."""
+        """Subject should be stream name and topic as usual.
+        The missed message content should refer to the mention."""
         hamlet = self.example_user('hamlet')
         msg_id_1 = self.send_stream_message(self.example_user('iago'),
                                             "Denmark",
@@ -788,7 +845,34 @@ class TestMissedMessages(ZulipTestCase):
         ])
         self.assertEqual(len(mail.outbox), 1)
         email_subject = '#Denmark > test'
+        email_text = mail.outbox[0].message().as_string()
         self.assertEqual(mail.outbox[0].subject, email_subject)
+        self.assertIn('You are receiving this because you were mentioned in Zulip Dev.',
+                      email_text)
+
+    def test_multiple_stream_and_topic_follow_messages(self) -> None:
+        """Subject should be stream name and topic as usual.
+        The missed message content should refer to the topic follow notification."""
+        hamlet = self.example_user('hamlet')
+        msg_id_1 = self.send_stream_message(self.example_user('iago'),
+                                            "Denmark",
+                                            'Regular message',
+                                            'Denmark1')
+        msg_id_2 = self.send_stream_message(self.example_user('othello'),
+                                            "Denmark",
+                                            '@**King Hamlet**',
+                                            'Denmark1')
+
+        handle_missedmessage_emails(hamlet.id, [
+            {'message_id': msg_id_1, "trigger": "stream_email_notify"},
+            {'message_id': msg_id_2, "trigger": "topic_follow_email_notify"},
+        ])
+        self.assertEqual(len(mail.outbox), 1)
+        email_subject = '#Denmark > Denmark1'
+        email_text = mail.outbox[0].message().as_string()
+        self.assertEqual(mail.outbox[0].subject, email_subject)
+        self.assertIn('You are receiving this because you contributed to this topic.',
+                      email_text)
 
     def test_message_access_in_emails(self) -> None:
         # Messages sent to a protected history-private stream shouldn't be

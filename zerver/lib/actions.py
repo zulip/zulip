@@ -991,6 +991,7 @@ class RecipientInfoResult(TypedDict):
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
+    topic_follow_email_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
     long_term_idle_user_ids: Set[int]
     default_bot_user_ids: Set[int]
@@ -1004,6 +1005,7 @@ def get_recipient_info(recipient: Recipient,
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
     wildcard_mention_user_ids: Set[int] = set()
+    topic_follow_email_user_ids: Set[int] = set()
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -1016,13 +1018,11 @@ def get_recipient_info(recipient: Recipient,
         # stream_topic.  We may eventually want to have different versions
         # of this function for different message types.
         assert(stream_topic is not None)
-        user_ids_muting_topic = stream_topic.user_ids_muting_topic()
 
         subscription_rows = stream_topic.get_active_subscriptions().annotate(
             user_profile_email_notifications=F('user_profile__enable_stream_email_notifications'),
             user_profile_push_notifications=F('user_profile__enable_stream_push_notifications'),
-            user_profile_wildcard_mentions_notify=F(
-                'user_profile__wildcard_mentions_notify'),
+            user_profile_wildcard_mentions_notify=F('user_profile__wildcard_mentions_notify'),
         ).values(
             'user_profile_id',
             'push_notifications',
@@ -1034,17 +1034,52 @@ def get_recipient_info(recipient: Recipient,
             'is_muted',
         ).order_by('user_profile_id')
 
+        '''
+        TODO: We will likely replace this query with a separate FollowedTopics
+              table, for greater efficiency.
+              For now we assume users follow all topics to which they have
+              posted in, but after the migration we would want to allow users
+              to control which topics they want to follow or unfollow.
+        '''
+
+        follower_rows = stream_topic.get_followers_user_ids_for_topic(recipient).annotate(
+            user_profile_id=F('sender_id'),
+            email_notifications=F('sender__enable_topic_follow_email_notifications'),
+            push_notifications=F('sender__enable_topic_follow_push_notifications'),
+            wildcard_mentions_notify=F('sender__enable_topic_follow_wildcard_mentions_notify'),
+        ).values(
+            'user_profile_id',
+            'email_notifications',
+            'push_notifications',
+            'wildcard_mentions_notify',
+        ).order_by('user_profile_id')
+
+        user_ids_muting_topic = stream_topic.user_ids_muting_topic()
+        user_ids_muting_stream = [
+            row['user_profile_id']
+            for row in subscription_rows
+            if row['is_muted']
+        ]
+
         message_to_user_ids = [
             row['user_profile_id']
             for row in subscription_rows
         ]
 
-        def should_send(setting: str, row: Dict[str, Any]) -> bool:
+        def should_send(setting: str, row: Dict[str, Any], check_active: bool=False) -> bool:
             # This implements the structure that the UserProfile stream notification settings
             # are defaults, which can be overridden by the stream-level settings (if those
             # values are not null).
-            if row['is_muted']:
-                return False
+            if check_active:
+                if row['user_profile_id'] not in message_to_user_ids:
+                    # The subscription is not active,
+                    # i.e. User is not subscribed to the stream
+                    return False
+                if row['user_profile_id'] in user_ids_muting_stream:
+                    return False
+            else:
+                if row['is_muted']:
+                    return False
             if row['user_profile_id'] in user_ids_muting_topic:
                 return False
             if row[setting] is not None:
@@ -1063,6 +1098,14 @@ def get_recipient_info(recipient: Recipient,
             for row in subscription_rows
             # Note: muting a stream overrides stream_email_notify
             if should_send('email_notifications', row)
+        }
+
+        topic_follow_email_user_ids = {
+            row['user_profile_id']
+            # Note: muting a stream or topic overrides topic_follow_email_notify
+            # and row[setting] will never be None for topics
+            for row in follower_rows
+            if should_send('email_notifications', row, check_active=True)
         }
 
         if possible_wildcard_mention:
@@ -1189,6 +1232,7 @@ def get_recipient_info(recipient: Recipient,
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
+        topic_follow_email_user_ids=topic_follow_email_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
         default_bot_user_ids=default_bot_user_ids,
@@ -1339,6 +1383,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         message['push_notify_user_ids'] = info['push_notify_user_ids']
         message['stream_push_user_ids'] = info['stream_push_user_ids']
         message['stream_email_user_ids'] = info['stream_email_user_ids']
+        message['topic_follow_email_user_ids'] = info['topic_follow_email_user_ids']
         message['um_eligible_user_ids'] = info['um_eligible_user_ids']
         message['long_term_idle_user_ids'] = info['long_term_idle_user_ids']
         message['default_bot_user_ids'] = info['default_bot_user_ids']
@@ -1407,6 +1452,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 long_term_idle_user_ids=message['long_term_idle_user_ids'],
                 stream_push_user_ids = message['stream_push_user_ids'],
                 stream_email_user_ids = message['stream_email_user_ids'],
+                topic_follow_email_user_ids=message['topic_follow_email_user_ids'],
                 mentioned_user_ids=mentioned_user_ids,
                 mark_as_read=mark_as_read
             )
@@ -1483,6 +1529,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 stream_push_notify=(user_id in message['stream_push_user_ids']),
                 stream_email_notify=(user_id in message['stream_email_user_ids']),
                 wildcard_mention_notify=(user_id in message['wildcard_mention_user_ids']),
+                topic_follow_email_notify=(user_id in message['topic_follow_email_user_ids']),
             )
             for user_id in user_ids
         ]
@@ -1559,6 +1606,7 @@ def create_user_messages(message: Message,
                          long_term_idle_user_ids: Set[int],
                          stream_push_user_ids: Set[int],
                          stream_email_user_ids: Set[int],
+                         topic_follow_email_user_ids: Set[int],
                          mentioned_user_ids: Set[int],
                          mark_as_read: List[int]=[]) -> List[UserMessageLite]:
     ums_to_create = []
@@ -1613,6 +1661,7 @@ def create_user_messages(message: Message,
         if (um.user_profile_id in long_term_idle_user_ids and
                 um.user_profile_id not in stream_push_user_ids and
                 um.user_profile_id not in stream_email_user_ids and
+                um.user_profile_id not in topic_follow_email_user_ids and
                 message.is_stream_message() and
                 int(um.flags) == 0):
             continue
@@ -4392,6 +4441,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
         event['push_notify_user_ids'] = list(info['push_notify_user_ids'])
         event['stream_push_user_ids'] = list(info['stream_push_user_ids'])
         event['stream_email_user_ids'] = list(info['stream_email_user_ids'])
+        event['topic_follow_email_user_ids'] = list(info['topic_follow_email_user_ids'])
         event['prior_mention_user_ids'] = list(prior_mention_user_ids)
         event['mention_user_ids'] = list(mention_user_ids)
         event['presence_idle_user_ids'] = filter_presence_idle_user_ids(info['active_user_ids'])

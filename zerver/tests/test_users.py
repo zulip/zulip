@@ -1255,6 +1255,7 @@ class RecipientInfoTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
         othello = self.example_user('othello')
+        aaron = self.example_user('aaron')
 
         # These tests were written with the old default for
         # enable_online_push_notifications; that default is better for
@@ -1262,17 +1263,20 @@ class RecipientInfoTest(ZulipTestCase):
         hamlet.enable_online_push_notifications = False
         cordelia.enable_online_push_notifications = False
         othello.enable_online_push_notifications = False
+        aaron.enable_online_push_notifications = False
         hamlet.save()
         cordelia.save()
         othello.save()
+        aaron.save()
 
         realm = hamlet.realm
 
         stream_name = 'Test Stream'
         topic_name = 'test topic'
 
-        for user in [hamlet, cordelia, othello]:
+        for user in [hamlet, cordelia, othello, aaron]:
             self.subscribe(user, stream_name)
+            self.send_stream_message(user, stream_name, "hi", topic_name)
 
         stream = get_stream(stream_name, realm)
         recipient = stream.recipient
@@ -1289,7 +1293,7 @@ class RecipientInfoTest(ZulipTestCase):
             possible_wildcard_mention=False,
         )
 
-        all_user_ids = {hamlet.id, cordelia.id, othello.id}
+        all_user_ids = {hamlet.id, cordelia.id, othello.id, aaron.id}
 
         expected_info = dict(
             active_user_ids=all_user_ids,
@@ -1297,6 +1301,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
             wildcard_mention_user_ids=set(),
+            topic_follow_email_user_ids=set(),
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
             default_bot_user_ids=set(),
@@ -1306,9 +1311,16 @@ class RecipientInfoTest(ZulipTestCase):
         self.assertEqual(info, expected_info)
 
         cordelia.wildcard_mentions_notify = False
+        cordelia.enable_topic_follow_email_notifications = True
         cordelia.save()
         hamlet.enable_stream_push_notifications = True
+        hamlet.enable_topic_follow_email_notifications = True
         hamlet.save()
+        aaron.enable_topic_follow_email_notifications = True
+        aaron.save()
+        sub = get_subscription(stream_name, aaron)
+        sub.active = False
+        sub.save()
         info = get_recipient_info(
             recipient=recipient,
             sender_id=hamlet.id,
@@ -1316,6 +1328,7 @@ class RecipientInfoTest(ZulipTestCase):
             possible_wildcard_mention=False,
         )
         self.assertEqual(info['stream_push_user_ids'], {hamlet.id})
+        self.assertEqual(info['topic_follow_email_user_ids'], {hamlet.id, cordelia.id})
         self.assertEqual(info['wildcard_mention_user_ids'], set())
 
         info = get_recipient_info(
@@ -1363,6 +1376,7 @@ class RecipientInfoTest(ZulipTestCase):
             possible_wildcard_mention=False,
         )
         self.assertEqual(info['stream_push_user_ids'], set())
+        self.assertEqual(info['topic_follow_email_user_ids'], {cordelia.id})
         self.assertEqual(info['wildcard_mention_user_ids'], set())
 
         info = get_recipient_info(

@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, Tuple
 from zerver.lib.actions import do_mute_topic, do_change_subscription_property
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock
+from zerver.lib.topic_mutes import add_topic_mute, remove_topic_mute
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications, \
     allocate_client_descriptor, ClientDescriptor, \
@@ -49,7 +50,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=False,
             mentioned=False, wildcard_mention_notify=False,
-            stream_push_notify=False, stream_email_notify=False,
+            stream_push_notify=False, stream_email_notify=False, topic_follow_email_notify=False,
             stream_name=None, always_push_notify=False, idle=True, already_notified={})
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is None)
@@ -58,7 +59,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=True,
             mentioned=False, wildcard_mention_notify=False,
-            stream_push_notify=False, stream_email_notify=True,
+            stream_push_notify=False, stream_email_notify=True, topic_follow_email_notify=False,
             stream_name=None, always_push_notify=False, idle=True, already_notified={})
         self.assertTrue(email_notice is not None)
         self.assertTrue(mobile_notice is not None)
@@ -68,7 +69,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=True,
             mentioned=False, wildcard_mention_notify=False,
-            stream_push_notify=False, stream_email_notify=False,
+            stream_push_notify=False, stream_email_notify=False, topic_follow_email_notify=False,
             stream_name=None, always_push_notify=False, idle=True, already_notified={
                 'push_notified': True,
                 'email_notified': False,
@@ -79,7 +80,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=True,
             mentioned=False, wildcard_mention_notify=False,
-            stream_push_notify=False, stream_email_notify=False,
+            stream_push_notify=False, stream_email_notify=False, topic_follow_email_notify=False,
             stream_name=None, always_push_notify=False, idle=True, already_notified={
                 'push_notified': False,
                 'email_notified': True,
@@ -91,7 +92,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=False,
             mentioned=True, wildcard_mention_notify=False,
-            stream_push_notify=False, stream_email_notify=False,
+            stream_push_notify=False, stream_email_notify=False, topic_follow_email_notify=False,
             stream_name=None, always_push_notify=False, idle=True, already_notified={})
         self.assertTrue(email_notice is not None)
         self.assertTrue(mobile_notice is not None)
@@ -102,7 +103,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=False,
             mentioned=False, wildcard_mention_notify=True,
-            stream_push_notify=False, stream_email_notify=False,
+            stream_push_notify=False, stream_email_notify=False, topic_follow_email_notify=False,
             stream_name=None, always_push_notify=False, idle=True, already_notified={})
         self.assertTrue(email_notice is not None)
         self.assertTrue(mobile_notice is not None)
@@ -111,7 +112,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=False,
             mentioned=False, wildcard_mention_notify=False,
-            stream_push_notify=True, stream_email_notify=False,
+            stream_push_notify=True, stream_email_notify=False, topic_follow_email_notify=False,
             stream_name="Denmark", always_push_notify=False, idle=True, already_notified={})
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is not None)
@@ -120,7 +121,16 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=False,
             mentioned=False, wildcard_mention_notify=False,
-            stream_push_notify=False, stream_email_notify=True,
+            stream_push_notify=False, stream_email_notify=True, topic_follow_email_notify=False,
+            stream_name="Denmark", always_push_notify=False, idle=True, already_notified={})
+        self.assertTrue(email_notice is not None)
+        self.assertTrue(mobile_notice is None)
+
+        # topic_follow_email_notify emails but doesn't push
+        email_notice, mobile_notice = self.check_will_notify(
+            user_profile.id, message_id, private_message=False,
+            mentioned=False, wildcard_mention_notify=False,
+            stream_push_notify=False, stream_email_notify=False, topic_follow_email_notify=True,
             stream_name="Denmark", always_push_notify=False, idle=True, already_notified={})
         self.assertTrue(email_notice is not None)
         self.assertTrue(mobile_notice is None)
@@ -129,7 +139,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=True,
             mentioned=False, wildcard_mention_notify=False,
-            stream_push_notify=False, stream_email_notify=True,
+            stream_push_notify=False, stream_email_notify=True, topic_follow_email_notify=False,
             stream_name=None, always_push_notify=False, idle=False, already_notified={})
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is None)
@@ -138,7 +148,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=False,
             mentioned=True, wildcard_mention_notify=False,
-            stream_push_notify=False, stream_email_notify=False,
+            stream_push_notify=False, stream_email_notify=False, topic_follow_email_notify=False,
             stream_name=None, always_push_notify=False, idle=False, already_notified={})
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is None)
@@ -147,7 +157,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=False,
             mentioned=False, wildcard_mention_notify=True,
-            stream_push_notify=False, stream_email_notify=False,
+            stream_push_notify=False, stream_email_notify=False, topic_follow_email_notify=False,
             stream_name=None, always_push_notify=False, idle=False, already_notified={})
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is None)
@@ -156,7 +166,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=True,
             mentioned=False, wildcard_mention_notify=False,
-            stream_push_notify=False, stream_email_notify=True,
+            stream_push_notify=False, stream_email_notify=True, topic_follow_email_notify=False,
             stream_name=None, always_push_notify=True, idle=False, already_notified={})
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is not None)
@@ -165,7 +175,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id, message_id, private_message=False,
             mentioned=False, wildcard_mention_notify=False,
-            stream_push_notify=True, stream_email_notify=True,
+            stream_push_notify=True, stream_email_notify=True, topic_follow_email_notify=False,
             stream_name="Denmark", always_push_notify=True, idle=False, already_notified={})
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is not None)
@@ -218,6 +228,9 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         """Tests what arguments missedmessage_hook passes into maybe_enqueue_notifications.
         Combined with the previous test, this ensures that the missedmessage_hook is correct"""
         user_profile = self.example_user('hamlet')
+        realm = user_profile.realm
+        stream = get_stream('Denmark', realm)
+        topic_name = "Test"
 
         user_profile.enable_online_push_notifications = False
         user_profile.save()
@@ -267,8 +280,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False, False, False,
-                                         "Denmark", False, True,
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False, False,
+                                         False, False, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -282,7 +295,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, True, False, False, False,
-                                         False, None, False, True,
+                                         False, False, None, False, True,
                                          {'email_notified': True, 'push_notified': True}))
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -297,7 +310,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, True, False, False,
-                                         False, "Denmark", False, True,
+                                         False, False, "Denmark", False, True,
                                          {'email_notified': True, 'push_notified': True}))
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -312,7 +325,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False, True, False,
-                                         False, "Denmark", False, True,
+                                         False, False, "Denmark", False, True,
                                          {'email_notified': True, 'push_notified': True}))
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -329,7 +342,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False, False,
-                                         False, "Denmark", False, True,
+                                         False, False, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -345,7 +358,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False, False,
-                                         False, "Denmark", False, True,
+                                         False, False, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
         destroy_event_queue(client_descriptor.event_queue.id)
         change_subscription_properties(user_profile, stream, sub, {'is_muted': False})
@@ -363,7 +376,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False, False,
-                                         False, "Denmark", False, True,
+                                         False, False, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
         destroy_event_queue(client_descriptor.event_queue.id)
         user_profile.wildcard_mentions_notify = True
@@ -385,7 +398,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False, True, False,
-                                         False, "Denmark", False, True,
+                                         False, False, "Denmark", False, True,
                                          {'email_notified': True, 'push_notified': True}))
         destroy_event_queue(client_descriptor.event_queue.id)
         user_profile.wildcard_mentions_notify = True
@@ -405,7 +418,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False,
-                                         True, False, "Denmark", False, True,
+                                         True, False, False, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -423,7 +436,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False,
-                                         False, True, "Denmark", False, True,
+                                         False, True, False, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -444,7 +457,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False, False,
-                                         False, "Denmark", False, True,
+                                         False, False, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -465,14 +478,76 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list = mock_enqueue.call_args_list[0][0]
 
             self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False,
-                                         False, False, "Denmark", False, True,
+                                         False, False, False, "Denmark", False, True,
+                                         {'email_notified': False, 'push_notified': False}))
+        destroy_event_queue(client_descriptor.event_queue.id)
+
+        # Clean up the state we just changed
+        change_subscription_properties(user_profile, stream, sub,
+                                       {'push_notifications': True,
+                                        'is_muted': False})
+
+        # Test the hook with a stream message with topic_follow_email_notify
+        # Note: Hamlet had already posted in this topic, in the previous tests.
+        # Thus he is a contributor eligible for topic notifications.
+        client_descriptor = allocate_event_queue()
+        user_profile.enable_topic_follow_email_notifications = True
+        user_profile.save()
+        change_subscription_properties(user_profile, stream, sub,
+                                       {'push_notifications': False,
+                                        'email_notifications': False})
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
+                                          content="what's up everyone?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_list = mock_enqueue.call_args_list[0][0]
+
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False,
+                                         False, False, True, "Denmark", False, True,
+                                         {'email_notified': False, 'push_notified': False}))
+        destroy_event_queue(client_descriptor.event_queue.id)
+
+        # Test the hook with stream message topic_follow_email_notify on
+        # a muted stream, which we should not notify for
+        client_descriptor = allocate_event_queue()
+        change_subscription_properties(user_profile, stream, sub, {'is_muted': True})
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
+                                          content="what's up everyone?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_list = mock_enqueue.call_args_list[0][0]
+
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False,
+                                         False, False, False, "Denmark", False, True,
+                                         {'email_notified': False, 'push_notified': False}))
+        destroy_event_queue(client_descriptor.event_queue.id)
+        change_subscription_properties(user_profile, stream, sub, {'is_muted': False})
+
+        # Test the hook with stream message topic_follow_email_notify on
+        # a muted topic, which we should not notify for
+        client_descriptor = allocate_event_queue()
+        add_topic_mute(user_profile, stream.id, stream.recipient.id, topic_name)
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
+                                          content="what's up everyone?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_list = mock_enqueue.call_args_list[0][0]
+
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, False,
+                                         False, False, False, "Denmark", False, True,
                                          {'email_notified': False, 'push_notified': False}))
         destroy_event_queue(client_descriptor.event_queue.id)
 
         # Clean up the state we just changed (not necessary unless we add more test code below)
-        change_subscription_properties(user_profile, stream, sub,
-                                       {'push_notifications': True,
-                                        'is_muted': False})
+        remove_topic_mute(user_profile, stream.id, topic_name)
+        user_profile.enable_topic_follow_email_notifications = False
+        user_profile.save()
 
 class FileReloadLogicTest(ZulipTestCase):
     def test_persistent_queue_filename(self) -> None:

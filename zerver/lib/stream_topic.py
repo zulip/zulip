@@ -7,7 +7,10 @@ from zerver.lib.stream_subscription import (
 
 from zerver.models import (
     MutedTopic,
+    Recipient,
 )
+
+from zerver.lib.topic import messages_for_topic
 
 class StreamTopicTarget:
     '''
@@ -32,6 +35,12 @@ class StreamTopicTarget:
             row['user_profile_id']
             for row in query
         }
+
+    def get_followers_user_ids_for_topic(self, recipient: Recipient) -> QuerySet:
+        """Currently followers are defined as users who have sent a message to the topic."""
+        return messages_for_topic(
+            recipient.id, self.topic_name
+        ).distinct('sender_id')
 
     def get_active_subscriptions(self) -> QuerySet:
         return get_active_subscriptions_for_stream_id(self.stream_id)

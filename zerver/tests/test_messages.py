@@ -1031,7 +1031,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 14)
+        self.assert_length(queries, 15)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user('iago')
@@ -3531,7 +3531,7 @@ class EditMessageTest(ZulipTestCase):
                 'propagate_mode': 'change_all',
                 'topic': 'new topic'
             })
-        self.assertEqual(len(queries), 49)
+        self.assertEqual(len(queries), 51)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)

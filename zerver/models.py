@@ -908,6 +908,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     notification_sound: str = models.CharField(max_length=20, default='zulip')
     wildcard_mentions_notify: bool = models.BooleanField(default=True)
 
+    # Followed Topics notifications.
+    enable_topic_follow_desktop_notifications: bool = models.BooleanField(default=False)
+    enable_topic_follow_email_notifications: bool = models.BooleanField(default=False)
+    enable_topic_follow_push_notifications: bool = models.BooleanField(default=False)
+    enable_topic_follow_audible_notifications: bool = models.BooleanField(default=False)
+    enable_topic_follow_wildcard_mentions_notify: bool = models.BooleanField(default=True)
+
     # PM + @-mention notifications.
     enable_desktop_notifications: bool = models.BooleanField(default=True)
     pm_content_in_desktop_notifications: bool = models.BooleanField(default=True)

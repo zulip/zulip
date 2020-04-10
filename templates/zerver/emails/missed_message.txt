@@ -23,6 +23,8 @@ See {{ alert_notif_url }} for more details.
 --
 {% if mention %}
 {% trans %}You are receiving this because you were mentioned in {{ realm_name }}.{% endtrans %}
+{% elif topic_follow_email_notify %}
+{% trans %}You are receiving this because you contributed to this topic.{% endtrans %}
 {% elif stream_email_notify %}
 {% trans %}You are receiving this because you have email notifications enabled for this stream.{% endtrans %}
 {% endif %}
