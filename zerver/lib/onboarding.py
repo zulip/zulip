@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db.models import Count
+from django.utils.translation import ugettext as _
 
 from zerver.lib.actions import \
     internal_prep_stream_message_by_name, internal_send_private_message, \
@@ -50,21 +51,42 @@ def send_initial_pms(user: UserProfile) -> None:
     organization_setup_text = ""
     if user.is_realm_admin:
         help_url = user.realm.uri + "/help/getting-your-organization-started-with-zulip"
-        organization_setup_text = ("* [Read the guide](%s) for getting your organization "
-                                   "started with Zulip\n" % (help_url,))
+        organization_setup_text = (
+            "* " +
+            _("[Read the guide]({help_url}) for getting your organization started with Zulip") +
+            "\n"
+        ).format(help_url=help_url)
 
     content = (
-        "Hello, and welcome to Zulip!\n\nThis is a private message from me, Welcome Bot. "
-        "Here are some tips to get you started:\n"
-        "* Download our [Desktop and mobile apps](/apps)\n"
-        "* Customize your account and notifications on your [Settings page](#settings)\n"
-        "* Type `?` to check out Zulip's keyboard shortcuts\n"
-        "%s"
+        _("Hello, and welcome to Zulip!") +
         "\n"
-        "The most important shortcut is `r` to reply.\n\n"
-        "Practice sending a few messages by replying to this conversation. If you're not into "
-        "keyboards, that's okay too; clicking anywhere on this message will also do the trick!") \
-        % (organization_setup_text,)
+        "\n" +
+        _("This is a private message from me, Welcome Bot.") +
+        " " +
+        _("Here are some tips to get you started:") +
+        "\n"
+        "* " +
+        _("Download our [Desktop and mobile apps]({apps_url})") +
+        "\n"
+        "* " +
+        _("Customize your account and notifications on your [Settings page]({settings_url})") +
+        "\n"
+        "* " +
+        _("Type `?` to check out Zulip's keyboard shortcuts") +
+        "\n"
+        "{organization_setup_text}"
+        "\n" +
+        _("The most important shortcut is `r` to reply.") +
+        "\n"
+        "\n" +
+        _("Practice sending a few messages by replying to this conversation.") +
+        " " +
+        _("If you're not into keyboards, that's okay too; "
+          "clicking anywhere on this message will also do the trick!")
+    )
+
+    content = content.format(apps_url="/apps", settings_url="#settings",
+                             organization_setup_text=organization_setup_text)
 
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
                                   user, content)
