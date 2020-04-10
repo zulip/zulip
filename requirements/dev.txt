@@ -409,6 +409,10 @@ fb-sapp==0.2.8 \
     --hash=sha256:03672bb55d169057b527b535cfa5ba5ec9cf28ff42ebd3de446be86b46747466 \
     --hash=sha256:1a5c2f28a27152afa615aeb960856198f91559000ae74cbf0544a225ae6feff2
     # via pyre-check
+flake8==3.8.4 \
+    --hash=sha256:749dbbd6bfd0cf1318af27bf97a14e28e5ff548ef8e5b1566ccfb25a11e7c839 \
+    --hash=sha256:aadae8761ec651813c24be05c6f7b4680857ef6afaae4651a4eccaef97ce6c3b
+    # via -r requirements/dev.in
 flask-graphql==2.0.1 \
     --hash=sha256:825578c044df436cd74503a38bbd31c919a90acda5e9b6e0e45736964bc5235d
     # via fb-sapp
@@ -557,6 +561,7 @@ importlib-metadata==3.4.0 ; python_version < "3.8" \
     # via
     #   -r requirements/common.in
     #   -r requirements/dev.in
+    #   flake8
     #   jsonpickle
     #   jsonschema
     #   markdown
@@ -817,6 +822,10 @@ matrix-client==0.3.2 \
     --hash=sha256:2855a2614a177db66f9bc3ba38cbd2876041456f663c334f72a160ab6bb11c49 \
     --hash=sha256:dce3ccb8665df0d519f08e07a16e6d3f9fab3a947df4b7a7c4bb26573d68f2d5
     # via zulip
+mccabe==0.6.1 \
+    --hash=sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42 \
+    --hash=sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f
+    # via flake8
 mock==4.0.2 \
     --hash=sha256:3f9b2c0196c60d21838f307f5825a7b86b678cedc58ab9e50a8988187b4d81e0 \
     --hash=sha256:dd33eb70232b6118298d516bbcecd26704689c386594f0f3c4f13867b2c56f72
@@ -1087,7 +1096,7 @@ pycodestyle==2.6.0 \
     --hash=sha256:2295e7b2f6b5bd100585ebcb1f616591b652db8a741695b3d8f5d28bdc934367 \
     --hash=sha256:c58a7d2815e0e8d7972bf1803331fb0152f867bd89adf8a01dfd55085434192e
     # via
-    #   -r requirements/dev.in
+    #   flake8
     #   zulint
 pycparser==2.20 \
     --hash=sha256:2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0 \
@@ -1101,7 +1110,7 @@ pyflakes==2.2.0 \
     --hash=sha256:0d94e0e05a19e57a99444b6ddcf9a6eb2e5c68d3ca1e98e90707af8152c90a92 \
     --hash=sha256:35b2d75ee967ea93b55750aa9edbbf72813e06a66ba54438df2cfac9e3c27fc8
     # via
-    #   -r requirements/dev.in
+    #   flake8
     #   zulint
 pygments==2.7.4 \
     --hash=sha256:bc9591213a8f0e0ca1a5e68a479b4887fdc3e75d0774e5c71c31920c427de435 \
