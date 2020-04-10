@@ -3742,8 +3742,8 @@ class UserSignUpTest(InviteUserBase):
             result = self.client_get(confirmation_url)
             self.assertEqual(result.status_code, 200)
 
-            key = find_key_by_email(email),
-            confirmation = Confirmation.objects.get(confirmation_key=key[0])
+            key = find_key_by_email(email)
+            confirmation = Confirmation.objects.get(confirmation_key=key)
             prereg_user = confirmation.content_object
             prereg_user.realm_creation = True
             prereg_user.save()
