@@ -884,7 +884,7 @@ class ExternalAuthMethod(ABC):
 
     @classmethod
     @abstractmethod
-    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+    def dict_representation(cls, realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
         """
         Method returning dictionaries representing the authentication methods
         corresponding to the backend that subclasses this. The documentation
@@ -929,7 +929,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
         return common_get_active_user(email, realm, return_data=return_data)
 
     @classmethod
-    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+    def dict_representation(cls, realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
         return [dict(
             name=cls.name,
             display_name="SSO",
@@ -1261,7 +1261,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
             return None
 
     @classmethod
-    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+    def dict_representation(cls, realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
         return [dict(
             name=cls.name,
             display_name=cls.auth_backend_name,
@@ -1471,6 +1471,20 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         if relayed_params is None:
             return None
 
+        idp_name = relayed_params.get("idp")
+        subdomain = relayed_params.get("subdomain")
+        if idp_name is None or subdomain is None:
+            error_msg = "Missing idp or subdomain value in relayed_params in SAML auth_complete: %s"
+            logging.info(error_msg % (dict(subdomain=subdomain, idp=idp_name),))
+            return None
+
+        idp_valid = self.validate_idp_for_subdomain(idp_name, subdomain)
+        if not idp_valid:
+            error_msg = "User authenticated with IdP %s but this provider is not " + \
+                        "enabled for this realm %s."
+            logging.info(error_msg % (idp_name, subdomain))
+            return None
+
         result = None
         try:
             for param, value in relayed_params.items():
@@ -1480,7 +1494,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             # super().auth_complete expects to have RelayState set to the idp_name,
             # so we need to replace this param.
             post_params = self.strategy.request.POST.copy()
-            post_params['RelayState'] = relayed_params["idp"]
+            post_params['RelayState'] = idp_name
             self.strategy.request.POST = post_params
 
             # Call the auth_complete method of SocialAuthMixIn
@@ -1501,6 +1515,16 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         return result
 
     @classmethod
+    def validate_idp_for_subdomain(cls, idp_name: str, subdomain: str) -> bool:
+        idp_dict = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.get(idp_name)
+        if idp_dict is None:
+            raise AssertionError("IdP: %s not found" % (idp_name,))
+        if 'limit_to_subdomains' in idp_dict and subdomain not in idp_dict['limit_to_subdomains']:
+            return False
+
+        return True
+
+    @classmethod
     def check_config(cls) -> Optional[HttpResponse]:
         obligatory_saml_settings_list = [
             settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID,
@@ -1515,9 +1539,12 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         return None
 
     @classmethod
-    def dict_representation(cls) -> List[ExternalAuthMethodDictT]:
+    def dict_representation(cls, realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
         result = []  # type: List[ExternalAuthMethodDictT]
         for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
+            if realm and not cls.validate_idp_for_subdomain(idp_name, realm.subdomain):
+                continue
+
             saml_dict = dict(
                 name='saml:{}'.format(idp_name),
                 display_name=idp_dict.get('display_name', cls.auth_backend_name),
@@ -1548,7 +1575,7 @@ def get_external_method_dicts(realm: Optional[Realm]=None) -> List[ExternalAuthM
         # EXTERNAL_AUTH_METHODS is already sorted in the correct order,
         # so we don't need to worry about sorting here.
         if auth_enabled_helper([backend.auth_backend_name], realm):
-            result.extend(backend.dict_representation())
+            result.extend(backend.dict_representation(realm))
 
     return result
 
