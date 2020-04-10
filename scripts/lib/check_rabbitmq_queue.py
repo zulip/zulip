@@ -47,8 +47,9 @@ MAX_SECONDS_TO_CLEAR_FOR_BURSTS = defaultdict(
 )  # type: DefaultDict[str, int]
 MAX_SECONDS_TO_CLEAR_NORMAL = defaultdict(
     lambda: 30,
-    digest_emails=120,
+    digest_emails=1200,
     slow_queries=120,
+    missedmessage_mobile_notifications=120,
 )  # type: DefaultDict[str, int]
 CRITICAL_SECONDS_TO_CLEAR_FOR_BURSTS = defaultdict(
     lambda: 240,
@@ -57,6 +58,7 @@ CRITICAL_SECONDS_TO_CLEAR_FOR_BURSTS = defaultdict(
 )  # type: DefaultDict[str, int]
 CRITICAL_SECONDS_TO_CLEAR_NORMAL = defaultdict(
     lambda: 60,
+    missedmessage_mobile_notifications=180,
     digest_emails=600,
     slow_queries=600,
 )  # type: DefaultDict[str, int]
