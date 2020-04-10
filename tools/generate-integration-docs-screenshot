@@ -23,12 +23,13 @@ import django
 django.setup()
 
 import argparse
+import subprocess
 from typing import Any, Dict
 
 import requests
 import ujson
 
-from zerver.models import UserProfile, get_user_by_delivery_email, get_realm
+from zerver.models import UserProfile, Message, get_user_by_delivery_email, get_realm
 from zerver.lib.actions import do_create_user, notify_created_bot
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.actions import do_change_avatar_fields
@@ -96,6 +97,8 @@ integration_name, fixture_name = split_fixture_path(options.fixture)
 integration = get_integration(integration_name)
 bot = create_integration_bot(integration.name)
 assert isinstance(bot.bot_owner, UserProfile)
+# Delete all messages, so new message is the only one it's message group
+Message.objects.filter(sender=bot).delete()
 
 url = "{}/{}?api_key={}&stream=devel".format(
     bot.bot_owner.realm.uri, integration.url, bot.api_key
@@ -104,7 +107,12 @@ with open(options.fixture) as f:
     data = ujson.load(f)
 headers = get_requests_headers(integration_name, fixture_name)
 response = requests.post(url, json=data, headers=headers)
-if response.status_code == 200:
-    print('Triggered {} webhook'.format(integration.name))
-else:
+if response.status_code != 200:
     print(response.json())
+    print('Failed to trigger webhook')
+    sys.exit(1)
+
+print('Triggered {} webhook'.format(integration.name))
+message_id = str(Message.objects.filter(sender=bot).last().id)
+screenshot_script = os.path.join(TOOLS_DIR, 'message-screenshot.js')
+subprocess.check_call(['node', screenshot_script, integration.name, message_id])
