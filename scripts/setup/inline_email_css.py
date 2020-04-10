@@ -26,6 +26,7 @@ def configure_cssutils() -> None:
 
     profile.addProfiles([(Profiles.CSS_LEVEL_2, properties[Profiles.CSS_LEVEL_2],
                          macros[Profiles.CSS_LEVEL_2])])
+configure_cssutils()
 
 def inline_template(template_name: str) -> None:
     os.makedirs(COMPILED_EMAIL_TEMPLATES_PATH, exist_ok=True)
@@ -88,7 +89,6 @@ def get_all_templates_from_directory(directory: str) -> Set[str]:
 
 if __name__ == "__main__":
     templates_to_inline = get_all_templates_from_directory(EMAIL_TEMPLATES_PATH)
-    configure_cssutils()
 
     for template_name in templates_to_inline:
         inline_template(template_name)
