@@ -205,6 +205,18 @@ exports.restore_compose_cursor = function () {
         .caret(saved_compose_cursor);
 };
 
+// Generic tooltip to replace HTML titles.
+exports.create_generic_tooltip = function (elem, title, placement) {
+    elem.tooltip({
+        title: title,
+        trigger: 'hover',
+        placement: placement,
+        animation: false,
+    });
+    elem.tooltip('show');
+    $(".tooltip-arrow").remove();
+};
+
 exports.initialize = function () {
     exports.set_compose_textarea_handlers();
     exports.show_error_for_unsupported_platform();

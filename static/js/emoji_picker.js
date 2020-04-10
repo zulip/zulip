@@ -691,17 +691,10 @@ exports.register_click_handlers = function () {
 
     $("#main_div").on("mouseenter", ".reaction_button", (e) => {
         e.stopPropagation();
-
         const elem = $(e.currentTarget);
-        const title = i18n.t("Add emoji reaction");
-        elem.tooltip({
-            title: title + " (:)",
-            trigger: 'hover',
-            placement: 'bottom',
-            animation: false,
-        });
-        elem.tooltip('show');
-        $(".tooltip-arrow").remove();
+        const hotkey = '(:)';
+        const title = i18n.t("Add emoji reaction __hotkey__", {hotkey: hotkey});
+        ui.create_generic_tooltip(elem, title, "bottom");
     });
 
     $('#main_div').on('mouseleave', '.reaction_button', (e) => {
