@@ -113,6 +113,16 @@
     }
 }
 
+.add_subscribers_container .pill-container {
+    width: 100%;
+    background-color: hsl(0, 0%, 100%);
+
+    .input:first-child:empty::before {
+        opacity: 0.5;
+        content: attr(data-placeholder);
+    }
+}
+
 @keyframes shake {
     10%,
     90% {

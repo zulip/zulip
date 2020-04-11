@@ -207,7 +207,7 @@ exports.update_add_subscriptions_elements = function (sub) {
 
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add subscribers.
-    const input_element = $('.add_subscribers_container').find('input[name="principal"]').expectOne();
+    const input_element = $('.add_subscribers_container').find('.input').expectOne();
     const button_element = $('.add_subscribers_container').find('button[name="add_subscriber"]').expectOne();
     const allow_user_to_add_subs = sub.can_add_subscribers;
 
