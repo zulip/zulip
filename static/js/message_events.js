@@ -121,6 +121,8 @@ exports.update_messages = function update_messages(events) {
 
         message_store.update_booleans(msg, event.flags);
 
+        unread.update_message_for_mention(msg);
+
         condense.un_cache_message_content_height(msg.id);
 
         if (event.rendered_content !== undefined) {
