@@ -28,8 +28,8 @@ function make_containers() {
     // parent container is the nearest ancestor to our main
     // container that has a max-height attribute, and then
     // the parent container will have a scroll event attached to
-    // it.  This is a good time to read __set_events in the
-    // real code.
+    // it.  This is a good time to read set_up_event_handlers
+    // in the real code.
     const parent_container = {};
     const container = {};
 
