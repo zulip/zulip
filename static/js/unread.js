@@ -434,12 +434,25 @@ exports.process_loaded_messages = function (messages) {
             );
         }
 
-        const is_unmuted_mention = message.type === 'stream' && message.mentioned &&
-                                   !muting.is_topic_muted(message.stream_id,
-                                                          message.topic);
-        if (message.mentioned_me_directly || is_unmuted_mention) {
-            exports.unread_mentions_counter.add(message.id);
-        }
+        exports.update_message_for_mention(message);
+    }
+};
+
+exports.update_message_for_mention = function (message) {
+    if (!message.unread) {
+        exports.unread_mentions_counter.delete(message.id);
+        return;
+    }
+
+    const is_unmuted_mention =
+        message.type === 'stream' &&
+        message.mentioned &&
+        !muting.is_topic_muted(message.stream_id, message.topic);
+
+    if (is_unmuted_mention || message.mentioned_me_directly) {
+        exports.unread_mentions_counter.add(message.id);
+    } else {
+        exports.unread_mentions_counter.delete(message.id);
     }
 };
 
