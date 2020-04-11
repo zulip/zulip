@@ -46,36 +46,28 @@ function populate_invites(invites_data) {
 
     const invites_table = $("#admin_invites_table").expectOne();
 
-    const admin_invites_list = list_render.get("admin_invites_list");
-
-    if (admin_invites_list) {
-        admin_invites_list.data(invites_data.invites);
-        admin_invites_list.set_container(invites_table);
-        admin_invites_list.render();
-    } else {
-        const invites_list = list_render.create(invites_table, invites_data.invites, {
-            name: "admin_invites_list",
-            modifier: function (item) {
-                item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
-                return render_admin_invites_list({ invite: item });
+    const invites_list = list_render.create(invites_table, invites_data.invites, {
+        name: 'admin_invites_list',
+        modifier: function (item) {
+            item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
+            return render_admin_invites_list({ invite: item });
+        },
+        filter: {
+            element: invites_table.closest(".settings-section").find(".search"),
+            predicate: function (item, value) {
+                const referrer_email_matched = item.ref.toLowerCase().includes(value);
+                if (item.is_multiuse) {
+                    return referrer_email_matched;
+                }
+                const invitee_email_matched = item.email.toLowerCase().includes(value);
+                return referrer_email_matched || invitee_email_matched;
             },
-            filter: {
-                element: invites_table.closest(".settings-section").find(".search"),
-                predicate: function (item, value) {
-                    const referrer_email_matched = item.ref.toLowerCase().includes(value);
-                    if (item.is_multiuse) {
-                        return referrer_email_matched;
-                    }
-                    const invitee_email_matched = item.email.toLowerCase().includes(value);
-                    return referrer_email_matched || invitee_email_matched;
-                },
-            },
-            parent_container: $("#admin-invites-list").expectOne(),
-        }).init();
+        },
+        parent_container: $("#admin-invites-list").expectOne(),
+    });
 
-        invites_list.sort('invitee');
-        invites_list.add_sort_function('email', sort_invitee);
-    }
+    invites_list.sort('invitee');
+    invites_list.add_sort_function('invitee', sort_invitee);
 
     loading.destroy_indicator($('#admin_page_invites_loading_indicator'));
 }
