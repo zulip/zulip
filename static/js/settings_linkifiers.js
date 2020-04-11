@@ -37,7 +37,7 @@ exports.populate_filters = function (filters_data) {
     }
 
     const filters_table = $("#admin_filters_table").expectOne();
-    const filters_list = list_render.create(filters_table, filters_data, {
+    list_render.create(filters_table, filters_data, {
         name: "linkifiers_list",
         modifier: function (filter) {
             return render_admin_filter_list({
@@ -60,11 +60,12 @@ exports.populate_filters = function (filters_data) {
             },
         },
         parent_container: $("#filter-settings").expectOne(),
-    }).init();
-
-    filters_list.add_sort_function("pattern", sort_pattern);
-    filters_list.add_sort_function("url", sort_url);
-    filters_list.sort('pattern');
+        init_sort: [sort_pattern],
+        sort_fields: {
+            pattern: sort_pattern,
+            url: sort_url,
+        },
+    });
 
     loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
 };
