@@ -23,7 +23,7 @@ exports.build_default_stream_table = function () {
     const stream_ids = stream_data.get_default_stream_ids();
     const subs = stream_ids.map(stream_data.get_sub_by_id);
 
-    const streams_list = list_render.create(table, subs, {
+    list_render.create(table, subs, {
         name: "default_streams_list",
         modifier: function (item) {
             const row = $(render_admin_default_streams_list({
@@ -42,9 +42,8 @@ exports.build_default_stream_table = function () {
             },
         },
         parent_container: $("#admin-default-streams-list").expectOne(),
-    }).init();
-
-    streams_list.sort("alphabetic", "name");
+        init_sort: ['alphabetic', 'name'],
+    });
 
     loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
 };

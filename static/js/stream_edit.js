@@ -217,7 +217,7 @@ function show_subscription_settings(sub_row) {
                 }
             },
         },
-    }).init();
+    });
 
     sub_settings.find('input[name="principal"]').typeahead({
         source: () => stream_data.potential_subscribers(sub),
