@@ -489,6 +489,16 @@ run_test('mentions', () => {
 
     muting.add_muted_topic(401, 'lunch');
 
+    const already_read_message = {
+        id: 14,
+        type: 'stream',
+        stream_id: 400,
+        topic: 'lunch',
+        mentioned: true,
+        mentioned_me_directly: true,
+        unread: false,
+    };
+
     const mention_me_message = {
         id: 15,
         type: 'stream',
@@ -520,9 +530,12 @@ run_test('mentions', () => {
         unread: true,
     };
 
-    unread.process_loaded_messages([mention_me_message,
-                                    mention_all_message,
-                                    muted_mention_all_message]);
+    unread.process_loaded_messages([
+        already_read_message,
+        mention_me_message,
+        mention_all_message,
+        muted_mention_all_message,
+    ]);
 
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 2);
