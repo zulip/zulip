@@ -1,5 +1,5 @@
 let message_type = false; // 'stream', 'private', or false-y
-
+let send_at_time;
 exports.set_message_type = function (msg_type) {
     message_type = msg_type;
 };
@@ -51,6 +51,14 @@ exports.private_message_recipient = function (value) {
 
 exports.has_message_content = function () {
     return exports.message_content() !== "";
+};
+
+exports.set_send_at_time = function (sending_time) {
+    send_at_time = sending_time;
+};
+
+exports.get_send_at_time = function () {
+    return send_at_time;
 };
 
 window.compose_state = exports;

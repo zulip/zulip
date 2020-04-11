@@ -16,9 +16,8 @@ exports.deferred_message_types = deferred_message_types;
 
 exports.is_deferred_delivery = function (message_content) {
     const reminders_test = deferred_message_types.reminders.test;
-    const scheduled_test = deferred_message_types.scheduled.test;
     return reminders_test.test(message_content) ||
-            scheduled_test.test(message_content);
+            compose_state.get_send_at_time !== undefined;
 };
 
 function patch_request_for_scheduling(request, message_content, deliver_at, delivery_type) {
@@ -40,32 +39,10 @@ exports.schedule_message = function (request) {
     if (request === undefined) {
         request = compose.create_message_object();
     }
+    const message = request.content;
+    const deliver_at = compose_state.get_send_at_time();
 
-    const raw_message = request.content.split('\n');
-    const command_line = raw_message[0];
-    const message = raw_message.slice(1).join('\n');
-
-    const deferred_message_type = deferred_message_types.filter(
-        props => command_line.match(props.test) !== null
-    )[0];
-    const command = command_line.match(deferred_message_type.test)[0];
-
-    const deliver_at = command_line.slice(command.length + 1);
-
-    if (message.trim() === '' || deliver_at.trim() === '' ||
-        command_line.slice(command.length, command.length + 1) !== ' ') {
-
-        $("#compose-textarea").attr('disabled', false);
-        if (command_line.slice(command.length, command.length + 1) !== ' ') {
-            compose.compose_error(i18n.t('Invalid slash command. Check if you are missing a space after the command.'), $('#compose-textarea'));
-        } else if (deliver_at.trim() === '') {
-            compose.compose_error(i18n.t('Please specify a date or time'), $('#compose-textarea'));
-        } else {
-            compose.compose_error(i18n.t('Your reminder note is empty!'), $('#compose-textarea'));
-        }
-        return;
-    }
-
+    const deferred_message_type = deferred_message_types.scheduled;
     request = patch_request_for_scheduling(
         request, message, deliver_at, deferred_message_type.delivery_type
     );

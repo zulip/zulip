@@ -511,7 +511,10 @@ a#undo_markdown_preview {
 .compose_mobile_private_button i {
     margin-right: 4px;
 }
-
+.send-later-custom {
+    margin-left: 50%;
+    font-size: 0.8em;
+}
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (max-width: 1165px) {
     .compose-content {

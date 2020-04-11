@@ -11,13 +11,13 @@ const render_user_group_info_popover_content = require('../templates/user_group_
 const render_user_info_popover_content = require('../templates/user_info_popover_content.hbs');
 const render_user_info_popover_title = require('../templates/user_info_popover_title.hbs');
 const render_user_profile_modal = require("../templates/user_profile_modal.hbs");
-
+const render_send_later_popover = require("../templates/send_later_popover.hbs");
 let current_actions_popover_elem;
 let current_flatpickr_instance;
 let current_message_info_popover_elem;
 let current_mobile_message_buttons_popover_elem;
 let userlist_placement = "right";
-
+let send_later_popover_elem;
 let list_of_popovers = [];
 
 function elem_to_user_id(elem) {
@@ -631,7 +631,16 @@ exports.hide_message_info_popover = function () {
         current_message_info_popover_elem = undefined;
     }
 };
+exports.send_later_popped = function () {
+    return send_later_popover_elem !== undefined;
+};
 
+exports.hide_send_later_popover = function () {
+    if (exports.send_later_popped()) {
+        send_later_popover_elem.popover("destroy");
+        send_later_popover_elem = undefined;
+    }
+};
 exports.hide_userlist_sidebar = function () {
     $(".app-main .column-right").removeClass("expanded");
 };
@@ -705,7 +714,145 @@ let suppress_scroll_hide = false;
 exports.set_suppress_scroll_hide = function () {
     suppress_scroll_hide = true;
 };
+const send_later_hours = {
+    in_one_hour: {
+        text: i18n.t("1 hour"),
+        hours: 1,
+    },
+    in_two_hours: {
+        text: i18n.t("2 hours"),
+        hours: 2,
+    },
+    in_four_hours: {
+        text: i18n.t("4 hours"),
+        hours: 4,
+    },
+};
 
+const send_later_tomorrow = {
+    tomorrow_nine_am: {
+        text: i18n.t("Tomorrow 9:00 AM"),
+        time: "9:00 am",
+    },
+    tomorrow_two_pm: {
+        text: i18n.t("Tomorrow 2:00 PM "),
+        time: "2:00 pm",
+    },
+};
+
+const send_later_days_and_weeks = {
+    in_one_day: {
+        text: i18n.t("1 day"),
+        days: 1,
+    },
+    in_two_days: {
+        text: i18n.t("2 days"),
+        days: 2,
+    },
+    in_one_week: {
+        text: i18n.t("1 week"),
+        days: 7,
+    },
+    in_two_weeks: {
+        text: i18n.t("2 weeks"),
+        days: 14,
+    },
+    in_one_month: {
+        text: i18n.t("1 month"),
+        days: 30,
+    },
+};
+
+const send_later_custom = {
+    text: i18n.t("Custom "),
+};
+
+exports.send_later_hours = send_later_hours;
+exports.send_later_tomorrow = send_later_tomorrow;
+exports.send_later_days_and_weeks = send_later_days_and_weeks;
+
+exports.render_send_later_popover = function (elt) {
+    const APPROX_HEIGHT = 375;
+    const APPROX_WIDTH = 255;
+    let placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
+    if (placement === 'viewport_center') {
+        // For legacy reasons `compute_placement` actually can
+        // return `viewport_center`, but bootstrap doesn't actually
+        // support that.
+        placement = 'left';
+    }
+    const content =
+        {
+            send_later_hours: send_later_hours,
+            send_later_tomorrow: send_later_tomorrow,
+            send_later_days_and_weeks: send_later_days_and_weeks,
+            send_later_custom: send_later_custom,
+        };
+
+    elt.popover({
+        // temporary patch for handling popover placement of `viewport_center`
+        placement: placement,
+        fix_positions: true,
+        title: "",
+        html: true,
+        content: render_send_later_popover(content),
+        trigger: "manual",
+    });
+    elt.popover("show");
+
+    current_flatpickr_instance = $('#send-later-custom-input').flatpickr({
+        enableTime: true,
+        clickOpens: false,
+        defaultDate: moment().format(),
+        minDate: 'today',
+        plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
+    });
+
+    send_later_popover_elem = elt;
+
+};
+
+exports.toggle_send_later_popover = function (element) {
+    const last_popover_elem = send_later_popover_elem;
+    popovers.hide_all();
+    if (last_popover_elem !== undefined) {
+        send_later_popover_elem = undefined;
+        $(element).popover("hide");
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    const elt = $(element);
+    popovers.render_send_later_popover(elt);
+};
+
+function set_compose_box_schedule(element) {
+    const send_later_in = $(element).attr('id');
+    if ($(element).attr('class') === "send_later_hours") {
+        const send_at_time = moment().add(send_later_hours[send_later_in].hours, 'h')
+            .format("MMM D YYYY h:mm a");
+        return send_at_time;
+    } else if ($(element).attr('class') === "send_later_tomorrow") {
+        const send_time = send_later_tomorrow[send_later_in].time;
+        const date = new Date();
+        const scheduled_date = date.setDate(date.getDate() + 1);
+        const send_at_time = moment(scheduled_date).format("MMM D YYYY ") + send_time;
+        return send_at_time;
+    } else if ($(element).attr('class') === "send_later_days_and_weeks") {
+        const send_at_time = moment().add(send_later_days_and_weeks[send_later_in].days, 'd')
+            .format("MMM D YYYY h:mm a");
+        return send_at_time;
+    } else if ($(element).attr('class') === ".flatpickr-confirm") {
+        const instance = $(current_flatpickr_instance);
+        const date = instance.prop("selectedDates");
+        const datestr = flatpickr.formatDate(date[0], "M d, Y at h:i ") + flatpickr.formatDate(date[0], "K");
+        const command = "/schedule " + datestr + "\n";
+        return command;
+    }
+    blueslip.error('Not a valid time.');
+    return;
+}
 exports.register_click_handlers = function () {
     $("#main_div").on("click", ".actions_hover", function (e) {
         const row = $(this).closest(".message_row");
@@ -968,11 +1115,6 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '.flatpickr-confirm', function (e) {
-        const datestr = $(".remind.custom")[0].value;
-        reminder_click_handler(datestr, e);
-    });
-
     $('body').on('click', '.respond_personal_button, .compose_private_message', function (e) {
         const user_id = elem_to_user_id($(e.target).parents('ul'));
         const email = people.get_by_user_id(user_id).email;
@@ -1093,6 +1235,43 @@ exports.register_click_handlers = function () {
             last_scroll = date;
         });
     }());
+
+    $("body").on("click", "#send_later", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        popovers.toggle_send_later_popover(this);
+    });
+
+    $("body").on("click", ".send_later_hours, .send_later_tomorrow, .send_later_days_and_weeks .flatpickr-confirm", function (e) {
+        if (send_later_popover_elem !== undefined) {
+            const send_at_time = set_compose_box_schedule(e.currentTarget);
+            let message_content = compose_state.message_content();
+            compose_state.set_send_at_time(send_at_time);
+            if (reminder.is_deferred_delivery(message_content)) {
+                const raw_message = message_content.split('\n');
+                message_content = raw_message.slice(1).join('\n');
+            }
+            compose_ui.insert_syntax_and_focus(message_content);
+            popovers.hide_send_later_popover();
+        } else if ($(e.currentTarget).attr('class') === "flatpickr-confirm") {
+            const datestr = $(".remind.custom")[0].value;
+            reminder_click_handler(datestr, e);
+        }
+        e.stopPropagation();
+        e.preventDefault();
+
+    });
+    $("body").on("click", "#send-later-custom-input", function (e) {
+        $(e.currentTarget)[0]._flatpickr.toggle();
+        $('.flatpickr-calendar').addClass('send-later-flatpickr');
+        $('.flatpickr-calendar').css('left', '31%');
+        $('.flatpickr-calendar').css('top', "52.8%");
+        $('.flatpickr-calendar').removeClass('arrowBottom');
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
 };
 
 exports.any_active = function () {
@@ -1117,6 +1296,7 @@ exports.hide_all_except_sidebars = function () {
     stream_popover.hide_all_messages_popover();
     stream_popover.hide_starred_messages_popover();
     exports.hide_user_sidebar_popover();
+    exports.hide_send_later_popover();
     exports.hide_mobile_message_buttons_popover();
     exports.hide_user_profile();
 
