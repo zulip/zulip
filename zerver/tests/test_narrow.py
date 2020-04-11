@@ -2347,6 +2347,10 @@ class GetOldMessagesTest(ZulipTestCase):
         for operand in ['is', 'near', 'has', 'id']:
             self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
 
+        # Disallow empty search terms
+        error_msg = 'elem["operand"] cannot be blank.'
+        self.exercise_bad_narrow_operand_using_dict_api('search', [''], error_msg)
+
     # The exercise_bad_narrow_operand helper method uses legacy tuple format to
     # test bad narrow, this method uses the current dict api format
     def exercise_bad_narrow_operand_using_dict_api(self, operator: str,
