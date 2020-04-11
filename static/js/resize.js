@@ -3,6 +3,17 @@ const autosize = require('autosize');
 
 let narrow_window = false;
 
+function calc_vh() {
+    const vh = window.innerHeight * 0.01;
+    this.document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+window.addEventListener('resize', function () {
+    calc_vh();
+});
+window.addEventListener('load', function () {
+    calc_vh();
+});
+
 function confine_to_range(lo, val, hi) {
     if (val < lo) {
         return lo;

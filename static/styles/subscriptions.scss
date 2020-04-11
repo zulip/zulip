@@ -389,8 +389,16 @@ form#add_new_subscription {
     opacity: 1;
 }
 
+.overlay-content {
+    height: 100vh; // fallback
+    height: calc(var(--vh) * 100) !important;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .subscriptions-container {
-    position: relative;
     height: 95%;
     border-radius: 4px;
     padding: 0px;
