@@ -1,6 +1,11 @@
 zrequire('message_events');
 zrequire('message_store');
+zrequire('muting');
 zrequire('people');
+zrequire('recent_senders');
+zrequire('stream_data');
+zrequire('topic_data');
+zrequire('unread');
 
 set_global('alert_words', {});
 set_global('condense', {});
@@ -22,6 +27,13 @@ const alice = {
 };
 
 people.add(alice);
+
+const denmark = {
+    subscribed: false,
+    name: 'Denmark',
+    stream_id: 101,
+};
+stream_data.add_sub(denmark);
 
 function test_helper(side_effects) {
     const events = [];
@@ -48,14 +60,27 @@ function test_helper(side_effects) {
 run_test('update_messages', () => {
     const original_message = {
         id: 111,
+        display_recipient: denmark.name,
+        flags: [],
         sender_id: alice.user_id,
+        stream_id: denmark.stream_id,
+        topic: 'lunch',
+        type: 'stream',
     };
 
     message_store.add_message_metadata(original_message);
+    message_store.set_message_booleans(original_message);
+
+    assert.equal(original_message.unread, true);
+
+    assert.deepEqual(
+        topic_data.get_recent_names(denmark.stream_id),
+        ['lunch']
+    );
 
     const events = [
         {
-            message_id: 111,
+            message_id: original_message.id,
             flags: [],
             orig_content: 'old stuff',
             content: '**new content**',
@@ -98,18 +123,28 @@ run_test('update_messages', () => {
     assert.deepEqual(rendered_mgs,  [
         {
             alerted: false,
+            collapsed: false,
             content: '<b>new content</b>',
+            display_recipient: denmark.name,
+            historical: false,
             id: 111,
+            is_stream: true,
             last_edit_timestamp: undefined,
             mentioned: false,
             mentioned_me_directly: false,
             raw_content: '**new content**',
             reactions: [],
-            sender_email: 'alice@example.com',
-            sender_full_name: 'Alice Patel',
+            reply_to: alice.email,
+            sender_email: alice.email,
+            sender_full_name: alice.full_name,
             sender_id: 32,
             sent_by_me: false,
-            topic: undefined,
+            starred: false,
+            stream: denmark.name,
+            stream_id: denmark.stream_id,
+            topic: 'lunch',
+            type: 'stream',
+            unread: true,
         },
     ]);
 
