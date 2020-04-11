@@ -48,15 +48,13 @@ exports.validate_filter = (opts) => {
 // opts: An object of random preferences.
 exports.create = function ($container, list, opts) {
     // this memoizes the results and will return a previously invoked
-    // instance's prototype.
+    // instance
     if (opts.name && DEFAULTS.instances.get(opts.name)) {
         // the false flag here means "don't run `init`". This is because a
         // user is likely reinitializing and will have put .init() afterwards.
         // This happens when the same codepath is hit multiple times.
         return DEFAULTS.instances.get(opts.name)
-        // sets the container to the new container in this prototype's args.
             .set_container($container)
-        // sets the input to the new input in the args.
             .set_opts(opts)
             .__set_events()
             .data(list)
@@ -83,7 +81,7 @@ exports.create = function ($container, list, opts) {
     }
     exports.validate_filter(opts);
 
-    const prototype = {
+    const widget = {
         // Reads the provided list (in the scope directly above)
         // and renders the next block of messages automatically
         // into the specified container.
@@ -168,7 +166,7 @@ exports.create = function ($container, list, opts) {
                     filter_list(value);
                 }
 
-                prototype.clear();
+                widget.clear();
 
                 return this;
             }
@@ -184,19 +182,13 @@ exports.create = function ($container, list, opts) {
             return this;
         },
 
-        // Let's imagine the following:
-        // list_render is initialized and becomes prototope A with scope A.
-        // list_render is re-initialized and becomes prototype A with scope A again.
-        // The issue is that when re-initializing, new variables could have been thrown
-        // in and old variables could be useless (eg. dead nodes), so we need to
-        // replace these with new copies if necessary.
         set_container: function ($new_container) {
             if ($new_container) {
                 $container = $new_container;
             }
 
             return this;
-        },
+        }
 
         set_opts: function (new_opts) {
             if (opts) {
@@ -208,7 +200,7 @@ exports.create = function ($container, list, opts) {
 
         reverse: function () {
             meta.filtered_list.reverse();
-            prototype.init();
+            widget.init();
             return this;
         },
 
@@ -244,7 +236,7 @@ exports.create = function ($container, list, opts) {
             if (!do_not_display) {
                 // clear and re-initialize the list with the newly filtered subset
                 // of items.
-                prototype.init();
+                widget.init();
 
                 if (opts.filter && opts.filter.onupdate) {
                     opts.filter.onupdate();
@@ -287,7 +279,7 @@ exports.create = function ($container, list, opts) {
             // of the container then fetch a new block of items and render them.
             $nearestScrollingContainer.scroll(function () {
                 if (this.scrollHeight - (this.scrollTop + this.clientHeight) < 10) {
-                    prototype.render();
+                    widget.render();
                 }
             });
 
@@ -305,13 +297,13 @@ exports.create = function ($container, list, opts) {
                     // from the last sort.
                     // it will then also not run an update in the DOM (because we
                     // pass `true`), because it will update regardless below at
-                    // `prototype.init()`.
-                    prototype.sort(undefined, meta.prop, true);
+                    // `widget.init()`.
+                    widget.sort(undefined, meta.prop, true);
                     filter_list(value);
 
                     // clear and re-initialize the list with the newly filtered subset
                     // of items.
-                    prototype.init();
+                    widget.init();
 
                     if (opts.filter.onupdate) {
                         opts.filter.onupdate();
@@ -323,10 +315,10 @@ exports.create = function ($container, list, opts) {
         },
     };
 
-    prototype.__set_events();
+    widget.__set_events();
 
     // add built-in generic sort functions.
-    prototype.add_generic_sort_function("alphabetic", function (prop) {
+    widget.add_generic_sort_function("alphabetic", function (prop) {
         return function (a, b) {
             // The conversion to uppercase helps make the sorting case insensitive.
             const str1 = a[prop].toUpperCase();
@@ -342,7 +334,7 @@ exports.create = function ($container, list, opts) {
         };
     });
 
-    prototype.add_generic_sort_function("numeric", function (prop) {
+    widget.add_generic_sort_function("numeric", function (prop) {
         return function (a, b) {
             if (parseFloat(a[prop]) > parseFloat(b[prop])) {
                 return 1;
@@ -356,10 +348,10 @@ exports.create = function ($container, list, opts) {
 
     // Save the instance for potential future retrieval if a name is provided.
     if (opts.name) {
-        DEFAULTS.instances.set(opts.name, prototype);
+        DEFAULTS.instances.set(opts.name, widget);
     }
 
-    return prototype;
+    return widget;
 };
 
 exports.get = function (name) {
