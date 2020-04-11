@@ -1,3 +1,4 @@
+const util = require("./util");
 const render_admin_invites_list = require("../templates/admin_invites_list.hbs");
 const render_settings_revoke_invite_modal = require("../templates/settings/revoke_invite_modal.hbs");
 
@@ -26,6 +27,15 @@ function add_invited_as_text(invites) {
     }
 }
 
+function sort_invitee(a, b) {
+    // multi-invite links don't have an email field,
+    // so we set them to empty strings to let them
+    // sort to the top
+    const str1 = (a.email || '').toUpperCase();
+    const str2 = (b.email || '').toUpperCase();
+
+    return util.strcmp(str1, str2);
+}
 
 function populate_invites(invites_data) {
     if (!meta.loaded) {
@@ -63,7 +73,8 @@ function populate_invites(invites_data) {
             parent_container: $("#admin-invites-list").expectOne(),
         }).init();
 
-        invites_list.sort("alphabetic", "email");
+        invites_list.sort('invitee');
+        invites_list.add_sort_function('email', sort_invitee);
     }
 
     loading.destroy_indicator($('#admin_page_invites_loading_indicator'));
