@@ -5,6 +5,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
 from django.template.exceptions import TemplateDoesNotExist
+from scripts.setup.inline_email_css import inline_template
 
 from zerver.models import ScheduledEmail, get_user_profile_by_id, \
     EMAIL_TYPES, Realm, UserProfile
@@ -13,6 +14,8 @@ import datetime
 from email.utils import parseaddr, formataddr
 import logging
 import ujson
+import hashlib
+import shutil
 
 import os
 from typing import Any, Dict, List, Mapping, Optional, Tuple
@@ -49,6 +52,60 @@ class FromAddress:
 
         with override_language(language):
             return _("Zulip Account Security")
+
+def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None:
+    """
+    Can be used directly with from a management shell with
+    send_custom_email(user_profile_list, dict(
+        markdown_template_path="/path/to/markdown/file.md",
+        subject="Email Subject",
+        from_name="Sender Name")
+    )
+    """
+
+    with open(options["markdown_template_path"]) as f:
+        email_template_hash = hashlib.sha256(f.read().encode('utf-8')).hexdigest()[0:32]
+
+    email_filename = "custom_email_%s.source.html" % (email_template_hash,)
+    email_id = "zerver/emails/custom_email_%s" % (email_template_hash,)
+    markdown_email_base_template_path = "templates/zerver/emails/custom_email_base.pre.html"
+    html_source_template_path = "templates/%s.source.html" % (email_id,)
+    plain_text_template_path = "templates/%s.txt" % (email_id,)
+    subject_path = "templates/%s.subject.txt" % (email_id,)
+
+    # First, we render the markdown input file just like our
+    # user-facing docs with render_markdown_path.
+    shutil.copyfile(options['markdown_template_path'], plain_text_template_path)
+
+    from zerver.templatetags.app_filters import render_markdown_path
+    rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
+
+    # And then extend it with our standard email headers.
+    with open(html_source_template_path, "w") as f:
+        with open(markdown_email_base_template_path) as base_template:
+            # Note that we're doing a hacky non-Jinja2 substitution here;
+            # we do this because the normal render_markdown_path ordering
+            # doesn't commute properly with inline_email_css.
+            f.write(base_template.read().replace('{{ rendered_input }}',
+                                                 rendered_input))
+
+    with open(subject_path, "w") as f:
+        f.write(options["subject"])
+
+    # Then, we compile the email template using inline_email_css to
+    # add our standard styling to the paragraph tags (etc.).
+    inline_template(email_filename)
+
+    # Finally, we send the actual emails.
+    for user_profile in users:
+        context = {
+            'realm_uri': user_profile.realm.uri,
+            'realm_name': user_profile.realm.name,
+        }
+        send_email(email_id, to_user_ids=[user_profile.id],
+                   from_address=FromAddress.SUPPORT,
+                   reply_to_email=options.get("reply_to"),
+                   from_name=options["from_name"], context=context)
 
 def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                 to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
