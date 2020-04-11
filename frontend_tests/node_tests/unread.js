@@ -553,6 +553,40 @@ run_test('mentions', () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
+run_test('mention updates', () => {
+    const message = {
+        id: 17,
+        unread: false,
+        type: 'stream',
+    };
+
+    function test_counted(counted) {
+        unread.update_message_for_mention(message);
+        assert.equal(
+            unread.unread_mentions_counter.has(message.id),
+            counted
+        );
+    }
+
+    test_counted(false);
+
+    message.unread = true;
+    message.mentioned = true;
+    test_counted(true);
+
+    message.mentioned = false;
+    test_counted(false);
+
+    message.mentioned = true;
+    test_counted(true);
+
+    message.unread = false;
+    test_counted(false);
+
+    message.unread = true;
+    test_counted(true);
+});
+
 run_test('starring', () => {
     // We don't need any setup here, because we just hard code
     // this to [] in the code.

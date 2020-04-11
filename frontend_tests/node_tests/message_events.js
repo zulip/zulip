@@ -61,7 +61,7 @@ run_test('update_messages', () => {
     const original_message = {
         id: 111,
         display_recipient: denmark.name,
-        flags: [],
+        flags: ['mentioned'],
         sender_id: alice.user_id,
         stream_id: denmark.stream_id,
         topic: 'lunch',
@@ -71,12 +71,16 @@ run_test('update_messages', () => {
     message_store.add_message_metadata(original_message);
     message_store.set_message_booleans(original_message);
 
+    assert.equal(original_message.mentioned, true);
     assert.equal(original_message.unread, true);
 
     assert.deepEqual(
         topic_data.get_recent_names(denmark.stream_id),
         ['lunch']
     );
+
+    unread.update_message_for_mention(original_message);
+    assert(unread.unread_mentions_counter.has(original_message.id));
 
     const events = [
         {
@@ -117,6 +121,8 @@ run_test('update_messages', () => {
 
     // TEST THIS:
     message_events.update_messages(events);
+
+    assert(!unread.unread_mentions_counter.has(original_message.id));
 
     helper.verify();
 
