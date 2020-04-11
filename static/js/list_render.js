@@ -56,7 +56,7 @@ exports.create = function ($container, list, opts) {
         return DEFAULTS.instances.get(opts.name)
             .set_container($container)
             .set_opts(opts)
-            .__set_events()
+            .set_up_event_handlers()
             .data(list)
             .init();
     }
@@ -259,10 +259,9 @@ exports.create = function ($container, list, opts) {
         meta.sorting_function = false;
     };
 
-    // this sets the events given the particular arguments assigned in
-    // the container and opts.
-    widget.__set_events = function () {
+    widget.set_up_event_handlers = function () {
         let $nearestScrollingContainer = $container;
+
         while ($nearestScrollingContainer.length) {
             if ($nearestScrollingContainer.is("body, html")) {
                 blueslip.warn("Please wrap progressive scrolling lists in an element with 'max-height' attribute. Error found in:\n" + blueslip.preview_node($container));
@@ -290,8 +289,7 @@ exports.create = function ($container, list, opts) {
 
         if (opts.filter && opts.filter.element) {
             opts.filter.element.on(opts.filter.event || "input", function () {
-                const self = this;
-                const value = self.value.toLocaleLowerCase();
+                const value = this.value.toLocaleLowerCase();
 
                 // run the sort algorithm that was used last, which is done
                 // by passing `undefined` -- which will make it use the params
@@ -314,8 +312,6 @@ exports.create = function ($container, list, opts) {
 
         return this;
     };
-
-    widget.__set_events();
 
     // add built-in generic sort functions.
     widget.add_generic_sort_function("alphabetic", function (prop) {
@@ -345,6 +341,8 @@ exports.create = function ($container, list, opts) {
             return -1;
         };
     });
+
+    widget.set_up_event_handlers();
 
     // Save the instance for potential future retrieval if a name is provided.
     if (opts.name) {
