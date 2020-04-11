@@ -129,13 +129,13 @@ exports.update_stream_description = function (sub) {
     );
 };
 
-exports.invite_user_to_stream = function (user_email, sub, success, failure) {
+exports.invite_user_to_stream = function (emails, sub, success, failure) {
     // TODO: use stream_id when backend supports it
     const stream_name = sub.name;
     return channel.post({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream_name}]),
-               principals: JSON.stringify([user_email])},
+               principals: JSON.stringify(emails)},
         success: success,
         error: failure,
     });
@@ -185,6 +185,13 @@ function show_subscription_settings(sub_row) {
     stream_color.set_colorpicker_color(colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
 
+    const container = $("#subscription_overlay .subscription_settings[data-stream-id='" + stream_id + "'] .pill-container");
+    exports.pill_widget = input_pill.create({
+        container: container,
+        create_item_from_text: user_pill.create_item_from_email,
+        get_text_from_item: user_pill.get_email_from_item,
+    });
+
     if (!sub.render_subscribers) {
         return;
     }
@@ -197,6 +204,11 @@ function show_subscription_settings(sub_row) {
 
     const users = exports.get_users_from_subscribers(sub.subscribers);
     exports.sort_but_pin_current_user_on_top(users);
+
+    function get_users_for_subscriber_typeahead() {
+        const potential_subscribers = stream_data.potential_subscribers(sub);
+        return user_pill.filter_taken_users(potential_subscribers, exports.pill_widget);
+    }
 
     list_render.create(list, users, {
         name: "stream_subscribers/" + stream_id,
@@ -219,33 +231,10 @@ function show_subscription_settings(sub_row) {
         },
     });
 
-    sub_settings.find('input[name="principal"]').typeahead({
-        source: () => stream_data.potential_subscribers(sub),
-        items: 5,
-        highlighter: function (item) {
-            return typeahead_helper.render_person(item);
-        },
-        matcher: function (item) {
-            const query = $.trim(this.query.toLowerCase());
-            if (query === '' || query === item.email) {
-                return false;
-            }
-            // Case-insensitive.
-            if (!settings_data.show_email()) {
-                return item.full_name.toLowerCase().includes(query);
-            }
-            return item.email.toLowerCase().includes(query) ||
-                   item.full_name.toLowerCase().includes(query);
-        },
-        sorter: function (matches) {
-            const current_stream = compose_state.stream_name();
-            return typeahead_helper.sort_recipientbox_typeahead(
-                this.query, matches, current_stream);
-        },
-        updater: function (item) {
-            return item.email;
-        },
-    });
+    user_pill.set_up_typeahead_on_pills(sub_settings.find('.input'),
+                                        exports.pill_widget,
+                                        function () {},
+                                        get_users_for_subscriber_typeahead);
 }
 
 exports.is_notification_setting = function (setting_label) {
@@ -569,18 +558,23 @@ exports.initialize = function () {
             return;
         }
 
-        const text_box = settings_row.find('input[name="principal"]');
-        const principal = $.trim(text_box.val());
+        const user_ids = user_pill.get_user_ids(exports.pill_widget);
+        const emails = user_ids.map(user_id => {
+            const person = people.get_by_user_id(user_id);
+            return person.email;
+        });
         const stream_subscription_info_elem = $('.stream_subscription_info').expectOne();
 
         function invite_success(data) {
-            text_box.val('');
-
-            if (Object.prototype.hasOwnProperty.call(data.subscribed, principal)) {
+            exports.pill_widget.clear();
+            if (!Object.entries(data.already_subscribed).length) {
                 stream_subscription_info_elem.text(i18n.t("Subscribed successfully!"));
                 // The rest of the work is done via the subscription -> add event we will get
             } else {
                 stream_subscription_info_elem.text(i18n.t("User already subscribed."));
+                const already_subscribed_users = Object.keys(data.already_subscribed).join(', ');
+                stream_subscription_info_elem.text(i18n.t(
+                    " __already_subscribed_users__ are already subscribed.", {already_subscribed_users: already_subscribed_users}));
             }
             stream_subscription_info_elem.addClass("text-success")
                 .removeClass("text-error");
@@ -592,7 +586,7 @@ exports.initialize = function () {
                 .addClass("text-error").removeClass("text-success");
         }
 
-        exports.invite_user_to_stream(principal, sub, invite_success, invite_failure);
+        exports.invite_user_to_stream(emails, sub, invite_success, invite_failure);
     });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {

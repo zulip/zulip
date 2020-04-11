@@ -3,20 +3,25 @@
     <div class="subscriber_list_settings">
         <label class="sub_settings_title float-left">
             {{t "Stream membership" }}
-            <div class="stream_subscription_info small"></div>
         </label>
-        <div class="subscriber_list_add float-right">
+        <div class="subscriber-search float-right">
+            <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
+        </div>
+        <div class="subscriber_list_add float-left">
             <form class="form-inline">
-                <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
                 <div class="add_subscribers_container">
-                    <input type="text" name="principal" placeholder="{{t 'Name or email' }}" value="" class="input-block" autocomplete="off" />
+                    <div class="pill-container person_picker">
+                        <div class="input" contenteditable="true"
+                          data-placeholder="{{t 'Add subscribers' }}"></div>
+                    </div>
                     <div class="add_subscriber_btn_wrapper inline-block">
-                        <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="-1">
+                        <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="0">
                             {{t 'Add' }}
                         </button>
                     </div>
                 </div>
             </form>
+            <div class="stream_subscription_info"></div>
         </div>
         <div class="clear-float"></div>
     </div>

@@ -312,15 +312,24 @@ form#add_new_subscription {
 .subscriber_list_add {
     width: 100%;
     margin: 10px auto;
-    text-align: right;
 }
 
-.subscriber_list_add .search {
-    float: left;
+.subscriber-search {
+    margin: 10px 0 0 0;
 }
 
 .subscriber_list_add .form-inline {
     margin-bottom: 0px;
+}
+
+.add_subscribers_container {
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+
+    .add_subscriber_btn_wrapper {
+        padding-left: 5px;
+    }
 }
 
 .remove-subscriber-form {
@@ -419,15 +428,15 @@ form#add_new_subscription {
             transition: all 0.3s ease;
             transform: translate(-13px, 0px);
         }
-    }
 
-    .exit {
-        font-weight: 600;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        color: hsl(0, 0%, 67%);
-        cursor: pointer;
+        .exit {
+            font-weight: 600;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0, 0%, 67%);
+            cursor: pointer;
+        }
     }
 
     .exit-sign {
