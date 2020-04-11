@@ -48,7 +48,8 @@ from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool, \
-    check_string_or_int_list, check_string_or_int, check_string_in
+    check_string_or_int_list, check_string_or_int, check_string_in, \
+    check_required_string
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, \
@@ -541,12 +542,15 @@ def narrow_parameter(json: str) -> OptionalNarrowListT:
             # operators_supporting_id, or operators_supporting_ids array.
             operators_supporting_id = ['sender', 'group-pm-with', 'stream']
             operators_supporting_ids = ['pm-with']
+            operators_non_empty_operand = {'search'}
 
             operator = elem.get('operator', '')
             if operator in operators_supporting_id:
                 operand_validator = check_string_or_int
             elif operator in operators_supporting_ids:
                 operand_validator = check_string_or_int_list
+            elif operator in operators_non_empty_operand:
+                operand_validator = check_required_string
             else:
                 operand_validator = check_string
 
