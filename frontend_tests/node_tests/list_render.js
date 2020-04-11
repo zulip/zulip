@@ -106,8 +106,7 @@ run_test('scrolling', () => {
     };
 
     container.html = (html) => { assert.equal(html, ''); };
-    const widget = list_render.create(container, items, opts);
-    widget.init();
+    list_render.create(container, items, opts);
 
     assert.deepEqual(
         container.appended_data.html(),
@@ -154,7 +153,6 @@ run_test('filtering', () => {
 
     container.html = (html) => { assert.equal(html, ''); };
     let widget = list_render.create(container, list, opts);
-    widget.init();
 
     let expected_html =
         '<div>apple</div>' +
@@ -186,7 +184,7 @@ run_test('filtering', () => {
     ];
 
     widget.data(new_data);
-    widget.init();
+    widget.redraw();
     expected_html =
         '<div>greta</div>' +
         '<div>gary</div>' +
