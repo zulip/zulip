@@ -114,6 +114,16 @@ class OembedTestCase(ZulipTestCase):
         data = get_oembed_data(url)
         self.assertIsNone(data)
 
+    @mock.patch('pyoembed.requests.get')
+    def test_invalid_json_in_response(self, get: Any) -> None:
+        get.return_value = response = mock.Mock()
+        response.headers = {'content-type': 'application/json'}
+        response.ok = True
+        response.text = '{invalid json}'
+        url = 'http://instagram.com/p/BLtI2WdAymy'
+        data = get_oembed_data(url)
+        self.assertIsNone(data)
+
     def test_oembed_html(self) -> None:
         html = '<iframe src="//www.instagram.com/embed.js"></iframe>'
         stripped_html = strip_cdata(html)
