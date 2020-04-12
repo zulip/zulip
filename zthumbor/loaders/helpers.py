@@ -6,7 +6,7 @@ import re
 import sys
 from typing import Any, Text, Tuple, Optional
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath('__file__'))))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
 
 # Piece of code below relating to secrets conf has been duplicated with that of
