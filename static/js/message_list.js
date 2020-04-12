@@ -306,6 +306,7 @@ exports.MessageList.prototype = {
     show_edit_message: function MessageList_show_edit_message(row, edit_obj) {
         row.find(".message_edit_form").empty().append(edit_obj.form);
         row.find(".message_content, .status-message, .message_controls").hide();
+        row.find(".message_edit").slideDown();
         row.find(".message_edit").css("display", "block");
         autosize(row.find(".message_edit_content"));
     },
