@@ -200,7 +200,7 @@ exports.initiate_search = function () {
         $('#search_query').focus();
     } else {
         tab_bar.open_search_bar_and_close_narrow_description();
-        $('#search_query').select();
+        $('#search_query').typeahead('lookup').select();
     }
 };
 
