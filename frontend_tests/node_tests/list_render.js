@@ -92,8 +92,44 @@ function div(item) {
     return '<div>' + item + '</div>';
 }
 
-run_test('list_render', () => {
+run_test('scrolling', () => {
     const {container, parent_container} = make_containers();
+
+    const items = [];
+
+    for (let i = 0; i < 200; i += 1) {
+        items.push('item ' + i);
+    }
+
+    const opts = {
+        modifier: (item) => item,
+    };
+
+    container.html = (html) => { assert.equal(html, ''); };
+    const widget = list_render.create(container, items, opts);
+    widget.init();
+
+    assert.deepEqual(
+        container.appended_data.html(),
+        items.slice(0, 80).join('')
+    );
+
+    // Set up our fake geometry so it forces a scroll action.
+    parent_container.scrollTop = 180;
+    parent_container.clientHeight = 100;
+    parent_container.scrollHeight = 260;
+
+    // Scrolling gets the next two elements from the list into
+    // our widget.
+    parent_container.call_scroll();
+    assert.deepEqual(
+        container.appended_data.html(),
+        items.slice(80, 100).join('')
+    );
+});
+
+run_test('filtering', () => {
+    const {container} = make_containers();
 
     const search_input = make_search_input();
 
@@ -113,32 +149,27 @@ run_test('list_render', () => {
                 return item.includes(value);
             },
         },
-        load_count: 2,
         modifier: (item) => div(item),
     };
 
+    container.html = (html) => { assert.equal(html, ''); };
     let widget = list_render.create(container, list, opts);
+    widget.init();
 
-    widget.render();
+    let expected_html =
+        '<div>apple</div>' +
+        '<div>banana</div>' +
+        '<div>carrot</div>' +
+        '<div>dog</div>' +
+        '<div>egg</div>' +
+        '<div>fence</div>' +
+        '<div>grape</div>';
 
-    let expected_html = '<div>apple</div><div>banana</div>';
-    assert.deepEqual(container.appended_data.html(), expected_html);
-
-    // Set up our fake geometry so it forces a scroll action.
-    parent_container.scrollTop = 180;
-    parent_container.clientHeight = 100;
-    parent_container.scrollHeight = 260;
-
-    // Scrolling gets the next two elements from the list into
-    // our widget.
-    parent_container.call_scroll();
-    expected_html = '<div>carrot</div><div>dog</div>';
     assert.deepEqual(container.appended_data.html(), expected_html);
 
     // Filtering will pick out dog/egg/grape when we put "g"
     // into our search input.  (This uses the default filter, which
     // is a glorified indexOf call.)
-    container.html = (html) => { assert.equal(html, ''); };
     search_input.val = () => 'g';
     search_input.simulate_input_event();
     expected_html = '<div>dog</div><div>egg</div><div>grape</div>';
@@ -155,8 +186,11 @@ run_test('list_render', () => {
     ];
 
     widget.data(new_data);
-    widget.render();
-    expected_html = '<div>greta</div><div>gary</div>';
+    widget.init();
+    expected_html =
+        '<div>greta</div>' +
+        '<div>gary</div>' +
+        '<div>giraffe</div>';
     assert.deepEqual(container.appended_data.html(), expected_html);
 
     // Opts does not require a filter key.
@@ -167,7 +201,9 @@ run_test('list_render', () => {
     widget = list_render.create(container, ['apple', 'banana'], opts);
     widget.render();
 
-    expected_html = '<div>apple</div><div>banana</div>';
+    expected_html =
+        '<div>apple</div>' +
+        '<div>banana</div>';
     assert.deepEqual(container.appended_data.html(), expected_html);
 });
 
@@ -267,7 +303,6 @@ run_test('sorting', () => {
 
     const opts = {
         name: 'my-list',
-        load_count: 2,
         modifier: (item) => {
             return div(item.name) + div(item.salary);
         },
