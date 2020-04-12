@@ -14,6 +14,23 @@ exports.maybe_disable_widgets = function () {
     }
 };
 
+function compare_by_index(a, b, i) {
+    if (a[i] > b[i]) {
+        return 1;
+    } else if (a[i] === b[i]) {
+        return 0;
+    }
+    return -1;
+}
+
+function sort_pattern(a, b) {
+    return compare_by_index(a, b, 0);
+}
+
+function sort_url(a, b) {
+    return compare_by_index(a, b, 1);
+}
+
 exports.populate_filters = function (filters_data) {
     if (!meta.loaded) {
         return;
@@ -45,22 +62,8 @@ exports.populate_filters = function (filters_data) {
         parent_container: $("#filter-settings").expectOne(),
     }).init();
 
-    function compare_by_index(a, b, i) {
-        if (a[i] > b[i]) {
-            return 1;
-        } else if (a[i] === b[i]) {
-            return 0;
-        }
-        return -1;
-    }
-
-    filters_list.add_sort_function("pattern", function (a, b) {
-        return compare_by_index(a, b, 0);
-    });
-
-    filters_list.add_sort_function("url", function (a, b) {
-        return compare_by_index(a, b, 1);
-    });
+    filters_list.add_sort_function("pattern", sort_pattern);
+    filters_list.add_sort_function("url", sort_url);
 
     const active_col = $('.admin_filters_table th.active').expectOne();
     filters_list.sort(

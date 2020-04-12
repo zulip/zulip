@@ -20,6 +20,26 @@ function compare_a_b(a, b) {
     return -1;
 }
 
+function sort_role(a, b) {
+    function role(user) {
+        if (user.is_admin) { return 0; }
+        if (user.is_guest) { return 2; }
+        return 1; // member
+    }
+    return compare_a_b(role(a), role(b));
+}
+
+function sort_bot_owner(a, b) {
+    if (!a.bot_owner_id) { return 1; }
+    if (!b.bot_owner_id) { return -1; }
+
+    return compare_a_b(a.bot_owner_id, b.bot_owner_id);
+}
+
+function sort_last_active(a, b) {
+    return compare_a_b(b.last_active, a.last_active);
+}
+
 function get_user_info_row(user_id) {
     return $("tr.user_row[data-user-id='" + user_id + "']");
 }
@@ -187,12 +207,7 @@ function populate_users(realm_people_data) {
 
     bot_list.sort("alphabetic", "full_name");
 
-    bot_list.add_sort_function("bot_owner", function (a, b) {
-        if (!a.bot_owner_id) { return 1; }
-        if (!b.bot_owner_id) { return -1; }
-
-        return compare_a_b(a.bot_owner_id, b.bot_owner_id);
-    });
+    bot_list.add_sort_function("bot_owner", sort_bot_owner);
 
     function get_rendered_last_activity(item) {
         const today = new XDate();
@@ -229,19 +244,8 @@ function populate_users(realm_people_data) {
 
     users_list.sort("alphabetic", "full_name");
 
-    function sort_role(a, b) {
-        function role(user) {
-            if (user.is_admin) { return 0; }
-            if (user.is_guest) { return 2; }
-            return 1; // member
-        }
-        return compare_a_b(role(a), role(b));
-    }
     users_list.add_sort_function("role", sort_role);
-
-    users_list.add_sort_function("last_active", function (a, b) {
-        return compare_a_b(b.last_active, a.last_active);
-    });
+    users_list.add_sort_function("last_active", sort_last_active);
 
     const $deactivated_users_table = $("#admin_deactivated_users_table");
     const deactivated_users_list = list_render.create($deactivated_users_table, deactivated_users, {

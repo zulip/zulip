@@ -52,6 +52,15 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+function sort_author_full_name(a, b) {
+    if (a.author.full_name > b.author.full_name) {
+        return 1;
+    } else if (a.author.full_name === b.author.full_name) {
+        return 0;
+    }
+    return -1;
+}
+
 exports.populate_emoji = function (emoji_data) {
     if (!meta.loaded) {
         return;
@@ -87,15 +96,7 @@ exports.populate_emoji = function (emoji_data) {
     }).init();
 
     emoji_list.sort("alphabetic", "name");
-
-    emoji_list.add_sort_function("author_full_name", function (a, b) {
-        if (a.author.full_name > b.author.full_name) {
-            return 1;
-        } else if (a.author.full_name === b.author.full_name) {
-            return 0;
-        }
-        return -1;
-    });
+    emoji_list.add_sort_function("author_full_name", sort_author_full_name);
 
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };
