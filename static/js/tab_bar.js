@@ -33,7 +33,7 @@ function make_tab_data() {
     }
 
     if (in_all()) {
-        tabs.push(make_tab(i18n.t("All Messages"), "#narrow/in/all", undefined, "root"));
+        tabs.push(make_tab(i18n.t("All messages"), "#narrow/in/all", undefined, "root"));
     } else if (page_params.narrow !== undefined) {
         tabs.push(make_tab("Stream " + page_params.narrow_stream,
                            hash_util.operators_to_hash([page_params.narrow[0]]),
@@ -56,7 +56,7 @@ function make_tab_data() {
         } else if (filter.has_operator("pm-with") ||
                    filter.has_operand("is", "private")) {
 
-            tabs.push(make_tab(i18n.t("Private Messages"), '#narrow/is/private',
+            tabs.push(make_tab(i18n.t("Private messages"), '#narrow/is/private',
                                undefined, 'private_message '));
 
             if (filter.has_operator("pm-with")) {
@@ -80,7 +80,7 @@ function make_tab_data() {
         } else if (filter.has_operand("is", "starred")) {
             tabs.push(make_tab(i18n.t("Starred messages"), hashed));
         } else if (filter.has_operand("streams", "public")) {
-            tabs.push(make_tab(i18n.t("Public Streams"), hashed));
+            tabs.push(make_tab(i18n.t("Public streams"), hashed));
         } else if (filter.has_operator("near")) {
             tabs.push(make_tab("Near " + filter.operands("near")[0], hashed));
         } else if (filter.has_operator("id")) {
