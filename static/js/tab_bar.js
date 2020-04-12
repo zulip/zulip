@@ -86,9 +86,10 @@ exports.exit_search = function () {
 };
 
 exports.update_stream_name = function (new_name) {
-    const tab_bar_data = make_tab_data();
-    tab_bar_data.title = new_name;
-    display_tab_bar(tab_bar_data);
+    const stream_name = $(".stream");
+    if (stream_name !== undefined) {
+        stream_name.text(new_name);
+    }
 };
 
 exports.update_stream_description = function (rendered_new_description) {
