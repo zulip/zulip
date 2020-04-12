@@ -49,6 +49,14 @@
  *   Our custom changes include all mentions of this.header, some CSS changes
  *   in compose.scss and splitting $container out of $menu so we can insert
  *   additional HTML before $menu.
+ *
+ * 4. Navbar changes:
+ *
+ *  Typically, typeahead hotkey actions are independent of other application
+ *  actions, however, the navbar is one case where we want to try and do more
+ *  than a simple typeahead action with a single hotkey press, and so we've
+ *  been forced to make a custom modification, see inline comment at `Esc`
+ *  keyup for more details.
  * ============================================================ */
 
 !function($){
@@ -348,6 +356,13 @@
 
         case 27: // escape
           if (!this.shown) return
+          // Custom Zulip code to achieve the following goals:
+          // when the searchbox is open in the navbar, and the typeahead is open, a single `Esc` should
+          // be able to close both the searchbox and the typeahead.
+          if ($("input:focus,textarea:focus")[0].className === "search-query input-block-level") {
+            tab_bar.exit_search();
+            $("input:focus,textarea:focus").blur();
+          }
           this.hide()
           break
 
