@@ -35,6 +35,7 @@ set_global('page_params', {});
 
 const ignore_modules = [
     'activity',
+    'click_handlers',
     'compose_pm_pill',
     'copy_and_paste',
     'drafts',
@@ -64,11 +65,6 @@ for (const mod of ignore_modules) {
         initialize: () => {},
     });
 }
-
-set_global('click_handlers', {
-    initialize: () => {},
-    bind_handler_for_opening_searchbox: () => {},
-});
 
 emoji.emojis_by_name = new Map();
 

@@ -438,6 +438,7 @@ exports.initialize_everything = function () {
     stream_list.initialize();
     condense.initialize();
     lightbox.initialize();
+    click_handlers.initialize();
     copy_and_paste.initialize();
     overlays.initialize();
     invite.initialize();
@@ -483,7 +484,6 @@ exports.initialize_everything = function () {
     sent_messages.initialize();
     hotspots.initialize();
     ui.initialize();
-    click_handlers.initialize(); // Must happen after ui.initialize()
     panels.initialize();
     typing.initialize();
     starred_messages.initialize();

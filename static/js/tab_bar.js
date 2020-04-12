@@ -69,7 +69,12 @@ function build_tab_bar(filter) {
     } else {
         const tab_bar_data = make_tab_data(filter);
         display_tab_bar(tab_bar_data);
-        click_handlers.bind_handler_for_opening_searchbox();
+        $(".search_closed").on("click", function (e) {
+            exports.open_search_bar_and_close_narrow_description();
+            $('#search_query').select();
+            e.preventDefault();
+            e.stopPropagation();
+        });
         exports.close_search_bar_and_open_narrow_description();
     }
 }
@@ -102,6 +107,19 @@ exports.update_stream_description = function (rendered_new_description) {
 exports.initialize = function () {
     const filter = narrow_state.filter();
     build_tab_bar(filter);
+
+    // register navbar click handlers
+    $('#search_exit').on("click", function (e) {
+        tab_bar.exit_search();
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $(".search_open").on("click", function (e) {
+        $('#search_query').typeahead('lookup').focus();
+        e.preventDefault();
+        e.stopPropagation();
+    });
 };
 
 exports.open_search_bar_and_close_narrow_description = function () {
