@@ -86,8 +86,8 @@ exports.create = function ($container, list, opts) {
     // Reads the provided list (in the scope directly above)
     // and renders the next block of messages automatically
     // into the specified container.
-    widget.render = function (load_count) {
-        load_count = load_count || opts.load_count || DEFAULTS.LOAD_COUNT;
+    widget.render = function (how_many) {
+        const load_count = how_many || DEFAULTS.LOAD_COUNT;
 
         // Stop once the offset reaches the length of the original list.
         if (meta.offset >= meta.filtered_list.length) {
