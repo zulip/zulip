@@ -4,24 +4,21 @@ Fetch contributors data from Github using their API, convert it to structured
 JSON data for the /team page contributors section.
 """
 
-# check for the venv
-from lib import sanity_check
-sanity_check.check_venv(__file__)
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from scripts.lib.setup_path import setup_path
+setup_path()
 
 from typing import Any, Dict, List, Optional, Union
 from typing_extensions import TypedDict
 
-import os
-import sys
 import argparse
 from time import sleep
 from datetime import date
 from random import randrange
 import logging
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from scripts.lib.setup_path import setup_path
-setup_path()
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 import django
