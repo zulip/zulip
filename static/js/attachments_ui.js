@@ -55,6 +55,22 @@ function delete_attachments(attachment) {
     });
 }
 
+function sort_mentioned_in(a, b) {
+    const a_m = a.messages[0];
+    const b_m = b.messages[0];
+
+    if (!a_m) { return 1; }
+    if (!b_m) { return -1; }
+
+    if (a_m.id > b_m.id) {
+        return 1;
+    } else if (a_m.id === b_m.id) {
+        return 0;
+    }
+
+    return -1;
+}
+
 function render_attachments_ui() {
     set_upload_space_stats();
 
@@ -80,22 +96,7 @@ function render_attachments_ui() {
 
     list.sort('numeric', 'create_time');
 
-    list.add_sort_function("mentioned-in", function (a, b) {
-        const a_m = a.messages[0];
-        const b_m = b.messages[0];
-
-        if (!a_m) { return 1; }
-        if (!b_m) { return -1; }
-
-        if (a_m.id > b_m.id) {
-            return 1;
-        } else if (a_m.id === b_m.id) {
-            return 0;
-        }
-
-        return -1;
-    });
-
+    list.add_sort_function("mentioned_in", sort_mentioned_in);
     ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 
