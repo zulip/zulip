@@ -8,7 +8,7 @@ from django.conf import settings
 from django.utils.http import is_safe_url
 from libthumbor import CryptoURL
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath('__file__'))))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
 
 from zthumbor.loaders.helpers import (
