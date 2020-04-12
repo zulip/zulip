@@ -71,7 +71,7 @@ function build_tab_bar(filter) {
         display_tab_bar(tab_bar_data);
         $(".search_closed").on("click", function (e) {
             exports.open_search_bar_and_close_narrow_description();
-            $('#search_query').select();
+            search.initiate_search();
             e.preventDefault();
             e.stopPropagation();
         });
@@ -114,12 +114,6 @@ exports.initialize = function () {
         e.preventDefault();
         e.stopPropagation();
     });
-
-    $(".search_open").on("click", function (e) {
-        $('#search_query').typeahead('lookup').focus();
-        e.preventDefault();
-        e.stopPropagation();
-    });
 };
 
 exports.open_search_bar_and_close_narrow_description = function () {
@@ -133,3 +127,4 @@ exports.close_search_bar_and_open_narrow_description = function () {
 };
 
 window.tab_bar = exports;
+
