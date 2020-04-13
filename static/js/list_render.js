@@ -10,6 +10,10 @@ exports.filter = (value, list, opts) => {
         but we split it out to make it a bit easier
         to test.
     */
+    if (!opts.filter) {
+        return [...list];
+    }
+
     if (opts.filter.filterer) {
         return opts.filter.filterer(list, value);
     }
@@ -63,18 +67,14 @@ exports.create = function ($container, list, opts) {
 
     const meta = {
         sorting_function: null,
-        prop: null,
         sorting_functions: new Map(),
         generic_sorting_functions: new Map(),
         offset: 0,
         list: list,
         filtered_list: list,
-
+        reverse_mode: false,
+        filter_value: '',
     };
-
-    function filter_list(value) {
-        meta.filtered_list = exports.filter(value, meta.list, opts);
-    }
 
     if (!opts) {
         return;
@@ -82,6 +82,24 @@ exports.create = function ($container, list, opts) {
     exports.validate_filter(opts);
 
     const widget = {};
+
+    widget.filter_and_sort = function () {
+        meta.filtered_list = exports.filter(
+            meta.filter_value,
+            meta.list,
+            opts
+        );
+
+        if (meta.sorting_function) {
+            meta.filtered_list.sort(
+                meta.sorting_function
+            );
+        }
+
+        if (meta.reverse_mode) {
+            meta.filtered_list.reverse();
+        }
+    };
 
     // Reads the provided list (in the scope directly above)
     // and renders the next block of messages automatically
@@ -142,10 +160,6 @@ exports.create = function ($container, list, opts) {
         return this;
     };
 
-    widget.filter = function (map_function) {
-        meta.filtered_list = meta.list(map_function);
-    };
-
     // reset the data associated with a list. This is so that instead of
     // initializing a new progressive list render instance, you can just
     // update the data of an existing one.
@@ -162,11 +176,7 @@ exports.create = function ($container, list, opts) {
             meta.list = data;
             meta.filtered_list = data;
 
-            if (opts.filter && opts.filter.element) {
-                const value = $(opts.filter.element).val().toLocaleLowerCase();
-                filter_list(value);
-            }
-
+            widget.filter_and_sort();
             widget.clear();
 
             return this;
@@ -199,24 +209,18 @@ exports.create = function ($container, list, opts) {
         return this;
     };
 
-    widget.reverse = function () {
-        meta.filtered_list.reverse();
-        widget.init();
-        return this;
+    widget.set_filter_value = function (filter_value) {
+        meta.filter_value = filter_value;
+    };
+
+    widget.set_reverse_mode = function (reverse_mode) {
+        meta.reverse_mode = reverse_mode;
     };
 
     // the sorting function is either the function or string that calls the
     // function to sort the list by. The prop is used for generic functions
     // that can be called to sort with a particular prop.
-
-    // the `map` will normalize the values with a function you provide to make
-    // it easier to sort with.
-
-    // `do_not_display` will signal to not update the DOM, likely because in
-    // the next function it will be updated in the DOM.
-    widget.sort = function (sorting_function, prop, do_not_display) {
-        meta.prop = prop;
-
+    widget.set_sorting_function = function (sorting_function, prop) {
         if (typeof sorting_function === "function") {
             meta.sorting_function = sorting_function;
         } else if (typeof sorting_function === "string") {
@@ -225,22 +229,6 @@ exports.create = function ($container, list, opts) {
                 meta.sorting_function = meta.generic_sorting_functions.get(sorting_function)(prop);
             } else {
                 meta.sorting_function = meta.sorting_functions.get(sorting_function);
-            }
-        }
-
-        // we do not want to sort if we are just looking to reverse
-        // by calling with no sorting_function
-        if (meta.sorting_function) {
-            meta.filtered_list = meta.filtered_list.sort(meta.sorting_function);
-        }
-
-        if (!do_not_display) {
-            // clear and re-initialize the list with the newly filtered subset
-            // of items.
-            widget.init();
-
-            if (opts.filter && opts.filter.onupdate) {
-                opts.filter.onupdate();
             }
         }
     };
@@ -253,10 +241,6 @@ exports.create = function ($container, list, opts) {
     // and perform a sort on it with the given sorting function.
     widget.add_generic_sort_function = function (name, sorting_function) {
         meta.generic_sorting_functions.set(name, sorting_function);
-    };
-
-    widget.remove_sort = function () {
-        meta.sorting_function = false;
     };
 
     widget.set_up_event_handlers = function () {
@@ -277,27 +261,27 @@ exports.create = function ($container, list, opts) {
         if (opts.filter && opts.filter.element) {
             opts.filter.element.on("input", function () {
                 const value = this.value.toLocaleLowerCase();
-
-                // run the sort algorithm that was used last, which is done
-                // by passing `undefined` -- which will make it use the params
-                // from the last sort.
-                // it will then also not run an update in the DOM (because we
-                // pass `true`), because it will update regardless below at
-                // `widget.init()`.
-                widget.sort(undefined, meta.prop, true);
-                filter_list(value);
-
-                // clear and re-initialize the list with the newly filtered subset
-                // of items.
-                widget.init();
-
-                if (opts.filter.onupdate) {
-                    opts.filter.onupdate();
-                }
+                widget.set_filter_value(value);
+                widget.hard_redraw();
             });
         }
 
         return this;
+    };
+
+    widget.sort = function (sorting_function, prop) {
+        widget.set_sorting_function(sorting_function, prop);
+        widget.hard_redraw();
+    };
+
+    widget.hard_redraw = function () {
+        widget.filter_and_sort();
+        widget.clear();
+        widget.render(DEFAULTS.INITIAL_RENDER_COUNT);
+
+        if (opts.filter && opts.filter.onupdate) {
+            opts.filter.onupdate();
+        }
     };
 
     // add built-in generic sort functions.
@@ -379,18 +363,16 @@ exports.handle_sort = function () {
         } else {
             $this.removeClass("descend");
         }
-
-        list.reverse();
-        // Table has already been sorted by this property; do not re-sort.
-        return;
+    } else {
+        $this.siblings(".active").removeClass("active");
+        $this.addClass("active");
     }
+
+    list.set_reverse_mode($this.hasClass("descend"));
 
     // if `prop_name` is defined, it will trigger the generic codepath,
     // and not if it is undefined.
     list.sort(sort_type, prop_name);
-
-    $this.siblings(".active").removeClass("active");
-    $this.addClass("active");
 };
 
 window.list_render = exports;
