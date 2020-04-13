@@ -107,7 +107,7 @@ run_test('update_messages', () => {
 
     const side_effects = [
         'condense.un_cache_message_content_height',
-        'message_edit.end',
+        'message_edit.end_message_row_edit',
         'notifications.received_messages',
         'unread_ui.update_unread_counts',
         'stream_list.update_streams_sidebar',
