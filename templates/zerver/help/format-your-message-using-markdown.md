@@ -10,7 +10,8 @@ to allow you to easily format your messages.
 * [Emphasis](#emphasis)
 * [Lists](#lists)
 * [Links and images](#links)
-* [Code and TeX](#code)
+* [Code blocks](#code)
+* [LaTeX](#latex)
 * [Quotes](#quotes)
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mentions](#mentions)
@@ -120,12 +121,17 @@ to display content without any syntax highlighting.
 Inline: $$O(n^2)$$
 
 Displayed:
-```tex
+``` math
 \int_a^b f(t)\, dt = F(b) - F(a)
 ```
 ~~~
 
 ![](/static/images/help/markdown-latex.png)
+
+Zulip's LaTeX rendering is powered by [KaTeX](https://katex.org).
+Their [support table](https://katex.org/docs/support_table.html) is a
+helpful resource for checking what's supported or how to express
+something.
 
 ## Quotes
 
