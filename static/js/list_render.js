@@ -50,12 +50,15 @@ exports.create = function ($container, list, opts) {
     // this memoizes the results and will return a previously invoked
     // instance
     if (opts.name && DEFAULTS.instances.get(opts.name)) {
-        const old_widget = DEFAULTS.instances.get(opts.name);
-
-        old_widget.data(list);
-        old_widget.redraw();
-
-        return old_widget;
+        // the false flag here means "don't run `init`". This is because a
+        // user is likely reinitializing and will have put .init() afterwards.
+        // This happens when the same codepath is hit multiple times.
+        return DEFAULTS.instances.get(opts.name)
+            .set_container($container)
+            .set_opts(opts)
+            .set_up_event_handlers()
+            .data(list)
+            .init();
     }
 
     const meta = {
@@ -126,14 +129,17 @@ exports.create = function ($container, list, opts) {
 
         $container.append($(html));
         meta.offset += load_count;
+
+        return this;
     };
 
     // Fills the container with an initial batch of items.
     // Needs to be enough to exceed the max height, so that a
     // scrollable area is created.
-    widget.redraw = function () {
-        widget.clear();
-        widget.render(DEFAULTS.INITIAL_RENDER_COUNT);
+    widget.init = function () {
+        this.clear();
+        this.render(DEFAULTS.INITIAL_RENDER_COUNT);
+        return this;
     };
 
     widget.filter = function (map_function) {
@@ -163,21 +169,40 @@ exports.create = function ($container, list, opts) {
 
             widget.clear();
 
-            return;
+            return this;
         }
 
         blueslip.warn("The data object provided to the progressive" +
                           " list render is invalid");
+        return this;
     };
 
     widget.clear = function () {
         $container.html("");
         meta.offset = 0;
+        return this;
+    };
+
+    widget.set_container = function ($new_container) {
+        if ($new_container) {
+            $container = $new_container;
+        }
+
+        return this;
+    };
+
+    widget.set_opts = function (new_opts) {
+        if (opts) {
+            opts = new_opts;
+        }
+
+        return this;
     };
 
     widget.reverse = function () {
         meta.filtered_list.reverse();
-        widget.redraw();
+        widget.init();
+        return this;
     };
 
     // the sorting function is either the function or string that calls the
@@ -212,12 +237,16 @@ exports.create = function ($container, list, opts) {
         if (!do_not_display) {
             // clear and re-initialize the list with the newly filtered subset
             // of items.
-            widget.redraw();
+            widget.init();
 
             if (opts.filter && opts.filter.onupdate) {
                 opts.filter.onupdate();
             }
         }
+    };
+
+    widget.add_sort_function = function (name, sorting_function) {
+        meta.sorting_functions.set(name, sorting_function);
     };
 
     // generic sorting functions are ones that will use a specified prop
@@ -267,19 +296,21 @@ exports.create = function ($container, list, opts) {
                 // from the last sort.
                 // it will then also not run an update in the DOM (because we
                 // pass `true`), because it will update regardless below at
-                // `widget.redraw()`.
+                // `widget.init()`.
                 widget.sort(undefined, meta.prop, true);
                 filter_list(value);
 
                 // clear and re-initialize the list with the newly filtered subset
                 // of items.
-                widget.redraw();
+                widget.init();
 
                 if (opts.filter.onupdate) {
                     opts.filter.onupdate();
                 }
             });
         }
+
+        return this;
     };
 
     // add built-in generic sort functions.
@@ -312,18 +343,6 @@ exports.create = function ($container, list, opts) {
     });
 
     widget.set_up_event_handlers();
-
-    if (opts.sort_fields) {
-        for (const [name, sorting_function] of Object.entries(opts.sort_fields)) {
-            meta.sorting_functions.set(name, sorting_function);
-        }
-    }
-
-    if (opts.init_sort) {
-        widget.sort(...opts.init_sort);
-    } else {
-        widget.redraw();
-    }
 
     // Save the instance for potential future retrieval if a name is provided.
     if (opts.name) {

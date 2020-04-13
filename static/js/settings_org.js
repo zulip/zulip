@@ -34,7 +34,7 @@ exports.default_code_language_widget = (function (element_id) {
                     return item.name.toLowerCase().includes(value);
                 },
             },
-        });
+        }).init();
         $(`#${element_id} .dropdown-search`).click(function (e) {
             e.stopPropagation();
         });
@@ -451,7 +451,7 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
                 ui.reset_scrollbar(dropdown_list_body);
             },
         },
-    });
+    }).init();
 
     $("#id_realm_notifications_stream .dropdown-search").click(function (e) {
         e.stopPropagation();
@@ -477,7 +477,7 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
                 return item.name.toLowerCase().includes(value);
             },
         },
-    });
+    }).init();
 
     $("#id_realm_signup_notifications_stream .dropdown-search").click(function (e) {
         e.stopPropagation();

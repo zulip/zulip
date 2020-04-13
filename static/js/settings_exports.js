@@ -37,7 +37,7 @@ exports.populate_exports_table = function (exports) {
     }
 
     const exports_table = $('#admin_exports_table').expectOne();
-    list_render.create(exports_table, Object.values(exports), {
+    const exports_list = list_render.create(exports_table, Object.values(exports), {
         name: "admin_exports_list",
         modifier: function (data) {
             if (data.deleted_timestamp === null) {
@@ -65,11 +65,11 @@ exports.populate_exports_table = function (exports) {
             },
         },
         parent_container: $("#data-exports").expectOne(),
-        init_sort: [sort_user],
-        sort_fields: {
-            user: sort_user,
-        },
-    });
+    }).init();
+
+    exports_list.add_sort_function("user", sort_user);
+
+    exports_list.sort("user");
 };
 
 exports.set_up = function () {

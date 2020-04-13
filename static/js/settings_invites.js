@@ -46,7 +46,7 @@ function populate_invites(invites_data) {
 
     const invites_table = $("#admin_invites_table").expectOne();
 
-    list_render.create(invites_table, invites_data.invites, {
+    const invites_list = list_render.create(invites_table, invites_data.invites, {
         name: 'admin_invites_list',
         modifier: function (item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
@@ -64,11 +64,10 @@ function populate_invites(invites_data) {
             },
         },
         parent_container: $("#admin-invites-list").expectOne(),
-        init_sort: [sort_invitee],
-        sort_fields: {
-            invitee: sort_invitee,
-        },
     });
+
+    invites_list.sort('invitee');
+    invites_list.add_sort_function('invitee', sort_invitee);
 
     loading.destroy_indicator($('#admin_page_invites_loading_indicator'));
 }
