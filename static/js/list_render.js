@@ -260,24 +260,11 @@ exports.create = function ($container, list, opts) {
     };
 
     widget.set_up_event_handlers = function () {
-        let $nearestScrollingContainer = $container;
-
-        while ($nearestScrollingContainer.length) {
-            if ($nearestScrollingContainer.is("body, html")) {
-                blueslip.warn("Please wrap progressive scrolling lists in an element with 'max-height' attribute. Error found in:\n" + blueslip.preview_node($container));
-                break;
-            }
-
-            if ($nearestScrollingContainer.css("max-height") !== "none") {
-                break;
-            }
-
-            $nearestScrollingContainer = $nearestScrollingContainer.parent();
-        }
+        meta.scroll_container = scroll_util.get_list_scrolling_container($container);
 
         // on scroll of the nearest scrolling container, if it hits the bottom
         // of the container then fetch a new block of items and render them.
-        $nearestScrollingContainer.scroll(function () {
+        meta.scroll_container.scroll(function () {
             if (this.scrollHeight - (this.scrollTop + this.clientHeight) < 10) {
                 widget.render();
             }
