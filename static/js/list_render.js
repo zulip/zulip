@@ -275,7 +275,7 @@ exports.create = function ($container, list, opts) {
         }
 
         if (opts.filter && opts.filter.element) {
-            opts.filter.element.on(opts.filter.event || "input", function () {
+            opts.filter.element.on("input", function () {
                 const value = this.value.toLocaleLowerCase();
 
                 // run the sort algorithm that was used last, which is done
