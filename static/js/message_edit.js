@@ -149,11 +149,11 @@ exports.end_if_focused = function () {
     if (focused_elem.length === 1) {
         focused_elem.blur();
         const row = focused_elem.closest('.message_row');
-        exports.end(row);
+        exports.end_message_row_edit(row);
     }
 };
 
-function handle_edit_keydown(from_topic_edited_only, e) {
+function handle_edit_keydown(e) {
     let row;
     const code = e.keyCode || e.which;
     switch (code) {
@@ -178,13 +178,13 @@ function handle_edit_keydown(from_topic_edited_only, e) {
             } else if (($(e.target).hasClass("message_edit_topic") ||
                                        $(e.target).hasClass("message_edit_topic_propagate"))) {
                 row = $(e.target).closest(".message_row");
-                exports.save(row, from_topic_edited_only);
+                exports.save_message_row_edit(row);
                 e.stopPropagation();
                 e.preventDefault();
             } else if (e.target.id === "inline_topic_edit") {
                 row = $(e.target).closest(".recipient_row");
                 exports.show_topic_edit_spinner(row);
-                exports.save(row, from_topic_edited_only);
+                exports.save_inline_topic_edit(row);
                 e.stopPropagation();
                 e.preventDefault();
             }
@@ -447,7 +447,11 @@ exports.is_editing = function (id) {
     return currently_editing_messages.has(id);
 };
 
-exports.end = function (row) {
+exports.end_inline_topic_edit = function (row) {
+    current_msg_list.hide_edit_topic_on_recipient_row(row);
+};
+
+exports.end_message_row_edit = function (row) {
     const message = current_msg_list.get(rows.id(row));
     if (message !== undefined &&
         currently_editing_messages.has(message.id)) {
@@ -466,9 +470,6 @@ exports.end = function (row) {
         currently_editing_messages.delete(message.id);
         current_msg_list.hide_edit_message(row);
     }
-    if (row !== undefined) {
-        current_msg_list.hide_edit_topic_on_recipient_row(row);
-    }
     condense.show_message_expander(row);
     row.find(".message_reactions").show();
 
@@ -477,15 +478,53 @@ exports.end = function (row) {
     row.find(".message_edit").blur();
 };
 
-exports.save = function (row, from_topic_edited_only) {
+exports.save_inline_topic_edit = function (row) {
     const msg_list = current_msg_list;
-    let message_id;
+    let message_id = rows.id_for_recipient_row(row);
+    const message = current_msg_list.get(message_id);
 
-    if (row.hasClass('recipient_row')) {
-        message_id = rows.id_for_recipient_row(row);
-    } else {
-        message_id = rows.id(row);
+    const old_topic = message.topic;
+    const new_topic = row.find(".inline_topic_edit").val();
+    const topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
+
+    if (!topic_changed) {
+        // this means the inline_topic_edit was opened and submitted without
+        // changing anything, therefore, we should just close the inline topic edit.
+        exports.end_inline_topic_edit(row);
+        return;
     }
+
+    if (message.locally_echoed) {
+        if (topic_changed) {
+            echo.edit_locally(message, {new_topic: new_topic});
+            row = current_msg_list.get_row(message_id);
+        }
+        exports.end_inline_topic_edit(row);
+        return;
+    }
+
+    const request = {
+        message_id: message.id,
+        topic: new_topic,
+        propagate_mode: "change_later",
+    };
+
+    channel.patch({
+        url: '/json/messages/' + message.id,
+        data: request,
+        success: function () {
+            const spinner = row.find(".topic_edit_spinner");
+            loading.destroy_indicator(spinner);
+        },
+        error: function (xhr) {
+            // do nothing
+        },
+    });
+};
+
+exports.save_message_row_edit = function (row) {
+    const msg_list = current_msg_list;
+    let message_id = rows.id(row);
     const message = current_msg_list.get(message_id);
     let changed = false;
     let edit_locally_echoed = false;
@@ -496,24 +535,21 @@ exports.save = function (row, from_topic_edited_only) {
     const old_topic = message.topic;
 
     if (message.type === "stream") {
-        if (from_topic_edited_only) {
-            new_topic = row.find(".inline_topic_edit").val();
-        } else {
-            new_topic = row.find(".message_edit_topic").val();
-        }
+        new_topic = row.find(".message_edit_topic").val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
     }
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
     if (message.locally_echoed) {
         if (new_content !== message.raw_content || topic_changed) {
+            // `edit_locally` handles the case where `new_topic` is undefined
             echo.edit_locally(message, {
                 raw_content: new_content,
                 new_topic: new_topic,
             });
             row = current_msg_list.get_row(message_id);
         }
-        exports.end(row);
+        exports.end_message_row_edit(row);
         return;
     }
 
@@ -525,13 +561,14 @@ exports.save = function (row, from_topic_edited_only) {
         changed = true;
     }
 
-    if (new_content !== message.raw_content && !from_topic_edited_only) {
+    if (new_content !== message.raw_content) {
         request.content = new_content;
         changed = true;
     }
+
     if (!changed) {
         // If they didn't change anything, just cancel it.
-        exports.end(row);
+        exports.end_message_row_edit(row);
         return;
     }
 
@@ -569,16 +606,13 @@ exports.save = function (row, from_topic_edited_only) {
         echo.edit_locally(message, currently_echoing_messages.get(message_id));
 
         row = current_msg_list.get_row(message_id);
-        message_edit.end(row);
+        message_edit.end_message_row_edit(row);
     }
 
     channel.patch({
         url: '/json/messages/' + message.id,
         data: request,
         success: function () {
-            const spinner = row.find(".topic_edit_spinner");
-            loading.destroy_indicator(spinner);
-
             if (edit_locally_echoed) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
