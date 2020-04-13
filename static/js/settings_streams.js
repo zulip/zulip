@@ -55,9 +55,9 @@ exports.update_default_streams_table = function () {
     }
 };
 
-function make_stream_default(stream_name) {
+function make_stream_default(stream_id) {
     const data = {
-        stream_name: stream_name,
+        stream_id: stream_id,
     };
     const default_stream_status = $("#admin-default-stream-status");
     default_stream_status.hide();
@@ -103,7 +103,7 @@ exports.build_page = function () {
             e.preventDefault();
             e.stopPropagation();
             const default_stream_input = $(".create_default_stream");
-            make_stream_default(default_stream_input.val());
+            make_stream_default(stream_data.get_stream_id(default_stream_input.val()));
             default_stream_input[0].value = "";
         }
     });
@@ -123,7 +123,7 @@ exports.build_page = function () {
         e.preventDefault();
         e.stopPropagation();
         const default_stream_input = $(".create_default_stream");
-        make_stream_default(default_stream_input.val());
+        make_stream_default(stream_data.get_stream_id(default_stream_input.val()));
         // Clear value inside input box
         default_stream_input[0].value = "";
     });
