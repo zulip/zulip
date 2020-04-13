@@ -236,7 +236,13 @@ function sort_button(opts) {
         closest: lookup('.progressive-table-wrapper', {
             data: lookup('list-render', opts.list_name),
         }),
-        hasClass: lookup('active', opts.active),
+        hasClass: (sel) => {
+            if (sel === 'active') {
+                return opts.active;
+            }
+            assert.equal(sel, 'descend');
+            return false;
+        },
         siblings: lookup('.active', {
             removeClass: (sel) => {
                 assert.equal(sel, 'active');
