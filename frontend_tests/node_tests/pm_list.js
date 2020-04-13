@@ -1,9 +1,6 @@
 set_global('$', global.make_zjquery());
 
 set_global('narrow_state', {});
-set_global('resize', {
-    resize_stream_filters_container: function () {},
-});
 set_global('ui', {
     get_content_element: element => element,
 });
