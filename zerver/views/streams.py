@@ -69,8 +69,8 @@ def deactivate_stream_backend(request: HttpRequest,
 @has_request_variables
 def add_default_stream(request: HttpRequest,
                        user_profile: UserProfile,
-                       stream_name: str=REQ()) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+                       stream_id: int=REQ(validator=check_int)) -> HttpResponse:
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
     do_add_default_stream(stream)
     return json_success()
 
