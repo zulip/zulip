@@ -184,7 +184,7 @@ function populate_users(realm_people_data) {
     };
 
     const $bots_table = $("#admin_bots_table");
-    list_render.create($bots_table, bots, {
+    const bot_list = list_render.create($bots_table, bots, {
         name: "admin_bot_list",
         modifier: function (item) {
             return render_admin_user_list({
@@ -203,11 +203,11 @@ function populate_users(realm_people_data) {
             onupdate: reset_scrollbar($bots_table),
         },
         parent_container: $("#admin-bot-list").expectOne(),
-        init_sort: ['alphabetic', 'full_name'],
-        sort_fields: {
-            bot_owner: sort_bot_owner,
-        },
-    });
+    }).init();
+
+    bot_list.sort("alphabetic", "full_name");
+
+    bot_list.add_sort_function("bot_owner", sort_bot_owner);
 
     function get_rendered_last_activity(item) {
         const today = new XDate();
@@ -222,7 +222,7 @@ function populate_users(realm_people_data) {
     }
 
     const $users_table = $("#admin_users_table");
-    list_render.create($users_table, active_users, {
+    const users_list = list_render.create($users_table, active_users, {
         name: "users_table_list",
         modifier: function (item) {
             const $row = $(render_admin_user_list({
@@ -240,15 +240,15 @@ function populate_users(realm_people_data) {
             onupdate: reset_scrollbar($users_table),
         },
         parent_container: $("#admin-user-list").expectOne(),
-        init_sort: ['alphabetic', 'full_name'],
-        sort_fields: {
-            role: sort_role,
-            last_active: sort_last_active,
-        },
-    });
+    }).init();
+
+    users_list.sort("alphabetic", "full_name");
+
+    users_list.add_sort_function("role", sort_role);
+    users_list.add_sort_function("last_active", sort_last_active);
 
     const $deactivated_users_table = $("#admin_deactivated_users_table");
-    list_render.create($deactivated_users_table, deactivated_users, {
+    const deactivated_users_list = list_render.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
         modifier: function (item) {
             return render_admin_user_list({
@@ -263,11 +263,10 @@ function populate_users(realm_people_data) {
             onupdate: reset_scrollbar($deactivated_users_table),
         },
         parent_container: $("#admin-deactivated-users-list").expectOne(),
-        init_sort: ['alphabetic', 'full_name'],
-        sort_fields: {
-            role: sort_role,
-        },
-    });
+    }).init();
+
+    deactivated_users_list.sort("alphabetic", "full_name");
+    deactivated_users_list.add_sort_function("role", sort_role);
 
     loading.destroy_indicator($('#admin_page_users_loading_indicator'));
     loading.destroy_indicator($('#admin_page_bots_loading_indicator'));

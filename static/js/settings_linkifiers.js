@@ -60,12 +60,10 @@ exports.populate_filters = function (filters_data) {
             },
         },
         parent_container: $("#filter-settings").expectOne(),
-        init_sort: [sort_pattern],
-        sort_fields: {
-            pattern: sort_pattern,
-            url: sort_url,
-        },
-    });
+    }).init();
+
+    filters_list.add_sort_function("pattern", sort_pattern);
+    filters_list.add_sort_function("url", sort_url);
 
     const active_col = $('.admin_filters_table th.active').expectOne();
     filters_list.sort(

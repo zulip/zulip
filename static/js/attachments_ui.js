@@ -77,7 +77,7 @@ function render_attachments_ui() {
     const uploaded_files_table = $("#uploaded_files_table").expectOne();
     const $search_input = $("#upload_file_search");
 
-    list_render.create(uploaded_files_table, attachments, {
+    const list = list_render.create(uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         modifier: function (attachment) {
             return render_uploaded_files_list({ attachment: attachment });
@@ -92,12 +92,11 @@ function render_attachments_ui() {
             },
         },
         parent_container: $('#attachments-settings').expectOne(),
-        init_sort: ['numeric', 'create_time'],
-        sort_fields: {
-            mentioned_in: sort_mentioned_in,
-        },
-    });
+    }).init();
 
+    list.sort('numeric', 'create_time');
+
+    list.add_sort_function("mentioned_in", sort_mentioned_in);
     ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 

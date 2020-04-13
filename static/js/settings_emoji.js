@@ -67,7 +67,7 @@ exports.populate_emoji = function (emoji_data) {
     }
 
     const emoji_table = $('#admin_emoji_table').expectOne();
-    list_render.create(emoji_table, Object.values(emoji_data), {
+    const emoji_list = list_render.create(emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
         modifier: function (item) {
             if (item.deactivated !== true) {
@@ -93,11 +93,10 @@ exports.populate_emoji = function (emoji_data) {
             },
         },
         parent_container: $("#emoji-settings").expectOne(),
-        sort_fields: {
-            author_full_name: sort_author_full_name,
-        },
-        init_sort: ['alphabetic', 'name'],
-    });
+    }).init();
+
+    emoji_list.sort("alphabetic", "name");
+    emoji_list.add_sort_function("author_full_name", sort_author_full_name);
 
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };
