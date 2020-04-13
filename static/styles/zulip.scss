@@ -2757,3 +2757,23 @@ div.topic_edit_spinner .loading_indicator_spinner {
         top: 5%;
     }
 }
+#compose-container {
+    &.error-shake {
+        animation: shake 0.5s ease-in-out 0s 1;
+    }
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0px);
+    }
+    25% {
+        transform: translateX(1px);
+    }
+    75% {
+        transform: translateX(-1px);
+    }
+    100% {
+        transform: translateX(0px);
+    }
+}

@@ -235,6 +235,10 @@ function create_message_object() {
 exports.create_message_object = create_message_object;
 
 function compose_error(error_text, bad_input) {
+    $("#compose-container").addClass('error-shake');
+    setTimeout(function () {
+        $("#compose-container").removeClass('error-shake');
+    }, 1000);
     $('#compose-send-status').removeClass(common.status_classes)
         .addClass('alert-error')
         .stop(true).fadeTo(0, 1);
