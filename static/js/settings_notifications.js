@@ -57,7 +57,7 @@ function rerender_ui() {
                 is_disabled: settings_config.all_notifications().show_push_notifications_tooltip,
             });
         },
-    });
+    }).init();
 
     if (unmatched_streams.length === 0) {
         unmatched_streams_table.css("display", "none");
