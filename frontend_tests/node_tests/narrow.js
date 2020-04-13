@@ -8,6 +8,11 @@ zrequire('Filter', 'js/filter');
 set_global('page_params', {
     stop_words: ['what', 'about'],
 });
+set_global('resize', {
+    resize_page_components: () => {},
+    resize_stream_filters_container: () => {},
+});
+
 
 zrequire('narrow');
 
