@@ -252,37 +252,37 @@ exports.initialize = function () {
     $("body").on("click", ".topic_edit_save", function (e) {
         const recipient_row = $(this).closest(".recipient_row");
         message_edit.show_topic_edit_spinner(recipient_row);
-        message_edit.save(recipient_row, true);
+        message_edit.save_inline_topic_edit(recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
         const recipient_row = $(this).closest(".recipient_row");
-        current_msg_list.hide_edit_topic_on_recipient_row(recipient_row);
+        message_edit.end_inline_topic_edit(recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_save", function (e) {
         const row = $(this).closest(".message_row");
-        message_edit.save(row, false);
+        message_edit.save_message_row_edit(row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_cancel", function (e) {
         const row = $(this).closest(".message_row");
-        message_edit.end(row);
+        message_edit.end_message_row_edit(row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_close", function (e) {
         const row = $(this).closest(".message_row");
-        message_edit.end(row);
+        message_edit.end_message_row_edit(row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".copy_message", function (e) {
         const row = $(this).closest(".message_row");
-        message_edit.end(row);
+        message_edit.end_message_row_edit(row);
         row.find(".alert-msg").text(i18n.t("Copied!"));
         row.find(".alert-msg").css("display", "block");
         row.find(".alert-msg").delay(1000).fadeOut(300);

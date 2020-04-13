@@ -135,7 +135,7 @@ exports.update_messages = function update_messages(events) {
 
         const row = current_msg_list.get_row(event.message_id);
         if (row.length > 0) {
-            message_edit.end(row);
+            message_edit.end_message_row_edit(row);
         }
 
         const new_topic = util.get_edit_event_topic(event);
