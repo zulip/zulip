@@ -157,9 +157,10 @@ class BaseHandler:
 
 def generic_handler(processor: Any, output: MutableSequence[str],
                     fence: str, lang: str,
-                    run_content_validators: Optional[bool]=False) -> BaseHandler:
+                    run_content_validators: Optional[bool]=False,
+                    default_language: Optional[str]=None) -> BaseHandler:
     if lang in ('quote', 'quoted'):
-        return QuoteHandler(processor, output, fence)
+        return QuoteHandler(processor, output, fence, default_language)
     elif lang in ('math', 'tex', 'latex'):
         return TexHandler(processor, output, fence)
     else:
@@ -171,27 +172,32 @@ def remap_language(lang: str) -> str:
     return lang
 
 def check_for_new_fence(processor: Any, output: MutableSequence[str], line: str,
-                        run_content_validators: Optional[bool]=False) -> None:
+                        run_content_validators: Optional[bool]=False,
+                        default_language: Optional[str]=None) -> None:
     m = FENCE_RE.match(line)
     if m:
         fence = m.group('fence')
         lang = m.group('lang')
-
-        handler = generic_handler(processor, output, fence, lang, run_content_validators)
+        if not lang and default_language:
+            lang = default_language
+        lang = remap_language(lang)
+        handler = generic_handler(processor, output, fence, lang, run_content_validators, default_language)
         processor.push(handler)
     else:
         output.append(line)
 
 class OuterHandler(BaseHandler):
     def __init__(self, processor: Any, output: MutableSequence[str],
-                 run_content_validators: Optional[bool]=False) -> None:
+                 run_content_validators: Optional[bool]=False,
+                 default_language: Optional[str]=None) -> None:
         self.output = output
         self.processor = processor
         self.run_content_validators = run_content_validators
+        self.default_language = default_language
 
     def handle_line(self, line: str) -> None:
         check_for_new_fence(self.processor, self.output, line,
-                            self.run_content_validators)
+                            self.run_content_validators, self.default_language)
 
     def done(self) -> None:
         self.processor.pop()
@@ -229,17 +235,19 @@ class CodeHandler(BaseHandler):
         self.processor.pop()
 
 class QuoteHandler(BaseHandler):
-    def __init__(self, processor: Any, output: MutableSequence[str], fence: str) -> None:
+    def __init__(self, processor: Any, output: MutableSequence[str],
+                 fence: str, default_language: Optional[str]=None) -> None:
         self.processor = processor
         self.output = output
         self.fence = fence
         self.lines: List[str] = []
+        self.default_language = default_language
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
             self.done()
         else:
-            check_for_new_fence(self.processor, self.lines, line)
+            check_for_new_fence(self.processor, self.lines, line, default_language=self.default_language)
 
     def done(self) -> None:
         text = '\n'.join(self.lines)
@@ -296,7 +304,12 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         processor = self
         self.handlers: List[BaseHandler] = []
 
-        handler = OuterHandler(processor, output, self.run_content_validators)
+        default_language = None
+        try:
+            default_language = self.md.zulip_realm.default_code_block_language
+        except AttributeError:
+            pass
+        handler = OuterHandler(processor, output, self.run_content_validators, default_language)
         self.push(handler)
 
         for line in lines:
@@ -313,12 +326,6 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return output
 
     def format_code(self, lang: str, text: str) -> str:
-        if not lang:
-            try:
-                lang = self.md.zulip_realm.default_code_block_language
-            except AttributeError:
-                pass
-        lang = remap_language(lang)
         if lang:
             langclass = LANG_TAG % (lang,)
         else:

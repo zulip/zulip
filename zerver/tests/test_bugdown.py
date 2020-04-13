@@ -1348,27 +1348,51 @@ class BugdownTest(ZulipTestCase):
         text = "```{}\nconsole.log('Hello World');\n```\n"
 
         # Render without default language
-        msg_with_js_before = bugdown_convert(text.format('js'))
-        msg_with_python_before = bugdown_convert(text.format('python'))
-        msg_without_language_before = bugdown_convert(text.format(''))
+        msg_with_js = bugdown_convert(text.format('js'))
+        msg_with_python = bugdown_convert(text.format('python'))
+        msg_without_language = bugdown_convert(text.format(''))
+        msg_with_quote = bugdown_convert(text.format('quote'))
+        msg_with_math = bugdown_convert(text.format('math'))
 
         # Render with default=javascript
         do_set_realm_property(realm, 'default_code_block_language', 'javascript')
-        msg_without_language_after = bugdown_convert(text.format(''))
-        msg_with_python_after = bugdown_convert(text.format('python'))
+        msg_without_language_default_js = bugdown_convert(text.format(''))
+        msg_with_python_default_js = bugdown_convert(text.format('python'))
 
         # Render with default=python
         do_set_realm_property(realm, 'default_code_block_language', 'python')
-        msg_without_language_later = bugdown_convert(text.format(''))
-        msg_with_none_later = bugdown_convert(text.format('none'))
+        msg_without_language_default_py = bugdown_convert(text.format(''))
+        msg_with_none_default_py = bugdown_convert(text.format('none'))
+
+        # Render with default=quote
+        do_set_realm_property(realm, 'default_code_block_language', 'quote')
+        msg_without_language_default_quote = bugdown_convert(text.format(''))
+
+        # Render with default=math
+        do_set_realm_property(realm, 'default_code_block_language', 'math')
+        msg_without_language_default_math = bugdown_convert(text.format(''))
 
         # Render without default language
         do_set_realm_property(realm, 'default_code_block_language', None)
         msg_without_language_final = bugdown_convert(text.format(''))
 
-        self.assertTrue(msg_with_js_before == msg_without_language_after)
-        self.assertTrue(msg_with_python_before == msg_with_python_after == msg_without_language_later)
-        self.assertTrue(msg_without_language_before == msg_with_none_later == msg_without_language_final)
+        self.assertTrue(msg_with_js == msg_without_language_default_js)
+        self.assertTrue(msg_with_python == msg_with_python_default_js == msg_without_language_default_py)
+        self.assertTrue(msg_with_quote == msg_without_language_default_quote)
+        self.assertTrue(msg_with_math == msg_without_language_default_math)
+        self.assertTrue(msg_without_language == msg_with_none_default_py == msg_without_language_final)
+
+        # Test checking inside nested quotes
+        nested_text = "````quote\n\n{}\n\n{}````".format(text.format('js'), text.format(''))
+        do_set_realm_property(realm, 'default_code_block_language', 'javascript')
+        rendered = bugdown_convert(nested_text)
+        with_language, without_language = re.findall(r'<pre>(.*?)$', rendered, re.MULTILINE)
+        self.assertTrue(with_language == without_language)
+
+        do_set_realm_property(realm, 'default_code_block_language', None)
+        rendered = bugdown_convert(nested_text)
+        with_language, without_language = re.findall(r'<pre>(.*?)$', rendered, re.MULTILINE)
+        self.assertFalse(with_language == without_language)
 
     def test_mention_wildcard(self) -> None:
         user_profile = self.example_user('othello')
