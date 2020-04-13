@@ -1231,6 +1231,13 @@ div.focused_table {
 .topic_edit {
     display: none;
     line-height: 22px;
+    .alert {
+        display: inline-block;
+        margin: 0;
+        padding: 0 10px;
+        line-height: 17px;
+        font-size: 14px;
+    }
 }
 
 #inline_topic_edit,
