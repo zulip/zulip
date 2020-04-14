@@ -379,18 +379,27 @@ run_test('copy_paste', () => {
 run_test('uppy_events', () => {
     set_global('$', global.make_zjquery());
     const callbacks = {};
-    let uppy_cancel_all_counter = 0;
+    let uppy_cancel_all_called = false;
     let state = {};
+    let files = [];
 
     function uppy_stub() {
         return {
             setMeta: () => {},
             use: () => {},
             cancelAll: () => {
-                uppy_cancel_all_counter += 1;
+                uppy_cancel_all_called = true;
             },
             on: (event_name, callback) => {
                 callbacks[event_name] = callback;
+            },
+            getFiles: () => {
+                return files;
+            },
+            removeFile: (file_id) => {
+                files = files.filter((file) => {
+                    return file.id !== file_id;
+                });
             },
             getState: () => {
                 return {
@@ -458,10 +467,42 @@ run_test('uppy_events', () => {
     upload.hide_upload_status = () => {
         hide_upload_status_called = true;
     };
-    assert.equal(uppy_cancel_all_counter, 0);
+    files = [
+        {
+            id: "uppy-zulip/jpeg-1e-image/jpeg-163515-1578367331279",
+            progress: {
+                uploadComplete: true,
+            },
+        },
+        {
+            id: "uppy-github/avatar/png-2v-1e-image/png-329746-1576507125831",
+            progress: {
+                uploadComplete: true,
+            },
+        },
+    ];
     on_complete_callback();
-    assert.equal(uppy_cancel_all_counter, 1);
     assert(hide_upload_status_called);
+    assert.equal(files.length, 0);
+
+    hide_upload_status_called = false;
+    files = [
+        {
+            id: "uppy-zulip/jpeg-1e-image/jpeg-163515-1578367331279",
+            progress: {
+                uploadComplete: true,
+            },
+        },
+        {
+            id: "uppy-github/avatar/png-2v-1e-image/png-329746-1576507125831",
+            progress: {
+                uploadComplete: false,
+            },
+        },
+    ];
+    on_complete_callback();
+    assert(!hide_upload_status_called);
+    assert.equal(files.length, 1);
 
     state = {
         type: "error",
@@ -470,28 +511,31 @@ run_test('uppy_events', () => {
     };
     const on_info_visible_callback = callbacks["info-visible"];
     let show_error_message_called = false;
+    uppy_cancel_all_called = false;
     upload.show_error_message = (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
         assert.equal(message, "Some error message");
     };
     on_info_visible_callback();
-    assert.equal(uppy_cancel_all_counter, 2);
+    assert(uppy_cancel_all_called);
     assert(show_error_message_called);
 
     state = {
         type: "error",
         message: "No Internet connection",
     };
+    uppy_cancel_all_called = false;
     on_info_visible_callback();
-    assert.equal(uppy_cancel_all_counter, 2);
+    assert(!uppy_cancel_all_called);
 
     state = {
         type: "error",
         details: "Upload Error",
     };
+    uppy_cancel_all_called = false;
     on_info_visible_callback();
-    assert.equal(uppy_cancel_all_counter, 2);
+    assert(!uppy_cancel_all_called);
 
     const on_upload_error_callback = callbacks["upload-error"];
     show_error_message_called = false;
@@ -505,8 +549,9 @@ run_test('uppy_events', () => {
             msg: "Response message",
         },
     };
+    uppy_cancel_all_called = false;
     on_upload_error_callback(null, null, response);
-    assert.equal(uppy_cancel_all_counter, 3);
+    assert(uppy_cancel_all_called);
     assert(show_error_message_called);
 
     upload.show_error_message = (config, message) => {
@@ -514,7 +559,8 @@ run_test('uppy_events', () => {
         assert.equal(config.mode, "compose");
         assert.equal(message, null);
     };
+    uppy_cancel_all_called = false;
     on_upload_error_callback(null, null);
-    assert.equal(uppy_cancel_all_counter, 4);
+    assert(uppy_cancel_all_called);
     assert(show_error_message_called);
 });
