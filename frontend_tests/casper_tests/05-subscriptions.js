@@ -154,7 +154,6 @@ casper.then(function () {
     // 1 user, Cordelia, is added. Othello (subscribed to Scotland) is not added twice.
     casper.test.assertSelectorHasText('.subscriber-count-text', '5');
     casper.sendKeys('#search_stream_name', 'WASeemio', { reset: true });
-    casper.click('#add_new_subscription .create_stream_button');
 });
 casper.then(function () {
     casper.click('#add_new_subscription .create_stream_button');
@@ -165,7 +164,7 @@ casper.then(function () {
     common.wait_for_text('#stream_name_error', 'A stream needs to have a name', function () {
         casper.test.assertTextExists('A stream needs to have a name', "Can't create a stream with an empty name");
         casper.click('form#stream_creation_form button.button.white');
-        casper.sendKeys('#search_stream_name', '   ', { reset: true });
+        casper.fill('form#add_new_subscription', {stream_name: '  '});
         casper.click('#add_new_subscription .create_stream_button');
         casper.fill('form#stream_creation_form', {stream_name: 'Waseemio'});
         casper.click('form#stream_creation_form button.button.sea-green');
