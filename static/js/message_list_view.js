@@ -167,6 +167,7 @@ function populate_group_from_message_container(group, message_container) {
         group.match_topic = util.get_match_topic(message_container.msg);
         group.stream_url = message_container.stream_url;
         group.topic_url = message_container.topic_url;
+        group.muted_and_sentbyme = muting.is_topic_muted(message_container.msg.stream_id, message_container.msg.topic)
         const sub = stream_data.get_sub(message_container.msg.stream);
         if (sub === undefined) {
             // Hack to handle unusual cases like the tutorial where
