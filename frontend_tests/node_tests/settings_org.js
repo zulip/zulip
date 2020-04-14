@@ -73,6 +73,7 @@ zrequire('stream_data');
 zrequire('settings_account');
 zrequire('settings_org');
 zrequire('settings_ui');
+zrequire('settings_list_widget');
 
 run_test('unloaded', () => {
     // This test mostly gets us line coverage, and makes

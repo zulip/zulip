@@ -163,6 +163,7 @@ import "../realm_icon.js";
 import "../realm_logo.js";
 import "../reminder.js";
 import "../confirm_dialog.js";
+import "../settings_list_widget.js";
 import "../settings_account.js";
 import "../settings_display.js";
 import "../settings_notifications.js";

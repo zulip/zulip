@@ -108,6 +108,7 @@ EXEMPT_FILES = {
     'static/js/search_pill_widget.js',
     'static/js/sent_messages.js',
     'static/js/server_events.js',
+    'static/js/settings_list_widget.js',
     'static/js/settings_account.js',
     'static/js/settings_bots.js',
     'static/js/settings_config.js',
