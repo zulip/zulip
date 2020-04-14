@@ -91,8 +91,6 @@ exports.show_error_message = function (config, message) {
 
 exports.upload_files = function (uppy, config, files) {
     if (files.length === 0) {
-        uppy.cancelAll();
-        exports.hide_upload_status(config);
         return;
     }
     if (page_params.max_file_upload_size === 0) {
