@@ -23,7 +23,7 @@
         "reference": "refs/heads/rw/webhook_impl",
         "pull_request": null,
         "commit_sha": "2d9f5fcec1ca7c68fa7bd44dd58ec4ff65814563",
-        "commit_message": "Implement webhooks for SemaphoreCI",
+        "commit_message": "Implement webhooks for SemaphoreCI\n\nThis implements the webhooks for Semaphore2",
         "branch": {
             "name": "rw/webhook_impl",
             "commit_range": "36ebdf6e906cf3491391442d2f779b512ca49485...2d9f5fcec1ca7c68fa7bd44dd58ec4ff65814563"
