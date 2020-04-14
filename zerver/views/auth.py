@@ -289,6 +289,15 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     context = {'desktop_url': response['Location'],
                'browser_url': browser_url,
                'realm_icon_url': realm_icon_url(user_profile.realm)}
+    # TODO: Unstructure create_response_for_otp_flow.
+    # TODO: Add to OTP plumbing the random ID.
+    from zerver.lib.actions import send_event
+    send_event(user_profile.realm,
+               dict(
+                   type="auth_longpolling",
+                   **context
+               ),
+               users=[])
     return render(request, 'zerver/desktop_redirect.html', context=context)
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:

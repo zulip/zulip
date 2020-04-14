@@ -1062,12 +1062,55 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
         already_notified={},
     )
 
+from zerver.lib.response import HttpResponse, json_success
+auth_handlers = {}  # type: Dict[str, Any]
+auth_handler_results = {}  # type: Dict[str, Any]
+def fetch_auth_longpoll(desktop_flow_id: str, handler: Any) -> HttpResponse:
+    if desktop_flow_id in auth_handler_results:
+        # If due to HTTP retries or whatnot, the longpoll somehow
+        # loses the race, we return any saved result.
+        result = auth_handler_results[desktop_flow_id].copy()
+
+        # TODO: Check if timestamp is expired?
+        del result['timestamp']
+        return json_success(result)
+
+    auth_handlers[desktop_flow_id] = dict(
+        handler=handler,
+        timestamp=time.time(),
+    )
+    # Mark this response with .asynchronous; this will result in
+    # Tornado discarding the response and instead long-polling the
+    # request.  See zulip_finish for more design details.
+    response = json_success()
+    response.asynchronous = True
+    return response
+
+def process_auth_longpoll_event(event: Mapping[str, Any]) -> None:
+    desktop_flow_id = event['desktop_flow_id']
+
+    auth_object = auth_handlers.get(desktop_flow_id)
+    if auth_object is None:
+        # TODO: If nobody's listening, save the result for a retry.
+        return
+
+    # TODO: Check auth_handlers timestamp for expiry and return a "try again" response?
+
+    # TODO: Implement garbage-collection of old auth handlers.
+
+    handler = auth_object['handler']
+    # TODO: Split finish_handler's event-queue specific logic
+    # and call a base helper instead of the main function that doesn't make sense.
+    finish_handler(handler.handler_id, desktop_flow_id, [], False)
+
 def process_notification(notice: Mapping[str, Any]) -> None:
     event = notice['event']  # type: Mapping[str, Any]
     users = notice['users']  # type: Union[List[int], List[Mapping[str, Any]]]
     start_time = time.time()
 
-    if event['type'] == "message":
+    if event['type'] == "auth_longpoll":
+        process_auth_longpoll_event(event)
+    elif event['type'] == "message":
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
     elif event['type'] == "update_message":
         process_message_update_event(event, cast(Iterable[Mapping[str, Any]], users))
