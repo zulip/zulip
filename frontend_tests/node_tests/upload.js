@@ -145,7 +145,7 @@ run_test('show_error_message', () => {
 });
 
 run_test('upload_files', () => {
-    let cancel_all_counter = 0;
+    let uppy_cancel_all_called = false;
     const files = [
         {
             name: "budapest.png",
@@ -155,7 +155,7 @@ run_test('upload_files', () => {
     let uppy_add_file_called = false;
     const uppy = {
         cancelAll: () => {
-            cancel_all_counter += 1;
+            uppy_cancel_all_called = true;
         },
         addFile: (params) => {
             uppy_add_file_called = true;
@@ -171,10 +171,9 @@ run_test('upload_files', () => {
         assert(config.mode, "compose");
     };
     const config =  {mode: "compose"};
-
+    $("#compose-send-button").attr("disabled", false);
     upload.upload_files(uppy, config, []);
-    assert.equal(cancel_all_counter, 1);
-    assert(hide_upload_status_called);
+    assert.equal($("#compose-send-button").attr("disabled"), false);
 
     page_params.max_file_upload_size = 0;
     let show_error_message_called = false;
@@ -217,8 +216,9 @@ run_test('upload_files', () => {
         func();
     });
     hide_upload_status_called = false;
+    uppy_cancel_all_called = false;
     on_click_close_button_callback();
-    assert.equal(cancel_all_counter, 2);
+    assert(uppy_cancel_all_called);
     assert(hide_upload_status_called);
 });
 
