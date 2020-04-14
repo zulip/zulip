@@ -197,28 +197,26 @@ function populate_users(realm_people_data) {
         },
     });
 
-    function get_rendered_last_activity(user) {
+    function get_last_active(user) {
         const last_active_date = presence.last_active_date(user.user_id);
 
         if (!last_active_date) {
-            return $("<span></span>").text(i18n.t("Unknown"));
+            return i18n.t("Unknown");
         }
-        const today = new XDate();
-        return timerender.render_date(last_active_date, undefined, today);
+        return timerender.render_now(last_active_date).time_str;
     }
 
     const $users_table = $("#admin_users_table");
     list_render.create($users_table, active_users, {
         name: "users_table_list",
         modifier: function (item) {
-            const $row = $(render_admin_user_list({
+            return render_admin_user_list({
                 can_modify: page_params.is_admin,
                 is_current_user: people.is_my_user_id(item.user_id),
                 display_email: settings_data.email_for_user_settings(item),
                 user: item,
-            }));
-            $row.find(".last_active").append(get_rendered_last_activity(item));
-            return $row;
+                last_active_date: get_last_active(item),
+            });
         },
         filter: {
             element: $users_table.closest(".settings-section").find(".search"),
