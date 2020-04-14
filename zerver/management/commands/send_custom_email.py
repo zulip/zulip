@@ -7,7 +7,13 @@ from zerver.models import UserProfile
 
 
 class Command(ZulipBaseCommand):
-    help = """Send email to specified email address."""
+    help = """
+    Send a custom email with Zulip branding to the specified users.
+
+    Useful to send a notice to all users of a realm or server.
+
+    The From and Subject headers can be provided in the body of the markdown
+    document used to generate the email, or on the command line."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--entire-server', action="store_true", default=False,
@@ -16,7 +22,7 @@ class Command(ZulipBaseCommand):
                             dest='markdown_template_path',
                             required=True,
                             type=str,
-                            help='Path to a markdown-format body for the email')
+                            help='Path to a markdown-format body for the email.')
         parser.add_argument('--subject',
                             type=str,
                             help='Subject for the email. It can be declarated in markdown file in headers')
