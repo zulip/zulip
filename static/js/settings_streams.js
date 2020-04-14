@@ -26,11 +26,10 @@ exports.build_default_stream_table = function () {
     list_render.create(table, subs, {
         name: "default_streams_list",
         modifier: function (item) {
-            const row = $(render_admin_default_streams_list({
+            return render_admin_default_streams_list({
                 stream: item,
                 can_modify: page_params.is_admin,
-            }));
-            return row;
+            });
         },
         filter: {
             element: table.closest(".settings-section").find(".search"),
