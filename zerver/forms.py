@@ -171,7 +171,7 @@ class HomepageForm(forms.Form):
             raise ValidationError(
                 _("Your email address, {email}, is not in one of the domains "
                   "that are allowed to register for accounts in this organization.").format(
-                      string_id=realm.string_id, email=email))
+                      email=email))
         except DisposableEmailError:
             raise ValidationError(_("Please use your real email address."))
         except EmailContainsPlusError:
