@@ -17,9 +17,26 @@ the development environment][authentication-dev-server].
   constantly with e.g. `git fetch upstream; git rebase
   upstream/master` to avoid developing on an old version of the Zulip
   codebase (leading to unnecessary merge conflicts).
-* Remember to run `tools/provision` to update your development
-  environment after switching branches; it will run in under a second
-  if no changes are required.
+* Remember to update your development environment after switching branches; To
+  update your environment, you'll need to re-provision your vagrant machine
+  using `vagrant provision` (this just runs `tools/provision` from your Zulip
+  checkout inside the Vagrant guest); this should complete in about a minute. It
+  will run in under a second if no changes are required.
+
+  After provisioning, you'll want to
+  [(re)start the Zulip development server](https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#step-3-start-the-development-environment).
+
+  You can create a script called `tools/custom_provision` in your Zulip Git
+  checkout; and place any extra setup commands (additional programs or
+  configuration that you may have installed in the developmemt environment)
+  there. Vagrant will run `tools/custom_provision` every time you run
+  `vagrant provision` (or create a Vagrant guest via `vagrant up`).
+
+  If you run into any trouble,
+  [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
+  [Zulip development community server](../contributing/chat-zulip-org.md) is a
+  great place to ask for help.
+
 * After making changes, you'll often want to run the
   [linters](../testing/linters.md) and relevant [test
   suites](../testing/testing.md).  Consider using our [Git pre-commit
@@ -33,6 +50,7 @@ the development environment][authentication-dev-server].
   `https://localhost:9991/devtools`.
 * If you want to restore your development environment's database to a
   pristine state, you can use `./tools/do-destroy-rebuild-database`.
+
 
 ## Server
 

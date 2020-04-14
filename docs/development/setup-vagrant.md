@@ -440,8 +440,11 @@ re-provision your vagrant machine using `vagrant provision` (this just
 runs `tools/provision` from your Zulip checkout inside the Vagrant
 guest); this should complete in about a minute.
 
-After provisioning, you'll want to
-[(re)start the Zulip development server](#step-3-start-the-development-environment).
+More information about provisioning and using the development environment can be
+found at
+[#common](https://zulip.readthedocs.io/en/latest/development/using.html#common)
+in the
+[Using the Development Environment](https://zulip.readthedocs.io/en/latest/development/using.html#)
 
 If you run into any trouble, [#provision
 help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
