@@ -188,8 +188,7 @@ exports.update_subscribers_list = function (sub) {
         // stream is open.
         if (subscribers_list) {
             stream_edit.sort_but_pin_current_user_on_top(users);
-            subscribers_list.data(users);
-            subscribers_list.clean_redraw();
+            subscribers_list.replace_list_data(users);
         }
         $(".subscriber_list_settings_container").show();
     }

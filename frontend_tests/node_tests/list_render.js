@@ -185,8 +185,7 @@ run_test('filtering', () => {
         'fox',
     ];
 
-    widget.data(new_data);
-    widget.clean_redraw();
+    widget.replace_list_data(new_data);
     expected_html =
         '<div>greta</div>' +
         '<div>gary</div>' +
