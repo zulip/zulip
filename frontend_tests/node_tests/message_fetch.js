@@ -37,6 +37,7 @@ set_global('server_events', {});
 set_global('stream_list', {
     maybe_scroll_narrow_into_view: () => {},
 });
+set_global('Handlebars', global.make_handlebars());
 
 const alice = {
     email: 'alice@example.com',

@@ -1,4 +1,9 @@
 const rt = zrequire('recent_topics');
+zrequire('timerender');
+zrequire('hashchange');
+zrequire('unread');
+zrequire('hash_util');
+zrequire('stream_data');
 
 const people = {
     is_my_user_id: function (id) {
@@ -6,7 +11,13 @@ const people = {
     },
 };
 
-set_global('people', people);
+set_global('Handlebars', global.make_handlebars());
+set_global('$', global.make_zjquery());
+set_global('people', {
+    get_by_user_id: () => { return new Map(); },
+    is_my_user_id: people.is_my_user_id,
+});
+set_global('XDate', zrequire('XDate', 'xdate'));
 
 // Custom Data
 
@@ -126,6 +137,13 @@ messages[9] = {
 };
 
 run_test('basic assertions', () => {
+
+    $('#recent_topics_table').html = () => {};
+    // node throws error that helper t not defined
+    // without this.
+    global.stub_templates(function () {
+        return '<recent table stub>';
+    });
 
     rt.process_messages(messages);
     let all_topics = rt.get();

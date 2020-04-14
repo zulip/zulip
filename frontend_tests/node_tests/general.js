@@ -92,6 +92,8 @@ const messages = {
 const noop = () => undefined;
 
 set_global('alert_words', {});
+set_global('Handlebars', global.make_handlebars());
+set_global('$', global.make_zjquery());
 
 alert_words.process_message = noop;
 
