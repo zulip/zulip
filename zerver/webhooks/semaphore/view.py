@@ -112,7 +112,7 @@ def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str]:
     commit_id = payload["commit"]["id"]
     commit_url = payload["commit"]["url"]
     author_email = payload["commit"]["author_email"]
-    message = payload["commit"]["message"]
+    message = summary_line(payload["commit"]["message"])
 
     if event == "build":
         build_url = payload["build_url"]
@@ -174,7 +174,7 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
             branch_name=branch_name,
             commit_id=commit_id,
             commit_hash=commit_id[:7],
-            commit_message=payload["revision"]["commit_message"],
+            commit_message=summary_line(payload["revision"]["commit_message"]),
             commit_url=GITHUB_URL_TEMPLATES['commit'].format(repo_url=repo_url, commit_id=commit_id),
         )
         template = GH_PUSH_TEMPLATE if is_github_repo(repo_url) else PUSH_TEMPLATE
@@ -212,3 +212,6 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
 
 def is_github_repo(repo_url: str) -> bool:
     return urlparse(repo_url).hostname == 'github.com'
+
+def summary_line(message: str) -> str:
+    return message.splitlines()[0]
