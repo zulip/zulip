@@ -348,6 +348,7 @@
                 "settings_display": false,
                 "settings_emoji": false,
                 "settings_exports": false,
+                "settings_list_widget": false,
                 "settings_linkifiers": false,
                 "settings_invites": false,
                 "settings_muting": false,
