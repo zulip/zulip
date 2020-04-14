@@ -160,7 +160,7 @@ class HomepageForm(forms.Form):
                                     "join using {email} does not "
                                     "exist.").format(email=email))
 
-        if not from_multiuse_invite and realm.invite_required:
+        if not from_multiuse_invite and realm.default_invite_required:
             raise ValidationError(_("Please request an invite for {email} "
                                     "from the organization "
                                     "administrator.").format(email=email))

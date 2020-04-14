@@ -147,13 +147,13 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
 
     if realm is None:
         realm_description = None
-        realm_invite_required = False
+        realm_default_invite_required = False
     else:
         realm_description = get_realm_rendered_description(realm)
-        realm_invite_required = realm.invite_required
+        realm_default_invite_required = realm.default_invite_required
 
     context = {
-        'realm_invite_required': realm_invite_required,
+        'realm_default_invite_required': realm_default_invite_required,
         'realm_description': realm_description,
         'require_email_format_usernames': require_email_format_usernames(realm),
         'password_auth_enabled': password_auth_enabled(realm),

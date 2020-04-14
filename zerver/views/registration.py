@@ -530,7 +530,7 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
         # Required for oAuth2
     except ConfirmationKeyException as exception:
         realm = get_realm_from_request(request)
-        if realm is None or realm.invite_required:
+        if realm is None or realm.default_invite_required:
             return render_confirmation_key_error(request, exception)
     return accounts_home(request, multiuse_object_key=confirmation_key,
                          multiuse_object=multiuse_object)

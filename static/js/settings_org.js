@@ -235,7 +235,7 @@ function get_property_value(property_name) {
     }
 
     if (property_name === 'realm_user_invite_restriction') {
-        if (!page_params.realm_invite_required) {
+        if (!page_params.realm_default_invite_required) {
             return "no_invite_required";
         }
         if (page_params.realm_invite_by_admins_only) {
@@ -552,7 +552,7 @@ exports.sync_realm_settings = function (property) {
         property = 'message_content_delete_limit_minutes';
     } else if (property === 'allow_message_deleting') {
         property = 'msg_delete_limit_setting';
-    } else if (property === 'invite_required' || property === 'invite_by_admins_only') {
+    } else if (property === 'default_invite_required' || property === 'invite_by_admins_only') {
         property = 'user_invite_restriction';
     }
     const element =  $('#id_realm_' + property);
@@ -854,13 +854,13 @@ exports.build_page = function () {
 
             const user_invite_restriction = $('#id_realm_user_invite_restriction').val();
             if (user_invite_restriction === 'no_invite_required') {
-                data.invite_required = false;
+                data.default_invite_required = false;
                 data.invite_by_admins_only = false;
             } else if (user_invite_restriction === 'by_admins_only') {
-                data.invite_required = true;
+                data.default_invite_required = true;
                 data.invite_by_admins_only = true;
             } else {
-                data.invite_required = true;
+                data.default_invite_required = true;
                 data.invite_by_admins_only = false;
             }
 

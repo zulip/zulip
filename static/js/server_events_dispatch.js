@@ -105,7 +105,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             inline_image_preview: noop,
             inline_url_embed_preview: noop,
             invite_by_admins_only: noop,
-            invite_required: noop,
+            default_invite_required: noop,
             mandatory_topics: noop,
             message_content_edit_limit_seconds: noop,
             message_content_delete_limit_seconds: noop,

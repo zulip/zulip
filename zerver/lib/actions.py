@@ -5158,7 +5158,7 @@ def do_invite_users(user_profile: UserProfile,
     check_invite_limit(user_profile.realm, len(invitee_emails))
 
     realm = user_profile.realm
-    if not realm.invite_required:
+    if not realm.default_invite_required:
         # Inhibit joining an open realm to send spam invitations.
         min_age = datetime.timedelta(days=settings.INVITES_MIN_USER_AGE_DAYS)
         if (user_profile.date_joined > timezone_now() - min_age

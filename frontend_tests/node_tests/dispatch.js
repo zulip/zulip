@@ -221,10 +221,10 @@ const event_fixtures = {
         value: 2,
     },
 
-    realm__update__invite_required: {
+    realm__update__default_invite_required: {
         type: 'realm',
         op: 'update',
-        property: 'invite_required',
+        property: 'default_invite_required',
         value: false,
     },
 
@@ -948,8 +948,8 @@ with_overrides(function (override) {
     event = event_fixtures.realm__update__bot_creation_policy;
     test_realm_integer(event, 'realm_bot_creation_policy');
 
-    event = event_fixtures.realm__update__invite_required;
-    test_realm_boolean(event, 'realm_invite_required');
+    event = event_fixtures.realm__update__default_invite_required;
+    test_realm_boolean(event, 'realm_default_invite_required');
 
     event = event_fixtures.realm__update__name;
     dispatch(event);
