@@ -169,7 +169,7 @@ MessageListData.prototype = {
         return messages.filter(
             message =>
                 !muting.is_topic_muted(message.stream_id, message.topic) ||
-                message.mentioned
+                message.mentioned || message.sent_by_me
         );
     },
 
