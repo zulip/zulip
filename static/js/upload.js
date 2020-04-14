@@ -212,10 +212,25 @@ exports.setup_upload = function (config) {
     });
 
     uppy.on('complete', () => {
-        setTimeout(function () {
-            uppy.cancelAll();
-            exports.hide_upload_status(config);
-        }, 500);
+        let uploads_in_progress = false;
+        uppy.getFiles().forEach(file => {
+            if (file.progress.uploadComplete) {
+                // The uploaded files should be removed since uppy don't allow files in the store
+                // to be re-uploaded again.
+                uppy.removeFile(file.id);
+            } else {
+                // Happens when user tries to upload files when there is already an existing batch
+                // being uploaded. So when the first batch of files complete, the second batch would
+                // still be in progress.
+                uploads_in_progress = true;
+            }
+        });
+
+        if (!uploads_in_progress) {
+            setTimeout(function () {
+                exports.hide_upload_status(config);
+            }, 500);
+        }
     });
 
     uppy.on('info-visible', () => {
