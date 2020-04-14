@@ -135,7 +135,7 @@ exports.get_invite_streams = function () {
 function update_subscription_checkboxes() {
     const data = {
         streams: exports.get_invite_streams(),
-        notifications_stream: page_params.notifications_stream,
+        notifications_stream: stream_data.get_notifications_stream(),
     };
     const html = render_invite_subscription(data);
     $('#streams_to_add').html(html);

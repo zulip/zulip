@@ -512,8 +512,7 @@ exports.is_stream_muted_by_name = function (stream_name) {
 };
 
 exports.is_notifications_stream_muted = function () {
-    // TODO: add page_params.notifications_stream_id
-    return exports.is_stream_muted_by_name(page_params.notifications_stream);
+    return exports.is_muted(page_params.realm_notifications_stream_id);
 };
 
 exports.is_subscribed = function (stream_name) {
@@ -865,6 +864,19 @@ exports.get_streams_for_admin = function () {
     return subs;
 };
 
+exports.get_notifications_stream = function () {
+    const stream_id = page_params.realm_notifications_stream_id;
+    if (stream_id !== -1) {
+        const stream_obj = exports.get_sub_by_id(stream_id);
+        if (stream_obj) {
+            return stream_obj.name;
+        }
+        // We reach here when the notifications stream is a private
+        // stream the current user is not subscribed to.
+    }
+    return '';
+};
+
 exports.initialize = function (params) {
     /*
         We get `params` data, which is data that we "own"
@@ -903,22 +915,6 @@ exports.initialize = function (params) {
     populate_subscriptions(subscriptions, true, true);
     populate_subscriptions(unsubscribed, false, true);
     populate_subscriptions(never_subscribed, false, false);
-
-    // Migrate the notifications stream from the new API structure to
-    // what the frontend expects.
-    if (page_params.realm_notifications_stream_id !== -1) {
-        const notifications_stream_obj =
-            exports.get_sub_by_id(page_params.realm_notifications_stream_id);
-        if (notifications_stream_obj) {
-            // This happens when the notifications stream is a private
-            // stream the current user is not subscribed to.
-            page_params.notifications_stream = notifications_stream_obj.name;
-        } else {
-            page_params.notifications_stream = "";
-        }
-    } else {
-        page_params.notifications_stream = "";
-    }
 
     exports.set_filter_out_inactives();
 };
