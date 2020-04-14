@@ -51,7 +51,8 @@ function make_containers() {
 
     // Capture the scroll callback so we can call it in
     // our tests.
-    parent_container.scroll = (f) => {
+    parent_container.on = (sel, f) => {
+        assert.equal(sel, 'scroll.list_widget_container');
         parent_container.call_scroll = () => {
             f.call(parent_container);
         };
@@ -77,7 +78,7 @@ function make_search_input() {
     $element.to_jquery = () => $element;
 
     $element.on = (event_name, f) => {
-        assert.equal(event_name, 'input');
+        assert.equal(event_name, 'input.list_widget_filter');
         $element.simulate_input_event = () => {
             const elem = {
                 value: $element.val(),

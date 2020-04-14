@@ -248,18 +248,18 @@ exports.create = function ($container, list, opts) {
 
         // on scroll of the nearest scrolling container, if it hits the bottom
         // of the container then fetch a new block of items and render them.
-        meta.scroll_container.scroll(function () {
+        meta.scroll_container.on('scroll.list_widget_container', function () {
             if (this.scrollHeight - (this.scrollTop + this.clientHeight) < 10) {
                 widget.render();
             }
         });
 
         if (opts.parent_container) {
-            opts.parent_container.on("click", "[data-sort]", exports.handle_sort);
+            opts.parent_container.on('click.list_widget_sort', "[data-sort]", exports.handle_sort);
         }
 
         if (opts.filter && opts.filter.element) {
-            opts.filter.element.on("input", function () {
+            opts.filter.element.on('input.list_widget_filter', function () {
                 const value = this.value.toLocaleLowerCase();
                 widget.set_filter_value(value);
                 widget.hard_redraw();
