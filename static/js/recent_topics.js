@@ -72,8 +72,32 @@ exports.process_topic = function (stream_id, topic) {
     exports.process_messages(msgs);
 };
 
+function format_values() {
+    const topics_array = [];
+    exports.get().forEach(function (elem, key) {
+        const stream_name = stream_data.maybe_get_stream_name(
+            elem.last_msg.stream_id) || elem.last_msg.stream_name;
+        const stream_id = parseInt(key.split(':')[0], 10);
+        const topic = key.split(':')[1];
+        const time = new XDate(elem.last_msg.timestamp * 1000);
+        const time_stamp = timerender.last_seen_status_from_date(time);
+        topics_array.push({
+            stream_id: stream_id,
+            stream_name: stream_name,
+            topic: topic,
+            unread_count: unread.unread_topic_counter.get(stream_id, topic),
+            timestamp: time_stamp,
+            stream_url: hash_util.by_stream_uri(stream_id),
+            topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
+        });
+    });
+    return topics_array;
+}
+
 exports.launch = function () {
-    const rendered_body = render_recent_topics_body();
+    const rendered_body = render_recent_topics_body({
+        recent_topics: format_values(),
+    });
     $('#recent_topics_table').html(rendered_body);
 
     overlays.open_overlay({

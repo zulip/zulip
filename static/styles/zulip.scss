@@ -1090,11 +1090,13 @@ a.message_label_clickable:hover {
     opacity: 1.0;
 }
 
-.on_hover_topic_mute {
+.on_hover_topic_mute,
+.on_hover_topic_read {
     opacity: 0.2;
 }
 
-.on_hover_topic_mute:hover {
+.on_hover_topic_mute:hover,
+.on_hover_topic_read:hover {
     cursor: pointer;
     opacity: 1.0;
 }

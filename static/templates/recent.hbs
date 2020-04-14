@@ -1,0 +1,21 @@
+<tr id="{{stream_id}}:{{topic}}">
+    <td class="recent_unread_count">
+        {{unread_count}}
+    </td>
+    <td class="recent_stream_name">
+        <a href="{{stream_url}}">{{stream_name}}</a>
+    </td>
+    <td class="recent_topic_name">
+        <a href="{{topic_url}}">{{topic}}</a>
+    </td>
+    <td class="recent_actions">
+        <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Mute topic' }} (M)"></i>
+        <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mark as read' }} (R)" role="button" tabindex="0" aria-label="{{t 'Mark as read' }} (R)"></i>
+    </td>
+    <td class='recent_users'>
+        {{!-- USER ICONS --}}
+    </td>
+    <td class="recent_timestamp">
+        {{ timestamp }}
+    </td>
+</tr>
