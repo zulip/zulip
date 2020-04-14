@@ -128,32 +128,6 @@ exports.create = function ($container, list, opts) {
         meta.offset += load_count;
     };
 
-    // reset the data associated with a list. This is so that instead of
-    // initializing a new progressive list render instance, you can just
-    // update the data of an existing one.
-    widget.data = function (...args) {
-        // if no args are provided then just return the existing data.
-        // this interface is similar to how many jQuery functions operate,
-        // where a call to the method without data returns the existing data.
-        if (args.length === 0) {
-            return meta.list;
-        }
-        const [data] = args;
-
-        if (Array.isArray(data)) {
-            meta.list = data;
-            meta.filtered_list = data;
-
-            widget.filter_and_sort();
-            widget.clear();
-
-            return;
-        }
-
-        blueslip.warn("The data object provided to the progressive" +
-                          " list render is invalid");
-    };
-
     widget.clear = function () {
         $container.html("");
         meta.offset = 0;
@@ -243,6 +217,16 @@ exports.create = function ($container, list, opts) {
         if (opts.filter && opts.filter.onupdate) {
             opts.filter.onupdate();
         }
+    };
+
+    widget.replace_list_data = function (list) {
+        /*
+            We mostly use this widget for lists where you are
+            not adding or removing rows, so when you do modify
+            the list, we have a brute force solution.
+        */
+        meta.list = list;
+        widget.hard_redraw();
     };
 
     // add built-in generic sort functions.
