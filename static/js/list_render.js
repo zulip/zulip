@@ -109,30 +109,17 @@ exports.create = function ($container, list, opts) {
         const finish = blueslip.start_timing('list_render ' + opts.name);
         let html = "";
         for (const item of slice) {
-            let _item = opts.modifier(item);
+            const s = opts.modifier(item);
 
-            // if valid jQuery selection, attempt to grab all elements within
-            // and string them together into a giant outerHTML fragment.
-            if (_item.constructor === jQuery) {
-                _item = (function ($nodes) {
-                    let html = "";
-                    $nodes.each(function () {
-                        if (this.nodeType === 1) {
-                            html += this.outerHTML;
-                        }
-                    });
-
-                    return html;
-                }(_item));
-            }
-
-            // if is a valid element, get the outerHTML.
-            if (_item instanceof Element) {
-                _item = _item.outerHTML;
+            if (typeof s !== 'string') {
+                blueslip.error('List item is not a string: ' + s);
+                continue;
             }
 
             // append the HTML or nothing if corrupt (null, undef, etc.).
-            html += _item || "";
+            if (s) {
+                html += s;
+            }
         }
 
         finish();
