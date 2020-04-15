@@ -58,7 +58,7 @@ from zerver.models import (
 from typing import Any, Dict, List, Optional, Set, Tuple, Sequence
 from typing_extensions import TypedDict
 
-RealmAlertWords = Dict[int, List[str]]
+RealmAlertWord = Dict[int, List[str]]
 
 RawUnreadMessagesResult = TypedDict('RawUnreadMessagesResult', {
     'pm_dict': Dict[int, Any],
