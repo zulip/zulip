@@ -64,14 +64,7 @@ exports.populate_filters = function (filters_data) {
 
     filters_list.add_sort_function("pattern", sort_pattern);
     filters_list.add_sort_function("url", sort_url);
-
-    const active_col = $('.admin_filters_table th.active').expectOne();
-    filters_list.sort(
-        active_col.data('sort'),
-        undefined,
-        undefined,
-        undefined,
-        active_col.hasClass('descend'));
+    filters_list.sort('pattern');
 
     loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
 };
