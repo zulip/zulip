@@ -808,6 +808,13 @@ run_test('is_notifications_stream_muted', () => {
     assert(stream_data.is_notifications_stream_muted());
 });
 
+run_test('realm_has_notifications_stream', () => {
+    page_params.realm_notifications_stream_id = 10;
+    assert(stream_data.realm_has_notifications_stream());
+    page_params.realm_notifications_stream_id = -1;
+    assert(!stream_data.realm_has_notifications_stream());
+});
+
 run_test('remove_default_stream', () => {
     const remove_me = {
         stream_id: 674,
