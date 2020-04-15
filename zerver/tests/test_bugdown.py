@@ -5,7 +5,7 @@ from zerver.lib import bugdown
 from zerver.lib.actions import (
     do_set_user_display_setting,
     do_remove_realm_emoji,
-    do_set_alert_words,
+    do_add_alert_words,
     do_set_realm_property,
 )
 from zerver.lib.alert_words import get_alert_word_automaton
@@ -1115,7 +1115,7 @@ class BugdownTest(ZulipTestCase):
 
     def test_alert_words(self) -> None:
         user_profile = self.example_user('othello')
-        do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])
+        do_add_alert_words(user_profile, ["ALERTWORD", "scaryword"])
         msg = Message(sender=user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(user_profile.realm)
 
@@ -1146,7 +1146,7 @@ class BugdownTest(ZulipTestCase):
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             user_ids.add(user_profile.id)
-            do_set_alert_words(user_profile, alert_words)
+            do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
         user_ids.add(sender_user_profile.id)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -1180,7 +1180,7 @@ class BugdownTest(ZulipTestCase):
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             user_ids.add(user_profile.id)
-            do_set_alert_words(user_profile, alert_words)
+            do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
         user_ids.add(sender_user_profile.id)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -1221,7 +1221,7 @@ class BugdownTest(ZulipTestCase):
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
             user_ids.add(user_profile.id)
-            do_set_alert_words(user_profile, alert_words)
+            do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
         user_ids.add(sender_user_profile.id)
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -1252,7 +1252,7 @@ class BugdownTest(ZulipTestCase):
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            do_set_alert_words(user_profile, alert_words)
+            do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
         msg = Message(sender=user_profile, sending_client=get_client("test"))
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
@@ -1288,7 +1288,7 @@ class BugdownTest(ZulipTestCase):
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            do_set_alert_words(user_profile, alert_words)
+            do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
         user_ids = {user_profiles['hamlet'].id, user_profiles['iago'].id, user_profiles['othello'].id}
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -1318,7 +1318,7 @@ class BugdownTest(ZulipTestCase):
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            do_set_alert_words(user_profile, alert_words)
+            do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user('polonius')
         user_ids = {user_profiles['hamlet'].id, user_profiles['iago'].id, user_profiles['othello'].id}
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
