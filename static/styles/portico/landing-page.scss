@@ -220,30 +220,32 @@ nav .brand.logo {
 nav.white {
     background-color: hsl(0, 0%, 100%);
 
-     li a,
-     li a:hover,
-     li a:visited {
+    li a,
+    li a:hover,
+    li a:visited {
         color: hsl(0, 0%, 27%);
     }
 
-     ul li.active::after {
+    ul li.active::after {
         color: hsl(0, 0%, 27%);
     }
 
-     .brand.logo span {
-        color: hsl(0, 0%, 27%);
+    .brand.logo {
+        span {
+            color: hsl(0, 0%, 27%);
+        }
+
+        circle {
+            fill: hsl(0, 0%, 27%) !important;
+        }
+
+        path {
+            fill: hsl(0, 0%, 100%) !important;
+            stroke: hsl(0, 0%, 100%) !important;
+        }
     }
 
-     .brand-logo circle {
-        fill: hsl(0, 0%, 27%) !important;
-    }
-
-     .brand-logo path {
-        fill: hsl(0, 0%, 100%) !important;
-        stroke: hsl(0, 0%, 100%) !important;
-    }
-
-     .hamburger {
+    .hamburger {
         fill: hsl(0, 0%, 27%);
     }
 }
