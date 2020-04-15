@@ -1046,7 +1046,7 @@ input[type=checkbox].inline-block {
     list-style-type: none;
 }
 
-#alert_words_list li.alert-word-item:last-child {
+#alert_words_list li.alert-word-item:first-child {
     background: none;
     margin-top: 8px;
 }

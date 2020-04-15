@@ -30,9 +30,9 @@ run_test('render_alert_words_ui', () => {
     alert_words_ui.render_alert_words_ui();
 
     assert.deepEqual(appended, [
-        'stub-foo',
-        'stub-bar',
         'stub-',
+        'stub-bar',
+        'stub-foo',
     ]);
     assert(new_alert_word.is_focused());
 });
