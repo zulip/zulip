@@ -219,39 +219,38 @@ nav .brand.logo {
 
 nav.white {
     background-color: hsl(0, 0%, 100%);
-}
 
-nav.white li a,
-nav.white li a:hover,
-nav.white li a:visited {
-    color: hsl(0, 0%, 27%);
-}
+     li a,
+     li a:hover,
+     li a:visited {
+        color: hsl(0, 0%, 27%);
+    }
 
-nav.white ul li.active::after {
-    color: hsl(0, 0%, 27%);
-}
+     ul li.active::after {
+        color: hsl(0, 0%, 27%);
+    }
 
-nav.white .brand.logo span {
-    color: hsl(0, 0%, 27%);
-}
+     .brand.logo span {
+        color: hsl(0, 0%, 27%);
+    }
 
-nav.white .brand-logo circle {
-    fill: hsl(0, 0%, 27%) !important;
-}
+     .brand-logo circle {
+        fill: hsl(0, 0%, 27%) !important;
+    }
 
-nav.white .brand-logo path {
-    fill: hsl(0, 0%, 100%) !important;
-    stroke: hsl(0, 0%, 100%) !important;
-}
+     .brand-logo path {
+        fill: hsl(0, 0%, 100%) !important;
+        stroke: hsl(0, 0%, 100%) !important;
+    }
 
-nav.white .hamburger {
-    fill: hsl(0, 0%, 27%);
-}
+     .hamburger {
+        fill: hsl(0, 0%, 27%);
+    }
 
-nav.white .brand.logo span {
-    color: hsl(0, 0%, 27%);
+     .brand.logo span {
+        color: hsl(0, 0%, 27%);
+    }
 }
-
 nav .hamburger {
     display: none;
     fill: hsl(0, 0%, 100%);
