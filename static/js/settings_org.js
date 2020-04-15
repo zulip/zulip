@@ -562,18 +562,8 @@ exports.build_page = function () {
 
     loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
 
-    // Populate notifications stream modal
-    if (page_params.is_admin) {
-        exports.init_dropdown_widgets();
-        exports.default_code_language_widget.setup();
-        exports.notifications_stream_widget.setup();
-        exports.signup_notifications_stream_widget.setup();
-    }
-    exports.default_code_language_widget.render(page_params.realm_default_code_block_language);
-    exports.notifications_stream_widget.render(page_params.realm_notifications_stream_id);
-    exports.signup_notifications_stream_widget.render(
-        page_params.realm_signup_notifications_stream_id);
-
+    // Initialize all the dropdown list widgets.
+    exports.init_dropdown_widgets();
     // Populate realm domains
     exports.populate_realm_domains(page_params.realm_domains);
 
@@ -920,10 +910,6 @@ exports.build_page = function () {
             },
         });
     });
-
-    exports.default_code_language_widget.register_event_handlers();
-    exports.notifications_stream_widget.register_event_handlers();
-    exports.signup_notifications_stream_widget.register_event_handlers();
 
     function upload_realm_icon(file_input) {
         const form_data = new FormData();
