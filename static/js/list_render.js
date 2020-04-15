@@ -214,7 +214,9 @@ exports.create = function ($container, list, opts) {
         });
 
         if (opts.parent_container) {
-            opts.parent_container.on('click.list_widget_sort', "[data-sort]", exports.handle_sort);
+            opts.parent_container.on('click.list_widget_sort', "[data-sort]", function () {
+                exports.handle_sort($(this), widget);
+            });
         }
 
         if (opts.filter && opts.filter.element) {
@@ -311,48 +313,35 @@ exports.get = function (name) {
     return DEFAULTS.instances.get(name) || false;
 };
 
-exports.handle_sort = function () {
+exports.handle_sort = function (th, list) {
     /*
         one would specify sort parameters like this:
             - name => sort alphabetic.
             - age  => sort numeric.
+            - status => look up `status` in sort_fields
+                        to find custom sort function
 
-        you MUST specify the `data-list-render` in the `.progressive-table-wrapper`
-
-        <div class="progressive-table-wrapper" data-list-render="some-list">
-            <table>
-                <thead>
-                    <th data-sort="alphabetic" data-sort-prop="name"></th>
-                    <th data-sort="numeric" data-sort-prop="age"></th>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+        <thead>
+            <th data-sort="alphabetic" data-sort-prop="name"></th>
+            <th data-sort="numeric" data-sort-prop="age"></th>
+            <th data-sort="status"></th>
+        </thead>
         */
-    const $this = $(this);
-    const sort_type = $this.data("sort");
-    const prop_name = $this.data("sort-prop");
-    const list_name = $this.closest(".progressive-table-wrapper").data("list-render");
+    const sort_type = th.data("sort");
+    const prop_name = th.data("sort-prop");
 
-    const list = exports.get(list_name);
-
-    if (!list) {
-        blueslip.error("Error. This `.progressive-table-wrapper` has no `data-list-render` attribute.");
-        return;
-    }
-
-    if ($this.hasClass("active")) {
-        if (!$this.hasClass("descend")) {
-            $this.addClass("descend");
+    if (th.hasClass("active")) {
+        if (!th.hasClass("descend")) {
+            th.addClass("descend");
         } else {
-            $this.removeClass("descend");
+            th.removeClass("descend");
         }
     } else {
-        $this.siblings(".active").removeClass("active");
-        $this.addClass("active");
+        th.siblings(".active").removeClass("active");
+        th.addClass("active");
     }
 
-    list.set_reverse_mode($this.hasClass("descend"));
+    list.set_reverse_mode(th.hasClass("descend"));
 
     // if `prop_name` is defined, it will trigger the generic codepath,
     // and not if it is undefined.
