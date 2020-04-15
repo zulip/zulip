@@ -1,8 +1,5 @@
-import datetime
-
 from django.db import connection
 from django.db.models.query import QuerySet, Q
-from django.utils.timezone import now as timezone_now
 
 from sqlalchemy.sql import (
     column,
@@ -124,15 +121,7 @@ def update_messages_for_topic_edit(message: Message,
                                    new_stream: Optional[Stream]) -> List[Message]:
     propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
     if propagate_mode == 'change_all':
-        # We only change messages up to 7 days in the past, to avoid hammering our
-        # DB by changing an unbounded amount of messages
-        #
-        # TODO: Look at removing this restriction and/or add a "change_last_week"
-        # option; this behavior feels buggy.
-        before_bound = timezone_now() - datetime.timedelta(days=7)
-
-        propagate_query = (propagate_query & ~Q(id = message.id) &
-                           Q(date_sent__range=(before_bound, timezone_now())))
+        propagate_query = propagate_query & ~Q(id = message.id)
     if propagate_mode == 'change_later':
         propagate_query = propagate_query & Q(id__gt = message.id)
 
