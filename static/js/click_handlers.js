@@ -232,6 +232,49 @@ exports.initialize = function () {
         $(e.currentTarget).tooltip('destroy');
     });
 
+    // TOOLTIPS FOR MESSAGE CONTROLs
+    $("#main_div").on("mouseenter", ".actions_hover", (e) => {
+        e.stopPropagation();
+
+        const elem = $(e.currentTarget);
+        const hotkey = '(i)';
+        const title = i18n.t("Message actions __hotkey__", {hotkey: hotkey});
+
+        ui.create_generic_tooltip(elem, title, "bottom");
+    });
+    $('#main_div').on('mouseleave', '.actions_hover', (e) => {
+        e.stopPropagation();
+        $(e.currentTarget).tooltip('hide');
+    });
+
+    $("#main_div").on("mouseenter", ".fa-pencil.edit_content_button", (e) => {
+        e.stopPropagation();
+
+        const elem = $(e.currentTarget);
+        const hotkey = '(e)';
+        const title = i18n.t("Edit __hotkey__", {hotkey: hotkey});
+
+        ui.create_generic_tooltip(elem, title, "bottom");
+    });
+    $('#main_div').on('mouseleave', '.fa-pencil.edit_content_button', (e) => {
+        e.stopPropagation();
+        $(e.currentTarget).tooltip('hide');
+    });
+
+    $("#main_div").on("mouseenter", ".fa-file-code-o.edit_content_button", (e) => {
+        e.stopPropagation();
+
+        const elem = $(e.currentTarget);
+        const hotkey = '(e)';
+        const title = i18n.t("View source __hotkey__", {hotkey: hotkey});
+
+        ui.create_generic_tooltip(elem, title, "bottom");
+    });
+    $('#main_div').on('mouseleave', '.fa-file-code-o.edit_content_button', (e) => {
+        e.stopPropagation();
+        $(e.currentTarget).tooltip('hide');
+    });
+
     // DESTROY PERSISTING TOOLTIPS ON HOVER
 
     $("body").on('mouseenter', '.tooltip', (e) => {
