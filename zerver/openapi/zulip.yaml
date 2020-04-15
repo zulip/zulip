@@ -3240,12 +3240,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                - $ref: '#/components/schemas/JsonError'
-                - example:
-                    {
-                        "msg": "Invalid API key",
-                        "result": "error"
-                    }
+                - $ref: '#/components/schemas/InvalidApiKeyError'
         '400_missing_request_argument_error':
           description: |
             Bad request.
@@ -3253,19 +3248,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                - $ref: '#/components/schemas/CodedError'
-                - properties:
-                    var_name:
-                      type: string
-                      description: |
-                        It contains the information about the missing argument.
-                - example:
-                    {
-                        "code": "REQUEST_VARIABLE_MISSING",
-                        "msg": "Missing 'content' argument",
-                        "result": "error",
-                        "var_name": "content"
-                    }
+                - $ref: '#/components/schemas/MissingArgumentError'
         '400_user_not_authorized_error':
           description: |
             Bad request.
@@ -3273,13 +3256,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                - $ref: '#/components/schemas/CodedError'
-                - example:
-                    {
-                        "code": "BAD_REQUEST",
-                        "msg": "User not authorized for this query",
-                        "result": "error"
-                    }
+                - $ref: '#/components/schemas/UserNotAuthorizedError'
   /zulip-outgoing-webhook:
     post:
       description: |
@@ -3490,6 +3467,38 @@ components:
               type: string
             description: A list of names of streams that the requesting
               user/bot was not authorized to subscribe to.
+    InvalidApiKeyError:
+      allOf:
+      - $ref: '#/components/schemas/JsonError'
+      - example:
+          {
+              "msg": "Invalid API key",
+              "result": "error"
+          }
+    MissingArgumentError:
+      allOf:
+      - $ref: '#/components/schemas/CodedError'
+      - properties:
+          var_name:
+            type: string
+            description: |
+              It contains the information about the missing argument.
+      - example:
+          {
+              "code": "REQUEST_VARIABLE_MISSING",
+              "msg": "Missing 'content' argument",
+              "result": "error",
+              "var_name": "content"
+          }
+    UserNotAuthorizedError:
+      allOf:
+      - $ref: '#/components/schemas/CodedError'
+      - example:
+          {
+              "code": "BAD_REQUEST",
+              "msg": "User not authorized for this query",
+              "result": "error"
+          }
 
   ###################
   # Shared responses
