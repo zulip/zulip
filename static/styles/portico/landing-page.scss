@@ -299,7 +299,6 @@ nav ul {
         display: none;
         user-select: none;
     }
-}
 
     li {
         position: relative;
@@ -310,23 +309,23 @@ nav ul {
 
         opacity: 0.7;
         transition: all 0.2s ease;
-    }
 
-    li.active,
-    li:hover {
-        opacity: 1;
-    }
+        &.active,
+        &:hover {
+            opacity: 1;
+        }
 
-    li.active::after {
-        content: "v";
+        &.active::after {
+            content: "v";
 
-        position: absolute;
-        bottom: -15px;
-        left: calc(50% - 4px);
+            position: absolute;
+            bottom: -15px;
+            left: calc(50% - 4px);
 
-        font-weight: 100;
+            font-weight: 100;
 
-        transform: scaleX(2) scaleY(0.5);
+            transform: scaleX(2) scaleY(0.5);
+        }
     }
 }
 
