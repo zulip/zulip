@@ -145,7 +145,7 @@ from zerver.decorator import statsd_increment
 from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.i18n import get_language_name
 from zerver.lib.alert_words import add_user_alert_words, \
-    remove_user_alert_words, set_user_alert_words
+    remove_user_alert_words
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
@@ -5369,10 +5369,6 @@ def do_add_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) ->
 def do_remove_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> None:
     words = remove_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, words)
-
-def do_set_alert_words(user_profile: UserProfile, alert_words: List[str]) -> None:
-    set_user_alert_words(user_profile, alert_words)
-    notify_alert_words(user_profile, alert_words)
 
 def do_mute_topic(user_profile: UserProfile, stream: Stream, recipient: Recipient, topic: str,
                   date_muted: Optional[datetime.datetime]=None) -> None:
