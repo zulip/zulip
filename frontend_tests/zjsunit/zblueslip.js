@@ -98,5 +98,9 @@ exports.make_zblueslip = function () {
         return () => {};
     };
 
+    lib.preview_node = (node) => {
+        return 'node:' + node;
+    };
+
     return lib;
 };

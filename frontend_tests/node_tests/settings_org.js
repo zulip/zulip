@@ -56,6 +56,12 @@ const _realm_logo = {
     build_realm_logo_widget: noop,
 };
 
+const _list_render = {
+    create: () => {
+        return { init: noop };
+    },
+};
+
 set_global('channel', _channel);
 set_global('csrf_token', 'token-stub');
 set_global('FormData', _FormData);
@@ -66,6 +72,7 @@ set_global('page_params', _page_params);
 set_global('realm_icon', _realm_icon);
 set_global('realm_logo', _realm_logo);
 set_global('ui_report', _ui_report);
+set_global('list_render', _list_render);
 
 const settings_config = zrequire('settings_config');
 const settings_bots = zrequire('settings_bots');
@@ -788,13 +795,13 @@ run_test('set_up', () => {
         upload_realm_icon = f;
     };
 
-    settings_org.init_dropdown_widgets();
-    const stub_notif_stream_render = settings_org.notifications_stream_widget.render;
-    settings_org.notifications_stream_widget.render = noop;
-    const stub_signup_notif_render = settings_org.signup_notifications_stream_widget.render;
-    settings_org.signup_notifications_stream_widget.render = noop;
-    const stub_language_render = settings_org.default_code_language_widget.render;
-    settings_org.default_code_language_widget.render = noop;
+    const settings_list_widget_backup = settings_list_widget;
+    settings_list_widget = () => {  // eslint-disable-line no-native-reassign
+        return {
+            render: noop,
+            update: noop,
+        };
+    };
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
     $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limit parent>'));
     $("#message_content_in_email_notifications_label").set_parent($.create('<stub in-content setting checkbox>'));
@@ -831,9 +838,7 @@ run_test('set_up', () => {
     test_parse_time_limit();
     test_discard_changes_button(discard_changes);
 
-    settings_org.notifications_stream_widget.render = stub_notif_stream_render;
-    settings_org.signup_notifications_stream_widget.render = stub_signup_notif_render;
-    settings_org.default_code_language_widget.render = stub_language_render;
+    settings_list_widget = settings_list_widget_backup;  // eslint-disable-line no-native-reassign
 });
 
 run_test('test get_organization_settings_options', () => {
@@ -1014,6 +1019,20 @@ run_test('misc', () => {
         arr.push({name: "some_stream", stream_id: 42});
         return arr;
     };
+
+    // Set stubs for settings_list_widget:
+    const widget_settings = ['realm_notifications_stream_id',
+                             'realm_signup_notifications_stream_id',
+                             'realm_default_code_block_language'];
+    const dropdown_list_parent = $.create(`<list parent>`);
+    dropdown_list_parent.set_find_results('.dropdown_list_reset_button', $.create('<disable button>'));
+    widget_settings.forEach(name => {
+        const elem = $.create(`#${name}_widget #${name}_name`);
+        elem.closest = () => {
+            return dropdown_list_parent;
+        };
+    });
+
     settings_org.init_dropdown_widgets();
 
     let setting_name = 'realm_notifications_stream_id';

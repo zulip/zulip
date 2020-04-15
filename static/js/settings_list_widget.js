@@ -8,31 +8,6 @@ const DropdownListWidget = function (opts) {
 
     const render_dropdown_list = require("../templates/settings/dropdown_list.hbs");
 
-    const setup = () => {
-        // populate the dropdown
-        const dropdown_list_body = $(`#${opts.container_id} .dropdown-list-body`).expectOne();
-        const search_input = $(`#${opts.container_id} .dropdown-search > input[type=text]`);
-        list_render.create(dropdown_list_body, opts.data, {
-            name: `${opts.setting_name}_list`,
-            modifier: function (item) {
-                return render_dropdown_list({ item: item });
-            },
-            filter: {
-                element: search_input,
-                predicate: function (item, value) {
-                    return item.name.toLowerCase().includes(value);
-                },
-            },
-        });
-        $(`#${opts.container_id} .dropdown-search`).click(function (e) {
-            e.stopPropagation();
-        });
-
-        $(`#${opts.container_id} .dropdown-toggle`).click(function () {
-            search_input.val("").trigger("input");
-        });
-    };
-
     const render = (value) => {
         $(`#${opts.container_id} #${opts.value_id}`).data("value", value);
 
@@ -76,6 +51,35 @@ const DropdownListWidget = function (opts) {
         });
     };
 
+    const setup = () => {
+        // populate the dropdown
+        const dropdown_list_body = $(`#${opts.container_id} .dropdown-list-body`).expectOne();
+        const search_input = $(`#${opts.container_id} .dropdown-search > input[type=text]`);
+
+        list_render.create(dropdown_list_body, opts.data, {
+            name: `${opts.setting_name}_list`,
+            modifier: function (item) {
+                return render_dropdown_list({ item: item });
+            },
+            filter: {
+                element: search_input,
+                predicate: function (item, value) {
+                    return item.name.toLowerCase().includes(value);
+                },
+            },
+        });
+        $(`#${opts.container_id} .dropdown-search`).click(function (e) {
+            e.stopPropagation();
+        });
+
+        $(`#${opts.container_id} .dropdown-toggle`).click(function () {
+            search_input.val("").trigger("input");
+        });
+
+        render(page_params[opts.setting_name]);
+        register_event_handlers();
+    };
+
     const value = () => {
         let val = $(`#${opts.container_id} #${opts.value_id}`).data('value');
         if (val === null) {
@@ -84,10 +88,11 @@ const DropdownListWidget = function (opts) {
         return val;
     };
 
+    // Run setup() automatically on initialization.
+    setup();
+
     return {
-        setup,
         render,
-        register_event_handlers,
         value,
     };
 };
