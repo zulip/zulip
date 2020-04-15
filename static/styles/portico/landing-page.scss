@@ -244,15 +244,19 @@ nav.white .brand-logo path {
     stroke: hsl(0, 0%, 100%) !important;
 }
 
+nav.white .hamburger {
+    fill: hsl(0, 0%, 27%);
+}
+
+nav.white .brand.logo span {
+    color: hsl(0, 0%, 27%);
+}
+
 nav .hamburger {
     display: none;
     fill: hsl(0, 0%, 100%);
     cursor: pointer;
     margin-top: 3px;
-}
-
-nav.white .hamburger {
-    fill: hsl(0, 0%, 27%);
 }
 
 nav .content {
@@ -275,10 +279,6 @@ nav .logo span {
     text-transform: uppercase;
     font-size: 1.2rem;
     letter-spacing: 0.1em;
-}
-
-nav.white .brand.logo span {
-    color: hsl(0, 0%, 27%);
 }
 
 nav .brand-logo {
