@@ -315,15 +315,6 @@ nav ul li {
     transition: all 0.2s ease;
 }
 
-nav li a,
-nav li a:hover,
-nav li a:visited {
-    text-decoration: none;
-    color: hsl(0, 0%, 100%);
-
-    font-size: 1.05em;
-}
-
 nav ul li.active,
 nav ul li:hover {
     opacity: 1;
@@ -339,6 +330,15 @@ nav ul li.active::after {
     font-weight: 100;
 
     transform: scaleX(2) scaleY(0.5);
+}
+
+nav li a,
+nav li a:hover,
+nav li a:visited {
+    text-decoration: none;
+    color: hsl(0, 0%, 100%);
+
+    font-size: 1.05em;
 }
 
 /* -- main panel styling -- */
