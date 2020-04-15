@@ -211,131 +211,131 @@ nav {
     padding: 40px;
 
     z-index: 4;
-}
 
-nav .brand.logo {
-    text-decoration: none;
-}
+    .brand.logo {
+        text-decoration: none;
+    }
 
-nav.white {
-    background-color: hsl(0, 0%, 100%);
+    &.white {
+        background-color: hsl(0, 0%, 100%);
+
+        li a,
+        li a:hover,
+        li a:visited {
+            color: hsl(0, 0%, 27%);
+        }
+
+        ul li.active::after {
+            color: hsl(0, 0%, 27%);
+        }
+
+        .brand.logo {
+            span {
+                color: hsl(0, 0%, 27%);
+            }
+
+            circle {
+                fill: hsl(0, 0%, 27%) !important;
+            }
+
+            path {
+                fill: hsl(0, 0%, 100%) !important;
+                stroke: hsl(0, 0%, 100%) !important;
+            }
+        }
+
+        .hamburger {
+            fill: hsl(0, 0%, 27%);
+        }
+    }
+    .hamburger {
+        display: none;
+        fill: hsl(0, 0%, 100%);
+        cursor: pointer;
+        margin-top: 3px;
+    }
+
+    .content {
+        margin: 0 5px 0 10px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .logo {
+        top: 7px;
+
+        span {
+            position: relative;
+            left: 5px;
+            top: 1px;
+            color: hsl(0, 0%, 100%);
+            font-weight: 600;
+            vertical-align: top;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            letter-spacing: 0.1em;
+        }
+    }
+
+    .brand-logo {
+        width: 25px;
+    }
+
+    ul {
+        float: right;
+        list-style-type: none;
+        font-weight: 400;
+        margin: 0;
+        padding: 0;
+
+        outline: 1000px solid;
+        outline-color: transparent;
+
+        cursor: pointer;
+        transition: outline-color 0.2s ease;
+
+        .exit {
+            display: none;
+            user-select: none;
+        }
+
+        li {
+            position: relative;
+            display: inline-block;
+            margin: 10px;
+
+            color: hsl(0, 0%, 100%);
+
+            opacity: 0.7;
+            transition: all 0.2s ease;
+
+            &.active,
+            &:hover {
+                opacity: 1;
+            }
+
+            &.active::after {
+                content: "v";
+
+                position: absolute;
+                bottom: -15px;
+                left: calc(50% - 4px);
+
+                font-weight: 100;
+
+                transform: scaleX(2) scaleY(0.5);
+            }
+        }
+    }
 
     li a,
     li a:hover,
     li a:visited {
-        color: hsl(0, 0%, 27%);
-    }
-
-    ul li.active::after {
-        color: hsl(0, 0%, 27%);
-    }
-
-    .brand.logo {
-        span {
-            color: hsl(0, 0%, 27%);
-        }
-
-        circle {
-            fill: hsl(0, 0%, 27%) !important;
-        }
-
-        path {
-            fill: hsl(0, 0%, 100%) !important;
-            stroke: hsl(0, 0%, 100%) !important;
-        }
-    }
-
-    .hamburger {
-        fill: hsl(0, 0%, 27%);
-    }
-}
-nav .hamburger {
-    display: none;
-    fill: hsl(0, 0%, 100%);
-    cursor: pointer;
-    margin-top: 3px;
-}
-
-nav .content {
-    margin: 0 5px 0 10px;
-    position: relative;
-    z-index: 2;
-}
-
-nav .logo {
-    top: 7px;
-
-    span {
-        position: relative;
-        left: 5px;
-        top: 1px;
-        color: hsl(0, 0%, 100%);
-        font-weight: 600;
-        vertical-align: top;
-        text-transform: uppercase;
-        font-size: 1.2rem;
-        letter-spacing: 0.1em;
-    }
-}
-
-nav .brand-logo {
-    width: 25px;
-}
-
-nav ul {
-    float: right;
-    list-style-type: none;
-    font-weight: 400;
-    margin: 0;
-    padding: 0;
-
-    outline: 1000px solid;
-    outline-color: transparent;
-
-    cursor: pointer;
-    transition: outline-color 0.2s ease;
-
-    .exit {
-        display: none;
-        user-select: none;
-    }
-
-    li {
-        position: relative;
-        display: inline-block;
-        margin: 10px;
-
+        text-decoration: none;
         color: hsl(0, 0%, 100%);
 
-        opacity: 0.7;
-        transition: all 0.2s ease;
-
-        &.active,
-        &:hover {
-            opacity: 1;
-        }
-
-        &.active::after {
-            content: "v";
-
-            position: absolute;
-            bottom: -15px;
-            left: calc(50% - 4px);
-
-            font-weight: 100;
-
-            transform: scaleX(2) scaleY(0.5);
-        }
+        font-size: 1.05em;
     }
-}
-
-nav li a,
-nav li a:hover,
-nav li a:visited {
-    text-decoration: none;
-    color: hsl(0, 0%, 100%);
-
-    font-size: 1.05em;
 }
 
 /* -- main panel styling -- */
