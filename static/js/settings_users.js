@@ -39,10 +39,24 @@ function sort_role(a, b) {
 }
 
 function sort_bot_owner(a, b) {
-    if (!a.bot_owner_id) { return 1; }
-    if (!b.bot_owner_id) { return -1; }
+    function owner_name(item) {
+        const owner = people.get_bot_owner_user(item);
 
-    return compare_a_b(a.bot_owner_id, b.bot_owner_id);
+        if (!owner) {
+            return '';
+        }
+
+        if (!owner.full_name) {
+            return '';
+        }
+
+        return owner.full_name.toLowerCase();
+    }
+
+    return compare_a_b(
+        owner_name(a),
+        owner_name(b)
+    );
 }
 
 function sort_last_active(a, b) {
