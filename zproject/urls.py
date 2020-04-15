@@ -37,6 +37,7 @@ import zerver.views.digest
 import zerver.views.messages
 from zerver.context_processors import latest_info_context
 import zerver.views.realm_export
+import zerver.views.upload
 
 from zerver.lib.rest import rest_dispatch
 
@@ -588,6 +589,9 @@ urls += [
 # having to rewrite URLs, and is implemented using the
 # 'override_api_url_scheme' flag passed to rest_dispatch
 urls += [
+    url(r'^user_uploads/temporary/([0-9A-Za-z]+)$',
+        zerver.views.upload.serve_local_file_unauthed,
+        name='zerver.views.upload.serve_local_file_unauthed'),
     url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)$',
         rest_dispatch,
         {'GET': ('zerver.views.upload.serve_file_backend',

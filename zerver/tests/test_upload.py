@@ -55,6 +55,7 @@ import os
 import io
 import shutil
 import re
+import time
 import datetime
 from django.utils.timezone import now as timezone_now
 from django_sendfile.sendfile import _get_sendfile
@@ -202,6 +203,48 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
         self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
+
+        # Now try the format that's supposed to return 200s
+        result = self.client_get(uri + "?url_only=true")
+        self.assert_json_success(result)
+        data = result.json()
+        url_only_url = data['url']
+        # Ensure this is different from the original uri:
+        self.assertNotEqual(url_only_url, uri)
+        self.assertIn('user_uploads/temporary/', url_only_url)
+        # The generated url has a token authorizing the requestor to access the file
+        # without being logged in.
+        self.logout()
+        self.assert_url_serves_contents_of_file(url_only_url, b"zulip!")
+        # The original uri shouldn't work when logged out:
+        result = self.client_get(uri)
+        self.assertEqual(result.status_code, 401)
+
+    def test_serve_local_file_unauthed_invalid_token(self) -> None:
+        result = self.client_get('/user_uploads/temporary/badtoken')
+        self.assert_json_error(result, "Invalid token")
+
+    def test_serve_local_file_unauthed_token_expires(self) -> None:
+        self.login('hamlet')
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {'file': fp})
+        url = result.json()["uri"] + "?url_only=true"
+
+        start_time = time.time()
+        with mock.patch('django.core.signing.time.time', return_value=start_time):
+            result = self.client_get(url)
+            self.assert_json_success(result)
+            data = result.json()
+            url_only_url = data['url']
+
+            self.logout()
+            self.assert_url_serves_contents_of_file(url_only_url, b"zulip!")
+
+        # After over 60 seconds, the token should become invalid:
+        with mock.patch('django.core.signing.time.time', return_value=start_time + 61):
+            result = self.client_get(url_only_url)
+            self.assert_json_error(result, "Invalid token")
 
     def test_file_download_unauthed(self) -> None:
         self.login('hamlet')
