@@ -294,39 +294,40 @@ nav ul {
 
     cursor: pointer;
     transition: outline-color 0.2s ease;
+
+    .exit {
+        display: none;
+        user-select: none;
+    }
 }
 
-nav ul .exit {
-    display: none;
-    user-select: none;
-}
+    li {
+        position: relative;
+        display: inline-block;
+        margin: 10px;
 
-nav ul li {
-    position: relative;
-    display: inline-block;
-    margin: 10px;
+        color: hsl(0, 0%, 100%);
 
-    color: hsl(0, 0%, 100%);
+        opacity: 0.7;
+        transition: all 0.2s ease;
+    }
 
-    opacity: 0.7;
-    transition: all 0.2s ease;
-}
+    li.active,
+    li:hover {
+        opacity: 1;
+    }
 
-nav ul li.active,
-nav ul li:hover {
-    opacity: 1;
-}
+    li.active::after {
+        content: "v";
 
-nav ul li.active::after {
-    content: "v";
+        position: absolute;
+        bottom: -15px;
+        left: calc(50% - 4px);
 
-    position: absolute;
-    bottom: -15px;
-    left: calc(50% - 4px);
+        font-weight: 100;
 
-    font-weight: 100;
-
-    transform: scaleX(2) scaleY(0.5);
+        transform: scaleX(2) scaleY(0.5);
+    }
 }
 
 nav li a,
