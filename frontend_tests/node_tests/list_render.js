@@ -228,9 +228,7 @@ function sort_button(opts) {
         };
     }
 
-    let button;
-
-    const $button = {
+    const button = {
         data: data,
         closest: lookup('.progressive-table-wrapper', {
             data: lookup('list-render', opts.list_name),
@@ -252,10 +250,6 @@ function sort_button(opts) {
             assert.equal(sel, 'active');
             button.activated = true;
         },
-    };
-
-    button = {
-        to_jquery: () => $button,
         siblings_deactivated: false,
         activated: false,
     };
@@ -321,7 +315,7 @@ run_test('sorting', () => {
         return people.map(opts.modifier).join('');
     }
 
-    list_render.create(container, list, opts);
+    const widget = list_render.create(container, list, opts);
 
     let button_opts;
     let button;
@@ -336,7 +330,7 @@ run_test('sorting', () => {
 
     button = sort_button(button_opts);
 
-    list_render.handle_sort.call(button);
+    list_render.handle_sort(button, widget);
 
     assert(cleared);
     assert(button.siblings_deactivated);
@@ -357,7 +351,7 @@ run_test('sorting', () => {
     cleared = false;
     button.siblings_deactivated = false;
 
-    list_render.handle_sort.call(button);
+    list_render.handle_sort(button, widget);
 
     assert(cleared);
     assert(button.siblings_deactivated);
