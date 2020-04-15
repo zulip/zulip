@@ -55,6 +55,7 @@ const DropdownListWidget = function (opts) {
         // populate the dropdown
         const dropdown_list_body = $(`#${opts.container_id} .dropdown-list-body`).expectOne();
         const search_input = $(`#${opts.container_id} .dropdown-search > input[type=text]`);
+        const dropdown_toggle = $(`#${opts.container_id} .dropdown-toggle`);
 
         list_render.create(dropdown_list_body, opts.data, {
             name: `${opts.setting_name}_list`,
@@ -72,8 +73,27 @@ const DropdownListWidget = function (opts) {
             e.stopPropagation();
         });
 
-        $(`#${opts.container_id} .dropdown-toggle`).click(function () {
+        dropdown_toggle.click(function () {
             search_input.val("").trigger("input");
+        });
+
+        dropdown_toggle.focus(function (e) {
+            // On opening a Bootstrap Dropdown, the parent element recieves focus.
+            // Here, we want our search input to have focus instead.
+            e.preventDefault();
+            search_input.focus();
+        });
+
+        search_input.keydown(function (e) {
+            if (!/(38|40|27)/.test(e.keyCode)) {
+                return;
+            }
+            e.preventDefault();
+            const custom_event = jQuery.Event("keydown.dropdown.data-api", {
+                keyCode: e.keyCode,
+                which: e.keyCode,
+            });
+            dropdown_toggle.trigger(custom_event);
         });
 
         render(page_params[opts.setting_name]);
