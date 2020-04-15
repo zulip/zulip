@@ -101,7 +101,7 @@ const stream_name_error = (function () {
 function update_announce_stream_state() {
 
     // If there is no notifications_stream, we simply hide the widget.
-    if (page_params.realm_notifications_stream_id === -1) {
+    if (!stream_data.realm_has_notifications_stream()) {
         $('#announce-new-stream').hide();
         return;
     }
@@ -174,7 +174,7 @@ function create_stream() {
     }
     data.stream_post_policy = JSON.stringify(stream_post_policy);
 
-    const announce = page_params.realm_notifications_stream_id !== -1 &&
+    const announce = stream_data.realm_has_notifications_stream() &&
         $('#announce-new-stream input').prop('checked');
     data.announce = JSON.stringify(announce);
 
@@ -274,7 +274,7 @@ exports.show_new_stream_modal = function () {
     // public, "announce stream" on.
     $('#make-invite-only input:radio[value=public]').prop('checked', true);
 
-    if (page_params.realm_notifications_stream_id !== -1) {
+    if (stream_data.realm_has_notifications_stream()) {
         $('#announce-new-stream').show();
         $('#announce-new-stream input').prop('disabled', false);
         $('#announce-new-stream input').prop('checked', true);
