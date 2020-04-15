@@ -13,7 +13,17 @@
         <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mark as read' }} (R)" role="button" tabindex="0" aria-label="{{t 'Mark as read' }} (R)"></i>
     </td>
     <td class='recent_users'>
-        {{!-- USER ICONS --}}
+        <ul class="recent_avatars">
+            <li class="recent_avatars__item">
+                <span class="recent_avatars__others">+3</span>
+            </li>
+            <li class="recent_avatars__item">
+                <img src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50" class="recent_avatars__img" />
+            </li>
+            <li class="recent_avatars__item">
+                <img src="https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1&s=50" class="recent_avatars__img" />
+            </li>
+        </ul>
     </td>
     <td class="recent_timestamp">
         {{ timestamp }}

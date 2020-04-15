@@ -55,5 +55,47 @@
     .recents-list {
         margin: auto;
         overflow: auto;
+
+        .recent_avatars {
+            display: inline-flex; /* Causes LI items to display in row. */
+            list-style-type: none;
+            margin: auto; /* Centers vertically / horizontally in flex container. */
+            height: 15px !important;
+
+            /*
+                By using the row-reverse layout, the visual ordering will be opposite of
+                the DOM ordering. This will allows us to stack the items in the opposite
+                direction of the natural stacking order without having to mess with the
+                zIndex value. The MAJOR DOWNSIDE is that the HTML itself now reads
+                backwards, which super janky.
+            */
+            flex-direction: row-reverse;
+        }
+
+        .recent_avatars__item {
+            height: 15px;
+            margin: 0px 0px 0px 0px;
+            padding: 0px 0px 0px 0px;
+            position: relative;
+            width: 15px; /* Forces flex items to be smaller than their contents. */
+        }
+
+        .recent_avatars__img,
+        .recent_avatars__initials,
+        .recent_avatars__others {
+            border: 1px solid hsl(221.1, 23.5%, 15.9%);
+            border-left: 0 !important;
+            border-radius: 6px;
+            color: hsl(0, 0%, 100%);
+            display: block;
+            height: 15px;
+            line-height: 15px;
+            text-align: center;
+            width: 15px;
+        }
+
+        .recent_avatars__others {
+            background-color: hsl(205.2, 76.5%, 50%);
+        }
     }
 }
