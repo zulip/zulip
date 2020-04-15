@@ -20,6 +20,15 @@ function compare_a_b(a, b) {
     return -1;
 }
 
+function sort_email(a, b) {
+    const email_a = settings_data.email_for_user_settings(a) || '';
+    const email_b = settings_data.email_for_user_settings(b) || '';
+    return compare_a_b(
+        email_a.toLowerCase(),
+        email_b.toLowerCase()
+    );
+}
+
 function sort_role(a, b) {
     function role(user) {
         if (user.is_admin) { return 0; }
@@ -193,6 +202,7 @@ function populate_users(realm_people_data) {
         parent_container: $("#admin-bot-list").expectOne(),
         init_sort: ['alphabetic', 'full_name'],
         sort_fields: {
+            email: sort_email,
             bot_owner: sort_bot_owner,
         },
     });
@@ -226,8 +236,9 @@ function populate_users(realm_people_data) {
         parent_container: $("#admin-user-list").expectOne(),
         init_sort: ['alphabetic', 'full_name'],
         sort_fields: {
-            role: sort_role,
+            email: sort_email,
             last_active: sort_last_active,
+            role: sort_role,
         },
     });
 
@@ -249,6 +260,7 @@ function populate_users(realm_people_data) {
         parent_container: $("#admin-deactivated-users-list").expectOne(),
         init_sort: ['alphabetic', 'full_name'],
         sort_fields: {
+            email: sort_email,
             role: sort_role,
         },
     });
