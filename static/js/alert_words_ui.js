@@ -2,9 +2,16 @@ const render_alert_word_settings_item = require('../templates/alert_word_setting
 
 exports.render_alert_words_ui = function () {
     const words = alert_words.get_word_list();
+    words.sort();
     const word_list = $('#alert_words_list');
 
     word_list.find('.alert-word-item').remove();
+
+    const new_alert_word_form = render_alert_word_settings_item({
+        word: '',
+        editing: true,
+    });
+    word_list.append(new_alert_word_form);
 
     for (const alert_word of words) {
         const rendered_alert_word = render_alert_word_settings_item({
@@ -13,12 +20,6 @@ exports.render_alert_words_ui = function () {
         });
         word_list.append(rendered_alert_word);
     }
-
-    const new_alert_word_form = render_alert_word_settings_item({
-        word: '',
-        editing: true,
-    });
-    word_list.append(new_alert_word_form);
 
     // Focus new alert word name text box.
     $('#create_alert_word_name').focus();
