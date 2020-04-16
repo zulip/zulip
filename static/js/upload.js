@@ -225,7 +225,8 @@ exports.setup_upload = function (config) {
             }
         });
 
-        if (!uploads_in_progress) {
+        const has_errors = exports.get_item("send_status", config).hasClass("alert-error");
+        if (!uploads_in_progress && !has_errors) {
             setTimeout(function () {
                 exports.hide_upload_status(config);
             }, 500);
