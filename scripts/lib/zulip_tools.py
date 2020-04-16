@@ -390,8 +390,9 @@ def os_families() -> Set[str]:
     distro_info = parse_os_release()
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
-def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]):
-    # type: (List[str], str, bool, List[str]) -> bool
+def file_or_package_hash_updated(paths: List[str],
+                                 hash_name: str,
+                                 package_versions: List[str]=[]) -> bool:
     # Check whether the files or package_versions passed as arguments
     # changed compared to the last execution.
     sha1sum = hashlib.sha1()
@@ -410,7 +411,7 @@ def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]
         hash_file.seek(0)
         last_hash = hash_file.read()
 
-        if is_force or (new_hash != last_hash):
+        if (new_hash != last_hash):
             hash_file.seek(0)
             hash_file.truncate()
             hash_file.write(new_hash)
