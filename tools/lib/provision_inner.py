@@ -94,6 +94,15 @@ def setup_bash_profile() -> None:
         # no existing bash profile found; claim .bash_profile
         setup_shell_profile(BASH_PROFILES[0])
 
+def need_to_run_compilemessages() -> bool:
+    # Consider updating generated translations data: both `.mo`
+    # files and `language-options.json`.
+    paths = ['zerver/management/commands/compilemessages.py']
+    paths += glob.glob('locale/*/LC_MESSAGES/*.po')
+    paths += glob.glob('locale/*/translations.json')
+
+    return file_or_package_hash_updated(paths, "last_compilemessages_hash")
+
 def main(options: argparse.Namespace) -> int:
     setup_bash_profile()
     setup_shell_profile('~/.zprofile')
@@ -187,13 +196,7 @@ def main(options: argparse.Namespace) -> int:
         elif test_template_db_status == 'current':
             print("No need to regenerate the test DB.")
 
-        # Consider updating generated translations data: both `.mo`
-        # files and `language-options.json`.
-        paths = ['zerver/management/commands/compilemessages.py']
-        paths += glob.glob('locale/*/LC_MESSAGES/*.po')
-        paths += glob.glob('locale/*/translations.json')
-
-        if (options.force or file_or_package_hash_updated(paths, "last_compilemessages_hash")):
+        if options.is_force or need_to_run_compilemessages():
             run(["./manage.py", "compilemessages"])
         else:
             print("No need to run `manage.py compilemessages`.")
