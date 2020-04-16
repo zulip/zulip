@@ -53,7 +53,7 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     else:
         form = ToSForm()
 
-    email = request.user.email
+    email = request.user.delivery_email
     special_message_template = None
     if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
         special_message_template = 'zerver/' + settings.FIRST_TIME_TOS_TEMPLATE
