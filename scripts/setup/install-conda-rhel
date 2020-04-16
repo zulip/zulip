@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Use this script to install conda package manager.
+set -e
+set -x
+
+# Using instructions from https://docs.conda.io/projects/conda/en/latest/user-guide/install/rpm-debian.html
+
+# Import conda GPG public key
+rpm --import https://repo.anaconda.com/pkgs/misc/gpgkeys/anaconda.asc
+
+# Add the Anaconda repository
+cat <<EOF > /etc/yum.repos.d/conda.repo
+[conda]
+name=Conda
+baseurl=https://repo.anaconda.com/pkgs/misc/rpmrepo/conda
+enabled=1
+gpgcheck=1
+gpgkey=https://repo.anaconda.com/pkgs/misc/gpgkeys/anaconda.asc
+EOF
+
+# Install it!
+# NOTE: Pin conda version?
+yum install -y conda
