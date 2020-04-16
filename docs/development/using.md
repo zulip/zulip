@@ -23,8 +23,8 @@ the development environment][authentication-dev-server].
   checkout inside the Vagrant guest); this should complete in about a minute. It
   will run in under a second if no changes are required.
 
-  After provisioning, you'll want to
-  [(re)start the Zulip development server](https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#step-3-start-the-development-environment).
+  After provisioning, you'll want to [(re)start the Zulip development server
+  ](../development/setup-vagrant.html#step-3-start-the-development-environment).
 
   You can create a script called `tools/custom_provision` in your Zulip Git
   checkout; and place any extra setup commands (additional programs or

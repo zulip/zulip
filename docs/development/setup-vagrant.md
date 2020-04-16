@@ -442,9 +442,9 @@ guest); this should complete in about a minute.
 
 More information about provisioning and using the development environment can be
 found at
-[#common](https://zulip.readthedocs.io/en/latest/development/using.html#common)
+[#common](../development/using.html#common)
 in the
-[Using the Development Environment](https://zulip.readthedocs.io/en/latest/development/using.html#)
+[Using the Development Environment](../development/using.md)
 
 If you run into any trouble, [#provision
 help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
