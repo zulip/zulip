@@ -5,6 +5,7 @@ const topics = new Map(); // Key is stream-id:topic.
 
 exports.process_messages = function (messages) {
     messages.forEach(exports.process_message);
+    // exports.update() is called via this call too
     exports.update_muted_topics();
 };
 
@@ -61,6 +62,7 @@ exports.update_muted_topics = function () {
         const key = elem.stream_id + ':' + elem.topic;
         topics.delete(key);
     }
+    exports.update();
 };
 
 exports.process_topic = function (stream_id, topic) {
