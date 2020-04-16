@@ -303,6 +303,16 @@ exports.update_messages = function update_messages(events) {
 
         notifications.received_messages([msg]);
         alert_words.process_message(msg);
+
+        if (topic_edited) {
+            const stream_id = event.stream_id;
+            const old_topic = util.get_edit_event_orig_topic(event);
+
+            // reprocess the old and new topics.
+            [old_topic, new_topic].forEach((topic) => {
+                recent_topics.process_topic(stream_id, topic);
+            });
+        }
     }
 
     // If a topic was edited, we re-render the whole view to get any
