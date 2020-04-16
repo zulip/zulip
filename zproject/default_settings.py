@@ -63,6 +63,9 @@ SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = None  # type: Optional[Dict[str, str]]
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT = None  # type: Optional[Dict[str, str]]
 SOCIAL_AUTH_SAML_ENABLED_IDPS = {}  # type: Dict[str, Dict[str, str]]
 SOCIAL_AUTH_SAML_SECURITY_CONFIG = {}  # type: Dict[str, Any]
+# Set this to True to enforce that any configured IdP needs to specify
+# the limit_to_subdomains setting to be considered valid:
+SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
 # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
 GOOGLE_OAUTH2_CLIENT_ID = None  # type: Optional[str]
 

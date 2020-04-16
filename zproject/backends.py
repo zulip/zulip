@@ -1394,6 +1394,20 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     # provide a registration flow prompt for them to set their name.
     full_name_validated = True
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        if settings.SAML_REQUIRE_LIMIT_TO_SUBDOMAINS:
+            idps_without_limit_to_subdomains = [
+                idp_name for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items()
+                if 'limit_to_subdomains' not in idp_dict
+            ]
+            if idps_without_limit_to_subdomains:
+                logging.error("SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following " +
+                              "IdPs don't have limit_to_subdomains specified and will be ignored: " +
+                              "%s" % (idps_without_limit_to_subdomains,))
+                for idp_name in idps_without_limit_to_subdomains:
+                    del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
+        super().__init__(*args, **kwargs)
+
     def auth_url(self) -> str:
         """Get the URL to which we must redirect in order to
         authenticate the user. Overriding the original SAMLAuth.auth_url.

@@ -1639,6 +1639,27 @@ class SAMLAuthBackendTest(SocialAuthBase):
             # No matching url pattern.
             self.assertEqual(result.status_code, 404)
 
+    def test_social_auth_saml_require_limit_to_subdomains(self) -> None:
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict['test_idp2'] = copy.deepcopy(idps_dict['test_idp'])
+        idps_dict['test_idp2']['url'] = 'https://idp2.example.com/idp/profile/SAML2/Redirect/SSO'
+        idps_dict['test_idp2']['display_name'] = 'Second Test IdP'
+        idps_dict['test_idp2']['limit_to_subdomains'] = ['zulip', ]
+
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
+                           SAML_REQUIRE_LIMIT_TO_SUBDOMAINS=True):
+            with mock.patch('logging.error') as mock_error:
+                # Initialization of the backend should validate the configured IdPs
+                # with respect to the SAML_REQUIRE_LIMIT_TO_SUBDOMAINS setting and remove
+                # the non-compliant ones.
+                SAMLAuthBackend()
+            self.assertEqual(list(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys()),
+                             ['test_idp2', ])
+            mock_error.assert_called_with(
+                "SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following " +
+                "IdPs don't have limit_to_subdomains specified and will be ignored: " +
+                "['test_idp']")
+
 class GitHubAuthBackendTest(SocialAuthBase):
     __unittest_skip__ = False
 
