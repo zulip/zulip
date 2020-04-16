@@ -4,9 +4,9 @@ To run a Zulip server, you will need:
 * A dedicated machine or VM
 * A supported OS:
   * Ubuntu 18.04 Bionic
-  * Ubuntu 16.04 Xenial
-  * Debian 9 Stretch
+  * Ubuntu 16.04 Xenial (deprecated)
   * Debian 10 Buster
+  * Debian 9 Stretch  (deprecated)
 * At least 2GB RAM, and 10GB disk space
   * If you expect 100+ users: 4GB RAM, and 2 CPUs
 * A hostname in DNS
@@ -29,12 +29,13 @@ can't support you, but
 
 #### Operating System
 
-Ubuntu 18.04 Bionic, Ubuntu 16.04 Xenial, Debian Buster and Debian
-Stretch are supported for running Zulip in production.  64-bit is
-recommended.  We also recommend installing on the newest option you're
-comfortable with, to save your organization the work of upgrading
-(Ubuntu Trusty [reached end of life in April 2019][trusty-eol]; Zulip
-2.0 was the last major release to support it).
+Ubuntu 18.04 Bionic, Debian Busterm, Ubuntu 16.04 Xenial (deprecated),
+and Debian Stretch (deprecated) are supported for running Zulip in
+production.  64-bit is recommended.  We also recommend installing on
+the newest option you're comfortable with, to save your organization
+the work of upgrading (Ubuntu Trusty [reached end of life in April
+2019][trusty-eol]; Zulip 2.0 was the last major release to support
+it).
 
 If you're using Ubuntu, the
 [Ubuntu universe repository][ubuntu-repositories] must be
