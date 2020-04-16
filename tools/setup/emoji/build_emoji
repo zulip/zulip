@@ -86,7 +86,7 @@ def main() -> None:
         with open(success_stamp, 'w') as f:
             f.close()
 
-    print("Using cached emojis from {}".format(source_emoji_dump))
+    print("build_emoji: Using cached emojis from {}".format(source_emoji_dump))
     if os.path.lexists(TARGET_EMOJI_DUMP):
         os.remove(TARGET_EMOJI_DUMP)
     os.symlink(source_emoji_dump, TARGET_EMOJI_DUMP)
