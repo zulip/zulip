@@ -241,6 +241,14 @@ Handlebars [helpers][] that Zulip registers.  The syntax for simple strings is:
 {{t 'English Text' }}
 ```
 
+If you are passing a translated string to a Handlebars Partial, you can use:
+
+```
+{{> template_name
+    variable_name=(t 'English Text')
+    }}
+```
+
 The syntax for block strings or strings containing variables is:
 
 ```

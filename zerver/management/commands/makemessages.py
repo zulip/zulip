@@ -48,6 +48,8 @@ strip_whitespace_left = re.compile("\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % 
 regexes = [r'{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
            r'{{\s*t "(.*?)"\W*}}',
            r"{{\s*t '(.*?)'\W*}}",
+           r'=\(t "(.*?)"\)(?=[^{]*}})',
+           r"=\(t '(.*?)'\)(?=[^{]*}})",
            r"i18n\.t\('([^']*?)'\)",
            r"i18n\.t\('(.*?)',\s*.*?[^,]\)",
            r'i18n\.t\("([^"]*?)"\)',
