@@ -119,6 +119,7 @@ exports.upload_files = function (uppy, config, files) {
             });
         } catch (error) {
             // Errors are handled by info-visible and upload-error event callbacks.
+            break;
         }
     }
 };
