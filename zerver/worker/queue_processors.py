@@ -13,6 +13,7 @@ import socket
 
 from django.conf import settings
 from django.db import connection
+from django.utils.timezone import now as timezone_now
 from zerver.models import \
     get_client, get_system_bot, PreregistrationUser, \
     get_user_profile_by_id, Message, Realm, UserMessage, UserProfile, \
@@ -680,14 +681,26 @@ class DeferredWorker(QueueProcessingWorker):
             start = time.time()
             realm = Realm.objects.get(id=event['realm_id'])
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
+            export_event = RealmAuditLog.objects.get(id=event['id'])
+            user_profile = get_user_profile_by_id(event['user_profile_id'])
 
-            public_url = export_realm_wrapper(realm=realm, output_dir=output_dir,
-                                              threads=6, upload=True, public_only=True,
-                                              delete_after_upload=True)
+            try:
+                public_url = export_realm_wrapper(realm=realm, output_dir=output_dir,
+                                                  threads=6, upload=True, public_only=True,
+                                                  delete_after_upload=True)
+            except Exception:
+                export_event.extra_data = ujson.dumps(dict(
+                    failed_timestamp=timezone_now().timestamp()
+                ))
+                export_event.save(update_fields=['extra_data'])
+                logging.error("Data export for %s failed after %s" % (
+                    user_profile.realm.string_id, time.time() - start))
+                notify_realm_export(user_profile)
+                return
+
             assert public_url is not None
 
             # Update the extra_data field now that the export is complete.
-            export_event = RealmAuditLog.objects.get(id=event['id'])
             export_event.extra_data = ujson.dumps(dict(
                 export_path=urllib.parse.urlparse(public_url).path,
             ))
@@ -695,7 +708,6 @@ class DeferredWorker(QueueProcessingWorker):
 
             # Send a private message notification letting the user who
             # triggered the export know the export finished.
-            user_profile = get_user_profile_by_id(event['user_profile_id'])
             content = "Your data export is complete and has been uploaded here:\n\n%s" % (
                 public_url,)
             internal_send_private_message(
