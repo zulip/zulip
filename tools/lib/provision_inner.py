@@ -165,7 +165,7 @@ def main(options: argparse.Namespace) -> int:
         if options.is_force or not rabbitmq_is_configured:
             run(["scripts/setup/configure-rabbitmq"])
         else:
-            print("RabbitMQ is already configured.")
+            print("No need to run `scripts/setup/configure-rabbitmq.")
 
         dev_template_db_status = template_database_status('dev')
         if options.is_force or dev_template_db_status == 'needs_rebuild':
