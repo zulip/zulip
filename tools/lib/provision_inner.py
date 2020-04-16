@@ -95,6 +95,11 @@ def setup_bash_profile() -> None:
         setup_shell_profile(BASH_PROFILES[0])
 
 def need_to_run_compilemessages() -> bool:
+    if not os.path.exists('locale/language_name_map.json'):
+        # User may have cleaned their git checkout.
+        print('Need to run compilemessages due to missing language_name_map.json')
+        return True
+
     # Consider updating generated translations data: both `.mo`
     # files and `language-options.json`.
     paths = ['zerver/management/commands/compilemessages.py']
