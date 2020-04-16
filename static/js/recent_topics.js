@@ -2,6 +2,7 @@ const topics = new Map(); // Key is stream-id:topic.
 
 exports.process_messages = function (messages) {
     messages.forEach(exports.process_message);
+    exports.update_muted_topics();
 };
 
 function reduce_message(msg) {
@@ -50,6 +51,13 @@ function get_sorted_topics() {
 
 exports.get = function () {
     return get_sorted_topics();
+};
+
+exports.update_muted_topics = function () {
+    for (const elem of muting.get_muted_topics()) {
+        const key = elem.stream_id + ':' + elem.topic;
+        topics.delete(key);
+    }
 };
 
 window.recent_topics = exports;

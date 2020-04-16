@@ -21,6 +21,15 @@ const topic4 = "topic-4";  // User not present
 const topic5 = "topic-5";  // other sender
 const topic6 = "topic-6";  // other sender
 
+const topic7 = "topic-7";  // muted topic
+set_global('muting', {
+    get_muted_topics: () => {
+        return [
+            (stream1, topic7),
+        ];
+    },
+});
+
 // sender1 == current user
 // sender2 == any other user
 const sender1 = 1;
@@ -100,6 +109,14 @@ messages[8] = {
     type: 'stream',
 };
 
+messages[9] = {
+    stream_id: stream1,
+    timestamp: 1060,
+    topic: topic7,
+    sender_id: sender1,
+    type: 'stream',
+};
+
 run_test('basic assertions', () => {
 
     rt.process_messages(messages);
@@ -146,6 +163,15 @@ run_test('basic assertions', () => {
         timestamp: messages[8].timestamp + 1,
         topic: topic6,
         sender_id: sender2,
+        type: 'stream',
+    });
+
+    // Send new message to topic7 (muted)
+    rt.process_message({
+        stream_id: stream1,
+        timestamp: messages[8].timestamp + 1,
+        topic: topic7,
+        sender_id: sender1,
         type: 'stream',
     });
 
