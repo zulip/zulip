@@ -126,6 +126,9 @@ def need_to_run_compilemessages() -> bool:
     return file_or_package_hash_updated(paths, "last_compilemessages_hash")
 
 def need_to_run_inline_email_css() -> bool:
+    if not os.path.exists('templates/zerver/emails/compiled/'):
+        return True
+
     email_source_paths = [
         "scripts/setup/inline_email_css.py",
         "templates/zerver/emails/email.css",
