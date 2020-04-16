@@ -1,22 +1,15 @@
-{{!--
-This code contains modifications by another contributor: see Issue #13575.
-Although the mouse hover and shortcut works, there is now an issue with the user profile.
-The shorcut description now replaces the user's avatar.
---}}
-
-
 <div class="message_top_line">
     {{#unless status_message}}
-    <span class="message_sender sender_info_hover no-select"  title="{{t 'User profile' }} (u)">
+    <span class="message_sender sender_info_hover no-select" >
         {{#if include_sender}}
-
+            <span title="{{t 'View user profile' }} (u)">
             {{> message_avatar}}
 
             <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
             {{#if sender_is_bot}}
             <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
             {{/if}}
-
+          </span>
         {{/if}}
     </span>
     {{/unless}}
