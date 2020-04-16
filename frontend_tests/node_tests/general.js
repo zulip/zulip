@@ -96,6 +96,7 @@ set_global('alert_words', {});
 alert_words.process_message = noop;
 
 // We can also bring in real code:
+zrequire('muting');
 zrequire('recent_senders');
 zrequire('unread');
 zrequire('stream_topic_history');
