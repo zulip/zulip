@@ -2,14 +2,13 @@
     {{#unless status_message}}
     <span class="message_sender sender_info_hover no-select">
         {{#if include_sender}}
-
+        <span title="{{t 'View user profile' }} (u)">
             {{> message_avatar}}
-
             <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
             {{#if sender_is_bot}}
             <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
             {{/if}}
-
+        </span>
         {{/if}}
     </span>
     {{/unless}}
