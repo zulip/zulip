@@ -242,8 +242,7 @@ def template_database_status(database_type: str) -> str:
         # migrations without spending a few 100ms parsing all the
         # Python migration code.
         paths = glob.glob('*/migrations/*.py')
-        check_migrations = file_or_package_hash_updated(paths, "migrations_hash_" + database.database_name,
-                                                        is_force=False)
+        check_migrations = file_or_package_hash_updated(paths, "migrations_hash_" + database.database_name)
         if not check_migrations:
             return 'current'
 
