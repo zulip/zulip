@@ -146,7 +146,7 @@ run_test('show_error_message', () => {
 
 run_test('upload_files', () => {
     let uppy_cancel_all_called = false;
-    const files = [
+    let files = [
         {
             name: "budapest.png",
             type: "image/png",
@@ -211,6 +211,25 @@ run_test('upload_files', () => {
     assert(compose_ui_insert_syntax_and_focus_called);
     assert(compose_ui_autosize_textarea_called);
     assert(uppy_add_file_called);
+
+    files = [
+        {
+            name: "budapest.png",
+            type: "image/png",
+        },
+        {
+            name: "prague.png",
+            type: "image/png",
+        },
+    ];
+    let add_file_counter = 0;
+    uppy.addFile = (file) => {
+        assert.equal(file.name, "budapest.png");
+        add_file_counter += 1;
+        throw Error();
+    };
+    upload.upload_files(uppy, config, files);
+    assert.equal(add_file_counter, 1);
 
     global.patch_builtin("setTimeout", (func) => {
         func();
