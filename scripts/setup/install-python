@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Use this script to install python using conda.
+set -e
+set -x
+
+# Defaults
+PYTHON_VERSION=3.7
+CONDA_VENV_PATH=/srv/zulip-conda-venv
+
+LINUX_DISTRO=$1
+
+# Install Conda
+sudo bash "$(dirname "$(dirname "$0")")/setup/install-conda-$LINUX_DISTRO"
+
+# NOTE: If user is reinstalling should we delete the old venv and create new or just use it??
+# Use old zulip conda venv if it exists.
+if [[ -d "$CONDA_VENV_PATH" ]]; then
+    echo "Using existing zulip conda env"
+
+else
+    # Activate (base) conda env
+    source /opt/conda/etc/profile.d/conda.sh
+    # Give user permission to write to the folder.
+    sudo mkdir "$CONDA_VENV_PATH"
+    # A better way would be to use chown and change
+    # owner to current user but it
+    # would raise complexities in a multiuser setup.
+    sudo chmod a+rwx "$CONDA_VENV_PATH"
+    # Create new conda env with our specified python version
+    # Install virtualenv inside conda venv to ensure all commands
+    # to virtualenv are run inside conda venv.
+    conda create -y --prefix "$CONDA_VENV_PATH" python="$PYTHON_VERSION" virtualenv
+fi
