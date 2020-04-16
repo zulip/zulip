@@ -143,9 +143,17 @@ exports.show_topic_edit_spinner = function (row) {
     $(".topic_edit_cancel").hide();
 };
 
-exports.end_if_focused = function () {
-    const focused_elem = $(".message_edit").find(':focus');
+exports.end_if_focused_on_inline_topic_edit = function () {
+    const focused_elem = $(".topic_edit_form").find(':focus');
+    if (focused_elem.length === 1) {
+        focused_elem.blur();
+        const recipient_row = focused_elem.closest('.recipient_row');
+        exports.end_inline_topic_edit(recipient_row);
+    }
+};
 
+exports.end_if_focused_on_message_row_edit = function () {
+    const focused_elem = $(".message_edit").find(':focus');
     if (focused_elem.length === 1) {
         focused_elem.blur();
         const row = focused_elem.closest('.message_row');
@@ -186,7 +194,7 @@ function handle_message_row_edit_keydown(e) {
         }
         return;
     case 27: // Handle escape keys in the message_edit form.
-        exports.end_if_focused();
+        exports.end_if_focused_on_message_row_edit();
         e.stopPropagation();
         e.preventDefault();
         return;
@@ -203,6 +211,11 @@ function handle_inline_topic_edit_keydown(e) {
         row = $(e.target).closest(".recipient_row");
         exports.show_topic_edit_spinner(row);
         exports.save_inline_topic_edit(row);
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+    case 27: // handle escape
+        exports.end_if_focused_on_inline_topic_edit();
         e.stopPropagation();
         e.preventDefault();
         return;
