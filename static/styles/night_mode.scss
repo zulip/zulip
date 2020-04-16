@@ -90,6 +90,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     /* these are converting grey things to "new grey" */
     *[disabled=disabled],
+    *[readonly=readonly],
     .sidebar-title,
     .recipient_row_date {
         color: inherit;
