@@ -125,6 +125,14 @@ def need_to_run_compilemessages() -> bool:
 
     return file_or_package_hash_updated(paths, "last_compilemessages_hash")
 
+def need_to_run_inline_email_css() -> bool:
+    email_source_paths = [
+        "scripts/setup/inline_email_css.py",
+        "templates/zerver/emails/email.css",
+    ]
+    email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
+    return file_or_package_hash_updated(email_source_paths, "last_email_source_files_hash")
+
 def main(options: argparse.Namespace) -> int:
     setup_bash_profile()
     setup_shell_profile('~/.zprofile')
@@ -161,10 +169,7 @@ def main(options: argparse.Namespace) -> int:
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
 
-    email_source_paths = ["scripts/setup/inline_email_css.py", "templates/zerver/emails/email.css"]
-    email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
-    if (options.is_force or
-            file_or_package_hash_updated(email_source_paths, "last_email_source_files_hash")):
+    if options.is_force or need_to_run_inline_email_css():
         run(["scripts/setup/inline_email_css.py"])
     else:
         print("No need to run `scripts/setup/inline_email_css.py`.")
