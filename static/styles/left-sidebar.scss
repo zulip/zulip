@@ -294,10 +294,10 @@ li.top_left_starred_messages {
     line-height: 1.1;
 }
 
-.all-messages-arrow i,
-.stream-sidebar-arrow i,
-.starred-messages-sidebar-arrow i,
-.topic-sidebar-arrow i {
+.all-messages-sidebar-menu-icon i,
+.stream-sidebar-menu-icon i,
+.starred-messages-sidebar-menu-icon i,
+.topic-sidebar-menu-icon i {
     padding-right: 0.25em;
     display: inline-block;
     width: 13px;
@@ -307,10 +307,10 @@ li.top_left_starred_messages {
     All of our left sidebar handlers use absolute
     positioning.  We should fix that.
 */
-.all-messages-arrow,
-.stream-sidebar-arrow,
-.starred-messages-sidebar-arrow,
-.topic-sidebar-arrow {
+.all-messages-sidebar-menu-icon,
+.stream-sidebar-menu-icon,
+.starred-messages-sidebar-menu-icon,
+.topic-sidebar-menu-icon {
     position: absolute;
     display: none;
 }
@@ -319,9 +319,9 @@ li.top_left_starred_messages {
     The All Messages and Stream chevrons are
     pretty similar.
 */
-.all-messages-arrow,
-.starred-messages-sidebar-arrow,
-.stream-sidebar-arrow {
+.all-messages-sidebar-menu-icon,
+.starred-messages-sidebar-menu-icon,
+.stream-sidebar-menu-icon {
     top: 3px;
     right: 10px;
     font-size: 0.8em;
@@ -332,7 +332,7 @@ li.top_left_starred_messages {
     font to show they're "lower" in the hierarchy,
     which also affects it positioning.
 */
-.topic-sidebar-arrow {
+.topic-sidebar-menu-icon {
     top: 1px;
     right: 10px;
     font-size: 0.7em;
@@ -342,10 +342,10 @@ li.top_left_starred_messages {
     When you hover over list items, we hover
     the relevant chevrons in light gray.
 */
-li.top_left_all_messages:hover .all-messages-arrow,
-li.top_left_starred_messages:hover .starred-messages-sidebar-arrow,
-#stream_filters li:hover .stream-sidebar-arrow,
-li.topic-list-item:hover .topic-sidebar-arrow {
+li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
+li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
+#stream_filters li:hover .stream-sidebar-menu-icon,
+li.topic-list-item:hover .topic-sidebar-menu-icon {
     display: inline;
     cursor: pointer;
     color: hsl(0, 0%, 53%);
@@ -355,10 +355,10 @@ li.topic-list-item:hover .topic-sidebar-arrow {
     If you hover directly over the chevron itself,
     show it in black.
 */
-.starred-messages-sidebar-arrow:hover,
-.all-messages-arrow:hover,
-.stream-sidebar-arrow:hover,
-.topic-sidebar-arrow:hover {
+.starred-messages-sidebar-menu-icon:hover,
+.all-messages-sidebar-menu-icon:hover,
+.stream-sidebar-menu-icon:hover,
+.topic-sidebar-menu-icon:hover {
     color: hsl(0, 0%, 0%) !important;
 }
 
