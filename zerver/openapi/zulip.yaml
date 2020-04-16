@@ -11,7 +11,8 @@ openapi: 3.0.1
 info:
   version: 1.0.0
   title: Zulip REST API
-  description: Powerful open source group chat
+  description: |
+    Powerful open source group chat
   contact:
     url: https://zulipchat.com
   license:
@@ -37,8 +38,8 @@ paths:
       - name: username
         in: query
         description: |
-          The username to be used for authentication (typically, the
-          email address, but it could be an LDAP username).
+          The username to be used for authentication (typically, the email
+          address, but it could be an LDAP username).
         schema:
           type: string
         required: true
@@ -58,14 +59,15 @@ paths:
                 $ref: '#/components/schemas/ApiKeyResponse'
   /dev_fetch_api_key:
     post:
-      description: Gather a token bound to a user account, to identify and
-        authenticate them when making operations with the API. This token must
-        be used as the password in the rest of the endpoints that require
-        Basic authentication.
+      description: |
+        Gather a token bound to a user account, to identify and authenticate
+        them when making operations with the API. This token must be used as the
+        password in the rest of the endpoints that require Basic authentication.
       parameters:
       - name: username
         in: query
-        description: The email address for the user that owns the API key.
+        description: |
+          The email address for the user that owns the API key.
         schema:
           type: string
         example: iago@zulip.com
@@ -80,33 +82,37 @@ paths:
                 $ref: '#/components/schemas/ApiKeyResponse'
   /events:
     get:
-      description: Receive new events from
-        [a registered event queue](/api/register-queue).
+      description: |
+        Receive new events from [a registered event queue](/api/register-queue).
       parameters:
       - name: queue_id
         in: query
-        description: The ID of a queue that you registered via
-          `POST /api/v1/register`
-          (see [Register a queue](/api/register-queue)).
+        description: |
+          The ID of a queue that you registered via `POST /api/v1/register` (see
+          [Register a queue](/api/register-queue)).
         schema:
           type: string
         example: 1375801870:2942
       - name: last_event_id
         in: query
-        description: The highest event ID in this queue that you've received
-          and wish to acknowledge. See the [code for `call_on_each_event`](https://github.com/zulip/python-zulip-api/blob/master/zulip/zulip/__init__.py)
-          in the [zulip Python module](https://github.com/zulip/python-zulip-api)
-          for an example implementation of correctly processing each event
+        description: |
+          The highest event ID in this queue that you've received and
+          wish to acknowledge. See the [code for
+          `call_on_each_event`](https://github.com/zulip/python-zulip-api/blob/master/zulip/zulip/__init__.py)
+          in the [zulip Python
+          module](https://github.com/zulip/python-zulip-api) for an
+          example implementation of correctly processing each event
           exactly once.
         schema:
           type: integer
         example: -1
       - name: dont_block
         in: query
-        description: Set to `true` if the client is requesting a nonblocking
-          reply. If not specified, the request will block until either a new
-          event is available or a few minutes have passed, in which case the
-          server will send the client a heartbeat event.
+        description: |
+          Set to `true` if the client is requesting a nonblocking reply. If not
+          specified, the request will block until either a new event is available
+          or a few minutes have passed, in which case the server will send the
+          client a heartbeat event.
         schema:
           type: boolean
           default: false
@@ -122,11 +128,11 @@ paths:
                 - properties:
                     events:
                       type: array
-                      description: An array of `event` objects (possibly
-                        zero-length if `dont_block` is set) of events with
-                        IDs newer than `last_event_id`. Event IDs are
-                        guaranteed to be increasing, but they are not
-                        guaranteed to be consecutive.
+                      description: |
+                        An array of `event` objects (possibly zero-length if `dont_block` is
+                        set) of events with IDs newer than `last_event_id`. Event IDs are
+                        guaranteed to be increasing, but they are not guaranteed to be
+                        consecutive.
                 - example:
                     {
                         "events": [
@@ -192,12 +198,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/BadEventQueueIdError'
     delete:
-      description: Delete a previously registered queue.
+      description: |
+        Delete a previously registered queue.
       parameters:
       - name: queue_id
         in: query
-        description: The ID of a queue that you registered via
-          `POST /api/v1/register`(see [Register a queue](/api/register-queue).
+        description: |
+          The ID of a queue that you registered via `POST /api/v1/register`(see
+          [Register a queue](/api/register-queue).
         schema:
           type: string
         example: 1375801870:2942
@@ -217,11 +225,13 @@ paths:
                 $ref: '#/components/schemas/BadEventQueueIdError'
   /get_stream_id:
     get:
-      description: Get the unique ID of a given stream.
+      description: |
+        Get the unique ID of a given stream.
       parameters:
       - name: stream
         in: query
-        description: The name of the stream to retrieve the ID for.
+        description: |
+          The name of the stream to retrieve the ID for.
         schema:
           type: string
         example: Denmark
@@ -237,7 +247,8 @@ paths:
                 - properties:
                     stream_id:
                       type: integer
-                      description: The ID of the given stream.
+                      description: |
+                        The ID of the given stream.
                 - example:
                     {
                         "msg": "",
@@ -259,8 +270,9 @@ paths:
                     }
   /mark_all_as_read:
     post:
-      description: Mark all the user's unread messages as read. This is often
-        called "bankruptcy" in Zulip.
+      description: |
+        Mark all the user's unread messages as read. This is often called
+        "bankruptcy" in Zulip.
       responses:
         '200':
           description: Success.
@@ -270,12 +282,13 @@ paths:
                 $ref: '#/components/schemas/JsonSuccess'
   /mark_stream_as_read:
     post:
-      description: Mark all the unread messages in a stream as read.
+      description: |
+        Mark all the unread messages in a stream as read.
       parameters:
       - name: stream_id
         in: query
-        description: The ID of the stream whose messages should be marked as
-          read.
+        description: |
+          The ID of the stream whose messages should be marked as read.
         schema:
           type: integer
         example: 42
@@ -289,19 +302,21 @@ paths:
                 $ref: '#/components/schemas/JsonSuccess'
   /mark_topic_as_read:
     post:
-      description: Mark all the unread messages in a topic as read.
+      description: |
+        Mark all the unread messages in a topic as read.
       parameters:
       - name: stream_id
         in: query
-        description: The ID of the stream that contains the topic.
+        description: |
+          The ID of the stream that contains the topic.
         schema:
           type: integer
         example: 42
         required: true
       - name: topic_name
         in: query
-        description: The name of the topic whose messages should be marked as
-          read.
+        description: |
+          The name of the topic whose messages should be marked as read.
         schema:
           type: string
         example: new coffee machine
@@ -315,14 +330,15 @@ paths:
                 $ref: '#/components/schemas/JsonSuccess'
   /messages:
     get:
-      description: Fetch messages that match a specific narrow.
+      description: |
+        Fetch messages that match a specific narrow.
       parameters:
       - name: anchor
         in: query
         description: |
-          Integer message ID to anchor fetching of new messages.
-          Supports special string values for when the client wants the
-          server to compute the anchor to use:
+          Integer message ID to anchor fetching of new messages. Supports special
+          string values for when the client wants the server to compute the anchor
+          to use:
 
           * `newest`: The most recent message.
           * `oldest`: The oldest message.
@@ -347,22 +363,25 @@ paths:
         example: 42
       - name: num_before
         in: query
-        description: The number of messages with IDs less than the anchor to retrieve.
+        description: |
+          The number of messages with IDs less than the anchor to retrieve.
         schema:
           type: integer
         example: 4
         required: true
       - name: num_after
         in: query
-        description: The number of messages with IDs greater than the anchor to retrieve.
+        description: |
+          The number of messages with IDs greater than the anchor to retrieve.
         schema:
           type: integer
         example: 8
         required: true
       - name: narrow
         in: query
-        description: The narrow where you want to fetch the messages from.
-          See how to [construct a narrow](/api/construct-narrow).
+        description: |
+          The narrow where you want to fetch the messages from. See how to
+          [construct a narrow](/api/construct-narrow).
         schema:
           type: array
           items:
@@ -371,20 +390,24 @@ paths:
         example: [{"operand": "Denmark", "operator": "stream"}]
       - name: client_gravatar
         in: query
-        description: Whether the client supports computing gravatars URLs.  If enabled,
-          `avatar_url` will be included in the response only if there is a Zulip avatar,
-          and will be `null` for users who are using gravatar as their avatar.  This option
-          significantly reduces the compressed size of user data, since gravatar URLs
-          are long, random strings and thus do not compress well.
+        description: |
+          Whether the client supports computing gravatars URLs.  If
+          enabled, `avatar_url` will be included in the response only
+          if there is a Zulip avatar, and will be `null` for users who
+          are using gravatar as their avatar.  This option
+          significantly reduces the compressed size of user data,
+          since gravatar URLs are long, random strings and thus do not
+          compress well.
         schema:
           type: boolean
           default: false
         example: true
       - name: apply_markdown
         in: query
-        description: If `true`, message content is returned in the rendered HTML format.
-          If `false`, message content is returned in the raw markdown-format text that user
-          entered.
+        description: |
+          If `true`, message content is returned in the rendered HTML
+          format. If `false`, message content is returned in the raw
+          markdown-format text that user entered.
         schema:
           type: boolean
           default: true
@@ -414,29 +437,34 @@ paths:
                 - properties:
                     anchor:
                       type: integer
-                      description: The same `anchor` specified in the request (or the computed
-                        one, if `use_first_unread_anchor` is `true`).
+                      description: |
+                        The same `anchor` specified in the request (or the computed one, if
+                        `use_first_unread_anchor` is `true`).
                     found_newest:
                       type: boolean
-                      description: Whether the `messages` list includes the
-                        very newest messages matching the narrow (used by clients that
-                        paginate their requests to decide whether there are more messages
-                        to fetch).
+                      description: |
+                        Whether the `messages` list includes the very newest messages matching
+                        the narrow (used by clients that paginate their requests to decide
+                        whether there are more messages to fetch).
                     found_oldest:
                       type: boolean
-                      description: Whether the `messages` list includes the
-                        very oldest messages matching the narrow (used by clients that
-                        paginate their requests to decide whether there are more messages
-                        to fetch).
+                      description: |
+                        Whether the `messages` list includes the very oldest messages matching
+                        the narrow (used by clients that paginate their requests to decide
+                        whether there are more messages to fetch).
                     found_anchor:
                       type: boolean
-                      description: Whether the anchor message is included in the response.
-                        If the message with the ID specified in the request does not exist or
-                        did not match the narrow, this will be false.
+                      description: |
+                        Whether the anchor message is included in the
+                        response. If the message with the ID specified
+                        in the request does not exist or did not match
+                        the narrow, this will be false.
                     history_limited:
                       type: boolean
-                      description: Whether the message history was limited due to plan restrictions.
-                        This flag is set to `true` only when the oldest messages(`found_oldest`)
+                      description: |
+                        Whether the message history was limited due to
+                        plan restrictions. This flag is set to `true`
+                        only when the oldest messages(`found_oldest`)
                         matching the narrow is fetched.
                     messages:
                       type: array
@@ -524,12 +552,14 @@ paths:
                         ]
                     }
     post:
-      description: Send a message.
+      description: |
+        Send a message.
       parameters:
       - name: type
         in: query
-        description: The type of message to be sent. `private` for a private
-          message and `stream` for a stream message.
+        description: |
+          The type of message to be sent. `private` for a private message and
+          `stream` for a stream message.
         schema:
           type: string
           enum:
@@ -540,9 +570,9 @@ paths:
       - name: to
         in: query
         description: |
-          For stream messages, either the name or integer ID of the stream.
-          For private messages, either a list containing integer user
-          IDs or a list containing string email addresses.
+          For stream messages, either the name or integer ID of the stream. For
+          private messages, either a list containing integer user IDs or a list
+          containing string email addresses.
 
           **Changes**: Support using user/stream IDs was added in Zulip 2.0.0.
         schema:
@@ -551,16 +581,17 @@ paths:
         required: true
       - name: topic
         in: query
-        description: The topic of the message. Only required if `type` is
-          `stream`, ignored otherwise. Maximum length of 60 characters.
+        description: |
+          The topic of the message. Only required if `type` is `stream`, ignored
+          otherwise. Maximum length of 60 characters.
         schema:
           type: string
           default:
         example: Castle
       - name: content
         in: query
-        description: The content of the message. Maximum message size of
-          10000 bytes.
+        description: |
+          The content of the message. Maximum message size of 10000 bytes.
         schema:
           type: string
         example: Hello
@@ -576,7 +607,8 @@ paths:
                 - properties:
                     id:
                       type: integer
-                      description: The ID assigned to the message sent.
+                      description: |
+                        The ID assigned to the message sent.
                 - example:
                     {
                         "msg": "",
@@ -604,11 +636,13 @@ paths:
                     }
   /messages/{message_id}:
     get:
-      description: Get the raw content of a message.
+      description: |
+        Get the raw content of a message.
       parameters:
       - name: message_id
         in: path
-        description: The target message's ID.
+        description: |
+          The target message's ID.
         schema:
           type: integer
         example: 42
@@ -624,7 +658,8 @@ paths:
                 - properties:
                     raw_content:
                       type: string
-                      description: The raw content of the message.
+                      description: |
+                        The raw content of the message.
                 - example:
                     {
                         "raw_content": "**Don't** forget your towel!",
@@ -638,28 +673,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/InvalidMessageError'
     patch:
-      description: Edit a message that has already been sent.
+      description: |
+        Edit a message that has already been sent.
       parameters:
       - name: message_id
         in: path
-        description: The ID of the message that you wish to edit/update.
+        description: |
+          The ID of the message that you wish to edit/update.
         schema:
           type: integer
         example: 42
         required: true
       - name: topic
         in: query
-        description: The topic of the message. Only required for stream
-          messages. Maximum length of 60 characters.
+        description: |
+          The topic of the message. Only required for stream messages. Maximum
+          length of 60 characters.
         schema:
           type: string
           default:
         example: Castle
       - name: propagate_mode
         in: query
-        description: "Which message(s) should be edited: just the one
-          indicated in `message_id`, messages in the same topic that had been
-          sent after this one, or all of them."
+        description: |
+          "Which message(s) should be edited: just the one indicated in
+          `message_id`, messages in the same topic that had been sent after this
+          one, or all of them."
         schema:
           type: string
           enum:
@@ -670,14 +709,15 @@ paths:
         example: change_all
       - name: content
         in: query
-        description: The content of the message. Maximum message size of 10000
-          bytes.
+        description: |
+          The content of the message. Maximum message size of 10000 bytes.
         schema:
           type: string
         example: Hello
       - name: stream_id
         in: query
-        description: The stream ID to move the message(s) to, if moving to another stream.
+        description: |
+          The stream ID to move the message(s) to, if moving to another stream.
         schema:
           type: integer
         example: 2
@@ -710,11 +750,13 @@ paths:
                         "result": "error"
                     }
     delete:
-      description: Delete a message.
+      description: |
+        Delete a message.
       parameters:
       - name: message_id
         in: path
-        description: The ID of the message to delete.
+        description: |
+          The ID of the message to delete.
         schema:
           type: integer
         example: 42
@@ -747,11 +789,13 @@ paths:
                     }
   /messages/{message_id}/history:
     get:
-      description: Get the different versions of a previously edited message.
+      description: |
+        Get the different versions of a previously edited message.
       parameters:
       - name: message_id
         in: path
-        description: The ID of the message you want to fetch the history of.
+        description: |
+          The ID of the message you want to fetch the history of.
         schema:
           type: integer
         example: 42
@@ -769,8 +813,9 @@ paths:
                       type: array
                       items:
                         type: object
-                      description: A chronologically sorted array of
-                        `snapshot` objects, each one with the values of the
+                      description: |
+                        A chronologically sorted array of `snapshot`
+                        objects, each one with the values of the
                         message after the edition.
                 - example:
                     {
@@ -805,11 +850,13 @@ paths:
                 $ref: '#/components/schemas/InvalidMessageError'
   /messages/flags:
     post:
-      description: Add or remove flags in a list of messages.
+      description: |
+        Add or remove flags in a list of messages.
       parameters:
       - name: messages
         in: query
-        description: An array containing the IDs of the target messages.
+        description: |
+          An array containing the IDs of the target messages.
         schema:
           type: array
           items:
@@ -818,7 +865,8 @@ paths:
         required: true
       - name: op
         in: query
-        description: Whether to `add` the flag or `remove` it.
+        description: |
+          Whether to `add` the flag or `remove` it.
         schema:
           type: string
           enum:
@@ -828,7 +876,8 @@ paths:
         required: true
       - name: flag
         in: query
-        description: The flag that should be added/removed.
+        description: |
+          The flag that should be added/removed.
         schema:
           type: string
         example: read
@@ -846,8 +895,8 @@ paths:
                       type: array
                       items:
                         type: integer
-                      description: An array with the IDs of the modified
-                        messages.
+                      description: |
+                        An array with the IDs of the modified messages.
                 - example:
                     {
                         "msg": "",
@@ -858,11 +907,13 @@ paths:
                     }
   /messages/render:
     post:
-      description: Render a message to HTML.
+      description: |
+        Render a message to HTML.
       parameters:
       - name: content
         in: query
-        description: The content of the message.
+        description: |
+          The content of the message.
         schema:
           type: string
         example: '**foo**'
@@ -878,7 +929,8 @@ paths:
                 - properties:
                     rendered:
                       type: string
-                      description: The rendered HTML.
+                      description: |
+                        The rendered HTML.
                 - example:
                     {
                         "msg": "",
@@ -887,11 +939,13 @@ paths:
                     }
   /messages/{message_id}/reactions:
     post:
-      description: Add an emoji reaction to a message.
+      description: |
+        Add an emoji reaction to a message.
       parameters:
       - name: message_id
         in: path
-        description: The ID of the message that you want to add an emoji reaction to.
+        description: |
+          The ID of the message that you want to add an emoji reaction to.
         schema:
           type: integer
         example: 42
@@ -899,12 +953,12 @@ paths:
       - name: emoji_name
         in: query
         description: |
-                     Name of the emoji you want to add as as a reaction.
+          Name of the emoji you want to add as as a reaction.
 
-                     To find an emoji's name, hover over a message to
-                     reveal three icons on the right, then click the smiley face icon.
-                     Images of available reaction emojis appear. Hover over the emoji
-                     you want, and note that emoji's text name.
+          To find an emoji's name, hover over a message to reveal
+          three icons on the right, then click the smiley face icon.
+          Images of available reaction emojis appear. Hover over the
+          emoji you want, and note that emoji's text name.
         schema:
           type: string
         example: 'octopus'
@@ -912,18 +966,18 @@ paths:
       - name: emoji_code
         in: query
         description: |
-                     An encoded version of the unicode codepoint.  For
-                     most clients, you won't need this; it's used to
-                     handle a rare corner case when upvoting a unicode
-                     emoji reaction added previously by another user.
+          An encoded version of the unicode codepoint.  For most
+          clients, you won't need this; it's used to handle a rare
+          corner case when upvoting a unicode emoji reaction added
+          previously by another user.
 
-                     If the existing reaction was added when the Zulip
-                     server was using a previous version of the emoji
-                     data mapping from codepoints to human-readable
-                     names, sending the `emoji_code` in the data for
-                     the original reaction allows the Zulip server to
-                     correctly consider your upvote as an upvote
-                     rather than a reaction with a "diffenent" emoji.
+          If the existing reaction was added when the Zulip
+          server was using a previous version of the emoji
+          data mapping from codepoints to human-readable
+          names, sending the `emoji_code` in the data for
+          the original reaction allows the Zulip server to
+          correctly consider your upvote as an upvote
+          rather than a reaction with a "diffenent" emoji.
         schema:
           type: string
         example: '1f419'
@@ -931,8 +985,8 @@ paths:
       - name: reaction_type
         in: query
         description: |
-                     If you are reacting with a [custom emoji](/help/add-custom-emoji),
-                     set `reaction_type` to `realm_emoji`.
+          If you are reacting with a [custom emoji](/help/add-custom-emoji), set
+          `reaction_type` to `realm_emoji`.
         schema:
           type: string
         example: 'unicode_emoji'
@@ -956,11 +1010,13 @@ paths:
                     }
 
     delete:
-      description: Delete an emoji reaction from a message.
+      description: |
+        Delete an emoji reaction from a message.
       parameters:
       - name: message_id
         in: path
-        description: The ID of the message from which you want to delete the emoji reaction.
+        description: |
+          The ID of the message from which you want to delete the emoji reaction.
         schema:
           type: integer
         example: 41
@@ -968,14 +1024,14 @@ paths:
       - name: emoji_name
         in: query
         description: |
-                     Name of the emoji you want to delete from a reaction.
+          Name of the emoji you want to delete from a reaction.
 
-                     To find an emoji's name, hover over a message to
-                     reveal three icons on the right, then click the smiley face icon.
-                     Images of available reaction emojis appear. Hover over the emoji
-                     you want, and note that emoji's text name.
+          To find an emoji's name, hover over a message to
+          reveal three icons on the right, then click the smiley face icon.
+          Images of available reaction emojis appear. Hover over the emoji
+          you want, and note that emoji's text name.
 
-                     Ignored if emoji_code is also passed.
+          Ignored if emoji_code is also passed.
         schema:
           type: string
         example: 'octopus'
@@ -983,14 +1039,14 @@ paths:
       - name: emoji_code
         in: query
         description: |
-                     Alternative to emoji_name for expressing which emoji to remove.
-                     An encoded version of the unicode codepoint for the emoji
-                     you'd like to remove from the message.
+          Alternative to emoji_name for expressing which emoji to remove. An
+          encoded version of the unicode codepoint for the emoji you'd like to
+          remove from the message.
 
-                     Recommended over using `emoji_name` for Zulip apps
-                     because this more robustly handles changes in the mapping
-                     between user-facing names and aliases for emoji (which change from
-                     time to time) and their unicode codepoints.
+          Recommended over using `emoji_name` for Zulip apps
+          because this more robustly handles changes in the mapping
+          between user-facing names and aliases for emoji (which change from
+          time to time) and their unicode codepoints.
         schema:
           type: string
         example: '1f419'
@@ -998,8 +1054,8 @@ paths:
       - name: reaction_type
         in: query
         description: |
-                     When removing a reaction with a [custom emoji](/help/add-custom-emoji),
-                     set `reaction_type` to `realm_emoji`.
+          When removing a reaction with a [custom emoji](/help/add-custom-emoji),
+          set `reaction_type` to `realm_emoji`.
         schema:
           type: string
         example: 'unicode_emoji'
@@ -1022,7 +1078,8 @@ paths:
                     }
   /user_uploads:
     post:
-      description: Upload a single file and get the corresponding URI.
+      description: |
+        Upload a single file and get the corresponding URI.
       requestBody:
         content:
           multipart/form-data:
@@ -1043,7 +1100,8 @@ paths:
                 - properties:
                     uri:
                       type: string
-                      description: The URI of the uploaded file.
+                      description: |
+                        The URI of the uploaded file.
                 - example:
                     {
                         "msg": "",
@@ -1052,12 +1110,14 @@ paths:
                     }
   /users:
     get:
-      description: Retrieve all users in a realm.
+      description: |
+        Retrieve all users in a realm.
       parameters:
       - name: client_gravatar
         in: query
-        description: The `client_gravatar` field is set to `true` if clients
-          can compute their own gravatars.
+        description: |
+          The `client_gravatar` field is set to `true` if clients can compute
+          their own gravatars.
         schema:
           type: boolean
           default: false
@@ -1065,8 +1125,8 @@ paths:
       - name: include_custom_profile_fields
         in: query
         description: |
-          Set to `true` if the client wants custom profile field data
-          to be included in the response.
+          Set to `true` if the client wants custom profile field data to be
+          included in the response.
 
           **Changes**: New in Zulip 2.1.0.  Previous versions do no offer these
           data via the API.
@@ -1085,8 +1145,9 @@ paths:
                 - properties:
                     members:
                       type: array
-                      description: A list of `user` objects, each containing
-                        details about a user in the organization.
+                      description: |
+                        A list of `user` objects, each containing details about a user in the
+                        organization.
                 - example:
                     {
                        "msg": "",
@@ -1165,32 +1226,37 @@ paths:
                        ]
                     }
     post:
-      description: Create a new user in a realm.
+      description: |
+        Create a new user in a realm.
       parameters:
       - name: email
         in: query
-        description: The email address of the new user.
+        description: |
+          The email address of the new user.
         schema:
           type: string
         example: username@example.com
         required: true
       - name: password
         in: query
-        description: The password of the new user.
+        description: |
+          The password of the new user.
         schema:
           type: string
         example: abcd1234
         required: true
       - name: full_name
         in: query
-        description: The full name of the new user.
+        description: |
+          The full name of the new user.
         schema:
           type: string
         example: New User
         required: true
       - name: short_name
         in: query
-        description: The short name of the new user.  Not user-visible.
+        description: |
+          The short name of the new user.  Not user-visible.
         schema:
           type: string
         example: newuser
@@ -1217,25 +1283,29 @@ paths:
 
   /users/{user_id}:
     get:
-      description: Retrieve a user in a realm.
+      description: |
+        Retrieve a user in a realm.
       parameters:
       - name: user_id
         in: path
-        description: The user id of the user.
+        description: |
+          The user id of the user.
         schema:
           type: integer
         example: 11
         required: true
       - name: client_gravatar
         in: query
-        description: The client should pass true if it can compute its own gravatar hashes.
+        description: |
+          The client should pass true if it can compute its own gravatar hashes.
         schema:
           type: boolean
           default: false
         example: true
       - name: include_custom_profile_fields
         in: query
-        description: The client should pass true if it wants to include custom profile field data.
+        description: |
+          The client should pass true if it wants to include custom profile field data.
         schema:
           type: boolean
           default: false
@@ -1304,18 +1374,21 @@ paths:
                     }
 
     patch:
-      description: Update the user.
+      description: |
+        Update the user.
       parameters:
       - name: user_id
         in: path
-        description: The user id of the user.
+        description: |
+          The user id of the user.
         schema:
           type: integer
         example: 12
         required: true
       - name: full_name
         in: query
-        description: The user's full name.
+        description: |
+          The user's full name.
         schema:
           type: string
           format: json
@@ -1323,21 +1396,24 @@ paths:
         required: false
       - name: is_admin
         in: query
-        description: Whether the target user is an administrator.
+        description: |
+          Whether the target user is an administrator.
         schema:
           type: boolean
         example: false
         required: false
       - name: is_guest
         in: query
-        description: Whether the target user is a guest.
+        description: |
+          Whether the target user is a guest.
         schema:
           type: boolean
         example: true
         required: false
       - name: profile_data
         in: query
-        description: A dictionary containing the to be updated custom profile field data for the user.
+        description: |
+          A dictionary containing the to be updated custom profile field data for the user.
         schema:
           type: array
           items:
@@ -1374,11 +1450,13 @@ paths:
                     }
 
     delete:
-      description: Delete the user with the passed 'user_id' from the realm.
+      description: |
+        Delete the user with the passed 'user_id' from the realm.
       parameters:
       - name: user_id
         in: path
-        description: The user id of the user.
+        description: |
+          The user id of the user.
         schema:
           type: integer
         example: 11
@@ -1411,12 +1489,13 @@ paths:
 
   /users/{email}/presence:
     get:
-      description: Get the presence status for a specific user.
+      description: |
+        Get the presence status for a specific user.
       parameters:
       - name: email
         in: path
-        description: The email address of the user whose presence you want to
-          fetch.
+        description: |
+          The email address of the user whose presence you want to fetch.
         schema:
           type: string
         example: iago@zulip.com
@@ -1432,8 +1511,9 @@ paths:
                 - properties:
                     presence:
                       type: object
-                      description: An object containing the presence details
-                        for every client the user has logged into.
+                      description: |
+                        An object containing the presence details for every client the user has
+                        logged into.
                 - example:
                     {
                         "presence": {
@@ -1455,7 +1535,8 @@ paths:
                     }
   /users/me:
     get:
-      description: Get the requesting user's profile data from the backend.
+      description: |
+        Get the requesting user's profile data from the backend.
       responses:
         '200':
           description: Success
@@ -1474,46 +1555,56 @@ paths:
                       example: "x"
                     client_id:
                       type: string
-                      description: NA
+                      description: |
+                        NA
                       example: "74c768b081076fdb3c4326256c17467e"
                     email:
                       type: string
-                      description: Email of the requesting user.
+                      description: |
+                        Email of the requesting user.
                       example: "iago@zulip.com"
                     full_name:
                       type: string
-                      description: Full name of the requesting user.
+                      description: |
+                        Full name of the requesting user.
                       example: "Iago"
                     is_admin:
                       type: boolean
-                      description: A boolean indicating if the requesting user is an admin.
+                      description: |
+                        A boolean indicating if the requesting user is an admin.
                       example: true
                     is_bot:
                       type: boolean
-                      description: A boolean indicating if the requesting user is a bot.
+                      description: |
+                        A boolean indicating if the requesting user is a bot.
                       example: false
                     max_message_id:
                       type: integer
-                      description: NA.
+                      description: |
+                        NA.
                       example: 30
                     pointer:
                       type: integer
-                      description: NA
+                      description: |
+                        NA
                       example: -1
                     short_name:
                       type: string
-                      description: Short name of the requesting user.
+                      description: |
+                        Short name of the requesting user.
                       example: "iago"
                     user_id:
                       type: integer
-                      description: The user's ID.
+                      description: |
+                        The user's ID.
                       example: 1
                     profile_data:
                       type: object
-                      description: A dictionary containing custom profile field data for the user.
-                        Each entry maps the integer ID of a custom profile field in the organization
-                        to a dictionary containing the user's data for that field.  Generally the
-                        data includes just a single `value` key; for those custom profile fields
+                      description: |
+                        A dictionary containing custom profile field data for the user. Each entry
+                        maps the integer ID of a custom profile field in the organization to a
+                        dictionary containing the user's data for that field.  Generally the data
+                        includes just a single `value` key; for those custom profile fields
                         supporting markdown, a `rendered_value` key will also be present.
                 - example:
                     {
@@ -1560,7 +1651,8 @@ paths:
                          }
                     }
     delete:
-      description: Delete the requesting user from the realm.
+      description: |
+        Delete the requesting user from the realm.
       responses:
         '200':
           description: Bad Request
@@ -1588,11 +1680,13 @@ paths:
                     }
   /users/me/{stream_id}/topics:
     get:
-      description: Get all the topics in a specific stream.
+      description: |
+        Get all the topics in a specific stream.
       parameters:
       - name: stream_id
         in: path
-        description: The unique ID of the stream.
+        description: |
+          The unique ID of the stream.
         schema:
           type: integer
         example: 42
@@ -1612,11 +1706,12 @@ paths:
                         type: object
                         properties:
                           max_id:
-                            description:
+                            description: |
                               The ID of the last message sent to the topic.
                             type: number
                           name:
-                            description: The name of the topic.
+                            description: |
+                              The name of the topic.
                             type: string
                 - example:
                     {
@@ -1652,7 +1747,8 @@ paths:
                     }
   /users/me/subscriptions:
     get:
-      description: Get information on every stream the user is subscribed to.
+      description: |
+        Get information on every stream the user is subscribed to.
       # operationId can be used to record which view function
       # corresponds to an endpoint.  TODO: Add these for more
       # endpoints, and perhaps use this to provide links to implementations.
@@ -1661,9 +1757,9 @@ paths:
       - name: include_subscribers
         in: query
         description: |
-          Set to `true` if you would like each stream's info to include a
-          list of current subscribers to that stream. (This may be significantly slower
-          in organizations with thousands of users.)
+          Set to `true` if you would like each stream's info to include a list of
+          current subscribers to that stream. (This may be significantly slower in
+          organizations with thousands of users.)
 
           **Changes**: New in Zulip 2.1.0.
         schema:
@@ -1733,15 +1829,17 @@ paths:
                       ]
                     }
     post:
-      description: Subscribe one or more users to one or more streams.
+      description: |
+        Subscribe one or more users to one or more streams.
       parameters:
       - name: subscriptions
         in: query
-        description: "A list of dictionaries containing the the key `name`
-          and value specifying the name of the stream to subscribe. If the
-          stream does not exist a new stream is created. The description of the
-          stream created can be specified by setting the dictionary key
-          `description` with an appropriate value.
+        description: |
+          "A list of dictionaries containing the the key `name` and value
+          specifying the name of the stream to subscribe. If the stream does not
+          exist a new stream is created. The description of the stream created can
+          be specified by setting the dictionary key `description` with an
+          appropriate value.
 
 
           **Note**: This argument is called `streams` and not `subscriptions`
@@ -1754,17 +1852,19 @@ paths:
         required: true
       - name: invite_only
         in: query
-        description: A boolean specifying whether the streams specified in
-          `subscriptions` are invite-only or not.
+        description: |
+          A boolean specifying whether the streams specified in `subscriptions`
+          are invite-only or not.
         schema:
           type: boolean
           default: false
         example: true
       - name: principals
         in: query
-        description: A list of email addresses of the users that will be
-          subscribed to the streams specified in the `subscriptions` argument.
-          If not provided, then the requesting user/bot is subscribed.
+        description: |
+          A list of email addresses of the users that will be subscribed to the
+          streams specified in the `subscriptions` argument. If not provided, then
+          the requesting user/bot is subscribed.
         schema:
           type: array
           items:
@@ -1773,20 +1873,22 @@ paths:
         example: ['ZOE@zulip.com']
       - name: authorization_errors_fatal
         in: query
-        description: A boolean specifying whether authorization errors (such
-          as when the requesting user is not authorized to access a private
-          stream) should be considered fatal or not. When `True`, an
-          authorization error is reported as such. When set to `False`, the
-          returned JSON payload indicates that there was an authorization
-          error, but the response is still considered a successful one.
+        description: |
+          A boolean specifying whether authorization errors (such as when the
+          requesting user is not authorized to access a private stream) should be
+          considered fatal or not. When `True`, an authorization error is reported
+          as such. When set to `False`, the returned JSON payload indicates that
+          there was an authorization error, but the response is still considered a
+          successful one.
         schema:
           type: boolean
           default: true
         example: false
       - name: history_public_to_subscribers
         in: query
-        description: A boolean indicating if the history should be available to
-          newly subscribed members.
+        description: |
+          A boolean indicating if the history should be available to newly
+          subscribed members.
         schema:
           type: boolean
           default: None
@@ -1808,10 +1910,10 @@ paths:
         example: 1
       - name: announce
         in: query
-        description: If `announce` is `True` and one of the streams specified
-          in `subscriptions` has to be created (i.e. doesn't exist to begin
-          with), an announcement will be made notifying that a new stream was
-          created.
+        description: |
+          If `announce` is `True` and one of the streams specified in
+          `subscriptions` has to be created (i.e. doesn't exist to begin with), an
+          announcement will be made notifying that a new stream was created.
         schema:
           type: boolean
         example: true
@@ -1882,12 +1984,14 @@ paths:
                         ]
                     }
     patch:
-      description: Update which streams you are are subscribed to.
+      description: |
+        Update which streams you are are subscribed to.
       operationId: zerver.views.streams.update_subscriptions_backend
       parameters:
         - name: delete
           in: query
-          description: A list of stream names to unsubscribe from.
+          description: |
+            A list of stream names to unsubscribe from.
           schema:
             type: array
             items:
@@ -1896,9 +2000,10 @@ paths:
           required: false
         - name: add
           in: query
-          description: A list of objects describing which streams to subscribe to,
-            optionally including per-user subscription parameters (e.g. color)
-            and if the stream is to be created, its description.
+          description: |
+            A list of objects describing which streams to subscribe to, optionally
+            including per-user subscription parameters (e.g. color) and if the
+            stream is to be created, its description.
           schema:
             type: array
             items:
@@ -1938,27 +2043,33 @@ paths:
                 - properties:
                     subscribed:
                       type: object
-                      description: A dictionary where the key is the email address of
-                        the user/bot and the value is a list of the names of the streams
-                        that were subscribed to as a result of the query.
+                      description: |
+                        A dictionary where the key is the email
+                        address of the user/bot and the value is a
+                        list of the names of the streams that were
+                        subscribed to as a result of the query.
                     already_subscribed:
                       type: object
-                      description: A dictionary where the key is the email address of
-                        the user/bot and the value is a list of the names of the streams
-                        that the user/bot is already subscribed to.
+                      description: |
+                        A dictionary where the key is the email
+                        address of the user/bot and the value is a
+                        list of the names of the streams that the
+                        user/bot is already subscribed to.
                     not_removed:
                       type: array
                       items:
                         type: string
-                      description: A list of the names of streams that the
-                        user is already unsubscribed from, and hence doesn't
-                        need to be unsubscribed.
+                      description: |
+                        A list of the names of streams that the user
+                        is already unsubscribed from, and hence
+                        doesn't need to be unsubscribed.
                     removed:
                       type: array
                       items:
                         type: string
-                      description: A list of the names of streams which were
-                        unsubscribed from as a result of the query.
+                      description: |
+                        A list of the names of streams which were unsubscribed
+                        from as a result of the query.
                 - example:
                     {
                         "msg": "",
@@ -1971,13 +2082,14 @@ paths:
                         "result": "success"
                     }
     delete:
-      description: Unsubscribe yourself or other users from one or more
-        streams.
+      description: |
+        Unsubscribe yourself or other users from one or more streams.
       parameters:
       - name: subscriptions
         in: query
-        description: A list of stream names to unsubscribe from. This argument
-          is called `streams` in our Python API.
+        description: |
+          A list of stream names to unsubscribe from. This argument is called
+          `streams` in our Python API.
         schema:
           type: array
           items:
@@ -1986,10 +2098,10 @@ paths:
         required: true
       - name: principals
         in: query
-        description: A list of email addresses of the users that will be
-          unsubscribed from the streams specified in the `subscriptions`
-          argument. If not provided, then the requesting user/bot is
-          unsubscribed.
+        description: |
+          A list of email addresses of the users that will be unsubscribed from
+          the streams specified in the `subscriptions` argument. If not provided,
+          then the requesting user/bot is unsubscribed.
         schema:
           type: array
           items:
@@ -2009,15 +2121,16 @@ paths:
                       type: array
                       items:
                         type: string
-                      description: A list of the names of streams that the
-                        user is already unsubscribed from, and hence doesn't
-                        need to be unsubscribed.
+                      description: |
+                        A list of the names of streams that the user is already unsubscribed
+                        from, and hence doesn't need to be unsubscribed.
                     removed:
                       type: array
                       items:
                         type: string
-                      description: A list of the names of streams which were
-                        unsubscribed from as a result of the query.
+                      description: |
+                        A list of the names of streams which were unsubscribed from as a result
+                        of the query.
                 - example:
                     {
                         "msg": "",
@@ -2035,36 +2148,38 @@ paths:
                 $ref: '#/components/schemas/NonExistingStreamError'
   /users/me/subscriptions/muted_topics:
     patch:
-      description: Toggle muting for a specific topic the user is subscribed
-        to.
+      description: |
+        Toggle muting for a specific topic the user is subscribed to.
       parameters:
       - name: stream
         in: query
-        description: The name of the stream in which to mute the topic.
+        description: |
+          The name of the stream in which to mute the topic.
         schema:
           type: string
         example: Verona
         required: false
       - name: stream_id
         in: query
-        description: The id of the stream in which to mute the topic.
+        description: |
+          The id of the stream in which to mute the topic.
         schema:
           type: integer
         example: 3
         required: false
       - name: topic
         in: query
-        description: The topic to (un)mute. Note that the request will succeed
-          regardless of whether any messages have been sent to the
-          specified topic.
+        description: |
+          The topic to (un)mute. Note that the request will succeed regardless of
+          whether any messages have been sent to the specified topic.
         schema:
           type: string
         example: dinner
         required: true
       - name: op
         in: query
-        description: Whether to mute (`add`) or unmute (`remove`) the provided
-          topic.
+        description: |
+          Whether to mute (`add`) or unmute (`remove`) the provided topic.
         schema:
           type: string
           enum:
@@ -2105,13 +2220,14 @@ paths:
                       }
   /realm/emoji/{emoji_name}:
     post:
-      description: Upload a single emoji file.
+      description: |
+        Upload a single emoji file.
       parameters:
       - name: emoji_name
         required: true
         in: path
-        description: The name that should be associated with the uploaded
-          emoji image/gif.
+        description: |
+          The name that should be associated with the uploaded emoji image/gif.
         schema:
           type: string
       requestBody:
@@ -2134,7 +2250,8 @@ paths:
 
   /realm/emoji:
     get:
-      description: Get all the custom emoji in the user's realm.
+      description: |
+        Get all the custom emoji in the user's realm.
       responses:
         '200':
           description: Success.
@@ -2146,8 +2263,9 @@ paths:
                 - properties:
                     emoji:
                       type: object
-                      description: An object that contains `emoji` objects,
-                        each identified with their emoji ID as the key.
+                      description: |
+                        An object that contains `emoji` objects, each identified with their
+                        emoji ID as the key.
                 - example:
                     {
                         "result": "success",
@@ -2168,16 +2286,17 @@ paths:
                     }
   /users/me/subscriptions/properties:
     post:
-      description: Make bulk modifications of the subscription properties on
-        one or more streams the user is subscribed to.
+      description: |
+        Make bulk modifications of the subscription properties on one or more
+        streams the user is subscribed to.
       parameters:
       - name: subscription_data
         in: query
-        description: A list of objects that describe the changes that should
-          be applied in each subscription. Each object represents a
-          subscription, and must have a `stream_id` key that identifies the
-          stream, as well as the `property` being modified and its new
-          `value`.
+        description: |
+          A list of objects that describe the changes that should be applied in
+          each subscription. Each object represents a subscription, and must have
+          a `stream_id` key that identifies the stream, as well as the `property`
+          being modified and its new `value`.
         schema:
           type: array
           items:
@@ -2197,8 +2316,8 @@ paths:
                       type: array
                       items:
                         type: object
-                      description: The same `subscription_data` object sent
-                        by the client for the request.
+                      description: |
+                        The same `subscription_data` object sent by the client for the request.
                 - example:
                     {
                         "subscription_data": [
@@ -2218,7 +2337,8 @@ paths:
                     }
   /realm/filters:
     get:
-      description: Fetch all the filters set up for the user's organization.
+      description: |
+        Fetch all the filters set up for the user's organization.
       responses:
         '200':
           description: Success.
@@ -2236,11 +2356,14 @@ paths:
                           oneOf:
                             - type: string
                             - type: integer
-                      description: An array of tuples, each representing one of the
-                        linkifiers set up in the organization. Each of these tuples contain the
-                        pattern, the formatted URL and the filter's ID, in that order. See
-                        the [Create linkifiers](/api/add-linkifiers) article for details on what
-                        each field means.
+                      description: |
+                        An array of tuples, each representing one of
+                        the linkifiers set up in the
+                        organization. Each of these tuples contain the
+                        pattern, the formatted URL and the filter's
+                        ID, in that order. See the [Create
+                        linkifiers](/api/add-linkifiers) article for
+                        details on what each field means.
                 - example:
                     {
                         "msg": "",
@@ -2254,22 +2377,25 @@ paths:
                         "result": "success"
                     }
     post:
-      description: Establish patterns in the messages that should be
-        automatically linkified.
+      description: |
+        Establish patterns in the messages that should be automatically
+        linkified.
       parameters:
       - name: pattern
         in: query
-        description: The [Python regular
-          expression](https://docs.python.org/3/howto/regex.html) that
-          should trigger the linkifier.
+        description: |
+          The [Python regular
+          expression](https://docs.python.org/3/howto/regex.html) that should
+          trigger the linkifier.
         schema:
           type: string
         example: '#(?P<id>[0-9]+)'
         required: true
       - name: url_format_string
         in: query
-        description: The URL used for the link. If you used named groups for
-          the `pattern`, you can insert their content here with
+        description: |
+          The URL used for the link. If you used named groups for the `pattern`,
+          you can insert their content here with
           `%(name_of_the_capturing_group)s`.
         schema:
           type: string
@@ -2286,7 +2412,8 @@ paths:
                 - properties:
                     id:
                       type: integer
-                      description: The numeric ID assigned to this filter.
+                      description: |
+                        The numeric ID assigned to this filter.
                 - example:
                     {
                         "id": 42,
@@ -2295,11 +2422,13 @@ paths:
                     }
   /realm/filters/{filter_id}:
     delete:
-      description: Remove an organization filter.
+      description: |
+        Remove an organization filter.
       parameters:
       - name: filter_id
         in: path
-        description: The ID of the filter that you want to remove.
+        description: |
+          The ID of the filter that you want to remove.
         schema:
           type: integer
         example: 42
@@ -2313,24 +2442,27 @@ paths:
                 $ref: '#/components/schemas/JsonSuccess'
   /register:
     post:
-      description: This powerful endpoint can be used to register a Zulip
-        "event queue" (subscribed to certain types of "events", or updates to
-        the messages and other Zulip data the current user has access to), as
-        well as to fetch the current state of that data.
+      description: |
+        This powerful endpoint can be used to register a Zulip "event queue"
+        (subscribed to certain types of "events", or updates to the messages and
+        other Zulip data the current user has access to), as well as to fetch
+        the current state of that data.
       parameters:
       - name: apply_markdown
         in: query
-        description: Set to `true` if you would like the content to be
-          rendered in HTML format (otherwise the API will return the raw text
-          that the user entered)
+        description: |
+          Set to `true` if you would like the content to be rendered in HTML
+          format (otherwise the API will return the raw text that the user
+          entered)
         schema:
           type: boolean
           default: false
         example: true
       - name: client_gravatar
         in: query
-        description: The `client_gravatar` field is set to `true` if clients
-          can compute their own gravatars.
+        description: |
+          The `client_gravatar` field is set to `true` if clients can compute
+          their own gravatars.
         schema:
           type: boolean
           default: false
@@ -2338,8 +2470,8 @@ paths:
       - name: slim_presence
         in: query
         description: |
-          Setting this to `true` will make presence dictionaries be
-          keyed by user_id instead of email.
+          Setting this to `true` will make presence dictionaries be keyed by
+          user_id instead of email.
 
           **Changes**: New in Zulip 2.2.
         schema:
@@ -2350,16 +2482,18 @@ paths:
         example: ['message']
       - name: all_public_streams
         in: query
-        description: Set to `True` if you would like to receive events that
-          occur within all public streams.
+        description: |
+          Set to `True` if you would like to receive events that occur within all
+          public streams.
         schema:
           type: boolean
           default: false
         example: true
       - name: include_subscribers
         in: query
-        description: Set to `True` if you would like to receive events that
-          include the subscribers for each stream.
+        description: |
+          Set to `True` if you would like to receive events that include the
+          subscribers for each stream.
         schema:
           type: boolean
           default: false
@@ -2367,9 +2501,8 @@ paths:
       - name: client_capabilities
         in: query
         description: |
-          Dictionary containing details on features the client
-          supports that are relevant to the format of responses sent
-          by the server.
+          Dictionary containing details on features the client supports that are
+          relevant to the format of responses sent by the server.
 
           * `notification_settings_null`: Boolean for whether the
             client can handle the current API with null values for
@@ -2386,8 +2519,9 @@ paths:
           }
       - name: fetch_event_types
         in: query
-        description: Same as the `event_types` argument except that the values
-          in `fetch_event_types` are used to fetch initial data. If
+        description: |
+          Same as the `event_types` argument except that the values in
+          `fetch_event_types` are used to fetch initial data. If
           `fetch_event_types` is not provided, `event_types` is used and if
           `event_types` is not provided, this argument defaults to `None`.
         schema:
@@ -2398,11 +2532,10 @@ paths:
       - name: narrow
         in: query
         description: |
-          A JSON-encoded array of length 2 indicating the narrow
-          for which you'd like to receive events. For instance, to
-          receive events for the stream `Denmark`, you would specify
-          `narrow=['stream', 'Denmark']`. Another example is
-          `narrow=['is', 'private']` for private messages.
+          A JSON-encoded array of length 2 indicating the narrow for which you'd
+          like to receive events. For instance, to receive events for the stream
+          `Denmark`, you would specify `narrow=['stream', 'Denmark']`. Another
+          example is `narrow=['is', 'private']` for private messages.
         schema:
           type: array
           items:
@@ -2422,12 +2555,12 @@ paths:
                 - properties:
                     queue_id:
                       type: string
-                      description: The ID of the queue that has been allocated
-                        for your client.
+                      description: |
+                        The ID of the queue that has been allocated for your client.
                     last_event_id:
                       type: integer
-                      description: The initial value of `last_event_id` to
-                        pass to `GET /api/v1/events`.
+                      description: |
+                        The initial value of `last_event_id` to pass to `GET /api/v1/events`.
                 - example:
                     {
                         "last_event_id": -1,
@@ -2450,7 +2583,8 @@ paths:
                     }
   /server_settings:
     get:
-      description: Fetch global settings for the Zulip server.
+      description: |
+        Fetch global settings for the Zulip server.
       responses:
         '200':
           description: Success.
@@ -2462,52 +2596,57 @@ paths:
                 - properties:
                     authentication_methods:
                       type: object
-                      description: Each key-value pair in the object indicates
-                        whether the authentication method is enabled on this
-                        server.
+                      description: |
+                        Each key-value pair in the object indicates whether the authentication
+                        method is enabled on this server.
                     external_authentication_methods:
                       type: array
-                      description: List of dictionaries describing which
-                        external authentication methods are enabled and their
-                        parameters - most importantly the login url, display_name
-                        and display_icon.
+                      description: |
+                        List of dictionaries describing which external authentication methods
+                        are enabled and their parameters - most importantly the login url,
+                        display_name and display_icon.
                     zulip_version:
                       type: string
-                      description: The version of Zulip running in the server.
+                      description: |
+                        The version of Zulip running in the server.
                     push_notifications_enabled:
                       type: boolean
-                      description: Whether mobile/push notifications are
-                        enabled.
+                      description: |
+                        Whether mobile/push notifications are enabled.
                     is_incompatible:
                       type: boolean
-                      description: Whether the Zulip client that has sent a
-                        request to this endpoint is deemed incompatible with
-                        the server.
+                      description: |
+                        Whether the Zulip client that has sent a request to this endpoint is
+                        deemed incompatible with the server.
                     email_auth_enabled:
                       type: boolean
-                      description: Setting for allowing users authenticate with
-                        an email-password combination.
+                      description: |
+                        Setting for allowing users authenticate with an email-password
+                        combination.
                     require_email_format_usernames:
                       type: boolean
-                      description: Whether usernames should have an email
-                        address format. This is important if your server has
-                        [LDAP authentication](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory)
+                      description: |
+                        Whether usernames should have an email address format. This is important if your server has [LDAP
+                        authentication](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory)
                         enabled with a username and password combination.
                     realm_uri:
                       type: string
-                      description: The organization's URI.
+                      description: |
+                        The organization's URI.
                     realm_name:
                       type: string
-                      description: The realm's name.
+                      description: |
+                        The realm's name.
                     realm_icon:
                       type: string
-                      description: The URI of the organization's mobile icon (usually
-                        a square version of the logo).
+                      description: |
+                        The URI of the organization's mobile icon (usually a square version of
+                        the logo).
                     realm_description:
                       type: string
-                      description: HTML description of the organization, as
-                        configured by the
-                        [organization profile](/help/create-your-organization-profile).
+                      description: |
+                        HTML description of the organization, as configured by the [organization
+                        profile](/help/create-your-organization-profile).
                 - example:
                     {
                         "authentication_methods": {
@@ -2558,109 +2697,124 @@ paths:
                     }
   /settings/notifications:
     patch:
-      description: Modify the user's preferences for notifications.
+      description: |
+        Modify the user's preferences for notifications.
       parameters:
       - name: enable_stream_desktop_notifications
         in: query
-        description: Enable visual desktop notifications for stream messages.
+        description: |
+          Enable visual desktop notifications for stream messages.
         schema:
           type: boolean
         example: true
       - name: enable_stream_email_notifications
         in: query
-        description: Enable email notifications for stream messages.
+        description: |
+          Enable email notifications for stream messages.
         schema:
           type: boolean
         example: true
       - name: enable_stream_push_notifications
         in: query
-        description: Enable mobile notifications for stream messages.
+        description: |
+          Enable mobile notifications for stream messages.
         schema:
           type: boolean
         example: true
       - name: enable_stream_audible_notifications
         in: query
-        description: Enable audible desktop notifications for stream messages.
+        description: |
+          Enable audible desktop notifications for stream messages.
         schema:
           type: boolean
         example: true
       - name: notification_sound
         in: query
-        description: Notification sound name.
+        description: |
+          Notification sound name.
         schema:
           type: string
           format: json
         example: ding
       - name: enable_desktop_notifications
         in: query
-        description: Enable visual desktop notifications for private messages
-          and @-mentions.
+        description: |
+          Enable visual desktop notifications for private messages and @-mentions.
         schema:
           type: boolean
         example: true
       - name: enable_sounds
         in: query
-        description: Enable audible desktop notifications for private messages
-          and @-mentions.
+        description: |
+          Enable audible desktop notifications for private messages and
+          @-mentions.
         schema:
           type: boolean
         example: true
       - name: enable_offline_email_notifications
         in: query
-        description: Enable email notifications for private messages and
-          @-mentions received when the user is offline.
+        description: |
+          Enable email notifications for private messages and @-mentions received
+          when the user is offline.
         schema:
           type: boolean
         example: true
       - name: enable_offline_push_notifications
         in: query
-        description: Enable mobile notification for private messages and
-          @-mentions received when the user is offline.
+        description: |
+          Enable mobile notification for private messages and @-mentions received
+          when the user is offline.
         schema:
           type: boolean
         example: true
       - name: enable_online_push_notifications
         in: query
-        description: Enable mobile notification for private messages and
-          @-mentions received when the user is online.
+        description: |
+          Enable mobile notification for private messages and @-mentions received
+          when the user is online.
         schema:
           type: boolean
         example: true
       - name: enable_digest_emails
         in: query
-        description: Enable digest emails when the user is away.
+        description: |
+          Enable digest emails when the user is away.
         schema:
           type: boolean
         example: true
       - name: enable_login_emails
         in: query
-        description: Enable email notifications for new logins to account.
+        description: |
+          Enable email notifications for new logins to account.
         schema:
           type: boolean
         example: true
       - name: message_content_in_email_notifications
         in: query
-        description: Include the message's content in missed messages email
-          notifications.
+        description: |
+          Include the message's content in missed messages email notifications.
         schema:
           type: boolean
         example: true
       - name: pm_content_in_desktop_notifications
         in: query
-        description: Include content of private messages in desktop notifications.
+        description: |
+          Include content of private messages in desktop notifications.
         schema:
           type: boolean
         example: true
       - name: wildcard_mentions_notify
         in: query
-        description: Whether wildcard mentions (E.g. @**all**) should send notifications like a personal mention.
+        description: |
+          Whether wildcard mentions (E.g. @**all**) should send notifications
+          like a personal mention.
         schema:
           type: boolean
         example: true
       - name: desktop_icon_count_display
         in: query
-        description: >
-          Unread count summary (appears in desktop sidebar and browser tab)
+        description: |
+          > Unread count summary (appears in desktop sidebar and browser tab)
 
            * 1 - All unreads
            * 2 - Private messages and mentions
@@ -2674,7 +2828,8 @@ paths:
         example: 1
       - name: realm_name_in_notifications
         in: query
-        description: Include organization name in subject of missed message emails.
+        description: |
+          Include organization name in subject of missed message emails.
         schema:
           type: boolean
         example: true
@@ -2689,51 +2844,52 @@ paths:
                 - properties:
                     enable_desktop_notifications:
                       type: boolean
-                      description: The setting for
-                        `enable_desktop_notifications`, if it was changed in
+                      description: |
+                        The setting for `enable_desktop_notifications`, if it was changed in
                         this request.
                     enable_digest_emails:
                       type: boolean
-                      description: The setting for `enable_digest_emails`, if
-                        it was changed in this request.
+                      description: |
+                        The setting for `enable_digest_emails`, if it was changed in this
+                        request.
                     enable_offline_email_notifications:
                       type: boolean
-                      description: The setting for
-                        `enable_offline_email_notifications`, if it was changed
+                      description: |
+                        The setting for `enable_offline_email_notifications`, if it was changed
                         in this request.
                     enable_offline_push_notifications:
                       type: boolean
-                      description: The setting for
-                        `enable_offline_push_notifications`, if it was changed
+                      description: |
+                        The setting for `enable_offline_push_notifications`, if it was changed
                         in this request.
                     enable_online_push_notifications:
                       type: boolean
-                      description: The setting for
-                        `enable_online_push_notifications`, if it was changed
-                        in this request.
+                      description: |
+                        The setting for `enable_online_push_notifications`, if it was changed in
+                        this request.
                     enable_sounds:
                       type: boolean
-                      description: The setting for `enable_sounds`, if it was
-                        changed in this request.
+                      description: |
+                        The setting for `enable_sounds`, if it was changed in this request.
                     enable_stream_email_notifications:
                       type: boolean
-                      description: The setting for
-                        `enable_stream_email_notifications`, if it was changed
+                      description: |
+                        The setting for `enable_stream_email_notifications`, if it was changed
                         in this request.
                     enable_stream_push_notifications:
                       type: boolean
-                      description: The setting for
-                        `enable_stream_push_notifications`, if it was changed
-                        in this request.
+                      description: |
+                        The setting for `enable_stream_push_notifications`, if it was changed in
+                        this request.
                     enable_stream_audible_notifications:
                       type: boolean
-                      description: The setting for
-                        `enable_stream_audible_notifications`, if it was changed in this
-                        request.
+                      description: |
+                        The setting for `enable_stream_audible_notifications`, if it was changed
+                        in this request.
                     message_content_in_email_notifications:
                       type: boolean
-                      description: The setting for
-                        `message_content_in_email_notifications`, if it was
+                      description: |
+                        The setting for `message_content_in_email_notifications`, if it was
                         changed in this request.
                 - example:
                     {
@@ -2744,41 +2900,47 @@ paths:
                     }
   /streams:
     get:
-      description: Get all streams that the user has access to.
+      description: |
+        Get all streams that the user has access to.
       parameters:
       - name: include_public
         in: query
-        description: Include all public streams.
+        description: |
+          Include all public streams.
         schema:
           type: boolean
           default: true
         example: false
       - name: include_subscribed
         in: query
-        description: Include all streams that the user is subscribed to.
+        description: |
+          Include all streams that the user is subscribed to.
         schema:
           type: boolean
           default: true
         example: false
       - name: include_all_active
         in: query
-        description: Include all active streams. The user must have
-          administrative privileges to use this parameter.
+        description: |
+          Include all active streams. The user must have administrative privileges
+          to use this parameter.
         schema:
           type: boolean
           default: false
         example: true
       - name: include_default
         in: query
-        description: Include all default streams for the user's realm.
+        description: |
+          Include all default streams for the user's realm.
         schema:
           type: boolean
           default: false
         example: true
       - name: include_owner_subscribed
         in: query
-        description: If the user is a bot, include all streams that the
-          bot's owner is subscribed to.
+        description: |
+          If the user is a bot, include all streams that the bot's owner is
+          subscribed to.
         schema:
           type: boolean
           default: false
@@ -2796,9 +2958,9 @@ paths:
                       type: array
                       items:
                         type: object
-                      description: A list of `stream` objects, which contain a
-                        `description`, a `name`, their `stream_id` and whether
-                        they are `invite_only` or not.
+                      description: |
+                        A list of `stream` objects, which contain a `description`, a `name`,
+                        their `stream_id` and whether they are `invite_only` or not.
                 - example:
                     {
                         "msg": "",
@@ -2857,12 +3019,14 @@ paths:
                     }
   /streams/{stream_id}:
     delete:
-      description: Delete the stream with the given ID.
+      description: |
+        Delete the stream with the given ID.
       operationId: zerver.views.streams.deactivate_stream_backend
       parameters:
       - name: stream_id
         in: path
-        description: The ID of the stream to be deleted.
+        description: |
+          The ID of the stream to be deleted.
         schema:
           type: integer
         example: 42
@@ -2897,19 +3061,22 @@ paths:
                         "result": "error"
                     }
     patch:
-      description: Update the stream with the given ID.
+      description: |
+        Update the stream with the given ID.
       operationId: zerver.views.streams.update_stream_backend
       parameters:
       - name: stream_id
         in: path
-        description: The ID of the stream to be updated.
+        description: |
+          The ID of the stream to be updated.
         schema:
           type: integer
         example: 42
         required: true
       - name: description
         in: query
-        description: The new description for the stream.
+        description: |
+          The new description for the stream.
         schema:
           type: string
           format: json
@@ -2917,7 +3084,8 @@ paths:
         required: false
       - name: new_name
         in: query
-        description: The new name for the stream.
+        description: |
+          The new name for the stream.
         schema:
           type: string
           format: json
@@ -2925,7 +3093,8 @@ paths:
         required: false
       - name: is_private
         in: query
-        description: Change whether the stream is a private stream.
+        description: |
+          Change whether the stream is a private stream.
         schema:
           type: boolean
         example: true
@@ -2994,13 +3163,14 @@ paths:
                     }
   /typing:
     post:
-      description: Send an event indicating that the user has started or
-        stopped typing on their client.
+      description: |
+        Send an event indicating that the user has started or stopped typing on
+        their client.
       parameters:
       - name: op
         in: query
-        description: Whether the user has started (`start`) or stopped (`stop`)
-          to type.
+        description: |
+          Whether the user has started (`start`) or stopped (`stop`) to type.
         schema:
           type: string
           enum:
@@ -3011,10 +3181,10 @@ paths:
       - name: to
         in: query
         description: |
-          The user_ids of the recipients of the message being typed.
-          Typing notifications are only supported for private messages.
-          Send a JSON-encoded list of user_ids. (Use a list even if there is
-          only one recipient.).
+          The user_ids of the recipients of the message being typed. Typing
+          notifications are only supported for private messages. Send a
+          JSON-encoded list of user_ids. (Use a list even if there is only one
+          recipient.).
 
           **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
           list of email addresses.  The email address-based format is deprecated
@@ -3035,25 +3205,30 @@ paths:
 
   /user_groups/create:
     post:
-      description: Create a user group.
+      description: |
+        Create a user group.
       parameters:
       - name: name
         in: query
-        description: The name of the user group.
+        description: |
+          The name of the user group.
         schema:
           type: string
         example: marketing
         required: true
       - name: description
         in: query
-        description: The description of the user group.
+        description: |
+          The description of the user group.
         schema:
           type: string
         example: The marketing team.
         required: true
       - name: members
         in: query
-        description: An array containing the user IDs of the initial members for the new user group.
+        description: |
+          An array containing the user IDs of the initial members for the
+          new user group.
         schema:
           type: array
           items:
@@ -3088,25 +3263,29 @@ paths:
                     }
   /user_groups/{group_id}:
     patch:
-      description: Update the user group.
+      description: |
+        Update the user group.
       parameters:
       - name: group_id
         in: path
-        description: The ID of the group.
+        description: |
+          The ID of the group.
         schema:
           type: integer
         example: 42
         required: true
       - name: name
         in: query
-        description: The new name of the group.
+        description: |
+          The new name of the group.
         schema:
           type: string
         example: marketing team
         required: true
       - name: description
         in: query
-        description: The new description of the group.
+        description: |
+          The new description of the group.
         schema:
           type: string
         example: The marketing team.
@@ -3129,11 +3308,13 @@ paths:
                         "result": "error"
                     }
     delete:
-      description: Delete the user group.
+      description: |
+        Delete the user group.
       parameters:
       - name: group_id
         in: path
-        description: The ID of the group.
+        description: |
+          The ID of the group.
         schema:
           type: integer
         example: 42
@@ -3168,7 +3349,8 @@ paths:
 
   /user_groups:
     get:
-      description: Get all user groups of the realm.
+      description: |
+        Get all user groups of the realm.
       responses:
         '200':
           description: Success.
@@ -3182,9 +3364,9 @@ paths:
                       type: array
                       items:
                         type: object
-                      description: A list of `user_group` objects, which contain a
-                        `description`, a `name`, their `id` and the list of members
-                        of the user group.
+                      description: |
+                        A list of `user_group` objects, which contain a `description`, a `name`,
+                        their `id` and the list of members of the user group.
                 - example:
                     {
                         "msg": "",
@@ -3208,16 +3390,17 @@ paths:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the arguments for call_on_each_event and friends.
     post:
-      description: (Ignored)
+      description: |
+        (Ignored)
       parameters:
       - name: narrow
         in: query
         description: |
-          A JSON-encoded array of length 2 indicating the narrow
-          for which you'd like to receive events for. For instance, to receive
-          events for the stream `Denmark`, you would specify
-          `narrow=['stream', 'Denmark']`. Another example is
-          `narrow=['is', 'private']` for private messages. Default is `[]`.
+          A JSON-encoded array of length 2 indicating the narrow for which you'd
+          like to receive events for. For instance, to receive events for the
+          stream `Denmark`, you would specify `narrow=['stream', 'Denmark']`.
+          Another example is `narrow=['is', 'private']` for private messages.
+          Default is `[]`.
         schema:
           type: array
           items:
@@ -3260,8 +3443,8 @@ paths:
   /zulip-outgoing-webhook:
     post:
       description: |
-        Outgoing Webhooks allows to build or set up Zulip integrations which
-        are notified when certain types of messages are sent in Zulip.
+        Outgoing Webhooks allows to build or set up Zulip integrations which are
+        notified when certain types of messages are sent in Zulip.
       responses:
         '200':
           description: |
@@ -3283,13 +3466,13 @@ paths:
                     token:
                       type: string
                       description: |
-                        A string of alphanumeric characters that can be use to authenticate
-                        the webhook request (each bot user uses a fixed token).
+                        A string of alphanumeric characters that can be use to authenticate the
+                        webhook request (each bot user uses a fixed token).
                     message:
                       type: object
                       description: |
-                        A dict containing details on the message which triggered the
-                        outgoing webhook
+                        A dict containing details on the message which triggered the outgoing
+                        webhook
                     bot_email:
                       type: string
                       description: |
@@ -3338,9 +3521,10 @@ components:
     BasicAuth:
       type: http
       scheme: basic
-      description: Basic authentication, with the user's email as the
-        username, and the API key as the password. The API key can be fetched
-        using the `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
+      description: |
+        Basic authentication, with the user's email as the username, and the API
+        key as the password. The API key can be fetched using the
+        `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
 
   schemas:
     JsonResponse:
@@ -3386,11 +3570,12 @@ components:
       - properties:
           api_key:
             type: string
-            description: The API key that can be used to authenticate as the
-              requested user.
+            description: |
+              The API key that can be used to authenticate as the requested user.
           email:
             type: string
-            description: The email address of the user who owns the API key.
+            description: |
+              The email address of the user who owns the API key.
       - example:
           {
               "api_key": "gjA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
@@ -3404,14 +3589,16 @@ components:
       - properties:
           code:
             type: string
-            description: A string that identifies the error.
+            description: |
+              A string that identifies the error.
     BadEventQueueIdError:
       allOf:
       - $ref: '#/components/schemas/CodedError'
       - properties:
           queue_id:
             type: string
-            description: The string that identifies the invalid event queue.
+            description: |
+              The string that identifies the invalid event queue.
       - example:
           {
               "code": "BAD_EVENT_QUEUE_ID",
@@ -3425,7 +3612,8 @@ components:
       - properties:
           raw_content:
             type: string
-            description: The raw content of the message.
+            description: |
+              The raw content of the message.
       - example:
           {
               "msg": "Invalid message(s)",
@@ -3438,8 +3626,8 @@ components:
         - properties:
             stream:
               type: string
-              description: The name of the stream that could not be
-                found.
+              description: |
+                The name of the stream that could not be found.
         - example:
             {
                 "code": "STREAM_DOES_NOT_EXIST",
@@ -3453,20 +3641,23 @@ components:
       - properties:
           subscribed:
             type: object
-            description: A dictionary where the key is the email address of
-              the user/bot and the value is a list of the names of the streams
-              that were subscribed to as a result of the query.
+            description: |
+              A dictionary where the key is the email address of the user/bot and the
+              value is a list of the names of the streams that were subscribed to as a
+              result of the query.
           already_subscribed:
             type: object
-            description: A dictionary where the key is the email address of
-              the user/bot and the value is a list of the names of the streams
-              that the user/bot is already subscribed to.
+            description: |
+              A dictionary where the key is the email address of the user/bot and the
+              value is a list of the names of the streams that the user/bot is already
+              subscribed to.
           unauthorized:
             type: array
             items:
               type: string
-            description: A list of names of streams that the requesting
-              user/bot was not authorized to subscribe to.
+            description: |
+              A list of names of streams that the requesting user/bot was not
+              authorized to subscribe to.
     InvalidApiKeyError:
       allOf:
       - $ref: '#/components/schemas/JsonError'
@@ -3519,8 +3710,8 @@ components:
       name: event_types
       in: query
       description: |
-        A JSON-encoded array indicating which types of events you're
-        interested in. Values that you might find useful include:
+        A JSON-encoded array indicating which types of events you're interested
+        in. Values that you might find useful include:
 
           * **message** (messages)
           * **subscription** (changes in your subscriptions)
