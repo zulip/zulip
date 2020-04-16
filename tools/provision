@@ -19,8 +19,33 @@ PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$PARENT_PATH"
 mkdir -p ../var/log
 LOG_PATH="../var/log/provision.log"
+CONDA_VENV_PATH=/srv/zulip-conda-venv
 
 echo "PROVISIONING STARTING." >> $LOG_PATH
+
+
+# Check for a supported OS release.
+if [ -f /etc/os-release ]; then
+    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$ID_LIKE")"
+    { read -r os_id; read -r os_id_like || true; } <<< "$os_info"
+fi
+
+# Install conda and python
+case " $os_id $os_id_like " in
+    *' debian '*)
+        "$PARENT_PATH"/../scripts/setup/install-python debian
+        ;;
+    *' rhel '*)
+        "$PARENT_PATH"/../scripts/setup/install-python rhel
+        ;;
+esac
+
+# This will move us into conda's env with python installed
+# If only `python(3)` is specified while creating a env using
+# using `virtualenv`, deafult system python will be used.
+# Please specifiy conda's python explicitly while creating any new venv.
+source /opt/conda/etc/profile.d/conda.sh
+conda activate "$CONDA_VENV_PATH"
 
 # PYTHONUNBUFFERED is important to ensure that tracebacks don't get
 # lost far above where they should be in the output.
