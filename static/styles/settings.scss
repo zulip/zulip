@@ -1145,7 +1145,7 @@ input[type=checkbox].inline-block {
 
     #user_avatar_delete_button {
         cursor: pointer;
-        color: hsl(236, 33%, 90%);
+        color: hsl(0, 0%, 75%);
         opacity: 0;
         font-size: 3rem;
         position: absolute;
@@ -1154,15 +1154,41 @@ input[type=checkbox].inline-block {
         z-index: 99;
     }
 
+    #user_avatar_delete_button:hover {
+        color: hsl(0, 0%, 100%);
+    }
+
+    #user_avatar_delete_button:hover ~ #user_avatar_upload_button {
+        visibility: hidden;
+    }
+
+    #user_avatar_delete_button:hover ~ #user_avatar_delete {
+        visibility: visible;
+    }
+
+    #user_avatar_delete {
+        color: hsl(0, 0%, 100%);
+        font-size: 0.85rem;
+        position: absolute;
+        top: 90px;
+        right: 40px;
+        visibility: hidden;
+        z-index: 99;
+    }
+
     #user_avatar_upload_button {
         cursor: pointer;
-        color: hsl(236, 33%, 90%);
+        color: hsl(0, 0%, 85%);
         opacity: 0;
         font-size: 0.85rem;
         position: absolute;
         top: 90px;
         right: 20px;
         z-index: 99;
+    }
+
+    #user_avatar_upload_button:hover {
+        color: hsl(0, 0%, 100%);
     }
 
     #user-avatar-spinner {
