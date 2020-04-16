@@ -37,6 +37,14 @@ const sender2 = 2;
 
 const messages = [];
 
+set_global('message_list', {
+    all: {
+        all_messages: function () {
+            return messages;
+        },
+    },
+});
+
 messages[0] = {
     stream_id: stream1,
     timestamp: 1000,
@@ -183,4 +191,14 @@ run_test('basic assertions', () => {
     assert(all_topics.has(stream1 + ':' + topic5));
     assert(all_topics.has(stream1 + ':' + topic6));
 
+});
+
+run_test('process_topic', () => {
+
+    rt.topics = new Map();
+    rt.process_topic(stream1, topic1);
+
+    const all_topics = rt.get();
+
+    assert(all_topics.size, 1); // Only 1 msg in the topic.
 });

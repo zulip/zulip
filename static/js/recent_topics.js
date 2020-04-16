@@ -1,3 +1,5 @@
+const util = require("./util");
+
 const topics = new Map(); // Key is stream-id:topic.
 
 exports.process_messages = function (messages) {
@@ -58,6 +60,15 @@ exports.update_muted_topics = function () {
         const key = elem.stream_id + ':' + elem.topic;
         topics.delete(key);
     }
+};
+
+exports.process_topic = function (stream_id, topic) {
+    // Delete topic if it exists
+    // and procoess it again, this ensures that we haven't
+    // missed processing any msg.
+    topics.delete(stream_id + ':' + topic);
+    const msgs = util.get_messages_in_topic(stream_id, topic);
+    exports.process_messages(msgs);
 };
 
 window.recent_topics = exports;
