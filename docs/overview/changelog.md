@@ -64,6 +64,18 @@ in bursts.
   system was always a hack, was only ever used for one endpoint, and
   did not provide a measureable latency benefit over HTTP/2.
 
+### 2.1.4 -- 2020-04-16
+
+- Fixed a regression in 2.1.3 that impacted creating the very first
+  organization via our data import tools.
+- Remove the old `tsearch_extras` postgres extension, which was causing
+  an exception restoring backups on fresh Zulip servers that had been
+  generated on systems that had been upgraded from older Zulip releases.
+- Removed fetching GitHub contributor data from static asset build
+  process.  This makes `upgrade-zulip-from-git` much more reliable.
+- Updated translation data from Transifex.
+- Support for Ubuntu 16.04 Xenial and Debian 9 Stretch is now deprecated.
+
 ### 2.1.3 -- 2020-04-01
 
 - CVE-2020-9444: Prevent reverse tabnapping attacks.
