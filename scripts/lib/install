@@ -206,6 +206,21 @@ if [ -z "$NO_DIST_UPGRADE" ]; then
     esac
 fi
 
+# Install conda and python
+# This moves us into conda's env with python installed
+case " $os_id $os_id_like " in
+    *' debian '*)
+        "$ZULIP_PATH"/scripts/setup/install-python debian
+        ;;
+    *' rhel '*)
+        "$ZULIP_PATH"/scripts/setup/install-python rhel
+        ;;
+esac
+
+# Activate conda venv
+source /opt/conda/etc/profile.d/conda.sh
+conda activate "$CONDA_VENV_PATH"
+
 case " $os_id $os_id_like " in
     *' debian '*)
         if ! apt-get install -y \
