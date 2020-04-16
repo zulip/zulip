@@ -94,6 +94,23 @@ def setup_bash_profile() -> None:
         # no existing bash profile found; claim .bash_profile
         setup_shell_profile(BASH_PROFILES[0])
 
+def need_to_run_build_pygments_data() -> bool:
+    if not os.path.exists("static/generated/pygments_data.json"):
+        return True
+
+    build_pygments_data_paths = [
+        "tools/setup/build_pygments_data",
+        "tools/setup/lang.json",
+    ]
+
+    from pygments import __version__ as pygments_version
+
+    return file_or_package_hash_updated(
+        build_pygments_data_paths,
+        "build_pygments_data_hash",
+        [pygments_version]
+    )
+
 def need_to_run_compilemessages() -> bool:
     if not os.path.exists('locale/language_name_map.json'):
         # User may have cleaned their git checkout.
@@ -139,12 +156,7 @@ def main(options: argparse.Namespace) -> int:
     # copy over static files from the zulip_bots package
     generate_zulip_bots_static_files()
 
-    build_pygments_data_paths = ["tools/setup/build_pygments_data", "tools/setup/lang.json"]
-    from pygments import __version__ as pygments_version
-    if (options.is_force or
-            not os.path.exists("static/generated/pygments_data.json") or
-            file_or_package_hash_updated(
-                build_pygments_data_paths, "build_pygments_data_hash", [pygments_version])):
+    if options.is_force or need_to_run_build_pygments_data():
         run(["tools/setup/build_pygments_data"])
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
