@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
+import glob
+import os
+import sys
+import shutil
+from typing import List
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if ZULIP_PATH not in sys.path:
+    sys.path.append(ZULIP_PATH)
+
+from zulip_bots.lib import get_bots_directory_path
+
 def generate_zulip_bots_static_files() -> None:
-    import glob
-    import os
-    import sys
-    import shutil
-
-    ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    if ZULIP_PATH not in sys.path:
-        sys.path.append(ZULIP_PATH)
-
-    from typing import List
-    from zulip_bots.lib import get_bots_directory_path
-
     bots_dir = 'static/generated/bots'
     if os.path.isdir(bots_dir):
         # delete old static files, they could be outdated
