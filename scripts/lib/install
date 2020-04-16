@@ -225,7 +225,7 @@ case " $os_id $os_id_like " in
     *' debian '*)
         if ! apt-get install -y \
             puppet git curl wget jq \
-            python python3 python-six python3-six crudini \
+            python python-six python3-six crudini \
             "${ADDITIONAL_PACKAGES[@]}"; then
             set +x
             echo -e '\033[0;31m' >&2
@@ -238,7 +238,7 @@ case " $os_id $os_id_like " in
     *' rhel '*)
         if ! yum install -y \
             puppet git curl wget jq \
-            python python3 python-six python3-six crudini \
+            python python-six python3-six crudini \
             "${ADDITIONAL_PACKAGES[@]}"; then
             set +x
             echo -e '\033[0;31m' >&2
