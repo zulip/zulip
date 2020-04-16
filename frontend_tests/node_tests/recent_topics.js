@@ -1,4 +1,6 @@
-const rt = zrequire('recent_topics');
+let rt = zrequire('recent_topics');
+zrequire('message_util');
+
 set_global('people', {
     is_my_user_id: function (id) {
         return id === 1;
@@ -9,6 +11,8 @@ set_global('people', {
 
 // New stream
 const stream1 = 1;
+const stream2 = 2;
+const stream3 = 3;
 
 // Topics in the stream
 const topic1 = "topic-1";  // No Other sender
@@ -18,6 +22,8 @@ const topic4 = "topic-4";  // User not present
 const topic5 = "topic-5";  // other sender
 const topic6 = "topic-6";  // other sender
 const topic7 = "topic-7";  // muted topic
+const topic8 = "topic-8";
+const topic9 = "topic-9";
 
 set_global('muting', {
     is_topic_muted: (stream_id, topic) => {
@@ -34,6 +40,14 @@ const sender1 = 1;
 const sender2 = 2;
 
 const messages = [];
+
+set_global('message_list', {
+    all: {
+        all_messages: function () {
+            return messages;
+        },
+    },
+});
 
 let id = 0;
 
@@ -220,4 +234,62 @@ run_test('basic assertions', () => {
 
     // a topic gets muted which we are not tracking
     assert.equal(rt.update_topic_is_muted(stream1, "topic-10", true), false);
+});
+
+run_test('test_topic_edit', () => {
+    rt = zrequire('recent_topics');
+    rt.process_messages(messages);
+
+    let all_topics = rt.get();
+    assert.equal(Array.from(all_topics.keys()).toString(),
+                 '1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1');
+
+    ////////////////// test change topic //////////////////
+    verify_topic_data(all_topics, stream1, topic6, messages[8].id, true, 0);
+    assert.equal(all_topics.get(stream1 + ":" + topic8), undefined);
+
+    // change topic of topic6 to topic8
+    messages[7].topic = topic8;
+    messages[8].topic = topic8;
+    rt.process_topic_edit(stream1, topic6, topic8);
+    all_topics = rt.get();
+
+    verify_topic_data(all_topics, stream1, topic8, messages[8].id, true, 0);
+    assert.equal(all_topics.get(stream1 + ":" + topic6), undefined);
+
+    ////////////////// test change topic to muted topic //////////////////
+    verify_topic_data(all_topics, stream1, topic8, messages[8].id, true, 0);
+    verify_topic_data(all_topics, stream1, topic7, messages[9].id, true, 0, true);
+
+    // change topic of topic8 to topic7
+    messages[7].topic = topic7;
+    messages[8].topic = topic7;
+    rt.process_topic_edit(stream1, topic8, topic7);
+    all_topics = rt.get();
+
+    assert.equal(all_topics.get(stream1 + ":" + topic8), undefined);
+    verify_topic_data(all_topics, stream1, topic7, messages[9].id, true, 0, true);
+
+    ////////////////// test stream change //////////////////
+    verify_topic_data(all_topics, stream1, topic1, messages[0].id, true, 0);
+    assert.equal(all_topics.get(stream2 + ":" + topic1), undefined);
+
+    messages[0].stream_id = stream2;
+    rt.process_topic_edit(stream1, topic1, topic1, stream2);
+    all_topics = rt.get();
+
+    assert.equal(all_topics.get(stream1 + ":" + topic1), undefined);
+    verify_topic_data(all_topics, stream2, topic1, messages[0].id, true, 0);
+
+    ////////////////// test stream & topic change //////////////////
+    verify_topic_data(all_topics, stream2, topic1, messages[0].id, true, 0);
+    assert.equal(all_topics.get(stream3 + ":" + topic9), undefined);
+
+    messages[0].stream_id = stream3;
+    messages[0].topic = topic9;
+    rt.process_topic_edit(stream2, topic1, topic9, stream3);
+    all_topics = rt.get();
+
+    assert.equal(all_topics.get(stream2 + ":" + topic1), undefined);
+    verify_topic_data(all_topics, stream3, topic9, messages[0].id, true, 0);
 });

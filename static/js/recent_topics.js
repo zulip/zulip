@@ -54,4 +54,17 @@ exports.get = function () {
     return get_sorted_topics();
 };
 
+exports.process_topic_edit = function (old_stream_id, old_topic, new_topic, new_stream_id) {
+    // See `recent_senders.process_topic_edit` for
+    // logic behind this and important notes on use of this function.
+    topics.delete(old_stream_id + ':' + old_topic);
+
+    const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
+    exports.process_messages(old_topic_msgs);
+
+    new_stream_id = new_stream_id || old_stream_id;
+    const new_topic_msgs = message_util.get_messages_in_topic(new_stream_id, new_topic);
+    exports.process_messages(new_topic_msgs);
+};
+
 window.recent_topics = exports;
