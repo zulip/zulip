@@ -634,7 +634,7 @@ exports.initialize = function () {
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         const sub = get_sub_for_target(e.target);
         const stream_row = $(this).parent();
-        subs.sub_or_unsub(sub);
+        subs.sub_or_unsub(sub, e.currentTarget);
         if (!sub.subscribed) {
             exports.open_edit_panel_for_row(stream_row);
         }

@@ -611,6 +611,22 @@ form#add_new_subscription {
             pointer-events: none;
             visibility: hidden;
         }
+
+        .sub_unsub_status {
+            display: inline-block !important;
+            height: auto !important;
+            width: auto !important;
+
+            .loading_indicator_spinner {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+            }
+
+            .loading_indicator_spinner svg path {
+                fill: hsl(178, 100%, 40%);
+            }
+        }
     }
 
     .checked svg {
