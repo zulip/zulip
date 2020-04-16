@@ -486,6 +486,7 @@ run_test('uppy_events', () => {
     upload.hide_upload_status = () => {
         hide_upload_status_called = true;
     };
+    $("#compose-send-status").removeClass("alert-error");
     files = [
         {
             id: "uppy-zulip/jpeg-1e-image/jpeg-163515-1578367331279",
@@ -504,6 +505,12 @@ run_test('uppy_events', () => {
     assert(hide_upload_status_called);
     assert.equal(files.length, 0);
 
+    hide_upload_status_called = false;
+    $("#compose-send-status").addClass("alert-error");
+    on_complete_callback();
+    assert(!hide_upload_status_called);
+
+    $("#compose-send-status").removeClass("alert-error");
     hide_upload_status_called = false;
     files = [
         {
