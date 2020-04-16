@@ -697,6 +697,7 @@ def apply_event(state: Dict[str, Any],
             for realm_domain in state['realm_domains']:
                 if realm_domain['domain'] == event['realm_domain']['domain']:
                     realm_domain['allow_subdomains'] = event['realm_domain']['allow_subdomains']
+                    realm_domain['invite_required'] = event['realm_domain']['invite_required']
         elif event['op'] == 'remove':
             state['realm_domains'] = [realm_domain for realm_domain in state['realm_domains']
                                       if realm_domain['domain'] != event['domain']]

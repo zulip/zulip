@@ -546,6 +546,7 @@ class RealmDomain(models.Model):
     # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True)  # type: str
     allow_subdomains = models.BooleanField(default=False)
+    invite_required = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("realm", "domain")
@@ -573,7 +574,7 @@ class EmailContainsPlusError(Exception):
     pass
 
 def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
-    return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
+    return list(realm.realmdomain_set.values('domain', 'allow_subdomains', 'invite_required'))
 
 class RealmEmoji(models.Model):
     author = models.ForeignKey('UserProfile', blank=True, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]

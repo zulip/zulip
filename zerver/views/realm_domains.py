@@ -20,7 +20,8 @@ def list_realm_domains(request: HttpRequest, user_profile: UserProfile) -> HttpR
 @has_request_variables
 def create_realm_domain(request: HttpRequest, user_profile: UserProfile,
                         domain: str=REQ(validator=check_string),
-                        allow_subdomains: bool=REQ(validator=check_bool)) -> HttpResponse:
+                        allow_subdomains: bool=REQ(validator=check_bool),
+                        invite_required: bool=REQ(validator=check_bool)) -> HttpResponse:
     domain = domain.strip().lower()
     try:
         validate_domain(domain)
@@ -29,16 +30,17 @@ def create_realm_domain(request: HttpRequest, user_profile: UserProfile,
     if RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists():
         return json_error(_("The domain %(domain)s is already"
                             " a part of your organization.") % {'domain': domain})
-    realm_domain = do_add_realm_domain(user_profile.realm, domain, allow_subdomains)
+    realm_domain = do_add_realm_domain(user_profile.realm, domain, allow_subdomains, invite_required)
     return json_success({'new_domain': [realm_domain.id, realm_domain.domain]})
 
 @require_realm_admin
 @has_request_variables
 def patch_realm_domain(request: HttpRequest, user_profile: UserProfile, domain: str,
-                       allow_subdomains: bool=REQ(validator=check_bool)) -> HttpResponse:
+                       allow_subdomains: bool=REQ(validator=check_bool),
+                       invite_required: bool=REQ(validator=check_bool)) -> HttpResponse:
     try:
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
-        do_change_realm_domain(realm_domain, allow_subdomains)
+        do_change_realm_domain(realm_domain, allow_subdomains, invite_required)
     except RealmDomain.DoesNotExist:
         return json_error(_('No entry found for domain %(domain)s.') % {'domain': domain})
     return json_success()
