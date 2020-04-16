@@ -33,7 +33,7 @@
         white-space: nowrap;
         text-overflow: ellipsis;
 
-        .user-list-arrow {
+        .user-list-sidebar-menu-icon {
             position: absolute;
             top: 0px;
             right: 10px;
@@ -54,7 +54,7 @@
         }
 
         &:hover {
-            .user-list-arrow {
+            .user-list-sidebar-menu-icon {
                 display: inline;
                 cursor: pointer;
                 color: hsl(0, 0%, 53%);

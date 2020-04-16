@@ -308,11 +308,11 @@ on a dark background, and don't change the dark labels dark either. */
     #searchbox .search_icon,
     #searchbox .search_button,
     .close,
-    #user_presences li:hover .user-list-arrow,
-    li.top_left_all_messages:hover .all-messages-arrow,
-    li.top_left_starred_messages:hover .starred-messages-sidebar-arrow,
-    #stream_filters li:hover .stream-sidebar-arrow,
-    li.topic-list-item:hover .topic-sidebar-arrow {
+    #user_presences li:hover .user-list-sidebar-menu-icon,
+    li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
+    li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
+    #stream_filters li:hover .stream-sidebar-menu-icon,
+    li.topic-list-item:hover .topic-sidebar-menu-icon {
         color: hsl(236, 33%, 80%);
     }
 
@@ -326,11 +326,11 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(0, 0%, 100%);
     }
 
-    #user_presences li .user-list-arrow:hover,
-    .all-messages-arrow:hover,
-    .starred-messages-sidebar-arrow:hover,
-    .stream-sidebar-arrow:hover,
-    .topic-sidebar-arrow:hover {
+    #user_presences li .user-list-sidebar-menu-icon:hover,
+    .all-messages-sidebar-menu-icon:hover,
+    .starred-messages-sidebar-menu-icon:hover,
+    .stream-sidebar-menu-icon:hover,
+    .topic-sidebar-menu-icon:hover {
         color: hsl(0, 0%, 100%) !important;
     }
 
