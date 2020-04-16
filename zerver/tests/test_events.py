@@ -2813,6 +2813,19 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_notify_realm_export(self) -> None:
+        pending_schema_checker = self.check_events_dict([
+            ('type', equals('realm_export')),
+            ('exports', check_list(check_dict_only([
+                ('id', check_int),
+                ('export_time', check_float),
+                ('acting_user_id', check_int),
+                ('export_url', equals(None)),
+                ('deleted_timestamp', equals(None)),
+                ('failed_timestamp', equals(None)),
+                ('pending', check_bool),
+            ]))),
+        ])
+
         schema_checker = self.check_events_dict([
             ('type', equals('realm_export')),
             ('exports', check_list(check_dict_only([
@@ -2821,6 +2834,8 @@ class EventsRegisterTest(ZulipTestCase):
                 ('acting_user_id', check_int),
                 ('export_url', check_string),
                 ('deleted_timestamp', equals(None)),
+                ('failed_timestamp', equals(None)),
+                ('pending', check_bool),
             ]))),
         ])
 
@@ -2832,10 +2847,14 @@ class EventsRegisterTest(ZulipTestCase):
             with stdout_suppressed():
                 events = self.do_test(
                     lambda: self.client_post('/json/export/realm'),
-                    state_change_expected=True, num_events=2)
+                    state_change_expected=True, num_events=3)
 
-        # The first event is a message from notification-bot.
-        error = schema_checker('events[1]', events[1])
+        # We first notify when an export is initiated,
+        error = pending_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # The second event is then a message from notification-bot.
+        error = schema_checker('events[2]', events[2])
         self.assert_on_error(error)
 
         # Now we check the deletion of the export.
@@ -2847,6 +2866,8 @@ class EventsRegisterTest(ZulipTestCase):
                 ('acting_user_id', check_int),
                 ('export_url', check_string),
                 ('deleted_timestamp', check_float),
+                ('failed_timestamp', equals(None)),
+                ('pending', check_bool),
             ]))),
         ])
 
@@ -2856,6 +2877,49 @@ class EventsRegisterTest(ZulipTestCase):
             lambda: self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id)),
             state_change_expected=False, num_events=1)
         error = deletion_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_notify_realm_export_on_failure(self) -> None:
+        pending_schema_checker = self.check_events_dict([
+            ('type', equals('realm_export')),
+            ('exports', check_list(check_dict_only([
+                ('id', check_int),
+                ('export_time', check_float),
+                ('acting_user_id', check_int),
+                ('export_url', equals(None)),
+                ('deleted_timestamp', equals(None)),
+                ('failed_timestamp', equals(None)),
+                ('pending', check_bool),
+            ]))),
+        ])
+
+        failed_schema_checker = self.check_events_dict([
+            ('type', equals('realm_export')),
+            ('exports', check_list(check_dict_only([
+                ('id', check_int),
+                ('export_time', check_float),
+                ('acting_user_id', check_int),
+                ('export_url', equals(None)),
+                ('deleted_timestamp', equals(None)),
+                ('failed_timestamp', check_float),
+                ('pending', check_bool),
+            ]))),
+        ])
+
+        do_change_is_admin(self.user_profile, True)
+        self.login_user(self.user_profile)
+
+        with mock.patch('zerver.lib.export.do_export_realm',
+                        side_effect=Exception("test")):
+            with stdout_suppressed():
+                events = self.do_test(
+                    lambda: self.client_post('/json/export/realm'),
+                    state_change_expected=False, num_events=2)
+
+        error = pending_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        error = failed_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
 class FetchInitialStateDataTest(ZulipTestCase):

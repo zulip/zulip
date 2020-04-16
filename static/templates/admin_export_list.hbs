@@ -8,9 +8,16 @@
     </td>
     <td>
         {{#if url}}
+        <span class="export_status">{{t 'Complete' }}</span>
+        {{else if failed}}
+        <span class="export_status">{{t 'Failed' }}</span>
+        {{else if pending}}
+        <span class="export_status">{{t 'Pending' }}</span>
+        {{/if}}
+    </td>
+    <td>
+        {{#if url}}
         <span class="export_url"><a href="{{url}}" download>{{t 'Download' }}</a></span>
-        {{else}}
-        <span class="export_url">{{t 'The export URL is not yet available... Check back soon.' }}</span>
         {{/if}}
     </td>
     <td class="actions">

@@ -38,6 +38,8 @@ exports.populate_exports_table = function (exports) {
                             new XDate(data.export_time * 1000)
                         ),
                         url: data.export_url,
+                        failed: data.failed_timestamp,
+                        pending: data.pending,
                     },
                 });
             }

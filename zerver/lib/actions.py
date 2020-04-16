@@ -5798,8 +5798,12 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
     export_extra_data = export.extra_data
     assert export_extra_data is not None
     export_data = ujson.loads(export_extra_data)
+    export_path = export_data.get('export_path')
 
-    delete_export_tarball(export_data.get('export_path'))
+    if export_path:
+        # Allow removal even if the export failed.
+        delete_export_tarball(export_path)
+
     export_data.update({'deleted_timestamp': timezone_now().timestamp()})
     export.extra_data = ujson.dumps(export_data)
     export.save(update_fields=['extra_data'])

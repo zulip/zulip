@@ -12,7 +12,7 @@ from zerver.models import RealmAuditLog, UserProfile
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_success
 from zerver.lib.export import get_realm_exports_serialized
-from zerver.lib.actions import do_delete_realm_export
+from zerver.lib.actions import do_delete_realm_export, notify_realm_export
 
 import ujson
 
@@ -51,6 +51,10 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
                                        event_type=event_type,
                                        event_time=event_time,
                                        acting_user=user)
+
+    # Allow for UI updates on a pending export
+    notify_realm_export(user)
+
     # Using the deferred_work queue processor to avoid
     # killing the process after 60s
     event = {'type': "realm_export",
