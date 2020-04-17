@@ -3,7 +3,6 @@ import argparse
 import subprocess
 import sys
 import os
-import glob
 import shlex
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,21 +37,10 @@ sys.path.insert(0, ZULIP_PATH)
 from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
 
-from tools.lib.test_script import assert_provisioning_status_ok, find_js_test_files
+from tools.lib.test_script import assert_provisioning_status_ok, find_js_test_files, prepare_puppeteer_run
 from tools.lib.test_server import test_server_running
 
 from typing import Iterable
-
-assert_provisioning_status_ok(options.force)
-
-os.chdir(ZULIP_PATH)
-
-subprocess.check_call(['node', 'node_modules/puppeteer/install.js'])
-
-os.makedirs('var/puppeteer', exist_ok=True)
-
-for f in glob.glob('var/puppeteer/puppeteer-failure*.png'):
-    os.remove(f)
 
 def run_tests(files: Iterable[str], external_host: str) -> None:
     test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/puppeteer_tests')
@@ -87,5 +75,7 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
         sys.exit(ret)
 
 external_host = "zulipdev.com:9981"
+assert_provisioning_status_ok(options.force)
+prepare_puppeteer_run()
 run_tests(options.tests, external_host)
 sys.exit(0)
