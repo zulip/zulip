@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e
+set -x
+
+
+#### UNTESTED & Possibly doesn't work.
+
+# Use conda's python to run further scripts
+bash "$(dirname "$(dirname "$0")")/setup/install-python"
+
+# We can safely run upgrade now.
+sudo bash "$(dirname "$0")/upgrade-zulip-stage-2"
