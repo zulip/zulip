@@ -237,6 +237,10 @@ v1_api_and_json_patterns = [
     # user_uploads -> zerver.views.upload
     url(r'^user_uploads$', rest_dispatch,
         {'POST': 'zerver.views.upload.upload_file_backend'}),
+    url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)$',
+        rest_dispatch,
+        {'GET': ('zerver.views.upload.serve_file_url_backend',
+                 {'override_api_url_scheme'})}),
 
     # bot_storage -> zerver.views.storage
     url(r'^bot_storage$', rest_dispatch,

@@ -204,8 +204,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
         self.assertIn('title="zulip.txt"', self.get_last_message().rendered_content)
 
-        # Now try the format that's supposed to return 200s
-        result = self.client_get(uri + "?url_only=true")
+        # Now try the endpoint that's supposed to return a temporary url for access
+        # to the file.
+        result = self.client_get('/json' + uri)
         self.assert_json_success(result)
         data = result.json()
         url_only_url = data['url']
@@ -229,7 +230,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
-        url = result.json()["uri"] + "?url_only=true"
+        url = '/json' + result.json()["uri"]
 
         start_time = time.time()
         with mock.patch('django.core.signing.time.time', return_value=start_time):
@@ -1621,8 +1622,9 @@ class S3Test(ZulipTestCase):
         redirect_url = response['Location']
         self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())
 
-        # Now try the format that's supposed to return 200s
-        result = self.client_get(uri + "?url_only=true")
+        # Now try the endpoint that's supposed to return a temporary url for access
+        # to the file.
+        result = self.client_get('/json' + uri)
         self.assert_json_success(result)
         data = result.json()
         url_only_url = data['url']

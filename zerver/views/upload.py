@@ -5,11 +5,9 @@ from django.utils.cache import patch_cache_control
 from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_success, json_error
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
     get_signed_upload_url, check_upload_within_quota, INLINE_MIME_TYPES, \
     generate_unauthed_file_access_url, get_local_file_path_id_from_token
-from zerver.lib.validator import check_bool
 from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
 from django_sendfile import sendfile
@@ -56,15 +54,22 @@ def serve_local(request: HttpRequest, path_id: str, url_only: bool) -> HttpRespo
     patch_cache_control(response, private=True, immutable=True)
     return response
 
-@has_request_variables
 def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
-                       realm_id_str: str, filename: str,
-                       url_only: bool=REQ(validator=check_bool,
-                                          default=False)) -> HttpResponse:
+                       realm_id_str: str, filename: str) -> HttpResponse:
+    return serve_file(request, user_profile, realm_id_str, filename, url_only=False)
+
+def serve_file_url_backend(request: HttpRequest, user_profile: UserProfile,
+                           realm_id_str: str, filename: str) -> HttpResponse:
     """
-    If the client passes url_only, we should return a signed, short-lived URL
+    We should return a signed, short-lived URL
     that the client can use for native mobile download, rather than serving a redirect.
     """
+
+    return serve_file(request, user_profile, realm_id_str, filename, url_only=True)
+
+def serve_file(request: HttpRequest, user_profile: UserProfile,
+               realm_id_str: str, filename: str,
+               url_only: bool=False) -> HttpResponse:
     path_id = "%s/%s" % (realm_id_str, filename)
     is_authorized = validate_attachment_request(user_profile, path_id)
 
