@@ -8,7 +8,7 @@ class zulip_ops::base {
     # package management
     'aptitude',
     # SSL Certificates
-    'letsencrypt',
+    'certbot',
     # Monitoring
     'munin-node',
     'munin-plugins-extra' ,
