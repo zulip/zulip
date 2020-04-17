@@ -40,6 +40,13 @@ Usually, this involves a few steps:
       zerver/webhooks/pingdom/fixtures/imap_down_to_up.json
   ```
 
+  If you have trouble using this tool, you can also manually generate the
+  screenshot using `send_webhook_fixture_message`. When generating the
+  screenshot of a sample message using this method, give your test bot a nice
+  name like "GitHub Bot", use the project's logo as the bot's avatar, and take
+  the screenshot showing the stream/topic bar for the message, not just the
+  message body.
+
 ## Markdown macros
 
 **Macros** are elements in the format of `{!macro.md!}` that insert common
