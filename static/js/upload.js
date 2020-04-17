@@ -16,6 +16,10 @@ exports.feature_check = function (upload_button) {
         upload_button.removeClass("notdisplayed");
     }
 };
+exports.get_translated_status = function (file) {
+    const status = i18n.t("Uploading __filename__…", {filename: file.name});
+    return "[" + status + "]()";
+};
 
 exports.get_item = function (key, config) {
     if (!config) {
@@ -102,7 +106,7 @@ exports.upload_files = function (uppy, config, files) {
     exports.get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
     exports.get_item("send_status_close_button", config).one('click', function () {
         uppy.getFiles().forEach((file) => {
-            compose_ui.replace_syntax("[Uploading " + file.name + "…]()", "", exports.get_item("textarea", config));
+            compose_ui.replace_syntax(exports.get_translated_status(file), "", exports.get_item("textarea", config));
         });
         compose_ui.autosize_textarea();
         uppy.cancelAll();
@@ -114,7 +118,7 @@ exports.upload_files = function (uppy, config, files) {
 
     for (const file of files) {
         try {
-            compose_ui.insert_syntax_and_focus("[Uploading " + file.name + "…]()", exports.get_item("textarea", config));
+            compose_ui.insert_syntax_and_focus(exports.get_translated_status(file), exports.get_item("textarea", config));
             compose_ui.autosize_textarea();
             uppy.addFile({
                 source: exports.get_item("source", config),
@@ -211,7 +215,7 @@ exports.setup_upload = function (config) {
         }
         const absolute_uri = upload.make_upload_absolute(uri);
         const filename_uri = "[" + filename + "](" + absolute_uri + ")";
-        compose_ui.replace_syntax("[Uploading " + file.name + "…]()", filename_uri, exports.get_item("textarea", config));
+        compose_ui.replace_syntax(exports.get_translated_status(file), filename_uri, exports.get_item("textarea", config));
         compose_ui.autosize_textarea();
     });
 
@@ -264,12 +268,12 @@ exports.setup_upload = function (config) {
         const message = response ? response.body.msg : null;
         uppy.cancelAll();
         exports.show_error_message(config, message);
-        compose_ui.replace_syntax("[Uploading " + file.name + "…]()", "", exports.get_item("textarea", config));
+        compose_ui.replace_syntax(exports.get_translated_status(file), "", exports.get_item("textarea", config));
         compose_ui.autosize_textarea();
     });
 
     uppy.on('restriction-failed', (file) => {
-        compose_ui.replace_syntax("[Uploading " + file.name + "…]()", "", exports.get_item("textarea", config));
+        compose_ui.replace_syntax(exports.get_translated_status(file), "", exports.get_item("textarea", config));
         compose_ui.autosize_textarea();
     });
 
