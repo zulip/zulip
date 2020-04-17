@@ -59,13 +59,25 @@ class SchemaError(Exception):
 
 openapi_spec = OpenAPISpec(OPENAPI_SPEC_PATH)
 
+def get_schema(endpoint: str, method: str, response: str) -> Dict[str, Any]:
+    if len(response) == 3:
+        schema = (openapi_spec.spec()['paths'][endpoint][method.lower()]['responses']
+                  [response]['content']['application/json']['schema'])
+        return schema
+    else:
+        resp_code = int(response[4])
+        response = response[0:3]
+        schema = (openapi_spec.spec()['paths'][endpoint][method.lower()]['responses']
+                  [response]['content']['application/json']['schema']["oneOf"][resp_code])
+        return schema
+
 def get_openapi_fixture(endpoint: str, method: str,
                         response: Optional[str]='200') -> Dict[str, Any]:
     """Fetch a fixture from the full spec object.
     """
-    return (openapi_spec.spec()['paths'][endpoint][method.lower()]['responses']
-            [response]['content']['application/json']['schema']
-            ['example'])
+    if response is None:
+        response = '200'
+    return (get_schema(endpoint, method, response)['example'])
 
 def get_openapi_paths() -> Set[str]:
     return set(openapi_spec.spec()['paths'].keys())
@@ -88,8 +100,7 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint.
     """
-    schema = (openapi_spec.spec()['paths'][endpoint][method.lower()]['responses']
-              [response]['content']['application/json']['schema'])
+    schema = get_schema(endpoint, method, response)
 
     exclusion_list = (EXCLUDE_PROPERTIES.get(endpoint, {}).get(method, {})
                                         .get(response, []))

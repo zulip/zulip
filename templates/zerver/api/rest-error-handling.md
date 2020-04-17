@@ -21,18 +21,18 @@ errors common to many endpoints:
 
 A typical failed JSON response for when the API key is invalid:
 
-{generate_code_example|/rest-error-handling:post|fixture(400_invalid_api_key)}
+{generate_code_example|/rest-error-handling:post|fixture(400_0)}
 
 ## Missing request argument(s)
 
 A typical failed JSON response for when a required request argument
 is not supplied:
 
-{generate_code_example|/rest-error-handling:post|fixture(400_missing_request_argument_error)}
+{generate_code_example|/rest-error-handling:post|fixture(400_1)}
 
 ## User not authorized for query
 
 A typical failed JSON response for when the user is not authorized
 for a query:
 
-{generate_code_example|/rest-error-handling:post|fixture(400_user_not_authorized_error)}
+{generate_code_example|/rest-error-handling:post|fixture(400_2)}
