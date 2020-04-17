@@ -16,13 +16,6 @@ from version import PROVISION_VERSION
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 
 VENV_PATH = "/srv/zulip-py3-venv"
-VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
-LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
-UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
-TEST_UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'test_uploads')
-COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
-NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
-XUNIT_XML_TEST_RESULTS_DIR_PATH = os.path.join(VAR_DIR_PATH, 'xunit-test-results')
 
 is_travis = 'TRAVIS' in os.environ
 
@@ -33,6 +26,21 @@ if is_travis:
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
 UUID_VAR_PATH = get_dev_uuid_var_path()
+
+def create_var_directories() -> None:
+    # create var/coverage, var/log, etc.
+    var_dir = os.path.join(ZULIP_PATH, 'var')
+    sub_dirs = [
+        'coverage',
+        'log',
+        'node-coverage',
+        'test_uploads',
+        'uploads',
+        'xunit-test-results',
+    ]
+    for sub_dir in sub_dirs:
+        path = os.path.join(var_dir, sub_dir)
+        os.makedirs(path, exist_ok=True)
 
 def setup_shell_profile(shell_profile):
     # type: (str) -> None
@@ -143,18 +151,7 @@ def main(options: argparse.Namespace) -> int:
     # This needs to happen before anything that imports zproject.settings.
     run(["scripts/setup/generate_secrets.py", "--development"])
 
-    # create log directory `zulip/var/log`
-    os.makedirs(LOG_DIR_PATH, exist_ok=True)
-    # create upload directory `var/uploads`
-    os.makedirs(UPLOAD_DIR_PATH, exist_ok=True)
-    # create test upload directory `var/test_upload`
-    os.makedirs(TEST_UPLOAD_DIR_PATH, exist_ok=True)
-    # create coverage directory `var/coverage`
-    os.makedirs(COVERAGE_DIR_PATH, exist_ok=True)
-    # create linecoverage directory `var/node-coverage`
-    os.makedirs(NODE_TEST_COVERAGE_DIR_PATH, exist_ok=True)
-    # create XUnit XML test results directory`var/xunit-test-results`
-    os.makedirs(XUNIT_XML_TEST_RESULTS_DIR_PATH, exist_ok=True)
+    create_var_directories()
 
     # The `build_emoji` script requires `emoji-datasource` package
     # which we install via npm; thus this step is after installing npm
