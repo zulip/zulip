@@ -17,7 +17,7 @@
 
         <div class="page-content">
             <div class="main">
-                <div class="alert alert-danger" id="error-message-box"></div>
+                <div class="portico-alert alert-danger" id="error-message-box"></div>
                 <h1>{{ _("Billing") }}</h1>
                 {% if admin_access and has_active_plan %}
                 <ul class="nav nav-tabs" id="billing-tabs">
@@ -52,7 +52,7 @@
                         </p>
                     </div>
                     <div class="tab-pane" id="payment-method" data-email="{{stripe_email}}" data-key="{{publishable_key}}">
-                        <div id="cardchange-error" class="alert alert-danger"></div>
+                        <div id="cardchange-error" class="portico-alert alert-danger"></div>
                         <div id="cardchange-input-section">
                             <form id="cardchange-form">
                                 <p>Current payment method: <strong>{{ payment_method }}</strong></p>
@@ -74,7 +74,7 @@
                             </div>
                             <div id="cardchange_loading_indicator"></div>
                         </div>
-                        <div id="cardchange-success" class="alert alert-success">
+                        <div id="cardchange-success" class="portico-alert alert-success">
                             Card updated. The page will now reload.
                         </div>
                     </div>

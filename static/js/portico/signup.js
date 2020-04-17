@@ -38,11 +38,11 @@ $(function () {
         errorPlacement: function (error, element) {
             // NB: this is called at most once, when the error element
             // is created.
-            element.next('.help-inline.alert.alert-error').remove();
+            element.next('.help-inline.portico-alert.portico-alert-error').remove();
             if (element.next().is('label[for="' + element.attr('id') + '"]')) {
-                error.insertAfter(element.next()).addClass('help-inline alert alert-error');
+                error.insertAfter(element.next()).addClass('help-inline portico-alert portico-alert-error');
             } else {
-                error.insertAfter(element).addClass('help-inline alert alert-error');
+                error.insertAfter(element).addClass('help-inline portico-alert portico-alert-error');
             }
         },
         highlight: highlight('error'),
@@ -106,7 +106,7 @@ $(function () {
         errorElement: "div",
         errorPlacement: function (error) {
             $('.email-frontend-error').empty();
-            $("#send_confirm .alert.email-backend-error").remove();
+            $("#send_confirm .portico-alert.email-backend-error").remove();
             error.appendTo(".email-frontend-error").addClass("text-error");
         },
         success: function () {
@@ -143,11 +143,11 @@ $(function () {
         invalidHandler: function () {
             // this removes all previous errors that were put on screen
             // by the server.
-            $("#login_form .alert.alert-error").remove();
+            $("#login_form .portico-alert.portico-alert-error").remove();
         },
         showErrors: function (error_map) {
             if (error_map.password) {
-                $("#login_form .alert.alert-error").remove();
+                $("#login_form .portico-alert.portico-alert-error").remove();
             }
             this.defaultShowErrors();
         },

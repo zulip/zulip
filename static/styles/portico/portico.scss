@@ -467,7 +467,7 @@ img.screenshot {
     color: hsl(0, 0%, 100%);
 }
 
-.alert-hidden {
+.portico-alert-hidden {
     display: none;
 }
 
@@ -989,7 +989,7 @@ input#terminal:checked ~ #tab-terminal {
     text-align: center;
 }
 
-.login-page .alert {
+.login-page .portico-alert {
     width: 320px;
     margin: auto;
     margin-top: -30px;

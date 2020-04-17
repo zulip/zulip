@@ -164,8 +164,8 @@ html {
     }
 }
 
-.new-style .login-page-container .alert,
-.register-page-container .new-style .alert {
+.new-style .login-page-container .portico-alert,
+.register-page-container .new-style .portico-alert {
     margin: 0;
     text-align: left;
     font-size: 0.7em;
@@ -303,7 +303,7 @@ html {
         margin-bottom: 0px;
     }
 
-    .alert.alert-info {
+    .portico-alert.portico-alert-info {
         padding: 8px 14px;
         text-align: left;
 
@@ -360,10 +360,10 @@ html {
         }
     }
 
-    .alert-info {
+    .portico-alert-info {
         font-weight: 400;
     }
-    .alert {
+    .portico-alert {
         &:not(.alert-info) {
             padding: 0;
             margin-bottom: 0;
@@ -376,7 +376,7 @@ html {
             color: hsl(0, 44%, 54%);
         }
 
-        &.alert-error {
+        &.portico-alert-error {
             text-align: left;
         }
     }
@@ -392,7 +392,7 @@ html {
         margin-bottom: 20px;
     }
 
-    .right-side .alert {
+    .right-side .portico-alert {
         max-width: 328px;
     }
 

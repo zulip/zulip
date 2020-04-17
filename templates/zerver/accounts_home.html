@@ -37,7 +37,7 @@ page can be easily identified in it's respective JavaScript file -->
 
                 <div class="right-side">
                     {% if no_auth_enabled %}
-                        <div class="alert">
+                        <div class="portico-alert">
                             <p>No authentication backends are enabled on this
                             server yet, so it is impossible to register!</p>
 
@@ -57,10 +57,10 @@ page can be easily identified in it's respective JavaScript file -->
                                 <div class="input-box no-validate">
                                     <input type="email" id="email" class="email" name="email" value="" autofocus required />
                                     <label for="email">Email</label>
-                                    <div class="alert alert-error email-frontend-error"></div>
+                                    <div class="portico-alert portico-alert-error email-frontend-error"></div>
                                     {% if form.email.errors %}
                                         {% for error in form.email.errors %}
-                                        <div class="email-backend-error alert alert-error">{{ error }}</div>
+                                        <div class="email-backend-error portico-alert portico-alert-error">{{ error }}</div>
                                         {% endfor %}
                                     {% endif %}
                                 </div>

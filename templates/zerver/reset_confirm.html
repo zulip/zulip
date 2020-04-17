@@ -32,7 +32,7 @@
                       data-min-guesses="{{password_min_guesses}}" autofocus required />
                     {% if form.new_password1.errors %}
                         {% for error in form.new_password1.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
+                        <div class="portico-alert portico-alert-error">{{ error }}</div>
                         {% endfor %}
                     {% endif %}
                 </div>
@@ -50,7 +50,7 @@
                       maxlength="100" required />
                     {% if form.new_password2.errors %}
                         {% for error in form.new_password2.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
+                        <div class="portico-alert portico-alert-error">{{ error }}</div>
                         {% endfor %}
                     {% endif %}
                 </div>

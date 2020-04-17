@@ -31,7 +31,7 @@ page can be easily identified in it's respective JavaScript file. -->
 
             <div class="right-side">
                 {% if no_auth_enabled %}
-                    <div class="alert">
+                    <div class="portico-alert">
                         <p>No authentication backends are enabled on this
                         server yet, so it is impossible to login!</p>
 
@@ -77,7 +77,7 @@ page can be easily identified in it's respective JavaScript file. -->
                             {% endif %}
 
                             {% if form.errors %}
-                            <div class="alert alert-error">
+                            <div class="portico-alert portico-alert-error">
                                 {% for error in form.errors.values() %}
                                 <div>{{ error | striptags }}</div>
                                 {% endfor %}
@@ -85,13 +85,13 @@ page can be easily identified in it's respective JavaScript file. -->
                             {% endif %}
 
                             {% if already_registered %}
-                            <div class="alert">
+                            <div class="portico-alert">
                                 {{ _("You've already registered with this email address. Please log in below.") }}
                             </div>
                             {% endif %}
 
                             {% if is_deactivated %}
-                            <div class="alert">
+                            <div class="portico-alert">
                                 {{ deactivated_account_error }}
                             </div>
                             {% endif %}
