@@ -119,7 +119,7 @@ class zulip::base {
     mode   => '0644',
     owner  => 'zulip',
     group  => 'zulip',
-    links => 'follow',
+    links  => 'follow',
   }
   file { ['/etc/zulip/zulip.conf', '/etc/zulip/settings.py']:
     ensure  => 'file',
