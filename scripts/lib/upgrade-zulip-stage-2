@@ -58,9 +58,6 @@ try:
 except (configparser.NoSectionError, configparser.NoOptionError):
     tornado_processes = 1
 
-# Handle issues around upstart on Ubuntu Xenial
-subprocess.check_call(["./scripts/lib/check-upstart"])
-
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
     subprocess.check_call([
