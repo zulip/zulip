@@ -113,9 +113,7 @@ case "$os_id$os_version_id" in
 Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
- - Debian 9 "stretch"
  - Debian 10 "buster"
- - Ubuntu 16.04 LTS "xenial"
  - Ubuntu 18.04 LTS "bionic"
 
 For more information, see:
@@ -166,9 +164,6 @@ case " $os_id $os_id_like " in
         "$ZULIP_PATH"/scripts/lib/setup-yum-repo
         ;;
 esac
-
-# Handle issues around upstart on Ubuntu Xenial
-"$ZULIP_PATH"/scripts/lib/check-upstart
 
 # Check early for missing SSL certificates
 if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && [ -z "$USE_CERTBOT""$SELF_SIGNED_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
