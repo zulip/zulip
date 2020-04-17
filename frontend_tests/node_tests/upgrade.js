@@ -75,7 +75,7 @@ run_test("initialize", () => {
     helpers.update_charged_amount = (prices, schedule) => {
         assert.equal(prices.annual, 6400);
         assert.equal(prices.monthly, 640);
-        assert.equal(schedule, "annual");
+        assert.equal(schedule, "monthly");
     };
 
     $('input[type=radio][name=license_management]:checked').val = () => {
@@ -149,8 +149,8 @@ run_test("autopay_form_fields", () => {
 
     const schedule_options = document.querySelectorAll("#autopay-form input[type=radio][name=schedule]");
     assert.equal(schedule_options.length, 2);
-    assert.equal(schedule_options[0].value, "annual");
-    assert.equal(schedule_options[1].value, "monthly");
+    assert.equal(schedule_options[0].value, "monthly");
+    assert.equal(schedule_options[1].value, "annual");
 
     assert(document.querySelector("#autopay-error"));
     assert(document.querySelector("#autopay-loading"));
