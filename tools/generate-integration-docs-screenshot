@@ -87,7 +87,7 @@ def get_requests_headers(integration_name: str, fixture_name: str) -> Dict[str, 
 def webhook_json_fixture(path: str) -> str:
     path = os.path.abspath(path)
     if not (os.path.exists(path) and path.endswith('.json') and 'webhooks' in path):
-        raise ValueError('Not a valid webhook JSON fixture')
+        raise argparse.ArgumentTypeError('Not a valid webhook JSON fixture')
     return path
 
 def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, fixture_path: str) -> None:
