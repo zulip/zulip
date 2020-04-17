@@ -92,10 +92,9 @@ def update_test_databases_if_required(use_force: bool=False,
         return
     subprocess.check_call(generate_fixtures_command)
 
-def database_exists(database_name: str, **options: Any) -> bool:
-    db = options.get('database', DEFAULT_DB_ALIAS)
+def database_exists(database_name: str) -> bool:
     try:
-        connection = connections[db]
+        connection = connections[DEFAULT_DB_ALIAS]
 
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1 from pg_database WHERE datname='{}';".format(database_name))
