@@ -38,6 +38,7 @@ TODOS_SUPPORT_EVENTS = [
     'todolist_name_changed',
     'todo_assignment_changed',
     'todo_completed',
+    'todo_uncompleted',
     'todo_created',
     'todo_due_on_changed',
 ]
