@@ -39,7 +39,7 @@ TODOS_SUPPORT_EVENTS = [
     'todo_assignment_changed',
     'todo_completed',
     'todo_created',
-    'todo_due_date_changed',
+    'todo_due_on_changed',
 ]
 
 SUPPORT_EVENTS = DOC_SUPPORT_EVENTS + QUESTION_SUPPORT_EVENTS + MESSAGE_SUPPORT_EVENTS + TODOS_SUPPORT_EVENTS
