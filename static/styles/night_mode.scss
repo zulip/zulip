@@ -450,8 +450,9 @@ on a dark background, and don't change the dark labels dark either. */
 
         .highlight_text_deleted {
             text-decoration: line-through;
-            background-color: hsla(7, 54%, 62%, 0.38);
-        }
+            color: hsl(0, 100%, 70%);
+            background-color:hsla(0, 64%, 95%, 0.3);
+        }
     }
 
     .tip {
