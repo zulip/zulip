@@ -8,7 +8,10 @@ secondary Postgres servers' xlog location.
 import subprocess
 import re
 
-from typing_extensions import NoReturn
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    # typing_extensions might not be installed
+    from typing_extensions import NoReturn
 
 states = {
     "OK": 0,
