@@ -42,7 +42,14 @@
                                     <div id="autopay-error" class="alert alert-danger"></div>
                                     <h3>{{ _("Payment schedule") }}</h3>
                                     <label>
-                                        <input type="radio" name="schedule" value="annual" checked />
+                                        <input type="radio" name="schedule" value="monthly" checked/>
+                                        <div class="box">
+                                            <div class="schedule-time">{{ _("Pay monthly") }}</div>
+                                            <div class="schedule-amount">$<span id="autopay_monthly_price"></span>/user/month</div>
+                                        </div>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="schedule" value="annual"/>
                                         <div class="box">
                                             <div class="schedule-time annually">{{ _("Pay annually") }}</div>
                                             <div class="schedule-amount">
@@ -51,13 +58,6 @@
                                                     ($<span id="autopay_annual_price"></span>/user/year)
                                                 </div>
                                             </div>
-                                        </div>
-                                    </label>
-                                    <label>
-                                        <input type="radio" name="schedule" value="monthly" />
-                                        <div class="box">
-                                            <div class="schedule-time">{{ _("Pay monthly") }}</div>
-                                            <div class="schedule-amount">$<span id="autopay_monthly_price"></span>/user/month</div>
                                         </div>
                                     </label>
                                 </div>
