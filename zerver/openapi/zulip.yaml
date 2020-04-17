@@ -1121,8 +1121,8 @@ paths:
           type: string
         example: 4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt
         required: True
-        responses:
-          '200':
+      responses:
+        '200':
           description: Success.
           content:
             application/json:
