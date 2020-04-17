@@ -224,16 +224,16 @@ on a dark background, and don't change the dark labels dark either. */
     .top-navbar-border {
         border-color: hsla(0, 0%, 0%, 0.6);
     }
-    #tab_bar #tab_list li.sub_count::before {
+    #tab_bar #tab_list .sub_count::before {
         background: hsla(0, 0%, 100%, 0.5);
     }
-    #tab_bar #tab_list li.sub_count::after {
+    #tab_bar #tab_list .sub_count::after {
         background: hsla(0, 0%, 100%, 0.5);
     }
 
     #searchbox_legacy {
-        #tab_bar #tab_list li.sub_count,
-        #tab_bar #tab_list li.narrow_description {
+        #tab_bar #tab_list .sub_count,
+        #tab_bar #tab_list .narrow_description {
             color: hsla(0, 0%, 90%, 1);
         }
     }
