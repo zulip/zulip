@@ -901,6 +901,8 @@ urllib3==1.25.8 \
     --hash=sha256:2f3db8b19923a873b3e5256dc9c2dedfa883e33d87c690d9c7913e1f40673cdc \
     --hash=sha256:87716c2d2a7121198ebcb7ce7cccf6ce5e9ba539041cfbaeecfb641dc0bf6acc \
     # via botocore, requests
+uwsgi==2.0.18 \
+    --hash=sha256:4972ac538800fb2d421027f49b4a1869b66048839507ccf0aa2fda792d99f583
 virtualenv-clone==0.5.3 \
     --hash=sha256:532f789a5c88adf339506e3ca03326f20ee82fd08ee5586b44dc859b5b4468c5 \
     --hash=sha256:c88ae171a11b087ea2513f260cdac9232461d8e9369bcd1dc143fc399d220557
@@ -924,6 +926,9 @@ werkzeug==0.16.1 \
     --hash=sha256:1e0dedc2acb1f46827daa2e399c1485c8fa17c0d8e70b6b875b4e7f54bf408d2 \
     --hash=sha256:b353856d37dec59d6511359f97f6a4b2468442e454bd1c98298ddce53cac1f04 \
     # via moto
+wheel==0.34.2 \
+    --hash=sha256:8788e9155fe14f54164c1b9eb0a319d98ef02c160725587ad60f14ddc57b6f96 \
+    --hash=sha256:df277cb51e61359aba502208d680f90c0493adec6f0e848af94948778aed386e
 wrapt==1.11.2 \
     --hash=sha256:565a021fd19419476b9362b05eeaa094178de64f8361e44468f9e9d7843901e1 \
     # via aws-xray-sdk
@@ -997,5 +1002,4 @@ pip==20.0.2 \
     --hash=sha256:7db0c8ea4c7ea51c8049640e8e6e7fde949de672bfa4949920675563a5a6967f
 setuptools==45.1.0 \
     --hash=sha256:68e7fd3508687f94367f1aa090a3ed921cd045a60b73d8b0aa1f305199a0ca28 \
-    --hash=sha256:91f72d83602a6e5e4a9e4fe296e27185854038d7cbda49dcd7006c4d3b3b89d5 \
-    # via cairocffi, cssselect2, ipython, jsonschema, markdown, sphinx, tinycss2, zope.interface
+    --hash=sha256:91f72d83602a6e5e4a9e4fe296e27185854038d7cbda49dcd7006c4d3b3b89d5
