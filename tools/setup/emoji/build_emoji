@@ -77,8 +77,9 @@ if 'TRAVIS' in os.environ:
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
 def main() -> None:
-    success_stamp = get_success_stamp()
-    source_emoji_dump = os.path.dirname(success_stamp)
+    sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
+    source_emoji_dump = os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji')
+    success_stamp = os.path.join(source_emoji_dump, '.success-stamp')
 
     if not os.path.exists(success_stamp):
         print("Dumping emojis ...")
@@ -100,10 +101,6 @@ def main() -> None:
             to_remove.discard(filename)
     for filename in to_remove:
         os.remove(os.path.join(TARGET_EMOJI_STYLES, filename))
-
-def get_success_stamp() -> str:
-    sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
-    return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
 
 def percent(f: float) -> str:
     return '%0.3f%%' % (f * 100,)
