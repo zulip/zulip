@@ -615,25 +615,21 @@ paths:
                         "id": 42,
                         "result": "success"
                     }
-        '400_non_existing_stream':
+        '400':
           description: Bad request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NonExistingStreamError'
-        '400_non_existing_user':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/CodedError'
-                - example:
-                    {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid email 'eeshan@zulip.com'",
-                        "result": "error"
-                    }
+                oneOf:
+                - $ref: '#/components/schemas/NonExistingStreamError'
+                - allOf:
+                  - $ref: '#/components/schemas/CodedError'
+                  - example:
+                      {
+                          "code": "BAD_REQUEST",
+                          "msg": "Invalid email 'eeshan@zulip.com'",
+                          "result": "error"
+                      }
   /messages/{message_id}:
     get:
       description: |
@@ -768,25 +764,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JsonSuccess'
-        '400_invalid_message':
+        '400':
           description: Bad request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InvalidMessageError'
-        '400_not_admin':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/CodedError'
-                - example:
-                    {
-                        "code": "BAD_REQUEST",
-                        "msg": "You don't have permission to delete this message",
-                        "result": "error"
-                    }
+                oneOf:
+                - $ref: '#/components/schemas/InvalidMessageError'
+                - allOf:
+                  - $ref: '#/components/schemas/CodedError'
+                  - example:
+                      {
+                          "code": "BAD_REQUEST",
+                          "msg": "You don't have permission to delete this message",
+                          "result": "error"
+                      }
   /messages/{message_id}/history:
     get:
       description: |
@@ -1960,71 +1952,63 @@ paths:
           type: boolean
         example: true
       responses:
-        '200_without_principals':
+        '200':
           description: Success.
           content:
             application/json:
               schema:
-                allOf:
-                - $ref: '#/components/schemas/AddSubscriptionsResponse'
-                - example:
-                    {
-                        "already_subscribed": {},
-                        "msg": "",
-                        "result": "success",
-                        "subscribed": {
-                            "iago@zulip.com": [
-                                "new stream"
-                            ]
-                        }
-                    }
-        '200_already_subscribed':
+                oneOf:
+                - allOf:
+                  - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                  - example:
+                      {
+                          "already_subscribed": {},
+                          "msg": "",
+                          "result": "success",
+                          "subscribed": {
+                              "iago@zulip.com": [
+                                  "new stream"
+                              ]
+                          }
+                      }
+                - allOf:
+                  - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                  - example:
+                      {
+                          "already_subscribed": {
+                              "newbie@zulip.com": [
+                                  "new stream"
+                              ]
+                          },
+                          "msg": "",
+                          "result": "success",
+                          "subscribed": {}
+                      }
+        '400':
           description: Success.
           content:
             application/json:
               schema:
-                allOf:
-                - $ref: '#/components/schemas/AddSubscriptionsResponse'
-                - example:
-                    {
-                        "already_subscribed": {
-                            "newbie@zulip.com": [
-                                "new stream"
-                            ]
-                        },
-                        "msg": "",
-                        "result": "success",
-                        "subscribed": {}
-                    }
-        '400_unauthorized_errors_fatal_true':
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/AddSubscriptionsResponse'
-                - example:
-                    {
-                        "msg": "Unable to access stream (private_stream).",
-                        "result": "error"
-                    }
-        '400_unauthorized_errors_fatal_false':
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/AddSubscriptionsResponse'
-                - example:
-                    {
-                        "already_subscribed": {},
-                        "msg": "",
-                        "result": "success",
-                        "subscribed": {},
-                        "unauthorized": [
-                            "private_stream"
-                        ]
-                    }
+                oneOf:
+                - allOf:
+                  - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                  - example:
+                      {
+                          "msg": "Unable to access stream (private_stream).",
+                          "result": "error"
+                      }
+                - allOf:
+                  - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                  - example:
+                      {
+                          "already_subscribed": {},
+                          "msg": "",
+                          "result": "success",
+                          "subscribed": {},
+                          "unauthorized": [
+                              "private_stream"
+                          ]
+                      }
     patch:
       description: |
         Update which streams you are are subscribed to.
@@ -2236,24 +2220,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JsonSuccess'
-        '400_topic_already_muted':
+        '400':
           description: Bad request.
           content:
             application/json:
               schema:
-                allOf:
+                oneOf:
+                - allOf:
                   - $ref: '#/components/schemas/JsonError'
                   - example:
                       {
                           "msg": "Topic already muted",
                           "result": "error"
                       }
-        '400_topic_not_muted':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
+                - allOf:
                   - $ref: '#/components/schemas/JsonError'
                   - example:
                       {
@@ -3453,35 +3433,28 @@ paths:
         example: event_types=['message']
       security:
       - basicAuth: []
+      responses:
+      # Makeshift response for this hack entry.
+       '200':
+         description: Success
   /rest-error-handling:
     post:
       description: |
         Common error to many endpoints
       responses:
-        '400_invalid_api_key':
+        '400':
           description: |
             Bad request.
           content:
             application/json:
               schema:
-                allOf:
-                - $ref: '#/components/schemas/InvalidApiKeyError'
-        '400_missing_request_argument_error':
-          description: |
-            Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/MissingArgumentError'
-        '400_user_not_authorized_error':
-          description: |
-            Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/UserNotAuthorizedError'
+                oneOf:
+                - allOf:
+                  - $ref: '#/components/schemas/InvalidApiKeyError'
+                - allOf:
+                  - $ref: '#/components/schemas/MissingArgumentError'
+                - allOf:
+                  - $ref: '#/components/schemas/UserNotAuthorizedError'
   /zulip-outgoing-webhook:
     post:
       description: |
@@ -3769,6 +3742,5 @@ components:
         type: array
         items:
           type: string
-        default:
+        default: null
       required: false
-      default: null
