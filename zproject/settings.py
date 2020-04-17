@@ -1085,7 +1085,9 @@ THUMBOR_KEY = get_secret('thumbor_key')
 
 TWO_FACTOR_PATCH_ADMIN = False
 
+# TODO: hack for now
 AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipRemoteJWTBackend',)
+
 JWT_AUTH_KEYS = {
-    '** realm **': '** AUTH KEY **'
+    'zulip': get_secret('jwt_auth_key')
 }

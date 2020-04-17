@@ -1621,19 +1621,20 @@ class ZulipRemoteJWTBackend(ExternalAuthMethod):
                      username: str, jwt_payload: Dict[str, Any], realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
 
-        if not auth_enabled_helper(["RemoteJWT"], realm):
-            return None
+        # if not auth_enabled_helper(["RemoteJWT"], realm):
+        #     return None
 
         # We want to get the user by email, not delivery_email
-        try:
-            user_profile = get_active_user(username, realm)
-        except UserProfile.DoesNotExist:
-            user_profile = do_create_user(username, None, realm, '', '')
+        user_profile = common_get_active_user(username, realm)
+        if user_profile is not None:
+            return user_profile
 
-        # Update user e-mail from JWT token?
-        if jwt_payload.get('email', None):
-            user_profile.delivery_email = jwt_payload['email']
-            user_profile.save(update_fields=["delivery_email"])
+        user_profile = do_create_user(username, None, realm, '', '')
+
+        # TODO: Update user e-mail from JWT token?
+        # if jwt_payload.get('email', None):
+        #     user_profile.delivery_email = jwt_payload['email']
+        #     user_profile.save(update_fields=["delivery_email"])
 
         return user_profile
 
