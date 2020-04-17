@@ -329,10 +329,6 @@ python_rules = RuleList(
          'good_lines': ['if my_django_model.id == 42', 'self.user_profile._meta.pk'],
          'bad_lines': ['if my_django_model.pk == 42']},
         {'pattern': r'^\s*#\s*type:',
-         'exclude': {
-             # thumbor is (currently) python2 only
-             'zthumbor/',
-         },
          'description': 'Comment-style function type annotation. Use Python3 style annotations instead.',
          },
         {'pattern': r"\S\s*#\s*type:(?!\s*ignore)",

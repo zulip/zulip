@@ -17,15 +17,13 @@ from .helpers import (
 )
 
 
-def get_not_found_result():
-    # type: () -> LoaderResult
+def get_not_found_result() -> LoaderResult:
     result = LoaderResult()
     result.error = LoaderResult.ERROR_NOT_FOUND
     result.successful = False
     return result
 
-async def load(context, url):
-    # type: (Context, str) -> LoaderResult
+async def load(context: Context, url: str) -> LoaderResult:
     source_type, encoded_url = separate_url_and_source_type(url)
     actual_url = base64.urlsafe_b64decode(urllib.parse.unquote(encoded_url)).decode('utf-8')
 
