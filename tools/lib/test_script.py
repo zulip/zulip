@@ -1,11 +1,14 @@
 from typing import Optional, Tuple, Iterable, List
 
 import os
+import subprocess
 import sys
 from distutils.version import LooseVersion
 from version import PROVISION_VERSION
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
 import glob
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def get_major_version(v: str) -> int:
     return int(v.split('.')[0])
@@ -95,3 +98,10 @@ def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
         test_files = sorted(glob.glob(os.path.join(test_dir, '*.js')))
 
     return test_files
+
+def prepare_puppeteer_run() -> None:
+    os.chdir(ZULIP_PATH)
+    subprocess.check_call(['node', 'node_modules/puppeteer/install.js'])
+    os.makedirs('var/puppeteer', exist_ok=True)
+    for f in glob.glob('var/puppeteer/puppeteer-failure*.png'):
+        os.remove(f)
