@@ -114,8 +114,13 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         sys.exit(1)
     print('Triggered {} webhook'.format(integration.name))
 
-def capture_last_message_screenshot(bot: UserProfile, integration: WebhookIntegration) -> None:
-    message_id = str(Message.objects.filter(sender=bot).last().id)
+def capture_last_message_screenshot(bot: UserProfile, integration: WebhookIntegration,
+                                    fixture_name: str) -> None:
+    message = Message.objects.filter(sender=bot).last()
+    if message is None:
+        print('No message found for {} integration for {}'.format(integration.name, fixture_name))
+        return
+    message_id = str(message.id)
     screenshot_script = os.path.join(TOOLS_DIR, 'message-screenshot.js')
     subprocess.check_call(['node', screenshot_script, integration.name, message_id])
 
@@ -128,4 +133,4 @@ integration_name, fixture_name = split_fixture_path(options.fixture)
 integration = get_integration(integration_name)
 bot = create_integration_bot(integration)
 send_bot_payload_message(bot, integration, options.fixture)
-capture_last_message_screenshot(bot, integration)
+capture_last_message_screenshot(bot, integration, fixture_name)
