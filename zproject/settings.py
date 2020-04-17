@@ -1077,3 +1077,8 @@ CROSS_REALM_BOT_EMAILS = {
 THUMBOR_KEY = get_secret('thumbor_key')
 
 TWO_FACTOR_PATCH_ADMIN = False
+
+AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipRemoteJWTBackend',)
+JWT_AUTH_KEYS = {
+    '** realm **': '** AUTH KEY **'
+}

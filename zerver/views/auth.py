@@ -810,6 +810,65 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})
 
+
+@csrf_exempt
+@require_post
+@has_request_variables
+def api_jwt_fetch_api_key(request: HttpRequest, json_web_token: str=REQ()) -> HttpResponse:
+    #
+    # A lot of copy paste from api_fetch_api_key and jwt_remote_user -- TODO refactor as appropriate
+    return_data = {}  # type: Dict[str, bool]
+    subdomain = get_subdomain(request)
+    realm = get_realm(subdomain)
+
+    try:
+        auth_key = settings.JWT_AUTH_KEYS[subdomain]
+    except KeyError:
+        raise JsonableError(_("Auth key for this subdomain not found."))
+
+    try:
+        options = {'verify_signature': True}
+        payload = jwt.decode(json_web_token, auth_key, options=options)
+    except KeyError:
+        raise JsonableError(_("No JSON web token passed in request"))
+    except jwt.InvalidTokenError:
+        raise JsonableError(_("Bad JSON web token"))
+
+    remote_user = payload.get("user", None)
+    if remote_user is None:
+        raise JsonableError(_("No user specified in JSON web token claims"))
+    email_domain = payload.get('realm', None)
+    if email_domain is None:
+        raise JsonableError(_("No organization specified in JSON web token claims"))
+
+    email = "%s@%s" % (remote_user, email_domain)
+
+    user_profile = authenticate(request=request,
+                                username=email,
+                                jwt_payload=payload,
+                                realm=realm,
+                                return_data=return_data)
+
+    if return_data.get("inactive_user"):
+        return json_error(_("Your account has been disabled."),
+                          data={"reason": "user disable"}, status=403)
+    if return_data.get("inactive_realm"):
+        return json_error(_("This organization has been deactivated."),
+                          data={"reason": "realm deactivated"}, status=403)
+    if return_data.get("password_auth_disabled"):
+        return json_error(_("Password auth is disabled in your team."),
+                          data={"reason": "password auth disabled"}, status=403)
+    if user_profile is None:
+        return json_error(_("Your username or password is incorrect."),
+                          data={"reason": "incorrect_creds"}, status=403)
+
+    # Mark this request as having a logged-in user for our server logs.
+    process_client(request, user_profile)
+    request._requestor_for_logs = user_profile.format_requestor_for_logs()
+
+    api_key = get_api_key(user_profile)
+    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
+
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
     """Returns which authentication methods are enabled on the server"""
     subdomain = get_subdomain(request)

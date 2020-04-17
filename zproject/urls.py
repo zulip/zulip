@@ -688,6 +688,11 @@ v1_api_mobile_patterns = [
     url(r'^fetch_google_client_id$',
         zerver.views.auth.api_fetch_google_client_id,
         name='zerver.views.auth.api_fetch_google_client_id'),
+
+    # This json format view used by the mobile apps accepts a remote jwt token
+    # This requires enabling RemoteJWT auth backend to work
+    url(r'^jwt_fetch_api_key$', zerver.views.auth.api_jwt_fetch_api_key,
+        name='zerver.views.auth.api_jwt_fetch_api_key'),
 ]
 urls += [
     url(r'^api/v1/', include(v1_api_mobile_patterns)),

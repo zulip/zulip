@@ -1448,3 +1448,40 @@ EXTERNAL_AUTH_METHODS = sorted(EXTERNAL_AUTH_METHODS, key=lambda x: x.sort_order
 # Provide this alternative name for backwards compatibility with
 # installations that had the old backend enabled.
 GoogleMobileOauth2Backend = GoogleAuthBackend
+
+@external_auth_method
+class ZulipRemoteJWTBackend(ExternalAuthMethod):
+    """
+    See also api_jwt_fetch_api_key in zerver/views/auth.py.
+    """
+    auth_backend_name = "RemoteJWT"
+    name = "remotejwt"
+    create_unknown_user = True
+
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     username: str, jwt_payload: Dict[str, Any], realm: Realm,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+
+        if not auth_enabled_helper(["RemoteJWT"], realm):
+            return None
+
+        # We want to get the user by email, not delivery_email
+        try:
+            user_profile = get_active_user(username, realm)
+        except UserProfile.DoesNotExist:
+            user_profile = do_create_user(username, None, realm, '', '')
+
+        # Update user e-mail from JWT token?
+        if jwt_payload.get('email', None):
+            user_profile.delivery_email = jwt_payload['email']
+            user_profile.save(update_fields=["delivery_email"])
+
+        return user_profile
+
+    @classmethod
+    def dict_representation(cls, realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
+        return [dict(
+            name=cls.name,
+            display_name="JWT",
+            display_icon=cls.display_icon,
+        )]
