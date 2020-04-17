@@ -5,7 +5,7 @@ from zerver.models import UserProfile
 
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_list, check_string
+from zerver.lib.validator import check_list, check_string, check_capped_string
 
 from zerver.lib.actions import do_add_alert_words, do_remove_alert_words
 from zerver.lib.alert_words import user_alert_words
@@ -19,7 +19,7 @@ def clean_alert_words(alert_words: List[str]) -> List[str]:
 
 @has_request_variables
 def add_alert_words(request: HttpRequest, user_profile: UserProfile,
-                    alert_words: List[str]=REQ(validator=check_list(check_string))
+                    alert_words: List[str]=REQ(validator=check_list(check_capped_string(100)))
                     ) -> HttpResponse:
     do_add_alert_words(user_profile, clean_alert_words(alert_words))
     return json_success({'alert_words': user_alert_words(user_profile)})
