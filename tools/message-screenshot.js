@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 const commander = require("commander");
 const path = require("path");
+const mkdirp = require("mkdirp");
 const host = "localhost:9991";
 const options = {};
 
@@ -55,7 +56,9 @@ async function run() {
         clip.x -= 5;
         clip.width += 10;
         clip.height += 10;
-        const imagePath = path.join(__dirname, '..', 'static', 'images', 'integrations', options.integration, '001.png');
+        const imageDir = path.join(__dirname, '..', 'static', 'images', 'integrations', options.integration);
+        mkdirp.sync(imageDir);
+        const imagePath = path.join(imageDir, '001.png');
         await page.screenshot({ path: imagePath, clip: clip });
         console.log(`Screenshot captured to: \x1B[1;31m${imagePath}\n`);
     } catch (e) {
