@@ -120,9 +120,9 @@ A typical successful JSON response may look like:
 A typical failed JSON response for when a stream message is sent to a stream
 that does not exist:
 
-{generate_code_example|/messages:post|fixture(400_non_existing_stream)}
+{generate_code_example|/messages:post|fixture(400_0)}
 
 A typical failed JSON response for when a private message is sent to a user
 that does not exist:
 
-{generate_code_example|/messages:post|fixture(400_non_existing_user)}
+{generate_code_example|/messages:post|fixture(400_1)}
