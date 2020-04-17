@@ -4396,12 +4396,14 @@ def notify_topic_moved_streams(user_profile: UserProfile,
 
     internal_send_stream_message(
         new_stream.realm, sender, new_stream, new_topic,
-        _("This topic was moved here from %s by %s") % (old_topic_link, user_mention))
+        _("This topic was moved here from %(old_location)s by %(user)s")
+        % dict(old_location=old_topic_link, user=user_mention))
 
     # Send a notification to the old stream that the topic was moved.
     internal_send_stream_message(
         old_stream.realm, sender, old_stream, old_topic,
-        _("This topic was moved by %s to %s") % (user_mention, new_topic_link))
+        _("This topic was moved by %(user)s to %(new_location)s")
+        % dict(user=user_mention, new_location=new_topic_link))
 
 def get_user_info_for_message_updates(message_id: int) -> MessageUpdateUserInfoResult:
 
