@@ -1,10 +1,11 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Iterable, List
 
 import os
 import sys
 from distutils.version import LooseVersion
 from version import PROVISION_VERSION
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
+import glob
 
 def get_major_version(v: str) -> int:
     return int(v.split('.')[0])
@@ -77,3 +78,20 @@ def assert_provisioning_status_ok(force: bool) -> None:
             print(msg)
             print('If you really know what you are doing, use --force to run anyway.')
             sys.exit(1)
+
+
+def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
+    test_files = []
+    for file in files:
+        for file_name in os.listdir(test_dir):
+            if file_name.startswith(file):
+                file = file_name
+                break
+        if not os.path.exists(file):
+            file = os.path.join(test_dir, file)
+        test_files.append(os.path.abspath(file))
+
+    if not test_files:
+        test_files = sorted(glob.glob(os.path.join(test_dir, '*.js')))
+
+    return test_files
