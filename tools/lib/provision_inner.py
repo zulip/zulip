@@ -8,7 +8,7 @@ import shutil
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run, run_as_root, OKBLUE, ENDC, \
+from scripts.lib.zulip_tools import run, OKBLUE, ENDC, \
     get_dev_uuid_var_path, file_or_package_hash_updated
 
 from version import PROVISION_VERSION
@@ -16,15 +16,6 @@ from version import PROVISION_VERSION
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 
 VENV_PATH = "/srv/zulip-py3-venv"
-
-is_travis = 'TRAVIS' in os.environ
-
-# TODO: De-duplicate this with emoji_dump.py
-EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
-if is_travis:
-    # In Travis CI, we don't have root access
-    EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
-
 UUID_VAR_PATH = get_dev_uuid_var_path()
 
 def create_var_directories() -> None:
@@ -156,9 +147,6 @@ def main(options: argparse.Namespace) -> int:
     # The `build_emoji` script requires `emoji-datasource` package
     # which we install via npm; thus this step is after installing npm
     # packages.
-    if not os.access(EMOJI_CACHE_PATH, os.W_OK):
-        run_as_root(["mkdir", "-p", EMOJI_CACHE_PATH])
-        run_as_root(["chown", "%s:%s" % (os.getuid(), os.getgid()), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
 
     # copy over static files from the zulip_bots package
