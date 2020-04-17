@@ -30,20 +30,15 @@ Usually, this involves a few steps:
 
 * Finally, generate a message sent by the integration and take a
   screenshot of the message to provide an example message in the
-  documentation. If your new integration is an incoming webhook
-  integration, you can generate such a message from your test
-  fixtures using `send_webhook_fixture_message`:
+  documentation.
 
-  ```
-  ./manage.py send_webhook_fixture_message \
-       --fixture=zerver/webhooks/pingdom/fixtures/imap_down_to_up.json \
-       '--url=/api/v1/external/pingdom?stream=stream_name&api_key=api_key'
-  ```
+  If your new integration is an incoming webhook integration, you can generate
+  the screenshot using `tools/generate-integration-docs-screenshot`:
 
-  When generating the screenshot of a sample message, give your test
-  bot a nice name like "GitHub Bot", use the project's logo as the
-  bot's avatar, and take the screenshot showing the stream/topic bar
-  for the message, not just the message body.
+  ```sh
+  ./tools/generate-integration-docs-screenshot \
+      zerver/webhooks/pingdom/fixtures/imap_down_to_up.json
+  ```
 
 ## Markdown macros
 
