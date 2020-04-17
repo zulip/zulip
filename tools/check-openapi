@@ -2,40 +2,15 @@
 
 const SwaggerParser = require('swagger-parser');
 
-function check_duplicate_operationids(file, api) {
-    const operation_ids = [];
-
-    for (const endpoint of api.paths) {
-        for (const value of endpoint) {
-            const operation_id = value.operationId;
-            if (operation_id !== undefined) {
-                if (operation_ids.includes(operation_id)) {
-                    console.error('In', file + ':');
-                    console.error('Duplicate operationId:', operation_id);
-                    process.exitCode = 1;
-                } else {
-                    operation_ids.push(operation_id);
-                }
-            }
-        }
+async function validate_swagger(file) {
+    try {
+        await SwaggerParser.validate(file);
+    } catch (err) {
+        // There is something wrong. Display the validation errors
+        console.error('In', file + ':');
+        console.error(err.message);
+        process.exitCode = 1;
     }
-}
-
-function validate_swagger(file) {
-    SwaggerParser.validate(file)
-        .then(function (api) {
-            // Let's make sure that there aren't any duplicate operationids,
-            // until this issue is fixed:
-            // https://github.com/BigstickCarpet/swagger-parser/issues/68
-            check_duplicate_operationids(file, api);
-            return;
-        })
-        .catch(function (err) {
-            // There is something wrong. Display the validation errors
-            console.error('In', file + ':');
-            console.error(err.message);
-            process.exitCode = 1;
-        });
 }
 
 // Iterate through the changed files, passed in the arguments.
