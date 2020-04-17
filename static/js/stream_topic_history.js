@@ -115,7 +115,7 @@ exports.per_stream_history = function (stream_id) {
         // client can maintain for newer topics.
 
         for (const obj of server_history) {
-            const topic_name = obj.topic_name;
+            const topic_name = obj.name;
             const message_id = obj.max_id;
 
             const existing = topics.get(topic_name);
