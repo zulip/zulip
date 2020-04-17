@@ -24,7 +24,7 @@ django.setup()
 
 import argparse
 import subprocess
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import requests
 import ujson
@@ -90,7 +90,18 @@ def webhook_json_fixture(path: str) -> str:
         raise argparse.ArgumentTypeError('Not a valid webhook JSON fixture')
     return path
 
-def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, fixture_path: str) -> None:
+def custom_headers(headers_json: str) -> Dict[str, str]:
+    if not headers_json:
+        return {}
+    try:
+        return ujson.loads(headers_json)
+    except ValueError as ve:
+        raise argparse.ArgumentTypeError(
+            'Encountered an error while attempting to parse custom headers: {}\n'
+            'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
+
+def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, fixture_path: str,
+                             extra_headers: Optional[Dict[str, str]]) -> None:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(sender=bot).delete()
 
@@ -102,6 +113,8 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         data = ujson.load(f)
     _, fixture_name = split_fixture_path(fixture_path)
     headers = get_requests_headers(integration.name, fixture_name)
+    if extra_headers:
+        headers.update(extra_headers)
     try:
         response = requests.post(url, json=data, headers=headers)
     except requests.exceptions.ConnectionError:
@@ -126,11 +139,14 @@ def capture_last_message_screenshot(bot: UserProfile, integration: WebhookIntegr
 
 parser = argparse.ArgumentParser()
 parser.add_argument('fixture', type=webhook_json_fixture, help='Path to the fixture to use')
+parser.add_argument('-H', '--custom-headers',
+                    type=custom_headers,
+                    help='Any additional headers to be sent with the request.')
 options = parser.parse_args()
 
 prepare_puppeteer_run()
 integration_name, fixture_name = split_fixture_path(options.fixture)
 integration = get_integration(integration_name)
 bot = create_integration_bot(integration)
-send_bot_payload_message(bot, integration, options.fixture)
+send_bot_payload_message(bot, integration, options.fixture, options.custom_headers)
 capture_last_message_screenshot(bot, integration, fixture_name)
