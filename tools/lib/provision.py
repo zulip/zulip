@@ -81,12 +81,8 @@ else:
 distro_info = parse_os_release()
 vendor = distro_info['ID']
 os_version = distro_info['VERSION_ID']
-if vendor == "debian" and os_version == "9":  # stretch
-    POSTGRES_VERSION = "9.6"
-elif vendor == "debian" and os_version == "10":  # buster
+if vendor == "debian" and os_version == "10":  # buster
     POSTGRES_VERSION = "11"
-elif vendor == "ubuntu" and os_version == "16.04":  # xenial
-    POSTGRES_VERSION = "9.5"
 elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
     POSTGRES_VERSION = "10"
 elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
