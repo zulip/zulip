@@ -82,7 +82,7 @@ aliases:
          || echo "Error in uploading coverage reports to codecov.io."
 
 jobs:
-  "bionic-backend-python3.6":
+  "bionic-backend-frontend-python3.6":
     docker:
       # This is built from tools/circleci/images/bionic/Dockerfile .
       # Bionic ships with Python 3.6.
@@ -108,6 +108,22 @@ jobs:
       - *save_cache_package_json
       - *save_cache_requirements
       - *run_backend_tests
+      - *run_frontend_tests
+        # We only need to upload coverage reports on whichever platform
+        # runs the frontend tests.
+      - *upload_coverage_report
+
+      - store_artifacts:
+          path: ./var/casper/
+          destination: casper
+
+      - store_artifacts:
+          path: ../../../tmp/zulip-test-event-log/
+          destination: test-reports
+
+      - store_test_results:
+            path: ./var/xunit-test-results/casper/
+
 
   "focal-backend-frontend-python3.8":
       docker:
@@ -127,25 +143,10 @@ jobs:
         - *save_cache_package_json
         - *save_cache_requirements
         - *run_backend_tests
-        - *run_frontend_tests
-        # We only need to upload coverage reports on whichever platform
-        # runs the frontend tests.
-        - *upload_coverage_report
-
-        - store_artifacts:
-            path: ./var/casper/
-            destination: casper
-
-        - store_artifacts:
-            path: ../../../tmp/zulip-test-event-log/
-            destination: test-reports
-
-        - store_test_results:
-              path: ./var/xunit-test-results/casper/
 
 workflows:
   version: 2
   build:
     jobs:
-      - "bionic-backend-python3.6"
+      - "bionic-backend-frontend-python3.6"
       # - "focal-backend-frontend-python3.8"
