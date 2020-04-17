@@ -5,8 +5,7 @@ be a good alternative for those with poor network connectivity or who have
 limited storage/memory on their local machines.
 
 We recommend giving the Zulip development environment its own virtual
-machine, running Ubuntu 16.04 or
-18.04, with at least 2GB of memory. If the Zulip development
+machine with at least 2GB of memory. If the Zulip development
 environment will be the only thing running on the remote virtual
 machine, we recommend installing
 [directly][install-direct]. Otherwise, we recommend the
