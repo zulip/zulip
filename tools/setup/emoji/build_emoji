@@ -17,7 +17,7 @@ from emoji_names import EMOJI_NAME_MAPS
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
 
-from scripts.lib.zulip_tools import generate_sha1sum_emoji
+from scripts.lib.zulip_tools import generate_sha1sum_emoji, run_as_root
 
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
 TARGET_EMOJI_STYLES = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji-styles')
@@ -77,6 +77,14 @@ if 'TRAVIS' in os.environ:
     EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
 def main() -> None:
+    if not os.access(EMOJI_CACHE_PATH, os.W_OK):
+        # Note: In production, this block will fail, since we don't
+        # assume sudo access; but it should never run in production
+        # anyway, because EMOJI_CACHE_PATH is created by puppet before
+        # build_emoji would be run.
+        run_as_root(["mkdir", "-p", EMOJI_CACHE_PATH])
+        run_as_root(["chown", "%s:%s" % (os.getuid(), os.getgid()), EMOJI_CACHE_PATH])
+
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
     source_emoji_dump = os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji')
     success_stamp = os.path.join(source_emoji_dump, '.success-stamp')
