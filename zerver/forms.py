@@ -24,9 +24,9 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, get_user_by_delivery_email, UserProfile, get_realm, \
-    email_to_domain, \
+    email_to_domain, RealmDomain,\
     DisposableEmailError, DomainNotAllowedForRealmError, \
-    EmailContainsPlusError
+    EmailContainsPlusError, InviteRequiredForRealmDomainError
 from zproject.backends import email_auth_enabled, email_belongs_to_ldap, check_password_strength
 
 import logging
@@ -160,7 +160,9 @@ class HomepageForm(forms.Form):
                                     "join using {email} does not "
                                     "exist.").format(email=email))
 
-        if not from_multiuse_invite and realm.default_invite_required:
+        invite_required = realm.default_invite_required and \
+            len(RealmDomain.objects.filter(realm=realm, invite_required=False)) == 0
+        if not from_multiuse_invite and invite_required:
             raise ValidationError(_("Please request an invite for {email} "
                                     "from the organization "
                                     "administrator.").format(email=email))
@@ -176,6 +178,10 @@ class HomepageForm(forms.Form):
             raise ValidationError(_("Please use your real email address."))
         except EmailContainsPlusError:
             raise ValidationError(_("Email addresses containing + are not allowed in this organization."))
+        except InviteRequiredForRealmDomainError:
+            raise ValidationError(_("Please request an invite for {email} "
+                                    "from the organization "
+                                    "administrator.").format(email=email))
 
         validate_email_not_already_in_realm(realm, email)
 

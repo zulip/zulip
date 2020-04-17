@@ -234,6 +234,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (page_params.realm_domains[i].domain === event.realm_domain.domain) {
                     page_params.realm_domains[i].allow_subdomains =
                         event.realm_domain.allow_subdomains;
+                    page_params.realm_domains[i].invite_required =
+                        event.realm_domain.invite_required;
                     break;
                 }
             }

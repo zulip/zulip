@@ -573,6 +573,9 @@ class DisposableEmailError(Exception):
 class EmailContainsPlusError(Exception):
     pass
 
+class InviteRequiredForRealmDomainError(Exception):
+    pass
+
 def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains', 'invite_required'))
 
