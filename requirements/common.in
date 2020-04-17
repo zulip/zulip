@@ -173,6 +173,9 @@ https://github.com/zulip/libthumbor/archive/60ed2431c07686a12f2770b2d852c5650f3c
 # Needed for string matching in AlertWordProcessor
 pyahocorasick
 
+# Needed for using integration logo svg files as bot avatars
+cairosvg
+
 # Needed for function decorators that don't break introspection.
 # Used for rate limiting authentication.
 decorator
