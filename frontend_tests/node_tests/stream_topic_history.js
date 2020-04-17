@@ -128,9 +128,9 @@ run_test('server_history', () => {
 
     function add_server_history() {
         stream_topic_history.add_history(stream_id, [
-            { topic_name: 'local', max_id: 501 },
-            { topic_name: 'hist2', max_id: 31 },
-            { topic_name: 'hist1', max_id: 30 },
+            { name: 'local', max_id: 501 },
+            { name: 'hist2', max_id: 31 },
+            { name: 'hist1', max_id: 30 },
         ]);
     }
 
@@ -183,8 +183,8 @@ run_test('server_history', () => {
     // topics in the future, if they dropped off due to renames,
     // but that is probably an edge case we can ignore for now.
     stream_topic_history.add_history(stream_id, [
-        { topic_name: 'hist2', max_id: 931 },
-        { topic_name: 'hist3', max_id: 5 },
+        { name: 'hist2', max_id: 931 },
+        { name: 'hist3', max_id: 5 },
     ]);
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ['hist2', 'hist1', 'hist3']);
@@ -253,9 +253,9 @@ run_test('server_history_end_to_end', () => {
     const stream_id = 99;
 
     const topics = [
-        { topic_name: 'topic3', max_id: 501 },
-        { topic_name: 'topic2', max_id: 31 },
-        { topic_name: 'topic1', max_id: 30 },
+        { name: 'topic3', max_id: 501 },
+        { name: 'topic2', max_id: 31 },
+        { name: 'topic1', max_id: 30 },
     ];
 
     let get_success_callback;
