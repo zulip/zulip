@@ -102,7 +102,12 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         data = ujson.load(f)
     _, fixture_name = split_fixture_path(fixture_path)
     headers = get_requests_headers(integration.name, fixture_name)
-    response = requests.post(url, json=data, headers=headers)
+    try:
+        response = requests.post(url, json=data, headers=headers)
+    except requests.exceptions.ConnectionError:
+        print('This tool needs the local dev server to be running. '
+              'Please start it using tools/run-dev.py before running this tool.')
+        sys.exit(1)
     if response.status_code != 200:
         print(response.json())
         print('Failed to trigger webhook')
