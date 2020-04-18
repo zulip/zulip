@@ -143,11 +143,12 @@ def find_log_caller_module(record: logging.LogRecord) -> Optional[str]:
     # we find something in the same source file, and that should give the
     # right module name.
     f = logging.currentframe()
-    while f is not None:
+    while True:
         if f.f_code.co_filename == record.pathname:
             return f.f_globals.get('__name__')
+        if f.f_back is None:
+            return None
         f = f.f_back
-    return None  # type: ignore # required because of previous ignore on f
 
 logger_nicknames = {
     'root': '',  # This one is more like undoing a nickname.
