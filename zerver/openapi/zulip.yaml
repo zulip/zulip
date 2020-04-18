@@ -581,15 +581,7 @@ paths:
           type: string
         example: [9, 10]
         required: true
-      - name: topic
-        in: query
-        description: |
-          The topic of the message. Only required if `type` is `stream`, ignored
-          otherwise. Maximum length of 60 characters.
-        schema:
-          type: string
-          default:
-        example: Castle
+      - $ref: '#/components/parameters/Topic'
       - name: content
         in: query
         description: |
@@ -682,15 +674,7 @@ paths:
           type: integer
         example: 42
         required: true
-      - name: topic
-        in: query
-        description: |
-          The topic of the message. Only required for stream messages. Maximum
-          length of 60 characters.
-        schema:
-          type: string
-          default:
-        example: Castle
+      - $ref: '#/components/parameters/Topic'
       - name: propagate_mode
         in: query
         description: |
@@ -3734,3 +3718,13 @@ components:
         type: integer
       example: 42
       required: true
+    Topic:
+      name: topic
+      in: query
+      description: |
+        The topic of the message. Only required for stream messages
+        (`type="stream"`), ignored otherwise. Maximum length of 60
+        characters.
+      schema:
+        type: string
+      example: Castle
