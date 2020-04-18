@@ -179,7 +179,7 @@ stream_data.add_sub(amp_stream);
 // works properly before markdown is initialized.
 run_test('fenced_block_defaults', () => {
     const input = '\n```\nfenced code\n```\n\nand then after\n';
-    const expected = '\n\n<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n\nand then after\n\n';
+    const expected = '\n\n<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\n\nand then after\n\n';
     const output = fenced_code.process_fenced_code(input);
     assert.equal(output, expected);
 });
@@ -290,15 +290,15 @@ run_test('marked', () => {
         {input: 'hello ***foo*** for you', expected: '<p>hello <strong><em>foo</em></strong> for you</p>'},
         {input: '__hello__', expected: '<p>__hello__</p>'},
         {input: '\n```\nfenced code\n```\n\nand then after\n',
-         expected: '<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n<p>and then after</p>'},
+         expected: '<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\n<p>and then after</p>'},
         {input: '\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n',
-         expected: '<div class="codehilite"><pre><span></span>    fenced code trailing whitespace\n</pre></div>\n\n\n<p>and then after</p>'},
+         expected: '<div class="codehilite"><pre><span></span><code>    fenced code trailing whitespace\n</code></pre></div>\n\n\n<p>and then after</p>'},
         {input: '* a\n* list \n* here',
          expected: '<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>'},
         {input: '\n```c#\nfenced code special\n```\n\nand then after\n',
-         expected: '<div class="codehilite"><pre><span></span>fenced code special\n</pre></div>\n\n\n<p>and then after</p>'},
+         expected: '<div class="codehilite"><pre><span></span><code>fenced code special\n</code></pre></div>\n\n\n<p>and then after</p>'},
         {input: '\n```vb.net\nfenced code dot\n```\n\nand then after\n',
-         expected: '<div class="codehilite"><pre><span></span>fenced code dot\n</pre></div>\n\n\n<p>and then after</p>'},
+         expected: '<div class="codehilite"><pre><span></span><code>fenced code dot\n</code></pre></div>\n\n\n<p>and then after</p>'},
         {input: 'Some text first\n* a\n* list \n* here\n\nand then after',
          expected: '<p>Some text first</p>\n<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>\n<p>and then after</p>'},
         {input: '1. an\n2. ordered \n3. list',
