@@ -57,6 +57,12 @@
  *  than a simple typeahead action with a single hotkey press, and so we've
  *  been forced to make a custom modification, see inline comment at `Esc`
  *  keyup for more details.
+ * 
+ * 5. Undo-preserving modifications:
+ * 
+ *   We use document.execCommand to execute the "insertText" command to modify
+ *   the text in the compose box. This prevents the browser undo history from
+ *   being discarded.
  * ============================================================ */
 
 !function($){
@@ -100,9 +106,17 @@
 
   , select: function (e) {
       var val = this.$menu.find('.active').data('typeahead-value')
-      this.$element
-        .val(this.updater(val, e))
-        .change()
+      const updated_val = this.updater(val, e);
+      
+      try {
+        this.$element.select();
+        document.execCommand('insertText', false, updated_val);
+      } catch (err) {
+        window.getSelection().removeAllRanges();
+        this.$element
+          .val(updated_val)
+          .change();
+      }
       return this.hide()
     }
 
