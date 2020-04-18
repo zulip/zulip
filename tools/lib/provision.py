@@ -138,6 +138,18 @@ COMMON_DEPENDENCIES = [
     # Puppeteer dependencies end here.
 ]
 
+if vendor == 'ubuntu' and os_version in ['20.04']:
+    COMMON_DEPENDENCIES += ["watchman"]
+    BUILD_WATCHMAN_FROM_SOURCE = False
+else:
+    COMMON_DEPENDENCIES += [
+        # Dependency for building Watchman from source.
+        "libtool",
+        "automake",
+        "autoconf",
+    ]
+    BUILD_WATCHMAN_FROM_SOURCE = True
+
 UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "redis-server",
     "hunspell-en-us",
@@ -387,6 +399,10 @@ def main(options):
 
     # Install sgrep.
     run_as_root(["tools/setup/install-sgrep"])
+
+    # Install Watchman.
+    if BUILD_WATCHMAN_FROM_SOURCE:
+        run_as_root(["tools/setup/install-watchman"])
 
     setup_venvs.main()
 

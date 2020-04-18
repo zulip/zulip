@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -e
+
+version=4.9.0
+# use the latest stable version
+
+if ! out="$(watchman --version 2>/dev/null)" || [[ "$out" != "$version" ]]
+then
+    cd "$(mktemp -d)"
+    git clone https://github.com/facebook/watchman.git -b v$version --depth 1
+    cd watchman
+    ./autogen.sh
+    ./configure
+    make
+    make install
+fi
