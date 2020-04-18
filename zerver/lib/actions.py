@@ -596,6 +596,7 @@ def do_set_realm_property(realm: Realm, name: str, value: Any) -> None:
         'Cannot update %s: %s is not an instance of %s' % (
             name, value, property_type,))
 
+    old_value = getattr(realm, name)
     setattr(realm, name, value)
     realm.save(update_fields=[name])
 
@@ -611,6 +612,13 @@ def do_set_realm_property(realm: Realm, name: str, value: Any) -> None:
     send_event(realm, event, active_user_ids(realm.id))
 
     if name == "email_address_visibility":
+        if Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, value]:
+            # We use real email addresses on UserProfile.email only if
+            # EMAIL_ADDRESS_VISIBILITY_EVERYONE is configured, so
+            # changes between values that will not require changing
+            # that field, so we can save work and return here.
+            return
+
         user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
         for user_profile in user_profiles:
             user_profile.email = get_display_email_address(user_profile, realm)
