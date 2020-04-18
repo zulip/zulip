@@ -143,7 +143,8 @@ automatically catch common mistakes in the commit message itself.
 
 ### Message body:
 
--   The body is written in prose, with full paragraphs.
+-   The body is written in prose, with full paragraphs; each paragraph should
+    be separated from the next by a single blank line.
 -   The body explains:
     -   why and how the change was made
     -   any manual testing you did in addition to running the automated tests
