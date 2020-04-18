@@ -63,16 +63,15 @@ class AlertWordTests(ZulipTestCase):
         """
         user = self.example_user('cordelia')
 
+        expected_remaining_alerts = set(self.interesting_alert_word_list)
         add_user_alert_words(user, self.interesting_alert_word_list)
-
-        theoretical_remaining_alerts = self.interesting_alert_word_list[:]
 
         for alert_word in self.interesting_alert_word_list:
             remove_user_alert_words(user, alert_word)
-            theoretical_remaining_alerts.remove(alert_word)
+            expected_remaining_alerts.remove(alert_word)
             actual_remaining_alerts = user_alert_words(user)
             self.assertEqual(set(actual_remaining_alerts),
-                             set(theoretical_remaining_alerts))
+                             expected_remaining_alerts)
 
     def test_realm_words(self) -> None:
         """
