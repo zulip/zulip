@@ -3279,14 +3279,7 @@ paths:
       description: |
         Update the user group.
       parameters:
-      - name: group_id
-        in: path
-        description: |
-          The ID of the group.
-        schema:
-          type: integer
-        example: 42
-        required: true
+      - $ref: '#/components/parameters/GroupId'
       - name: name
         in: query
         description: |
@@ -3324,14 +3317,7 @@ paths:
       description: |
         Delete the user group.
       parameters:
-      - name: group_id
-        in: path
-        description: |
-          The ID of the group.
-        schema:
-          type: integer
-        example: 42
-        required: true
+      - $ref: '#/components/parameters/GroupId'
       responses:
         '200':
           description: Success.
@@ -3739,3 +3725,12 @@ components:
         default: []
       example: ['stream', 'Denmark']
       required: false
+    GroupId:
+      name: group_id
+      in: path
+      description: |
+        The ID of the group.
+      schema:
+        type: integer
+      example: 42
+      required: true
