@@ -20,15 +20,13 @@ let stash_func = function (text) {
     return text;
 };
 
-function wrap_code(code) {
+exports.wrap_code = function (code) {
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
-    code += '\n';
-    while (code.length > 2 && code.substr(code.length - 2) === '\n\n') {
-        code = code.substring(0, code.length - 1);
-    }
-    return '<div class="codehilite"><pre><span></span>' + _.escape(code) + '</pre></div>\n';
-}
+    return '<div class="codehilite"><pre><span></span>' +
+        _.escape(code.replace(/^\n+|\n+$/g, '')) +
+        '\n</pre></div>\n';
+};
 
 function wrap_quote(text) {
     const paragraphs = text.split('\n\n');
@@ -120,7 +118,7 @@ exports.process_fenced_code = function (content) {
                 },
 
                 done: function () {
-                    const text = wrap_code(lines.join('\n'));
+                    const text = exports.wrap_code(lines.join('\n'));
                     // insert safe HTML that is passed through the parsing
                     const placeholder = stash_func(text, true);
                     output_lines.push('');
