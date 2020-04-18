@@ -46,8 +46,8 @@ You may pass the `client_gravatar` or `include_custom_profile_fields` query para
       `2` for an `Incoming webhook` bot. `3` for an `Outgoing webhook` bot.
       `4` for an `Embedded` bot.
     * `user_id`: The ID of the user.
-    * `bot_owner`: If the user is a bot (i.e. `is_bot` is `True`), `bot_owner`
-      is the email address of the user who created the bot.
+    * `bot_owner_id`: If the user is a bot (i.e. `is_bot` is `True`), `bot_owner_id`
+      is user ID of the user who owns the bot (usually the creator).
     * `is_active`: A boolean specifying whether the user is active or not.
     * `is_guest`: A boolean specifying whether the user is a guest user or not.
     * `timezone`: The time zone of the user.
