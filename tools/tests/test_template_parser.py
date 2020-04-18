@@ -249,7 +249,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(token.kind, 'html_start')
         self.assertEqual(token.tag, 'a')
 
-        tag = '<br />bla'
+        tag = '<br>bla'
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, 'html_singleton')
         self.assertEqual(token.tag, 'br')

@@ -41,7 +41,7 @@ class TestHtmlBranches(unittest.TestCase):
                 <link rel="stylesheet" href="style.css" />
             </head>
             <body>
-                <p>Hello<br />world!</p>
+                <p>Hello<br>world!</p>
                 <p>Goodbye<!-- test -->world!</p>
             </body>
             </html>
@@ -83,7 +83,7 @@ class TestHtmlBranches(unittest.TestCase):
                 <link rel="stylesheet" href="style.css" />
             </head>
             <body>
-                <p>Hello<br />world!</p>
+                <p>Hello<br>world!</p>
                 <p>Goodbye<!-- test -->world!</p>
             </body>
             </html>
