@@ -1,5 +1,8 @@
 from typing import Callable, List, Optional, Text
 
+class FormattedException(Exception):
+    pass
+
 class TemplateParserException(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
@@ -148,9 +151,14 @@ def tokenize(text: str) -> List[Token]:
                 advance(1)
                 continue
         except TokenizationException as e:
-            raise TemplateParserException('''%s at Line %d Col %d:"%s"''' %
-                                          (e.message, state.line, state.col,
-                                           e.line_content))
+            raise FormattedException(
+                '''%s at Line %d Col %d:"%s"''' % (
+                    e.message,
+                    state.line,
+                    state.col,
+                    e.line_content
+                )
+            )
 
         line_span = len(s.split('\n'))
         token = Token(
@@ -197,7 +205,12 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None, check_indent:
         with open(fn) as f:
             text = f.read()
 
-    tokens = tokenize(text)
+    try:
+        tokens = tokenize(text)
+    except FormattedException as e:
+        raise TemplateParserException('''
+            fn: %s
+            %s''' % (fn, e))
 
     class State:
         def __init__(self, func: Callable[[Token], None]) -> None:

@@ -5,6 +5,7 @@ from collections import defaultdict
 
 from .template_parser import (
     tokenize,
+    FormattedException,
     Token,
 )
 
@@ -133,7 +134,7 @@ def split_for_id_and_class(element: str) -> List[str]:
 
 
 def html_branches(text: str, fn: Optional[str] = None) -> List[HtmlTreeBranch]:
-    tree = html_tag_tree(text)
+    tree = html_tag_tree(text, fn)
     branches: List[HtmlTreeBranch] = []
 
     def walk(node: Node, tag_info_list: Optional[List[TagInfo]] = None) -> None:
@@ -156,7 +157,7 @@ def html_branches(text: str, fn: Optional[str] = None) -> List[HtmlTreeBranch]:
     return branches
 
 
-def html_tag_tree(text: str) -> Node:
+def html_tag_tree(text: str, fn: Optional[str]=None) -> Node:
     tokens = tokenize(text)
     top_level = Node(token=None, parent=None)
     stack = [top_level]
@@ -184,7 +185,13 @@ def build_id_dict(templates: List[str]) -> (Dict[str, List[str]]):
     for fn in templates:
         with open(fn) as f:
             text = f.read()
-        list_tags = tokenize(text)
+
+        try:
+            list_tags = tokenize(text)
+        except FormattedException as e:
+            raise Exception('''
+                fn: %s
+                %s''' % (fn, e))
 
         for tag in list_tags:
             info = get_tag_info(tag)
