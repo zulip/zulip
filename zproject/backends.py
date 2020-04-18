@@ -1558,6 +1558,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
             if realm and not cls.validate_idp_for_subdomain(idp_name, realm.subdomain):
                 continue
+            if realm is None and 'limit_to_subdomains' in idp_dict:
+                # If queried without a realm, only return IdPs that can be used on all realms.
+                continue
 
             saml_dict = dict(
                 name='saml:{}'.format(idp_name),

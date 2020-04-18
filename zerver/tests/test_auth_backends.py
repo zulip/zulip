@@ -2514,14 +2514,16 @@ class ExternalMethodDictsTests(ZulipTestCase):
         ):
             # Calling get_external_method_dicts without a realm returns all methods configured on the server:
             external_auth_methods = get_external_method_dicts()
-            self.assert_length(external_auth_methods, 3)  # 2 IdP + a dict for github auth
-            self.assertEqual(set([external_auth_methods[0]['name'], external_auth_methods[1]['name']]),
-                             set(['saml:test_idp', 'saml:test_idp2']))
+            # 1 IdP enabled for all realms + a dict for github auth
+            self.assert_length(external_auth_methods, 2)
+            self.assertEqual([external_auth_methods[0]['name'], external_auth_methods[1]['name']],
+                             ['saml:test_idp', 'github'])
 
             external_auth_methods = get_external_method_dicts(get_realm("zulip"))
             # Only test_idp enabled for the zulip realm, + github auth.
             self.assert_length(external_auth_methods, 2)
-            self.assertEqual(external_auth_methods[0]['name'], 'saml:test_idp')
+            self.assertEqual([external_auth_methods[0]['name'], external_auth_methods[1]['name']],
+                             ['saml:test_idp', 'github'])
 
             external_auth_methods = get_external_method_dicts(get_realm("zephyr"))
             # Both idps enabled for the zephyr realm, + github auth.
