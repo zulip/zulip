@@ -1371,17 +1371,11 @@ div.focused_table {
     border-left: 1px solid hsl(0, 0%, 88%);
 }
 
-
 .search_icon {
     color: hsl(0, 0%, 80%);
     text-decoration: none;
-    width: 0;
-    height: 0;
-    padding-top: 12px;
-    padding-left: 50px;
     &:hover {
         color: hsl(0, 0%, 0%);
-        text-decoration: none;
     }
 }
 
@@ -1526,8 +1520,7 @@ div.focused_table {
         .search_closed {
             flex: 0; // makes sure search icon is always visible
             margin-left: auto; // aligns search icon to right end of box
-            margin-right: 40px;  // 27 = 15 (gets icon inside border) + 25 (margin against border)
-
+            margin-right: 15px;
             cursor: pointer;
             font-size: 20px;
 
