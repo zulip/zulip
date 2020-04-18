@@ -75,10 +75,10 @@ Store.
    sudo apt install rabbitmq-server memcached redis-server postgresql
    ```
 
-1. Open `/etc/rabbitmq/Rabbitmq.conf` using e.g.:
+1. Open `/etc/rabbitmq/rabbitmq-env.conf` using e.g.:
 
    ```
-   sudo vim /etc/rabbitmq/Rabbitmq.conf
+   sudo vim /etc/rabbitmq/rabbitmq-env.conf
    ```
 
    Add the following lines at the end of your file and save:
