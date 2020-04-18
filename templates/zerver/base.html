@@ -34,7 +34,7 @@
         {% endblock %}
 
         {% set all_page_params = default_page_params.copy() %}
-        {% set _ = all_page_params.update(page_params) %}
+        {% set _ = all_page_params.update(page_params|default({})) %}
         <div hidden id="page-params" data-params='{{ all_page_params|tojson }}'></div>
     </body>
 
