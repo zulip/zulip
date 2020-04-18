@@ -1371,6 +1371,20 @@ div.focused_table {
     border-left: 1px solid hsl(0, 0%, 88%);
 }
 
+
+.search_icon {
+    color: hsl(0, 0%, 80%);
+    text-decoration: none;
+    width: 0;
+    height: 0;
+    padding-top: 12px;
+    padding-left: 50px;
+    &:hover {
+        color: hsl(0, 0%, 0%);
+        text-decoration: none;
+    }
+}
+
 #tab_bar {
     width: 100%;
     z-index: 2;
@@ -1522,19 +1536,6 @@ div.focused_table {
                 padding: 5px 0px 0px 0px;
             }
         }
-    }
-}
-
-.search_icon {
-    color: hsl(0, 0%, 80%);
-    text-decoration: none;
-    width: 0;
-    height: 0;
-    padding-top: 12px;
-    padding-left: 50px;
-    &:hover {
-        color: hsl(0, 0%, 0%);
-        text-decoration: none;
     }
 }
 
