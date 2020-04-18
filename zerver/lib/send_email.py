@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.core.management import CommandError
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
@@ -130,13 +131,13 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
 class EmailNotDeliveredException(Exception):
     pass
 
-class DoubledEmailArgumentException(Exception):
+class DoubledEmailArgumentException(CommandError):
     def __init__(self, argument_name: str) -> None:
         msg = "Argument '%s' is ambiguously present in both options and email template." % (
             argument_name)
         super().__init__(msg)
 
-class NoEmailArgumentException(Exception):
+class NoEmailArgumentException(CommandError):
     def __init__(self, argument_name: str) -> None:
         msg = "Argument '%s' is required in either options or email template." % (
             argument_name)
