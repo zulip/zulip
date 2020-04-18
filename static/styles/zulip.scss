@@ -1425,6 +1425,9 @@ div.focused_table {
             &:not(.stream) {
                 text-overflow: ellipsis;
             }
+            &:nth-last-child(2) {
+                flex-grow: 1;
+            }
             i {
                 margin-right: 3px;
             }
@@ -1519,8 +1522,8 @@ div.focused_table {
 
         .search_closed {
             flex: 0; // makes sure search icon is always visible
-            margin-left: auto; // aligns search icon to right end of box
             margin-right: 15px;
+
             cursor: pointer;
             font-size: 20px;
 
