@@ -23,9 +23,9 @@ let stash_func = function (text) {
 exports.wrap_code = function (code) {
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
-    return '<div class="codehilite"><pre><span></span>' +
+    return '<div class="codehilite"><pre><span></span><code>' +
         _.escape(code.replace(/^\n+|\n+$/g, '')) +
-        '\n</pre></div>\n';
+        '\n</code></pre></div>\n';
 };
 
 function wrap_quote(text) {

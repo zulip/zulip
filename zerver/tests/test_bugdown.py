@@ -1934,8 +1934,8 @@ class BugdownTest(ZulipTestCase):
               "    I am writing this message to test something. I am writing this message to test something."
         converted = bugdown_convert(msg)
         expected_output = '<p>Hello,</p>\n' +   \
-                          '<div class="codehilite"><pre><span></span>I am writing this message to test something. I am writing this message to test something.\n' +     \
-                          '</pre></div>'
+                          '<div class="codehilite"><pre><span></span><code>I am writing this message to test something. I am writing this message to test something.\n' +     \
+                          '</code></pre></div>'
         self.assertEqual(converted, expected_output)
 
         realm = Realm.objects.create(string_id='code_block_processor_test')
