@@ -301,7 +301,21 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None, check_indent:
 def is_special_html_tag(s: str, tag: str) -> bool:
     return tag in ['link', 'meta', '!DOCTYPE']
 
+OPTIONAL_CLOSING_TAGS = [
+    'br',
+    'circle',
+    'hr',
+    'img',
+    'input',
+    'path',
+    'polygon',
+]
+
 def is_self_closing_html_tag(s: Text, tag: Text) -> bool:
+    if s.endswith('/>'):
+        if tag in OPTIONAL_CLOSING_TAGS:
+            return True
+        raise TokenizationException('Singleton tag not allowed', tag)
     self_closing_tag = tag in [
         'area',
         'base',
@@ -316,8 +330,9 @@ def is_self_closing_html_tag(s: Text, tag: Text) -> bool:
         'track',
         'wbr',
     ]
-    singleton_tag = s.endswith('/>')
-    return self_closing_tag or singleton_tag
+    if self_closing_tag:
+        return True
+    return False
 
 def is_django_block_tag(tag: str) -> bool:
     return tag in [
