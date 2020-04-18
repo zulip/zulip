@@ -593,7 +593,7 @@ urls += [
 # having to rewrite URLs, and is implemented using the
 # 'override_api_url_scheme' flag passed to rest_dispatch
 urls += [
-    url(r'^user_uploads/temporary/([0-9A-Za-z]+)$',
+    url(r'^user_uploads/temporary/([0-9A-Za-z]+)/([^/]+)$',
         zerver.views.upload.serve_local_file_unauthed,
         name='zerver.views.upload.serve_local_file_unauthed'),
     url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)$',
