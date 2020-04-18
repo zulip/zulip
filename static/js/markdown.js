@@ -438,11 +438,7 @@ exports.initialize = function (realm_filters, helper_config) {
 
     // No <code> around our code blocks instead a codehilite <div> and disable
     // class-specific highlighting.
-    r.code = function (code) {
-        return '<div class="codehilite"><pre>'
-          + _.escape(code)
-          + '\n</pre></div>\n\n\n';
-    };
+    r.code = code => fenced_code.wrap_code(code) + '\n\n';
 
     // Our links have title=
     r.link = function (href, title, text) {
