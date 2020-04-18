@@ -32,6 +32,9 @@ class Command(ZulipBaseCommand):
         parser.add_argument('--reply-to',
                             type=str,
                             help='Optional reply-to line for the email')
+        parser.add_argument('--admins-only',
+                            help='Send only to organization administrators',
+                            action='store_true')
 
         self.add_user_list_args(parser,
                                 help="Email addresses of user(s) to send emails to.",

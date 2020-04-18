@@ -295,7 +295,8 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     inline_template(email_filename)
 
     # Finally, we send the actual emails.
-    for user_profile in users:
+    for user_profile in filter(lambda user:
+                               not options.get('admins_only') or user.is_realm_admin, users):
         context = {
             'realm_uri': user_profile.realm.uri,
             'realm_name': user_profile.realm.name,
