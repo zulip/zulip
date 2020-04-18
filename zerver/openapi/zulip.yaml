@@ -133,6 +133,8 @@ paths:
                         set) of events with IDs newer than `last_event_id`. Event IDs are
                         guaranteed to be increasing, but they are not guaranteed to be
                         consecutive.
+                      items:
+                        type: object
                 - example:
                     {
                         "events": [
@@ -1182,6 +1184,8 @@ paths:
                       description: |
                         A list of `user` objects, each containing details about a user in the
                         organization.
+                      items:
+                        type: object
                 - example:
                     {
                        "msg": "",
@@ -2132,7 +2136,6 @@ paths:
           type: array
           items:
             type: string
-          default:
         example: ['ZOE@zulip.com']
       responses:
         '200':
@@ -2564,7 +2567,7 @@ paths:
             anyOf:
             - type: string
             - type: integer
-          default: narrow=[]
+          default: []
         example: ['stream', 'Denmark']
       responses:
         '200':
@@ -2627,6 +2630,8 @@ paths:
                         List of dictionaries describing which external authentication methods
                         are enabled and their parameters - most importantly the login url,
                         display_name and display_icon.
+                      items:
+                        type: object
                     zulip_version:
                       type: string
                       description: |
@@ -3742,5 +3747,4 @@ components:
         type: array
         items:
           type: string
-        default: null
       required: false
