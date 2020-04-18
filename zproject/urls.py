@@ -37,6 +37,7 @@ import zerver.views.digest
 import zerver.views.messages
 from zerver.context_processors import latest_info_context
 import zerver.views.realm_export
+import zerver.views.upload
 
 from zerver.lib.rest import rest_dispatch
 
@@ -236,6 +237,10 @@ v1_api_and_json_patterns = [
     # user_uploads -> zerver.views.upload
     url(r'^user_uploads$', rest_dispatch,
         {'POST': 'zerver.views.upload.upload_file_backend'}),
+    url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)$',
+        rest_dispatch,
+        {'GET': ('zerver.views.upload.serve_file_url_backend',
+                 {'override_api_url_scheme'})}),
 
     # bot_storage -> zerver.views.storage
     url(r'^bot_storage$', rest_dispatch,
@@ -588,6 +593,9 @@ urls += [
 # having to rewrite URLs, and is implemented using the
 # 'override_api_url_scheme' flag passed to rest_dispatch
 urls += [
+    url(r'^user_uploads/temporary/([0-9A-Za-z]+)$',
+        zerver.views.upload.serve_local_file_unauthed,
+        name='zerver.views.upload.serve_local_file_unauthed'),
     url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)$',
         rest_dispatch,
         {'GET': ('zerver.views.upload.serve_file_backend',

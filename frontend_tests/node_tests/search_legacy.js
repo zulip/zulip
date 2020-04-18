@@ -2,6 +2,7 @@ set_global('page_params', {
     search_pills_enabled: false,
 });
 zrequire('search');
+zrequire('tab_bar');
 
 const noop = () => {};
 const return_true = () => true;
@@ -26,8 +27,6 @@ run_test('update_button_visibility', () => {
     search_query.val('');
     narrow_state.active = return_false;
     search_button.prop('disabled', false);
-    search.update_button_visibility();
-    assert(search_button.prop('disabled'));
 
     search_query.is = return_true;
     search_query.val('');
@@ -213,7 +212,6 @@ run_test('initialize', () => {
         search_query_box.is = return_true;
         func(ev);
         assert(is_blurred);
-        assert(search_button.prop('disabled'));
 
         _setup('ver');
         search.is_using_input_method = true;
@@ -239,7 +237,7 @@ run_test('initialize', () => {
             search_query_box.val("test string");
             narrow_state.search_string = () => 'ver';
             callback();
-            assert.equal(search_query_box.val(), 'ver');
+            assert.equal(search_query_box.val(), 'test string');
         }
     };
 
@@ -247,10 +245,24 @@ run_test('initialize', () => {
 });
 
 run_test('initiate_search', () => {
-    let is_searchbox_selected = false;
-    $('#search_query').select = () => {
-        is_searchbox_selected = true;
+    // open typeahead and select text when navbar is open
+    // this implicitly expects the code to used the chained
+    // function calls, which is something to keep in mind if
+    // this test ever fails unexpectedly.
+    let typeahead_forced_open = false;
+    let is_searchbox_text_selected = false;
+    $('#search_query').select = noop;
+    $('#search_query').typeahead = (lookup) => {
+        if (lookup === "lookup") {
+            typeahead_forced_open = true;
+            return {
+                select: () => {
+                    is_searchbox_text_selected = true;
+                },
+            };
+        }
     };
     search.initiate_search();
-    assert(is_searchbox_selected);
+    assert(typeahead_forced_open);
+    assert(is_searchbox_text_selected);
 });

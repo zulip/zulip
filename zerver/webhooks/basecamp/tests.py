@@ -119,9 +119,17 @@ class BasecampHookTests(WebhookTestCase):
         expected_message = "Tomasz completed the todo task [New task](https://3.basecamp.com/3688623/buckets/2957043/todos/427055624)."
         self._send_and_test_message('todo_completed', expected_message)
 
+    def test_basecamp_makes_todo_uncompleted(self) -> None:
+        expected_message = "Tomasz uncompleted the todo task [New task](https://3.basecamp.com/3688623/buckets/2957043/todos/427055624)."
+        self._send_and_test_message('todo_uncompleted', expected_message)
+
     def test_basecamp_makes_todo_created(self) -> None:
         expected_message = "Tomasz created the todo task [New task](https://3.basecamp.com/3688623/buckets/2957043/todos/427055624)."
         self._send_and_test_message('todo_created', expected_message)
+
+    def test_basecamp_makes_todo_due_on_changed(self) -> None:
+        expected_message = "Tomasz changed due_on of the todo task [New task](https://3.basecamp.com/3688623/buckets/2957043/todos/427055624)."
+        self._send_and_test_message('todo_due_on_changed', expected_message)
 
     def test_basecamp_makes_comment_created(self) -> None:
         expected_message = "Tomasz created the [comment](https://3.basecamp.com/3688623/buckets/2957043/todos/427055624#__recording_427058780) of the task [New task](https://3.basecamp.com/3688623/buckets/2957043/todos/427055624)."

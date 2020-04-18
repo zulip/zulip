@@ -573,7 +573,11 @@ Filter.prototype = {
                     }
                     return people.get_by_email(email).full_name;
                 });
-                return names;
+
+                // We use join to handle the addition of a comma and space after every name
+                // and also to ensure that we return a string and not an array so that we
+                // can have the same return type as other cases.
+                return names.join(', ');
             }
             }
         }

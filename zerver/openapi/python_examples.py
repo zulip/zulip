@@ -62,7 +62,7 @@ def add_subscriptions(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
-                                    '200_without_principals')
+                                    '200_0')
 
     # {code_example|start}
     # To subscribe another user to a stream, you may pass in
@@ -87,7 +87,7 @@ def test_add_subscriptions_already_subscribed(client):
     )
 
     validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
-                                    '200_already_subscribed')
+                                    '200_1')
 
 def test_authorization_errors_fatal(client, nonadmin_client):
     # type: (Client, Client) -> None
@@ -112,7 +112,7 @@ def test_authorization_errors_fatal(client, nonadmin_client):
     )
 
     validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
-                                    '400_unauthorized_errors_fatal_false')
+                                    '400_0')
 
     result = nonadmin_client.add_subscriptions(
         streams=[
@@ -122,7 +122,7 @@ def test_authorization_errors_fatal(client, nonadmin_client):
     )
 
     validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
-                                    '400_unauthorized_errors_fatal_true')
+                                    '400_1')
 
 @openapi_test_function("/users/{email}/presence:get")
 def get_user_presence(client):
@@ -413,7 +413,7 @@ def test_user_not_authorized_error(nonadmin_client):
     # type: (Client) -> None
     result = nonadmin_client.get_streams(include_all_active=True)
 
-    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_user_not_authorized_error')
+    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_2')
 
 def get_subscribers(client):
     # type: (Client) -> None
@@ -718,7 +718,7 @@ def test_nonexistent_stream_error(client):
     result = client.send_message(request)
 
     validate_against_openapi_schema(result, '/messages', 'post',
-                                    '400_non_existing_stream')
+                                    '400_0')
 
 def test_private_message_invalid_recipient(client):
     # type: (Client) -> None
@@ -730,7 +730,7 @@ def test_private_message_invalid_recipient(client):
     result = client.send_message(request)
 
     validate_against_openapi_schema(result, '/messages', 'post',
-                                    '400_non_existing_user')
+                                    '400_1')
 
 @openapi_test_function("/messages/{message_id}:patch")
 def update_message(client, message_id):
@@ -804,7 +804,7 @@ def test_delete_message_edit_permission_error(client, nonadmin_client):
     result = nonadmin_client.delete_message(result['id'])
 
     validate_against_openapi_schema(result, '/messages/{message_id}', 'delete',
-                                    '400_not_admin')
+                                    '400_1')
 
 @openapi_test_function("/messages/{message_id}/history:get")
 def get_message_history(client, message_id):
@@ -1098,13 +1098,13 @@ def update_user_group_members(client, group_id):
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
-    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_invalid_api_key')
+    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_0')
 
 def test_missing_request_argument(client):
     # type: (Client) -> None
     result = client.render_message({})
 
-    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_missing_request_argument_error')
+    validate_against_openapi_schema(result, '/rest-error-handling', 'post', '400_1')
 
 
 def test_invalid_stream_error(client):

@@ -97,7 +97,7 @@ run_test('create_ajax_request', () => {
         assert.equal(data.signed_seat_count, '"{{ signed_seat_count }}"');
         assert.equal(data.salt, '"{{ salt }}"');
         assert.equal(data.billing_modality, '"charge_automatically"');
-        assert.equal(data.schedule, '"annual"');
+        assert.equal(data.schedule, '"monthly"');
         assert.equal(data.license_management, '"automatic"');
         assert.equal(data.licenses, '');
 

@@ -224,8 +224,6 @@ Now run these commands:
 ```
 sudo ./scripts/lib/install-node
 yarn install
-sudo mkdir /srv/zulip-emoji-cache
-sudo chown -R `whoami`: /srv/zulip-emoji-cache
 ./tools/setup/emoji/build_emoji
 ./scripts/setup/inline_email_css.py
 ./tools/setup/build_pygments_data
