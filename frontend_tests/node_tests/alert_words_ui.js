@@ -20,7 +20,7 @@ run_test('render_alert_words_ui', () => {
     word_list.set_find_results('.alert-word-item', alert_word_items);
 
     global.stub_templates((name, args) => {
-        assert.equal(name, 'alert_word_settings_item');
+        assert.equal(name, 'settings/alert_word_settings_item');
         return 'stub-' + args.word;
     });
 
