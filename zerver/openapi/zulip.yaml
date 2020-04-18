@@ -85,14 +85,7 @@ paths:
       description: |
         Receive new events from [a registered event queue](/api/register-queue).
       parameters:
-      - name: queue_id
-        in: query
-        description: |
-          The ID of a queue that you registered via `POST /api/v1/register` (see
-          [Register a queue](/api/register-queue)).
-        schema:
-          type: string
-        example: 1375801870:2942
+      - $ref: '#/components/parameters/QueueId'
       - name: last_event_id
         in: query
         description: |
@@ -203,15 +196,7 @@ paths:
       description: |
         Delete a previously registered queue.
       parameters:
-      - name: queue_id
-        in: query
-        description: |
-          The ID of a queue that you registered via `POST /api/v1/register`(see
-          [Register a queue](/api/register-queue).
-        schema:
-          type: string
-        example: 1375801870:2942
-        required: true
+      - $ref: '#/components/parameters/QueueId'
       responses:
         '200':
           description: Success.
@@ -3728,3 +3713,13 @@ components:
       schema:
         type: string
       example: Castle
+    QueueId:
+      name: queue_id
+      in: query
+      description: |
+        The ID of a queue that you registered via `POST /api/v1/register` (see
+        [Register a queue](/api/register-queue)).
+      schema:
+        type: string
+      example: 1375801870:2942
+      required: true
