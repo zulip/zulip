@@ -30,7 +30,6 @@ run_test('render_alert_words_ui', () => {
     alert_words_ui.render_alert_words_ui();
 
     assert.deepEqual(appended, [
-        'stub-',
         'stub-bar',
         'stub-foo',
     ]);
@@ -42,8 +41,8 @@ run_test('add_alert_word', () => {
 
     alert_words_ui.set_up_alert_words();
 
-    const word_list = $('#alert_words_list');
-    const add_func = word_list.get_on_handler('click', '#create_alert_word_button');
+    const create_form = $('#create_alert_word_form');
+    const add_func = create_form.get_on_handler('click', '#create_alert_word_button');
 
     const new_alert_word = $('#create_alert_word_name');
     const alert_word_status = $('#alert_word_status');
@@ -93,8 +92,8 @@ run_test('add_alert_word', () => {
 });
 
 run_test('add_alert_word_keypress', () => {
-    const word_list = $('#alert_words_list');
-    const keypress_func = word_list.get_on_handler('keypress', '#create_alert_word_name');
+    const create_form = $('#create_alert_word_form');
+    const keypress_func = create_form.get_on_handler('keypress', '#create_alert_word_name');
 
     const new_alert_word = $('#create_alert_word_name');
     new_alert_word.val('zot');
