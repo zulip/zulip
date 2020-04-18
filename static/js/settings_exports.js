@@ -8,18 +8,6 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
-exports.clear_success_banner = function () {
-    const export_status = $('#export_status');
-    if (export_status.hasClass('alert-success')) {
-        // Politely remove our success banner if the export
-        // finishes before the view is closed.
-        export_status.fadeTo(200, 0);
-        setTimeout(function () {
-            export_status.hide();
-        }, 205);
-    }
-};
-
 function sort_user(a, b) {
     const a_name = people.get_full_name(a.acting_user_id).toLowerCase();
     const b_name = people.get_full_name(b.acting_user_id).toLowerCase();
@@ -83,7 +71,7 @@ exports.set_up = function () {
         channel.post({
             url: '/json/export/realm',
             success: function () {
-                ui_report.success(i18n.t("Export started. Check back in a few minutes."), export_status);
+                ui_report.success(i18n.t("Export started. Check back in a few minutes."), export_status, 4000);
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Export failed"), xhr, export_status);

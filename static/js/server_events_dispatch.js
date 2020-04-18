@@ -526,7 +526,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
     case 'realm_export':
         settings_exports.populate_exports_table(event.exports);
-        settings_exports.clear_success_banner();
         break;
     }
 
