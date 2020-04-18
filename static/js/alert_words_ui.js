@@ -7,16 +7,9 @@ exports.render_alert_words_ui = function () {
 
     word_list.find('.alert-word-item').remove();
 
-    const new_alert_word_form = render_alert_word_settings_item({
-        word: '',
-        editing: true,
-    });
-    word_list.append(new_alert_word_form);
-
     for (const alert_word of words) {
         const rendered_alert_word = render_alert_word_settings_item({
             word: alert_word,
-            editing: false,
         });
         word_list.append(rendered_alert_word);
     }
@@ -54,6 +47,7 @@ function add_alert_word(alert_word) {
         success: function () {
             const message = "Alert word \"" + words_to_be_added + "\" added successfully!";
             update_alert_word_status(i18n.t(message), false);
+            $('#create_alert_word_name').val('');
         },
         error: function () {
             update_alert_word_status(i18n.t("Error adding alert word!"), true);
@@ -81,7 +75,7 @@ exports.set_up_alert_words = function () {
 
     exports.render_alert_words_ui();
 
-    $('#alert_words_list').on('click', '#create_alert_word_button', function () {
+    $('#create_alert_word_form').on('click', '#create_alert_word_button', function () {
         const word = $('#create_alert_word_name').val();
         add_alert_word(word);
     });
@@ -91,7 +85,7 @@ exports.set_up_alert_words = function () {
         remove_alert_word(word);
     });
 
-    $('#alert_words_list').on('keypress', '#create_alert_word_name', function (event) {
+    $('#create_alert_word_form').on('keypress', '#create_alert_word_name', function (event) {
         const key = event.which;
         // Handle enter (13) as "add".
         if (key === 13) {
