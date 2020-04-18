@@ -215,13 +215,7 @@ paths:
       description: |
         Get the unique ID of a given stream.
       parameters:
-      - name: stream
-        in: query
-        description: |
-          The name of the stream to retrieve the ID for.
-        schema:
-          type: string
-        example: Denmark
+      - $ref: '#/components/parameters/Stream'
         required: true
       responses:
         '200':
@@ -2149,13 +2143,7 @@ paths:
       description: |
         Toggle muting for a specific topic the user is subscribed to.
       parameters:
-      - name: stream
-        in: query
-        description: |
-          The name of the stream in which to mute the topic.
-        schema:
-          type: string
-        example: Verona
+      - $ref: '#/components/parameters/Stream'
         required: false
       - name: stream_id
         in: query
@@ -3723,3 +3711,11 @@ components:
         type: string
       example: 1375801870:2942
       required: true
+    Stream:
+      name: stream
+      in: query
+      description: |
+        The name of the stream.
+      schema:
+        type: string
+      example: Denmark
