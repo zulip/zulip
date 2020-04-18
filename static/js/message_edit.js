@@ -209,7 +209,6 @@ function handle_inline_topic_edit_keydown(e) {
     switch (code) {
     case 13: // Handle enter key in the recipient bar/inline topic edit form
         row = $(e.target).closest(".recipient_row");
-        exports.show_topic_edit_spinner(row);
         exports.save_inline_topic_edit(row);
         e.stopPropagation();
         e.preventDefault();
@@ -518,6 +517,8 @@ exports.save_inline_topic_edit = function (row) {
         exports.end_inline_topic_edit(row);
         return;
     }
+
+    exports.show_topic_edit_spinner(row);
 
     if (message.locally_echoed) {
         if (topic_changed) {

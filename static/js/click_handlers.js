@@ -251,7 +251,6 @@ exports.initialize = function () {
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         const recipient_row = $(this).closest(".recipient_row");
-        message_edit.show_topic_edit_spinner(recipient_row);
         message_edit.save_inline_topic_edit(recipient_row);
         e.stopPropagation();
         popovers.hide_all();
