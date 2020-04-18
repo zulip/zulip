@@ -1,5 +1,6 @@
 from functools import partial
 import random
+import sys
 
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Type, TypeVar, Union
@@ -127,12 +128,11 @@ def run_test(test: TestCase, result: TestResult) -> bool:
     bounce_key_prefix_for_testing(test_name)
     bounce_redis_key_prefix_for_testing(test_name)
 
-    if not hasattr(test, "_pre_setup"):
-        msg = "Test doesn't have _pre_setup; something is wrong."
-        error_pre_setup = (Exception, Exception(msg), None)
-        result.addError(test, error_pre_setup)
+    try:
+        test._pre_setup()
+    except Exception:
+        result.addError(test, sys.exc_info())
         return True
-    test._pre_setup()
 
     start_time = time.time()
 

@@ -35,6 +35,7 @@ def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
     # Attempt to poll the log file for 60 sec. to see if all worker threads are launched.
     old_handler = signal.signal(signal.SIGALRM, on_timer)
     signal.setitimer(signal.ITIMER_REAL, 0.3, 0.3)
+    assert run_dev.stdout is not None
     for line in run_dev.stdout:
         log_output.append(line)
         if line.endswith(successful_worker_launch):
