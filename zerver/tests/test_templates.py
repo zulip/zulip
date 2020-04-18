@@ -102,8 +102,8 @@ footer
         expected = ('header<h1id="this-is-a-heading">Thisisaheading.</h1><ol>'
                     '<li><p>Alistitemwithanindentedcodeblock:</p><divclass="codehilite">'
                     '<pre>indentedcodeblockwithmultiplelines</pre></div></li></ol>'
-                    '<divclass="codehilite"><pre><span></span>'
-                    'non-indentedcodeblockwithmultiplelines</pre></div>footer')
+                    '<divclass="codehilite"><pre><span></span><code>'
+                    'non-indentedcodeblockwithmultiplelines</code></pre></div>footer')
         self.assertEqual(content_sans_whitespace, expected)
 
     def test_custom_markdown_include_extension(self) -> None:
