@@ -13,7 +13,7 @@ from typing import List, Optional
 
 from zerver.lib.email_notifications import fix_emojis, handle_missedmessage_emails, \
     enqueue_welcome_emails, relative_to_full_url
-from zerver.lib.actions import do_change_notification_settings
+from zerver.lib.actions import do_change_notification_settings, do_change_is_admin
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.send_email import FromAddress, send_custom_email
 from zerver.models import (
@@ -88,6 +88,20 @@ class TestCustomEmails(ZulipTestCase):
             "markdown_template_path": markdown_template_path,
             "from_name": from_name,
         })
+
+    def test_send_custom_email_admins_only(self) -> None:
+        admin_user = self.example_user('hamlet')
+        do_change_is_admin(admin_user, True)
+
+        non_admin_user = self.example_user('cordelia')
+
+        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+        send_custom_email([admin_user, non_admin_user], {
+            "markdown_template_path": markdown_template_path,
+            "admins_only": True
+        })
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(admin_user.delivery_email, mail.outbox[0].to[0])
 
 
 class TestFollowupEmails(ZulipTestCase):
