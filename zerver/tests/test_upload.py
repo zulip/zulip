@@ -212,6 +212,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Ensure this is different from the original uri:
         self.assertNotEqual(url_only_url, uri)
         self.assertIn('user_uploads/temporary/', url_only_url)
+        self.assertTrue(url_only_url.endswith('zulip.txt'))
         # The generated url has a token authorizing the requestor to access the file
         # without being logged in.
         self.logout()
@@ -221,8 +222,25 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(result.status_code, 401)
 
     def test_serve_local_file_unauthed_invalid_token(self) -> None:
-        result = self.client_get('/user_uploads/temporary/badtoken')
+        result = self.client_get('/user_uploads/temporary/badtoken/file.png')
         self.assert_json_error(result, "Invalid token")
+
+    def test_serve_local_file_unauthed_altered_filename(self) -> None:
+        self.login('hamlet')
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {'file': fp})
+        url = '/json' + result.json()["uri"]
+
+        result = self.client_get(url)
+        self.assert_json_success(result)
+        data = result.json()
+        url_only_url = data['url']
+
+        self.assertTrue(url_only_url.endswith('zulip.txt'))
+        url_only_url_changed_filename = url_only_url.split('zulip.txt')[0] + 'differentname.exe'
+        result = self.client_get(url_only_url_changed_filename)
+        self.assert_json_error(result, "Invalid filename")
 
     def test_serve_local_file_unauthed_token_expires(self) -> None:
         self.login('hamlet')
