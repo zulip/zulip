@@ -28,6 +28,7 @@ from zerver.lib.cache import (
     bot_dict_fields,
     display_recipient_cache_key,
     delete_user_profile_caches,
+    flush_user_profile,
     to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
 )
@@ -610,19 +611,15 @@ def do_set_realm_property(realm: Realm, name: str, value: Any) -> None:
     send_event(realm, event, active_user_ids(realm.id))
 
     if name == "email_address_visibility":
-        for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False):
-            # TODO: This does linear queries in the number of users
-            # and thus is potentially very slow.  Probably not super
-            # important since this is a feature few folks will toggle,
-            # but as a policy matter, we don't do linear queries
-            # ~anywhere in Zulip.
-            old_email = user_profile.email
+        user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
+        for user_profile in user_profiles:
             user_profile.email = get_display_email_address(user_profile, realm)
-            user_profile.save(update_fields=["email"])
-
             # TODO: Design a bulk event for this or force-reload all clients
-            if user_profile.email != old_email:
-                send_user_email_update_event(user_profile)
+            send_user_email_update_event(user_profile)
+        UserProfile.objects.bulk_update(user_profiles, ['email'])
+
+        for user_profile in user_profiles:
+            flush_user_profile(sender=UserProfile, instance=user_profile)
 
 def do_set_realm_authentication_methods(realm: Realm,
                                         authentication_methods: Dict[str, bool]) -> None:
