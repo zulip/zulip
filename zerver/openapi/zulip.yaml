@@ -1666,14 +1666,7 @@ paths:
       description: |
         Get all the topics in a specific stream.
       parameters:
-      - name: stream_id
-        in: path
-        description: |
-          The unique ID of the stream.
-        schema:
-          type: integer
-        example: 42
-        required: true
+      - $ref: '#/components/parameters/StreamIdInPath'
       responses:
         '200':
           description: Success.
@@ -2969,14 +2962,7 @@ paths:
         Delete the stream with the given ID.
       operationId: zerver.views.streams.deactivate_stream_backend
       parameters:
-      - name: stream_id
-        in: path
-        description: |
-          The ID of the stream to be deleted.
-        schema:
-          type: integer
-        example: 42
-        required: true
+      - $ref: '#/components/parameters/StreamIdInPath'
       responses:
         '200':
           description: Success.
@@ -3011,14 +2997,7 @@ paths:
         Update the stream with the given ID.
       operationId: zerver.views.streams.update_stream_backend
       parameters:
-      - name: stream_id
-        in: path
-        description: |
-          The ID of the stream to be updated.
-        schema:
-          type: integer
-        example: 42
-        required: true
+      - $ref: '#/components/parameters/StreamIdInPath'
       - name: description
         in: query
         description: |
@@ -3703,3 +3682,12 @@ components:
       schema:
         type: integer
       example: 42
+    StreamIdInPath:
+      name: stream_id
+      in: path
+      description: |
+        The ID of the stream to access.
+      schema:
+        type: integer
+      example: 42
+      required: true
