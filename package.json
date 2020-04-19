@@ -58,7 +58,7 @@
     "sortablejs": "^1.9.0",
     "sorttable": "^1.0.2",
     "source-sans-pro": "^3.6.0",
-    "spectrum-colorpicker": "^1.8.0",
+    "spectrum-colorpicker": "https://github.com/andersk/spectrum.git#44dbe543919befc33e9160bf79f1395e8b9f6eb4",
     "stacktrace-gps": "^3.0.4",
     "style-loader": "^1.0.0",
     "terser-webpack-plugin": "^2.1.0",
