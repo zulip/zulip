@@ -221,6 +221,9 @@ i18n.t('keyWithCount', {count: 5}); // output: '5 items'
 i18n.t('keyWithCount', {count: 100}); // output: '100 items'
 ```
 
+For examples of tested usages of plurals with different language codes and
+translation data, refer to `frontend_tests/node_tests/i18n.js`.
+
 For further reading on plurals, read the [official] documentation.
 
 By default, all text is escaped by i18next. To unescape a text you can use
