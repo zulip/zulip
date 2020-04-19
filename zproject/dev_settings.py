@@ -172,6 +172,6 @@ MEMCACHED_USERNAME = None
 # TODO: hack for now
 AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipRemoteJWTBackend',)
 
-JWT_AUTH_KEYS = {
-    'zulip': get_secret('jwt_auth_key')
-}
+# JWT_AUTH_KEYS = {
+#    'zulip': get_secret('jwt_auth_key')
+# }
