@@ -83,8 +83,9 @@ body.night-mode {
 
     /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
-    .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover {
-        color: hsl(212, 28%, 18%);
+    .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
+    #tab_list li.stream:not(.dark_background) {
+        color: hsl(212, 28%, 18%) !important;
     }
 
     /* these are converting grey things to "new grey" */
@@ -203,7 +204,8 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .message-header-contents,
-    .message_header_private_message .message-header-contents {
+    .message_header_private_message .message-header-contents,
+    #tab_bar #tab_list li.active {
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
@@ -223,19 +225,6 @@ on a dark background, and don't change the dark labels dark either. */
 
     .top-navbar-border {
         border-color: hsla(0, 0%, 0%, 0.6);
-    }
-    #tab_bar #tab_list li.sub_count::before {
-        background: hsla(0, 0%, 100%, 0.5);
-    }
-    #tab_bar #tab_list li.sub_count::after {
-        background: hsla(0, 0%, 100%, 0.5);
-    }
-
-    #searchbox_legacy {
-        #tab_bar #tab_list li.sub_count,
-        #tab_bar #tab_list li.narrow_description {
-            color: hsla(0, 0%, 90%, 1);
-        }
     }
 
     .overlay,
@@ -365,6 +354,8 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     thead,
+    #searchbox,
+    #searchbox_legacy,
     .drafts-container .drafts-header,
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
@@ -451,8 +442,8 @@ on a dark background, and don't change the dark labels dark either. */
         .highlight_text_deleted {
             text-decoration: line-through;
             color: hsl(0, 100%, 70%);
-            background-color: hsla(0, 64%, 95%, 0.3);
-        }
+            background-color:hsla(0, 64%, 95%, 0.3);
+        }
     }
 
     .tip {
