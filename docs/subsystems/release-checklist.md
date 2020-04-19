@@ -22,7 +22,7 @@ preparing a new release.
 * Download updated translation strings from Transifex and commit them.
 * Use `build-release-tarball` to generate a release tarball.
 * Test the new tarball extensively, both new install and upgrade from last
-  release, on both Xenial and Bionic.
+  release, on both Bionic and Focal.
 * Repeat until release is ready.
 * When near finished: move the blog post draft to Ghost.  (For a draft
   in Dropbox Paper, use "··· > Download > Markdown" to get a pretty
