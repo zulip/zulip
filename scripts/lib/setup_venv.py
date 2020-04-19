@@ -298,7 +298,19 @@ def setup_virtualenv(
     else:
         cached_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, os.path.basename(target_venv_path))
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
-    if not os.path.exists(success_stamp):
+
+    # Check only for python3 since we are installing python3 via conda
+    # will run python version upgrades in future.
+    # Python2 use will soon be dropped.
+    same_python = True
+    if python2 == False:
+        # Check for python version match.
+        conda_python = os.path.join(CONDA_VENV_PATH, 'bin', 'python')
+        cached_venv_python = os.path.join(target_venv_path, 'bin', 'python')
+        same_python = (subprocess.check_output([cached_venv_python, '--version']) ==\
+                    subprocess.check_output([conda_python, '--version']))
+
+    if not (os.path.exists(success_stamp) and same_python):
         do_setup_virtualenv(cached_venv_path, requirements_file, python2)
         with open(success_stamp, 'w') as f:
             f.close()
