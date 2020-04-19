@@ -21,6 +21,16 @@ LATEST_DESKTOP_VERSION = "5.0.0"
 DESKTOP_MINIMUM_VERSION = "5.0.0"
 DESKTOP_WARNING_VERSION = "5.0.0"
 
+# Bump the API_FEATURE_LEVEL whenever an API change is made
+# that clients might want to condition on.  If we forget at
+# the time we make the change, then bump it later as soon
+# as we notice; clients using API_FEATURE_LEVEL will just not
+# use the new feature/API until the bump.
+#
+# Changes should be accompanied by documentation explaining what the new
+# level means in templates/zerver/api/server-settings.md.
+API_FEATURE_LEVEL = 1
+
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
 # the major version to indicate that folks should provision in both

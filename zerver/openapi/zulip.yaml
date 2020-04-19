@@ -2450,6 +2450,15 @@ paths:
                       type: string
                       description: |
                         The version of Zulip running in the server.
+                    zulip_feature_level:
+                      type: integer
+                      description: |
+                        An integer to indicate the features added to the server.
+                        The feature level increases monotonically; a value of N
+                        means the server supports all API features introduced
+                        before feature level N. This provides fine-grained
+                        distinctions among development versions in between major
+                        releases.
                     push_notifications_enabled:
                       type: boolean
                       description: |

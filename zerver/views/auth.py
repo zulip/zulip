@@ -45,7 +45,7 @@ from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
     AUTH_BACKEND_NAME_MAP, auth_enabled_helper, saml_auth_enabled, SAMLAuthBackend, \
     redirect_to_config_error, ZulipRemoteUserBackend, validate_otp_params
-from version import ZULIP_VERSION
+from version import ZULIP_VERSION, API_FEATURE_LEVEL
 
 import jwt
 import logging
@@ -946,6 +946,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     result = dict(
         authentication_methods=get_auth_backends_data(request),
         zulip_version=ZULIP_VERSION,
+        zulip_feature_level=API_FEATURE_LEVEL,
         push_notifications_enabled=push_notifications_enabled(),
         is_incompatible=check_server_incompatibility(request),
     )
