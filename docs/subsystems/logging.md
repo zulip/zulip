@@ -121,15 +121,9 @@ new feature hard to miss.
 
 * Blueslip is implemented in `static/js/blueslip.js`.
 * In order to capture essentially any error occurring in the browser,
-blueslip does the following:
-  * Wraps every function passed into `$.ready()`, i.e., every
-  on-webapp-startup method used by Zulip.
-  * Wraps every jQuery AJAX request handler used by Zulip.
-  * Wraps every function passed into `$.on()`, i.e. all event
-  handlers declared in Zulip.
-  * Declares a default browser exception handler.
-  * Has methods for being manually triggered by Zulip JavaScript code
-    for warnings and assertion failures.
+  Blueslip listens for the `error` event on `window`, and has methods
+  for being manually triggered by Zulip JavaScript code for warnings
+  and assertion failures.
 * Blueslip keeps a log of all the notices it has received during a
   browser session, and includes them in reports to the server, so that
   one can see cases where exceptions chained together.  You can print
