@@ -440,3 +440,39 @@ Note that `test-backend --coverage` will assert that
 various specific files in the project have 100% test coverage and
 throw an error if their coverage has fallen.  One of our project goals
 is to expand that checking to ever-larger parts of the codebase.
+
+## Troubleshooting
+
+Most probaby, you're tests are failing because there's a small error
+or you haven't written tests that are up to the mark. The best
+troubleshooting suggestion would be to revisit your tests and compare
+them with existing ones. Zulip aims to maintain a high standard in
+its tests and should help you write yours.
+
+Keeping your fork updated is highly recommended. Take a look at
+[updating fork](../git/using.html#keep-your-fork-up-to-date).
+Sometimes, you could face errors because your codebase isn't the latest one.
+
+### Handling Flakes
+
+If you strongly believe that your code is up to mark and you're experiencing a
+flake, the first step would be to notice the type of error.
+
+Try `./tools/test-backend --nonfatal-errors` and notice all occurring errors.
+`--help` will tell you more about this command. These flakes usually do not
+persist over multiple test iterations.
+
+- Zulip's backend tests are designed in such a way that it will not flake
+due to timeout errors. If you are facing one, it is possible that is in
+one of the bugdown tests which has a timeout set at 5 seconds for a
+different reason. You shouldn't worry about it unless you have made
+changes in that area. You can choose to ignore them and they usually
+don't persist.
+
+- We do have a couple tests that are sensitive to how recently you've reloaded
+the database. If you see one of those bugs, try running
+`./tools/do-destroy-rebuild-test-database`.
+The database automatically rebuild itself if the schema changes but you might
+encouter bugs when the tests are time sensitive because you haven't updated
+the dates and times in the database. You could even run this even if the issue
+is not exactly the same as discussed above as a good practice.
