@@ -59,7 +59,7 @@ from zerver.models import (
     get_default_stream_groups, CustomProfileField, Stream
 )
 from zproject.backends import email_auth_enabled, password_auth_enabled
-from version import ZULIP_VERSION
+from version import ZULIP_VERSION, API_FEATURE_LEVEL
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
@@ -312,6 +312,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('zulip_version'):
         state['zulip_version'] = ZULIP_VERSION
+        state['zulip_feature_level'] = API_FEATURE_LEVEL
 
     return state
 

@@ -224,6 +224,7 @@ class HomeTest(ZulipTestCase):
             "warn_no_email",
             "webpack_public_path",
             "wildcard_mentions_notify",
+            "zulip_feature_level",
             "zulip_version",
         ]
 
