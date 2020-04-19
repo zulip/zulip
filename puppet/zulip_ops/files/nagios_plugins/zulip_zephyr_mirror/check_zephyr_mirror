@@ -22,8 +22,7 @@ states = {
     "UNKNOWN": 3
 }  # type: Dict[str, int]
 
-def report(state, data, last_check):
-    # type: (str, str, float) -> None
+def report(state: str, data: str, last_check: float) -> None:
     print("%s: Last test run completed at %s\n%s" % (
         state, time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check)),
         data))

@@ -21,8 +21,7 @@ states = {
     "UNKNOWN": 3
 }  # type: Dict[str, int]
 
-def report(state, output):
-    # type: (str, str) -> None
+def report(state: str, output: str) -> None:
     print("%s\n%s" % (state, output))
     exit(states[state])
 

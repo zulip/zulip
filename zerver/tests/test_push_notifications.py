@@ -1220,8 +1220,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         self.assertDictEqual(payload, expected)
         mock_push_notifications.assert_called()
 
-    def test_get_message_payload_apns_stream_message(self):
-        # type: () -> None
+    def test_get_message_payload_apns_stream_message(self) -> None:
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = 'push_stream_notify'
@@ -1252,8 +1251,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
-    def test_get_message_payload_apns_stream_mention(self):
-        # type: () -> None
+    def test_get_message_payload_apns_stream_mention(self) -> None:
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
@@ -1285,8 +1283,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
-    def test_get_message_payload_apns_stream_wildcard_mention(self):
-        # type: () -> None
+    def test_get_message_payload_apns_stream_wildcard_mention(self) -> None:
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)

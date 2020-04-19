@@ -2312,8 +2312,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = change_bot_owner_checker_user('events[1]', events[1])
         self.assert_on_error(error)
 
-    def test_do_update_outgoing_webhook_service(self):
-        # type: () -> None
+    def test_do_update_outgoing_webhook_service(self) -> None:
         update_outgoing_webhook_service_checker = self.check_events_dict([
             ('type', equals('realm_bot')),
             ('op', equals('update')),

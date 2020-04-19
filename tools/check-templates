@@ -22,8 +22,7 @@ EXCLUDED_FILES = [
     'static/assets/icons/template.hbs',
 ]
 
-def check_our_files(modified_only, all_dups, fix, targets):
-    # type: (bool, bool, bool, List[str]) -> None
+def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: List[str]) -> None:
     by_lang = lister.list_files(
         targets=targets,
         modified_only=args.modified,
@@ -34,8 +33,7 @@ def check_our_files(modified_only, all_dups, fix, targets):
     check_handlebar_templates(by_lang['hbs'], fix)
     check_html_templates(by_lang['html'], all_dups, fix)
 
-def check_html_templates(templates, all_dups, fix):
-    # type: (Iterable[str], bool, bool) -> None
+def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) -> None:
     # Our files with .html extensions are usually for Django, but we also
     # have a few static .html files.
     #
@@ -143,8 +141,7 @@ def check_html_templates(templates, all_dups, fix):
             if not validate_indent_html(fn, fix):
                 sys.exit(1)
 
-def check_handlebar_templates(templates, fix):
-    # type: (Iterable[str], bool) -> None
+def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
     # Check all our handlebars templates.
     templates = [fn for fn in templates if fn.endswith('.hbs')]
 

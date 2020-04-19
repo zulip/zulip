@@ -5,8 +5,7 @@ import argparse
 import hashlib
 from typing import Iterable, List, MutableSet
 
-def expand_reqs_helper(fpath, visited):
-    # type: (str, MutableSet[str]) -> List[str]
+def expand_reqs_helper(fpath: str, visited: MutableSet[str]) -> List[str]:
     if fpath in visited:
         return []
     else:
@@ -27,8 +26,7 @@ def expand_reqs_helper(fpath, visited):
                 result.append(dep)
     return result
 
-def expand_reqs(fpath):
-    # type: (str) -> List[str]
+def expand_reqs(fpath: str) -> List[str]:
     """
     Returns a sorted list of unique dependencies specified by the requirements file `fpath`.
     Removes comments from the output and recursively visits files specified inside `fpath`.
@@ -38,13 +36,11 @@ def expand_reqs(fpath):
     output = expand_reqs_helper(absfpath, set())
     return sorted(set(output))
 
-def hash_deps(deps):
-    # type: (Iterable[str]) -> str
+def hash_deps(deps: Iterable[str]) -> str:
     deps_str = "\n".join(deps) + "\n"
     return hashlib.sha1(deps_str.encode('utf-8')).hexdigest()
 
-def main():
-    # type: () -> int
+def main() -> int:
     description = ("Finds the SHA1 hash of list of dependencies in a requirements file"
                    " after recursively visiting all files specified in it.")
     parser = argparse.ArgumentParser(description=description)

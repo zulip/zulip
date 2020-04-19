@@ -36,8 +36,7 @@ def generate_files(source_file: str, tmp_dir: str) -> None:
                            '--input-file', input_file_path, '--output-file', output_file_path],
                           stdout=subprocess.DEVNULL)
 
-def print_diff(path_file1, path_file2):
-    # type: (str, str) -> None
+def print_diff(path_file1: str, path_file2: str) -> None:
     with open(path_file1) as file1:
         with open(path_file2) as file2:
             diff = difflib.unified_diff(
