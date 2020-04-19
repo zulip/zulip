@@ -2,8 +2,7 @@ import os
 import pwd
 import sys
 
-def check_venv(filename):
-    # type: (str) -> None
+def check_venv(filename: str) -> None:
     try:
         import django
         import ujson

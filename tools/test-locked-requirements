@@ -20,8 +20,7 @@ if 'TRAVIS' in os.environ:
     CACHE_DIR = os.path.join(os.environ['HOME'], 'misc')
 CACHE_FILE = os.path.join(CACHE_DIR, 'requirements_hashes')
 
-def print_diff(path_file1, path_file2):
-    # type: (str, str) -> None
+def print_diff(path_file1: str, path_file2: str) -> None:
     with open(path_file1) as file1:
         with open(path_file2) as file2:
             diff = difflib.unified_diff(
@@ -32,8 +31,7 @@ def print_diff(path_file1, path_file2):
             )
     sys.stdout.writelines(diff)
 
-def test_locked_requirements(tmp_dir):
-    # type: (str) -> bool
+def test_locked_requirements(tmp_dir: str) -> bool:
     # `pip-compile` tries to avoid unnecessarily updating recursive dependencies
     # if lock files are present already. If we don't copy these files to the tmp
     # dir then recursive dependencies will get updated to their latest version
@@ -53,8 +51,7 @@ def test_locked_requirements(tmp_dir):
 
     return same
 
-def get_requirements_hash(tmp_dir, use_test_lock_files=False):
-    # type: (str, Optional[bool]) -> str
+def get_requirements_hash(tmp_dir: str, use_test_lock_files: Optional[bool] = False) -> str:
     sha1 = hashlib.sha1()
     reqs_files = sorted(glob.glob(os.path.join(REQS_DIR, "*.in")))
     lock_files_path = REQS_DIR
@@ -66,21 +63,18 @@ def get_requirements_hash(tmp_dir, use_test_lock_files=False):
             sha1.update(fp.read().encode("utf-8"))
     return sha1.hexdigest()
 
-def may_be_setup_cache():
-    # type: () -> None
+def may_be_setup_cache() -> None:
     os.makedirs(CACHE_DIR, exist_ok=True)
     if not os.path.exists(CACHE_FILE):
         with open(CACHE_FILE, 'w') as fp:
             ujson.dump([], fp)
 
-def load_cache():
-    # type: () -> List[str]
+def load_cache() -> List[str]:
     with open(CACHE_FILE) as fp:
         hash_list = ujson.load(fp)
     return hash_list
 
-def update_cache(hash_list):
-    # type: (List[str]) -> None
+def update_cache(hash_list: List[str]) -> None:
     # We store last 100 hash entries. Aggressive caching is
     # not a problem as it is cheap to do.
     if len(hash_list) > 100:
@@ -88,8 +82,7 @@ def update_cache(hash_list):
     with open(CACHE_FILE, 'w') as fp:
         ujson.dump(hash_list, fp)
 
-def main():
-    # type: () -> None
+def main() -> None:
     may_be_setup_cache()
     hash_list = load_cache()
     tmp = tempfile.TemporaryDirectory()

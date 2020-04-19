@@ -1,30 +1,25 @@
 from typing import Callable, List, Optional, Text
 
 class TemplateParserException(Exception):
-    def __init__(self, message):
-        # type: (str) -> None
+    def __init__(self, message: str) -> None:
         self.message = message
 
-    def __str__(self):
-        # type: () -> str
+    def __str__(self) -> str:
         return self.message
 
 class TokenizationException(Exception):
-    def __init__(self, message, line_content=None):
-        # type: (str, Optional[str]) -> None
+    def __init__(self, message: str, line_content: Optional[str] = None) -> None:
         self.message = message
         self.line_content = line_content
 
 class TokenizerState:
-    def __init__(self):
-        # type: () -> None
+    def __init__(self) -> None:
         self.i = 0
         self.line = 1
         self.col = 1
 
 class Token:
-    def __init__(self, kind, s, tag, line, col, line_span):
-        # type: (str, str, str, int, int, int) -> None
+    def __init__(self, kind: str, s: str, tag: str, line: int, col: int, line_span: int) -> None:
         self.kind = kind
         self.s = s
         self.tag = tag
@@ -32,10 +27,8 @@ class Token:
         self.col = col
         self.line_span = line_span
 
-def tokenize(text):
-    # type: (str) -> List[Token]
-    def advance(n):
-        # type: (int) -> None
+def tokenize(text: str) -> List[Token]:
+    def advance(n: int) -> None:
         for _ in range(n):
             state.i += 1
             if state.i >= 0 and text[state.i - 1] == '\n':
@@ -44,55 +37,43 @@ def tokenize(text):
             else:
                 state.col += 1
 
-    def looking_at(s):
-        # type: (str) -> bool
+    def looking_at(s: str) -> bool:
         return text[state.i:state.i+len(s)] == s
 
-    def looking_at_htmlcomment():
-        # type: () -> bool
+    def looking_at_htmlcomment() -> bool:
         return looking_at("<!--")
 
-    def looking_at_handlebarcomment():
-        # type: () -> bool
+    def looking_at_handlebarcomment() -> bool:
         return looking_at("{{!")
 
-    def looking_at_djangocomment():
-        # type: () -> bool
+    def looking_at_djangocomment() -> bool:
         return looking_at("{#")
 
     def looking_at_handlebarpartial() -> bool:
         return looking_at("{{>")
 
-    def looking_at_html_start():
-        # type: () -> bool
+    def looking_at_html_start() -> bool:
         return looking_at("<") and not looking_at("</")
 
-    def looking_at_html_end():
-        # type: () -> bool
+    def looking_at_html_end() -> bool:
         return looking_at("</")
 
-    def looking_at_handlebars_start():
-        # type: () -> bool
+    def looking_at_handlebars_start() -> bool:
         return looking_at("{{#") or looking_at("{{^")
 
-    def looking_at_handlebars_end():
-        # type: () -> bool
+    def looking_at_handlebars_end() -> bool:
         return looking_at("{{/")
 
-    def looking_at_django_start():
-        # type: () -> bool
+    def looking_at_django_start() -> bool:
         return looking_at("{% ") and not looking_at("{% end")
 
-    def looking_at_django_end():
-        # type: () -> bool
+    def looking_at_django_end() -> bool:
         return looking_at("{% end")
 
-    def looking_at_jinja2_end_whitespace_stripped():
-        # type: () -> bool
+    def looking_at_jinja2_end_whitespace_stripped() -> bool:
         return looking_at("{%- end")
 
-    def looking_at_jinja2_start_whitespace_stripped_type2():
-        # type: () -> bool
+    def looking_at_jinja2_start_whitespace_stripped_type2() -> bool:
         # This function detects tag like {%- if foo -%}...{% endif %}
         return looking_at("{%-") and not looking_at("{%- end")
 
@@ -206,8 +187,7 @@ def tokenize(text):
 
     return tokens
 
-def validate(fn=None, text=None, check_indent=True):
-    # type: (Optional[str], Optional[str], bool) -> None
+def validate(fn: Optional[str] = None, text: Optional[str] = None, check_indent: bool = True) -> None:
     assert fn or text
 
     if fn is None:
@@ -220,13 +200,11 @@ def validate(fn=None, text=None, check_indent=True):
     tokens = tokenize(text)
 
     class State:
-        def __init__(self, func):
-            # type: (Callable[[Token], None]) -> None
+        def __init__(self, func: Callable[[Token], None]) -> None:
             self.depth = 0
             self.matcher = func
 
-    def no_start_tag(token):
-        # type: (Token) -> None
+    def no_start_tag(token: Token) -> None:
         raise TemplateParserException('''
             No start tag
             fn: %s
@@ -237,8 +215,7 @@ def validate(fn=None, text=None, check_indent=True):
 
     state = State(no_start_tag)
 
-    def start_tag_matcher(start_token):
-        # type: (Token) -> None
+    def start_tag_matcher(start_token: Token) -> None:
         state.depth += 1
         start_tag = start_token.tag.strip('~')
         start_line = start_token.line
@@ -246,8 +223,7 @@ def validate(fn=None, text=None, check_indent=True):
 
         old_matcher = state.matcher
 
-        def f(end_token):
-            # type: (Token) -> None
+        def f(end_token: Token) -> None:
 
             end_tag = end_token.tag.strip('~')
             end_line = end_token.line
@@ -305,8 +281,7 @@ def validate(fn=None, text=None, check_indent=True):
     if state.depth != 0:
         raise TemplateParserException('Missing end tag')
 
-def is_special_html_tag(s, tag):
-    # type: (str, str) -> bool
+def is_special_html_tag(s: str, tag: str) -> bool:
     return tag in ['link', 'meta', '!DOCTYPE']
 
 def is_self_closing_html_tag(s: Text, tag: Text) -> bool:
@@ -327,8 +302,7 @@ def is_self_closing_html_tag(s: Text, tag: Text) -> bool:
     singleton_tag = s.endswith('/>')
     return self_closing_tag or singleton_tag
 
-def is_django_block_tag(tag):
-    # type: (str) -> bool
+def is_django_block_tag(tag: str) -> bool:
     return tag in [
         'autoescape',
         'block',
@@ -344,8 +318,7 @@ def is_django_block_tag(tag):
         'with',
     ]
 
-def get_handlebars_tag(text, i):
-    # type: (str, int) -> str
+def get_handlebars_tag(text: str, i: int) -> str:
     end = i + 2
     while end < len(text) - 1 and text[end] != '}':
         end += 1
@@ -354,8 +327,7 @@ def get_handlebars_tag(text, i):
     s = text[i:end+2]
     return s
 
-def get_django_tag(text, i, stripped=False):
-    # type: (str, int, bool) -> str
+def get_django_tag(text: str, i: int, stripped: bool = False) -> str:
     end = i + 2
     if stripped:
         end += 1
@@ -366,8 +338,7 @@ def get_django_tag(text, i, stripped=False):
     s = text[i:end+2]
     return s
 
-def get_html_tag(text, i):
-    # type: (str, int) -> str
+def get_html_tag(text: str, i: int) -> str:
     quote_count = 0
     end = i + 1
     unclosed_end = 0
@@ -387,8 +358,7 @@ def get_html_tag(text, i):
     s = text[i:end+1]
     return s
 
-def get_html_comment(text, i):
-    # type: (str, int) -> str
+def get_html_comment(text: str, i: int) -> str:
     end = i + 7
     unclosed_end = 0
     while end <= len(text):
@@ -399,8 +369,7 @@ def get_html_comment(text, i):
         end += 1
     raise TokenizationException('Unclosed comment', text[i:unclosed_end])
 
-def get_handlebar_comment(text, i):
-    # type: (str, int) -> str
+def get_handlebar_comment(text: str, i: int) -> str:
     end = i + 5
     unclosed_end = 0
     while end <= len(text):
@@ -411,8 +380,7 @@ def get_handlebar_comment(text, i):
         end += 1
     raise TokenizationException('Unclosed comment', text[i:unclosed_end])
 
-def get_django_comment(text, i):
-    # type: (str, int) -> str
+def get_django_comment(text: str, i: int) -> str:
     end = i + 4
     unclosed_end = 0
     while end <= len(text):
@@ -423,8 +391,7 @@ def get_django_comment(text, i):
         end += 1
     raise TokenizationException('Unclosed comment', text[i:unclosed_end])
 
-def get_handlebar_partial(text, i):
-    # type: (str, int) -> str
+def get_handlebar_partial(text: str, i: int) -> str:
     end = i + 10
     unclosed_end = 0
     while end <= len(text):

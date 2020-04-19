@@ -13,8 +13,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 def get_major_version(v: str) -> int:
     return int(v.split('.')[0])
 
-def get_version_file():
-    # type: () -> str
+def get_version_file() -> str:
     uuid_var_path = get_dev_uuid_var_path()
     return os.path.join(uuid_var_path, 'provision_version')
 

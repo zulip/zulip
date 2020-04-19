@@ -33,12 +33,10 @@ def create_var_directories() -> None:
         path = os.path.join(var_dir, sub_dir)
         os.makedirs(path, exist_ok=True)
 
-def setup_shell_profile(shell_profile):
-    # type: (str) -> None
+def setup_shell_profile(shell_profile: str) -> None:
     shell_profile_path = os.path.expanduser(shell_profile)
 
-    def write_command(command):
-        # type: (str) -> None
+    def write_command(command: str) -> None:
         if os.path.exists(shell_profile_path):
             with open(shell_profile_path) as shell_profile_file:
                 lines = [line.strip() for line in shell_profile_file.readlines()]

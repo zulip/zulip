@@ -1400,8 +1400,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         config_data = ujson.loads(result.content)['config_data']
         self.assertEqual(config_data, ujson.loads(bot_info['config_data']))
 
-    def test_outgoing_webhook_invalid_interface(self):
-        # type: () -> None
+    def test_outgoing_webhook_invalid_interface(self) -> None:
         self.login('hamlet')
         bot_info = {
             'full_name': 'Outgoing Webhook test bot',

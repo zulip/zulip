@@ -173,8 +173,7 @@ for cmd in cmds:
     subprocess.Popen(cmd)
 
 
-def transform_url(protocol, path, query, target_port, target_host):
-    # type: (str, str, str, int, str) -> str
+def transform_url(protocol: str, path: str, query: str, target_port: int, target_host: str) -> str:
     # generate url with target host
     host = ":".join((target_host, str(target_port)))
     # Here we are going to rewrite the path a bit so that it is in parity with
@@ -186,8 +185,7 @@ def transform_url(protocol, path, query, target_port, target_host):
 
 
 @gen.engine
-def fetch_request(url, callback, **kwargs):
-    # type: (str, Any, **Any) -> Generator[Callable[..., Any], Any, None]
+def fetch_request(url: str, callback: Any, **kwargs: Any) -> "Generator[Callable[..., Any], Any, None]":
     # use large timeouts to handle polling requests
     req = httpclient.HTTPRequest(
         url,
@@ -208,8 +206,9 @@ class BaseHandler(web.RequestHandler):
     # target server port
     target_port = None  # type: int
 
-    def _add_request_headers(self, exclude_lower_headers_list=None):
-        # type: (Optional[List[str]]) -> httputil.HTTPHeaders
+    def _add_request_headers(
+        self, exclude_lower_headers_list: Optional[List[str]] = None
+    ) -> httputil.HTTPHeaders:
         exclude_lower_headers_list = exclude_lower_headers_list or []
         headers = httputil.HTTPHeaders()
         for header, v in self.request.headers.get_all():
@@ -217,36 +216,28 @@ class BaseHandler(web.RequestHandler):
                 headers.add(header, v)
         return headers
 
-    def get(self):
-        # type: () -> None
+    def get(self) -> None:
         pass
 
-    def head(self):
-        # type: () -> None
+    def head(self) -> None:
         pass
 
-    def post(self):
-        # type: () -> None
+    def post(self) -> None:
         pass
 
-    def put(self):
-        # type: () -> None
+    def put(self) -> None:
         pass
 
-    def patch(self):
-        # type: () -> None
+    def patch(self) -> None:
         pass
 
-    def options(self):
-        # type: () -> None
+    def options(self) -> None:
         pass
 
-    def delete(self):
-        # type: () -> None
+    def delete(self) -> None:
         pass
 
-    def handle_response(self, response):
-        # type: (Any) -> None
+    def handle_response(self, response: Any) -> None:
         if response.error and not isinstance(response.error, httpclient.HTTPError):
             self.set_status(500)
             self.write('Internal server error:\n' + str(response.error))
@@ -262,8 +253,7 @@ class BaseHandler(web.RequestHandler):
         self.finish()
 
     @web.asynchronous
-    def prepare(self):
-        # type: () -> None
+    def prepare(self) -> None:
         if 'X-REAL-IP' not in self.request.headers:
             self.request.headers['X-REAL-IP'] = self.request.remote_ip
         if 'X-FORWARDED_PORT' not in self.request.headers:
@@ -311,8 +301,7 @@ class ThumborHandler(BaseHandler):
 
 
 class Application(web.Application):
-    def __init__(self, enable_logging=False):
-        # type: (bool) -> None
+    def __init__(self, enable_logging: bool = False) -> None:
         handlers = [
             (r"/json/events.*", TornadoHandler),
             (r"/api/v1/events.*", TornadoHandler),
@@ -322,19 +311,16 @@ class Application(web.Application):
         ]
         super().__init__(handlers, enable_logging=enable_logging)
 
-    def log_request(self, handler):
-        # type: (BaseHandler) -> None
+    def log_request(self, handler: BaseHandler) -> None:
         if self.settings['enable_logging']:
             super().log_request(handler)
 
 
-def on_shutdown():
-    # type: () -> None
+def on_shutdown() -> None:
     IOLoop.instance().stop()
 
 
-def shutdown_handler(*args, **kwargs):
-    # type: (*Any, **Any) -> None
+def shutdown_handler(*args: Any, **kwargs: Any) -> None:
     io_loop = IOLoop.instance()
     if io_loop._callbacks:
         io_loop.call_later(1, shutdown_handler)

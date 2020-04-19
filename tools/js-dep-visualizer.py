@@ -31,8 +31,7 @@ JS_FILES_DIR = os.path.join(ROOT_DIR, 'static/js')
 OUTPUT_FILE_PATH = os.path.relpath(os.path.join(ROOT_DIR, 'var/zulip-deps.dot'))
 PNG_FILE_PATH = os.path.relpath(os.path.join(ROOT_DIR, 'var/zulip-deps.png'))
 
-def get_js_edges():
-    # type: () -> Tuple[EdgeSet, MethodDict]
+def get_js_edges() -> Tuple[EdgeSet, MethodDict]:
     names = set()
     modules = []  # type: List[Dict[str, Any]]
     for js_file in os.listdir(JS_FILES_DIR):
@@ -75,8 +74,7 @@ def get_js_edges():
                     methods[tup].append(method)
     return edges, methods
 
-def find_edges_to_remove(graph, methods):
-    # type: (Graph, MethodDict) -> Tuple[Graph, List[Edge]]
+def find_edges_to_remove(graph: Graph, methods: MethodDict) -> Tuple[Graph, List[Edge]]:
     EXEMPT_EDGES = [
         # These are sensible dependencies, so don't cut them.
         ('rows', 'message_store'),
@@ -144,8 +142,7 @@ def find_edges_to_remove(graph, methods):
         ('message_edit', 'resize'),
     ]  # type: List[Edge]
 
-    def is_exempt(edge):
-        # type: (Tuple[str, str]) -> bool
+    def is_exempt(edge: Tuple[str, str]) -> bool:
         parent, child = edge
         if edge == ('server_events', 'reload'):
             return False
@@ -223,8 +220,7 @@ def find_edges_to_remove(graph, methods):
         ('emoji_picker', 'reactions'),
     ]
 
-    def cut_is_legal(edge):
-        # type: (Edge) -> bool
+    def cut_is_legal(edge: Edge) -> bool:
         parent, child = edge
         if child in ['reload', 'popovers', 'overlays', 'notifications',
                      'server_events', 'compose_actions']:
@@ -255,8 +251,7 @@ def find_edges_to_remove(graph, methods):
 
     return graph, removed_edges
 
-def report_roadmap(edges, methods):
-    # type: (List[Edge], MethodDict) -> None
+def report_roadmap(edges: List[Edge], methods: MethodDict) -> None:
     child_modules = {child for parent, child in edges}
     module_methods = defaultdict(set)  # type: DefaultDict[str, Set[str]]
     callers = defaultdict(set)  # type: DefaultDict[Tuple[str, str], Set[str]]
@@ -277,8 +272,7 @@ def report_roadmap(edges, methods):
             print()
         print()
 
-def produce_partial_output(graph):
-    # type: (Graph) -> None
+def produce_partial_output(graph: Graph) -> None:
     print(graph.num_edges())
     buffer = make_dot_file(graph)
 
@@ -290,8 +284,7 @@ def produce_partial_output(graph):
     print('See dot file here: {}'.format(OUTPUT_FILE_PATH))
     print('See output png file: {}'.format(PNG_FILE_PATH))
 
-def run():
-    # type: () -> None
+def run() -> None:
     edges, methods = get_js_edges()
     graph = Graph(edges)
     graph, removed_edges = find_edges_to_remove(graph, methods)

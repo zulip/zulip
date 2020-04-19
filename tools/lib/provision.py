@@ -217,8 +217,7 @@ REPO_STOPWORDS_PATH = os.path.join(
     "zulip_english.stop",
 )
 
-def install_system_deps():
-    # type: () -> None
+def install_system_deps() -> None:
 
     # By doing list -> set -> list conversion, we remove duplicates.
     deps_to_install = sorted(set(SYSTEM_DEPENDENCIES))
@@ -235,8 +234,7 @@ def install_system_deps():
     if BUILD_PGROONGA_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-pgroonga"])
 
-def install_apt_deps(deps_to_install):
-    # type: (List[str]) -> None
+def install_apt_deps(deps_to_install: List[str]) -> None:
     # setup-apt-repo does an `apt-get update` if the sources.list files changed.
     run_as_root(["./scripts/lib/setup-apt-repo"])
 
@@ -253,8 +251,7 @@ def install_apt_deps(deps_to_install):
         + deps_to_install
     )
 
-def install_yum_deps(deps_to_install):
-    # type: (List[str]) -> None
+def install_yum_deps(deps_to_install: List[str]) -> None:
     print(WARNING + "RedHat support is still experimental.")
     run_as_root(["./scripts/lib/setup-yum-repo"])
 
@@ -314,8 +311,7 @@ def install_yum_deps(deps_to_install):
     overwrite_symlink("/usr/share/myspell/en_US.aff", "/usr/pgsql-%s/share/tsearch_data/en_us.affix"
                       % (POSTGRES_VERSION,))
 
-def main(options):
-    # type: (argparse.Namespace) -> NoReturn
+def main(options: argparse.Namespace) -> "NoReturn":
 
     # yarn and management commands expect to be run from the root of the
     # project.

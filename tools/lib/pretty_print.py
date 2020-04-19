@@ -9,8 +9,7 @@ from zulint.printer import GREEN, ENDC
 
 import subprocess
 
-def pretty_print_html(html, num_spaces=4):
-    # type: (str, int) -> str
+def pretty_print_html(html: str, num_spaces: int = 4) -> str:
     # We use 1-based indexing for both rows and columns.
     tokens = tokenize(html)
     lines = html.split('\n')
@@ -191,8 +190,7 @@ def pretty_print_html(html, num_spaces=4):
     return '\n'.join(formatted_lines)
 
 
-def validate_indent_html(fn, fix):
-    # type: (str, bool) -> int
+def validate_indent_html(fn: str, fix: bool) -> int:
     with open(fn) as f:
         html = f.read()
     phtml = pretty_print_html(html)
