@@ -44,7 +44,7 @@ from social_core.pipeline.partial import partial
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
-    do_update_user_custom_profile_data_if_changed, validate_email_for_realm
+    do_update_user_custom_profile_data_if_changed, validate_email_for_realm, bulk_add_subscriptions
 from zerver.lib.avatar import is_avatar_new, avatar_url
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
@@ -52,7 +52,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.lib.utils import generate_random_token
 from zerver.lib.redis_utils import get_redis_client
-from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
+from zerver.models import Stream, CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
     email_allowed_for_realm, get_user_profile_by_id, remote_user_to_email, \
     email_to_username, get_realm, get_user_by_delivery_email, supported_auth_backends
@@ -1454,16 +1454,20 @@ class ZulipRemoteJWTBackend(ExternalAuthMethod):
 
         # We want to get the user by email, not delivery_email
         user_profile = common_get_active_user(username, realm)
-        if user_profile is not None:
-            return user_profile
-
-        user_profile = do_create_user(username, None, realm, '', '')
+        if user_profile is None:
+            user_profile = do_create_user(username, None, realm, '', '')
 
         # TODO: Update user e-mail from JWT token?
         # if jwt_payload.get('email', None):
         #     user_profile.delivery_email = jwt_payload['email']
         #     user_profile.save(update_fields=["delivery_email"])
 
+        # Create a channel and invite the support
+
+        bulk_add_subscriptions(
+            streams=[Stream(name=username, description="Support channel for ".format(username))],
+            users=[user_profile] + list(UserProfile.objects.filter(role__lte=200))
+        )
         return user_profile
 
     @classmethod
