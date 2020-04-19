@@ -536,14 +536,7 @@ paths:
         example: [9, 10]
         required: true
       - $ref: '#/components/parameters/Topic'
-      - name: content
-        in: query
-        description: |
-          The content of the message. Maximum message size of 10000 bytes.
-        schema:
-          type: string
-        example: Hello
-        required: true
+      - $ref: '#/components/parameters/Content'
       responses:
         '200':
           description: Success.
@@ -643,13 +636,7 @@ paths:
           - change_all
           default: change_one
         example: change_all
-      - name: content
-        in: query
-        description: |
-          The content of the message. Maximum message size of 10000 bytes.
-        schema:
-          type: string
-        example: Hello
+      - $ref: '#/components/parameters/Content'
       - $ref: '#/components/parameters/StreamIdInQuery'
       responses:
         '200':
@@ -836,14 +823,7 @@ paths:
       description: |
         Render a message to HTML.
       parameters:
-      - name: content
-        in: query
-        description: |
-          The content of the message.
-        schema:
-          type: string
-        example: '**foo**'
-        required: true
+      - $ref: '#/components/parameters/Content'
       responses:
         '200':
           description: Success.
@@ -3671,3 +3651,12 @@ components:
         type: boolean
         default: false
       example: true
+    Content:
+      name: content
+      in: query
+      description: |
+        The content of the message. Maximum message size of 10000 bytes.
+      schema:
+        type: string
+      example: Hello
+      required: true
