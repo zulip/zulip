@@ -390,6 +390,10 @@ li,
     left: -5px;
     margin-top: -24px;
     display: block;
+    /* The z-index here ensures that the copy-message
+    icon is clickable and is needed because of reduced
+    opacity of readonly textarea */
+    z-index: 2;
 }
 
 #clipboard_image {
