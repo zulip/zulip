@@ -10967,10 +10967,9 @@ specificity@^0.4.1:
   resolved "https://registry.yarnpkg.com/specificity/-/specificity-0.4.1.tgz#aab5e645012db08ba182e151165738d00887b019"
   integrity sha512-1klA3Gi5PD1Wv9Q0wUoOQN1IWAuPu0D1U03ThXTr0cJ20+/iq2tHSDnK7Kk/0LXJ1ztUB2/1Os0wKmfyNgUQfg==
 
-spectrum-colorpicker@^1.8.0:
+"spectrum-colorpicker@https://github.com/andersk/spectrum.git#44dbe543919befc33e9160bf79f1395e8b9f6eb4":
   version "1.8.0"
-  resolved "https://registry.yarnpkg.com/spectrum-colorpicker/-/spectrum-colorpicker-1.8.0.tgz#b926cf5002c0a77860b5f8351e1c093c65200107"
-  integrity sha1-uSbPUALAp3hgtfg1HhwJPGUgAQc=
+  resolved "https://github.com/andersk/spectrum.git#44dbe543919befc33e9160bf79f1395e8b9f6eb4"
 
 split-polygon@^1.0.0:
   version "1.0.0"
