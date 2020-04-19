@@ -247,7 +247,7 @@ export default (env?: string): webpack.Configuration[] => {
     if (!production) {
         // Out JS debugging tools
         for (const paths of Object.values(assets)) {
-            paths.push('./static/js/debug.js');
+            paths.unshift('./static/js/debug.js');
         }
         config.devServer = {
             clientLogLevel: "error",

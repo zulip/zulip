@@ -93,6 +93,7 @@
     "difflib": "^0.2.4",
     "eslint": "^7.2.0",
     "eslint-plugin-empty-returns": "^1.0.2",
+    "jquery-migrate": "^3.3.0",
     "jsdom": "^16.1.0",
     "nyc": "^15.0.0",
     "phantomjs-prebuilt": "^2.1.16",
