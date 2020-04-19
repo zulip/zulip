@@ -3803,8 +3803,7 @@ class NoReplyEmailTest(ZulipTestCase):
 
 class TwoFactorAuthTest(ZulipTestCase):
     @patch('two_factor.models.totp')
-    def test_two_factor_login(self, mock_totp):
-        # type: (MagicMock) -> None
+    def test_two_factor_login(self, mock_totp: MagicMock) -> None:
         token = 123456
         email = self.example_email('hamlet')
         password = self.ldap_password('hamlet')
@@ -3814,8 +3813,7 @@ class TwoFactorAuthTest(ZulipTestCase):
         user_profile.save()
         self.create_default_device(user_profile)
 
-        def totp(*args, **kwargs):
-            # type: (*Any, **Any) -> int
+        def totp(*args: Any, **kwargs: Any) -> int:
             return token
 
         mock_totp.side_effect = totp

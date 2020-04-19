@@ -6,8 +6,7 @@ from typing import List, Dict, Union
 
 from zulint.lister import list_files
 
-def do_replace(listing, old_string, new_string):
-    # type: (Union[Dict[str, List[str]], List[str]], str, str) -> None
+def do_replace(listing: Union[Dict[str, List[str]], List[str]], old_string: str, new_string: str) -> None:
     for filename in listing:
         regex = 's/{}/{}/g'.format(old_string, new_string)
         check_call(['sed', '-i', regex, filename])

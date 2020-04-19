@@ -20,16 +20,16 @@ YARN_PACKAGE_JSON = os.path.join(ZULIP_SRV_PATH, 'zulip-yarn/package.json')
 
 DEFAULT_PRODUCTION = False
 
-def get_yarn_args(production):
-    # type: (bool) -> List[str]
+def get_yarn_args(production: bool) -> List[str]:
     if production:
         yarn_args = ["--prod"]
     else:
         yarn_args = []
     return yarn_args
 
-def generate_sha1sum_node_modules(setup_dir=None, production=DEFAULT_PRODUCTION):
-    # type: (Optional[str], bool) -> str
+def generate_sha1sum_node_modules(
+    setup_dir: Optional[str] = None, production: bool = DEFAULT_PRODUCTION
+) -> str:
     if setup_dir is None:
         setup_dir = os.path.realpath(os.getcwd())
     PACKAGE_JSON_FILE_PATH = os.path.join(setup_dir, 'package.json')
@@ -47,9 +47,12 @@ def generate_sha1sum_node_modules(setup_dir=None, production=DEFAULT_PRODUCTION)
     sha1sum.update(''.join(sorted(yarn_args)).encode('utf8'))
     return sha1sum.hexdigest()
 
-def setup_node_modules(production=DEFAULT_PRODUCTION, stdout=None, stderr=None,
-                       prefer_offline=False):
-    # type: (bool, Optional[IO[Any]], Optional[IO[Any]], bool) -> None
+def setup_node_modules(
+    production: bool = DEFAULT_PRODUCTION,
+    stdout: Optional[IO[Any]] = None,
+    stderr: Optional[IO[Any]] = None,
+    prefer_offline: bool = False,
+) -> None:
     yarn_args = get_yarn_args(production=production)
     if prefer_offline:
         yarn_args.append("--prefer-offline")
@@ -72,8 +75,13 @@ def setup_node_modules(production=DEFAULT_PRODUCTION, stdout=None, stderr=None,
         shutil.rmtree('node_modules')
     os.symlink(cached_node_modules, 'node_modules')
 
-def do_yarn_install(target_path, yarn_args, success_stamp, stdout=None, stderr=None):
-    # type: (str, List[str], str, Optional[IO[Any]], Optional[IO[Any]]) -> None
+def do_yarn_install(
+    target_path: str,
+    yarn_args: List[str],
+    success_stamp: str,
+    stdout: Optional[IO[Any]] = None,
+    stderr: Optional[IO[Any]] = None,
+) -> None:
     os.makedirs(target_path, exist_ok=True)
     shutil.copy('package.json', target_path)
     shutil.copy("yarn.lock", target_path)
