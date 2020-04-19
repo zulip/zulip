@@ -864,7 +864,6 @@ def api_jwt_fetch_api_key(request: HttpRequest, json_web_token: str=REQ()) -> Ht
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
 
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})
