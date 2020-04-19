@@ -137,6 +137,20 @@ if args.ignore_static_assets:
     # cannot run `tools/update-prod-static`.
     pass
 elif args.from_git:
+    # Running `upgrade-zulip-from-git` from 2GB RAM machine is
+    # at risk of having it fail because 2GB of RAM is insufficient
+    # to both run the Zulip server and build static assets with webpack;
+    # the result is almost always an OOM kill. Hence, we only run this
+    # upgrade if atleast 3GB of RAM is avaiable.
+    logging.info("Checking RAM requirements...")
+    with open("/proc/meminfo") as meminfo:
+        ram_size = meminfo.readlines()[0].strip().split(" ")[-2]
+        ram_gb = float(ram_size) / 1024.0 / 1024.0
+        if ram_gb < 3.0:
+            logging.info("You system has less than 3GB of RAM available."
+                         "Server will shutdown to avoid running out of memory when building assets.")
+            shutdown_server()
+
     # Note: The fact that this is before we apply puppet changes means
     # that we don't support adding new puppet dependencies of
     # update-prod-static with the git upgrade process.  But it'll fail
