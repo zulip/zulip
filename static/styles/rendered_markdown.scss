@@ -423,6 +423,11 @@ pre {
     padding-right: 7px;
 }
 
+.rendered_markdown pre code {
+    font-size: inherit;
+    padding: 0;
+}
+
 /* Ensure the horizontal scrollbar is visible on Mac */
 pre::-webkit-scrollbar {
     height: 8px;
