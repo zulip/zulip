@@ -357,20 +357,7 @@ paths:
             type: object
           default: []
         example: [{"operand": "Denmark", "operator": "stream"}]
-      - name: client_gravatar
-        in: query
-        description: |
-          Whether the client supports computing gravatars URLs.  If
-          enabled, `avatar_url` will be included in the response only
-          if there is a Zulip avatar, and will be `null` for users who
-          are using gravatar as their avatar.  This option
-          significantly reduces the compressed size of user data,
-          since gravatar URLs are long, random strings and thus do not
-          compress well.
-        schema:
-          type: boolean
-          default: false
-        example: true
+      - $ref: '#/components/parameters/ClientGravatar'
       - name: apply_markdown
         in: query
         description: |
@@ -1094,15 +1081,7 @@ paths:
       description: |
         Retrieve all users in a realm.
       parameters:
-      - name: client_gravatar
-        in: query
-        description: |
-          The `client_gravatar` field is set to `true` if clients can compute
-          their own gravatars.
-        schema:
-          type: boolean
-          default: false
-        example: true
+      - $ref: '#/components/parameters/ClientGravatar'
       - name: include_custom_profile_fields
         in: query
         description: |
@@ -1277,14 +1256,7 @@ paths:
           type: integer
         example: 11
         required: true
-      - name: client_gravatar
-        in: query
-        description: |
-          The client should pass true if it can compute its own gravatar hashes.
-        schema:
-          type: boolean
-          default: false
-        example: true
+      - $ref: '#/components/parameters/ClientGravatar'
       - name: include_custom_profile_fields
         in: query
         description: |
@@ -2409,15 +2381,7 @@ paths:
           type: boolean
           default: false
         example: true
-      - name: client_gravatar
-        in: query
-        description: |
-          The `client_gravatar` field is set to `true` if clients can compute
-          their own gravatars.
-        schema:
-          type: boolean
-          default: false
-        example: true
+      - $ref: '#/components/parameters/ClientGravatar'
       - name: slim_presence
         in: query
         description: |
@@ -3691,3 +3655,19 @@ components:
         type: integer
       example: 42
       required: true
+    ClientGravatar:
+      name: client_gravatar
+      in: query
+      description: |
+        Whether the client supports computing gravatars URLs.  If
+        enabled, `avatar_url` will be included in the response only
+        if there is a Zulip avatar, and will be `null` for users who
+        are using gravatar as their avatar.  This option
+        significantly reduces the compressed size of user data,
+        since gravatar URLs are long, random strings and thus do not
+        compress well. The `client_gravatar` field is set to `true` if
+        clients can compute their own gravatars.
+      schema:
+        type: boolean
+        default: false
+      example: true
