@@ -1434,20 +1434,7 @@ def get_external_method_dicts(realm: Optional[Realm]=None) -> List[ExternalAuthM
 
     return result
 
-AUTH_BACKEND_NAME_MAP = {
-    'Dev': DevAuthBackend,
-    'Email': EmailAuthBackend,
-    'LDAP': ZulipLDAPAuthBackend,
-}  # type: Dict[str, Any]
 
-for external_method in EXTERNAL_AUTH_METHODS:
-    AUTH_BACKEND_NAME_MAP[external_method.auth_backend_name] = external_method
-
-EXTERNAL_AUTH_METHODS = sorted(EXTERNAL_AUTH_METHODS, key=lambda x: x.sort_order, reverse=True)
-
-# Provide this alternative name for backwards compatibility with
-# installations that had the old backend enabled.
-GoogleMobileOauth2Backend = GoogleAuthBackend
 
 @external_auth_method
 class ZulipRemoteJWTBackend(ExternalAuthMethod):
@@ -1462,8 +1449,8 @@ class ZulipRemoteJWTBackend(ExternalAuthMethod):
                      username: str, jwt_payload: Dict[str, Any], realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
 
-        # if not auth_enabled_helper(["RemoteJWT"], realm):
-        #     return None
+        if not auth_enabled_helper(["RemoteJWT"], realm):
+            return None
 
         # We want to get the user by email, not delivery_email
         user_profile = common_get_active_user(username, realm)
@@ -1486,3 +1473,20 @@ class ZulipRemoteJWTBackend(ExternalAuthMethod):
             display_name="JWT",
             display_icon=cls.display_icon,
         )]
+
+
+AUTH_BACKEND_NAME_MAP = {
+    'Dev': DevAuthBackend,
+    'Email': EmailAuthBackend,
+    'LDAP': ZulipLDAPAuthBackend,
+    'RemoteJWT': ZulipRemoteJWTBackend
+}  # type: Dict[str, Any]
+
+for external_method in EXTERNAL_AUTH_METHODS:
+    AUTH_BACKEND_NAME_MAP[external_method.auth_backend_name] = external_method
+
+EXTERNAL_AUTH_METHODS = sorted(EXTERNAL_AUTH_METHODS, key=lambda x: x.sort_order, reverse=True)
+
+# Provide this alternative name for backwards compatibility with
+# installations that had the old backend enabled.
+GoogleMobileOauth2Backend = GoogleAuthBackend
