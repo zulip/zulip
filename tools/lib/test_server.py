@@ -23,8 +23,7 @@ if TOOLS_DIR not in sys.path:
 from zerver.lib.test_fixtures import update_test_databases_if_required
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 
-def set_up_django(external_host):
-    # type: (str) -> None
+def set_up_django(external_host: str) -> None:
     os.environ['EXTERNAL_HOST'] = external_host
     os.environ["TORNADO_SERVER"] = "http://127.0.0.1:9983"
     os.environ["LOCAL_UPLOADS_DIR"] = get_or_create_dev_uuid_var_path(
@@ -33,8 +32,7 @@ def set_up_django(external_host):
     django.setup()
     os.environ['PYTHONUNBUFFERED'] = 'y'
 
-def assert_server_running(server, log_file):
-    # type: (subprocess.Popen[bytes], Optional[str]) -> None
+def assert_server_running(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> None:
     """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
         message = 'Server died unexpectedly!'
@@ -42,8 +40,7 @@ def assert_server_running(server, log_file):
             message += '\nSee %s\n' % (log_file,)
         raise RuntimeError(message)
 
-def server_is_up(server, log_file):
-    # type: (subprocess.Popen[bytes], Optional[str]) -> bool
+def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> bool:
     assert_server_running(server, log_file)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.

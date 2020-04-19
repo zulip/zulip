@@ -14,8 +14,7 @@ sys.path.insert(0, ROOT_DIR)
 from scripts.lib.zulip_tools import get_dev_uuid_var_path
 UUID_VAR_PATH = get_dev_uuid_var_path()
 
-def run(check_func):
-    # type: (Callable[[], bool]) -> None
+def run(check_func: Callable[[], bool]) -> None:
     '''
     This decorator simply runs functions.  It makes it more
     convenient to add new checks without a big main() function.
@@ -24,32 +23,27 @@ def run(check_func):
     if not rc:
         sys.exit(1)
 
-def run_command(args):
-    # type: (List[str]) -> None
+def run_command(args: List[str]) -> None:
     print(' '.join(map(shlex.quote, args)))
     subprocess.check_call(args)
 
 @run
-def check_python_version():
-    # type: () -> bool
+def check_python_version() -> bool:
     subprocess.check_call(['/usr/bin/env', 'python', '-V'])
     return True
 
 @run
-def pwd():
-    # type: () -> bool
+def pwd() -> bool:
     print(os.getcwd())
     return True
 
 @run
-def host_info():
-    # type: () -> bool
+def host_info() -> bool:
     print(platform.platform())
     return True
 
 @run
-def check_django():
-    # type: () -> bool
+def check_django() -> bool:
     try:
         import django
         print('Django version:', django.get_version())
@@ -70,8 +64,7 @@ def check_django():
         return False
 
 @run
-def provision_version():
-    # type: () -> bool
+def provision_version() -> bool:
     fn = os.path.join(UUID_VAR_PATH, 'provision_version')
     with open(fn) as f:
         version = f.read().strip()
@@ -84,15 +77,13 @@ def provision_version():
     return True
 
 @run
-def node_stuff():
-    # type: () -> bool
+def node_stuff() -> bool:
     print('node version:')
     subprocess.check_call(['node', '--version'])
     return True
 
 @run
-def test_models():
-    # type: () -> bool
+def test_models() -> bool:
     settings_module = "zproject.settings"
     os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
     import django
@@ -103,8 +94,7 @@ def test_models():
     return True
 
 @run
-def check_venv():
-    # type: () -> bool
+def check_venv() -> bool:
     path = os.path.join(ROOT_DIR, 'scripts', 'lib', 'hash_reqs.py')
     cache_dir = '/srv/zulip-venv-cache/'
     for fn in ['dev.txt']:
@@ -118,8 +108,7 @@ def check_venv():
     return True
 
 @run
-def check_migrations():
-    # type: () -> bool
+def check_migrations() -> bool:
     print()
     rc = subprocess.check_call('./tools/test-migrations')
     return (rc == 0)

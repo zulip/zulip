@@ -252,8 +252,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertTrue(storage.contains('another key'))
         self.assertRaises(StateError, lambda: storage.remove('some key'))
 
-    def test_internal_endpoint(self):
-        # type: () -> None
+    def test_internal_endpoint(self) -> None:
         self.login_user(self.user_profile)
 
         # Store some data.

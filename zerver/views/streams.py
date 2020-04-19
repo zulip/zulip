@@ -221,8 +221,11 @@ def update_subscriptions_backend(
     ]  # type: List[FuncKwargPair]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
-def compose_views(request, user_profile, method_kwarg_pairs):
-    # type: (HttpRequest, UserProfile, List[FuncKwargPair]) -> HttpResponse
+def compose_views(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    method_kwarg_pairs: "List[FuncKwargPair]",
+) -> HttpResponse:
     '''
     This takes a series of view methods from method_kwarg_pairs and calls
     them in sequence, and it smushes all the json results into a single

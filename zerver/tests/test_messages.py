@@ -3133,10 +3133,9 @@ class EditMessageTest(ZulipTestCase):
         do_edit_message_assert_error(id_, 'G', "Your organization has turned off message editing", True)
 
     def test_allow_community_topic_editing(self) -> None:
-        def set_message_editing_params(allow_message_editing,
-                                       message_content_edit_limit_seconds,
-                                       allow_community_topic_editing):
-            # type: (bool, int, bool) -> None
+        def set_message_editing_params(allow_message_editing: bool,
+                                       message_content_edit_limit_seconds: int,
+                                       allow_community_topic_editing: bool) -> None:
             result = self.client_patch("/json/realm", {
                 'allow_message_editing': ujson.dumps(allow_message_editing),
                 'message_content_edit_limit_seconds': message_content_edit_limit_seconds,
@@ -3144,16 +3143,14 @@ class EditMessageTest(ZulipTestCase):
             })
             self.assert_json_success(result)
 
-        def do_edit_message_assert_success(id_, unique_str):
-            # type: (int, str) -> None
+        def do_edit_message_assert_success(id_: int, unique_str: str) -> None:
             new_topic = 'topic' + unique_str
             params_dict = {'message_id': id_, 'topic': new_topic}
             result = self.client_patch("/json/messages/" + str(id_), params_dict)
             self.assert_json_success(result)
             self.check_topic(id_, topic_name=new_topic)
 
-        def do_edit_message_assert_error(id_, unique_str, error):
-            # type: (int, str, str) -> None
+        def do_edit_message_assert_error(id_: int, unique_str: str, error: str) -> None:
             message = Message.objects.get(id=id_)
             old_topic = message.topic_name()
             old_content = message.content

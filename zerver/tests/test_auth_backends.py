@@ -2610,8 +2610,7 @@ class TestTwoFactor(ZulipTestCase):
             self.assertIn('otp_device_id', self.client.session.keys())
 
     @mock.patch('two_factor.models.totp')
-    def test_two_factor_login_with_ldap(self, mock_totp):
-        # type: (mock.MagicMock) -> None
+    def test_two_factor_login_with_ldap(self, mock_totp: mock.MagicMock) -> None:
         token = 123456
         email = self.example_email('hamlet')
         password = self.ldap_password('hamlet')
@@ -2621,8 +2620,7 @@ class TestTwoFactor(ZulipTestCase):
         user_profile.save()
         self.create_default_device(user_profile)
 
-        def totp(*args, **kwargs):
-            # type: (*Any, **Any) -> int
+        def totp(*args: Any, **kwargs: Any) -> int:
             return token
 
         mock_totp.side_effect = totp

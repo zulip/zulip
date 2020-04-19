@@ -19,8 +19,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("tarball", help="Filename of input tarball")
 
 
-def restore_backup(tarball_file):
-    # type: (IO[bytes]) -> None
+def restore_backup(tarball_file: IO[bytes]) -> None:
 
     su_to_zulip(save_suid=True)
 

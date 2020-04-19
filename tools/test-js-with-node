@@ -245,8 +245,7 @@ def run_tests_via_node_js() -> int:
         sys.exit(1)
     return ret
 
-def check_line_coverage(fn, line_coverage, line_mapping, log=True):
-    # type: (str, Dict[Any, Any], Dict[Any, Any], bool) -> bool
+def check_line_coverage(fn: str, line_coverage: Dict[Any, Any], line_mapping: Dict[Any, Any], log: bool = True) -> bool:
     missing_lines = []
     for line in line_coverage:
         if line_coverage[line] == 0:

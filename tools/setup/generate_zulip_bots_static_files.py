@@ -25,8 +25,7 @@ def generate_zulip_bots_static_files() -> None:
 
     os.makedirs(bots_dir, exist_ok=True)
 
-    def copyfiles(paths):
-        # type: (List[str]) -> None
+    def copyfiles(paths: List[str]) -> None:
         for src_path in paths:
             bot_name = os.path.basename(os.path.dirname(src_path))
 
