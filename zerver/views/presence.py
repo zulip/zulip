@@ -24,10 +24,11 @@ from zerver.models import UserActivity, UserPresence, UserProfile, \
     get_active_user
 
 def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
-                         email: str) -> HttpResponse:
+                         ) -> HttpResponse:
     # This isn't used by the webapp; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
+    email = user_profile.email
     try:
         target = get_active_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
