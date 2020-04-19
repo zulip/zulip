@@ -302,9 +302,7 @@ def is_special_html_tag(s: str, tag: str) -> bool:
     return tag in ['link', 'meta', '!DOCTYPE']
 
 OPTIONAL_CLOSING_TAGS = [
-    'br',
     'circle',
-    'hr',
     'img',
     'input',
     'path',

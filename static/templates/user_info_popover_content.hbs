@@ -52,7 +52,7 @@
     </div>
 
     {{#if is_me}}
-        <hr />
+        <hr>
         {{#if can_set_away}}
         <li>
             <a href="#" class="set_away_status">
@@ -80,7 +80,7 @@
     {{/if}}
 
     {{#if status_text}}
-        {{#unless is_me}}<hr />{{/unless}}
+        {{#unless is_me}}<hr>{{/unless}}
         <li class="user_info_status_text">
             <span id="status_message">
                 {{status_text}}
@@ -89,7 +89,7 @@
         </li>
     {{/if}}
 
-    <hr />
+    <hr>
     {{#if show_user_profile}}
     <li>
         <a href="#" class="view_user_profile">
@@ -124,7 +124,7 @@
         </a>
     </li>
     {{/if}}
-    <hr />
+    <hr>
     <li>
         <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
             <i class="fa fa-lock" aria-hidden="true"></i>
