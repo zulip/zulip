@@ -1713,7 +1713,7 @@ def possible_linked_stream_names(content: str) -> Set[str]:
         matches.append(match.group('stream_name'))
     return set(matches)
 
-class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
+class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
 
     allowed_before_punctuation = {' ', '\n', '(', '"', '.', ',', '\'', ';', '[', '*', '`', '>'}
     allowed_after_punctuation = {' ', '\n', ')', '",', '?', ':', '.', ',', '\'', ';', ']', '!',
@@ -1835,7 +1835,7 @@ class Bugdown(markdown.Markdown):
         preprocessors.register(BugdownListPreprocessor(self), 'hanging_lists', 35)
         preprocessors.register(markdown.preprocessors.NormalizeWhitespace(self), 'normalize_whitespace', 30)
         preprocessors.register(fenced_code.FencedBlockPreprocessor(self), 'fenced_code_block', 25)
-        preprocessors.register(AlertWordsNotificationProcessor(self), 'custom_text_notifications', 20)
+        preprocessors.register(AlertWordNotificationProcessor(self), 'custom_text_notifications', 20)
         return preprocessors
 
     def build_block_parser(self) -> markdown.util.Registry:
