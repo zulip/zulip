@@ -153,49 +153,61 @@ exports.end_if_focused = function () {
     }
 };
 
-function handle_edit_keydown(e) {
-    let row;
+function handle_message_row_edit_keydown(e) {
     const code = e.keyCode || e.which;
     switch (code) {
-        case 13:
-            if ($(e.target).hasClass("message_edit_content")) {
-                // Pressing enter to save edits is coupled with enter to send
-                if (composebox_typeahead.should_enter_send(e)) {
-                    row = $(".message_edit_content").filter(":focus").closest(".message_row");
-                    const message_edit_save_button = row.find(".message_edit_save");
-                    if (message_edit_save_button.attr('disabled') === "disabled") {
-                        // In cases when the save button is disabled
-                        // we need to disable save on pressing enter
-                        // Prevent default to avoid new-line on pressing
-                        // enter inside the textarea in this case
-                        e.preventDefault();
-                        return;
-                    }
-                } else {
-                    composebox_typeahead.handle_enter($(e.target), e);
+    case 13:
+        if ($(e.target).hasClass("message_edit_content")) {
+            // Pressing enter to save edits is coupled with enter to send
+            if (composebox_typeahead.should_enter_send(e)) {
+                const row = $(".message_edit_content").filter(":focus").closest(".message_row");
+                const message_edit_save_button = row.find(".message_edit_save");
+                if (message_edit_save_button.attr('disabled') === "disabled") {
+                    // In cases when the save button is disabled
+                    // we need to disable save on pressing enter
+                    // Prevent default to avoid new-line on pressing
+                    // enter inside the textarea in this case
+                    e.preventDefault();
                     return;
                 }
-            } else if (($(e.target).hasClass("message_edit_topic") ||
-                                       $(e.target).hasClass("message_edit_topic_propagate"))) {
-                row = $(e.target).closest(".message_row");
                 exports.save_message_row_edit(row);
                 e.stopPropagation();
                 e.preventDefault();
-            } else if (e.target.id === "inline_topic_edit") {
-                row = $(e.target).closest(".recipient_row");
-                exports.show_topic_edit_spinner(row);
-                exports.save_inline_topic_edit(row);
-                e.stopPropagation();
-                e.preventDefault();
+            } else {
+                composebox_typeahead.handle_enter($(e.target), e);
+                return;
             }
-            return;
-        case 27: // Handle escape keys in the message_edit form.
-            exports.end_if_focused();
+        } else if ($(e.target).hasClass("message_edit_topic") ||
+                    $(e.target).hasClass("message_edit_topic_propagate")) {
+            const row = $(e.target).closest(".message_row");
+            exports.save_message_row_edit(row);
             e.stopPropagation();
             e.preventDefault();
-            return;
-        default:
-            return;
+        }
+        return;
+    case 27: // Handle escape keys in the message_edit form.
+        exports.end_if_focused();
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+    default:
+        return;
+    }
+}
+
+function handle_inline_topic_edit_keydown(e) {
+    let row;
+    const code = e.keyCode || e.which;
+    switch (code) {
+    case 13: // Handle enter key in the recipient bar/inline topic edit form
+        row = $(e.target).closest(".recipient_row");
+        exports.show_topic_edit_spinner(row);
+        exports.save_inline_topic_edit(row);
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+    default:
+        return;
     }
 }
 
@@ -256,7 +268,7 @@ function edit_message(row, raw_content) {
     currently_editing_messages.set(message.id, edit_obj);
     current_msg_list.show_edit_message(row, edit_obj);
 
-    form.keydown(_.partial(handle_edit_keydown, false));
+    form.keydown(handle_message_row_edit_keydown);
 
     upload.feature_check($('#attach_files_' + rows.id(row)));
 
@@ -433,7 +445,7 @@ exports.start = function (row, edit_box_open_callback) {
 exports.start_topic_edit = function (recipient_row) {
     const form = $(render_topic_edit_form());
     current_msg_list.show_edit_topic_on_recipient_row(recipient_row, form);
-    form.keydown(_.partial(handle_edit_keydown, true));
+    form.keydown(handle_inline_topic_edit_keydown);
     const msg_id = rows.id_for_recipient_row(recipient_row);
     const message = current_msg_list.get(msg_id);
     let topic = message.topic;
