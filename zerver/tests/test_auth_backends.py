@@ -38,7 +38,7 @@ from zerver.lib.email_validation import get_realm_email_validator, \
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
-    check_bool, check_dict_only, check_list, check_string, Validator
+    check_bool, check_dict_only, check_list, check_string, check_int, Validator
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
@@ -2552,6 +2552,7 @@ class FetchAuthBackends(ZulipTestCase):
                 ('require_email_format_usernames', check_bool),
                 ('realm_uri', check_string),
                 ('zulip_version', check_string),
+                ('zulip_feature_level', check_int),
                 ('push_notifications_enabled', check_bool),
                 ('msg', check_string),
                 ('result', check_string),
