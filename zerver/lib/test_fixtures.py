@@ -224,40 +224,48 @@ def template_database_status(database_type: str) -> str:
     if not os.path.exists(status_dir):
         os.mkdir(status_dir)
 
-    if database_exists(database.database_name):
-        # To ensure Python evaluates all the hash tests (and thus creates the
-        # hash files about the current state), we evaluate them in a
-        # list and then process the result
-        files_hash_status = all([check_file_hash(fn, status_dir) for fn in check_files])
-        settings_hash_status = all([check_setting_hash(setting_name, status_dir)
-                                    for setting_name in check_settings])
-        hash_status = files_hash_status and settings_hash_status
-        if not hash_status:
-            return 'needs_rebuild'
+    if not database_exists(database.database_name):
+        # TODO: It's possible that `database_exists` will
+        #       return `False` even though the database
+        #       exists, but we just have the wrong password,
+        #       probably due to changing the secrets file.
+        #
+        #       The only problem this causes is that we waste
+        #       some time rebuilding the whole database, but
+        #       it's better to err on that side, generally.
+        return 'needs_rebuild'
 
-        # Here we hash and compare our migration files before doing
-        # the work of seeing what to do with them; if there are no
-        # changes, we can safely assume we don't need to run
-        # migrations without spending a few 100ms parsing all the
-        # Python migration code.
-        paths = [
-            *glob.glob('*/migrations/*.py'),
-            'requirements/dev.txt',
-        ]
-        check_migrations = file_or_package_hash_updated(paths, "migrations_hash_" + database.database_name)
-        if not check_migrations:
-            return 'current'
+    # To ensure Python evaluates all the hash tests (and thus creates the
+    # hash files about the current state), we evaluate them in a
+    # list and then process the result
+    files_hash_status = all([check_file_hash(fn, status_dir) for fn in check_files])
+    settings_hash_status = all([check_setting_hash(setting_name, status_dir)
+                                for setting_name in check_settings])
+    hash_status = files_hash_status and settings_hash_status
+    if not hash_status:
+        return 'needs_rebuild'
 
-        migration_op = what_to_do_with_migrations(database.migration_status, settings=database.settings)
-        if migration_op == 'scrap':
-            return 'needs_rebuild'
-
-        if migration_op == 'migrate':
-            return 'run_migrations'
-
+    # Here we hash and compare our migration files before doing
+    # the work of seeing what to do with them; if there are no
+    # changes, we can safely assume we don't need to run
+    # migrations without spending a few 100ms parsing all the
+    # Python migration code.
+    paths = [
+        *glob.glob('*/migrations/*.py'),
+        'requirements/dev.txt',
+    ]
+    check_migrations = file_or_package_hash_updated(paths, "migrations_hash_" + database.database_name)
+    if not check_migrations:
         return 'current'
 
-    return 'needs_rebuild'
+    migration_op = what_to_do_with_migrations(database.migration_status, settings=database.settings)
+    if migration_op == 'scrap':
+        return 'needs_rebuild'
+
+    if migration_op == 'migrate':
+        return 'run_migrations'
+
+    return 'current'
 
 def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     """The logic in zerver/lib/test_runner.py tries to delete all the
