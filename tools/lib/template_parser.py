@@ -103,7 +103,11 @@ def tokenize(text: str) -> List[Token]:
                 kind = 'handlebars_singleton'
             elif looking_at_html_start():
                 s = get_html_tag(text, state.i)
-                tag_parts = s[1:-1].split()
+                if s.endswith('/>'):
+                    end_offset = -2
+                else:
+                    end_offset = -1
+                tag_parts = s[1:end_offset].split()
 
                 if not tag_parts:
                     raise TemplateParserException("Tag name missing")
