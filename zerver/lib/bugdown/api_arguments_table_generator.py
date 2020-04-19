@@ -98,7 +98,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         <span class="api-argument-example-label">Example</span>: <code>{example}</code>
     </div>
     <div class="api-description">{description}</div>
-    <hr />
+    <hr>
 </div>"""
 
         md_engine = markdown.Markdown(extensions=[])
