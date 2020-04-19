@@ -82,6 +82,23 @@ try:
 except (configparser.NoSectionError, configparser.NoOptionError):
     tornado_processes = 1
 
+IS_SERVER_UP = True
+
+def shutdown_server() -> None:
+    global IS_SERVER_UP
+
+    core_server_services = ["zulip-django",
+                            "zulip-tornado" if tornado_processes == 1 else "zulip-tornado:*"]
+    worker_services = ["zulip-workers:*"]
+    # Stop and start thumbor service only if thumbor is installed.
+    if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
+        core_server_services.append("zulip-thumbor")
+
+    logging.info("Stopping Zulip...")
+    subprocess.check_call(["supervisorctl", "stop"] + core_server_services + worker_services,
+                          preexec_fn=su_to_zulip)
+    IS_SERVER_UP = False
+
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
     subprocess.check_call([
@@ -192,20 +209,11 @@ if not args.skip_migrations:
 if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
     subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
 
-core_server_services = ["zulip-django",
-                        "zulip-tornado" if tornado_processes == 1 else "zulip-tornado:*"]
-worker_services = ["zulip-workers:*"]
-# Stop and start thumbor service only if thumbor is installed.
-if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
-    core_server_services.append("zulip-thumbor")
-
-if not args.skip_puppet or migrations_needed:
+if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
     # By default, we shut down the service to apply migrations and
     # puppet changes, to minimize risk of issues due to inconsistent
     # state.
-    logging.info("Stopping Zulip...")
-    subprocess.check_call(["supervisorctl", "stop"] + core_server_services + worker_services,
-                          preexec_fn=su_to_zulip)
+    shutdown_server()
 
 if not args.skip_puppet:
     logging.info("Applying puppet changes...")
