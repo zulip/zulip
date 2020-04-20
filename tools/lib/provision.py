@@ -131,6 +131,8 @@ COMMON_DEPENDENCIES = [
     "libgtk-3-0",
     "libatk-bridge2.0-0",
     "libx11-xcb1",
+    "libxcb-dri3-0",
+    "libgbm1",
     "libxss1",
     "fonts-liberation",
     "libappindicator1",
