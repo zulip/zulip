@@ -49,6 +49,7 @@ CATEGORIES: Dict[str, str] = {
 class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = 'images/integrations/logos/{name}.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'images/integrations/logos/{name}.svg'
+    DEFAULT_BOT_AVATAR_PATH = 'images/integrations/bot_avatars/{name}.png'
 
     def __init__(self, name: str, client_name: str, categories: List[str],
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
