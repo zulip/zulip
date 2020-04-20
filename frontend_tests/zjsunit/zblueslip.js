@@ -37,7 +37,7 @@ exports.make_zblueslip = function () {
         lib.test_data[name].push(obj);
     };
 
-    lib.check_seen_messages = () => {
+    const check_seen_messages = () => {
         for (const name of names) {
             for (const obj of lib.test_logs[name]) {
                 const message = obj.message;
@@ -66,7 +66,7 @@ exports.make_zblueslip = function () {
 
     lib.reset = (skip_checks = false) => {
         if (!skip_checks) {
-            lib.check_seen_messages();
+            check_seen_messages();
         }
 
         for (const name of names) {
