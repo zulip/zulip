@@ -621,6 +621,9 @@ run_test('initialize', () => {
         assert.deepEqual(actual_value, expected_value);
 
         subject_typeahead_called = true;
+
+        // Unset the stream name.
+        $('#stream_message_recipient_stream').val('');
     };
 
     let pm_recipient_typeahead_called = false;
@@ -632,8 +635,8 @@ run_test('initialize', () => {
 
         // This should match the users added at the beginning of this test file.
         let actual_value = options.source('');
-        let expected_value = [alice, hamlet, othello, cordelia, lear,
-                              twin1, twin2, gael, hal, harry,
+        let expected_value = [alice, cordelia, hal, gael, harry,
+                              hamlet, lear, twin1, twin2, othello,
                               hamletcharacters, backend, call_center];
         assert.deepEqual(actual_value, expected_value);
 
@@ -725,7 +728,7 @@ run_test('initialize', () => {
         // A literal match at the beginning of an element puts it at the top.
         query = 'co';  // Matches everything ("x@zulip.COm")
         actual_value = sorter(query, [othello, deactivated_user, cordelia]);
-        expected_value = [cordelia, othello, deactivated_user];
+        expected_value = [cordelia, deactivated_user, othello];
         assert.deepEqual(actual_value, expected_value);
 
         query = 'non-existing-user';
