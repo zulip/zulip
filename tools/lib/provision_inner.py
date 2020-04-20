@@ -166,7 +166,7 @@ def main(options: argparse.Namespace) -> int:
         # of the development environment (it just uses the development
         # environment to build a release tarball).
 
-        # Need to set up Django before using template_database_status
+        # Need to set up Django before using template_status
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
         django.setup()
@@ -175,7 +175,6 @@ def main(options: argparse.Namespace) -> int:
             DEV_DATABASE,
             TEST_DATABASE,
             destroy_leaked_test_databases,
-            template_database_status,
         )
 
         try:
@@ -190,7 +189,7 @@ def main(options: argparse.Namespace) -> int:
         else:
             print("No need to run `scripts/setup/configure-rabbitmq.")
 
-        dev_template_db_status = template_database_status(DEV_DATABASE)
+        dev_template_db_status = DEV_DATABASE.template_status()
         if options.is_force or dev_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-dev-db"])
             run(["tools/do-destroy-rebuild-database"])
@@ -199,7 +198,7 @@ def main(options: argparse.Namespace) -> int:
         elif dev_template_db_status == 'current':
             print("No need to regenerate the dev DB.")
 
-        test_template_db_status = template_database_status(TEST_DATABASE)
+        test_template_db_status = TEST_DATABASE.template_status()
         if options.is_force or test_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-test-db"])
             run(["tools/do-destroy-rebuild-test-database"])
