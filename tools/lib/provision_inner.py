@@ -14,6 +14,7 @@ from scripts.lib.zulip_tools import run, OKBLUE, ENDC, \
     get_dev_uuid_var_path, file_or_package_hash_updated
 
 from version import PROVISION_VERSION
+from pygments import __version__ as pygments_version
 
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 
@@ -117,8 +118,6 @@ def setup_bash_profile() -> None:
 def need_to_run_build_pygments_data() -> bool:
     if not os.path.exists("static/generated/pygments_data.json"):
         return True
-
-    from pygments import __version__ as pygments_version
 
     return file_or_package_hash_updated(
         "build_pygments_data_hash",
