@@ -156,44 +156,47 @@ exports.end_if_focused = function () {
 function handle_edit_keydown(from_topic_edited_only, e) {
     let row;
     const code = e.keyCode || e.which;
-
-    // Handle escape keys in the message_edit form.
-    if (code === 27) {
-        exports.end_if_focused();
-        e.stopPropagation();
-        e.preventDefault();
-        return;
-    }
-
-    if ($(e.target).hasClass("message_edit_content") && code === 13) {
-        // Pressing enter to save edits is coupled with enter to send
-        if (composebox_typeahead.should_enter_send(e)) {
-            row = $(".message_edit_content").filter(":focus").closest(".message_row");
-            const message_edit_save_button = row.find(".message_edit_save");
-            if (message_edit_save_button.attr('disabled') === "disabled") {
-                // In cases when the save button is disabled
-                // we need to disable save on pressing enter
-                // Prevent default to avoid new-line on pressing
-                // enter inside the textarea in this case
+    switch (code) {
+        case 13:
+            if ($(e.target).hasClass("message_edit_content")) {
+                // Pressing enter to save edits is coupled with enter to send
+                if (composebox_typeahead.should_enter_send(e)) {
+                    row = $(".message_edit_content").filter(":focus").closest(".message_row");
+                    const message_edit_save_button = row.find(".message_edit_save");
+                    if (message_edit_save_button.attr('disabled') === "disabled") {
+                        // In cases when the save button is disabled
+                        // we need to disable save on pressing enter
+                        // Prevent default to avoid new-line on pressing
+                        // enter inside the textarea in this case
+                        e.preventDefault();
+                        return;
+                    }
+                } else {
+                    composebox_typeahead.handle_enter($(e.target), e);
+                    return;
+                }
+            } else if (($(e.target).hasClass("message_edit_topic") ||
+                                       $(e.target).hasClass("message_edit_topic_propagate"))) {
+                row = $(e.target).closest(".message_row");
+                exports.save(row, from_topic_edited_only);
+                e.stopPropagation();
                 e.preventDefault();
-                return;
+            } else if (e.target.id === "inline_topic_edit") {
+                row = $(e.target).closest(".recipient_row");
+                exports.show_topic_edit_spinner(row);
+                exports.save(row, from_topic_edited_only);
+                e.stopPropagation();
+                e.preventDefault();
             }
-        } else {
-            composebox_typeahead.handle_enter($(e.target), e);
             return;
-        }
-    } else if (code === 13 && ($(e.target).hasClass("message_edit_topic") ||
-                               $(e.target).hasClass("message_edit_topic_propagate"))) {
-        row = $(e.target).closest(".message_row");
-    } else if (e.target.id === "inline_topic_edit" && code === 13) {
-        row = $(e.target).closest(".recipient_row");
-        exports.show_topic_edit_spinner(row);
-    } else {
-        return;
+        case 27: // Handle escape keys in the message_edit form.
+            exports.end_if_focused();
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        default:
+            return;
     }
-    e.stopPropagation();
-    e.preventDefault();
-    exports.save(row, from_topic_edited_only);
 }
 
 function timer_text(seconds_left) {
