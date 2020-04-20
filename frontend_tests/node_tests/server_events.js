@@ -112,7 +112,6 @@ run_test('event_dispatch_error', () => {
     assert.equal(logs[0].more_info.event.op, 'update');
     assert.equal(logs[0].more_info.event.id, 1);
     assert.equal(logs[0].more_info.other, undefined);
-    blueslip.reset();
 });
 
 run_test('event_new_message_error', () => {
@@ -130,7 +129,6 @@ run_test('event_new_message_error', () => {
     const logs = blueslip.get_test_logs('error');
     assert.equal(logs.length, 1);
     assert.equal(logs[0].more_info, undefined);
-    blueslip.reset();
 });
 
 run_test('event_edit_message_error', () => {
@@ -146,5 +144,4 @@ run_test('event_edit_message_error', () => {
     const logs = blueslip.get_test_logs('error');
     assert.equal(logs.length, 1);
     assert.equal(logs[0].more_info, undefined);
-    blueslip.reset();
 });

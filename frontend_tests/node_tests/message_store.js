@@ -101,7 +101,6 @@ run_test('add_message_metadata', () => {
 
     blueslip.expect('error', 'message_store got non-number: 2067');
     retrieved_message = message_store.get('2067');
-    blueslip.reset();
     assert.equal(retrieved_message, message);
 
     // access cached previous message, and test match subject/content
@@ -196,8 +195,6 @@ run_test('errors', () => {
 
     const names = message_store.get_pm_full_names(message);
     assert.equal(names, '?');
-
-    blueslip.reset();
 
     message = {
         type: 'stream',
@@ -304,5 +301,4 @@ run_test('message_id_change', () => {
 run_test('errors', () => {
     blueslip.expect('error', 'message_store.get got bad value: undefined');
     message_store.get(undefined);
-    blueslip.reset();
 });

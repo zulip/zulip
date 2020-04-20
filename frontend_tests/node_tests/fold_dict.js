@@ -88,7 +88,5 @@ run_test('undefined_keys', () => {
 
     assert.equal(d.has(undefined), false);
     assert.strictEqual(d.get(undefined), undefined);
-
-    blueslip.reset();
 });
 

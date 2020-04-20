@@ -159,7 +159,6 @@ run_test('get_status', () => {
 run_test('reload_defaults', () => {
     blueslip.expect('warn', 'get_filter_text() is called before initialization');
     assert.equal(activity.get_filter_text(), '');
-    blueslip.reset();
 });
 
 run_test('sort_users', () => {

@@ -43,7 +43,6 @@ run_test('misc errors', () => {
     blueslip.expect('error', 'Cannot highlight key for list_cursor: nada');
     cursor.go_to('nada');
 
-    blueslip.reset();
     cursor.prev();
     cursor.next();
 });
@@ -68,7 +67,6 @@ run_test('single item list', () => {
 
     // Test prev/next, which should just silently do nothing.
     // (Our basic_conf() has prev_key and next_key return undefined.)
-    blueslip.reset();
     cursor.prev();
     cursor.next();
 
