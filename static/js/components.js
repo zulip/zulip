@@ -13,6 +13,11 @@
 exports.toggle = function (opts) {
     const component = (function render_component(opts) {
         const _component = $("<div class='tab-switcher'></div>");
+        if (opts.html_class) {
+            // add a check inside passed arguments in case some extra
+            // classes need to be added for correct alignment or other purposes
+            _component.addClass(opts.html_class);
+        }
         opts.values.forEach(function (value, i) {
             // create a tab with a tab-id so they don't have to be referenced
             // by text value which can be inconsistent.
