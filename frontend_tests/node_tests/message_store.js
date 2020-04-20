@@ -186,18 +186,16 @@ run_test('errors', () => {
         display_recipient: [{id: 92714}],
     };
 
-    blueslip.expect('error', 'Unknown user_id in get_by_user_id: 92714');
-    blueslip.expect('error', 'Unknown user id 92714'); // From person.js
+    blueslip.expect('error', 'Unknown user_id in get_by_user_id: 92714', 2);
+    blueslip.expect('error', 'Unknown user id 92714', 2); // From person.js
 
     // Expect each to throw two blueslip errors
     // One from message_store.js, one from person.js
     const emails = message_store.get_pm_emails(message);
     assert.equal(emails, '?');
-    assert.equal(blueslip.get_test_logs('error').length, 2);
 
     const names = message_store.get_pm_full_names(message);
     assert.equal(names, '?');
-    assert.equal(blueslip.get_test_logs('error').length, 4);
 
     blueslip.reset();
 

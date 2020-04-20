@@ -292,7 +292,7 @@ run_test('subscribers', () => {
 
     blueslip.expect(
         'warn',
-        'We got a is_user_subscribed call for a non-existent or inaccessible stream.');
+        'We got a is_user_subscribed call for a non-existent or inaccessible stream.', 2);
     sub.invite_only = true;
     stream_data.update_calculated_fields(sub);
     assert.equal(stream_data.is_user_subscribed('Rome', brutus.user_id), undefined);

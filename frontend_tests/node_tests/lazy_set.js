@@ -15,8 +15,9 @@ run_test('map', () => {
 });
 
 run_test('conversions', () => {
-    blueslip.expect('error', 'not a number');
+    blueslip.expect('error', 'not a number', 2);
     const ls = new LazySet([1, 2]);
     ls.add('3');
     assert(ls.has('3'));
+    blueslip.reset();
 });
