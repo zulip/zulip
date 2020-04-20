@@ -68,7 +68,6 @@ run_test('unknown user', () => {
 
     blueslip.expect('error', 'Unknown user ID in presence data: 999');
     presence.set_info(presences, now);
-    blueslip.reset();
 
     // If the server is suspected to be offline or reloading,
     // then we suppress errors.  The use case here is that we

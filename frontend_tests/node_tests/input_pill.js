@@ -51,7 +51,6 @@ run_test('basics', () => {
 
     blueslip.expect('error', 'Pill needs container.');
     input_pill.create(config);
-    blueslip.reset();
 
     const pill_input = $.create('pill_input');
     const container = $.create('container');
@@ -60,12 +59,10 @@ run_test('basics', () => {
     blueslip.expect('error', 'Pill needs create_item_from_text');
     config.container = container;
     input_pill.create(config);
-    blueslip.reset();
 
     blueslip.expect('error', 'Pill needs get_text_from_item');
     config.create_item_from_text = noop;
     input_pill.create(config);
-    blueslip.reset();
 
     config.get_text_from_item = noop;
     const widget = input_pill.create(config);

@@ -320,7 +320,6 @@ run_test('populate_user_groups', () => {
     assert(user_groups_list_append_called);
     assert(get_by_user_id_called);
     assert(input_typeahead_called);
-    blueslip.reset();
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.

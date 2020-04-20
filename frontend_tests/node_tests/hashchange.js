@@ -300,7 +300,6 @@ run_test('save_narrow', () => {
 
     blueslip.expect('warn', 'browser does not support pushState');
     hashchange.save_narrow(operators);
-    blueslip.reset();
 
     helper.assert_events([
         'message_viewport.stop_auto_scrolling',

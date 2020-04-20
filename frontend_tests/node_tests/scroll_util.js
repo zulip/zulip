@@ -110,6 +110,4 @@ run_test('get_list_scrolling_container error', () => {
     );
 
     scroll_util.get_list_scrolling_container(body);
-
-    blueslip.reset();
 });

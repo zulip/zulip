@@ -136,7 +136,6 @@ run_test('basics', () => {
     blueslip.expect('warn', 'Unknown user_id 8888 in reaction for message 1001');
     blueslip.expect('warn', 'Unknown user_id 9999 in reaction for message 1001');
     const result = reactions.get_message_reactions(message);
-    blueslip.reset();
     assert(reactions.current_user_has_reacted_to_emoji(message, 'unicode_emoji,263a'));
     assert(!reactions.current_user_has_reacted_to_emoji(message, 'bogus'));
 
@@ -209,7 +208,6 @@ run_test('sending', () => {
         blueslip.expect('warn', 'XHR Error Message.');
         global.channel.xhr_error_message = function () {return 'XHR Error Message.';};
         args.error();
-        blueslip.reset();
     });
     emoji_name = 'alien'; // not set yet
     global.with_stub(function (stub) {
@@ -257,7 +255,6 @@ run_test('sending', () => {
     emoji_name = 'unknown-emoji';   // Test sending an emoji unknown to frontend.
     blueslip.expect('warn', 'Bad emoji name: ' + emoji_name);
     reactions.toggle_emoji_reaction(message_id, emoji_name);
-    blueslip.reset();
     reactions.add_reaction = orig_add_reaction;
     reactions.remove_reaction = orig_remove_reaction;
 });
@@ -639,7 +636,6 @@ run_test('error_handling', () => {
     reactions.current_user_has_reacted_to_emoji = function () { return true; };
     reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
     reactions.current_user_has_reacted_to_emoji = original_func;
-    blueslip.reset();
 
     reactions.add_reaction(bogus_event);
 
@@ -763,7 +759,6 @@ run_test('duplicates', () => {
         ],
     };
 
-    blueslip.reset();
     blueslip.expect(
         'error',
         'server sent duplicate reactions for user 5 (key=unicode_emoji,263a)');
@@ -772,13 +767,11 @@ run_test('duplicates', () => {
 
 run_test('process_reaction_click errors', () => {
     global.message_store.get = () => undefined;
-    blueslip.reset();
     blueslip.expect('error', 'reactions: Bad message id: 55');
     blueslip.expect('error', 'message_id for reaction click is unknown: 55');
     reactions.process_reaction_click(55, 'whatever');
 
     global.message_store.get = () => message;
-    blueslip.reset();
     blueslip.expect('error', 'Data integrity problem for reaction bad-local-id (message some-msg-id)');
     reactions.process_reaction_click('some-msg-id', 'bad-local-id');
 });

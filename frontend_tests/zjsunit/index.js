@@ -101,6 +101,8 @@ global.run_test = (label, f) => {
         console.info('        test: ' + label);
     }
     f();
+    // defensively reset blueslip after each test.
+    blueslip.reset();
 };
 
 try {

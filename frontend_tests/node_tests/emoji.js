@@ -46,7 +46,6 @@ run_test('get_canonical_name', () => {
 
     blueslip.expect('error', 'Invalid emoji name: non_existent');
     emoji.get_canonical_name('non_existent');
-    blueslip.reset();
 });
 
 function set_up_spain_realm_emoji_for_test() {
