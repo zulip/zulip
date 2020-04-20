@@ -35,7 +35,7 @@ from zerver.lib.upload import upload_avatar_image
 from zerver.lib.actions import do_change_avatar_fields
 from zerver.lib.integrations import WebhookIntegration, INTEGRATIONS, split_fixture_path
 from zerver.lib.webhooks.common import get_fixture_http_headers
-from setup.generate_zulip_bots_static_files import create_png_from_svg
+from setup.generate_integration_bots_avatars import create_png_from_svg
 from tools.lib.test_script import prepare_puppeteer_run
 
 def create_integration_bot(integration: WebhookIntegration) -> UserProfile:
