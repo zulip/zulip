@@ -28,6 +28,13 @@ exports.populate_exports_table = function (exports) {
     list_render.create(exports_table, Object.values(exports), {
         name: "admin_exports_list",
         modifier: function (data) {
+            let failed_timestamp = data.failed_timestamp;
+            if (failed_timestamp !== null) {
+                failed_timestamp = timerender.last_seen_status_from_date(
+                    new XDate(failed_timestamp * 1000)
+                );
+            }
+
             if (data.deleted_timestamp === null) {
                 return render_admin_export_list({
                     realm_export: {
@@ -38,7 +45,7 @@ exports.populate_exports_table = function (exports) {
                             new XDate(data.export_time * 1000)
                         ),
                         url: data.export_url,
-                        failed: data.failed_timestamp,
+                        time_failed: failed_timestamp,
                         pending: data.pending,
                     },
                 });
@@ -60,6 +67,13 @@ exports.populate_exports_table = function (exports) {
             user: sort_user,
         },
     });
+
+    const spinner = $('.export_row .export_url_spinner');
+    if (spinner.length) {
+        loading.make_indicator(spinner);
+    } else {
+        loading.destroy_indicator(spinner);
+    }
 };
 
 exports.set_up = function () {
