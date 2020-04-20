@@ -28,16 +28,40 @@ exports.make_zblueslip = function () {
         lib.seen_messages[name] = new Set();
     }
 
-    lib.expect = (name, message) => {
+    lib.expect = (name, message, count = 1) => {
         if (opts[name] === undefined) {
             throw Error('unexpected arg for expect: ' + name);
         }
-        lib.test_data[name].push(message);
+        if (count <= 0 && Number.isInteger(count)) {
+            throw Error('expected count should be a positive integer');
+        }
+        const obj = {message, count, expected_count: count};
+        lib.test_data[name].push(obj);
     };
 
     lib.check_seen_messages = () => {
         for (const name of names) {
-            for (const message of lib.test_data[name]) {
+            for (const obj of lib.test_logs[name]) {
+                const message = obj.message;
+                const i = lib.test_data[name].findIndex(x => x.message === message);
+                if (i === -1) {
+                    // Only throw this for message types we want to explicitly track.
+                    // For example, we do not want to throw here for debug messages.
+                    if (opts[name]) {
+                        throw Error (`Unexpected '${name}' message: ${message}`);
+                    }
+                    continue;
+                }
+                lib.test_data[name][i].count -= 1;
+            }
+
+            for (const obj of lib.test_data[name]) {
+                const message = obj.message;
+                if (obj.count > 0) {
+                    throw Error(`We saw ${obj.count} (expected ${obj.expected_count}) of '${name}': ${message}`);
+                } else if (obj.count < 0) {
+                    throw Error(`We saw ${obj.expected_count - obj.count} (expected ${obj.expected_count}) of '${name}': ${message}`);
+                }
                 if (!lib.seen_messages[name].has(message)) {
                     throw Error('Never saw: ' + message);
                 }
@@ -45,8 +69,10 @@ exports.make_zblueslip = function () {
         }
     };
 
-    lib.reset = () => {
-        lib.check_seen_messages();
+    lib.reset = (skip_checks = false) => {
+        if (!skip_checks) {
+            lib.check_seen_messages();
+        }
 
         for (const name of names) {
             lib.test_data[name] = [];
@@ -81,7 +107,8 @@ exports.make_zblueslip = function () {
             }
             lib.seen_messages[name].add(message);
             lib.test_logs[name].push({message, more_info, stack});
-            const exact_match_fail = !lib.test_data[name].includes(message);
+            const matched_error_message = lib.test_data[name].find(x => x.message === message);
+            const exact_match_fail = !matched_error_message;
             if (exact_match_fail) {
                 const error = Error(`Invalid ${name} message: "${message}".`);
                 error.blueslip = true;

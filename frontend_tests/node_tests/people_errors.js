@@ -81,12 +81,11 @@ run_test('blueslip', () => {
         display_recipient: [],
         sender_id: me.user_id,
     };
-    blueslip.expect('error', 'Empty recipient list in message');
+    blueslip.expect('error', 'Empty recipient list in message', 4);
     people.pm_with_user_ids(message);
     people.group_pm_with_user_ids(message);
     people.all_user_ids_in_pm(message);
     assert.equal(people.pm_perma_link(message), undefined);
-    assert.equal(blueslip.get_test_logs('error').length, 4);
     blueslip.reset();
 
     const charles = {
