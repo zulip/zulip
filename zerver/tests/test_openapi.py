@@ -57,7 +57,7 @@ class OpenAPIToolsTest(ZulipTestCase):
             'name': 'message_id',
             'in': 'path',
             'description':
-                'The ID of the message that you wish to edit/update.\n',
+                'The target message\'s ID.\n',
             'example': 42,
             'required': True,
             'schema': {'type': 'integer'}
