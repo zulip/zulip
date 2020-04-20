@@ -402,6 +402,22 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode('utf-8')
         self.assertIn('You are using old version of the Zulip desktop', html)
 
+    def test_unsupported_browser(self) -> None:
+        user = self.example_user('hamlet')
+        self.login_user(user)
+
+        # currently we don't support IE, so some of IE's user agents are added.
+        unsupported_user_agents = [
+            "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2)",
+            "Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko",
+            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0)"
+        ]
+        for user_agent in unsupported_user_agents:
+            result = self.client_get('/',
+                                     HTTP_USER_AGENT=user_agent)
+            html = result.content.decode('utf-8')
+            self.assertIn('Internet Explorer is not supported by Zulip.', html)
+
     def test_terms_of_service_first_time_template(self) -> None:
         user = self.example_user('hamlet')
         self.login_user(user)

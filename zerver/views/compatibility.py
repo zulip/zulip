@@ -6,6 +6,7 @@ from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_error, json_success
 from zerver.lib.user_agent import parse_user_agent
+from zerver.signals import get_device_browser
 from version import DESKTOP_MINIMUM_VERSION, DESKTOP_WARNING_VERSION
 
 def pop_numerals(ver: str) -> Tuple[List[int], str]:
@@ -115,3 +116,9 @@ def is_outdated_desktop_app(user_agent_str: str) -> Tuple[bool, bool, bool]:
         return (True, False, False)
 
     return (False, False, False)
+
+def is_unsupported_browser(user_agent: str) -> Tuple[bool, Optional[str]]:
+    browser_name = get_device_browser(user_agent)
+    if browser_name == "Internet Explorer":
+        return (True, browser_name)
+    return (False, browser_name)
