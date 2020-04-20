@@ -49,14 +49,14 @@
  *   Our custom changes include all mentions of this.header, some CSS changes
  *   in compose.scss and splitting $container out of $menu so we can insert
  *   additional HTML before $menu.
- * 
+ *
  * 4. Navbar changes:
  *
- *  Typically, typeahead hotkey actions are independent of other application
- *  actions, however, the navbar is one case where we want to try and do more
- *  than a simple typeahead action with a single hotkey press, and so we've
- *  been forced to make a custom modification, see inline comment at `Esc`
- *  keyup for more details.
+ *   Typically, typeahead hotkey actions are independent of other application
+ *   actions, however, the navbar is one case where we want to try and do more
+ *   than a simple typeahead action with a single hotkey press, and so we've
+ *   been forced to make a custom modification, see inline comment at `Esc`
+ *   keyup for more details.
  *
  * 5. Event swallowing for Enter and Tab:
  * 
