@@ -83,6 +83,72 @@ class Database:
 
         return 'migrate'
 
+    def template_status(self) -> str:
+        # This function returns a status string specifying the type of
+        # state the template db is in and thus the kind of action required.
+        database_name = self.database_name
+
+        check_files = [
+            'zilencer/management/commands/populate_db.py',
+            'zerver/lib/bulk_create.py',
+            'zerver/lib/generate_test_data.py',
+            'zerver/lib/server_initialization.py',
+            'tools/setup/postgres-init-test-db',
+            'tools/setup/postgres-init-dev-db',
+            'zerver/migrations/0258_enable_online_push_notifications_default.py',
+        ]
+        check_settings = [
+            'REALM_INTERNAL_BOTS',
+        ]
+
+        # Construct a directory to store hashes named after the target database.
+        status_dir = os.path.join(UUID_VAR_DIR, database_name + '_db_status')
+        if not os.path.exists(status_dir):
+            os.mkdir(status_dir)
+
+        if not database_exists(database_name):
+            # TODO: It's possible that `database_exists` will
+            #       return `False` even though the database
+            #       exists, but we just have the wrong password,
+            #       probably due to changing the secrets file.
+            #
+            #       The only problem this causes is that we waste
+            #       some time rebuilding the whole database, but
+            #       it's better to err on that side, generally.
+            return 'needs_rebuild'
+
+        # To ensure Python evaluates all the hash tests (and thus creates the
+        # hash files about the current state), we evaluate them in a
+        # list and then process the result
+        files_hash_status = all([check_file_hash(fn, status_dir) for fn in check_files])
+        settings_hash_status = all([check_setting_hash(setting_name, status_dir)
+                                    for setting_name in check_settings])
+        hash_status = files_hash_status and settings_hash_status
+        if not hash_status:
+            return 'needs_rebuild'
+
+        # Here we hash and compare our migration files before doing
+        # the work of seeing what to do with them; if there are no
+        # changes, we can safely assume we don't need to run
+        # migrations without spending a few 100ms parsing all the
+        # Python migration code.
+        paths = [
+            *glob.glob('*/migrations/*.py'),
+            'requirements/dev.txt',
+        ]
+        check_migrations = file_or_package_hash_updated(paths, "migrations_hash_" + database_name)
+        if not check_migrations:
+            return 'current'
+
+        migration_op = self.what_to_do_with_migrations()
+        if migration_op == 'scrap':
+            return 'needs_rebuild'
+
+        if migration_op == 'migrate':
+            return 'run_migrations'
+
+        return 'current'
+
 DEV_DATABASE = Database(
     platform='dev',
     database_name='zulip',
@@ -116,7 +182,7 @@ def update_test_databases_if_required(use_force: bool=False,
     If use_force is specified, it will always do a full rebuild.
     """
     generate_fixtures_command = ['tools/setup/generate-fixtures']
-    test_template_db_status = template_database_status(TEST_DATABASE)
+    test_template_db_status = TEST_DATABASE.template_status()
     if use_force or test_template_db_status == 'needs_rebuild':
         generate_fixtures_command.append('--force')
     elif test_template_db_status == 'run_migrations':
@@ -208,72 +274,6 @@ def check_setting_hash(setting_name: str, status_dir: str) -> bool:
     target_content = json.dumps(getattr(settings, setting_name), sort_keys=True)
 
     return _check_hash(source_hash_file, target_content)
-
-def template_database_status(database: Database) -> str:
-    # This function returns a status string specifying the type of
-    # state the template db is in and thus the kind of action required.
-    database_name = database.database_name
-
-    check_files = [
-        'zilencer/management/commands/populate_db.py',
-        'zerver/lib/bulk_create.py',
-        'zerver/lib/generate_test_data.py',
-        'zerver/lib/server_initialization.py',
-        'tools/setup/postgres-init-test-db',
-        'tools/setup/postgres-init-dev-db',
-        'zerver/migrations/0258_enable_online_push_notifications_default.py',
-    ]
-    check_settings = [
-        'REALM_INTERNAL_BOTS',
-    ]
-
-    # Construct a directory to store hashes named after the target database.
-    status_dir = os.path.join(UUID_VAR_DIR, database_name + '_db_status')
-    if not os.path.exists(status_dir):
-        os.mkdir(status_dir)
-
-    if not database_exists(database_name):
-        # TODO: It's possible that `database_exists` will
-        #       return `False` even though the database
-        #       exists, but we just have the wrong password,
-        #       probably due to changing the secrets file.
-        #
-        #       The only problem this causes is that we waste
-        #       some time rebuilding the whole database, but
-        #       it's better to err on that side, generally.
-        return 'needs_rebuild'
-
-    # To ensure Python evaluates all the hash tests (and thus creates the
-    # hash files about the current state), we evaluate them in a
-    # list and then process the result
-    files_hash_status = all([check_file_hash(fn, status_dir) for fn in check_files])
-    settings_hash_status = all([check_setting_hash(setting_name, status_dir)
-                                for setting_name in check_settings])
-    hash_status = files_hash_status and settings_hash_status
-    if not hash_status:
-        return 'needs_rebuild'
-
-    # Here we hash and compare our migration files before doing
-    # the work of seeing what to do with them; if there are no
-    # changes, we can safely assume we don't need to run
-    # migrations without spending a few 100ms parsing all the
-    # Python migration code.
-    paths = [
-        *glob.glob('*/migrations/*.py'),
-        'requirements/dev.txt',
-    ]
-    check_migrations = file_or_package_hash_updated(paths, "migrations_hash_" + database_name)
-    if not check_migrations:
-        return 'current'
-
-    migration_op = database.what_to_do_with_migrations()
-    if migration_op == 'scrap':
-        return 'needs_rebuild'
-
-    if migration_op == 'migrate':
-        return 'run_migrations'
-
-    return 'current'
 
 def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     """The logic in zerver/lib/test_runner.py tries to delete all the
