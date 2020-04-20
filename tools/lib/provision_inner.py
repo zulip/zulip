@@ -5,6 +5,8 @@ import argparse
 import glob
 import shutil
 
+from typing import List
+
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
@@ -32,6 +34,27 @@ def create_var_directories() -> None:
     for sub_dir in sub_dirs:
         path = os.path.join(var_dir, sub_dir)
         os.makedirs(path, exist_ok=True)
+
+def build_pygments_data_paths() -> List[str]:
+    paths = [
+        "tools/setup/build_pygments_data",
+        "tools/setup/lang.json",
+    ]
+    return paths
+
+def compilemessages_paths() -> List[str]:
+    paths = ['zerver/management/commands/compilemessages.py']
+    paths += glob.glob('locale/*/LC_MESSAGES/*.po')
+    paths += glob.glob('locale/*/translations.json')
+    return paths
+
+def inline_email_css_paths() -> List[str]:
+    paths = [
+        "scripts/setup/inline_email_css.py",
+        "templates/zerver/emails/email.css",
+    ]
+    paths += glob.glob('templates/zerver/emails/*.source.html')
+    return paths
 
 def setup_shell_profile(shell_profile: str) -> None:
     shell_profile_path = os.path.expanduser(shell_profile)
@@ -95,15 +118,10 @@ def need_to_run_build_pygments_data() -> bool:
     if not os.path.exists("static/generated/pygments_data.json"):
         return True
 
-    build_pygments_data_paths = [
-        "tools/setup/build_pygments_data",
-        "tools/setup/lang.json",
-    ]
-
     from pygments import __version__ as pygments_version
 
     return file_or_package_hash_updated(
-        build_pygments_data_paths,
+        build_pygments_data_paths(),
         "build_pygments_data_hash",
         [pygments_version]
     )
@@ -114,24 +132,19 @@ def need_to_run_compilemessages() -> bool:
         print('Need to run compilemessages due to missing language_name_map.json')
         return True
 
-    # Consider updating generated translations data: both `.mo`
-    # files and `language-options.json`.
-    paths = ['zerver/management/commands/compilemessages.py']
-    paths += glob.glob('locale/*/LC_MESSAGES/*.po')
-    paths += glob.glob('locale/*/translations.json')
-
-    return file_or_package_hash_updated(paths, "last_compilemessages_hash")
+    return file_or_package_hash_updated(
+        compilemessages_paths(),
+        "last_compilemessages_hash"
+    )
 
 def need_to_run_inline_email_css() -> bool:
     if not os.path.exists('templates/zerver/emails/compiled/'):
         return True
 
-    email_source_paths = [
-        "scripts/setup/inline_email_css.py",
-        "templates/zerver/emails/email.css",
-    ]
-    email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
-    return file_or_package_hash_updated(email_source_paths, "last_email_source_files_hash")
+    return file_or_package_hash_updated(
+        inline_email_css_paths(),
+        "last_email_source_files_hash"
+    )
 
 def main(options: argparse.Namespace) -> int:
     setup_bash_profile()
