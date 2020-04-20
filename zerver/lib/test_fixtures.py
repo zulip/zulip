@@ -116,7 +116,7 @@ def update_test_databases_if_required(use_force: bool=False,
     If use_force is specified, it will always do a full rebuild.
     """
     generate_fixtures_command = ['tools/setup/generate-fixtures']
-    test_template_db_status = template_database_status('test')
+    test_template_db_status = template_database_status(TEST_DATABASE)
     if use_force or test_template_db_status == 'needs_rebuild':
         generate_fixtures_command.append('--force')
     elif test_template_db_status == 'run_migrations':
@@ -209,13 +209,10 @@ def check_setting_hash(setting_name: str, status_dir: str) -> bool:
 
     return _check_hash(source_hash_file, target_content)
 
-def template_database_status(platform: str) -> str:
+def template_database_status(database: Database) -> str:
     # This function returns a status string specifying the type of
     # state the template db is in and thus the kind of action required.
-    if platform == 'dev':
-        database = DEV_DATABASE
-    elif platform == 'test':
-        database = TEST_DATABASE
+    database_name = database.database_name
 
     check_files = [
         'zilencer/management/commands/populate_db.py',
@@ -231,11 +228,11 @@ def template_database_status(platform: str) -> str:
     ]
 
     # Construct a directory to store hashes named after the target database.
-    status_dir = os.path.join(UUID_VAR_DIR, database.database_name + '_db_status')
+    status_dir = os.path.join(UUID_VAR_DIR, database_name + '_db_status')
     if not os.path.exists(status_dir):
         os.mkdir(status_dir)
 
-    if not database_exists(database.database_name):
+    if not database_exists(database_name):
         # TODO: It's possible that `database_exists` will
         #       return `False` even though the database
         #       exists, but we just have the wrong password,
@@ -265,7 +262,7 @@ def template_database_status(platform: str) -> str:
         *glob.glob('*/migrations/*.py'),
         'requirements/dev.txt',
     ]
-    check_migrations = file_or_package_hash_updated(paths, "migrations_hash_" + database.database_name)
+    check_migrations = file_or_package_hash_updated(paths, "migrations_hash_" + database_name)
     if not check_migrations:
         return 'current'
 
