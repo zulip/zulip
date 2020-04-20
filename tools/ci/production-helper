@@ -6,7 +6,7 @@ set -e
 set -x
 
 ZULIP_PATH=$(mktemp -d)
-tar -xf zulip-server-travis.tar.gz -C "$ZULIP_PATH" --strip-components=1
+tar -xf zulip-server-test.tar.gz -C "$ZULIP_PATH" --strip-components=1
 
 # Do an apt upgrade to start with an up-to-date machine
 APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold')
@@ -22,12 +22,12 @@ service rabbitmq-server stop
 rm -rf /var/lib/rabbitmq/mnesia/
 
 # Install Zulip
-env TRAVIS=1 "$ZULIP_PATH"/scripts/setup/install --self-signed-cert --hostname 127.0.0.1 --email zulip-travis-admin@travis.example.com
+env TRAVIS=1 "$ZULIP_PATH"/scripts/setup/install --self-signed-cert --hostname 127.0.0.1 --email circleci@example.com
 
 cat >>/etc/zulip/settings.py <<EOF
-# Travis CI override settings above
+# Circle CI override settings above
 AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
-NOREPLY_EMAIL_ADDRESS = 'noreply@travis.example.com'
+NOREPLY_EMAIL_ADDRESS = 'noreply@circleci.example.com'
 ALLOWED_HOSTS = []
 EOF
 
