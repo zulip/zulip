@@ -26,6 +26,12 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path, run, \
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile(r'[\W\-_]')
 
+def migration_paths() -> List[str]:
+    return [
+        *glob.glob('*/migrations/*.py'),
+        'requirements/dev.txt',
+    ]
+
 class Database:
     def __init__(self, platform: str, database_name: str, settings: str):
         self.database_name = database_name
@@ -146,11 +152,10 @@ class Database:
         # changes, we can safely assume we don't need to run
         # migrations without spending a few 100ms parsing all the
         # Python migration code.
-        paths = [
-            *glob.glob('*/migrations/*.py'),
-            'requirements/dev.txt',
-        ]
-        check_migrations = file_or_package_hash_updated(paths, "migrations_hash_" + database_name)
+        check_migrations = file_or_package_hash_updated(
+            migration_paths(),
+            "migrations_hash_" + database_name
+        )
         if not check_migrations:
             return 'current'
 
