@@ -190,7 +190,7 @@ def main(options: argparse.Namespace) -> int:
         else:
             print("No need to run `scripts/setup/configure-rabbitmq.")
 
-        dev_template_db_status = template_database_status('dev')
+        dev_template_db_status = template_database_status(DEV_DATABASE)
         if options.is_force or dev_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-dev-db"])
             run(["tools/do-destroy-rebuild-database"])
@@ -199,7 +199,7 @@ def main(options: argparse.Namespace) -> int:
         elif dev_template_db_status == 'current':
             print("No need to regenerate the dev DB.")
 
-        test_template_db_status = template_database_status('test')
+        test_template_db_status = template_database_status(TEST_DATABASE)
         if options.is_force or test_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-test-db"])
             run(["tools/do-destroy-rebuild-test-database"])
