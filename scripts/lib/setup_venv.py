@@ -24,7 +24,6 @@ VENV_DEPENDENCIES = [
     "libldap2-dev",
     "libmemcached-dev",
     "python3-dev",          # Needed to install typed-ast dependency of mypy
-    "python3-pip",
     "python-pip",
     "virtualenv",
     "python3-six",
@@ -80,7 +79,6 @@ REDHAT_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
 ]
 
 FEDORA_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
-    "python3-pip",
     "python3-six",
     "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
 ]
@@ -309,7 +307,7 @@ def setup_virtualenv(
         cached_venv_python = os.path.join(target_venv_path, 'bin', 'python')
         same_python = (subprocess.check_output([cached_venv_python, '--version']) ==\
                     subprocess.check_output([conda_python, '--version']))
-
+    print(same_python, "SAME PYTHON")
     if not (os.path.exists(success_stamp) and same_python):
         do_setup_virtualenv(cached_venv_path, requirements_file, python2)
         with open(success_stamp, 'w') as f:

@@ -29,5 +29,5 @@ else
     # Create new conda env with our specified python version
     # Install virtualenv inside conda venv to ensure all commands
     # to virtualenv are run inside conda venv.
-    conda create -y --prefix "$CONDA_VENV_PATH" python="$PYTHON_VERSION" virtualenv
+    conda create -y --prefix "$CONDA_VENV_PATH" python="$PYTHON_VERSION" virtualenv pip
 fi
