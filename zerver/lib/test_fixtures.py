@@ -83,6 +83,20 @@ class Database:
 
         return 'migrate'
 
+    def database_exists(self) -> bool:
+        try:
+            connection = connections[DEFAULT_DB_ALIAS]
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT 1 from pg_database WHERE datname='{}';".format(self.database_name)
+                )
+                return_value = bool(cursor.fetchone())
+            connections.close_all()
+            return return_value
+        except OperationalError:
+            return False
+
     def template_status(self) -> str:
         # This function returns a status string specifying the type of
         # state the template db is in and thus the kind of action required.
@@ -106,7 +120,7 @@ class Database:
         if not os.path.exists(status_dir):
             os.mkdir(status_dir)
 
-        if not database_exists(database_name):
+        if not self.database_exists():
             # TODO: It's possible that `database_exists` will
             #       return `False` even though the database
             #       exists, but we just have the wrong password,
@@ -190,18 +204,6 @@ def update_test_databases_if_required(use_force: bool=False,
     elif not rebuild_test_database:
         return
     subprocess.check_call(generate_fixtures_command)
-
-def database_exists(database_name: str) -> bool:
-    try:
-        connection = connections[DEFAULT_DB_ALIAS]
-
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1 from pg_database WHERE datname='{}';".format(database_name))
-            return_value = bool(cursor.fetchone())
-        connections.close_all()
-        return return_value
-    except OperationalError:
-        return False
 
 def get_migration_status(**options: Any) -> str:
     verbosity = options.get('verbosity', 1)
