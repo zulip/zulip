@@ -91,7 +91,7 @@ cairocffi==1.1.0 \
 cairosvg==2.4.2 \
     --hash=sha256:4e668f96653326780036ebb0a9ff2bb59a8443d7bcfc51a14aab77b57a8e67ad \
     --hash=sha256:9cb1df7e9bc60f75fb87f67940a8fb805aad544337a67a40b67c05cfe33711a2 \
-    # via -r requirements/common.in
+    # via -r requirements/dev.in
 cchardet==2.1.6 \
     --hash=sha256:0f6e4e464e332da776b9c1a34e4e83b6301d38c2724efc93848c46ade66d02bb \
     --hash=sha256:217a7008bd399bdb61f6a0a2570acc5c3a9f96140e0a0d089b9e748c4d4e4c4e \
