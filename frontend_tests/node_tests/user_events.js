@@ -151,7 +151,6 @@ run_test('updates', () => {
     blueslip.expect('error', 'Got update_person event for unexpected user 29');
     blueslip.expect('error', 'Unknown user_id in get_by_user_id: 29');
     assert(!user_events.update_person({user_id: 29, full_name: 'Sir Isaac Newton'}));
-    assert.equal(blueslip.get_test_logs('error').length, 2);
     blueslip.reset();
 
     me.profile_data = {};

@@ -136,7 +136,6 @@ run_test('basics', () => {
     blueslip.expect('warn', 'Unknown user_id 8888 in reaction for message 1001');
     blueslip.expect('warn', 'Unknown user_id 9999 in reaction for message 1001');
     const result = reactions.get_message_reactions(message);
-    assert.equal(blueslip.get_test_logs('warn').length, 2);
     blueslip.reset();
     assert(reactions.current_user_has_reacted_to_emoji(message, 'unicode_emoji,263a'));
     assert(!reactions.current_user_has_reacted_to_emoji(message, 'bogus'));
