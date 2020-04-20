@@ -20,12 +20,10 @@ exports.make_zblueslip = function () {
     // Store valid test data for options.
     lib.test_data = {};
     lib.test_logs = {};
-    lib.seen_messages = {};
 
     for (const name of names) {
         lib.test_data[name] = [];
         lib.test_logs[name] = [];
-        lib.seen_messages[name] = new Set();
     }
 
     lib.expect = (name, message, count = 1) => {
@@ -62,9 +60,6 @@ exports.make_zblueslip = function () {
                 } else if (obj.count < 0) {
                     throw Error(`We saw ${obj.expected_count - obj.count} (expected ${obj.expected_count}) of '${name}': ${message}`);
                 }
-                if (!lib.seen_messages[name].has(message)) {
-                    throw Error('Never saw: ' + message);
-                }
             }
         }
     };
@@ -77,7 +72,6 @@ exports.make_zblueslip = function () {
         for (const name of names) {
             lib.test_data[name] = [];
             lib.test_logs[name] = [];
-            lib.seen_messages[name].clear();
         }
     };
 
@@ -90,7 +84,6 @@ exports.make_zblueslip = function () {
         if (!opts[name]) {
             // should just log the message.
             lib[name] = function (message, more_info, stack) {
-                lib.seen_messages[name].add(message);
                 lib.test_logs[name].push({message, more_info, stack});
             };
             continue;
@@ -105,7 +98,6 @@ exports.make_zblueslip = function () {
                     throw Error('message should be string: ' + message);
                 }
             }
-            lib.seen_messages[name].add(message);
             lib.test_logs[name].push({message, more_info, stack});
             const matched_error_message = lib.test_data[name].find(x => x.message === message);
             const exact_match_fail = !matched_error_message;
