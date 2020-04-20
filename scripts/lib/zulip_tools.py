@@ -379,8 +379,8 @@ def os_families() -> Set[str]:
     distro_info = parse_os_release()
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
-def file_or_package_hash_updated(paths: List[str],
-                                 hash_name: str,
+def file_or_package_hash_updated(hash_name: str,
+                                 paths: List[str],
                                  package_versions: List[str]=[]) -> bool:
     # Check whether the files or package_versions passed as arguments
     # changed compared to the last execution.

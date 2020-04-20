@@ -121,8 +121,8 @@ def need_to_run_build_pygments_data() -> bool:
     from pygments import __version__ as pygments_version
 
     return file_or_package_hash_updated(
-        build_pygments_data_paths(),
         "build_pygments_data_hash",
+        build_pygments_data_paths(),
         [pygments_version]
     )
 
@@ -133,8 +133,8 @@ def need_to_run_compilemessages() -> bool:
         return True
 
     return file_or_package_hash_updated(
+        "last_compilemessages_hash",
         compilemessages_paths(),
-        "last_compilemessages_hash"
     )
 
 def need_to_run_inline_email_css() -> bool:
@@ -142,8 +142,8 @@ def need_to_run_inline_email_css() -> bool:
         return True
 
     return file_or_package_hash_updated(
+        "last_email_source_files_hash",
         inline_email_css_paths(),
-        "last_email_source_files_hash"
     )
 
 def main(options: argparse.Namespace) -> int:

@@ -153,8 +153,8 @@ class Database:
         # migrations without spending a few 100ms parsing all the
         # Python migration code.
         check_migrations = file_or_package_hash_updated(
-            migration_paths(),
             "migrations_hash_" + database_name
+            migration_paths(),
         )
         if not check_migrations:
             return 'current'
