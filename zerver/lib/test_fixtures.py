@@ -57,6 +57,32 @@ class Database:
             './manage.py', 'get_migration_status', '--output='+self.migration_status_file,
         ])
 
+    def what_to_do_with_migrations(self) -> str:
+        status_fn = self.migration_status_path
+        settings = self.settings
+
+        if not os.path.exists(status_fn):
+            return 'scrap'
+
+        with open(status_fn) as f:
+            previous_migration_status = f.read()
+
+        current_migration_status = get_migration_status(settings=settings)
+        all_curr_migrations = extract_migrations_as_list(current_migration_status)
+        all_prev_migrations = extract_migrations_as_list(previous_migration_status)
+
+        if len(all_curr_migrations) < len(all_prev_migrations):
+            return 'scrap'
+
+        for migration in all_prev_migrations:
+            if migration not in all_curr_migrations:
+                return 'scrap'
+
+        if len(all_curr_migrations) == len(all_prev_migrations):
+            return 'migrations_are_latest'
+
+        return 'migrate'
+
 DEV_DATABASE = Database(
     platform='dev',
     database_name='zulip',
@@ -143,32 +169,6 @@ def get_migration_status(**options: Any) -> str:
 def extract_migrations_as_list(migration_status: str) -> List[str]:
     MIGRATIONS_RE = re.compile(r'\[[X| ]\] (\d+_.+)\n')
     return MIGRATIONS_RE.findall(migration_status)
-
-def what_to_do_with_migrations(database: Database) -> str:
-    status_fn = database.migration_status_path
-    settings = database.settings
-
-    if not os.path.exists(status_fn):
-        return 'scrap'
-
-    with open(status_fn) as f:
-        previous_migration_status = f.read()
-
-    current_migration_status = get_migration_status(settings=settings)
-    all_curr_migrations = extract_migrations_as_list(current_migration_status)
-    all_prev_migrations = extract_migrations_as_list(previous_migration_status)
-
-    if len(all_curr_migrations) < len(all_prev_migrations):
-        return 'scrap'
-
-    for migration in all_prev_migrations:
-        if migration not in all_curr_migrations:
-            return 'scrap'
-
-    if len(all_curr_migrations) == len(all_prev_migrations):
-        return 'migrations_are_latest'
-
-    return 'migrate'
 
 def _get_hash_file_path(source_file_path: str, status_dir: str) -> str:
     basename = os.path.basename(source_file_path)
@@ -269,7 +269,7 @@ def template_database_status(platform: str) -> str:
     if not check_migrations:
         return 'current'
 
-    migration_op = what_to_do_with_migrations(database)
+    migration_op = database.what_to_do_with_migrations()
     if migration_op == 'scrap':
         return 'needs_rebuild'
 
