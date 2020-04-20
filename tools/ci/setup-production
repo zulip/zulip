@@ -41,7 +41,7 @@ sudo /etc/init.d/memcached restart
 sudo "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" postgres zulip zulip_base
 
 # Remove and recreate the postgres database
-sudo pg_ctlcluster 9.5 main stop
-sudo pg_dropcluster 9.5 main
-sudo rm -rf /etc/postgresql/9.5/main /var/lib/postgresql/9.5/main
-sudo pg_createcluster 9.5 main
+sudo pg_ctlcluster 10 main stop
+sudo pg_dropcluster 10 main
+sudo rm -rf /etc/postgresql/10/main /var/lib/postgresql/10/main
+sudo pg_createcluster 10 main
