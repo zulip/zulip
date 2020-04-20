@@ -9,11 +9,11 @@ set -x
 # Provisioning may fail due to many issues but most of the times a network
 # connection issue is the reason. So we are going to retry entire provisioning
 # once again if that fixes our problem.
-tools/provision --production-travis || {
+tools/provision --production-test-suite || {
     ret=$?
     if [ "$ret" = 1 ]; then
         echo "\`provision\`: Something went wrong with the provisioning, might be a network issue, Retrying to provision..."
-        tools/provision --production-travis
+        tools/provision --production-test-suite
     else
         echo "\`provision\`: Something REALLY BAD went wrong with the provisioning, not retrying."
         exit "$ret"
@@ -23,13 +23,12 @@ tools/provision --production-travis || {
 cp -a tools/ci/success-http-headers.txt ~/
 source tools/ci/activate-venv
 
-if ! env TRAVIS=1 ./tools/build-release-tarball travis; then
+if ! env TRAVIS=1 ./tools/build-release-tarball test; then
     echo "Attempting to output failure logging data"
     cat /tmp/tmp.*/update-prod-static.log || true
     exit 1
 fi
-mv /tmp/tmp.*/zulip-server-travis.tar.gz ./
-
+mv /tmp/tmp.*/zulip-server-test.tar.gz ./
 
 # Shut down all services so that restarting postgres and rebuilding
 # the postgres database to match the prod installation setup will work.
