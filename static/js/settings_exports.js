@@ -29,28 +29,34 @@ exports.populate_exports_table = function (exports) {
         name: "admin_exports_list",
         modifier: function (data) {
             let failed_timestamp = data.failed_timestamp;
+            let deleted_timestamp = data.deleted_timestamp;
+
             if (failed_timestamp !== null) {
                 failed_timestamp = timerender.last_seen_status_from_date(
                     new XDate(failed_timestamp * 1000)
                 );
             }
 
-            if (data.deleted_timestamp === null) {
-                return render_admin_export_list({
-                    realm_export: {
-                        id: data.id,
-                        acting_user: people.get_full_name(data.acting_user_id),
-                        // Convert seconds -> milliseconds
-                        event_time: timerender.last_seen_status_from_date(
-                            new XDate(data.export_time * 1000)
-                        ),
-                        url: data.export_url,
-                        time_failed: failed_timestamp,
-                        pending: data.pending,
-                    },
-                });
+            if (deleted_timestamp !== null) {
+                deleted_timestamp = timerender.last_seen_status_from_date(
+                    new XDate(deleted_timestamp * 1000)
+                );
             }
-            return "";
+
+            return render_admin_export_list({
+                realm_export: {
+                    id: data.id,
+                    acting_user: people.get_full_name(data.acting_user_id),
+                    // Convert seconds -> milliseconds
+                    event_time: timerender.last_seen_status_from_date(
+                        new XDate(data.export_time * 1000)
+                    ),
+                    url: data.export_url,
+                    time_failed: failed_timestamp,
+                    pending: data.pending,
+                    time_deleted: deleted_timestamp,
+                },
+            });
         },
         filter: {
             element: exports_table.closest(".settings-section").find(".search"),
