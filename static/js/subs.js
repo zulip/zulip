@@ -537,6 +537,7 @@ exports.setup_page = function (callback) {
                 { label: `<i class="fa fa-user-o" title="${i18n.t("Sort by number of subscribers")}"></i>`, key: "by-subscriber-count" },
                 { label: `<i class="fa fa-bar-chart" title="${i18n.t("Sort by estimated weekly traffic")}"></i>`, key: "by-weekly-traffic" },
             ],
+            html_class: "stream_sorter_toggle",
             callback: function (value, key) {
                 exports.switch_stream_sort(key);
             },
