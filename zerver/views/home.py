@@ -24,7 +24,8 @@ from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.lib.utils import statsd, generate_random_token
-from zerver.views.compatibility import is_outdated_desktop_app
+from zerver.views.compatibility import is_outdated_desktop_app, \
+    is_unsupported_browser
 from two_factor.utils import default_device
 
 import calendar
@@ -147,14 +148,24 @@ def home(request: HttpRequest) -> HttpResponse:
 @zulip_login_required
 def home_real(request: HttpRequest) -> HttpResponse:
     # Before we do any real work, check if the app is banned.
+    client_user_agent = request.META.get("HTTP_USER_AGENT", "")
     (insecure_desktop_app, banned_desktop_app, auto_update_broken) = is_outdated_desktop_app(
-        request.META.get("HTTP_USER_AGENT", ""))
+        client_user_agent)
     if banned_desktop_app:
         return render(
             request,
             'zerver/insecure_desktop_app.html',
             context={
                 "auto_update_broken": auto_update_broken,
+            }
+        )
+    (unsupported_browser, browser_name) = is_unsupported_browser(client_user_agent)
+    if unsupported_browser:
+        return render(
+            request,
+            'zerver/unsupported_browser.html',
+            context={
+                "browser_name": browser_name,
             }
         )
 
