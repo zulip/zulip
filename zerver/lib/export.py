@@ -1776,7 +1776,7 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
             failed_timestamp = export_data.get('failed_timestamp')
             export_path = export_data.get('export_path')
 
-            if export_path:
+            if export_path and not deleted_timestamp:
                 export_url = zerver.lib.upload.upload_backend.get_export_tarball_url(
                     user.realm, export_path)
 

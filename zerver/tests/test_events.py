@@ -2864,7 +2864,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('id', check_int),
                 ('export_time', check_float),
                 ('acting_user_id', check_int),
-                ('export_url', check_string),
+                ('export_url', equals(None)),
                 ('deleted_timestamp', check_float),
                 ('failed_timestamp', equals(None)),
                 ('pending', check_bool),
