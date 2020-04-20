@@ -260,7 +260,6 @@ run_test('subscribers', () => {
     blueslip.expect('warn', 'We got a remove_subscriber call for a non-existent stream ' + bad_stream);
     ok = stream_data.remove_subscriber(bad_stream, brutus.user_id);
     assert(!ok);
-    assert.equal(blueslip.get_test_logs('warn').length, 2);
 
     // verify that removing an already-removed subscriber is a noop
     blueslip.expect('warn', 'We tried to remove invalid subscriber: 104');
@@ -311,7 +310,6 @@ run_test('subscribers', () => {
     blueslip.expect('error', 'We tried to add invalid subscriber: 9999999');
     ok = stream_data.add_subscriber('Rome', 9999999);
     assert(!ok);
-    assert.equal(blueslip.get_test_logs('error').length, 2);
     blueslip.reset();
 });
 
