@@ -11,7 +11,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, OKBLUE, ENDC, \
-    get_dev_uuid_var_path, file_or_package_hash_updated
+    get_dev_uuid_var_path, is_digest_obsolete, write_new_digest
 
 from version import PROVISION_VERSION
 from pygments import __version__ as pygments_version
@@ -119,7 +119,7 @@ def need_to_run_build_pygments_data() -> bool:
     if not os.path.exists("static/generated/pygments_data.json"):
         return True
 
-    return file_or_package_hash_updated(
+    return is_digest_obsolete(
         "build_pygments_data_hash",
         build_pygments_data_paths(),
         [pygments_version]
@@ -131,7 +131,7 @@ def need_to_run_compilemessages() -> bool:
         print('Need to run compilemessages due to missing language_name_map.json')
         return True
 
-    return file_or_package_hash_updated(
+    return is_digest_obsolete(
         "last_compilemessages_hash",
         compilemessages_paths(),
     )
@@ -140,7 +140,7 @@ def need_to_run_inline_email_css() -> bool:
     if not os.path.exists('templates/zerver/emails/compiled/'):
         return True
 
-    return file_or_package_hash_updated(
+    return is_digest_obsolete(
         "last_email_source_files_hash",
         inline_email_css_paths(),
     )
@@ -164,11 +164,20 @@ def main(options: argparse.Namespace) -> int:
 
     if options.is_force or need_to_run_build_pygments_data():
         run(["tools/setup/build_pygments_data"])
+        write_new_digest(
+            'build_pygments_data_hash',
+            build_pygments_data_paths(),
+            [pygments_version]
+        )
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
 
     if options.is_force or need_to_run_inline_email_css():
         run(["scripts/setup/inline_email_css.py"])
+        write_new_digest(
+            "last_email_source_files_hash",
+            inline_email_css_paths(),
+        )
     else:
         print("No need to run `scripts/setup/inline_email_css.py`.")
 
@@ -221,6 +230,10 @@ def main(options: argparse.Namespace) -> int:
 
         if options.is_force or need_to_run_compilemessages():
             run(["./manage.py", "compilemessages"])
+            write_new_digest(
+                "last_compilemessages_hash",
+                compilemessages_paths(),
+            )
         else:
             print("No need to run `manage.py compilemessages`.")
 
