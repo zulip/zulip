@@ -85,8 +85,15 @@ run_test('basics', () => {
 
         self.children = [];
 
+        self.classList = new Set();
+
         self.append = function (child) {
             self.children.push(child);
+        };
+
+        self.addClass = function (c) {
+            self.classList.add(c);
+            self.addedClass = c;
         };
 
         self.find = function (sel) {
@@ -110,6 +117,8 @@ run_test('basics', () => {
         switch (sel) {
         case "<div class='tab-switcher'></div>":
             return switcher;
+        case "<div class='tab-switcher stream_sorter_toggle'></div>":
+            return switcher;
         case "<div class='ind-tab' data-tab-key='keyboard-shortcuts' data-tab-id='0' tabindex='0'>translated: Keyboard shortcuts</div>":
             return make_tab(0);
         case "<div class='ind-tab' data-tab-key='message-formatting' data-tab-id='1' tabindex='0'>translated: Message formatting</div>":
@@ -131,6 +140,7 @@ run_test('basics', () => {
             { label: i18n.t("Message formatting"), key: "message-formatting" },
             { label: i18n.t("Search operators"), key: "search-operators" },
         ],
+        html_class: "stream_sorter_toggle",
         callback: function (name, key) {
             assert.equal(callback_args, undefined);
             callback_args = [name, key];
@@ -146,6 +156,8 @@ run_test('basics', () => {
     assert.equal(widget.get(), switcher);
 
     assert.deepEqual(switcher.children, tabs);
+
+    assert.equal(switcher.addedClass, 'stream_sorter_toggle');
 
     assert.equal(focused_tab, 0);
     assert.equal(tabs[0].class, 'first selected');
