@@ -234,7 +234,6 @@ run_test('unexpected_403_response', () => {
         check_ajax_options: function (options) {
             blueslip.expect('error', 'Unexpected 403 response from server');
             options.simulate_error();
-            blueslip.reset();
         },
     });
 });
@@ -264,7 +263,6 @@ run_test('retry', () => {
                     assert.equal(options.data, 42);
                 },
             });
-            blueslip.reset();
         },
     });
 });
@@ -281,7 +279,6 @@ run_test('too_many_pending', () => {
     _.times(50, function () {
         channel.post({});
     });
-    blueslip.reset();
 });
 
 run_test('xhr_error_message', () => {

@@ -310,7 +310,6 @@ run_test('subscribers', () => {
     blueslip.expect('error', 'We tried to add invalid subscriber: 9999999');
     ok = stream_data.add_subscriber('Rome', 9999999);
     assert(!ok);
-    blueslip.reset();
 });
 
 run_test('is_active', () => {
@@ -588,7 +587,6 @@ run_test('delete_sub', () => {
 
     blueslip.expect('warn', 'Failed to delete stream 99999');
     stream_data.delete_sub(99999);
-    blueslip.reset();
 });
 
 run_test('get_subscriber_count', () => {
@@ -601,7 +599,6 @@ run_test('get_subscriber_count', () => {
 
     blueslip.expect('warn', 'We got a get_subscriber_count count call for a non-existent stream.');
     assert.equal(stream_data.get_subscriber_count('India'), undefined);
-    blueslip.reset();
 
     stream_data.add_sub(india);
     assert.equal(stream_data.get_subscriber_count('India'), 0);

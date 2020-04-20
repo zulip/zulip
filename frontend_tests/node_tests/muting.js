@@ -77,7 +77,6 @@ run_test('get_and_set_muted_topics', () => {
     ];
     muting.initialize();
 
-    blueslip.reset();
 
     assert.deepEqual(muting.get_muted_topics().sort(), [
         [design.stream_id, 'typography'],

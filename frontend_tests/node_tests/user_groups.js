@@ -49,13 +49,11 @@ run_test('user_groups', () => {
 
     blueslip.expect('error', 'Unknown group_id in get_user_group_from_id: ' + all.id);
     assert.equal(user_groups.get_user_group_from_id(all.id), undefined);
-    blueslip.reset();
 
     user_groups.remove(students);
 
     blueslip.expect('error', 'Unknown group_id in get_user_group_from_id: ' + students.id);
     assert.equal(user_groups.get_user_group_from_id(students.id), undefined);
-    blueslip.reset();
 
     assert.equal(user_groups.get_user_group_from_name(all.name), undefined);
     assert.equal(user_groups.get_user_group_from_name(admins.name).id, 1);
@@ -89,5 +87,4 @@ run_test('user_groups', () => {
 
     blueslip.expect('error', 'Could not find user group with ID -1');
     assert.equal(user_groups.is_member_of(-1, 15), false);
-    blueslip.reset();
 });

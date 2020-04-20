@@ -184,5 +184,4 @@ run_test('reply_message_errors', () => {
         message: bogus_message,
     });
 
-    blueslip.reset();
 });

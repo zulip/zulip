@@ -19,5 +19,4 @@ run_test('conversions', () => {
     const ls = new LazySet([1, 2]);
     ls.add('3');
     assert(ls.has('3'));
-    blueslip.reset();
 });
