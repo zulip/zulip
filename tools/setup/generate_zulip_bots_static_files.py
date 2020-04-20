@@ -13,8 +13,6 @@ if ZULIP_PATH not in sys.path:
 from scripts.lib.setup_path import setup_path
 setup_path()
 
-import cairosvg
-
 from zulip_bots.lib import get_bots_directory_path
 
 def generate_zulip_bots_static_files() -> None:
@@ -47,6 +45,8 @@ def generate_zulip_bots_static_files() -> None:
     copyfiles(docs)
 
 def create_png_from_svg(svg_path: str, destination_dir: Optional[str]=None) -> str:
+    import cairosvg
+
     png_name = os.path.splitext(os.path.basename(svg_path))[0] + '.png'
     if destination_dir is None:
         destination_dir = tempfile.gettempdir()
