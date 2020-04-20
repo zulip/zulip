@@ -22,9 +22,9 @@ run_test('report_late_add', () => {
     people.report_late_add(55, 'foo@example.com');
     blueslip.reset();
 
+    blueslip.expect('log', 'Added user late: user_id=55 email=foo@example.com');
     reload_state.is_in_progress = return_true;
     people.report_late_add(55, 'foo@example.com');
-    assert.equal(blueslip.get_test_logs('log')[0].message, 'Added user late: user_id=55 email=foo@example.com');
     blueslip.reset();
 });
 
@@ -36,7 +36,7 @@ run_test('is_my_user_id', () => {
     blueslip.expect('error', 'user_id is a string in my_user_id: 30');
     assert.equal(people.is_my_user_id(me.user_id.toString()), true);
 
-    assert.equal(blueslip.get_test_logs('error').length, 2);
+    blueslip.reset();
 });
 
 run_test('blueslip', () => {

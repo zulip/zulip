@@ -254,6 +254,7 @@ run_test('retry', () => {
                 f();
             });
 
+            blueslip.expect('log', 'Retrying idempotent[object Object]');
             test_with_mock_ajax({
                 run_code: function () {
                     options.simulate_success();
@@ -263,8 +264,6 @@ run_test('retry', () => {
                     assert.equal(options.data, 42);
                 },
             });
-
-            assert.equal(blueslip.get_test_logs('log')[0].message, 'Retrying idempotent[object Object]');
             blueslip.reset();
         },
     });
