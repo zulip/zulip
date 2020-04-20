@@ -2,7 +2,7 @@
 WARNING: no certificate subject alternative name matches
 	requested host name ‘localhost’.
   HTTP/1.1 302 Found
-  Server: nginx/1.10.3 (Ubuntu)
+  Server: nginx/1.14.0 (Ubuntu)
   Content-Type: text/html; charset=utf-8
   Content-Length: 0
   Connection: keep-alive
@@ -14,7 +14,7 @@ WARNING: no certificate subject alternative name matches
 Location: /login/ [following]
 Reusing existing connection to localhost:443.
   HTTP/1.1 200 OK
-  Server: nginx/1.10.3 (Ubuntu)
+  Server: nginx/1.14.0 (Ubuntu)
   Content-Type: text/html; charset=utf-8
   Content-Length: 6361
   Connection: keep-alive
