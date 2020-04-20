@@ -816,6 +816,7 @@ run_test('initialize', () => {
             caret_called = true;
             return 7;
         };
+        fake_this.$element.closest = () => [];
         fake_this.options = options;
         let actual_value = options.source.call(fake_this, 'test #s');
         assert.deepEqual(
