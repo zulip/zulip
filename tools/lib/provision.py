@@ -391,9 +391,10 @@ def main(options: argparse.Namespace) -> "NoReturn":
     run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
     if is_circleci and not options.is_production_test_suite:
-        run_as_root(["service", "rabbitmq-server", "restart"])
         run_as_root(["service", "redis-server", "restart"])
         run_as_root(["service", "memcached", "restart"])
+    if is_circleci:
+        run_as_root(["service", "rabbitmq-server", "restart"])
         run_as_root(["service", "postgresql", "restart"])
     elif "fedora" in os_families():
         # These platforms don't enable and start services on
