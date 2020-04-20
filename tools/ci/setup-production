@@ -2,29 +2,9 @@
 # In short, this provisions a Zulip development environment and then
 # builds a Zulip release tarball (the same way we build them for an
 # actual release).  The actual test job will then install that.
-#
-# This script is more complicated than that, basically because Travis
-# CI installs a ton of crap in its build workers, and we need to
-# remove some and reconfigure others to make things run smoothly and
-# quickly.
-#
-# More description in https://zulip.readthedocs.io/en/latest/testing/travis.html.
+
 set -e
 set -x
-
-# Make /home/travis world-readable so the `zulip` user will be able to
-# read it, since that's where we store our caches.
-sudo chmod a+rX /home/travis
-
-# Uninstall the unnecessary extra versions of postgres that Travis CI
-# installs since if we don't do this, doing apt upgrades can fail due
-# to conflicts over which version of postgres should be running.
-sudo apt-get -y remove \
-    postgresql-9.4 postgresql-contrib-9.4 postgresql-client-9.4 \
-    postgresql-9.6 postgresql-contrib-9.6 postgresql-client-9.6
-
-# Remove some of Travis's' stupid extra sources.list files
-sudo rm -f /etc/apt/sources.list.d/mongodb*.list
 
 # Provisioning may fail due to many issues but most of the times a network
 # connection issue is the reason. So we are going to retry entire provisioning
@@ -42,10 +22,6 @@ tools/provision --production-travis || {
 
 cp -a tools/ci/success-http-headers.txt ~/
 source tools/ci/activate-venv
-
-# Force OpenJDK 8 JRE. This is a workaround for Travis CI having
-# broken their java install, but also nicely provides consistency.
-sudo ln -nsf /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java /usr/bin/java
 
 if ! env TRAVIS=1 ./tools/build-release-tarball travis; then
     echo "Attempting to output failure logging data"
