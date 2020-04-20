@@ -23,22 +23,30 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from scripts.lib.zulip_tools import get_dev_uuid_var_path, run, \
     file_or_package_hash_updated, TEMPLATE_DATABASE_DIR
 
-class DatabaseType:
-    def __init__(self, database_name: str, settings: str, migration_status: str):
-        self.database_name = database_name
-        self.settings = settings
-        self.migration_status = migration_status
-
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile(r'[\W\-_]')
 
-DEV_DATABASE_TYPE = DatabaseType(database_name='zulip',
-                                 settings='zproject.settings',
-                                 migration_status=os.path.join(UUID_VAR_DIR, "migration_status_dev"))
+class Database:
+    def __init__(self, platform: str, database_name: str, settings: str):
+        self.database_name = database_name
+        self.settings = settings
+        self.migration_status_file = 'migration_status_' + platform
+        self.migration_status_path = os.path.join(
+            UUID_VAR_DIR,
+            self.migration_status_file
+        )
 
-TEST_DATABASE_TYPE = DatabaseType(database_name='zulip_test_template',
-                                  settings='zproject.test_settings',
-                                  migration_status=os.path.join(UUID_VAR_DIR, 'migration_status_test'))
+DEV_DATABASE = Database(
+    platform='dev',
+    database_name='zulip',
+    settings='zproject.settings',
+)
+
+TEST_DATABASE = Database(
+    platform='test',
+    database_name='zulip_test_template',
+    settings='zproject.test_settings',
+)
 
 def run_db_migrations(platform: str) -> None:
     if platform == 'dev':
@@ -137,11 +145,11 @@ def extract_migrations_as_list(migration_status: str) -> List[str]:
     MIGRATIONS_RE = re.compile(r'\[[X| ]\] (\d+_.+)\n')
     return MIGRATIONS_RE.findall(migration_status)
 
-def what_to_do_with_migrations(migration_file: str, **options: Any) -> str:
-    if not os.path.exists(migration_file):
+def what_to_do_with_migrations(migration_status_path: str, **options: Any) -> str:
+    if not os.path.exists(migration_status_path):
         return 'scrap'
 
-    with open(migration_file) as f:
+    with open(migration_status_path) as f:
         previous_migration_status = f.read()
     current_migration_status = get_migration_status(**options)
     all_curr_migrations = extract_migrations_as_list(current_migration_status)
@@ -198,13 +206,13 @@ def check_setting_hash(setting_name: str, status_dir: str) -> bool:
 
     return _check_hash(source_hash_file, target_content)
 
-def template_database_status(database_type: str) -> str:
+def template_database_status(platform: str) -> str:
     # This function returns a status string specifying the type of
     # state the template db is in and thus the kind of action required.
-    if database_type == 'dev':
-        database = DEV_DATABASE_TYPE
-    elif database_type == 'test':
-        database = TEST_DATABASE_TYPE
+    if platform == 'dev':
+        database = DEV_DATABASE
+    elif platform == 'test':
+        database = TEST_DATABASE
 
     check_files = [
         'zilencer/management/commands/populate_db.py',
@@ -258,7 +266,10 @@ def template_database_status(database_type: str) -> str:
     if not check_migrations:
         return 'current'
 
-    migration_op = what_to_do_with_migrations(database.migration_status, settings=database.settings)
+    migration_op = what_to_do_with_migrations(
+        database.migration_status_path,
+        settings=database.settings
+    )
     if migration_op == 'scrap':
         return 'needs_rebuild'
 
