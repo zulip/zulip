@@ -379,11 +379,8 @@ def os_families() -> Set[str]:
     distro_info = parse_os_release()
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
-def file_or_package_hash_updated(hash_name: str,
-                                 paths: List[str],
-                                 package_versions: List[str]=[]) -> bool:
-    # Check whether the files or package_versions passed as arguments
-    # changed compared to the last execution.
+def path_version_digest(paths: List[str],
+                        package_versions: List[str]) -> str:
     sha1sum = hashlib.sha1()
     for path in paths:
         with open(path, 'rb') as file_to_hash:
@@ -394,8 +391,16 @@ def file_or_package_hash_updated(hash_name: str,
     for package_version in package_versions:
         sha1sum.update(package_version.encode("utf-8"))
 
+    return sha1sum.hexdigest()
+
+def file_or_package_hash_updated(hash_name: str,
+                                 paths: List[str],
+                                 package_versions: List[str]=[]) -> bool:
+    # Check whether the files or package_versions passed as arguments
+    # changed compared to the last execution.
     hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
-    new_hash = sha1sum.hexdigest()
+    new_hash = path_version_digest(paths, package_versions)
+
     with open(hash_path, 'a+') as hash_file:
         hash_file.seek(0)
         last_hash = hash_file.read()
