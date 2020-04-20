@@ -390,7 +390,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
 
     run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
-    if is_circleci or (is_travis and not options.is_production_travis):
+    if is_circleci and not options.is_production_test_suite:
         run_as_root(["service", "rabbitmq-server", "restart"])
         run_as_root(["service", "redis-server", "restart"])
         run_as_root(["service", "memcached", "restart"])
@@ -416,7 +416,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
         [
             provision_inner,
             *(["--force"] if options.is_force else []),
-            *(["--production-travis"] if options.is_production_travis else []),
+            *(["--production-test-suite"] if options.is_production_test_suite else []),
         ]
     )
 
@@ -427,10 +427,10 @@ if __name__ == "__main__":
                         default=False,
                         help="Ignore all provisioning optimizations.")
 
-    parser.add_argument('--production-travis', action='store_true',
-                        dest='is_production_travis',
+    parser.add_argument('--production-test-suite', action='store_true',
+                        dest='is_production_test_suite',
                         default=False,
-                        help="Provision for Travis with production settings.")
+                        help="Provision for test suite with production settings.")
 
     options = parser.parse_args()
     main(options)
