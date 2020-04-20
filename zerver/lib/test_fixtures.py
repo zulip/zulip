@@ -36,6 +36,27 @@ class Database:
             self.migration_status_file
         )
 
+    def run_db_migrations(self) -> None:
+        # We shell out to `manage.py` and pass `DJANGO_SETTINGS_MODULE` on
+        # the command line rather than just calling the migration
+        # functions, because Django doesn't support changing settings like
+        # what the database is as runtime.
+        # Also we export ZULIP_DB_NAME which is ignored by dev platform but
+        # recognised by test platform and used to migrate correct db.
+        env_prelude = [
+            'env',
+            'DJANGO_SETTINGS_MODULE=' + self.settings,
+            'ZULIP_DB_NAME=' + self.database_name,
+        ]
+
+        run(env_prelude + [
+            './manage.py', 'migrate', '--no-input',
+        ])
+
+        run(env_prelude + [
+            './manage.py', 'get_migration_status', '--output='+self.migration_status_file,
+        ])
+
 DEV_DATABASE = Database(
     platform='dev',
     database_name='zulip',
@@ -47,28 +68,6 @@ TEST_DATABASE = Database(
     database_name='zulip_test_template',
     settings='zproject.test_settings',
 )
-
-def run_db_migrations(platform: str) -> None:
-    if platform == 'dev':
-        migration_status_file = 'migration_status_dev'
-        settings = 'zproject.settings'
-        db_name = 'ZULIP_DB_NAME=zulip'
-    elif platform == 'test':
-        migration_status_file = 'migration_status_test'
-        settings = 'zproject.test_settings'
-        db_name = 'ZULIP_DB_NAME=zulip_test_template'
-
-    # We shell out to `manage.py` and pass `DJANGO_SETTINGS_MODULE` on
-    # the command line rather than just calling the migration
-    # functions, because Django doesn't support changing settings like
-    # what the database is as runtime.
-    # Also we export DB_NAME which is ignored by dev platform but
-    # recognised by test platform and used to migrate correct db.
-    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % (settings,)), db_name,
-         './manage.py', 'migrate', '--no-input'])
-    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % (settings,)), db_name,
-         './manage.py', 'get_migration_status',
-         '--output=%s' % (migration_status_file,)])
 
 def update_test_databases_if_required(use_force: bool=False,
                                       rebuild_test_database: bool=False) -> None:
@@ -95,7 +94,7 @@ def update_test_databases_if_required(use_force: bool=False,
     if use_force or test_template_db_status == 'needs_rebuild':
         generate_fixtures_command.append('--force')
     elif test_template_db_status == 'run_migrations':
-        run_db_migrations('test')
+        TEST_DATABASE.run_db_migrations()
     elif not rebuild_test_database:
         return
     subprocess.check_call(generate_fixtures_command)

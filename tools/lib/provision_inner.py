@@ -171,8 +171,12 @@ def main(options: argparse.Namespace) -> int:
         import django
         django.setup()
 
-        from zerver.lib.test_fixtures import template_database_status, run_db_migrations, \
-            destroy_leaked_test_databases
+        from zerver.lib.test_fixtures import (
+            DEV_DATABASE,
+            TEST_DATABASE,
+            destroy_leaked_test_databases,
+            template_database_status,
+        )
 
         try:
             from zerver.lib.queue import SimpleQueueClient
@@ -191,7 +195,7 @@ def main(options: argparse.Namespace) -> int:
             run(["tools/setup/postgres-init-dev-db"])
             run(["tools/do-destroy-rebuild-database"])
         elif dev_template_db_status == 'run_migrations':
-            run_db_migrations('dev')
+            DEV_DATABASE.run_db_migrations()
         elif dev_template_db_status == 'current':
             print("No need to regenerate the dev DB.")
 
@@ -200,7 +204,7 @@ def main(options: argparse.Namespace) -> int:
             run(["tools/setup/postgres-init-test-db"])
             run(["tools/do-destroy-rebuild-test-database"])
         elif test_template_db_status == 'run_migrations':
-            run_db_migrations('test')
+            TEST_DATABASE.run_db_migrations()
         elif test_template_db_status == 'current':
             print("No need to regenerate the test DB.")
 
