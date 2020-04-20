@@ -214,6 +214,7 @@ export default (env?: string): webpack.Configuration[] => {
                 filename: "5xx.html",
                 template: "static/html/5xx.html",
                 chunks: ["error-styles"],
+                removeComments: false,
             }),
         ],
     };

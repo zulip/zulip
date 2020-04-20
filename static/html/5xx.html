@@ -5,14 +5,13 @@
         <title>Zulip - 500 internal server error</title>
         <base href="/static/webpack-bundles/">
 
+        <!--# if expr="$status = 502" -->
         <meta http-equiv="refresh" content="60;URL='/'">
+        <!--# endif -->
 
     </head>
 
     <body class="error_page">
-        <!-- TODO: Make nginx 5xx error page customizable -->
-        <!-- This is tricky because it's not served by Django, -->
-        <!-- so we can't use variables -->
         <div class="header" style="background-color: #c9e9e0;">
             <div class="header-main" id="top_navbar">
                 <div class="float-left">
@@ -36,7 +35,7 @@
                 <img src="/static/images/500art.svg" alt=""/>
                 <div class="errorbox">
                     <div class="errorcontent">
-                        <h1 class="lead">Internal server error</h1>
+                        <h1 class="lead"><!--# echo var="status" default="" --> <!--# echo var="status_text" default="Something went wrong." --></h1>
                         <p>This Zulip server is currently experiencing some technical difficulties. Sorry about that!</p>
                         <p>The page will reload automatically soon after service is restored.</p>
                     </div>

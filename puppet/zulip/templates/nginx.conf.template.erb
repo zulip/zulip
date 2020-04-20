@@ -13,6 +13,7 @@ events {
 }
 
 http {
+    ssi on;
     sendfile on;
     tcp_nopush on;
     tcp_nodelay on;
@@ -61,4 +62,11 @@ http {
 
     include /etc/nginx/conf.d/*.conf;
     include /etc/nginx/sites-enabled/*;
+
+    map $status $status_text {
+        502 'Bad Gateway';
+        503 'Service Unavailable';
+        504 'Gateway Timeout';
+        default 'Something is wrong';
+    }
 }
