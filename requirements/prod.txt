@@ -54,13 +54,6 @@ cachetools==4.1.0 \
     --hash=sha256:1d057645db16ca7fe1f3bd953558897603d6f0b9c51ed9d11eb4d071ec4e2aab \
     --hash=sha256:de5d88f87781602201cde465d3afe837546663b168e8b39df67411b0bf10cefc \
     # via premailer
-cairocffi==1.1.0 \
-    --hash=sha256:f1c0c5878f74ac9ccb5d48b2601fcc75390c881ce476e79f4cfedd288b1b05db \
-    # via cairosvg
-cairosvg==2.4.2 \
-    --hash=sha256:4e668f96653326780036ebb0a9ff2bb59a8443d7bcfc51a14aab77b57a8e67ad \
-    --hash=sha256:9cb1df7e9bc60f75fb87f67940a8fb805aad544337a67a40b67c05cfe33711a2 \
-    # via -r requirements/common.in
 cchardet==2.1.6 \
     --hash=sha256:0f6e4e464e332da776b9c1a34e4e83b6301d38c2724efc93848c46ade66d02bb \
     --hash=sha256:217a7008bd399bdb61f6a0a2570acc5c3a9f96140e0a0d089b9e748c4d4e4c4e \
@@ -125,7 +118,7 @@ cffi==1.14.0 \
     --hash=sha256:e56c744aa6ff427a607763346e4170629caf7e48ead6921745986db3692f987f \
     --hash=sha256:e577934fc5f8779c554639376beeaa5657d54349096ef24abe8c74c5d9c117c3 \
     --hash=sha256:f2b0fa0c01d8a0c7483afd9f31d7ecf2d71760ca24499c8697aeb5ca37dc090c \
-    # via argon2-cffi, cairocffi, cryptography
+    # via argon2-cffi, cryptography
 chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
     --hash=sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691 \
@@ -151,10 +144,6 @@ cryptography==2.9 \
     --hash=sha256:ed1d0760c7e46436ec90834d6f10477ff09475c692ed1695329d324b2c5cd547 \
     --hash=sha256:ef9a55013676907df6c9d7dd943eb1770d014f68beaa7e73250fb43c759f4585 \
     # via apns2, pyopenssl, requests, social-auth-core
-cssselect2==0.3.0 \
-    --hash=sha256:5c2716f06b5de93f701d5755a9666f2ee22cbcd8b4da8adddfc30095ffea3abc \
-    --hash=sha256:97d7d4234f846f9996d838964d38e13b45541c18143bc55cf00e4bc1281ace76 \
-    # via cairosvg
 cssselect==1.1.0 \
     --hash=sha256:f612ee47b749c877ebae5bb77035d8f4202c6ad0f0fc1271b3c18ad6c4468ecf \
     --hash=sha256:f95f8dedd925fd8f54edb3d2dfb44c190d9d18512377d3c1e2388d16126879bc \
@@ -170,7 +159,7 @@ decorator==4.4.2 \
 defusedxml==0.6.0 \
     --hash=sha256:6687150770438374ab581bb7a1b327a847dd9c5749e396102de3fad4e8a3ef93 \
     --hash=sha256:f684034d135af4c6cbb949b8a4d2ed61634515257a67299e5f940fbaa34377f5 \
-    # via -r requirements/common.in, cairosvg, python3-openid, python3-saml, social-auth-core
+    # via -r requirements/common.in, python3-openid, python3-saml, social-auth-core
 disposable-email-domains==0.0.61 \
     --hash=sha256:d42395a18c244b8d1544e5ebbabc1a8f1522ed5b91d729325e603038edf37947 \
     --hash=sha256:f90e431b281aea166bac97fa2aae7271f78eb1624420bb313de4b009efa1a050 \
@@ -434,7 +423,7 @@ pillow==7.1.1 \
     --hash=sha256:d6bf085f6f9ec6a1724c187083b37b58a8048f86036d42d21802ed5d1fae4853 \
     --hash=sha256:da737ab273f4d60ae552f82ad83f7cbd0e173ca30ca20b160f708c92742ee212 \
     --hash=sha256:eb84e7e5b07ff3725ab05977ac56d5eeb0c510795aeb48e8b691491be3c5745b \
-    # via -r requirements/common.in, cairosvg
+    # via -r requirements/common.in
 pkgconfig==1.5.1 \
     --hash=sha256:97bfe3d981bab675d5ea3ef259045d7919c93897db7d3b59d4e8593cba8d354f \
     --hash=sha256:cddf2d7ecadb272178a942eb852a9dee46bda2adcc36c3416b0fef47a4ed9f38 \
@@ -640,10 +629,6 @@ stripe==2.45.0 \
 https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.zip#egg=talon==1.2.10.zulip1 \
     --hash=sha256:21d87c437379287d09df7a2d2af7bd818d4fa00be619dff446dacbdb4338d921 \
     # via -r requirements/common.in
-tinycss2==1.0.2 \
-    --hash=sha256:6427d0e3faa0a5e0e8c9f6437e2de26148a7a197a8b0992789f23d9a802788cf \
-    --hash=sha256:9fdacc0e22d344ddd2ca053837c133900fe820ae1222f63b79617490a498507a \
-    # via cairosvg, cssselect2
 tornado==4.5.3 \
     --hash=sha256:5ef073ac6180038ccf99411fe05ae9aafb675952a2c8db60592d5daf8401f803 \
     --hash=sha256:6d14e47eab0e15799cf3cdcc86b0b98279da68522caace2bd7ce644287685f0a \
@@ -681,10 +666,6 @@ wcwidth==0.1.9 \
     --hash=sha256:cafe2186b3c009a04067022ce1dcd79cb38d8d65ee4f4791b8888d6599d1bbe1 \
     --hash=sha256:ee73862862a156bf77ff92b09034fc4825dd3af9cf81bc5b360668d425f3c5f1 \
     # via prompt-toolkit
-webencodings==0.5.1 \
-    --hash=sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78 \
-    --hash=sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923 \
-    # via cssselect2, tinycss2
 xmlsec==1.3.3 \
     --hash=sha256:e573c0172174973223d874ffd158ecd4e0faa761015474385289a6468dd29ed6 \
     # via python3-saml
@@ -710,4 +691,4 @@ pip==20.0.2 \
 setuptools==46.1.3 \
     --hash=sha256:4fe404eec2738c20ab5841fa2d791902d2a645f32318a7850ef26f8d7215a8ee \
     --hash=sha256:795e0475ba6cd7fa082b1ee6e90d552209995627a2a227a47c6ea93282f4bfb1 \
-    # via cairocffi, cssselect2, ipython, markdown, tinycss2
+    # via ipython, markdown
