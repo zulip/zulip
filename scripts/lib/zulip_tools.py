@@ -393,24 +393,38 @@ def path_version_digest(paths: List[str],
 
     return sha1sum.hexdigest()
 
-def file_or_package_hash_updated(hash_name: str,
-                                 paths: List[str],
-                                 package_versions: List[str]=[]) -> bool:
-    # Check whether the files or package_versions passed as arguments
-    # changed compared to the last execution.
-    hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
+def is_digest_obsolete(hash_name: str,
+                       paths: List[str],
+                       package_versions: List[str]=[]) -> bool:
+    # Check whether the `paths` contents or
+    # `package_versions` have changed.
+
+    last_hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
+    try:
+        with open(last_hash_path) as f:
+            old_hash = f.read()
+    except FileNotFoundError:
+        # This is normal for a fresh checkout--a missing
+        # digest is an obsolete digest.
+        return True
+
     new_hash = path_version_digest(paths, package_versions)
 
-    with open(hash_path, 'a+') as hash_file:
-        hash_file.seek(0)
-        last_hash = hash_file.read()
+    return new_hash != old_hash
 
-        if (new_hash != last_hash):
-            hash_file.seek(0)
-            hash_file.truncate()
-            hash_file.write(new_hash)
-            return True
-    return False
+def write_new_digest(hash_name: str,
+                     paths: List[str],
+                     package_versions: List[str]=[]) -> None:
+    hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
+    new_hash = path_version_digest(paths, package_versions)
+    with open(hash_path, 'w') as f:
+        f.write(new_hash)
+
+    # Be a little verbose here--our callers ensure we
+    # only write new digests when things have changed, and
+    # making this system more transparent to developers
+    # can help them troubleshoot provisioning glitches.
+    print('New digest written to: ' + hash_path)
 
 def is_root() -> bool:
     if 'posix' in os.name and os.geteuid() == 0:

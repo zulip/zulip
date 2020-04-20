@@ -20,8 +20,10 @@ from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from scripts.lib.zulip_tools import get_dev_uuid_var_path, run, \
-    file_or_package_hash_updated, TEMPLATE_DATABASE_DIR
+from scripts.lib.zulip_tools import (
+    get_dev_uuid_var_path, run, TEMPLATE_DATABASE_DIR,
+    is_digest_obsolete, write_new_digest,
+)
 
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile(r'[\W\-_]')
@@ -41,6 +43,7 @@ class Database:
             UUID_VAR_DIR,
             self.migration_status_file
         )
+        self.migration_digest_file = "migrations_hash_" + database_name
 
     def run_db_migrations(self) -> None:
         # We shell out to `manage.py` and pass `DJANGO_SETTINGS_MODULE` on
@@ -152,12 +155,19 @@ class Database:
         # changes, we can safely assume we don't need to run
         # migrations without spending a few 100ms parsing all the
         # Python migration code.
-        check_migrations = file_or_package_hash_updated(
-            "migrations_hash_" + database_name
-            migration_paths(),
-        )
-        if not check_migrations:
+        if not self.is_digest_obsolete():
             return 'current'
+
+        '''
+        NOTE:
+            We immediately update the digest, assuming our
+            callers will do what it takes to run the migrations.
+
+            Ideally our callers would just do it themselves
+            AFTER the migrations actually succeeded, but the
+            caller codepaths are kind of complicated here.
+        '''
+        self.write_new_digest()
 
         migration_op = self.what_to_do_with_migrations()
         if migration_op == 'scrap':
@@ -167,6 +177,18 @@ class Database:
             return 'run_migrations'
 
         return 'current'
+
+    def is_digest_obsolete(self) -> bool:
+        return is_digest_obsolete(
+            self.migration_digest_file,
+            migration_paths(),
+        )
+
+    def write_new_digest(self) -> None:
+        write_new_digest(
+            self.migration_digest_file,
+            migration_paths(),
+        )
 
 DEV_DATABASE = Database(
     platform='dev',
