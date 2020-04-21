@@ -1772,18 +1772,7 @@ paths:
       # endpoints, and perhaps use this to provide links to implementations.
       operationId: zerver.views.streams.list_subscriptions_backend
       parameters:
-      - name: include_subscribers
-        in: query
-        description: |
-          Set to `true` if you would like each stream's info to include a list of
-          current subscribers to that stream. (This may be significantly slower in
-          organizations with thousands of users.)
-
-          **Changes**: New in Zulip 2.1.0.
-        schema:
-          type: boolean
-          default: false
-        example: true
+      - $ref: '#/components/parameters/IncludeSubscribers'
       responses:
         '200':
           description: Success.
@@ -2486,15 +2475,7 @@ paths:
           type: boolean
           default: false
         example: true
-      - name: include_subscribers
-        in: query
-        description: |
-          Set to `True` if you would like to receive events that include the
-          subscribers for each stream.
-        schema:
-          type: boolean
-          default: false
-        example: true
+      - $ref: '#/components/parameters/IncludeSubscribers'
       - name: client_capabilities
         in: query
         description: |
@@ -3853,3 +3834,19 @@ components:
         default: None
       example: false
       required: false
+
+    IncludeSubscribers:
+      name: include_subscribers
+      in: query
+      description: |
+        Whether each returned stream object should include a `subscribers`
+        field containing a list of the user IDs of its subscribers.
+
+        (This may be significantly slower in organizations with
+        thousands of users subscribed to many streams.)
+
+        **Changes**: New in Zulip 2.1.0.
+      schema:
+        type: boolean
+        default: false
+      example: true
