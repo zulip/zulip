@@ -1917,21 +1917,7 @@ paths:
           type: boolean
           default: None
         example: false
-      - name: stream_post_policy
-        in: query
-        description: |
-          Policy for which users can post messages to the stream.
-
-          * 1 => Any user can post.
-          * 2 => Only administrators can post.
-          * 3 => Only new members can post.
-
-          **Changes**: New in Zulip 2.2 (feature level 1), replacing
-          the previous is_announcement_only boolean.
-        schema:
-          type: integer
-          default: 1
-        example: 1
+      - $ref: '#/components/parameters/StreamPostPolicy'
       - name: announce
         in: query
         description: |
@@ -3159,21 +3145,7 @@ paths:
           type: boolean
         example: true
         required: false
-      - name: stream_post_policy
-        in: query
-        description: |
-          Policy for which users can post messages to the stream.
-
-          * 1 => Any user can post.
-          * 2 => Only administrators can post.
-          * 3 => Only new members can post.
-
-          **Changes**: New in Zulip 2.2 (feature level 1), replacing
-          the previous `is_announcement_only` boolean.
-        schema:
-          type: integer
-        example: 2
-        required: false
+      - $ref: '#/components/parameters/StreamPostPolicy'
       - name: history_public_to_subscribers
         in: query
         description: |
@@ -3871,3 +3843,20 @@ components:
         type: integer
       example: 11
       required: true
+    StreamPostPolicy:
+      name: stream_post_policy
+      in: query
+      description: |
+        Policy for which users can post messages to the stream.
+
+        * 1 => Any user can post.
+        * 2 => Only administrators can post.
+        * 3 => Only new members can post.
+
+        **Changes**: New in Zulip 2.2, replacing the previous is_announcement_only
+        boolean.
+      schema:
+        type: integer
+        default: 1
+      example: 2
+      required: false
