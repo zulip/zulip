@@ -118,6 +118,12 @@ Store.
        the services using ``./tools/wsl/start_services``.
    ```
 
+1. If you are facing problems or you see error messages after running `./tools/run-dev.py`,
+   you can try running `./tools/provision` again.
+
+1. [Visual Studio Code Remote - WSL](https://code.visualstudio.com/docs/remote/wsl) is
+   recommended for editing files when developing with WSL.
+
 1. You're done!  You can pick up the [documentation on using the
    Zulip development
    environment](../development/setup-vagrant.html#step-4-developing),
