@@ -90,13 +90,20 @@ class Integration:
     def is_enabled(self) -> bool:
         return True
 
-    def get_logo_url(self) -> Optional[str]:
+    def get_logo_path(self) -> Optional[str]:
         logo_file_path_svg = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
         logo_file_path_png = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
         if os.path.isfile(static_path(logo_file_path_svg)):
-            return staticfiles_storage.url(logo_file_path_svg)
+            return logo_file_path_svg
         elif os.path.isfile(static_path(logo_file_path_png)):
-            return staticfiles_storage.url(logo_file_path_png)
+            return logo_file_path_png
+
+        return None
+
+    def get_logo_url(self) -> Optional[str]:
+        logo_path = self.get_logo_path()
+        if logo_path is not None:
+            return staticfiles_storage.url(logo_path)
 
         return None
 
