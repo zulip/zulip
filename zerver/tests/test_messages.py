@@ -94,6 +94,8 @@ from zerver.lib.soft_deactivation import (
     reactivate_user_if_soft_deactivated,
 )
 
+from zerver.lib.stream_recipient import StreamRecipientMap
+
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_TOPIC_NAME_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
@@ -5214,3 +5216,18 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
 
     def test_bulk_get_huddle_user_ids_empty_list(self) -> None:
         self.assertEqual(bulk_get_huddle_user_ids([]), {})
+
+class NoRecipientIDsTest(ZulipTestCase):
+    def test_no_recipient_ids(self) -> None:
+        # Takes code coverage for stream_recipients.py to 100%
+        # and checks that having no recipient ids
+        # returns nothing.
+
+        empty_stream_recipient = StreamRecipientMap()
+        empty_stream_recipient.populate_for_recipient_ids([])
+
+        # Checks that the dictionary mapping recipients to streams is empty
+        # since there will not be any recipients.
+        # recip_to_stream will be empty because _process_query() will not have
+        # run due to the return statement prior to the query execution.
+        self.assertEqual(empty_stream_recipient.recipient_to_stream_id_dict(), {})
