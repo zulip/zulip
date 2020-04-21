@@ -1087,7 +1087,7 @@ def social_auth_associate_user(
     user_profile = social_associate_user_helper(
         backend, return_data, *args, **kwargs)
 
-    if type(user_profile) == HttpResponse:
+    if isinstance(user_profile, HttpResponse):
         return user_profile
     else:
         return {'user_profile': user_profile,
