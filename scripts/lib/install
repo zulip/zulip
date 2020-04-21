@@ -276,7 +276,7 @@ EOF
     #
     # (There are more possibilities in the case of dpkg errors.)  Here
     # we are checking for either empty or not-installed.
-    if [ -n "$TRAVIS" ] || ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
+    if ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
         cat <<EOF
 
 [rabbitmq]
