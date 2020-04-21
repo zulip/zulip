@@ -29,12 +29,12 @@ def configure_cssutils() -> None:
 configure_cssutils()
 
 def inline_template(template_source_name: str) -> None:
-    os.makedirs(COMPILED_EMAIL_TEMPLATES_PATH, exist_ok=True)
-
     template_name = template_source_name.split('.source.html')[0]
-    compiled_template_path = os.path.join(COMPILED_EMAIL_TEMPLATES_PATH,
-                                          template_name + ".html")
     template_path = os.path.join(EMAIL_TEMPLATES_PATH, template_source_name)
+    compiled_template_path = os.path.join(os.path.dirname(template_path), "compiled",
+                                          os.path.basename(template_name) + ".html")
+
+    os.makedirs(os.path.dirname(compiled_template_path), exist_ok=True)
 
     with open(template_path) as template_source_file:
         template_str = template_source_file.read()
