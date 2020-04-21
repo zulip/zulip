@@ -1310,14 +1310,7 @@ paths:
 
         *This endpoint is new in Zulip Server 2.2.*
       parameters:
-      - name: user_id
-        in: path
-        description: |
-          The user id of the user.
-        schema:
-          type: integer
-        example: 11
-        required: true
+      - $ref: '#/components/parameters/UserId'
       - $ref: '#/components/parameters/ClientGravatar'
       - name: include_custom_profile_fields
         in: query
@@ -1401,14 +1394,7 @@ paths:
         [role](/help/roles-and-permissions), and [custom profile
         fields](/help/add-custom-profile-fields).
       parameters:
-      - name: user_id
-        in: path
-        description: |
-          The user id of the user.
-        schema:
-          type: integer
-        example: 12
-        required: true
+      - $ref: '#/components/parameters/UserId'
       - name: full_name
         in: query
         description: |
@@ -1481,14 +1467,7 @@ paths:
 
         `DELETE {{ api_url }}/v1/users/{user_id}`
       parameters:
-      - name: user_id
-        in: path
-        description: |
-          The user id of the user.
-        schema:
-          type: integer
-        example: 11
-        required: true
+      - $ref: '#/components/parameters/UserId'
       responses:
         '200':
           description: Success
@@ -3882,4 +3861,13 @@ components:
       schema:
         type: integer
       example: 42
+      required: true
+    UserId:
+      name: user_id
+      in: path
+      description: |
+        The user id of the user.
+      schema:
+        type: integer
+      example: 11
       required: true
