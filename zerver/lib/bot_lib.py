@@ -28,12 +28,12 @@ def get_bot_handler(service_name: str) -> Any:
     if not configured_service:
         return None
     bot_module_name = 'zulip_bots.bots.%s.%s' % (configured_service, configured_service)
-    bot_module = importlib.import_module(bot_module_name)  # type: Any
+    bot_module: Any = importlib.import_module(bot_module_name)
     return bot_module.handler_class()
 
 
 class StateHandler:
-    storage_size_limit = 10000000   # type: int # TODO: Store this in the server configuration model.
+    storage_size_limit: int = 10000000  # TODO: Store this in the server configuration model.
 
     def __init__(self, user_profile: UserProfile) -> None:
         self.user_profile = user_profile

@@ -104,15 +104,15 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
     else:
         loop_cnt = None
 
-    remote_debug = []  # type: List[str]
+    remote_debug: List[str] = []
     if options.remote_debug:
         remote_debug = ["--remote-debugger-port=7777", "--remote-debugger-autorun=yes"]
 
-    verbose = []  # type: List[str]
+    verbose: List[str] = []
     if options.verbose:
         verbose = ["--verbose", "--log-level=debug"]
 
-    xunit_export = []  # type: List[str]
+    xunit_export: List[str] = []
     if options.xunit_export:
         xunit_export = ["--xunit=var/xunit-test-results/casper/result.xml"]
 

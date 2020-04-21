@@ -32,7 +32,7 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
     3. user_map, which is a dictionary to map from gitter user id to zulip user id
     """
     NOW = float(timezone_now().timestamp())
-    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Gitter')  # type: List[ZerverFieldsT]
+    zerver_realm: List[ZerverFieldsT] = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Gitter')
     realm = build_realm(zerver_realm, realm_id, domain_name)
 
     zerver_userprofile, avatars, user_map = build_userprofile(int(NOW), domain_name, gitter_data)
@@ -60,8 +60,8 @@ def build_userprofile(timestamp: Any, domain_name: str,
     """
     logging.info('######### IMPORTING USERS STARTED #########\n')
     zerver_userprofile = []
-    avatar_list = []  # type: List[ZerverFieldsT]
-    user_map = {}  # type: Dict[str, int]
+    avatar_list: List[ZerverFieldsT] = []
+    user_map: Dict[str, int] = {}
     user_id = 0
 
     for data in gitter_data:
@@ -169,7 +169,7 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
     while True:
         message_json = {}
         zerver_message = []
-        zerver_usermessage = []  # type: List[ZerverFieldsT]
+        zerver_usermessage: List[ZerverFieldsT] = []
         message_data = gitter_data[low_index: upper_index]
         if len(message_data) == 0:
             break
@@ -262,7 +262,7 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
     os.makedirs(avatar_realm_folder, exist_ok=True)
     avatar_records = process_avatars(avatar_list, avatar_folder, realm_id, threads)
 
-    attachment = {"zerver_attachment": []}  # type: Dict[str, List[Any]]
+    attachment: Dict[str, List[Any]] = {"zerver_attachment": []}
 
     # IO realm.json
     create_converted_data_files(realm, output_dir, '/realm.json')

@@ -393,7 +393,7 @@ def process_missed_message(to: str, message: message.Message) -> None:
         user_profile.id, recipient_str))
 
 def process_message(message: message.Message, rcpt_to: Optional[str]=None) -> None:
-    to = None  # type: Optional[str]
+    to: Optional[str] = None
 
     try:
         if rcpt_to is not None:

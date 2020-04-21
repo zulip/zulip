@@ -23,7 +23,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         super().setUp()
         signals.request_started.disconnect(close_old_connections)
         signals.request_finished.disconnect(close_old_connections)
-        self.session_cookie = None  # type: Optional[Dict[str, str]]
+        self.session_cookie: Optional[Dict[str, str]] = None
 
     def tearDown(self) -> None:
         super().tearDown()

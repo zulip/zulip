@@ -21,9 +21,9 @@ from version import ZULIP_VERSION
 class OutgoingWebhookServiceInterface:
 
     def __init__(self, token: str, user_profile: UserProfile, service_name: str) -> None:
-        self.token = token  # type: str
-        self.user_profile = user_profile  # type: UserProfile
-        self.service_name = service_name  # type: str
+        self.token: str = token
+        self.user_profile: UserProfile = user_profile
+        self.service_name: str = service_name
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
@@ -118,10 +118,10 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
         return None
 
-AVAILABLE_OUTGOING_WEBHOOK_INTERFACES = {
+AVAILABLE_OUTGOING_WEBHOOK_INTERFACES: Dict[str, Any] = {
     GENERIC_INTERFACE: GenericOutgoingWebhookService,
     SLACK_INTERFACE: SlackOutgoingWebhookService,
-}   # type: Dict[str, Any]
+}
 
 def get_service_interface_class(interface: str) -> Any:
     if interface is None or interface not in AVAILABLE_OUTGOING_WEBHOOK_INTERFACES:

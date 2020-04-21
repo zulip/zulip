@@ -55,7 +55,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
                 if is_openapi_format:
                     endpoint, method = doc_name.rsplit(':', 1)
-                    arguments = []  # type: List[Dict[str, Any]]
+                    arguments: List[Dict[str, Any]] = []
 
                     try:
                         arguments = get_openapi_parameters(endpoint, method)

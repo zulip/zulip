@@ -363,7 +363,7 @@ def process_new_human_user(user_profile: UserProfile,
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         streams = prereg_user.streams.all()
-        acting_user = prereg_user.referred_by  # type: Optional[UserProfile]
+        acting_user: Optional[UserProfile] = prereg_user.referred_by
     else:
         streams = []
         acting_user = None
@@ -447,7 +447,7 @@ def notify_created_user(user_profile: UserProfile) -> None:
                              # values are expected to be added in a
                              # later event.
                              custom_profile_field_data={})
-    event = dict(type="realm_user", op="add", person=person)  # type: Dict[str, Any]
+    event: Dict[str, Any] = dict(type="realm_user", op="add", person=person)
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
@@ -992,9 +992,9 @@ def get_recipient_info(recipient: Recipient,
                        stream_topic: Optional[StreamTopicTarget],
                        possibly_mentioned_user_ids: Optional[Set[int]]=None,
                        possible_wildcard_mention: bool=True) -> RecipientInfoResult:
-    stream_push_user_ids = set()  # type: Set[int]
-    stream_email_user_ids = set()  # type: Set[int]
-    wildcard_mention_user_ids = set()  # type: Set[int]
+    stream_push_user_ids: Set[int] = set()
+    stream_email_user_ids: Set[int] = set()
+    wildcard_mention_user_ids: Set[int] = set()
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -1174,7 +1174,7 @@ def get_recipient_info(recipient: Recipient,
         if is_service_bot(row)
     ]
 
-    info = dict(
+    info: RecipientInfoResult = dict(
         active_user_ids=active_user_ids,
         push_notify_user_ids=push_notify_user_ids,
         stream_push_user_ids=stream_push_user_ids,
@@ -1184,14 +1184,14 @@ def get_recipient_info(recipient: Recipient,
         long_term_idle_user_ids=long_term_idle_user_ids,
         default_bot_user_ids=default_bot_user_ids,
         service_bot_tuples=service_bot_tuples
-    )  # type: RecipientInfoResult
+    )
     return info
 
 def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[int, int]],
                            mentioned_user_ids: Set[int], active_user_ids: Set[int],
                            recipient_type: int) -> Dict[str, List[Dict[str, Any]]]:
 
-    event_dict = defaultdict(list)  # type: Dict[str, List[Dict[str, Any]]]
+    event_dict: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
 
     # Avoid infinite loops by preventing messages sent by bots from generating
     # Service events.
@@ -1247,7 +1247,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
     return event_dict
 
 def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
-    scheduled_messages = []  # type: List[ScheduledMessage]
+    scheduled_messages: List[ScheduledMessage] = []
 
     for message in messages:
         scheduled_message = ScheduledMessage()
@@ -1283,8 +1283,8 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
     messages = [message for message in messages_maybe_none if message is not None]
 
     # Filter out zephyr mirror anomalies where the message was already sent
-    already_sent_ids = []  # type: List[int]
-    new_messages = []  # type: List[MutableMapping[str, Any]]
+    already_sent_ids: List[int] = []
+    new_messages: List[MutableMapping[str, Any]] = []
     for message in messages:
         if isinstance(message['message'], int):
             already_sent_ids.append(message['message'])
@@ -1292,7 +1292,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             new_messages.append(message)
     messages = new_messages
 
-    links_for_embed = set()  # type: Set[str]
+    links_for_embed: Set[str] = set()
     # For consistency, changes to the default values for these gets should also be applied
     # to the default args in do_send_message
     for message in messages:
@@ -1310,10 +1310,10 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
 
         if message['message'].is_stream_message():
             stream_id = message['message'].recipient.type_id
-            stream_topic = StreamTopicTarget(
+            stream_topic: Optional[StreamTopicTarget] = StreamTopicTarget(
                 stream_id=stream_id,
                 topic_name=message['message'].topic_name()
-            )  # type: Optional[StreamTopicTarget]
+            )
         else:
             stream_topic = None
 
@@ -1375,7 +1375,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         message['um_eligible_user_ids'] |= mentioned_bot_user_ids
 
     # Save the message receipts in the database
-    user_message_flags = defaultdict(dict)  # type: Dict[int, Dict[int, List[str]]]
+    user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
     with transaction.atomic():
         Message.objects.bulk_create([message['message'] for message in messages])
 
@@ -1386,7 +1386,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 message['message'].has_attachment = True
                 message['message'].save(update_fields=['has_attachment'])
 
-        ums = []  # type: List[UserMessageLite]
+        ums: List[UserMessageLite] = []
         for message in messages:
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
             # they will be processed later.
@@ -1661,13 +1661,15 @@ def notify_reaction_update(user_profile: UserProfile, message: Message,
                  'email': user_profile.email,
                  'full_name': user_profile.full_name}
 
-    event = {'type': 'reaction',
-             'op': op,
-             'user': user_dict,
-             'message_id': message.id,
-             'emoji_name': reaction.emoji_name,
-             'emoji_code': reaction.emoji_code,
-             'reaction_type': reaction.reaction_type}  # type: Dict[str, Any]
+    event: Dict[str, Any] = {
+        'type': 'reaction',
+        'op': op,
+        'user': user_dict,
+        'message_id': message.id,
+        'emoji_name': reaction.emoji_name,
+        'emoji_code': reaction.emoji_code,
+        'reaction_type': reaction.reaction_type,
+    }
 
     # Update the cached message since new reaction is added.
     update_to_dict_cache([message])
@@ -1860,13 +1862,13 @@ def get_recipient_from_user_profiles(recipient_profiles: Sequence[UserProfile],
     # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages
     recipient_profiles_map[sender.id] = sender
 
-    user_ids = {user_id for user_id in recipient_profiles_map}  # type: Set[int]
+    user_ids: Set[int] = {user_id for user_id in recipient_profiles_map}
     return get_huddle_recipient(user_ids)
 
 def validate_recipient_user_profiles(user_profiles: Sequence[UserProfile],
                                      sender: UserProfile,
                                      allow_deactivated: bool=False) -> Sequence[UserProfile]:
-    recipient_profiles_map = {}  # type: Dict[int, UserProfile]
+    recipient_profiles_map: Dict[int, UserProfile] = {}
 
     # We exempt cross-realm bots from the check that all the recipients
     # are in the same realm.
@@ -1896,7 +1898,7 @@ def user_ids_for_emails(
     we still have to support mobile sending emails
     in typing notifications.
     '''
-    user_ids = []  # type: List[int]
+    user_ids: List[int] = []
     for email in emails:
         try:
             user_profile = get_user_including_cross_realm(email, realm)
@@ -2537,7 +2539,7 @@ def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
         for stream_id in stream_ids
     ])
 
-    result = {stream["id"]: [] for stream in stream_dicts}  # type: Dict[int, List[int]]
+    result: Dict[int, List[int]] = {stream["id"]: [] for stream in stream_dicts}
     if not recipient_ids:
         return result
 
@@ -2687,7 +2689,7 @@ def get_user_ids_for_streams(streams: Iterable[Stream]) -> Dict[int, List[int]]:
 
     get_stream_id = itemgetter('recipient__type_id')
 
-    all_subscribers_by_stream = defaultdict(list)  # type: Dict[int, List[int]]
+    all_subscribers_by_stream: Dict[int, List[int]] = defaultdict(list)
     for stream_id, rows in itertools.groupby(all_subs, get_stream_id):
         user_ids = [row['user_profile_id'] for row in rows]
         all_subscribers_by_stream[stream_id] = user_ids
@@ -2714,25 +2716,25 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                            acting_user: Optional[UserProfile]=None) -> SubT:
     users = list(users)
 
-    recipients_map = {stream.id: stream.recipient_id for stream in streams}  # type: Dict[int, int]
-    recipient_ids = [recipient_id for recipient_id in recipients_map.values()]  # type: List[int]
+    recipients_map: Dict[int, int] = {stream.id: stream.recipient_id for stream in streams}
+    recipient_ids: List[int] = [recipient_id for recipient_id in recipients_map.values()]
 
-    stream_map = {}  # type: Dict[int, Stream]
+    stream_map: Dict[int, Stream] = {}
     for stream in streams:
         stream_map[recipients_map[stream.id]] = stream
 
-    subs_by_user = defaultdict(list)  # type: Dict[int, List[Subscription]]
+    subs_by_user: Dict[int, List[Subscription]] = defaultdict(list)
     all_subs_query = get_stream_subscriptions_for_users(users).select_related('user_profile')
     for sub in all_subs_query:
         subs_by_user[sub.user_profile_id].append(sub)
 
     realm = users[0].realm
 
-    already_subscribed = []  # type: List[Tuple[UserProfile, Stream]]
-    subs_to_activate = []  # type: List[Tuple[Subscription, Stream]]
-    new_subs = []  # type: List[Tuple[UserProfile, int, Stream]]
+    already_subscribed: List[Tuple[UserProfile, Stream]] = []
+    subs_to_activate: List[Tuple[Subscription, Stream]] = []
+    new_subs: List[Tuple[UserProfile, int, Stream]] = []
     for user_profile in users:
-        needs_new_sub = set(recipient_ids)  # type: Set[int]
+        needs_new_sub: Set[int] = set(recipient_ids)
         for sub in subs_by_user[user_profile.id]:
             if sub.recipient_id in needs_new_sub:
                 needs_new_sub.remove(sub.recipient_id)
@@ -2747,7 +2749,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         for recipient_id in needs_new_sub:
             new_subs.append((user_profile, recipient_id, stream_map[recipient_id]))
 
-    subs_to_add = []  # type: List[Tuple[Subscription, Stream]]
+    subs_to_add: List[Tuple[Subscription, Stream]] = []
     for (user_profile, recipient_id, stream) in new_subs:
         if color_map is not None and stream.name in color_map:
             color = color_map[stream.name]
@@ -2772,7 +2774,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     event_time = timezone_now()
     event_last_message_id = get_last_message_id()
 
-    all_subscription_logs = []  # type: (List[RealmAuditLog])
+    all_subscription_logs: (List[RealmAuditLog]) = []
     for (sub, stream) in subs_to_add:
         all_subscription_logs.append(RealmAuditLog(realm=realm,
                                                    acting_user=acting_user,
@@ -2814,8 +2816,8 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         user_ids = all_subscribers_by_stream[stream.id]
         return user_ids
 
-    sub_tuples_by_user = defaultdict(list)  # type: Dict[int, List[Tuple[Subscription, Stream]]]
-    new_streams = set()  # type: Set[Tuple[int, int]]
+    sub_tuples_by_user: Dict[int, List[Tuple[Subscription, Stream]]] = defaultdict(list)
+    new_streams: Set[Tuple[int, int]] = set()
     for (sub, stream) in subs_to_add + subs_to_activate:
         sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
         new_streams.add((sub.user_profile.id, stream.id))
@@ -2918,7 +2920,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
     def get_non_subscribed_tups() -> List[Tuple[UserProfile, Stream]]:
         stream_ids = {stream.id for stream in streams}
 
-        not_subscribed = []  # type: List[Tuple[UserProfile, Stream]]
+        not_subscribed: List[Tuple[UserProfile, Stream]] = []
 
         for user_profile in users:
             user_sub_stream_info = existing_subs_by_user[user_profile.id]
@@ -2937,8 +2939,8 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
     not_subscribed = get_non_subscribed_tups()
 
-    subs_to_deactivate = []  # type: List[Tuple[Subscription, Stream]]
-    sub_ids_to_deactivate = []  # type: List[int]
+    subs_to_deactivate: List[Tuple[Subscription, Stream]] = []
+    sub_ids_to_deactivate: List[int] = []
 
     # This loop just flattens out our data into big lists for
     # bulk operations.
@@ -2961,7 +2963,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
     # Log Subscription Activities in RealmAuditLog
     event_time = timezone_now()
     event_last_message_id = get_last_message_id()
-    all_subscription_logs = []  # type: (List[RealmAuditLog])
+    all_subscription_logs: (List[RealmAuditLog]) = []
     for (sub, stream) in subs_to_deactivate:
         all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
                                                    modified_user=sub.user_profile,
@@ -2972,8 +2974,8 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
     # Now since we have all log objects generated we can do a bulk insert
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
-    altered_user_dict = defaultdict(list)  # type: Dict[int, List[UserProfile]]
-    streams_by_user = defaultdict(list)  # type: Dict[int, List[Stream]]
+    altered_user_dict: Dict[int, List[UserProfile]] = defaultdict(list)
+    streams_by_user: Dict[int, List[Stream]] = defaultdict(list)
     for (sub, stream) in subs_to_deactivate:
         streams_by_user[sub.user_profile_id].append(stream)
         altered_user_dict[stream.id].append(sub.user_profile)
@@ -3179,14 +3181,14 @@ def do_change_bot_owner(user_profile: UserProfile, bot_owner: UserProfile,
 
     # Since `bot_owner_id` is included in the user profile dict we need
     # to update the users dict with the new bot owner id
-    event = dict(
+    event: Dict[str, Any] = dict(
         type="realm_user",
         op="update",
         person=dict(
             user_id=user_profile.id,
             bot_owner_id=user_profile.bot_owner.id,
         ),
-    )  # type: Dict[str, Any]
+    )
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
@@ -3354,7 +3356,7 @@ def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional
                    'stream': str(stream)})
     if user_profile.is_bot:
         if stream:
-            stream_name = stream.name  # type: Optional[str]
+            stream_name: Optional[str] = stream.name
         else:
             stream_name = None
         send_event(user_profile.realm,
@@ -3377,7 +3379,7 @@ def do_change_default_events_register_stream(user_profile: UserProfile,
                    'stream': str(stream)})
     if user_profile.is_bot:
         if stream:
-            stream_name = stream.name  # type: Optional[str]
+            stream_name: Optional[str] = stream.name
         else:
             stream_name = None
         send_event(user_profile.realm,
@@ -3611,7 +3613,7 @@ def do_create_realm(string_id: str, name: str,
         logging.info("Server not yet initialized. Creating the internal realm first.")
         create_internal_realm()
 
-    kwargs = {}  # type: Dict[str, Any]
+    kwargs: Dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
         kwargs['emails_restricted_to_domains'] = emails_restricted_to_domains
     realm = Realm(string_id=string_id, name=name, **kwargs)
@@ -4267,7 +4269,7 @@ def update_user_message_flags(message: Message, ums: Iterable[UserMessage]) -> N
     wildcard = message.mentions_wildcard
     mentioned_ids = message.mentions_user_ids
     ids_with_alert_words = message.user_ids_with_alert_words
-    changed_ums = set()  # type: Set[UserMessage]
+    changed_ums: Set[UserMessage] = set()
 
     def update_flag(um: UserMessage, should_set: bool, flag: int) -> None:
         if should_set:
@@ -4311,10 +4313,10 @@ def do_update_embedded_data(user_profile: UserProfile,
                             message: Message,
                             content: Optional[str],
                             rendered_content: Optional[str]) -> None:
-    event = {
+    event: Dict[str, Any] = {
         'type': 'update_message',
         'sender': user_profile.email,
-        'message_id': message.id}  # type: Dict[str, Any]
+        'message_id': message.id}
     changed_messages = [message]
 
     ums = UserMessage.objects.filter(message=message.id)
@@ -4359,15 +4361,17 @@ def do_update_message(user_profile: UserProfile, message: Message,
     timestamp = timezone_now()
     message.last_edit_time = timestamp
 
-    event = {'type': 'update_message',
-             'user_id': user_profile.id,
-             'edit_timestamp': datetime_to_timestamp(timestamp),
-             'message_id': message.id}  # type: Dict[str, Any]
+    event: Dict[str, Any] = {
+        'type': 'update_message',
+        'user_id': user_profile.id,
+        'edit_timestamp': datetime_to_timestamp(timestamp),
+        'message_id': message.id,
+    }
 
-    edit_history_event = {
+    edit_history_event: Dict[str, Any] = {
         'user_id': user_profile.id,
         'timestamp': event['edit_timestamp'],
-    }  # type: Dict[str, Any]
+    }
 
     changed_messages = [message]
 
@@ -4417,10 +4421,10 @@ def do_update_message(user_profile: UserProfile, message: Message,
             else:
                 new_topic_name = message.topic_name()
 
-            stream_topic = StreamTopicTarget(
+            stream_topic: Optional[StreamTopicTarget] = StreamTopicTarget(
                 stream_id=stream_id,
                 topic_name=new_topic_name,
-            )  # type: Optional[StreamTopicTarget]
+            )
         else:
             stream_topic = None
 
@@ -4545,7 +4549,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         return
 
     usermessages = UserMessage.objects.filter(message_id__in=message_ids)
-    message_id_to_notifiable_users = {}  # type: Dict[int, List[int]]
+    message_id_to_notifiable_users: Dict[int, List[int]] = {}
     for um in usermessages:
         if um.message_id not in message_id_to_notifiable_users:
             message_id_to_notifiable_users[um.message_id] = []
@@ -4557,12 +4561,13 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         if not message.is_stream_message():
             message_type = "private"
 
-        event = {
+        event: Dict[str, Any] = {
             'type': 'delete_message',
             'sender': message.sender.email,
             'sender_id': message.sender_id,
             'message_id': message.id,
-            'message_type': message_type, }  # type: Dict[str, Any]
+            'message_type': message_type,
+        }
         if message_type == "stream":
             event['stream_id'] = message.recipient.type_id
             event['topic'] = message.topic_name()
@@ -4685,7 +4690,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     stream_recipient = StreamRecipientMap()
     stream_recipient.populate_for_recipient_ids(sub_recipient_ids)
 
-    stream_ids = set()  # type: Set[int]
+    stream_ids: Set[int] = set()
     for sub in sub_dicts:
         sub['stream_id'] = stream_recipient.stream_id_for(sub['recipient_id'])
         stream_ids.add(sub['stream_id'])
@@ -4724,12 +4729,12 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     streams_subscribed_map.update({stream['id']: False for stream in all_streams if stream not in streams})
 
     if include_subscribers:
-        subscriber_map = bulk_get_subscriber_user_ids(
+        subscriber_map: Mapping[int, Optional[List[int]]] = bulk_get_subscriber_user_ids(
             all_streams,
             user_profile,
             streams_subscribed_map,
             stream_recipient
-        )  # type: Mapping[int, Optional[List[int]]]
+        )
     else:
         # If we're not including subscribers, always return None,
         # which the below code needs to check for anyway.
@@ -4774,7 +4779,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             stream["name"], stream["email_token"], show_sender=True)
 
         # Construct and add subscribers data
-        subscribers = subscriber_map[stream["id"]]  # type: Optional[List[int]]
+        subscribers: Optional[List[int]] = subscriber_map[stream["id"]]
         # Important: don't show the subscribers if the stream is invite only
         # and this user isn't on it anymore (or a realm administrator).
         if stream["invite_only"] and not (sub["active"] or user_profile.is_realm_admin):
@@ -4873,7 +4878,7 @@ def get_active_presence_idle_user_ids(realm: Realm,
 
     user_ids = set()
     for user_id in active_user_ids:
-        flags = user_flags.get(user_id, [])  # type: Iterable[str]
+        flags: Iterable[str] = user_flags.get(user_id, [])
         mentioned = 'mentioned' in flags or 'wildcard_mentioned' in flags
         private_message = is_pm and user_id != sender_id
         alerted = 'has_alert_word' in flags
@@ -4941,9 +4946,9 @@ class InvitationError(JsonableError):
 
     def __init__(self, msg: str, errors: List[Tuple[str, str, bool]],
                  sent_invitations: bool) -> None:
-        self._msg = msg  # type: str
-        self.errors = errors  # type: List[Tuple[str, str, bool]]
-        self.sent_invitations = sent_invitations  # type: bool
+        self._msg: str = msg
+        self.errors: List[Tuple[str, str, bool]] = errors
+        self.sent_invitations: bool = sent_invitations
 
 def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
     '''An upper bound on the number of invites sent in the last `days` days'''
@@ -5009,8 +5014,8 @@ def do_invite_users(user_profile: UserProfile,
                   "Ask an organization admin, or a more experienced user."),
                 [], sent_invitations=False)
 
-    good_emails = set()  # type: Set[str]
-    errors = []  # type: List[Tuple[str, str, bool]]
+    good_emails: Set[str] = set()
+    errors: List[Tuple[str, str, bool]] = []
     validate_email_allowed_in_realm = get_realm_email_validator(user_profile.realm)
     for email in invitee_emails:
         if email == '':
@@ -5032,7 +5037,7 @@ def do_invite_users(user_profile: UserProfile,
     '''
     error_dict = get_existing_user_errors(user_profile.realm, good_emails)
 
-    skipped = []  # type: List[Tuple[str, str, bool]]
+    skipped: List[Tuple[str, str, bool]] = []
     for email in error_dict:
         msg, deactivated = error_dict[email]
         skipped.append((email, msg, deactivated))
@@ -5324,7 +5329,7 @@ def do_get_streams(
     else:
         # We construct a query as the or (|) of the various sources
         # this user requested streams from.
-        query_filter = None  # type: Optional[Q]
+        query_filter: Optional[Q] = None
 
         def add_filter_option(option: Q) -> None:
             nonlocal query_filter
@@ -5631,7 +5636,7 @@ def do_update_bot_config_data(bot_profile: UserProfile,
 def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
     user_profile = get_user_profile_by_id(user_profile_id)
     services = get_bot_services(user_profile_id)
-    service_dicts = []  # type: List[Dict[str, Any]]
+    service_dicts: List[Dict[str, Any]] = []
     if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
         service_dicts = [{'base_url': service.base_url,
                           'interface': service.interface,
@@ -5651,7 +5656,7 @@ def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
 def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
                                realm: Realm) -> Dict[int, List[Dict[str, Any]]]:
     bot_profile_ids = [bot_dict['id'] for bot_dict in bot_dicts]
-    bot_services_by_uid = defaultdict(list)  # type: Dict[int, List[Service]]
+    bot_services_by_uid: Dict[int, List[Service]] = defaultdict(list)
     for service in Service.objects.filter(user_profile_id__in=bot_profile_ids):
         bot_services_by_uid[service.user_profile_id].append(service)
 
@@ -5659,12 +5664,12 @@ def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
                         if bot_dict['bot_type'] == UserProfile.EMBEDDED_BOT]
     embedded_bot_configs = get_bot_configs(embedded_bot_ids)
 
-    service_dicts_by_uid = {}  # type: Dict[int, List[Dict[str, Any]]]
+    service_dicts_by_uid: Dict[int, List[Dict[str, Any]]] = {}
     for bot_dict in bot_dicts:
         bot_profile_id = bot_dict["id"]
         bot_type = bot_dict["bot_type"]
         services = bot_services_by_uid[bot_profile_id]
-        service_dicts = []  # type: List[Dict[str, Any]]
+        service_dicts: List[Dict[str, Any]] = []
         if bot_type  == UserProfile.OUTGOING_WEBHOOK_BOT:
             service_dicts = [{'base_url': service.base_url,
                               'interface': service.interface,

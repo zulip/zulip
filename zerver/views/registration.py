@@ -252,14 +252,14 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
         if not realm_creation:
             try:
-                existing_user_profile = get_user_by_delivery_email(email, realm)  # type: Optional[UserProfile]
+                existing_user_profile: Optional[UserProfile] = get_user_by_delivery_email(email, realm)
             except UserProfile.DoesNotExist:
                 existing_user_profile = None
         else:
             existing_user_profile = None
 
-        user_profile = None  # type: Optional[UserProfile]
-        return_data = {}  # type: Dict[str, bool]
+        user_profile: Optional[UserProfile] = None
+        return_data: Dict[str, bool] = {}
         if ldap_auth_enabled(realm):
             # If the user was authenticated using an external SSO
             # mechanism like Google or GitHub auth, then authentication
@@ -542,7 +542,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
     from zerver.context_processors import common_context
     url = reverse('zerver.views.registration.find_account')
 
-    emails = []  # type: List[str]
+    emails: List[str] = []
     if request.method == 'POST':
         form = FindMyTeamForm(request.POST)
         if form.is_valid():

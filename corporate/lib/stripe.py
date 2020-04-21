@@ -398,7 +398,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     invoice_item_created = False
     for ledger_entry in LicenseLedger.objects.filter(plan=plan, id__gt=plan.invoiced_through.id,
                                                      event_time__lte=event_time).order_by('id'):
-        price_args = {}  # type: Dict[str, int]
+        price_args: Dict[str, int] = {}
         if ledger_entry.is_renewal:
             if plan.fixed_price is not None:
                 price_args = {'amount': plan.fixed_price}
@@ -423,7 +423,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
             plan.invoiced_through = ledger_entry
             plan.invoicing_status = CustomerPlan.STARTED
             plan.save(update_fields=['invoicing_status', 'invoiced_through'])
-            idempotency_key = 'ledger_entry:{}'.format(ledger_entry.id)  # type: Optional[str]
+            idempotency_key: Optional[str] = 'ledger_entry:{}'.format(ledger_entry.id)
             if settings.TEST_SUITE:
                 idempotency_key = None
             stripe.InvoiceItem.create(

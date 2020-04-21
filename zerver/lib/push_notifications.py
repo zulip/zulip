@@ -52,7 +52,7 @@ def hex_to_b64(data: str) -> str:
 # Sending to APNs, for iOS
 #
 
-_apns_client = None  # type: Optional[APNsClient]
+_apns_client: Optional["APNsClient"] = None
 _apns_client_initialized = False
 
 def get_apns_client() -> 'Optional[APNsClient]':
@@ -547,7 +547,7 @@ def truncate_content(content: str) -> Tuple[str, bool]:
 
 def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     '''Common fields for all notification payloads.'''
-    data = {}  # type: Dict[str, Any]
+    data: Dict[str, Any] = {}
 
     # These will let the app support logging into multiple realms and servers.
     data['server'] = settings.EXTERNAL_HOST

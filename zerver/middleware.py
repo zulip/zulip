@@ -332,7 +332,7 @@ class CsrfFailureError(JsonableError):
     data_fields = ['reason']
 
     def __init__(self, reason: str) -> None:
-        self.reason = reason  # type: str
+        self.reason: str = reason
 
     @staticmethod
     def msg_format() -> str:

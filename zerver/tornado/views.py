@@ -73,7 +73,7 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile,
                                               intentionally_undocumented=True)
                        ) -> HttpResponse:
     # Extract the Tornado handler from the request
-    handler = request._tornado_handler  # type: AsyncDjangoHandler
+    handler: AsyncDjangoHandler = request._tornado_handler
 
     if user_client is None:
         valid_user_client = request.client

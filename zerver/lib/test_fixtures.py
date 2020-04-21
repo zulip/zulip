@@ -321,7 +321,7 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     while also ensuring we will eventually delete all leaked databases.
     """
     files = glob.glob(os.path.join(UUID_VAR_DIR, TEMPLATE_DATABASE_DIR, "*"))
-    test_databases = set()  # type: Set[str]
+    test_databases: Set[str] = set()
     try:
         with connection.cursor() as cursor:
             cursor.execute("SELECT datname FROM pg_database;")
@@ -332,7 +332,7 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
     except ProgrammingError:
         pass
 
-    databases_in_use = set()  # type: Set[str]
+    databases_in_use: Set[str] = set()
     for file in files:
         if round(time.time()) - os.path.getmtime(file) < expiry_time:
             with open(file) as f:

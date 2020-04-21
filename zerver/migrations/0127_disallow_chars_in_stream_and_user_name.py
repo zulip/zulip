@@ -9,9 +9,9 @@ class Migration(migrations.Migration):
         ('zerver', '0126_prereg_remove_users_without_realm'),
     ]
 
-    operations = [
+    operations: List[Any] = [
         # There was a migration here, which wasn't ready for wide deployment
         # and was backed out.  This placeholder is left behind to avoid
         # confusing the migration engine on any installs that applied the
         # migration.  (Fortunately no reverse migration is needed.)
-    ]  # type: List[Any]
+    ]

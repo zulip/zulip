@@ -88,12 +88,12 @@ def fetch_initial_state_data(user_profile: UserProfile,
                              queue_id: str, client_gravatar: bool,
                              slim_presence: bool = False,
                              include_subscribers: bool = True) -> Dict[str, Any]:
-    state = {'queue_id': queue_id}  # type: Dict[str, Any]
+    state: Dict[str, Any] = {'queue_id': queue_id}
     realm = user_profile.realm
 
     if event_types is None:
         # return True always
-        want = always_want  # type: Callable[[str], bool]
+        want: Callable[[str], bool] = always_want
     else:
         want = set(event_types).__contains__
 
@@ -803,7 +803,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
         raise JsonableError(_("Could not allocate event queue"))
 
     if fetch_event_types is not None:
-        event_types_set = set(fetch_event_types)  # type: Optional[Set[str]]
+        event_types_set: Optional[Set[str]] = set(fetch_event_types)
     elif event_types is not None:
         event_types_set = set(event_types)
     else:

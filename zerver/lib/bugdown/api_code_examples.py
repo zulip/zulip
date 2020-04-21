@@ -242,7 +242,7 @@ def render_curl_example(function: str, api_url: str,
     parts = function.split(":")
     endpoint = parts[0]
     method = parts[1]
-    kwargs = dict()  # type: Dict[str, Any]
+    kwargs: Dict[str, Any] = dict()
     if len(parts) > 2:
         kwargs["auth_email"] = parts[2]
     if len(parts) > 3:
@@ -252,7 +252,7 @@ def render_curl_example(function: str, api_url: str,
     kwargs["include"] = include
     return generate_curl_example(endpoint, method, **kwargs)
 
-SUPPORTED_LANGUAGES = {
+SUPPORTED_LANGUAGES: Dict[str, Any] = {
     'python': {
         'client_config': PYTHON_CLIENT_CONFIG,
         'admin_config': PYTHON_CLIENT_ADMIN_CONFIG,
@@ -261,7 +261,7 @@ SUPPORTED_LANGUAGES = {
     'curl': {
         'render': render_curl_example
     }
-}  # type: Dict[str, Any]
+}
 
 class APICodeExamplesGenerator(Extension):
     def __init__(self, api_url: Optional[str]) -> None:

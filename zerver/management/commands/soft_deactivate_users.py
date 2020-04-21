@@ -57,7 +57,7 @@ class Command(ZulipBaseCommand):
         activate = options['activate']
         deactivate = options['deactivate']
 
-        filter_kwargs = {}  # type: Dict[str, Realm]
+        filter_kwargs: Dict[str, Realm] = {}
         if realm is not None:
             filter_kwargs = dict(realm=realm)
 

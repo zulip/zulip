@@ -57,7 +57,7 @@ class RealmTest(ZulipTestCase):
     def test_update_realm_name_events(self) -> None:
         realm = get_realm('zulip')
         new_name = 'Puliz'
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             do_set_realm_property(realm, 'name', new_name)
         event = events[0]['event']
@@ -71,7 +71,7 @@ class RealmTest(ZulipTestCase):
     def test_update_realm_description_events(self) -> None:
         realm = get_realm('zulip')
         new_description = 'zulip dev group'
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             do_set_realm_property(realm, 'description', new_description)
         event = events[0]['event']
@@ -86,7 +86,7 @@ class RealmTest(ZulipTestCase):
         self.login('iago')
         new_description = 'zulip dev group'
         data = dict(description=ujson.dumps(new_description))
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/realm', data)
             self.assert_json_success(result)
@@ -713,8 +713,8 @@ class RealmAPITest(ZulipTestCase):
         assertion error.
         """
 
-        bool_tests = [False, True]  # type: List[bool]
-        test_values = dict(
+        bool_tests: List[bool] = [False, True]
+        test_values: Dict[str, Any] = dict(
             default_language=['de', 'en'],
             default_code_block_language=['javascript', ''],
             description=['Realm description', 'New description'],
@@ -749,7 +749,7 @@ class RealmAPITest(ZulipTestCase):
             zoom_api_secret=["abc", "xyz"],
             zoom_api_key=["abc", "xyz"],
             zoom_user_id=["example@example.com", "example@example.org"]
-        )  # type: Dict[str, Any]
+        )
 
         vals = test_values.get(name)
         if Realm.property_types[name] is bool:

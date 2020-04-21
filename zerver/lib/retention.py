@@ -20,7 +20,7 @@ log_to_file(logger, settings.RETENTION_LOG_PATH)
 
 MESSAGE_BATCH_SIZE = 1000
 
-models_with_message_key = [
+models_with_message_key: List[Dict[str, Any]] = [
     {
         'class': Reaction,
         'archive_class': ArchivedReaction,
@@ -39,7 +39,7 @@ models_with_message_key = [
         'table_name': 'zerver_usermessage',
         'archive_table_name': 'zerver_archivedusermessage'
     },
-]  # type: List[Dict[str, Any]]
+]
 
 @transaction.atomic(savepoint=False)
 def move_rows(base_model: Model, raw_query: str, src_db_table: str='', returning_id: bool=False,
@@ -280,7 +280,7 @@ def archive_stream_messages(realm: Realm, chunk_size: int=MESSAGE_BATCH_SIZE) ->
     if not realm.message_retention_days:
         streams = streams.exclude(message_retention_days__isnull=True)
 
-    retention_policy_dict = {}  # type: Dict[int, int]
+    retention_policy_dict: Dict[int, int] = {}
     for stream in streams:
         #  if stream.message_retention_days is null, use the realm's policy
         if stream.message_retention_days:

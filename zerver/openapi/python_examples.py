@@ -14,9 +14,9 @@ from zulip import Client
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-TEST_FUNCTIONS = dict()  # type: Dict[str, Callable[..., None]]
-REGISTERED_TEST_FUNCTIONS = set()  # type: Set[str]
-CALLED_TEST_FUNCTIONS = set()  # type: Set[str]
+TEST_FUNCTIONS: Dict[str, Callable[..., None]] = dict()
+REGISTERED_TEST_FUNCTIONS: Set[str] = set()
+CALLED_TEST_FUNCTIONS: Set[str] = set()
 
 def openapi_test_function(endpoint: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """This decorator is used to register an openapi test function with
@@ -565,13 +565,13 @@ def get_messages(client: Client) -> None:
 
     # {code_example|start}
     # Get the 100 last messages sent by "iago@zulip.com" to the stream "Verona"
-    request = {
+    request: Dict[str, Any] = {
         'anchor': 'newest',
         'num_before': 100,
         'num_after': 0,
         'narrow': [{'operator': 'sender', 'operand': 'iago@zulip.com'},
                    {'operator': 'stream', 'operand': 'Verona'}],
-    }  # type: Dict[str, Any]
+    }
     result = client.get_messages(request)
     # {code_example|end}
 
@@ -594,7 +594,7 @@ def get_raw_message(client: Client, message_id: int) -> None:
 @openapi_test_function("/messages:post")
 def send_message(client: Client) -> int:
 
-    request = {}  # type: Dict[str, Any]
+    request: Dict[str, Any] = {}
 
     # {code_example|start}
     # Send a stream message
@@ -789,12 +789,12 @@ def get_realm_emoji(client: Client) -> None:
 def update_message_flags(client: Client) -> None:
 
     # Send a few test messages
-    request = {
+    request: Dict[str, Any] = {
         "type": "stream",
         "to": "Denmark",
         "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts."
-    }  # type: Dict[str, Any]
+    }
     message_ids = []
     for i in range(0, 3):
         message_ids.append(client.send_message(request)['id'])

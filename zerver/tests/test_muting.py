@@ -135,7 +135,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
 
-        data = {'stream': stream.name, 'topic': 'Verona3', 'op': 'add'}  # type: Dict[str, Any]
+        data: Dict[str, Any] = {'stream': stream.name, 'topic': 'Verona3', 'op': 'add'}
         result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Topic already muted")
 
@@ -158,7 +158,7 @@ class MutedTopicsTests(ZulipTestCase):
         stream = get_stream('Verona', realm)
 
         url = '/api/v1/users/me/subscriptions/muted_topics'
-        data = {'stream': 'BOGUS', 'topic': 'Verona3', 'op': 'remove'}  # type: Dict[str, Any]
+        data: Dict[str, Any] = {'stream': 'BOGUS', 'topic': 'Verona3', 'op': 'remove'}
         result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Topic is not muted")
 

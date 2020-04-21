@@ -160,7 +160,7 @@ class UserStatusTest(ZulipTestCase):
         self.login_user(hamlet)
 
         # Try to omit parameter--this should be an error.
-        payload = dict()  # type: Dict[str, Any]
+        payload: Dict[str, Any] = dict()
         result = self.client_post('/json/users/me/status', payload)
         self.assert_json_error(result, "Client did not pass any new values.")
 

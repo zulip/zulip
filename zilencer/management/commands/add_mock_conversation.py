@@ -49,7 +49,7 @@ From image editing program:
 
         bulk_add_subscriptions([stream], list(UserProfile.objects.filter(realm=realm)))
 
-        staged_messages = [
+        staged_messages: List[Dict[str, Any]] = [
             {'sender': starr,
              'content': "Hey @**Bel Fisher**, check out Zulip's Markdown formatting! "
              "You can have:\n* bulleted lists\n  * with sub-bullets too\n"
@@ -75,7 +75,7 @@ From image editing program:
              'content': 'https://twitter.com/gvanrossum/status/786661035637772288'},
             {'sender': fisher,
              'content': "Oops, the Twitter bot I set up shouldn't be posting here. Let me go fix that."},
-        ]  # type: List[Dict[str, Any]]
+        ]
 
         messages = [internal_prep_stream_message(
             realm, message['sender'], stream,

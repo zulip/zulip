@@ -360,7 +360,7 @@ class ReactionEventTest(ZulipTestCase):
             'emoji_name': 'smile'
         }
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.api_post(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
                                    reaction_info)
@@ -404,7 +404,7 @@ class ReactionEventTest(ZulipTestCase):
                             reaction_info)
         self.assert_json_success(add)
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.api_delete(reaction_sender, '/api/v1/messages/%s/reactions' % (pm_id,),
                                      reaction_info)
@@ -820,7 +820,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
             'emoji_code': '1f354',
             'reaction_type': 'unicode_emoji',
         }
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.post_reaction(reaction_info,
                                         message_id=pm_id,
@@ -860,7 +860,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         add = self.post_reaction(reaction_info, message_id=pm_id, sender=reaction_sender.short_name)
         self.assert_json_success(add)
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.delete_reaction(reaction_info,
                                           message_id=pm_id,

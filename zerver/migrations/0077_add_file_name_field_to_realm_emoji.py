@@ -111,7 +111,7 @@ class S3Uploader(Uploader):
 
     def upload_files(self, response: Response, resized_image: bytes,
                      dst_path_id: str) -> None:
-        headers = None  # type: Optional[Dict[str, str]]
+        headers: Optional[Dict[str, str]] = None
         content_type = response.headers.get("Content-Type") or guess_type(dst_path_id)[0]
         if content_type:
             headers = {'Content-Type': content_type}
@@ -129,7 +129,7 @@ def get_uploader() -> Uploader:
 
 def upload_emoji_to_storage(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     realm_emoji_model = apps.get_model('zerver', 'RealmEmoji')
-    uploader = get_uploader()  # type: Uploader
+    uploader: Uploader = get_uploader()
     for emoji in realm_emoji_model.objects.all():
         file_name = uploader.upload_emoji(emoji.realm_id, emoji.img_url, emoji.name)
         if file_name is None:

@@ -554,7 +554,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             self.send_personal_message(self.sender, self.recipient, body2)
         ]
 
-        attachment_id_to_message_ids = {}  # type: Dict[int, List[int]]
+        attachment_id_to_message_ids: Dict[int, List[int]] = {}
         attachment_ids = list(
             Attachment.objects.filter(messages__id__in=msg_ids).values_list("id", flat=True)
         )

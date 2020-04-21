@@ -113,7 +113,7 @@ def messages_for_ids(message_ids: List[int],
         extractor=extract_message_dict,
         setter=stringify_message_dict)
 
-    message_list = []  # type: List[Dict[str, Any]]
+    message_list: List[Dict[str, Any]] = []
 
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
@@ -499,11 +499,13 @@ class MessageDict:
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between
                 # someone and themself, preserving ordering
-                recip = {'email': sender_email,
-                         'full_name': sender_full_name,
-                         'short_name': sender_short_name,
-                         'id': sender_id,
-                         'is_mirror_dummy': sender_is_mirror_dummy}  # type: UserDisplayRecipient
+                recip: UserDisplayRecipient = {
+                    'email': sender_email,
+                    'full_name': sender_full_name,
+                    'short_name': sender_short_name,
+                    'id': sender_id,
+                    'is_mirror_dummy': sender_is_mirror_dummy,
+                }
                 if recip['email'] < display_recipient[0]['email']:
                     display_recipient = [recip, display_recipient[0]]
                 elif recip['email'] > display_recipient[0]['email']:
@@ -658,7 +660,7 @@ def render_markdown(message: Message,
     '''
 
     if user_ids is None:
-        message_user_ids = set()  # type: Set[int]
+        message_user_ids: Set[int] = set()
     else:
         message_user_ids = user_ids
 
@@ -719,21 +721,21 @@ def do_render_markdown(message: Message,
     return rendered_content
 
 def huddle_users(recipient_id: int) -> str:
-    display_recipient = get_display_recipient_by_id(recipient_id,
-                                                    Recipient.HUDDLE,
-                                                    None)  # type: DisplayRecipientT
+    display_recipient: DisplayRecipientT = get_display_recipient_by_id(
+        recipient_id, Recipient.HUDDLE, None
+    )
 
     # str is for streams.
     assert not isinstance(display_recipient, str)
 
-    user_ids = [obj['id'] for obj in display_recipient]  # type: List[int]
+    user_ids: List[int] = [obj['id'] for obj in display_recipient]
     user_ids = sorted(user_ids)
     return ','.join(str(uid) for uid in user_ids)
 
 def aggregate_message_dict(input_dict: Dict[int, Dict[str, Any]],
                            lookup_fields: List[str],
                            collect_senders: bool) -> List[Dict[str, Any]]:
-    lookup_dict = dict()  # type: Dict[Tuple[Any, ...], Dict[str, Any]]
+    lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = dict()
 
     '''
     A concrete example might help explain the inputs here:
@@ -862,7 +864,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 
         return False
 
-    huddle_cache = {}  # type: Dict[int, str]
+    huddle_cache: Dict[int, str] = {}
 
     def get_huddle_users(recipient_id: int) -> str:
         if recipient_id in huddle_cache:
@@ -975,12 +977,12 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
         collect_senders=False,
     )
 
-    result = dict(
+    result: UnreadMessagesResult = dict(
         pms=pm_objects,
         streams=stream_objects,
         huddles=huddle_objects,
         mentions=mentions,
-        count=count)  # type: UnreadMessagesResult
+        count=count)
 
     return result
 

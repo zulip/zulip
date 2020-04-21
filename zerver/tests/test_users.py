@@ -150,7 +150,7 @@ class PermissionTest(ZulipTestCase):
         # Giveth
         req = dict(is_admin=ujson.dumps(True))
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(othello.id), req)
         self.assert_json_success(result)
@@ -351,7 +351,7 @@ class PermissionTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         req = dict(is_guest=ujson.dumps(True))
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
         self.assert_json_success(result)
@@ -370,7 +370,7 @@ class PermissionTest(ZulipTestCase):
         polonius = self.example_user("polonius")
         self.assertTrue(polonius.is_guest)
         req = dict(is_guest=ujson.dumps(False))
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(polonius.id), req)
         self.assert_json_success(result)
@@ -398,7 +398,7 @@ class PermissionTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.assertFalse(hamlet.is_guest)
         req = dict(is_admin=ujson.dumps(False), is_guest=ujson.dumps(True))
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
         self.assert_json_success(result)
@@ -431,7 +431,7 @@ class PermissionTest(ZulipTestCase):
         polonius = self.example_user("polonius")
         self.assertFalse(polonius.is_realm_admin)
         req = dict(is_admin=ujson.dumps(True), is_guest=ujson.dumps(False))
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/{}'.format(polonius.id), req)
         self.assert_json_success(result)
@@ -520,7 +520,7 @@ class PermissionTest(ZulipTestCase):
         empty_profile_data = []
         for field_name in fields:
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
-            value = ''  # type: Union[str, None, List[Any]]
+            value: Union[str, None, List[Any]] = ''
             if field.field_type == CustomProfileField.USER:
                 value = []
             empty_profile_data.append({
@@ -745,7 +745,7 @@ class UserProfileTest(ZulipTestCase):
         bot = self.example_user("default_bot")
 
         # Invalid user ID
-        invalid_uid = 1000  # type: Any
+        invalid_uid: Any = 1000
         self.assertEqual(check_valid_user_ids(realm.id, invalid_uid),
                          "User IDs is not a list")
         self.assertEqual(check_valid_user_ids(realm.id, [invalid_uid]),

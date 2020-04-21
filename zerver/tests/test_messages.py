@@ -3531,7 +3531,7 @@ class EditMessageTest(ZulipTestCase):
 class MirroredMessageUsersTest(ZulipTestCase):
     def test_invalid_sender(self) -> None:
         user = self.example_user('hamlet')
-        recipients = []  # type: List[str]
+        recipients: List[str] = []
 
         Request = namedtuple('Request', ['POST'])
         request = Request(POST=dict())  # no sender
@@ -3545,7 +3545,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         user = self.example_user('hamlet')
         sender = user
 
-        recipients = []  # type: List[str]
+        recipients: List[str] = []
 
         Request = namedtuple('Request', ['POST', 'client'])
         request = Request(POST = dict(sender=sender.email, type='private'),
@@ -4229,7 +4229,7 @@ class MissedMessageTest(ZulipTestCase):
         othello = self.example_user('othello')
         recipient_ids = {hamlet.id, othello.id}
         message_type = 'stream'
-        user_flags = {}  # type: Dict[int, List[str]]
+        user_flags: Dict[int, List[str]] = {}
 
         def assert_missing(user_ids: List[int]) -> None:
             presence_idle_user_ids = get_active_presence_idle_user_ids(
@@ -4897,7 +4897,7 @@ class MessageHydrationTest(ZulipTestCase):
 
     def test_hydrate_pm_recipient_info(self) -> None:
         cordelia = self.example_user('cordelia')
-        display_recipient = [
+        display_recipient: List[UserDisplayRecipient] = [
             dict(
                 email='aaron@example.com',
                 full_name='Aaron Smith',
@@ -4905,7 +4905,7 @@ class MessageHydrationTest(ZulipTestCase):
                 id=999,
                 is_mirror_dummy=False
             ),
-        ]   # type: List[UserDisplayRecipient]
+        ]
 
         obj = dict(
             recipient_type=Recipient.PERSONAL,
@@ -5035,11 +5035,13 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
 
         else:
             for user_profile in expected_recipient_objects:
-                recipient_dict = {'email': user_profile.email,
-                                  'full_name': user_profile.full_name,
-                                  'short_name': user_profile.short_name,
-                                  'id': user_profile.id,
-                                  'is_mirror_dummy': user_profile.is_mirror_dummy}  # type: UserDisplayRecipient
+                recipient_dict: UserDisplayRecipient = {
+                    'email': user_profile.email,
+                    'full_name': user_profile.full_name,
+                    'short_name': user_profile.short_name,
+                    'id': user_profile.id,
+                    'is_mirror_dummy': user_profile.is_mirror_dummy,
+                }
                 self.assertTrue(recipient_dict in display_recipient)
 
     def test_display_recipient_personal(self) -> None:

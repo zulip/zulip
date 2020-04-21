@@ -89,8 +89,8 @@ class DecoratorTestCase(TestCase):
             return x + x
 
         class Request:
-            GET = {}  # type: Dict[str, str]
-            POST = {}  # type: Dict[str, str]
+            GET: Dict[str, str] = {}
+            POST: Dict[str, str] = {}
 
         request = Request()
 
@@ -127,8 +127,8 @@ class DecoratorTestCase(TestCase):
             return sum(numbers)
 
         class Request:
-            GET = {}  # type: Dict[str, str]
-            POST = {}  # type: Dict[str, str]
+            GET: Dict[str, str] = {}
+            POST: Dict[str, str] = {}
 
         request = Request()
 
@@ -170,8 +170,8 @@ class DecoratorTestCase(TestCase):
             return sum(numbers)
 
         class Request:
-            GET = {}  # type: Dict[str, str]
-            POST = {}  # type: Dict[str, str]
+            GET: Dict[str, str] = {}
+            POST: Dict[str, str] = {}
 
         request = Request()
 
@@ -200,8 +200,8 @@ class DecoratorTestCase(TestCase):
             return value[1:-1]
 
         class Request:
-            GET = {}  # type: Dict[str, str]
-            POST = {}  # type: Dict[str, str]
+            GET: Dict[str, str] = {}
+            POST: Dict[str, str] = {}
 
         request = Request()
 
@@ -695,14 +695,14 @@ class RateLimitTestCase(TestCase):
 
 class ValidatorTestCase(TestCase):
     def test_check_string(self) -> None:
-        x = "hello"  # type: Any
+        x: Any = "hello"
         self.assertEqual(check_string('x', x), None)
 
         x = 4
         self.assertEqual(check_string('x', x), 'x is not a string')
 
     def test_check_string_fixed_length(self) -> None:
-        x = "hello"  # type: Any
+        x: Any = "hello"
         self.assertEqual(check_string_fixed_length(5)('x', x), None)
 
         x = 4
@@ -715,7 +715,7 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_string_fixed_length(5)('x', x), 'x has incorrect length 2; should be 5')
 
     def test_check_capped_string(self) -> None:
-        x = "hello"  # type: Any
+        x: Any = "hello"
         self.assertEqual(check_capped_string(5)('x', x), None)
 
         x = 4
@@ -739,7 +739,7 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_int_in([1])("Test", "t"), "Test is not an integer")
 
     def test_check_short_string(self) -> None:
-        x = "hello"  # type: Any
+        x: Any = "hello"
         self.assertEqual(check_short_string('x', x), None)
 
         x = 'x' * 201
@@ -749,14 +749,14 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_short_string('x', x), 'x is not a string')
 
     def test_check_bool(self) -> None:
-        x = True  # type: Any
+        x: Any = True
         self.assertEqual(check_bool('x', x), None)
 
         x = 4
         self.assertEqual(check_bool('x', x), 'x is not a boolean')
 
     def test_check_int(self) -> None:
-        x = 5  # type: Any
+        x: Any = 5
         self.assertEqual(check_int('x', x), None)
 
         x = [{}]
@@ -778,7 +778,7 @@ class ValidatorTestCase(TestCase):
             to_not_negative_int_or_none('-5')
 
     def test_check_float(self) -> None:
-        x = 5.5  # type: Any
+        x: Any = 5.5
         self.assertEqual(check_float('x', x), None)
 
         x = 5
@@ -804,7 +804,7 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(error, 'color is not a string')
 
     def test_check_list(self) -> None:
-        x = 999  # type: Any
+        x: Any = 999
         error = check_list(check_string)('x', x)
         self.assertEqual(error, 'x is not a list')
 
@@ -821,15 +821,15 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(error, 'x should have exactly 2 items')
 
     def test_check_dict(self) -> None:
-        keys = [
+        keys: List[Tuple[str, Validator]] = [
             ('names', check_list(check_string)),
             ('city', check_string),
-        ]  # type: List[Tuple[str, Validator]]
+        ]
 
-        x = {
+        x: Any = {
             'names': ['alice', 'bob'],
             'city': 'Boston',
-        }  # type: Any
+        }
         error = check_dict(keys)('x', x)
         self.assertEqual(error, None)
 
@@ -932,7 +932,7 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_person(nonperson), 'This is not a valid person')
 
     def test_check_variable_type(self) -> None:
-        x = 5  # type: Any
+        x: Any = 5
         self.assertEqual(check_variable_type([check_string, check_int])('x', x), None)
 
         x = 'x'
@@ -942,12 +942,12 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_variable_type([check_string, check_int])('x', x), 'x is not an allowed_type')
 
     def test_equals(self) -> None:
-        x = 5  # type: Any
+        x: Any = 5
         self.assertEqual(equals(5)('x', x), None)
         self.assertEqual(equals(6)('x', x), 'x != 6 (5 is wrong)')
 
     def test_check_none_or(self) -> None:
-        x = 5  # type: Any
+        x: Any = 5
         self.assertEqual(check_none_or(check_int)('x', x), None)
         x = None
         self.assertEqual(check_none_or(check_int)('x', x), None)
@@ -955,7 +955,7 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_none_or(check_int)('x', x), 'x is not an integer')
 
     def test_check_url(self) -> None:
-        url = "http://127.0.0.1:5002/"  # type: Any
+        url: Any = "http://127.0.0.1:5002/"
         self.assertEqual(check_url('url', url), None)
 
         url = "http://zulip-bots.example.com/"
@@ -968,7 +968,7 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_url('url', url), 'url is not a string')
 
     def test_check_string_or_int_list(self) -> None:
-        x = "string"  # type: Any
+        x: Any = "string"
         self.assertEqual(check_string_or_int_list('x', x), None)
 
         x = [1, 2, 4]
@@ -981,7 +981,7 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_string_or_int_list('x', x), 'x[2] is not an integer')
 
     def test_check_string_or_int(self) -> None:
-        x = "string"  # type: Any
+        x: Any = "string"
         self.assertEqual(check_string_or_int('x', x), None)
 
         x = 1
@@ -1353,10 +1353,10 @@ class TestInternalNotifyView(TestCase):
 
     def test_valid_internal_requests(self) -> None:
         secret = 'random'
-        req = self.Request(
+        req: HttpRequest = self.Request(
             POST=dict(secret=secret),
             META=dict(REMOTE_ADDR='127.0.0.1'),
-        )  # type: HttpRequest
+        )
 
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(req))
@@ -1709,8 +1709,8 @@ class CacheTestCase(ZulipTestCase):
 
         def test_greetings(greeting: str) -> Tuple[List[str], List[str]]:
 
-            result_log = []  # type: List[str]
-            work_log = []  # type: List[str]
+            result_log: List[str] = []
+            work_log: List[str] = []
 
             @cachify
             def greet(first_name: str, last_name: str) -> str:
@@ -1756,7 +1756,7 @@ class CacheTestCase(ZulipTestCase):
 class TestUserAgentParsing(ZulipTestCase):
     def test_user_agent_parsing(self) -> None:
         """Test for our user agent parsing logic, using a large data set."""
-        user_agents_parsed = defaultdict(int)  # type: Dict[str, int]
+        user_agents_parsed: Dict[str, int] = defaultdict(int)
         user_agents_path = os.path.join(settings.DEPLOY_ROOT, "zerver/tests/fixtures/user_agents_unique")
         for line in open(user_agents_path).readlines():
             line = line.strip()

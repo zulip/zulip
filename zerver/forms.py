@@ -264,7 +264,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
                 logging.info("Too many password reset attempts for email %s" % (email,))
                 return
 
-        user = None  # type: Optional[UserProfile]
+        user: Optional[UserProfile] = None
         try:
             user = get_user_by_delivery_email(email, realm)
         except UserProfile.DoesNotExist:
@@ -333,7 +333,7 @@ class OurAuthenticationForm(AuthenticationForm):
                                 (username, subdomain))
                 raise ValidationError("Realm does not exist")
 
-            return_data = {}  # type: Dict[str, Any]
+            return_data: Dict[str, Any] = {}
             try:
                 self.user_cache = authenticate(request=self.request, username=username, password=password,
                                                realm=realm, return_data=return_data)

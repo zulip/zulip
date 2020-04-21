@@ -330,7 +330,7 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
         raise UnexpectedWebhookEventType('Jira', event)
 
     subject = get_issue_subject(payload)
-    content = content_func(payload, user_profile)  # type: str
+    content: str = content_func(payload, user_profile)
 
     check_send_webhook_message(request, user_profile,
                                subject, content,

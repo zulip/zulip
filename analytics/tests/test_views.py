@@ -617,7 +617,7 @@ class TestGetChartDataHelpers(ZulipTestCase):
         self.assertEqual(last_successful_fill('property'), one_hour_before)
 
     def test_sort_by_totals(self) -> None:
-        empty = []  # type: List[int]
+        empty: List[int] = []
         value_arrays = {'c': [0, 1], 'a': [9], 'b': [1, 1, 1], 'd': empty}
         self.assertEqual(sort_by_totals(value_arrays), ['a', 'b', 'c', 'd'])
 

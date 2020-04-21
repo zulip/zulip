@@ -90,7 +90,7 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
                              status_val, new_user_input)
 
     if ping_only:
-        ret = {}  # type: Dict[str, Any]
+        ret: Dict[str, Any] = {}
     else:
         ret = get_presence_response(user_profile, slim_presence)
 

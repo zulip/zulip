@@ -57,7 +57,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     Never make a urls.py pattern put user input into a variable called GET, POST,
     etc, as that is where we route HTTP verbs to target functions.
     """
-    supported_methods = {}  # type: Dict[str, Any]
+    supported_methods: Dict[str, Any] = {}
 
     if hasattr(request, "saved_response"):
         # For completing long-polled Tornado requests, we skip the

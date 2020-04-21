@@ -21,8 +21,8 @@ EXCLUDE_PROPERTIES = {
 class OpenAPISpec():
     def __init__(self, path: str) -> None:
         self.path = path
-        self.last_update = None  # type: Optional[float]
-        self.data = None  # type: Optional[Dict[str, Any]]
+        self.last_update: Optional[float] = None
+        self.data: Optional[Dict[str, Any]] = None
 
     def reload(self) -> None:
         # Because importing yamole (and in turn, yaml) takes

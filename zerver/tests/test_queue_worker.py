@@ -49,8 +49,8 @@ loopworker_sleep_mock = patch(
 class WorkerTest(ZulipTestCase):
     class FakeClient:
         def __init__(self) -> None:
-            self.consumers = {}  # type: Dict[str, Callable[[Dict[str, Any]], None]]
-            self.queue = []  # type: List[Tuple[str, Any]]
+            self.consumers: Dict[str, Callable[[Dict[str, Any]], None]] = {}
+            self.queue: List[Tuple[str, Any]] = []
 
         def register_json_consumer(self,
                                    queue_name: str,

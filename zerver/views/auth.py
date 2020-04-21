@@ -200,11 +200,13 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
     # just send the user back to the registration page.
     url = reverse('register')
     context = login_context(request)
-    extra_context = {'form': form, 'current_url': lambda: url,
-                     'from_multiuse_invite': from_multiuse_invite,
-                     'multiuse_object_key': multiuse_object_key,
-                     'mobile_flow_otp': mobile_flow_otp,
-                     'desktop_flow_otp': desktop_flow_otp}  # type: Mapping[str, Any]
+    extra_context: Mapping[str, Any] = {
+        'form': form, 'current_url': lambda: url,
+        'from_multiuse_invite': from_multiuse_invite,
+        'multiuse_object_key': multiuse_object_key,
+        'mobile_flow_otp': mobile_flow_otp,
+        'desktop_flow_otp': desktop_flow_otp,
+    }
     context.update(extra_context)
     return render(request, 'zerver/accounts_home.html', context=context)
 
@@ -334,7 +336,7 @@ def remote_user_sso(request: HttpRequest,
                     desktop_flow_otp: Optional[str]=REQ(default=None)) -> HttpResponse:
     subdomain = get_subdomain(request)
     try:
-        realm = get_realm(subdomain)  # type: Optional[Realm]
+        realm: Optional[Realm] = get_realm(subdomain)
     except Realm.DoesNotExist:
         realm = None
 
@@ -443,7 +445,7 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
 def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
                        ) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
-    extra_url_params = {}  # type: Dict[str, str]
+    extra_url_params: Dict[str, str] = {}
     if backend == "saml":
         result = SAMLAuthBackend.check_config()
         if result is not None:
@@ -469,7 +471,7 @@ def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[s
 def start_social_signup(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
                         ) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
-    extra_url_params = {}  # type: Dict[str, str]
+    extra_url_params: Dict[str, str] = {}
     if backend == "saml":
         result = SAMLAuthBackend.check_config()
         if result is not None:
@@ -666,7 +668,7 @@ def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> 
     context['deactivated_account_error'] = DEACTIVATED_ACCOUNT_ERROR
 
 class TwoFactorLoginView(BaseTwoFactorLoginView):
-    extra_context = None  # type: ExtraContext
+    extra_context: ExtraContext = None
     form_list = (
         ('auth', OurAuthenticationForm),
         ('token', AuthenticationTokenForm),
@@ -839,7 +841,7 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
 
-    return_data = {}  # type: Dict[str, bool]
+    return_data: Dict[str, bool] = {}
     user_profile = authenticate(dev_auth_username=username,
                                 realm=realm,
                                 return_data=return_data)
@@ -870,7 +872,7 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
 @require_post
 @has_request_variables
 def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=REQ()) -> HttpResponse:
-    return_data = {}  # type: Dict[str, bool]
+    return_data: Dict[str, bool] = {}
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
     if not ldap_auth_enabled(realm=get_realm_from_request(request)):

@@ -72,7 +72,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("Please fill out all fields."))
 
     if new_password != "":
-        return_data = {}  # type: Dict[str, Any]
+        return_data: Dict[str, Any] = {}
         if email_belongs_to_ldap(user_profile.realm, user_profile.delivery_email):
             return json_error(_("Your Zulip password is managed in LDAP"))
 
@@ -105,7 +105,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
         # by Django,
         request.session.save()
 
-    result = {}  # type: Dict[str, Any]
+    result: Dict[str, Any] = {}
     new_email = email.strip()
     if user_profile.delivery_email != new_email and new_email != '':
         if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
@@ -172,7 +172,7 @@ def update_display_settings_backend(
         raise JsonableError(_("Invalid default_language"))
 
     request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
-    result = {}  # type: Dict[str, Any]
+    result: Dict[str, Any] = {}
     for k, v in list(request_settings.items()):
         if v is not None and getattr(user_profile, k) != v:
             do_set_user_display_setting(user_profile, k, v)

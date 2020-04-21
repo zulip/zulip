@@ -149,8 +149,9 @@ def normalize_fixture_data(decorated_function: CallableT,
             '"%s": 1[5-9][0-9]{8}(?![0-9-])' % (timestamp_field,)
         ] = '"%s": 1%02d%%07d' % (timestamp_field, i+1)
 
-    normalized_values = {pattern: {}
-                         for pattern in pattern_translations.keys()}  # type: Dict[str, Dict[str, str]]
+    normalized_values: Dict[str, Dict[str, str]] = {
+        pattern: {} for pattern in pattern_translations.keys()
+    }
     for fixture_file in fixture_files_for_function(decorated_function):
         with open(fixture_file) as f:
             file_content = f.read()
@@ -258,10 +259,10 @@ class StripeTestCase(ZulipTestCase):
         if realm is not None:  # nocoverage: TODO
             host_args['HTTP_HOST'] = realm.host
         response = self.client_get("/upgrade/", **host_args)
-        params = {
+        params: Dict[str, Any] = {
             'schedule': 'annual',
             'signed_seat_count': self.get_signed_seat_count_from_response(response),
-            'salt': self.get_salt_from_response(response)}  # type: Dict[str, Any]
+            'salt': self.get_salt_from_response(response)}
         if invoice:  # send_invoice
             params.update({
                 'billing_modality': 'send_invoice',
@@ -1110,10 +1111,10 @@ class RequiresBillingAccessTest(ZulipTestCase):
         self.assert_json_error_contains(response, "Must be a billing administrator or an organization")
 
     def test_non_admins_blocked_from_json_endpoints(self) -> None:
-        params = [
+        params: List[Tuple[str, Dict[str, Any]]] = [
             ("/json/billing/sources/change", {'stripe_token': ujson.dumps('token')}),
             ("/json/billing/plan/change", {'status': ujson.dumps(1)}),
-        ]  # type: List[Tuple[str, Dict[str, Any]]]
+        ]
 
         for (url, data) in params:
             self.verify_non_admins_blocked_from_endpoint(url, data)

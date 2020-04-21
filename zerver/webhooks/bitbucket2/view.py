@@ -334,7 +334,7 @@ def get_pull_request_comment_action_body(
 def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
     if change.get('new'):
         tag = change['new']
-        action = 'pushed'  # type: Optional[str]
+        action: Optional[str] = 'pushed'
     elif change.get('old'):
         tag = change['old']
         action = 'removed'

@@ -29,7 +29,7 @@ class MockRequest(HttpRequest):
             "num_before": 1200,
             "num_after": 200
         }
-        self.GET = {}  # type: Dict[Any, Any]
+        self.GET: Dict[Any, Any] = {}
         self.session = MockSession()
 
     def get_full_path(self) -> str:

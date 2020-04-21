@@ -80,7 +80,7 @@ def get_test_method(test: TestCase) -> Callable[[], None]:
     return getattr(test, test._testMethodName)
 
 # Each tuple is delay, test_name, slowness_reason
-TEST_TIMINGS = []  # type: List[Tuple[float, str, str]]
+TEST_TIMINGS: List[Tuple[float, str, str]] = []
 
 
 def report_slow_tests() -> None:
@@ -154,7 +154,7 @@ class TextTestResult(runner.TextTestResult):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.failed_tests = []  # type: List[str]
+        self.failed_tests: List[str] = []
 
     def addInfo(self, test: TestCase, msg: str) -> None:
         self.stream.write(msg)  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
@@ -416,10 +416,10 @@ class Runner(DiscoverRunner):
 
         # `templates_rendered` holds templates which were rendered
         # in proper logical tests.
-        self.templates_rendered = set()  # type: Set[str]
+        self.templates_rendered: Set[str] = set()
         # `shallow_tested_templates` holds templates which were rendered
         # in `zerver.tests.test_templates`.
-        self.shallow_tested_templates = set()  # type: Set[str]
+        self.shallow_tested_templates: Set[str] = set()
         template_rendered.connect(self.on_template_rendered)
 
     def get_resultclass(self) -> Type[TestResult]:

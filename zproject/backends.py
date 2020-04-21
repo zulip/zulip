@@ -553,7 +553,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
     def sync_custom_profile_fields_from_ldap(self, user_profile: UserProfile,
                                              ldap_user: _LDAPUser) -> None:
-        values_by_var_name = {}   # type: Dict[str, Union[int, str, List[int]]]
+        values_by_var_name: Dict[str, Union[int, str, List[int]]] = {}
         for attr, ldap_attr in settings.AUTH_LDAP_USER_ATTR_MAP.items():
             if not attr.startswith('custom_profile_field__'):
                 continue
@@ -567,7 +567,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 continue
             values_by_var_name[var_name] = value
 
-        fields_by_var_name = {}   # type: Dict[str, CustomProfileField]
+        fields_by_var_name: Dict[str, CustomProfileField] = {}
         custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
         for field in custom_profile_fields:
             var_name = '_'.join(field.name.lower().split(' '))
@@ -578,7 +578,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             var_name = '_'.join(data['name'].lower().split(' '))
             existing_values[var_name] = data['value']
 
-        profile_data = []   # type: List[Dict[str, Union[int, str, List[int]]]]
+        profile_data: List[Dict[str, Union[int, str, List[int]]]] = []
         for var_name, value in values_by_var_name.items():
             try:
                 field = fields_by_var_name[var_name]
@@ -644,7 +644,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         user account in the realm (assuming the realm is configured to
         allow that email address to sign up).
         """
-        return_data = {}  # type: Dict[str, Any]
+        return_data: Dict[str, Any] = {}
 
         username = self.user_email_from_ldapuser(username, ldap_user)
 
@@ -694,7 +694,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         except JsonableError as e:
             raise ZulipLDAPException(e.msg)
 
-        opts = {}   # type: Dict[str, Any]
+        opts: Dict[str, Any] = {}
         if self._prereg_user:
             invited_as = self._prereg_user.invited_as
             realm_creation = self._prereg_user.realm_creation
@@ -724,7 +724,7 @@ class ZulipLDAPUser(_LDAPUser):
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        self.realm = kwargs['realm']  # type: Realm
+        self.realm: Realm = kwargs['realm']
         del kwargs['realm']
 
         super().__init__(*args, **kwargs)
@@ -881,7 +881,7 @@ class ExternalAuthMethod(ABC):
     """
     auth_backend_name = "undeclared"
     name = "undeclared"
-    display_icon = None  # type: Optional[str]
+    display_icon: Optional[str] = None
 
     # Used to determine how to order buttons on login form, backend with
     # higher sort order are displayed first.
@@ -899,7 +899,7 @@ class ExternalAuthMethod(ABC):
         that are all serviced by that backend - our SAML backend is an example of that.
         """
 
-EXTERNAL_AUTH_METHODS = []  # type: List[Type[ExternalAuthMethod]]
+EXTERNAL_AUTH_METHODS: List[Type[ExternalAuthMethod]] = []
 
 def external_auth_method(cls: Type[ExternalAuthMethod]) -> Type[ExternalAuthMethod]:
     assert issubclass(cls, ExternalAuthMethod)
@@ -1083,7 +1083,7 @@ def social_auth_associate_user(
     social_auth_finish, as kwargs.
     """
     partial_token = backend.strategy.request_data().get('partial_token')
-    return_data = {}  # type: Dict[str, Any]
+    return_data: Dict[str, Any] = {}
     user_profile = social_associate_user_helper(
         backend, return_data, *args, **kwargs)
 
@@ -1292,7 +1292,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             # case without any verified emails
             emails = []
 
-        verified_emails = []  # type: List[str]
+        verified_emails: List[str] = []
         for email_obj in self.filter_usable_emails(emails):
             # social_associate_user_helper assumes that the first email in
             # verified_emails is primary.
@@ -1372,7 +1372,7 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
     display_icon = "/static/images/landing-page/logos/googl_e-icon.png"
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
-        verified_emails = []    # type: List[str]
+        verified_emails: List[str] = []
         details = kwargs["response"]
         email_verified = details.get("email_verified")
         if email_verified:
@@ -1559,7 +1559,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
     @classmethod
     def dict_representation(cls, realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
-        result = []  # type: List[ExternalAuthMethodDictT]
+        result: List[ExternalAuthMethodDictT] = []
         for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
             if realm and not cls.validate_idp_for_subdomain(idp_name, realm.subdomain):
                 continue
@@ -1567,13 +1567,13 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 # If queried without a realm, only return IdPs that can be used on all realms.
                 continue
 
-            saml_dict = dict(
+            saml_dict: ExternalAuthMethodDictT = dict(
                 name='saml:{}'.format(idp_name),
                 display_name=idp_dict.get('display_name', cls.auth_backend_name),
                 display_icon=idp_dict.get('display_icon', cls.display_icon),
                 login_url=reverse('login-social-extra-arg', args=('saml', idp_name)),
                 signup_url=reverse('signup-social-extra-arg', args=('saml', idp_name)),
-            )  # type: ExternalAuthMethodDictT
+            )
             result.append(saml_dict)
 
         return result
@@ -1592,7 +1592,7 @@ def get_external_method_dicts(realm: Optional[Realm]=None) -> List[ExternalAuthM
     Returns a list of dictionaries that represent social backends, sorted
     in the order in which they should be displayed.
     """
-    result = []  # type: List[ExternalAuthMethodDictT]
+    result: List[ExternalAuthMethodDictT] = []
     for backend in EXTERNAL_AUTH_METHODS:
         # EXTERNAL_AUTH_METHODS is already sorted in the correct order,
         # so we don't need to worry about sorting here.
@@ -1601,11 +1601,11 @@ def get_external_method_dicts(realm: Optional[Realm]=None) -> List[ExternalAuthM
 
     return result
 
-AUTH_BACKEND_NAME_MAP = {
+AUTH_BACKEND_NAME_MAP: Dict[str, Any] = {
     'Dev': DevAuthBackend,
     'Email': EmailAuthBackend,
     'LDAP': ZulipLDAPAuthBackend,
-}  # type: Dict[str, Any]
+}
 
 for external_method in EXTERNAL_AUTH_METHODS:
     AUTH_BACKEND_NAME_MAP[external_method.auth_backend_name] = external_method

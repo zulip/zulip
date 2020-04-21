@@ -26,7 +26,7 @@ def get_bot_configs(bot_profile_ids: List[int]) -> Dict[int, Dict[str, str]]:
     if not bot_profile_ids:
         return {}
     entries = BotConfigData.objects.filter(bot_profile_id__in=bot_profile_ids)
-    entries_by_uid = defaultdict(dict)  # type: Dict[int, Dict[str, str]]
+    entries_by_uid: Dict[int, Dict[str, str]] = defaultdict(dict)
     for entry in entries:
         entries_by_uid[entry.bot_profile_id].update({entry.key: entry.value})
     return entries_by_uid

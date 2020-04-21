@@ -193,7 +193,7 @@ class AuthBackendTest(ZulipTestCase):
                         return_value=False), \
                 mock.patch('zproject.backends.password_auth_enabled',
                            return_value=True):
-            return_data = {}  # type: Dict[str, bool]
+            return_data: Dict[str, bool] = {}
             user = EmailAuthBackend().authenticate(request=mock.MagicMock(),
                                                    username=user_profile.delivery_email,
                                                    realm=get_realm("zulip"),
@@ -397,7 +397,7 @@ class AuthBackendTest(ZulipTestCase):
         google_email_data = dict(email=user.delivery_email,
                                  name=user.full_name,
                                  email_verified=True)
-        backends_to_test = {
+        backends_to_test: Dict[str, Any] = {
             'google': {
                 'urls': [
                     # The limited process that we test here doesn't require mocking any urls.
@@ -415,7 +415,7 @@ class AuthBackendTest(ZulipTestCase):
                 ],
                 'backend': GitHubAuthBackend,
             }
-        }   # type: Dict[str, Any]
+        }
 
         def patched_authenticate(**kwargs: Any) -> Any:
             # This is how we pass the subdomain to the authentication
@@ -442,7 +442,7 @@ class AuthBackendTest(ZulipTestCase):
 
         for backend_name in backends_to_test:
             with responses.RequestsMock(assert_all_requests_are_fired=True) as requests_mock:
-                urls = backends_to_test[backend_name]['urls']   # type: List[Dict[str, Any]]
+                urls: List[Dict[str, Any]] = backends_to_test[backend_name]['urls']
                 for details in urls:
                     requests_mock.add(
                         details['method'],
@@ -1421,7 +1421,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             last_name=last_name
         )
         # SAMLResponse needs to be base64-encoded.
-        saml_response = base64.b64encode(unencoded_saml_response.encode()).decode()  # type: str
+        saml_response: str = base64.b64encode(unencoded_saml_response.encode()).decode()
 
         return saml_response
 

@@ -303,7 +303,7 @@ def do_pull_minutes_active(property: str, start_time: datetime, end_time: dateti
     ).values_list(
         'user_profile_id', 'user_profile__realm_id', 'start', 'end')
 
-    seconds_active = defaultdict(float)  # type: Dict[Tuple[int, int], float]
+    seconds_active: Dict[Tuple[int, int], float] = defaultdict(float)
     for user_id, realm_id, interval_start, interval_end in user_activity_intervals:
         if realm is None or realm.id == realm_id:
             start = max(start_time, interval_start)

@@ -29,11 +29,11 @@ class HipChatImporter(ZulipTestCase):
         )
         user_handler.add_user(user=user_with_id)
 
-        normal_message = dict(
+        normal_message: Dict[str, Any] = dict(
             sender=dict(
                 id=1,
             )
-        )  # type: Dict[str, Any]
+        )
 
         sender_id = get_hipchat_sender_id(
             realm_id=realm_id,

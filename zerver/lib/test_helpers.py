@@ -117,7 +117,7 @@ def capture_event(event_info: EventInfo) -> Iterator[None]:
 @contextmanager
 def simulated_empty_cache() -> Generator[
         List[Tuple[str, Union[str, List[str]], str]], None, None]:
-    cache_queries = []  # type: List[Tuple[str, Union[str, List[str]], str]]
+    cache_queries: List[Tuple[str, Union[str, List[str]], str]] = []
 
     def my_cache_get(key: str, cache_name: Optional[str]=None) -> Optional[Dict[str, Any]]:
         cache_queries.append(('get', key, cache_name))
@@ -143,7 +143,7 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
     the with statement.
     '''
 
-    queries = []  # type: List[Dict[str, Union[str, bytes]]]
+    queries: List[Dict[str, Union[str, bytes]]] = []
 
     def wrapper_execute(self: TimeTrackingCursor,
                         action: Callable[[str, Iterable[Any]], None],
@@ -258,19 +258,19 @@ class POSTRequestMock:
     method = "POST"
 
     def __init__(self, post_data: Dict[str, Any], user_profile: Optional[UserProfile]) -> None:
-        self.GET = {}  # type: Dict[str, Any]
+        self.GET: Dict[str, Any] = {}
 
         # Convert any integer parameters passed into strings, even
         # though of course the HTTP API would do so.  Ideally, we'd
         # get rid of this abstraction entirely and just use the HTTP
         # API directly, but while it exists, we need this code.
-        self.POST = {}  # type: Dict[str, str]
+        self.POST: Dict[str, str] = {}
         for key in post_data:
             self.POST[key] = str(post_data[key])
 
         self.user = user_profile
         self._tornado_handler = DummyHandler()
-        self._log_data = {}  # type: Dict[str, Any]
+        self._log_data: Dict[str, Any] = {}
         self.META = {'PATH_INFO': 'test'}
         self.path = ''
 
@@ -280,8 +280,8 @@ class HostRequestMock:
 
     def __init__(self, user_profile: UserProfile=None, host: str=settings.EXTERNAL_HOST) -> None:
         self.host = host
-        self.GET = {}  # type: Dict[str, Any]
-        self.POST = {}  # type: Dict[str, Any]
+        self.GET: Dict[str, Any] = {}
+        self.POST: Dict[str, Any] = {}
         self.META = {'PATH_INFO': 'test'}
         self.path = ''
         self.user = user_profile
@@ -309,7 +309,7 @@ class MockPythonResponse:
 
 
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
-INSTRUMENTED_CALLS = []  # type: List[Dict[str, Any]]
+INSTRUMENTED_CALLS: List[Dict[str, Any]] = []
 
 UrlFuncT = Callable[..., HttpResponse]  # TODO: make more specific
 
@@ -350,7 +350,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         from zproject.urls import urlpatterns, v1_api_and_json_patterns
 
         # Find our untested urls.
-        pattern_cnt = collections.defaultdict(int)  # type: Dict[str, int]
+        pattern_cnt: Dict[str, int] = collections.defaultdict(int)
 
         def re_strip(r: Any) -> str:
             return str(r).lstrip('^').rstrip('$')

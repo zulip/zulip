@@ -108,7 +108,7 @@ def get_users() -> List[UserProfile]:
 # doing any setup for things we're unlikely to use (without the lambda
 # wrapper the below adds an extra 3ms or so to startup time for
 # anything importing this file).
-cache_fillers = {
+cache_fillers: Dict[str, Tuple[Callable[[], List[Any]], Callable[[Dict[str, Any], Any], None], int, int]] = {
     'user': (get_users, user_cache_items, 3600*24*7, 10000),
     'client': (lambda: Client.objects.select_related().all(), client_cache_items, 3600*24*7, 10000),
     'stream': (get_streams, stream_cache_items, 3600*24*7, 10000),
@@ -118,12 +118,12 @@ cache_fillers = {
     #    'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
     'huddle': (lambda: Huddle.objects.select_related().all(), huddle_cache_items, 3600*24*7, 10000),
     'session': (lambda: Session.objects.all(), session_cache_items, 3600*24*7, 10000),
-}  # type: Dict[str, Tuple[Callable[[], List[Any]], Callable[[Dict[str, Any], Any], None], int, int]]
+}
 
 def fill_remote_cache(cache: str) -> None:
     remote_cache_time_start = get_remote_cache_time()
     remote_cache_requests_start = get_remote_cache_requests()
-    items_for_remote_cache = {}  # type: Dict[str, Any]
+    items_for_remote_cache: Dict[str, Any] = {}
     (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
     count = 0
     for obj in objects():

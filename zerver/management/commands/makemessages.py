@@ -140,7 +140,7 @@ class Command(makemessages.Command):
             template.constant_re = old_constant_re
 
     def extract_strings(self, data: str) -> List[str]:
-        translation_strings = []  # type: List[str]
+        translation_strings: List[str] = []
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
                 match = match.strip()
@@ -158,7 +158,7 @@ class Command(makemessages.Command):
         return data
 
     def get_translation_strings(self) -> List[str]:
-        translation_strings = []  # type: List[str]
+        translation_strings: List[str] = []
         dirname = self.get_template_dir()
 
         for dirpath, dirnames, filenames in os.walk(dirname):

@@ -88,7 +88,7 @@ class Command(compilemessages.Command):
         locale_path = "{}/locale".format(settings.DEPLOY_ROOT)
         output_path = "{}/language_options.json".format(locale_path)
 
-        data = {'languages': []}  # type: Dict[str, List[Dict[str, Any]]]
+        data: Dict[str, List[Dict[str, Any]]] = {'languages': []}
 
         try:
             locales = self.get_locales()
@@ -114,7 +114,7 @@ class Command(compilemessages.Command):
                 # Not a locale.
                 continue
 
-            info = {}  # type: Dict[str, Any]
+            info: Dict[str, Any] = {}
             code = to_language(locale)
             percentage = self.get_translation_percentage(locale_path, locale)
             try:

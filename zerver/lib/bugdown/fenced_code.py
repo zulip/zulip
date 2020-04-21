@@ -203,7 +203,7 @@ class CodeHandler(BaseHandler):
         self.output = output
         self.fence = fence
         self.lang = lang
-        self.lines = []  # type: List[str]
+        self.lines: List[str] = []
         self.run_content_validators = run_content_validators
 
     def handle_line(self, line: str) -> None:
@@ -233,7 +233,7 @@ class QuoteHandler(BaseHandler):
         self.processor = processor
         self.output = output
         self.fence = fence
-        self.lines = []  # type: List[str]
+        self.lines: List[str] = []
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -255,7 +255,7 @@ class TexHandler(BaseHandler):
         self.processor = processor
         self.output = output
         self.fence = fence
-        self.lines = []  # type: List[str]
+        self.lines: List[str] = []
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -280,7 +280,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
         self.checked_for_codehilite = False
         self.run_content_validators = run_content_validators
-        self.codehilite_conf = {}  # type: Dict[str, List[Any]]
+        self.codehilite_conf: Dict[str, List[Any]] = {}
 
     def push(self, handler: BaseHandler) -> None:
         self.handlers.append(handler)
@@ -291,10 +291,10 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
     def run(self, lines: Iterable[str]) -> List[str]:
         """ Match and store Fenced Code Blocks in the HtmlStash. """
 
-        output = []  # type: List[str]
+        output: List[str] = []
 
         processor = self
-        self.handlers = []  # type: List[BaseHandler]
+        self.handlers: List[BaseHandler] = []
 
         handler = OuterHandler(processor, output, self.run_content_validators)
         self.push(handler)

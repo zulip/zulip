@@ -115,7 +115,7 @@ class SlackImporter(ZulipTestCase):
         realm_id = 2
         realm_subdomain = "test-realm"
         time = float(timezone_now().timestamp())
-        test_realm = build_zerver_realm(realm_id, realm_subdomain, time, 'Slack')  # type: List[Dict[str, Any]]
+        test_realm: List[Dict[str, Any]] = build_zerver_realm(realm_id, realm_subdomain, time, 'Slack')
         test_zerver_realm_dict = test_realm[0]
 
         self.assertEqual(test_zerver_realm_dict['id'], realm_id)
@@ -146,7 +146,7 @@ class SlackImporter(ZulipTestCase):
     def test_get_timezone(self) -> None:
         user_chicago_timezone = {"tz": "America/Chicago"}
         user_timezone_none = {"tz": None}
-        user_no_timezone = {}  # type: Dict[str, Any]
+        user_no_timezone: Dict[str, Any] = {}
 
         self.assertEqual(get_user_timezone(user_chicago_timezone), "America/Chicago")
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
@@ -391,7 +391,7 @@ class SlackImporter(ZulipTestCase):
         slack_user_id_to_zulip_user_id = {"U061A1R2R": 1, "U061A3E0G": 8, "U061A5N1G": 7, "U064KUGRJ": 5}
         subscription_id_count = 0
         recipient_id = 12
-        zerver_subscription = []  # type: List[Dict[str, Any]]
+        zerver_subscription: List[Dict[str, Any]] = []
         final_subscription_id = get_subscription(channel_members, zerver_subscription,
                                                  recipient_id, slack_user_id_to_zulip_user_id,
                                                  subscription_id_count)
@@ -475,7 +475,7 @@ class SlackImporter(ZulipTestCase):
                                       mock_users_to_zerver_userprofile: mock.Mock) -> None:
 
         realm_id = 1
-        user_list = []  # type: List[Dict[str, Any]]
+        user_list: List[Dict[str, Any]] = []
         realm, slack_user_id_to_zulip_user_id, slack_recipient_name_to_zulip_recipient_id, \
             added_channels, added_mpims, dm_members, \
             avatar_list, em = slack_workspace_to_realm('testdomain', realm_id, user_list, 'test-realm',
@@ -515,7 +515,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(user_without_file, 'U064KUGRJ')
 
     def test_build_zerver_message(self) -> None:
-        zerver_usermessage = []  # type: List[Dict[str, Any]]
+        zerver_usermessage: List[Dict[str, Any]] = []
 
         # recipient_id -> set of user_ids
         subscriber_map = {
@@ -565,44 +565,46 @@ class SlackImporter(ZulipTestCase):
 
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
 
-        all_messages = [{"text": "<@U066MTL5U> has joined the channel", "subtype": "channel_join",
-                         "user": "U066MTL5U", "ts": "1434139102.000002", "channel_name": "random"},
-                        {"text": "<@U061A5N1G>: hey!", "user": "U061A1R2R",
-                         "ts": "1437868294.000006", "has_image": True, "channel_name": "random"},
-                        {"text": "random", "user": "U061A5N1G", "reactions": reactions,
-                         "ts": "1439868294.000006", "channel_name": "random"},
-                        {"text": "without a user", "user": None,  # this message will be ignored as it has no user
-                         "ts": "1239868294.000006", "channel_name": "general"},
-                        {"text": "<http://journals.plos.org/plosone/article>", "user": "U061A1R2R",
-                         "ts": "1463868370.000008", "channel_name": "general"},
-                        {"text": "added bot", "user": "U061A5N1G", "subtype": "bot_add",
-                         "ts": "1433868549.000010", "channel_name": "general"},
-                        # This message will be ignored since it has no user and file is None.
-                        # See #9217 for the situation; likely file uploads on archived channels
-                        {'upload': False, 'file': None, 'text': 'A file was shared',
-                         'channel_name': 'general', 'type': 'message', 'ts': '1433868549.000011',
-                         'subtype': 'file_share'},
-                        {"text": "random test", "user": "U061A1R2R",
-                         "ts": "1433868669.000012", "channel_name": "general"},
-                        {"text": "Hello everyone", "user": "U061A1R2R", "type": "message",
-                         "ts": "1433868669.000015", "mpim_name": "mpdm-user9--user2--user10-1"},
-                        {"text": "Who is watching the World Cup", "user": "U061A5N1G", "type": "message",
-                         "ts": "1433868949.000015", "mpim_name": "mpdm-user6--user7--user4-1"},
-                        {'client_msg_id': '998d9229-35aa-424f-8d87-99e00df27dc9', 'type': 'message',
-                         'text': 'Who is coming for camping this weekend?', 'user': 'U061A1R2R',
-                         'ts': '1553607595.000700', 'pm_name': 'DHX1UP7EG'},
-                        {"client_msg_id": "998d9229-35aa-424f-8d87-99e00df27dc9", "type": "message",
-                         "text": "<@U061A5N1G>: Are you in Kochi?", "user": "U066MTL5U",
-                         "ts": "1553607595.000700", "pm_name": "DJ47BL849"}]  # type: List[Dict[str, Any]]
+        all_messages: List[Dict[str, Any]] = [
+            {"text": "<@U066MTL5U> has joined the channel", "subtype": "channel_join",
+             "user": "U066MTL5U", "ts": "1434139102.000002", "channel_name": "random"},
+            {"text": "<@U061A5N1G>: hey!", "user": "U061A1R2R",
+             "ts": "1437868294.000006", "has_image": True, "channel_name": "random"},
+            {"text": "random", "user": "U061A5N1G", "reactions": reactions,
+             "ts": "1439868294.000006", "channel_name": "random"},
+            {"text": "without a user", "user": None,  # this message will be ignored as it has no user
+             "ts": "1239868294.000006", "channel_name": "general"},
+            {"text": "<http://journals.plos.org/plosone/article>", "user": "U061A1R2R",
+             "ts": "1463868370.000008", "channel_name": "general"},
+            {"text": "added bot", "user": "U061A5N1G", "subtype": "bot_add",
+             "ts": "1433868549.000010", "channel_name": "general"},
+            # This message will be ignored since it has no user and file is None.
+            # See #9217 for the situation; likely file uploads on archived channels
+            {'upload': False, 'file': None, 'text': 'A file was shared',
+             'channel_name': 'general', 'type': 'message', 'ts': '1433868549.000011',
+             'subtype': 'file_share'},
+            {"text": "random test", "user": "U061A1R2R",
+             "ts": "1433868669.000012", "channel_name": "general"},
+            {"text": "Hello everyone", "user": "U061A1R2R", "type": "message",
+             "ts": "1433868669.000015", "mpim_name": "mpdm-user9--user2--user10-1"},
+            {"text": "Who is watching the World Cup", "user": "U061A5N1G", "type": "message",
+             "ts": "1433868949.000015", "mpim_name": "mpdm-user6--user7--user4-1"},
+            {'client_msg_id': '998d9229-35aa-424f-8d87-99e00df27dc9', 'type': 'message',
+             'text': 'Who is coming for camping this weekend?', 'user': 'U061A1R2R',
+             'ts': '1553607595.000700', 'pm_name': 'DHX1UP7EG'},
+            {"client_msg_id": "998d9229-35aa-424f-8d87-99e00df27dc9", "type": "message",
+             "text": "<@U061A5N1G>: Are you in Kochi?", "user": "U066MTL5U",
+             "ts": "1553607595.000700", "pm_name": "DJ47BL849"},
+        ]
 
         slack_recipient_name_to_zulip_recipient_id = {'random': 2, 'general': 1, 'mpdm-user9--user2--user10-1': 5,
                                                       'mpdm-user6--user7--user4-1': 6, 'U066MTL5U': 7, 'U061A5N1G': 8,
                                                       'U061A1R2R': 8}
         dm_members = {'DJ47BL849': ('U066MTL5U', 'U061A5N1G'), 'DHX1UP7EG': ('U061A5N1G', 'U061A1R2R')}
 
-        zerver_usermessage = []  # type: List[Dict[str, Any]]
-        subscriber_map = dict()  # type: Dict[int, Set[int]]
-        added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
+        zerver_usermessage: List[Dict[str, Any]] = []
+        subscriber_map: Dict[int, Set[int]] = dict()
+        added_channels: Dict[str, Tuple[str, int]] = {'random': ('c5', 1), 'general': ('c6', 2)}
 
         zerver_message, zerver_usermessage, attachment, uploads, reaction = \
             channel_message_to_zerver_message(
@@ -662,7 +664,7 @@ class SlackImporter(ZulipTestCase):
         output_dir = os.path.join(settings.TEST_WORKER_DIR, 'test-slack-import')
         os.makedirs(output_dir, exist_ok=True)
 
-        added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
+        added_channels: Dict[str, Tuple[str, int]] = {'random': ('c5', 1), 'general': ('c6', 2)}
 
         time = float(timezone_now().timestamp())
         zerver_message = [{'id': 1, 'ts': time}, {'id': 5, 'ts': time}]
@@ -672,8 +674,8 @@ class SlackImporter(ZulipTestCase):
             import copy
             return iter(copy.deepcopy(zerver_message))
 
-        realm = {'zerver_subscription': []}  # type: Dict[str, Any]
-        user_list = []  # type: List[Dict[str, Any]]
+        realm: Dict[str, Any] = {'zerver_subscription': []}
+        user_list: List[Dict[str, Any]] = []
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
         attachments = uploads = []  # type: List[Dict[str, Any]]
 
@@ -812,8 +814,8 @@ class SlackImporter(ZulipTestCase):
             'alice': alice_id,
         }
 
-        zerver_attachment = []  # type: List[Dict[str, Any]]
-        uploads_list = []  # type: List[Dict[str, Any]]
+        zerver_attachment: List[Dict[str, Any]] = []
+        uploads_list: List[Dict[str, Any]] = []
 
         info = process_message_files(
             message=message,

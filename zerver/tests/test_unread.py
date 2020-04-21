@@ -268,7 +268,7 @@ class UnreadCountTests(ZulipTestCase):
         message_id = self.send_stream_message(self.example_user("hamlet"), "test_stream", "hello")
         unrelated_message_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", "hello")
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/mark_stream_as_read", {
                 "stream_id": stream.id
@@ -324,7 +324,7 @@ class UnreadCountTests(ZulipTestCase):
 
         message_id = self.send_stream_message(self.example_user("hamlet"), "test_stream", "hello", "test_topic")
         unrelated_message_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", "hello", "Denmark2")
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_post("/json/mark_topic_as_read", {
                 "stream_id": get_stream("test_stream", user_profile.realm).id,

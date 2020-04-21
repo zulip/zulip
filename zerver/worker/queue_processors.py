@@ -72,8 +72,8 @@ def assign_queue(
         return clazz
     return decorate
 
-worker_classes = {}  # type: Dict[str, Type[QueueProcessingWorker]]
-queues = {}  # type: Dict[str, Dict[str, Type[QueueProcessingWorker]]]
+worker_classes: Dict[str, Type["QueueProcessingWorker"]] = {}
+queues: Dict[str, Dict[str, Type["QueueProcessingWorker"]]] = {}
 def register_worker(queue_name: str, clazz: Type['QueueProcessingWorker'], queue_type: str) -> None:
     if queue_type not in queues:
         queues[queue_type] = {}
@@ -114,11 +114,11 @@ def retry_send_email_failures(
     return wrapper
 
 class QueueProcessingWorker(ABC):
-    queue_name = None  # type: str
+    queue_name: str = None
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
 
     def __init__(self) -> None:
-        self.q = None  # type: SimpleQueueClient
+        self.q: SimpleQueueClient = None
         if self.queue_name is None:
             raise WorkerDeclarationException("Queue worker declared without queue_name")
 
@@ -127,7 +127,7 @@ class QueueProcessingWorker(ABC):
     def initialize_statistics(self) -> None:
         self.queue_last_emptied_timestamp = time.time()
         self.consumed_since_last_emptied = 0
-        self.recent_consume_times = deque(maxlen=50)  # type: MutableSequence[Tuple[int, float]]
+        self.recent_consume_times: MutableSequence[Tuple[int, float]] = deque(maxlen=50)
         self.consume_interation_counter = 0
 
         self.update_statistics(0)
@@ -168,7 +168,7 @@ class QueueProcessingWorker(ABC):
         try:
             time_start = time.time()
             consume_func(events)
-            consume_time_seconds = time.time() - time_start  # type: Optional[float]
+            consume_time_seconds: Optional[float] = time.time() - time_start
             self.consumed_since_last_emptied += len(events)
         except Exception:
             self._handle_consume_exception(events)
@@ -329,7 +329,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
     """
     sleep_delay = 10
     sleep_only_if_empty = True
-    client_id_map = {}  # type: Dict[str, int]
+    client_id_map: Dict[str, int] = {}
 
     def start(self) -> None:
         # For our unit tests to make sense, we need to clear this on startup.
@@ -337,7 +337,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
         super().start()
 
     def consume_batch(self, user_activity_events: List[Dict[str, Any]]) -> None:
-        uncommitted_events = {}  # type: Dict[Tuple[int, int, str], Tuple[int, float]]
+        uncommitted_events: Dict[Tuple[int, int, str], Tuple[int, float]] = {}
 
         # First, we drain the queue of all user_activity events and
         # deduplicate them for insertion into the database.
@@ -400,9 +400,9 @@ class MissedMessageWorker(QueueProcessingWorker):
     # mechanism for that case.
     TIMER_FREQUENCY = 5
     BATCH_DURATION = 120
-    timer_event = None  # type: Optional[Timer]
-    events_by_recipient = defaultdict(list)  # type: Dict[int, List[Dict[str, Any]]]
-    batch_start_by_recipient = {}  # type: Dict[int, float]
+    timer_event: Optional[Timer] = None
+    events_by_recipient: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    batch_start_by_recipient: Dict[int, float] = {}
 
     def consume(self, event: Dict[str, Any]) -> None:
         logging.debug("Received missedmessage_emails event: %s" % (event,))

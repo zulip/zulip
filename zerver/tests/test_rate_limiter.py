@@ -36,7 +36,7 @@ class RateLimiterBackendBase(ZulipTestCase):
     __unittest_skip__ = True
 
     def setUp(self) -> None:
-        self.requests_record = {}  # type: Dict[str, List[float]]
+        self.requests_record: Dict[str, List[float]] = {}
 
     def create_object(self, name: str, rules: List[Tuple[int, int]]) -> RateLimitedTestObject:
         obj = RateLimitedTestObject(name, rules, self.backend)

@@ -40,7 +40,7 @@ def get_status_dicts_for_rows(all_rows: List[Dict[str, Any]],
         get_user_key = lambda row: row['user_profile__email']
         get_user_info = get_legacy_user_info
 
-    user_statuses = dict()  # type: Dict[str, Dict[str, Any]]
+    user_statuses: Dict[str, Dict[str, Any]] = dict()
 
     for user_key, presence_rows in itertools.groupby(all_rows, get_user_key):
         info = get_user_info(
@@ -137,7 +137,7 @@ def get_presence_for_user(user_profile_id: int,
     )
     presence_rows = list(query)
 
-    mobile_user_ids = set()  # type: Set[int]
+    mobile_user_ids: Set[int] = set()
     if PushDeviceToken.objects.filter(user_id=user_profile_id).exists():  # nocoverage
         # TODO: Add a test, though this is low priority, since we don't use mobile_user_ids yet.
         mobile_user_ids.add(user_profile_id)

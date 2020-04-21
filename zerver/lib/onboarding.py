@@ -74,7 +74,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # Make sure each stream created in the realm creation process has at least one message below
     # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
     # view slightly less overwhelming
-    welcome_messages = [
+    welcome_messages: List[Dict[str, str]] = [
         {'stream': Realm.INITIAL_PRIVATE_STREAM_NAME,
          'topic': "private streams",
          'content': "This is a private stream, as indicated by the "
@@ -96,7 +96,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
          "\n\n[](/static/images/cute/turtle.png)"
          "\n\n[Start a new topic](/help/start-a-new-topic) any time you're not replying to a "
          "previous message."},
-    ]  # type: List[Dict[str, str]]
+    ]
     messages = [internal_prep_stream_message_by_name(
         realm, welcome_bot, message['stream'], message['topic'],
         message['content'] % {
