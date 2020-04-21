@@ -11,11 +11,13 @@ import markdown
 
 import zerver.openapi.python_examples
 from zerver.openapi.openapi import get_openapi_fixture, openapi_spec, get_openapi_description
+import zerver.openapi.javascript_examples
 
 MACRO_REGEXP = re.compile(
     r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
 PYTHON_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
 MACRO_REGEXP_DESC = re.compile(r'\{generate_api_description(\(\s*(.+?)\s*\))}')
+JS_EXAMPLE_REGEX = re.compile(r'\/\/ \{code_example\|\s*(.+?)\s*\}')
 
 PYTHON_CLIENT_CONFIG = """
 #!/usr/bin/env python3
@@ -34,6 +36,16 @@ import zulip
 
 # The user for this zuliprc file must be an organization administrator
 client = zulip.Client(config_file="~/zuliprc-admin")
+
+"""
+
+JS_CLIENT_CONFIG = """
+const zulip = require('zulip-js');
+
+// Pass the path to your zuliprc file here.
+const config = {
+    zuliprc: 'zuliprc',
+};
 
 """
 
@@ -103,6 +115,25 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
 
     code_example.append('print(result)')
     code_example.append('\n')
+    code_example.append('```')
+
+    return code_example
+
+def render_javascript_code_example(function: str, **kwargs: Any) -> List[str]:
+    method = zerver.openapi.javascript_examples.TEST_FUNCTIONS[function]
+    function_source_lines = inspect.getsourcelines(method)[0]
+
+    config = JS_CLIENT_CONFIG.splitlines()
+
+    snippet = extract_code_example(function_source_lines, [], JS_EXAMPLE_REGEX)
+
+    code_example = []
+    code_example.append('```js')
+    code_example.extend(config)
+    for line in snippet:
+        # Strip newlines
+        code_example.append(line.rstrip())
+
     code_example.append('```')
 
     return code_example
@@ -264,6 +295,9 @@ SUPPORTED_LANGUAGES: Dict[str, Any] = {
     },
     'curl': {
         'render': render_curl_example
+    },
+    'JavaScript': {
+        'render': render_javascript_code_example,
     }
 }
 
