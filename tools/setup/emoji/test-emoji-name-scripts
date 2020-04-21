@@ -7,7 +7,7 @@ import subprocess
 import shutil
 import tempfile
 
-TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
+TOOLS_DIR = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 def generate_files(source_file: str, tmp_dir: str) -> None:
     # Copy the source CSV file to out temporary test directory.
