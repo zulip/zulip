@@ -522,6 +522,33 @@ input[type=checkbox] + .inline-block {
     display: none;
 }
 
+#settings_page .icon-button.fail-button {
+    background-color: hsl(2, 46%, 68%);
+    border-color: hsl(2, 46%, 68%);
+}
+
+#settings_page .fail-button {
+    color: hsl(0, 0%, 100%);
+}
+
+#settings_page .fail-button:hover {
+    color: hsl(0, 0%, 100%);
+}
+
+#settings_page .fail-button.icon-button:hover .icon-button-icon {
+    color: hsl(0, 0%, 100%);
+}
+
+#settings_page .fail-button .icon-button-text.alert-error {
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(2, 46%, 68%);
+    border-color: hsl(2, 46%, 68%);
+}
+
+#settings_page .fail-button .icon-button-text.show {
+    display: inline;
+}
+
 #google_hangouts_domain,
 #zoom_help_text,
 .organization-settings-parent div:first-of-type {

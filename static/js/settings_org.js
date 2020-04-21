@@ -481,6 +481,7 @@ exports.change_save_button_state = function ($element, state) {
     }
 
     const $saveBtn = $element.find('.save-button');
+    const $failBtn = $element.find('.fail-button');
     const $textEl = $saveBtn.find('.icon-button-text');
 
     if (state !== "saving") {
@@ -489,6 +490,13 @@ exports.change_save_button_state = function ($element, state) {
 
     if (state === "discarded") {
         show_hide_element($element, false, 0);
+        return;
+    }
+
+    if (state === "failed") {
+        $failBtn.show();
+        $saveBtn.hide();
+        get_subsection_property_elements($element).forEach(discard_property_element_changes);
         return;
     }
 
@@ -501,6 +509,7 @@ exports.change_save_button_state = function ($element, state) {
         is_show = true;
 
         $element.find('.discard-button').show();
+        $failBtn.hide();
     } else if (state === "saved") {
         button_text = i18n.t("Save changes");
         data_status = "";
@@ -512,10 +521,6 @@ exports.change_save_button_state = function ($element, state) {
 
         $element.find('.discard-button').hide();
         $saveBtn.addClass('saving');
-    } else if (state === "failed") {
-        button_text = i18n.t("Save changes");
-        data_status = "failed";
-        is_show = true;
     } else if (state === 'succeeded') {
         button_text = i18n.t("Saved");
         data_status = "saved";
@@ -767,7 +772,7 @@ exports.build_page = function () {
     exports.save_organization_settings = function (data, save_button) {
         const subsection_parent = save_button.closest('.org-subsection-parent');
         const save_btn_container = subsection_parent.find('.save-button-controls');
-        const failed_alert_elem = subsection_parent.find('.subsection-failed-status p');
+        const failed_alert_elem = subsection_parent.find('.subsection-changes-fail .icon-button-text');
         exports.change_save_button_state(save_btn_container, "saving");
         channel.patch({
             url: "/json/realm",
@@ -778,7 +783,6 @@ exports.build_page = function () {
             },
             error: function (xhr) {
                 exports.change_save_button_state(save_btn_container, "failed");
-                save_button.hide();
                 ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
             },
         });
@@ -906,6 +910,12 @@ exports.build_page = function () {
 
         return data;
     }
+
+    $(".organization").on("click", ".subsection-header .subsection-changes-fail .button", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(e.currentTarget).hide();
+    });
 
     $(".organization").on("click", ".subsection-header .subsection-changes-save .button", function (e) {
         e.preventDefault();
