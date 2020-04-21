@@ -1908,15 +1908,7 @@ paths:
           type: boolean
           default: true
         example: false
-      - name: history_public_to_subscribers
-        in: query
-        description: |
-          A boolean indicating if the history should be available to newly
-          subscribed members.
-        schema:
-          type: boolean
-          default: None
-        example: false
+      - $ref: '#/components/parameters/HistoryPublicToSubscribers'
       - $ref: '#/components/parameters/StreamPostPolicy'
       - name: announce
         in: query
@@ -3139,17 +3131,7 @@ paths:
         example: true
         required: false
       - $ref: '#/components/parameters/StreamPostPolicy'
-      - name: history_public_to_subscribers
-        in: query
-        description: |
-          Whether subscribers have access to full stream history, even before they joined
-          the stream.
-        schema:
-          type: boolean
-        example: true
-        required: false
-
-
+      - $ref: '#/components/parameters/HistoryPublicToSubscribers'
       responses:
         '200':
           description: Success.
@@ -3852,4 +3834,15 @@ components:
         type: integer
         default: 1
       example: 2
+      required: false
+    HistoryPublicToSubscribers:
+      name: history_public_to_subscribers
+      in: query
+      description: |
+        A boolean indicating if the history should be available to newly
+        subscribed members.
+      schema:
+        type: boolean
+        default: None
+      example: false
       required: false
