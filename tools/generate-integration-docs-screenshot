@@ -35,8 +35,8 @@ from zerver.lib.upload import upload_avatar_image
 from zerver.lib.actions import do_change_avatar_fields
 from zerver.lib.integrations import WebhookIntegration, INTEGRATIONS, split_fixture_path
 from zerver.lib.webhooks.common import get_fixture_http_headers
-from setup.generate_integration_bots_avatars import create_png_from_svg
 from tools.lib.test_script import prepare_puppeteer_run
+from zerver.lib.storage import static_path
 
 def create_integration_bot(integration: WebhookIntegration) -> UserProfile:
     realm = get_realm('zulip')
@@ -57,16 +57,11 @@ def create_integration_bot(integration: WebhookIntegration) -> UserProfile:
         )
         notify_created_bot(bot)
 
-        if integration.logo_url is None:
-            return bot
-        logo_relative_path = integration.logo_url[len(realm.uri) + 1:]
-        logo_path = os.path.join(ROOT_DIR, logo_relative_path)
-        if logo_path.endswith(".svg"):
-            logo_path = create_png_from_svg(logo_path)
-
-        with open(logo_path, "rb") as f:
-            upload_avatar_image(f, owner, bot)
-            do_change_avatar_fields(bot, UserProfile.AVATAR_FROM_USER)
+        bot_avatar_path = static_path(integration.DEFAULT_BOT_AVATAR_PATH.format(name=integration.name))
+        if os.path.isfile(bot_avatar_path):
+            with open(bot_avatar_path, "rb") as f:
+                upload_avatar_image(f, owner, bot)
+                do_change_avatar_fields(bot, UserProfile.AVATAR_FROM_USER)
 
     return bot
 
