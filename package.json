@@ -74,6 +74,7 @@
     "webpack4-bundle-tracker": "^0.0.1-beta",
     "winchan": "^0.2.1",
     "xdate": "^0.8.2",
+    "zulip-js": "^2.0.8",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
