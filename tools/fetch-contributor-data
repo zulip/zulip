@@ -121,23 +121,23 @@ def update_contributor_data_file() -> None:
                 sleep_time = randrange(0, min(64, 2**retry_attempts))
                 sleep(sleep_time)
 
-        # remove duplicate contributions count
-        # find commits at the time of split and subtract from zulip-server
-        with open(duplicate_commits_file) as f:
-            duplicate_commits = json.load(f)
-            for committer in duplicate_commits:
-                if committer in contribs_list and contribs_list[committer].get('server'):
-                    total_commits = contribs_list[committer]['server']
-                    assert isinstance(total_commits, int)
-                    duplicate_commits_count = duplicate_commits[committer]
-                    original_commits = total_commits - duplicate_commits_count
-                    contribs_list[committer]['server'] = original_commits
-
         for repo in repos_done:
             del repositories[repo]
 
         if not repositories:
             break
+
+    # remove duplicate contributions count
+    # find commits at the time of split and subtract from zulip-server
+    with open(duplicate_commits_file) as f:
+        duplicate_commits = json.load(f)
+        for committer in duplicate_commits:
+            if committer in contribs_list and contribs_list[committer].get('server'):
+                total_commits = contribs_list[committer]['server']
+                assert isinstance(total_commits, int)
+                duplicate_commits_count = duplicate_commits[committer]
+                original_commits = total_commits - duplicate_commits_count
+                contribs_list[committer]['server'] = original_commits
 
     for contributor_name, contributor_data in contribs_list.items():
         contributor_data['name'] = contributor_name
