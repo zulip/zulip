@@ -62,7 +62,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     """
     NOW = float(timezone_now().timestamp())
 
-    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Slack')  # type: List[ZerverFieldsT]
+    zerver_realm: List[ZerverFieldsT] = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Slack')
     realm = build_realm(zerver_realm, realm_id, domain_name)
 
     zerver_userprofile, avatars, slack_user_id_to_zulip_user_id, zerver_customprofilefield, \
@@ -127,17 +127,17 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
     """
     logging.info('######### IMPORTING USERS STARTED #########\n')
     zerver_userprofile = []
-    zerver_customprofilefield = []  # type: List[ZerverFieldsT]
-    zerver_customprofilefield_values = []  # type: List[ZerverFieldsT]
-    avatar_list = []  # type: List[ZerverFieldsT]
+    zerver_customprofilefield: List[ZerverFieldsT] = []
+    zerver_customprofilefield_values: List[ZerverFieldsT] = []
+    avatar_list: List[ZerverFieldsT] = []
     slack_user_id_to_zulip_user_id = {}
 
     # The user data we get from the slack api does not contain custom profile data
     # Hence we get it from the slack zip file
     slack_data_file_user_list = get_data_file(slack_data_dir + '/users.json')
 
-    slack_user_id_to_custom_profile_fields = {}  # type: ZerverFieldsT
-    slack_custom_field_name_to_zulip_custom_field_id = {}  # type: ZerverFieldsT
+    slack_user_id_to_custom_profile_fields: ZerverFieldsT = {}
+    slack_custom_field_name_to_zulip_custom_field_id: ZerverFieldsT = {}
 
     for user in slack_data_file_user_list:
         process_slack_custom_fields(user, slack_user_id_to_custom_profile_fields)
@@ -498,8 +498,8 @@ def process_long_term_idle_users(slack_data_dir: str, users: List[ZerverFieldsT]
     """
     all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, dm_members)
 
-    sender_counts = defaultdict(int)  # type: Dict[str, int]
-    recent_senders = set()  # type: Set[str]
+    sender_counts: Dict[str, int] = defaultdict(int)
+    recent_senders: Set[str] = set()
     NOW = float(timezone_now().timestamp())
     for message in all_messages:
         timestamp = float(message['ts'])
@@ -563,9 +563,9 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, dm_members)
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
 
-    total_reactions = []  # type: List[ZerverFieldsT]
-    total_attachments = []  # type: List[ZerverFieldsT]
-    total_uploads = []  # type: List[ZerverFieldsT]
+    total_reactions: List[ZerverFieldsT] = []
+    total_attachments: List[ZerverFieldsT] = []
+    total_uploads: List[ZerverFieldsT] = []
 
     dump_file_id = 1
 
@@ -615,7 +615,7 @@ def get_messages_iterator(slack_data_dir: str, added_channels: Dict[str, Any],
        large imports that can OOM kill."""
 
     dir_names = list(added_channels.keys()) + list(added_mpims.keys()) + list(dm_members.keys())
-    all_json_names = defaultdict(list)  # type: Dict[str, List[str]]
+    all_json_names: Dict[str, List[str]] = defaultdict(list)
     for dir_name in dir_names:
         dir_path = os.path.join(slack_data_dir, dir_name)
         json_names = os.listdir(dir_path)
@@ -624,7 +624,7 @@ def get_messages_iterator(slack_data_dir: str, added_channels: Dict[str, Any],
 
     # Sort json_name by date
     for json_name in sorted(all_json_names.keys()):
-        messages_for_one_day = []  # type: List[ZerverFieldsT]
+        messages_for_one_day: List[ZerverFieldsT] = []
         for dir_path in all_json_names[json_name]:
             message_dir = os.path.join(dir_path, json_name)
             dir_name = os.path.basename(dir_path)
@@ -675,10 +675,10 @@ def channel_message_to_zerver_message(realm_id: int,
     5. reaction_list, which is a list of all user reactions
     """
     zerver_message = []
-    zerver_usermessage = []  # type: List[ZerverFieldsT]
-    uploads_list = []  # type: List[ZerverFieldsT]
-    zerver_attachment = []  # type: List[ZerverFieldsT]
-    reaction_list = []  # type: List[ZerverFieldsT]
+    zerver_usermessage: List[ZerverFieldsT] = []
+    uploads_list: List[ZerverFieldsT] = []
+    zerver_attachment: List[ZerverFieldsT] = []
+    reaction_list: List[ZerverFieldsT] = []
 
     total_user_messages = 0
     total_skipped_user_messages = 0
@@ -947,7 +947,7 @@ def fetch_shared_channel_users(user_list: List[ZerverFieldsT], slack_data_dir: s
     normal_user_ids = set()
     mirror_dummy_user_ids = set()
     added_channels = {}
-    team_id_to_domain = {}  # type: Dict[str, str]
+    team_id_to_domain: Dict[str, str] = {}
     for user in user_list:
         user["is_mirror_dummy"] = False
         normal_user_ids.add(user["id"])

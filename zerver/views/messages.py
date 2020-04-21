@@ -75,7 +75,7 @@ class BadNarrowOperator(JsonableError):
     data_fields = ['desc']
 
     def __init__(self, desc: str) -> None:
-        self.desc = desc  # type: str
+        self.desc: str = desc
 
     @staticmethod
     def msg_format() -> str:
@@ -590,7 +590,7 @@ def ok_to_include_history(narrow: OptionalNarrowListT, user_profile: UserProfile
     if narrow is not None:
         for term in narrow:
             if term['operator'] == "stream" and not term.get('negated', False):
-                operand = term['operand']  # type: Union[str, int]
+                operand: Union[str, int] = term['operand']
                 if isinstance(operand, str):
                     include_history = can_access_stream_history_by_name(user_profile, operand)
                 else:
@@ -926,8 +926,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     # rendered message dict before returning it.  We attempt to
     # bulk-fetch rendered message dicts from remote cache using the
     # 'messages' list.
-    message_ids = []  # type: List[int]
-    user_message_flags = {}  # type: Dict[int, List[str]]
+    message_ids: List[int] = []
+    user_message_flags: Dict[int, List[str]] = {}
     if include_history:
         message_ids = [row[0] for row in rows]
 
@@ -946,7 +946,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
             user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
             message_ids.append(message_id)
 
-    search_fields = dict()  # type: Dict[int, Dict[str, str]]
+    search_fields: Dict[int, Dict[str, str]] = dict()
     if is_search:
         for row in rows:
             message_id = row[0]
@@ -1089,8 +1089,8 @@ def post_process_limited_query(rows: List[Any],
     if anchored_to_right:
         num_after = 0
         before_rows = visible_rows[:]
-        anchor_rows = []  # type: List[Any]
-        after_rows = []  # type: List[Any]
+        anchor_rows: List[Any] = []
+        after_rows: List[Any] = []
     else:
         before_rows = [r for r in visible_rows if r[0] < anchor]
         anchor_rows = [r for r in visible_rows if r[0] == anchor]
@@ -1339,7 +1339,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
 
     # If req_to is None, then we default to an
     # empty list of recipients.
-    message_to = []  # type: Union[Sequence[int], Sequence[str]]
+    message_to: Union[Sequence[int], Sequence[str]] = []
 
     if req_to is not None:
         if message_type_name == 'stream':
@@ -1565,10 +1565,10 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         if topic_name == "":
             raise JsonableError(_("Topic can't be empty"))
     rendered_content = None
-    links_for_embed = set()  # type: Set[str]
-    prior_mention_user_ids = set()  # type: Set[int]
-    mention_user_ids = set()  # type: Set[int]
-    mention_data = None  # type: Optional[bugdown.MentionData]
+    links_for_embed: Set[str] = set()
+    prior_mention_user_ids: Set[int] = set()
+    mention_user_ids: Set[int] = set()
+    mention_data: Optional[bugdown.MentionData] = None
     if content is not None:
         content = content.strip()
         if content == "":

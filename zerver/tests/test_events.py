@@ -169,7 +169,7 @@ class LogEventsTest(ZulipTestCase):
 
         self.assertFalse(os.path.exists(dir_name))
         with self.settings(EVENT_LOG_DIR=dir_name):
-            event = {}  # type: Dict[str, int]
+            event: Dict[str, int] = {}
             log_event(event)
         self.assertTrue(os.path.exists(dir_name))
 
@@ -189,7 +189,7 @@ class EventsEndpointTest(ZulipTestCase):
         self.assert_json_error(result, "Could not allocate event queue")
 
         return_event_queue = '15:11'
-        return_user_events = []  # type: List[Dict[str, Any]]
+        return_user_events: List[Dict[str, Any]] = []
 
         # Test that call is made to deal with a returning soft deactivated user.
         with mock.patch('zerver.lib.events.reactivate_user_if_soft_deactivated') as fa:
@@ -737,8 +737,8 @@ class EventsRegisterTest(ZulipTestCase):
         propagate_mode = 'change_all'
         content = 'new content'
         rendered_content = render_markdown(message, content)
-        prior_mention_user_ids = set()  # type: Set[int]
-        mentioned_user_ids = set()  # type: Set[int]
+        prior_mention_user_ids: Set[int] = set()
+        mentioned_user_ids: Set[int] = set()
         mention_data = MentionData(
             realm_id=self.user_profile.realm_id,
             content=content,
@@ -1604,8 +1604,8 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def do_set_realm_property_test(self, name: str) -> None:
-        bool_tests = [True, False, True]  # type: List[bool]
-        test_values = dict(
+        bool_tests: List[bool] = [True, False, True]
+        test_values: Dict[str, Any] = dict(
             default_language=['es', 'de', 'en'],
             description=['Realm description', 'New description'],
             digest_weekday=[0, 1, 2],
@@ -1627,7 +1627,7 @@ class EventsRegisterTest(ZulipTestCase):
             zoom_api_key=["abc", "xyz"],
             zoom_user_id=["example@example.com", "example@example.org"],
             default_code_block_language=['python', 'javascript'],
-        )  # type: Dict[str, Any]
+        )
 
         vals = test_values.get(name)
         property_type = Realm.property_types[name]
@@ -1842,12 +1842,12 @@ class EventsRegisterTest(ZulipTestCase):
     def do_set_user_display_settings_test(self, setting_name: str) -> None:
         """Test updating each setting in UserProfile.property_types dict."""
 
-        test_changes = dict(
+        test_changes: Dict[str, Any] = dict(
             emojiset = ['twitter'],
             default_language = ['es', 'de', 'en'],
             timezone = ['US/Mountain', 'US/Samoa', 'Pacific/Galapogos', ''],
             demote_inactive_streams = [2, 3, 1],
-        )  # type: Dict[str, Any]
+        )
 
         property_type = UserProfile.property_types[setting_name]
         if property_type is bool:
@@ -2588,7 +2588,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         # Subscribe to a totally new stream, so it's just Hamlet on it
-        action = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")  # type: Callable[[], object]
+        action: Callable[[], object] = lambda: self.subscribe(self.example_user("hamlet"), "test_stream")
         events = self.do_test(action, event_types=["subscription", "realm_user"],
                               include_subscribers=include_subscribers)
         error = add_schema_checker('events[0]', events[0])
@@ -2946,7 +2946,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             self.subscribe(hamlet, stream_name)
             self.subscribe(cordelia, stream_name)
 
-        all_message_ids = set()  # type: Set[int]
+        all_message_ids: Set[int] = set()
         message_ids = dict()
 
         tups = [
@@ -3449,7 +3449,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 self.apply_markdown = apply_markdown
                 self.client_gravatar = client_gravatar
                 self.client_type_name = 'whatever'
-                self.events = []  # type: List[Dict[str, Any]]
+                self.events: List[Dict[str, Any]] = []
 
             def accepts_messages(self) -> bool:
                 return True
@@ -3532,7 +3532,7 @@ class ClientDescriptorsTest(ZulipTestCase):
         # Setting users to `[]` bypasses code we don't care about
         # for this test--we assume client_info is correct in our mocks,
         # and we are interested in how messages are put on event queue.
-        users = []  # type: List[Dict[str, Any]]
+        users: List[Dict[str, Any]] = []
 
         with mock.patch('zerver.tornado.event_queue.get_client_info_for_message_event',
                         return_value=client_info):

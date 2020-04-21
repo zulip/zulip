@@ -266,11 +266,11 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
 
         # query_function shouldn't be called, because the only requested object
         # is already cached:
-        result = generic_bulk_cached_fetch(
+        result: Dict[str, UserProfile] = generic_bulk_cached_fetch(
             cache_key_function=user_profile_by_email_cache_key,
             query_function=query_function,
             object_ids=[self.example_email("hamlet")]
-        )  # type: Dict[str, UserProfile]
+        )
         self.assertEqual(result, {hamlet.delivery_email: hamlet})
 
         flush_cache(Mock())
@@ -294,9 +294,9 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
 
         # query_function and cache_key_function shouldn't be called, because
         # objects_ids is empty, so there's nothing to do.
-        result = generic_bulk_cached_fetch(
+        result: Dict[str, UserProfile] = generic_bulk_cached_fetch(
             cache_key_function=cache_key_function,
             query_function=query_function,
             object_ids=[]
-        )  # type: Dict[str, UserProfile]
+        )
         self.assertEqual(result, {})

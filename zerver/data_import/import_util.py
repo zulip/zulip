@@ -21,8 +21,8 @@ ZerverFieldsT = Dict[str, Any]
 
 class SubscriberHandler:
     def __init__(self) -> None:
-        self.stream_info = dict()  # type: Dict[int, Set[int]]
-        self.huddle_info = dict()  # type: Dict[int, Set[int]]
+        self.stream_info: Dict[int, Set[int]] = dict()
+        self.huddle_info: Dict[int, Set[int]] = dict()
 
     def set_info(self,
                  users: Set[int],
@@ -105,7 +105,7 @@ def make_subscriber_map(zerver_subscription: List[ZerverFieldsT]) -> Dict[int, S
     This can be convenient for building up UserMessage
     rows.
     '''
-    subscriber_map = dict()  # type: Dict[int, Set[int]]
+    subscriber_map: Dict[int, Set[int]] = dict()
     for sub in zerver_subscription:
         user_id = sub['user_profile']
         recipient_id = sub['recipient']
@@ -163,7 +163,7 @@ def build_public_stream_subscriptions(
     users to every public stream.  This returns a list of Subscription
     dicts.
     '''
-    subscriptions = []  # type: List[ZerverFieldsT]
+    subscriptions: List[ZerverFieldsT] = []
 
     public_stream_ids = {
         stream['id']
@@ -199,7 +199,7 @@ def build_stream_subscriptions(
         zerver_recipient: List[ZerverFieldsT],
         zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
 
-    subscriptions = []  # type: List[ZerverFieldsT]
+    subscriptions: List[ZerverFieldsT] = []
 
     stream_ids = {stream['id'] for stream in zerver_stream}
 
@@ -227,7 +227,7 @@ def build_huddle_subscriptions(
         zerver_recipient: List[ZerverFieldsT],
         zerver_huddle: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
 
-    subscriptions = []  # type: List[ZerverFieldsT]
+    subscriptions: List[ZerverFieldsT] = []
 
     huddle_ids = {huddle['id'] for huddle in zerver_huddle}
 
@@ -252,7 +252,7 @@ def build_huddle_subscriptions(
 
 def build_personal_subscriptions(zerver_recipient: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
 
-    subscriptions = []  # type: List[ZerverFieldsT]
+    subscriptions: List[ZerverFieldsT] = []
 
     personal_recipients = [
         recipient
@@ -586,7 +586,7 @@ def run_parallel_wrapper(f: Callable[[ListJobData], None], full_items: List[List
             if count % 1000 == 0:
                 logging.info("A download thread finished %s items" % (count,))
         return 0
-    job_lists = [full_items[i::threads] for i in range(threads)]  # type: List[List[ListJobData]]
+    job_lists: List[List[ListJobData]] = [full_items[i::threads] for i in range(threads)]
     return run_parallel(wrapping_function, job_lists, threads=threads)
 
 def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,

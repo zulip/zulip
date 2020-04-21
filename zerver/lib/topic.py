@@ -161,7 +161,7 @@ def update_messages_for_topic_edit(message: Message,
     return messages_list
 
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
-    canonical_topic_names = {}  # type: Dict[str, Tuple[int, str]]
+    canonical_topic_names: Dict[str, Tuple[int, str]] = {}
 
     # Sort rows by max_message_id so that if a topic
     # has many different casings, we use the most

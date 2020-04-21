@@ -85,7 +85,7 @@ class TypingHappyPathTest(ZulipTestCase):
             op='start',
         )
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with queries_captured() as queries:
             with tornado_redirected_to_list(events):
                 result = self.api_post(sender, '/api/v1/typing', params)
@@ -116,7 +116,7 @@ class TypingHappyPathTest(ZulipTestCase):
         huddle_hash = get_huddle_hash(list(expected_recipient_ids))
         self.assertFalse(Huddle.objects.filter(huddle_hash=huddle_hash).exists())
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
 
         params = dict(
             to=ujson.dumps([user.id for user in recipient_users]),
@@ -156,7 +156,7 @@ class TypingHappyPathTest(ZulipTestCase):
         email = user.email
         expected_recipient_emails = {email}
         expected_recipient_ids = {user.id}
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.api_post(
                 user,
@@ -197,7 +197,7 @@ class TypingHappyPathTest(ZulipTestCase):
             op='start'
         )
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.api_post(sender, '/api/v1/typing', params)
 
@@ -226,7 +226,7 @@ class TypingHappyPathTest(ZulipTestCase):
         expected_recipient_emails = {email}
         expected_recipient_ids = {user.id}
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             params = dict(
                 to=ujson.dumps([user.id]),
@@ -260,7 +260,7 @@ class TypingHappyPathTest(ZulipTestCase):
         expected_recipient_emails = {user.email for user in expected_recipients}
         expected_recipient_ids = {user.id for user in expected_recipients}
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             params = dict(
                 to=ujson.dumps([recipient.id]),
@@ -301,7 +301,7 @@ class TypingLegacyMobileSupportTest(ZulipTestCase):
             op='start',
         )
 
-        events = []  # type: List[Mapping[str, Any]]
+        events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.api_post(sender, '/api/v1/typing', params)
 

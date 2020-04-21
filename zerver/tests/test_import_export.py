@@ -122,7 +122,7 @@ class QueryUtilTest(ZulipTestCase):
 
         queries = get_queries()
 
-        all_msg_ids = set()  # type: Set[int]
+        all_msg_ids: Set[int] = set()
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
@@ -832,7 +832,7 @@ class ImportExportTest(ZulipTestCase):
                 return {get_email(user_id) for user_id in user_id_list}
 
             def custom_profile_field_values_for(fields: List[CustomProfileField]) -> Set[FrozenSet[str]]:
-                user_emails = set()  # type: Set[FrozenSet[str]]
+                user_emails: Set[FrozenSet[str]] = set()
                 for field in fields:
                     values = CustomProfileFieldValue.objects.filter(field=field)
                     for value in values:

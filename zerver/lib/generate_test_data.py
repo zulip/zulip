@@ -45,7 +45,7 @@ def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -
     # First, load the entire file into a dictionary,
     # then apply our custom filters to it as needed.
 
-    paragraphs = []  # type: List[str]
+    paragraphs: List[str] = []
 
     with open(corpus_file) as infile:
         # OUR DATA: we need to separate the person talking and what they say

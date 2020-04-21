@@ -16,8 +16,8 @@ from zerver.lib.types import ViewFuncT
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.logging_handlers import AdminNotifyHandler
 
-captured_request = None  # type: Optional[HttpRequest]
-captured_exc_info = None  # type: Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]]
+captured_request: Optional[HttpRequest] = None
+captured_exc_info: Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]] = None
 def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewFuncT]:
     def wrapper(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func)

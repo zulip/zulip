@@ -125,7 +125,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(wide_message_dict['sender_realm_id'], othello.realm_id)
 
     def test_process_success(self) -> None:
-        response = dict(response_not_required=True)  # type: Dict[str, Any]
+        response: Dict[str, Any] = dict(response_not_required=True)
         success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 
@@ -217,7 +217,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertTrue(mock_fail_with_message.called)
 
     def test_process_success(self) -> None:
-        response = dict(response_not_required=True)  # type: Dict[str, Any]
+        response: Dict[str, Any] = dict(response_not_required=True)
         success_response = self.handler.process_success(response)
         self.assertEqual(success_response, None)
 

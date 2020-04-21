@@ -32,8 +32,8 @@ from version import ZULIP_VERSION
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
-]  # type: List[str]
+extensions: List[str] = [
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -63,7 +63,7 @@ release = ZULIP_VERSION
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None  # type: Optional[str]
+language: Optional[str] = None
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -217,7 +217,7 @@ htmlhelp_basename = 'zulip-contributor-docsdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: Dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     #'papersize': 'letterpaper',
 
@@ -229,7 +229,7 @@ latex_elements = {
 
     # Latex figure (float) alignment
     #'figure_align': 'htbp',
-}  # type: Dict[str, str]
+}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,

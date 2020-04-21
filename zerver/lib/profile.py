@@ -26,7 +26,7 @@ def profiled(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
     def wrapped_func(*args: Any, **kwargs: Any) -> ReturnT:
         fn = func.__name__ + ".profile"
         prof = cProfile.Profile()
-        retval = prof.runcall(func, *args, **kwargs)  # type: ReturnT
+        retval: ReturnT = prof.runcall(func, *args, **kwargs)
         prof.dump_stats(fn)
         return retval
     return wrapped_func

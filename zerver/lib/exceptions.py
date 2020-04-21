@@ -83,18 +83,18 @@ class JsonableError(Exception):
     '''
 
     # Override this in subclasses, as needed.
-    code = ErrorCode.BAD_REQUEST  # type: ErrorCode
+    code: ErrorCode = ErrorCode.BAD_REQUEST
 
     # Override this in subclasses if providing structured data.
-    data_fields = []  # type: List[str]
+    data_fields: List[str] = []
 
     # Optionally override this in subclasses to return a different HTTP status,
     # like 403 or 404.
-    http_status_code = 400  # type: int
+    http_status_code: int = 400
 
     def __init__(self, msg: str) -> None:
         # `_msg` is an implementation detail of `JsonableError` itself.
-        self._msg = msg  # type: str
+        self._msg: str = msg
 
     @staticmethod
     def msg_format() -> str:
@@ -190,7 +190,7 @@ class InvalidJSONError(JsonableError):
         return _("Malformed JSON")
 
 class OrganizationAdministratorRequired(JsonableError):
-    code = ErrorCode.UNAUTHORIZED_PRINCIPAL  # type: ErrorCode
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
     ADMIN_REQUIRED_MESSAGE = _("Must be an organization administrator")
 

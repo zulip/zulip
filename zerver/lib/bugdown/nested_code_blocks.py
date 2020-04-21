@@ -37,8 +37,8 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
     ) -> List[ResultWithFamily]:
         nested_code_blocks = []
         for code_tag in code_tags:
-            parent = code_tag.family.parent  # type: Any
-            grandparent = code_tag.family.grandparent  # type: Any
+            parent: Any = code_tag.family.parent
+            grandparent: Any = code_tag.family.grandparent
             if parent.tag == "p" and grandparent.tag == "li":
                 # if the parent (<p>) has no text, and no children,
                 # that means that the <code> element inside is its

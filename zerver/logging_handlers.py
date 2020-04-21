@@ -86,7 +86,7 @@ class AdminNotifyHandler(logging.Handler):
         logging.Handler.__init__(self)
 
     def emit(self, record: logging.LogRecord) -> None:
-        report = {}  # type: Dict[str, Any]
+        report: Dict[str, Any] = {}
 
         # This parameter determines whether Zulip should attempt to
         # send Zulip messages containing the error report.  If there's

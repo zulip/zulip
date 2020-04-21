@@ -16,7 +16,7 @@ from zerver.middleware import async_request_timer_restart, async_request_timer_s
 from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
 current_handler_id = 0
-handlers = {}  # type: Dict[int, 'AsyncDjangoHandler']
+handlers: Dict[int, 'AsyncDjangoHandler'] = {}
 
 # Copied from django.core.handlers.base
 logger = logging.getLogger('django.request')
@@ -122,7 +122,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         # Copy any cookies
         if not hasattr(self, "_new_cookies"):
-            self._new_cookies = []  # type: List[http.cookie.SimpleCookie[str]]
+            self._new_cookies: List[http.cookie.SimpleCookie[str]] = []
         self._new_cookies.append(response.cookies)
 
         # Copy the response content

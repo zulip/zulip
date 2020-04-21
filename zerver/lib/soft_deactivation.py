@@ -20,7 +20,7 @@ def filter_by_subscription_history(user_profile: UserProfile,
                                    all_stream_messages: DefaultDict[int, List[Message]],
                                    all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]],
                                    ) -> List[UserMessage]:
-    user_messages_to_insert = []  # type: List[UserMessage]
+    user_messages_to_insert: List[UserMessage] = []
 
     def store_user_message_to_insert(message: Message) -> None:
         message = UserMessage(user_profile=user_profile,
@@ -149,7 +149,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         modified_stream__id__in=stream_ids,
         event_type__in=events).order_by('event_last_message_id', 'id'))
 
-    all_stream_subscription_logs = defaultdict(list)  # type: DefaultDict[int, List[RealmAuditLog]]
+    all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]] = defaultdict(list)
     for log in subscription_logs:
         all_stream_subscription_logs[log.modified_stream_id].append(log)
 
@@ -177,7 +177,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     all_stream_msgs = [msg for msg in all_stream_msgs
                        if msg['id'] not in already_created_ums]
 
-    stream_messages = defaultdict(list)  # type: DefaultDict[int, List[Message]]
+    stream_messages: DefaultDict[int, List[Message]] = defaultdict(list)
     for msg in all_stream_msgs:
         stream_messages[msg['recipient__type_id']].append(msg)
 
@@ -240,7 +240,7 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
     return users_soft_deactivated
 
 def do_auto_soft_deactivate_users(inactive_for_days: int, realm: Optional[Realm]) -> List[UserProfile]:
-    filter_kwargs = {}  # type: Dict[str, Realm]
+    filter_kwargs: Dict[str, Realm] = {}
     if realm is not None:
         filter_kwargs = dict(user_profile__realm=realm)
     users_to_deactivate = get_users_for_soft_deactivation(inactive_for_days, filter_kwargs)

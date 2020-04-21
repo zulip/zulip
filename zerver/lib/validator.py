@@ -210,7 +210,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                optional_keys: Iterable[Tuple[str, Validator]]=[],
                value_validator: Optional[Validator]=None,
                _allow_only_listed_keys: bool=False) -> Validator:
-    type_structure = {}  # type: Dict[str, Any]
+    type_structure: Dict[str, Any] = {}
 
     @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> Optional[str]:

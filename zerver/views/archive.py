@@ -52,7 +52,7 @@ def archive(request: HttpRequest,
         return get_response([], True, stream.name)
 
     rendered_message_list = []
-    prev_sender = None  # type: Optional[UserProfile]
+    prev_sender: Optional[UserProfile] = None
     for msg in all_messages:
         include_sender = False
         status_message = Message.is_status_message(msg.content, msg.rendered_content)

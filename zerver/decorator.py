@@ -61,7 +61,7 @@ log_to_file(webhook_unexpected_events_logger,
             settings.WEBHOOK_UNEXPECTED_EVENTS_LOG_PATH)
 
 def cachify(method: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
-    dct = {}  # type: Dict[Tuple[Any, ...], ReturnT]
+    dct: Dict[Tuple[Any, ...], ReturnT] = {}
 
     def cache_wrapper(*args: Any) -> ReturnT:
         tup = tuple(args)
@@ -131,7 +131,7 @@ def get_client_name(request: HttpRequest) -> str:
     if 'client' in request.POST:
         return request.POST['client']
     if "HTTP_USER_AGENT" in request.META:
-        user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])  # type: Optional[Dict[str, str]]
+        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.META["HTTP_USER_AGENT"])
     else:
         user_agent = None
     if user_agent is not None:
@@ -167,7 +167,7 @@ class InvalidZulipServerError(JsonableError):
     data_fields = ['role']
 
     def __init__(self, role: str) -> None:
-        self.role = role  # type: str
+        self.role: str = role
 
     @staticmethod
     def msg_format() -> str:

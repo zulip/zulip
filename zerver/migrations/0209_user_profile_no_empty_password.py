@@ -66,8 +66,8 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
     # searching for the relevant events in that log.
     event_type_class = RealmAuditLog._meta.get_field('event_type').get_internal_type()
     if event_type_class == 'CharField':
-        USER_PASSWORD_CHANGED = 'user_password_changed'  # type: Union[int, str]
-        USER_API_KEY_CHANGED = 'user_api_key_changed'  # type: Union[int, str]
+        USER_PASSWORD_CHANGED: Union[int, str] = 'user_password_changed'
+        USER_API_KEY_CHANGED: Union[int, str] = 'user_api_key_changed'
     else:
         USER_PASSWORD_CHANGED = 122
         USER_API_KEY_CHANGED = 127
@@ -84,8 +84,8 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
     # password_change_user_ids_no_reset_needed.
     password_change_user_ids = set(RealmAuditLog.objects.filter(
         event_type=USER_PASSWORD_CHANGED).values_list("modified_user_id", flat=True))
-    password_change_user_ids_api_key_reset_needed = set()  # type: Set[int]
-    password_change_user_ids_no_reset_needed = set()  # type: Set[int]
+    password_change_user_ids_api_key_reset_needed: Set[int] = set()
+    password_change_user_ids_no_reset_needed: Set[int] = set()
 
     for user_id in password_change_user_ids:
         # Here, we check the timing for users who have changed

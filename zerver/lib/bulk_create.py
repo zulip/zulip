@@ -24,7 +24,7 @@ def bulk_create_users(realm: Realm,
     users = sorted([user_raw for user_raw in users_raw if user_raw[0] not in existing_users])
 
     # Now create user_profiles
-    profiles_to_create = []  # type: List[UserProfile]
+    profiles_to_create: List[UserProfile] = []
     for (email, full_name, short_name, active) in users:
         profile = create_user_profile(realm, email,
                                       initial_password(email), active, bot_type,
@@ -52,7 +52,7 @@ def bulk_create_users(realm: Realm,
                        event_type=RealmAuditLog.USER_CREATED, event_time=profile_.date_joined)
          for profile_ in profiles_to_create])
 
-    recipients_to_create = []  # type: List[Recipient]
+    recipients_to_create: List[Recipient] = []
     for user_id in user_ids:
         recipient = Recipient(type_id=user_id, type=Recipient.PERSONAL)
         recipients_to_create.append(recipient)
@@ -61,11 +61,11 @@ def bulk_create_users(realm: Realm,
 
     bulk_set_users_or_streams_recipient_fields(UserProfile, profiles_to_create, recipients_to_create)
 
-    recipients_by_user_id = {}  # type: Dict[int, Recipient]
+    recipients_by_user_id: Dict[int, Recipient] = {}
     for recipient in recipients_to_create:
         recipients_by_user_id[recipient.type_id] = recipient
 
-    subscriptions_to_create = []  # type: List[Subscription]
+    subscriptions_to_create: List[Subscription] = []
     for user_id in user_ids:
         recipient = recipients_by_user_id[user_id]
         subscription = Subscription(user_profile_id=user_id, recipient=recipient)
@@ -106,7 +106,7 @@ def bulk_create_streams(realm: Realm,
     existing_streams = frozenset([name.lower() for name in
                                   Stream.objects.filter(realm=realm)
                                   .values_list('name', flat=True)])
-    streams_to_create = []  # type: List[Stream]
+    streams_to_create: List[Stream] = []
     for name, options in stream_dict.items():
         if 'history_public_to_subscribers' not in options:
             options['history_public_to_subscribers'] = (
@@ -137,7 +137,7 @@ def bulk_create_streams(realm: Realm,
     streams_to_create.sort(key=lambda x: x.name)
     Stream.objects.bulk_create(streams_to_create)
 
-    recipients_to_create = []  # type: List[Recipient]
+    recipients_to_create: List[Recipient] = []
     for stream in Stream.objects.filter(realm=realm).values('id', 'name'):
         if stream['name'].lower() not in existing_streams:
             recipients_to_create.append(Recipient(type_id=stream['id'],

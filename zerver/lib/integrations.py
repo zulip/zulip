@@ -29,7 +29,7 @@ Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-CATEGORIES = {
+CATEGORIES: Dict[str, str] = {
     'meta-integration': _('Integration frameworks'),
     'continuous-integration': _('Continuous integration'),
     'customer-support': _('Customer support'),
@@ -44,7 +44,7 @@ CATEGORIES = {
     'productivity': _('Productivity'),
     'version-control': _('Version control'),
     'bots': _('Interactive bots'),
-}  # type: Dict[str, str]
+}
 
 class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = 'images/integrations/logos/{name}.png'
@@ -222,16 +222,16 @@ class EmbeddedBotIntegration(Integration):
         super().__init__(
             name, client_name, *args, **kwargs)
 
-EMBEDDED_BOTS = [
+EMBEDDED_BOTS: List[EmbeddedBotIntegration] = [
     EmbeddedBotIntegration('converter', []),
     EmbeddedBotIntegration('encrypt', []),
     EmbeddedBotIntegration('helloworld', []),
     EmbeddedBotIntegration('virtual_fs', []),
     EmbeddedBotIntegration('giphy', []),
     EmbeddedBotIntegration('followup', []),
-]  # type: List[EmbeddedBotIntegration]
+]
 
-WEBHOOK_INTEGRATIONS = [
+WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration('airbrake', ['monitoring']),
     WebhookIntegration(
         'alertmanager',
@@ -358,9 +358,9 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('zabbix', ['monitoring'], display_name='Zabbix'),
     WebhookIntegration('gci', ['misc'], display_name='Google Code-in',
                        stream_name='gci'),
-]  # type: List[WebhookIntegration]
+]
 
-INTEGRATIONS = {
+INTEGRATIONS: Dict[str, Integration] = {
     'asana': Integration('asana', 'asana', ['project-management'], doc='zerver/integrations/asana.md'),
     'capistrano': Integration(
         'capistrano',
@@ -452,16 +452,16 @@ INTEGRATIONS = {
                            # _ needed to get around adblock plus
                            logo='images/integrations/logos/twitte_r.svg',
                            doc='zerver/integrations/twitter.md'),
-}  # type: Dict[str, Integration]
+}
 
-BOT_INTEGRATIONS = [
+BOT_INTEGRATIONS: List[BotIntegration] = [
     BotIntegration('github_detail', ['version-control', 'bots'],
                    display_name='GitHub Detail'),
     BotIntegration('xkcd', ['bots', 'misc'], display_name='xkcd',
                    logo='images/integrations/logos/xkcd.png'),
-]  # type: List[BotIntegration]
+]
 
-HUBOT_INTEGRATIONS = [
+HUBOT_INTEGRATIONS: List[HubotIntegration] = [
     HubotIntegration('assembla', ['version-control', 'project-management'],
                      display_name='Assembla', logo_alt='Assembla'),
     HubotIntegration('bonusly', ['hr']),
@@ -480,7 +480,7 @@ HUBOT_INTEGRATIONS = [
     HubotIntegration('youtube', ['misc'], display_name='YouTube',
                      # _ needed to get around adblock plus
                      logo='images/integrations/logos/youtub_e.svg'),
-]  # type: List[HubotIntegration]
+]
 
 for hubot_integration in HUBOT_INTEGRATIONS:
     INTEGRATIONS[hubot_integration.name] = hubot_integration

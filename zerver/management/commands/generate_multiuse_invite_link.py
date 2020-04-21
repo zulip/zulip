@@ -30,7 +30,7 @@ class Command(ZulipBaseCommand):
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 
-        streams = []  # type: List[Stream]
+        streams: List[Stream] = []
         if options["streams"]:
             stream_names = {stream.strip() for stream in options["streams"].split(",")}
             for stream_name in set(stream_names):

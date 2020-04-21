@@ -126,7 +126,7 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
     The messages are collapsed into per-recipient and per-sender blocks, like
     our web interface
     """
-    messages_to_render = []  # type: List[Dict[str, Any]]
+    messages_to_render: List[Dict[str, Any]] = []
 
     def sender_string(message: Message) -> str:
         if message.recipient.type in (Recipient.STREAM, Recipient.HUDDLE):
@@ -417,7 +417,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         })
 
     with override_language(user_profile.default_language):
-        from_name = _("Zulip missed messages")  # type: str
+        from_name: str = _("Zulip missed messages")
     from_address = FromAddress.NOREPLY
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
@@ -470,7 +470,7 @@ def handle_missedmessage_emails(user_profile_id: int,
     # We bucket messages by tuples that identify similar messages.
     # For streams it's recipient_id and topic.
     # For PMs it's recipient id and sender.
-    messages_by_bucket = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
+    messages_by_bucket: Dict[Tuple[int, str], List[Message]] = defaultdict(list)
     for msg in messages:
         if msg.recipient.type == Recipient.PERSONAL:
             # For PM's group using (recipient, sender).
@@ -491,7 +491,7 @@ def handle_missedmessage_emails(user_profile_id: int,
             msg_list.extend(filtered_context_messages)
 
     # Sort emails by least recently-active discussion.
-    bucket_tups = []  # type: List[Tuple[Tuple[int, str], int]]
+    bucket_tups: List[Tuple[Tuple[int, str], int]] = []
     for bucket_tup, msg_list in messages_by_bucket.items():
         max_message_id = max(msg_list, key=lambda msg: msg.id).id
         bucket_tups.append((bucket_tup, max_message_id))

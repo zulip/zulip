@@ -51,10 +51,10 @@ def get_bulk_stream_subscriber_info(
 
     stream_ids = stream_dict.keys()
 
-    result = {
+    result: Dict[int, List[Tuple[Subscription, Stream]]] = {
         user_profile.id: []
         for user_profile in user_profiles
-    }  # type: Dict[int, List[Tuple[Subscription, Stream]]]
+    }
 
     subs = Subscription.objects.filter(
         user_profile__in=user_profiles,

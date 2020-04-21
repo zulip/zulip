@@ -81,9 +81,9 @@ def gather_hot_conversations(user_profile: UserProfile, messages: List[Message])
     # Returns a list of dictionaries containing the templating
     # information for each hot conversation.
 
-    conversation_length = defaultdict(int)  # type: Dict[Tuple[int, str], int]
-    conversation_messages = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
-    conversation_diversity = defaultdict(set)  # type: Dict[Tuple[int, str], Set[str]]
+    conversation_length: Dict[Tuple[int, str], int] = defaultdict(int)
+    conversation_messages: Dict[Tuple[int, str], List[Message]] = defaultdict(list)
+    conversation_diversity: Dict[Tuple[int, str], Set[str]] = defaultdict(set)
     for message in messages:
         key = (message.recipient.type_id,
                message.topic_name())

@@ -15,7 +15,7 @@ BODY = "The `{contract_title}` document {actions}."
 
 def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
     contract_title = payload['signature_request']['title']
-    recipients = {}  # type: Dict[str, List[str]]
+    recipients: Dict[str, List[str]] = {}
     signatures = payload['signature_request']['signatures']
 
     for signature in signatures:

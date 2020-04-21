@@ -319,12 +319,12 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def do_test_change_user_display_setting(self, setting_name: str) -> None:
 
-        test_changes = dict(
+        test_changes: Dict[str, Any] = dict(
             default_language = 'de',
             emojiset = 'google',
             timezone = 'US/Mountain',
             demote_inactive_streams = 2,
-        )  # type: Dict[str, Any]
+        )
 
         self.login('hamlet')
         test_value = test_changes.get(setting_name)
@@ -333,7 +333,7 @@ class ChangeSettingsTest(ZulipTestCase):
             raise AssertionError('No test created for %s' % (setting_name,))
 
         if isinstance(test_value, int):
-            invalid_value = 100  # type: Any
+            invalid_value: Any = 100
         else:
             invalid_value = 'invalid_' + setting_name
         data = {setting_name: ujson.dumps(test_value)}

@@ -74,7 +74,7 @@ def detect_narrowed_window(request: HttpRequest,
     if user_profile is None:  # nocoverage
         return [], None, None
 
-    narrow = []  # type: List[List[str]]
+    narrow: List[List[str]] = []
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
 
@@ -112,7 +112,7 @@ def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[
     return calendar.timegm(user_message.message.date_sent.utctimetuple())
 
 def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]]:
-    bot_types = []  # type: List[Dict[str, object]]
+    bot_types: List[Dict[str, object]] = []
     if user_profile is None:  # nocoverage
         return bot_types
 
@@ -199,7 +199,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         needs_tutorial = False
 
     if user_profile is None:  # nocoverage
-        furthest_read_time = time.time()  # type: Optional[float]
+        furthest_read_time: Optional[float] = time.time()
     elif user_profile.pointer == -1:
         if user_has_messages:
             # Put the new user's pointer at the bottom

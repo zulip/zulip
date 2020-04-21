@@ -23,7 +23,7 @@ class NonClosingPool(sqlalchemy.pool.NullPool):
                               logging_name=self._orig_logging_name,
                               _dispatch=self.dispatch)
 
-sqlalchemy_engine = None  # type: Optional[Any]
+sqlalchemy_engine: Optional[Any] = None
 def get_sqlalchemy_connection() -> sqlalchemy.engine.base.Connection:
     global sqlalchemy_engine
     if sqlalchemy_engine is None:

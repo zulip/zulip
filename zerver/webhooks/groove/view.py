@@ -74,7 +74,7 @@ def replied_body(payload: Dict[str, Any], actor: str, action: str) -> str:
 
 def get_event_handler(event: str) -> Callable[..., str]:
     # The main reason for this function existence is because of mypy
-    handler = EVENTS_FUNCTION_MAPPER.get(event)  # type: Any
+    handler: Any = EVENTS_FUNCTION_MAPPER.get(event)
     if handler is None:
         raise UnexpectedWebhookEventType("Groove", event)
     return handler

@@ -127,7 +127,7 @@ def get_existing_user_errors(
     to cross-realm bots and mirror dummies too.
     '''
 
-    errors = {}  # type: Dict[str, Tuple[str, bool]]
+    errors: Dict[str, Tuple[str, bool]] = {}
 
     users = get_users_by_delivery_email(emails, target_realm).only(
         'delivery_email',

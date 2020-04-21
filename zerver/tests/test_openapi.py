@@ -69,11 +69,11 @@ class OpenAPIToolsTest(ZulipTestCase):
         with self.assertRaises(SchemaError,
                                msg=('Extraneous key "foo" in '
                                     'the response\'scontent')):
-            bad_content = {
+            bad_content: Dict[str, object] = {
                 'msg': '',
                 'result': 'success',
                 'foo': 'bar'
-            }  # type: Dict[str, object]
+            }
             validate_against_openapi_schema(bad_content,
                                             TEST_ENDPOINT,
                                             TEST_METHOD,
@@ -160,7 +160,7 @@ class OpenAPIToolsTest(ZulipTestCase):
 
 class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
-    checked_endpoints = set()  # type: Set[str]
+    checked_endpoints: Set[str] = set()
     pending_endpoints = {
         #### TODO: These endpoints are a priority to document:
         '/messages/matches_narrow',
@@ -271,8 +271,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
 
     # Endpoints where the documentation is currently failing our
     # consistency tests.  We aim to keep this list empty.
-    buggy_documentation_endpoints = set([
-    ])  # type: Set[str]
+    buggy_documentation_endpoints: Set[str] = set([
+    ])
 
     def convert_regex_to_url_pattern(self, regex_pattern: str) -> str:
         """ Convert regular expressions style URL patterns to their
@@ -426,7 +426,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
         OpenAPI data defines a different type than that actually accepted by the function.
         Otherwise, we print out the exact differences for convenient debugging and raise an
         AssertionError. """
-        openapi_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, object]]]]
+        openapi_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
         for element in openapi_parameters:
             if function.__name__ == 'send_notification_backend':
                 if element['name'] == 'to':
@@ -439,7 +439,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                     '''
                     continue
 
-            name = element["name"]  # type: str
+            name: str = element["name"]
             schema = element["schema"]
             if 'oneOf' in schema:
                 # Hack: Just use the type of the first value
@@ -463,7 +463,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
             else:
                 openapi_params.add((name, _type))
 
-        function_params = set()  # type: Set[Tuple[str, Union[type, Tuple[type, object]]]]
+        function_params: Set[Tuple[str, Union[type, Tuple[type, object]]]] = set()
 
         # Iterate through the decorators to find the original
         # function, wrapped by has_request_variables, so we can parse
@@ -542,7 +542,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
             for method, value in methods_endpoints.items():
                 if isinstance(value, str):
                     function_name = value
-                    tags = set()  # type: Set[str]
+                    tags: Set[str] = set()
                 else:
                     function_name, tags = value
 
@@ -710,14 +710,14 @@ class TestCurlExampleGeneration(ZulipTestCase):
         }
     }
 
-    spec_mock_with_invalid_method = {
+    spec_mock_with_invalid_method: Dict[str, object] = {
         "security": [{"basicAuth": []}],
         "paths": {
             "/endpoint": {
                 "brew": {}  # the data is irrelevant as is should be rejected.
             }
         }
-    }  # type: Dict[str, object]
+    }
 
     spec_mock_using_object = {
         "security": [{"basicAuth": []}],

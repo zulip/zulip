@@ -21,7 +21,7 @@ from zerver.models import UserProfile
 import subprocess
 import logging
 
-js_source_map = None  # type: Optional[SourceMap]
+js_source_map: Optional[SourceMap] = None
 
 # Read the source map information for decoding JavaScript backtraces.
 def get_js_source_map() -> Optional[SourceMap]:
@@ -105,8 +105,10 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
     try:
-        version = subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"],
-                                          universal_newlines=True)  # type: Optional[str]
+        version: Optional[str] = subprocess.check_output(
+            ["git", "log", "HEAD^..HEAD", "--oneline"],
+            universal_newlines=True,
+        )
     except Exception:
         version = None
 

@@ -1048,7 +1048,7 @@ class BugdownTest(ZulipTestCase):
             directly for testing is kind of awkward
             '''
             class Instance:
-                realm_id = None  # type: Optional[int]
+                realm_id: Optional[int] = None
             instance = Instance()
             instance.realm_id = realm.id
             flush_realm_filter(sender=None, instance=instance)
@@ -1135,13 +1135,13 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(msg.user_ids_with_alert_words, set())
 
     def test_alert_words_returns_user_ids_with_alert_words(self) -> None:
-        alert_words_for_users = {
+        alert_words_for_users: Dict[str, List[str]] = {
             'hamlet': ['how'], 'cordelia': ['this possible'],
             'iago': ['hello'], 'prospero': ['hello'],
             'othello': ['how are you'], 'aaron': ['hey']
-        }  # type: Dict[str, List[str]]
-        user_profiles = {}  # type: Dict[str, UserProfile]
-        user_ids = set()  # type: Set[int]
+        }
+        user_profiles: Dict[str, UserProfile] = {}
+        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1160,22 +1160,22 @@ class BugdownTest(ZulipTestCase):
 
         content = "hello how is this possible how are you doing today"
         render(msg, content)
-        expected_user_ids = {
+        expected_user_ids: Set[int] = {
             user_profiles['hamlet'].id, user_profiles['cordelia'].id, user_profiles['iago'].id,
             user_profiles['prospero'].id, user_profiles['othello'].id
-        }  # type: Set[int]
+        }
         # All users except aaron have their alert word appear in the message content
         self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_user_ids_with_alert_words_1(self) -> None:
-        alert_words_for_users = {
+        alert_words_for_users: Dict[str, List[str]] = {
             'hamlet': ['provisioning', 'Prod deployment'],
             'cordelia': ['test', 'Prod'],
             'iago': ['prod'], 'prospero': ['deployment'],
             'othello': ['last']
-        }  # type: Dict[str, List[str]]
-        user_profiles = {}  # type: Dict[str, UserProfile]
-        user_ids = set()  # type: Set[int]
+        }
+        user_profiles: Dict[str, UserProfile] = {}
+        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1198,25 +1198,25 @@ class BugdownTest(ZulipTestCase):
         and this is a new line
         last"""
         render(msg, content)
-        expected_user_ids = {
+        expected_user_ids: Set[int] = {
             user_profiles['hamlet'].id,
             user_profiles['cordelia'].id,
             user_profiles['iago'].id,
             user_profiles['prospero'].id,
             user_profiles['othello'].id
-        }  # type: Set[int]
+        }
         # All users have their alert word appear in the message content
         self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_user_ids_with_alert_words_in_french(self) -> None:
-        alert_words_for_users = {
+        alert_words_for_users: Dict[str, List[str]] = {
             'hamlet': ['réglementaire', 'une politique', 'une merveille'],
             'cordelia': ['énormément', 'Prod'],
             'iago': ['prod'], 'prospero': ['deployment'],
             'othello': ['last']
-        }  # type: Dict[str, List[str]]
-        user_profiles = {}  # type: Dict[str, UserProfile]
-        user_ids = set()  # type: Set[int]
+        }
+        user_profiles: Dict[str, UserProfile] = {}
+        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1238,17 +1238,17 @@ class BugdownTest(ZulipTestCase):
         et j'espère qu'il n'y n' réglementaire a pas de mots d'alerte dans ce texte français
         """
         render(msg, content)
-        expected_user_ids = {user_profiles['hamlet'].id, user_profiles['cordelia'].id}  # type: Set[int]
+        expected_user_ids: Set[int] = {user_profiles['hamlet'].id, user_profiles['cordelia'].id}
         # Only hamlet and cordelia have their alert-words appear in the message content
         self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_empty_user_ids_with_alert_words(self) -> None:
-        alert_words_for_users = {
+        alert_words_for_users: Dict[str, List[str]] = {
             'hamlet': [], 'cordelia': [], 'iago': [], 'prospero': [],
             'othello': [], 'aaron': []
-        }  # type: Dict[str, List[str]]
-        user_profiles = {}  # type: Dict[str, UserProfile]
-        user_ids = set()  # type: Set[int]
+        }
+        user_profiles: Dict[str, UserProfile] = {}
+        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1268,7 +1268,7 @@ class BugdownTest(ZulipTestCase):
         in sending of the message
         """
         render(msg, content)
-        expected_user_ids = set()  # type: Set[int]
+        expected_user_ids: Set[int] = set()
         # None of the users have their alert-words appear in the message content
         self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
 
@@ -1277,14 +1277,14 @@ class BugdownTest(ZulipTestCase):
         return alert_words
 
     def test_alert_words_with_empty_alert_words(self) -> None:
-        alert_words_for_users = {
+        alert_words_for_users: Dict[str, List[str]] = {
             'hamlet': [],
             'cordelia': [],
             'iago': [],
             'othello': []
-        }  # type: Dict[str, List[str]]
-        user_profiles = {}  # type: Dict[str, UserProfile]
-        user_ids = set()  # type: Set[int]
+        }
+        user_profiles: Dict[str, UserProfile] = {}
+        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1302,19 +1302,19 @@ class BugdownTest(ZulipTestCase):
 
         content = """This is to test a empty alert words i.e. no user has any alert-words set"""
         render(msg, content)
-        expected_user_ids = set()  # type: Set[int]
+        expected_user_ids: Set[int] = set()
         self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_retuns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
 
-        alert_words_for_users = {
+        alert_words_for_users: Dict[str, List[str]] = {
             'hamlet': ['issue124'],
             'cordelia': self.get_mock_alert_words(500, 10),
             'iago': self.get_mock_alert_words(500, 10),
             'othello': self.get_mock_alert_words(500, 10)
-        }  # type: Dict[str, List[str]]
-        user_profiles = {}  # type: Dict[str, UserProfile]
-        user_ids = set()  # type: Set[int]
+        }
+        user_profiles: Dict[str, UserProfile] = {}
+        user_ids: Set[int] = set()
         for (username, alert_words) in alert_words_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
@@ -1338,7 +1338,7 @@ class BugdownTest(ZulipTestCase):
         between 1 and 100 for you. The process is fairly simple
         """
         render(msg, content)
-        expected_user_ids = {user_profiles['hamlet'].id}  # type: Set[int]
+        expected_user_ids: Set[int] = {user_profiles['hamlet'].id}
         # Only hamlet has alert-word 'issue124' present in the message content
         self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
 

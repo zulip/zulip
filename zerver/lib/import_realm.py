@@ -54,7 +54,7 @@ realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
 #
 # Code reviewers: give these tables extra scrutiny, as we need to
 # make sure to reload related tables AFTER we re-map the ids.
-ID_MAP = {
+ID_MAP: Dict[str, Dict[int, int]] = {
     'client': {},
     'user_profile': {},
     'huddle': {},
@@ -87,15 +87,15 @@ ID_MAP = {
     'analytics_realmcount': {},
     'analytics_streamcount': {},
     'analytics_usercount': {},
-}  # type: Dict[str, Dict[int, int]]
+}
 
-id_map_to_list = {
+id_map_to_list: Dict[str, Dict[int, List[int]]] = {
     'huddle_to_user_list': {},
-}  # type: Dict[str, Dict[int, List[int]]]
+}
 
-path_maps = {
+path_maps: Dict[str, Dict[str, str]] = {
     'attachment_path': {},
-}  # type: Dict[str, Dict[str, str]]
+}
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
     if table not in ID_MAP:
@@ -296,7 +296,7 @@ def fix_message_rendered_content(realm: Realm,
             # platforms, since they generally don't have an "alert
             # words" type feature, and notifications aren't important anyway.
             realm_alert_words_automaton = None
-            message_user_ids = set()  # type: Set[int]
+            message_user_ids: Set[int] = set()
 
             rendered_content = do_render_markdown(
                 message=cast(Message, message_object),
@@ -604,7 +604,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
 
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename) as records_file:
-        records = ujson.load(records_file)  # type: List[Dict[str, Any]]
+        records: List[Dict[str, Any]] = ujson.load(records_file)
     timestamp = datetime_to_timestamp(timezone_now())
 
     re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
@@ -696,7 +696,7 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
                     # set; that is OK, because those are never served
                     # directly anyway.
                     content_type = 'application/octet-stream'
-            headers = {'Content-Type': content_type}  # type: Dict[str, Any]
+            headers: Dict[str, Any] = {'Content-Type': content_type}
 
             key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
         else:
@@ -804,12 +804,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     realm = Realm(**data['zerver_realm'][0])
 
     if realm.notifications_stream_id is not None:
-        notifications_stream_id = int(realm.notifications_stream_id)  # type: Optional[int]
+        notifications_stream_id: Optional[int] = int(realm.notifications_stream_id)
     else:
         notifications_stream_id = None
     realm.notifications_stream_id = None
     if realm.signup_notifications_stream_id is not None:
-        signup_notifications_stream_id = int(realm.signup_notifications_stream_id)  # type: Optional[int]
+        signup_notifications_stream_id: Optional[int] = int(realm.signup_notifications_stream_id)
     else:
         signup_notifications_stream_id = None
     realm.signup_notifications_stream_id = None
@@ -1138,9 +1138,9 @@ def get_incoming_message_ids(import_dir: Path,
     '''
 
     if sort_by_date:
-        tups = list()  # type: List[Tuple[int, int]]
+        tups: List[Tuple[int, int]] = list()
     else:
-        message_ids = []  # type: List[int]
+        message_ids: List[int] = []
 
     dump_file_id = 1
     while True:
@@ -1263,16 +1263,16 @@ def import_attachments(data: TableData) -> None:
     # We do this in a slightly convoluted way to anticipate
     # a future where we may need to call re_map_foreign_keys.
 
-    m2m_rows = []  # type: List[Record]
+    m2m_rows: List[Record] = []
     for parent_row in data[parent_db_table_name]:
         for fk_id in parent_row[child_plural]:
-            m2m_row = {}  # type: Record
+            m2m_row: Record = {}
             m2m_row[parent_singular] = parent_row['id']
             m2m_row[child_singular] = ID_MAP['message'][fk_id]
             m2m_rows.append(m2m_row)
 
     # Create our table data for insert.
-    m2m_data = {m2m_table_name: m2m_rows}  # type: TableData
+    m2m_data: TableData = {m2m_table_name: m2m_rows}
     convert_to_id_fields(m2m_data, m2m_table_name, parent_singular)
     convert_to_id_fields(m2m_data, m2m_table_name, child_singular)
     m2m_rows = m2m_data[m2m_table_name]

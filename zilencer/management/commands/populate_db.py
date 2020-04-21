@@ -64,7 +64,7 @@ def clear_database() -> None:
             behaviors=default_cache["OPTIONS"],
         ).flush_all()
 
-    model = None  # type: Any # Hack because mypy doesn't know these are model classes
+    model: Any = None  # Hack because mypy doesn't know these are model classes
     for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,
                   DefaultStream]:
@@ -310,17 +310,19 @@ class Command(BaseCommand):
 
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
-            stream_dict = {
+            stream_dict: Dict[str, Dict[str, Any]] = {
                 "Verona": {"description": "A city in Italy"},
                 "Denmark": {"description": "A Scandinavian country"},
                 "Scotland": {"description": "Located in the United Kingdom"},
                 "Venice": {"description": "A northeastern Italian city"},
                 "Rome": {"description": "Yet another Italian city", "is_web_public": True}
-            }  # type: Dict[str, Dict[str, Any]]
+            }
 
             bulk_create_streams(zulip_realm, stream_dict)
-            recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
-                                 for name in stream_list]  # type: List[int]
+            recipient_streams: List[int] = [
+                Stream.objects.get(name=name, realm=zulip_realm).id
+                for name in stream_list
+            ]
 
             # Create subscriptions to streams.  The following
             # algorithm will give each of the users a different but
@@ -329,9 +331,9 @@ class Command(BaseCommand):
             # subscriptions to make sure test data is consistent
             # across platforms.
 
-            subscriptions_list = []  # type: List[Tuple[UserProfile, Recipient]]
-            profiles = UserProfile.objects.select_related().filter(
-                is_bot=False).order_by("email")  # type: Sequence[UserProfile]
+            subscriptions_list: List[Tuple[UserProfile, Recipient]] = []
+            profiles: Sequence[UserProfile] = UserProfile.objects.select_related().filter(
+                is_bot=False).order_by("email")
 
             if options["test_suite"]:
                 subscriptions_map = {
@@ -366,9 +368,9 @@ class Command(BaseCommand):
                         r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
                         subscriptions_list.append((profile, r))
 
-            subscriptions_to_add = []  # type: List[Subscription]
+            subscriptions_to_add: List[Subscription] = []
             event_time = timezone_now()
-            all_subscription_logs = []  # type: (List[RealmAuditLog])
+            all_subscription_logs: (List[RealmAuditLog]) = []
 
             i = 0
             for profile, recipient in subscriptions_list:
@@ -402,10 +404,10 @@ class Command(BaseCommand):
             favorite_food = try_add_realm_custom_profile_field(zulip_realm, "Favorite food",
                                                                CustomProfileField.SHORT_TEXT,
                                                                hint="Or drink, if you'd prefer")
-            field_data = {
+            field_data: ProfileFieldData = {
                 'vim': {'text': 'Vim', 'order': '1'},
                 'emacs': {'text': 'Emacs', 'order': '2'},
-            }  # type: ProfileFieldData
+            }
             favorite_editor = try_add_realm_custom_profile_field(zulip_realm,
                                                                  "Favorite editor",
                                                                  CustomProfileField.CHOICE,
@@ -450,7 +452,7 @@ class Command(BaseCommand):
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
-        user_profiles = list(UserProfile.objects.filter(is_bot=False))  # type: List[UserProfile]
+        user_profiles: List[UserProfile] = list(UserProfile.objects.filter(is_bot=False))
 
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path('images/test-images/checkbox.png')
@@ -460,7 +462,7 @@ class Command(BaseCommand):
         if not options["test_suite"]:
             # Populate users with some bar data
             for user in user_profiles:
-                status = UserPresence.ACTIVE  # type: int
+                status: int = UserPresence.ACTIVE
                 date = timezone_now()
                 client = get_client("website")
                 if user.full_name[0] <= 'H':
@@ -494,7 +496,7 @@ class Command(BaseCommand):
                 cache_set(url, urls_with_preview_data[url], PREVIEW_CACHE_NAME)
 
         threads = options["threads"]
-        jobs = []  # type: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int], int]]
+        jobs: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int], int]] = []
         for i in range(threads):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
@@ -526,7 +528,7 @@ class Command(BaseCommand):
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
 
-                zulip_stream_dict = {
+                zulip_stream_dict: Dict[str, Dict[str, Any]] = {
                     "devel": {"description": "For developing"},
                     "all": {"description": "For **everything**"},
                     "announce": {"description": "For announcements",
@@ -537,7 +539,7 @@ class Command(BaseCommand):
                     "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
                     "sales": {"description": "For sales discussion"}
-                }  # type: Dict[str, Dict[str, Any]]
+                }
 
                 # Calculate the maximum number of digits in any extra stream's
                 # number, since a stream with name "Extra Stream 3" could show
@@ -597,7 +599,7 @@ class Command(BaseCommand):
                 call_command('populate_analytics_db')
             self.stdout.write("Successfully populated test database.\n")
 
-recipient_hash = {}  # type: Dict[int, Recipient]
+recipient_hash: Dict[int, Recipient] = {}
 def get_recipient_by_id(rid: int) -> Recipient:
     if rid in recipient_hash:
         return recipient_hash[rid]
@@ -621,11 +623,12 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
     random.shuffle(dialog)
     texts = itertools.cycle(dialog)
 
-    recipient_streams = [klass.id for klass in
-                         Recipient.objects.filter(type=Recipient.STREAM)]  # type: List[int]
-    recipient_huddles = [h.id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]  # type: List[int]
+    recipient_streams: List[int] = [
+        klass.id for klass in Recipient.objects.filter(type=Recipient.STREAM)
+    ]
+    recipient_huddles: List[int] = [h.id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
 
-    huddle_members = {}  # type: Dict[int, List[int]]
+    huddle_members: Dict[int, List[int]] = {}
     for h in recipient_huddles:
         huddle_members[h] = [s.user_profile.id for s in
                              Subscription.objects.filter(recipient_id=h)]
@@ -633,10 +636,10 @@ def generate_and_send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping
     message_batch_size = options['batch_size']
     num_messages = 0
     random_max = 1000000
-    recipients = {}  # type: Dict[int, Tuple[int, int, Dict[str, Any]]]
+    recipients: Dict[int, Tuple[int, int, Dict[str, Any]]] = {}
     messages = []
     while num_messages < tot_messages:
-        saved_data = {}  # type: Dict[str, Any]
+        saved_data: Dict[str, Any] = {}
         message = Message()
         message.sending_client = get_client('populate_db')
 

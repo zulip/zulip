@@ -41,7 +41,7 @@ class PrincipalError(JsonableError):
     http_status_code = 403
 
     def __init__(self, principal: str) -> None:
-        self.principal = principal  # type: str
+        self.principal: str = principal
 
     @staticmethod
     def msg_format() -> str:
@@ -215,10 +215,10 @@ def update_subscriptions_backend(
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
-    method_kwarg_pairs = [
+    method_kwarg_pairs: List[FuncKwargPair] = [
         (add_subscriptions_backend, dict(streams_raw=add)),
         (remove_subscriptions_backend, dict(streams_raw=delete))
-    ]  # type: List[FuncKwargPair]
+    ]
     return compose_views(request, user_profile, method_kwarg_pairs)
 
 def compose_views(
@@ -236,7 +236,7 @@ def compose_views(
     TODO: Move this a utils-like module if we end up using it more widely.
     '''
 
-    json_dict = {}  # type: Dict[str, Any]
+    json_dict: Dict[str, Any] = {}
     with transaction.atomic():
         for method, kwargs in method_kwarg_pairs:
             response = method(request, user_profile, **kwargs)
@@ -272,7 +272,7 @@ def remove_subscriptions_backend(
     else:
         people_to_unsub = {user_profile}
 
-    result = dict(removed=[], not_removed=[])  # type: Dict[str, List[str]]
+    result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
                                                           request.client,
                                                           acting_user=user_profile)
@@ -329,7 +329,7 @@ def add_subscriptions_backend(
             # We don't allow newline characters in stream descriptions.
             stream_dict['description'] = stream_dict['description'].replace("\n", " ")
 
-        stream_dict_copy = {}  # type: Dict[str, Any]
+        stream_dict_copy: Dict[str, Any] = {}
         for field in stream_dict:
             stream_dict_copy[field] = stream_dict[field]
         # Strip the stream name here.
@@ -371,9 +371,9 @@ def add_subscriptions_backend(
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
-    email_to_user_profile = dict()  # type: Dict[str, UserProfile]
+    email_to_user_profile: Dict[str, UserProfile] = dict()
 
-    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))  # type: Dict[str, Any]
+    result: Dict[str, Any] = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
     for (subscriber, stream) in subscribed:
         result["subscribed"][subscriber.email].append(stream.name)
         email_to_user_profile[subscriber.email] = subscriber

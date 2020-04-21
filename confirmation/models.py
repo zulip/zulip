@@ -88,11 +88,11 @@ def confirmation_url(confirmation_key: str, host: str,
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=CASCADE)
-    object_id = models.PositiveIntegerField(db_index=True)  # type: int
+    object_id: int = models.PositiveIntegerField(db_index=True)
     content_object = GenericForeignKey('content_type', 'object_id')
-    date_sent = models.DateTimeField(db_index=True)  # type: datetime.datetime
-    confirmation_key = models.CharField(max_length=40, db_index=True)  # type: str
-    realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
+    date_sent: datetime.datetime = models.DateTimeField(db_index=True)
+    confirmation_key: str = models.CharField(max_length=40, db_index=True)
+    realm: Optional[Realm] = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
     # The following list is the set of valid types
     USER_REGISTRATION = 1
@@ -103,7 +103,7 @@ class Confirmation(models.Model):
     MULTIUSE_INVITE = 6
     REALM_CREATION = 7
     REALM_REACTIVATION = 8
-    type = models.PositiveSmallIntegerField()  # type: int
+    type: int = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
         return '<Confirmation: %s>' % (self.content_object,)
@@ -177,7 +177,7 @@ class RealmCreationKey(models.Model):
 
     # True just if we should presume the email address the user enters
     # is theirs, and skip sending mail to it to confirm that.
-    presume_email_valid = models.BooleanField(default=False)  # type: bool
+    presume_email_valid: bool = models.BooleanField(default=False)
 
     class Invalid(Exception):
         pass

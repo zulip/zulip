@@ -10,7 +10,7 @@ class SourceMap:
 
     def __init__(self, sourcemap_dirs: List[str]) -> None:
         self._dirs = sourcemap_dirs
-        self._indices = {}  # type: Dict[str, sourcemap.SourceMapDecoder]
+        self._indices: Dict[str, sourcemap.SourceMapDecoder] = {}
 
     def _index_for(self, minified_src: str) -> sourcemap.SourceMapDecoder:
         '''Return the source map index for minified_src, loading it if not
@@ -26,7 +26,7 @@ class SourceMap:
         return self._indices[minified_src]
 
     def annotate_stacktrace(self, stacktrace: str) -> str:
-        out = ''  # type: str
+        out: str = ''
         for ln in stacktrace.splitlines():
             out += ln + '\n'
             match = re.search(r'/static/webpack-bundles/([^:]+):(\d+):(\d+)', ln)

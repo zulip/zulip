@@ -86,8 +86,8 @@ def create_streams_if_needed(realm: Realm,
                              stream_dicts: List[Mapping[str, Any]]) -> Tuple[List[Stream], List[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
-    added_streams = []  # type: List[Stream]
-    existing_streams = []  # type: List[Stream]
+    added_streams: List[Stream] = []
+    existing_streams: List[Stream] = []
     for stream_dict in stream_dicts:
         stream, created = create_stream_if_needed(
             realm,
@@ -361,7 +361,7 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
 
 def filter_stream_authorization(user_profile: UserProfile,
                                 streams: Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]:
-    streams_subscribed = set()  # type: Set[int]
+    streams_subscribed: Set[int] = set()
     recipient_ids = [stream.recipient_id for stream in streams]
     subs = Subscription.objects.filter(user_profile=user_profile,
                                        recipient_id__in=recipient_ids,
@@ -370,7 +370,7 @@ def filter_stream_authorization(user_profile: UserProfile,
     for sub in subs:
         streams_subscribed.add(sub.recipient.type_id)
 
-    unauthorized_streams = []  # type: List[Stream]
+    unauthorized_streams: List[Stream] = []
     for stream in streams:
         # The user is authorized for their own streams
         if stream.id in streams_subscribed:
@@ -411,8 +411,8 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
         assert stream_name == stream_name.strip()
         check_stream_name(stream_name)
 
-    existing_streams = []  # type: List[Stream]
-    missing_stream_dicts = []  # type: List[Mapping[str, Any]]
+    existing_streams: List[Stream] = []
+    missing_stream_dicts: List[Mapping[str, Any]] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
     member_creating_announcement_only_stream = False
@@ -438,7 +438,7 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
     if len(missing_stream_dicts) == 0:
         # This is the happy path for callers who expected all of these
         # streams to exist already.
-        created_streams = []  # type: List[Stream]
+        created_streams: List[Stream] = []
     else:
         # autocreate=True path starts here
         if not user_profile.can_create_streams():

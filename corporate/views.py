@@ -57,7 +57,7 @@ def check_upgrade_parameters(
 
 # Should only be called if the customer is being charged automatically
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
-    stripe_source = stripe_customer.default_source  # type: Optional[Union[stripe.Card, stripe.Source]]
+    stripe_source: Optional[Union[stripe.Card, stripe.Source]] = stripe_customer.default_source
     # In case of e.g. an expired card
     if stripe_source is None:  # nocoverage
         return _("No payment method on file")
@@ -128,7 +128,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
 
     seat_count = get_latest_seat_count(user.realm)
     signed_seat_count, salt = sign_string(str(seat_count))
-    context = {
+    context: Dict[str, Any] = {
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
         'email': user.delivery_email,
         'seat_count': seat_count,
@@ -143,7 +143,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             'monthly_price': 800,
             'percent_off': float(percent_off),
         },
-    }  # type: Dict[str, Any]
+    }
     response = render(request, 'corporate/upgrade.html', context=context)
     return response
 
@@ -157,7 +157,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
 
     if not user.is_realm_admin and not user.is_billing_admin:
-        context = {'admin_access': False}  # type: Dict[str, Any]
+        context: Dict[str, Any] = {'admin_access': False}
         return render(request, 'corporate/billing.html', context=context)
 
     context = {

@@ -282,7 +282,7 @@ class TestMissedMessages(ZulipTestCase):
                 "You are receiving this because you were mentioned in Zulip Dev."
             ]
             email_subject = '#Denmark > test'
-            verify_body_does_not_include = []  # type: List[str]
+            verify_body_does_not_include: List[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -318,7 +318,7 @@ class TestMissedMessages(ZulipTestCase):
                 "You are receiving this because you were mentioned in Zulip Dev."
             ]
             email_subject = '#Denmark > test'
-            verify_body_does_not_include = []  # type: List[str]
+            verify_body_does_not_include: List[str] = []
         else:
             # Test in case if message content in missed email message are disabled.
             verify_body_include = [
@@ -378,7 +378,7 @@ class TestMissedMessages(ZulipTestCase):
         if show_message_content:
             verify_body_include = ['Extremely personal message!']
             email_subject = 'PMs with Othello, the Moor of Venice'
-            verify_body_does_not_include = []  # type: List[str]
+            verify_body_does_not_include: List[str] = []
         else:
             if message_content_disabled_by_realm:
                 verify_body_include = [
@@ -435,7 +435,7 @@ class TestMissedMessages(ZulipTestCase):
         if show_message_content:
             verify_body_include = ['Othello, the Moor of Venice: Group personal message! -- Reply']
             email_subject = 'Group PMs with Iago and Othello, the Moor of Venice'
-            verify_body_does_not_include = []  # type: List[str]
+            verify_body_does_not_include: List[str] = []
         else:
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",

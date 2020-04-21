@@ -9,7 +9,7 @@ from django.utils.translation import ugettext as _
 
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence
 
-stop_words_list = None  # type: Optional[List[str]]
+stop_words_list: Optional[List[str]] = None
 def read_stop_words() -> List[str]:
     global stop_words_list
     if stop_words_list is None:

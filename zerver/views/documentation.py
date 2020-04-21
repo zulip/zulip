@@ -81,7 +81,7 @@ class MarkdownDirectoryView(ApiURLView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         article = kwargs["article"]
-        context = super().get_context_data()  # type: Dict[str, Any]
+        context: Dict[str, Any] = super().get_context_data()
         (context["article"], http_status_ignored) = self.get_path(article)
 
         # For disabling the "Back to home" on the homepage
@@ -119,7 +119,7 @@ class MarkdownDirectoryView(ApiURLView):
         context["sidebar_index"] = sidebar_index
         context["sidebar_class"] = sidebar_class
         # An "article" might require the api_uri_context to be rendered
-        api_uri_context = {}  # type: Dict[str, Any]
+        api_uri_context: Dict[str, Any] = {}
         add_api_uri_context(api_uri_context, self.request)
         api_uri_context["run_content_validators"] = True
         context["api_uri_context"] = api_uri_context
@@ -167,7 +167,7 @@ class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations/index.html'
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)  # type: Dict[str, Any]
+        context: Dict[str, Any] = super().get_context_data(**kwargs)
         add_integrations_context(context)
         add_integrations_open_graph_context(context, self.request)
         return context
@@ -182,7 +182,7 @@ def integration_doc(request: HttpRequest, integration_name: str=REQ()) -> HttpRe
     except KeyError:
         return HttpResponseNotFound()
 
-    context = {}  # type: Dict[str, Any]
+    context: Dict[str, Any] = {}
     add_api_uri_context(context, request)
 
     context['integration_name'] = integration.name

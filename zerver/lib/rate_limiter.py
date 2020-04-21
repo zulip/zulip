@@ -19,7 +19,7 @@ import time
 # https://www.domaintools.com/resources/blog/rate-limiting-with-redis
 
 client = get_redis_client()
-rules = settings.RATE_LIMITING_RULES  # type: Dict[str, List[Tuple[int, int]]]
+rules: Dict[str, List[Tuple[int, int]]] = settings.RATE_LIMITING_RULES
 
 KEY_PREFIX = ''
 
@@ -31,7 +31,7 @@ class RateLimiterLockingException(Exception):
 class RateLimitedObject(ABC):
     def __init__(self, backend: Optional['Type[RateLimiterBackend]']=None) -> None:
         if backend is not None:
-            self.backend = backend  # type: Type[RateLimiterBackend]
+            self.backend: Type[RateLimiterBackend] = backend
         elif settings.RUNNING_INSIDE_TORNADO:
             self.backend = TornadoInMemoryRateLimiterBackend
         else:
@@ -119,7 +119,7 @@ class RateLimitedUser(RateLimitedObject):
     def rules(self) -> List[Tuple[int, int]]:
         # user.rate_limits are general limits, applicable to the domain 'api_by_user'
         if self.user.rate_limits != "" and self.domain == 'api_by_user':
-            result = []  # type: List[Tuple[int, int]]
+            result: List[Tuple[int, int]] = []
             for limit in self.user.rate_limits.split(','):
                 (seconds, requests) = limit.split(':', 2)
                 result.append((int(seconds), int(requests)))
@@ -179,15 +179,15 @@ class RateLimiterBackend(ABC):
 class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
     # reset_times[rule][key] is the time at which the event
     # request from the rate-limited key will be accepted.
-    reset_times = {}  # type: Dict[Tuple[int, int], Dict[str, float]]
+    reset_times: Dict[Tuple[int, int], Dict[str, float]] = {}
 
     # last_gc_time is the last time when the garbage was
     # collected from reset_times for rule (time_window, max_count).
-    last_gc_time = {}  # type: Dict[Tuple[int, int], float]
+    last_gc_time: Dict[Tuple[int, int], float] = {}
 
     # timestamps_blocked_until[key] contains the timestamp
     # up to which the key has been blocked manually.
-    timestamps_blocked_until = {}  # type: Dict[str, float]
+    timestamps_blocked_until: Dict[str, float] = {}
 
     @classmethod
     def _garbage_collect_for_rule(cls, now: float, time_window: int, max_count: int) -> None:
@@ -333,8 +333,8 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
             results = pipe.execute()
 
-        count = results[0]  # type: int
-        newest_call = results[1]  # type: Optional[bytes]
+        count: int = results[0]
+        newest_call: Optional[bytes] = results[1]
 
         calls_left = max_calls - count
         if newest_call is not None:
@@ -361,7 +361,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
             pipe.get(blocking_key)
             pipe.ttl(blocking_key)
 
-            rule_timestamps = pipe.execute()  # type: List[Optional[bytes]]
+            rule_timestamps: List[Optional[bytes]] = pipe.execute()
 
         # Check if there is a manual block on this API key
         blocking_ttl_b = rule_timestamps.pop()

@@ -77,7 +77,7 @@ def get_push_commits_event_message(user_name: str, compare_url: Optional[str],
         number_of_commits=len(commits_data),
         commit_or_commits=COMMIT_OR_COMMITS.format('s' if len(commits_data) > 1 else ''))
 
-    committers_items = get_all_committers(commits_data)  # type: List[Tuple[str, int]]
+    committers_items: List[Tuple[str, int]] = get_all_committers(commits_data)
     if len(committers_items) == 1 and user_name == committers_items[0][0]:
         return PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS.format(
             user_name=user_name,
@@ -279,15 +279,16 @@ def get_short_sha(sha: str) -> str:
     return sha[:7]
 
 def get_all_committers(commits_data: List[Dict[str, Any]]) -> List[Tuple[str, int]]:
-    committers = defaultdict(int)  # type: Dict[str, int]
+    committers: Dict[str, int] = defaultdict(int)
 
     for commit in commits_data:
         committers[commit['name']] += 1
 
     # Sort by commit count, breaking ties alphabetically.
-    committers_items = sorted(list(committers.items()),
-                              key=lambda item: (-item[1], item[0]))  # type: List[Tuple[str, int]]
-    committers_values = [c_i[1] for c_i in committers_items]  # type: List[int]
+    committers_items: List[Tuple[str, int]] = sorted(
+        list(committers.items()), key=lambda item: (-item[1], item[0])
+    )
+    committers_values: List[int] = [c_i[1] for c_i in committers_items]
 
     if len(committers) > PUSH_COMMITTERS_LIMIT_INFO:
         others_number_of_commits = sum(committers_values[PUSH_COMMITTERS_LIMIT_INFO:])

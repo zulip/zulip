@@ -70,7 +70,7 @@ Example:
         message = self._parse_email_fixture(full_fixture_path)
         self._prepare_message(message, realm, stream)
 
-        data = {}  # type: Dict[str, str]
+        data: Dict[str, str] = {}
         data['recipient'] = str(message['To'])  # Need str() here to avoid mypy throwing an error
         data['msg_text'] = message.as_string()
         mirror_email_message(data)

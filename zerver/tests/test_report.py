@@ -18,7 +18,7 @@ class StatsMock:
     def __init__(self, settings: Callable[..., Any]) -> None:
         self.settings = settings
         self.real_impl = statsd
-        self.func_calls = []  # type: List[Tuple[str, Iterable[Any]]]
+        self.func_calls: List[Tuple[str, Iterable[Any]]] = []
 
     def __getattr__(self, name: str) -> Callable[..., Any]:
         def f(*args: Any) -> None:

@@ -38,7 +38,7 @@ def sync_filesizes(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None
         bucket = conn.get_bucket(bucket_name, validate=False)
         for attachment in attachments.objects.all():
             if attachment.size is None:
-                file_key = bucket.get_key(attachment.path_id)  # type: Optional[Key]
+                file_key: Optional[Key] = bucket.get_key(attachment.path_id)
                 if file_key is None:
                     new_size = 0
                 else:

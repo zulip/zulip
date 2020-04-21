@@ -39,9 +39,9 @@ class SlackMessageConversion(ZulipTestCase):
         for name, test in format_tests.items():
             # Check that there aren't any unexpected keys as those are often typos
             self.assertEqual(len(set(test.keys()) - valid_keys), 0)
-            slack_user_map = {}  # type: Dict[str, int]
-            users = [{}]         # type: List[Dict[str, Any]]
-            channel_map = {}     # type: Dict[str, Tuple[str, int]]
+            slack_user_map: Dict[str, int] = {}
+            users: List[Dict[str, Any]] = [{}]
+            channel_map: Dict[str, Tuple[str, int]] = {}
             converted = convert_to_zulip_markdown(test['input'], users, channel_map, slack_user_map)
             converted_text = converted[0]
             with self.subTest(slack_message_conversion=name):
@@ -91,7 +91,7 @@ class SlackMessageConversion(ZulipTestCase):
         self.assertEqual(mentioned_users, [])
 
     def test_has_link(self) -> None:
-        slack_user_map = {}  # type: Dict[str, int]
+        slack_user_map: Dict[str, int] = {}
 
         message = '<http://journals.plos.org/plosone/article>'
         text, mentioned_users, has_link = convert_to_zulip_markdown(message, [], {}, slack_user_map)

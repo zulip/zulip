@@ -3,7 +3,7 @@ from typing import Dict, Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from zerver.tornado.event_queue import ClientDescriptor
 
-descriptors_by_handler_id = {}  # type: Dict[int, ClientDescriptor]
+descriptors_by_handler_id: Dict[int, "ClientDescriptor"] = {}
 
 def get_descriptor_by_handler_id(handler_id: int) -> Optional['ClientDescriptor']:
     return descriptors_by_handler_id.get(handler_id)

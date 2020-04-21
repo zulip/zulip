@@ -124,8 +124,8 @@ def convert_channel_data(channel_data: List[ZerverFieldsT],
         if d['team'] == team_name
     ]
 
-    channel_members_map = {}  # type: Dict[str, List[str]]
-    channel_admins_map = {}  # type: Dict[str, List[str]]
+    channel_members_map: Dict[str, List[str]] = {}
+    channel_admins_map: Dict[str, List[str]] = {}
 
     def initialize_stream_membership_dicts() -> None:
         for channel in channel_data:
@@ -310,7 +310,7 @@ def process_raw_message_batch(realm_id: int,
         content = content.replace('@here', '@**all**')
         return content
 
-    mention_map = dict()  # type: Dict[int, Set[int]]
+    mention_map: Dict[int, Set[int]] = dict()
     zerver_message = []
 
     import html2text
@@ -672,7 +672,7 @@ def reset_mirror_dummy_users(username_to_user: Dict[str, Dict[str, Any]]) -> Non
         user["is_mirror_dummy"] = False
 
 def mattermost_data_file_to_dict(mattermost_data_file: str) -> Dict[str, Any]:
-    mattermost_data = {}  # type: Dict[str, Any]
+    mattermost_data: Dict[str, Any] = {}
     mattermost_data["version"] = []
     mattermost_data["team"] = []
     mattermost_data["channel"] = []
@@ -694,7 +694,7 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> Dict[str, Any]:
     return mattermost_data
 
 def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: bool) -> None:
-    username_to_user = {}  # type: Dict[str, Dict[str, Any]]
+    username_to_user: Dict[str, Dict[str, Any]] = {}
 
     os.makedirs(output_dir, exist_ok=True)
     if os.listdir(output_dir):  # nocoverage
@@ -741,7 +741,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         )
         realm['zerver_stream'] = zerver_stream
 
-        zerver_huddle = []  # type: List[ZerverFieldsT]
+        zerver_huddle: List[ZerverFieldsT] = []
         if len(mattermost_data["team"]) == 1:
             zerver_huddle = convert_huddle_data(
                 huddle_data=mattermost_data["direct_channel"],
@@ -796,7 +796,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             zerver_subscription=zerver_subscription,
         )
 
-        total_reactions = []  # type: List[Dict[str, Any]]
+        total_reactions: List[Dict[str, Any]] = []
         write_message_data(
             num_teams=len(mattermost_data["team"]),
             team_name=team_name,
@@ -825,7 +825,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         create_converted_data_files([], realm_output_dir, '/uploads/records.json')
 
         # Mattermost currently doesn't support exporting attachments
-        attachment = {"zerver_attachment": []}  # type: Dict[str, List[Any]]
+        attachment: Dict[str, List[Any]] = {"zerver_attachment": []}
         create_converted_data_files(attachment, realm_output_dir, '/attachment.json')
 
         logging.info('Start making tarball')

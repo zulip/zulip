@@ -67,7 +67,7 @@ Incident [{incident_num}]({incident_url}) resolved:
 """.strip()
 
 def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
-    format_dict = {}  # type: Dict[str, Any]
+    format_dict: Dict[str, Any] = {}
     format_dict['action'] = PAGER_DUTY_EVENT_NAMES[message['type']]
 
     format_dict['incident_id'] = message['data']['incident']['id']

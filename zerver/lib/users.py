@@ -169,11 +169,11 @@ def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
     def fetch_users_by_id(user_ids: List[int]) -> List[UserProfile]:
         return list(UserProfile.objects.filter(id__in=user_ids).select_related())
 
-    user_profiles_by_id = generic_bulk_cached_fetch(
+    user_profiles_by_id: Dict[int, UserProfile] = generic_bulk_cached_fetch(
         cache_key_function=user_profile_by_id_cache_key,
         query_function=fetch_users_by_id,
         object_ids=user_ids
-    )  # type: Dict[int, UserProfile]
+    )
 
     found_user_ids = user_profiles_by_id.keys()
     missed_user_ids = [user_id for user_id in user_ids if user_id not in found_user_ids]
@@ -380,7 +380,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
 
 def get_custom_profile_field_values(custom_profile_field_values:
                                     List[CustomProfileFieldValue]) -> Dict[int, Dict[str, Any]]:
-    profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
+    profiles_by_user_id: Dict[int, Dict[str, Any]] = defaultdict(dict)
     for profile_field in custom_profile_field_values:
         user_id = profile_field.user_profile_id
         if profile_field.field.is_renderable():

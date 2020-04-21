@@ -121,7 +121,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, 'WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s)')
 
         # Add new streams
-        stream_dicts = [
+        stream_dicts: List[Mapping[str, Any]] = [
             {
                 "name": "publicstream",
                 "description": "Public stream with public history"
@@ -137,7 +137,7 @@ class NarrowBuilderTest(ZulipTestCase):
                 "invite_only": True,
                 "history_public_to_subscribers": True
             }
-        ]  # type: List[Mapping[str, Any]]
+        ]
         realm = get_realm('zulip')
         created, existing = create_streams_if_needed(realm, stream_dicts)
         self.assertEqual(len(created), 3)
@@ -151,7 +151,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, 'WHERE recipient_id NOT IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s)')
 
         # Add new streams
-        stream_dicts = [
+        stream_dicts: List[Mapping[str, Any]] = [
             {
                 "name": "publicstream",
                 "description": "Public stream with public history"
@@ -167,7 +167,7 @@ class NarrowBuilderTest(ZulipTestCase):
                 "invite_only": True,
                 "history_public_to_subscribers": True
             }
-        ]  # type: List[Mapping[str, Any]]
+        ]
         realm = get_realm('zulip')
         created, existing = create_streams_if_needed(realm, stream_dicts)
         self.assertEqual(len(created), 3)
@@ -1041,7 +1041,7 @@ class GetOldMessagesTest(ZulipTestCase):
     def get_and_check_messages(self,
                                modified_params: Dict[str, Union[str, int]],
                                **kwargs: Any) -> Dict[str, Any]:
-        post_params = {"anchor": 1, "num_before": 1, "num_after": 1}  # type: Dict[str, Union[str, int]]
+        post_params: Dict[str, Union[str, int]] = {"anchor": 1, "num_before": 1, "num_after": 1}
         post_params.update(modified_params)
         payload = self.client_get("/json/messages", dict(post_params),
                                   **kwargs)
@@ -1090,7 +1090,7 @@ class GetOldMessagesTest(ZulipTestCase):
         hamlet_user = self.example_user('hamlet')
         othello_user = self.example_user('othello')
 
-        query_ids = {}  # type: Dict[str, Union[int, str]]
+        query_ids: Dict[str, Union[int, str]] = {}
 
         scotland_stream = get_stream('Scotland', hamlet_user.realm)
         query_ids['scotland_recipient'] = scotland_stream.recipient_id
@@ -1112,9 +1112,9 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login('hamlet')
 
         def get_content_type(apply_markdown: bool) -> str:
-            req = dict(
+            req: Dict[str, Any] = dict(
                 apply_markdown=ujson.dumps(apply_markdown),
-            )  # type: Dict[str, Any]
+            )
             result = self.get_and_check_messages(req)
             message = result['messages'][0]
             return message['content_type']
@@ -1253,7 +1253,7 @@ class GetOldMessagesTest(ZulipTestCase):
         for personal in personals:
             emails = dr_emails(get_display_recipient(personal.recipient))
             self.login_user(me)
-            narrow = [dict(operator='pm-with', operand=emails)]  # type: List[Dict[str, Any]]
+            narrow: List[Dict[str, Any]] = [dict(operator='pm-with', operand=emails)]
             result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
             for message in result["messages"]:
@@ -1650,22 +1650,22 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='sender', operand=cordelia.email),
             dict(operator='search', operand='lunch'),
         ]
-        result = self.get_and_check_messages(dict(
+        result: Dict[str, Any] = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
             num_before=0,
             num_after=10,
-        ))  # type: Dict[str, Any]
+        ))
         self.assertEqual(len(result['messages']), 2)
         messages = result['messages']
 
         narrow = [dict(operator='search', operand='https://google.com')]
-        link_search_result = self.get_and_check_messages(dict(
+        link_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
             num_before=0,
             num_after=10,
-        ))  # type: Dict[str, Any]
+        ))
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" title="https://google.com">https://<span class="highlight">google.com</span></a></p>')
@@ -1698,12 +1698,12 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='discuss'),
             dict(operator='search', operand='after'),
         ]
-        multi_search_result = self.get_and_check_messages(dict(
+        multi_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
             narrow=ujson.dumps(multi_search_narrow),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Any]
+        ))
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
 
@@ -1795,12 +1795,12 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='special'),
             dict(operator='stream', operand='newstream'),
         ]
-        stream_search_result = self.get_and_check_messages(dict(
+        stream_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
             narrow=ujson.dumps(stream_search_narrow),
             anchor=0,
             num_after=10,
             num_before=10,
-        ))  # type: Dict[str, Any]
+        ))
         self.assertEqual(len(stream_search_result['messages']), 1)
         self.assertEqual(stream_search_result['messages'][0]['match_content'],
                          '<p>Public <span class="highlight">special</span> content!</p>')
@@ -1842,12 +1842,12 @@ class GetOldMessagesTest(ZulipTestCase):
         narrow = [
             dict(operator='search', operand='日本'),
         ]
-        result = self.get_and_check_messages(dict(
+        result: Dict[str, Any] = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Any]
+        ))
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
@@ -1878,12 +1878,12 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(operator='search', operand='speak'),
             dict(operator='search', operand='wiki'),
         ]
-        multi_search_result = self.get_and_check_messages(dict(
+        multi_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
             narrow=ujson.dumps(multi_search_narrow),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Any]
+        ))
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'],
                          '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese" title="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>')
@@ -1904,12 +1904,12 @@ class GetOldMessagesTest(ZulipTestCase):
                          '<p>今<span class="highlight">朝は</span>ごはんを食<span class="highlight">べました</span>。</p>')
 
         narrow = [dict(operator='search', operand='https://google.com')]
-        link_search_result = self.get_and_check_messages(dict(
+        link_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Any]
+        ))
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" title="https://google.com"><span class="highlight">https://google.com</span></a></p>')
@@ -1918,12 +1918,12 @@ class GetOldMessagesTest(ZulipTestCase):
         special_search_narrow = [
             dict(operator='search', operand='butter'),
         ]
-        special_search_result = self.get_and_check_messages(dict(
+        special_search_result: Dict[str, Any] = self.get_and_check_messages(dict(
             narrow=ujson.dumps(special_search_narrow),
             anchor=next_message_id,
             num_after=10,
             num_before=0,
-        ))  # type: Dict[str, Any]
+        ))
         self.assertEqual(len(special_search_result['messages']), 1)
         self.assertEqual(special_search_result['messages'][0][MATCH_TOPIC],
                          'bread &amp; <span class="highlight">butter</span>')
@@ -1988,9 +1988,11 @@ class GetOldMessagesTest(ZulipTestCase):
         anchor = self.send_stream_message(cordelia, "Verona")
 
         narrow = [dict(operator='sender', operand=cordelia.email)]
-        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow),
-                                                  anchor=anchor, num_before=0,
-                                                  num_after=0))  # type: Dict[str, Any]
+        result: Dict[str, Any] = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(narrow),
+            anchor=anchor, num_before=0,
+            num_after=0,
+        ))
         self.assertEqual(len(result['messages']), 1)
 
         narrow = [dict(operator='is', operand='mentioned')]
@@ -2251,7 +2253,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login('hamlet')
 
-        required_args = (("num_before", 1), ("num_after", 1))  # type: Tuple[Tuple[str, int], ...]
+        required_args: Tuple[Tuple[str, int], ...] = (("num_before", 1), ("num_after", 1))
 
         for i in range(len(required_args)):
             post_params = dict(required_args[:i] + required_args[i + 1:])
@@ -2301,10 +2303,12 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login('hamlet')
 
-        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]  # type: List[Tuple[str, Union[int, str, bool]]]
+        other_params: List[Tuple[str, Union[int, str, bool]]] = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
 
-        bad_types = (False, 0, '', '{malformed json,',
-                     '{foo: 3}', '[1,2]', '[["x","y","z"]]')  # type: Tuple[Union[int, str, bool], ...]
+        bad_types: Tuple[Union[int, str, bool], ...] = (
+            False, 0, '', '{malformed json,',
+            '{foo: 3}', '[1,2]', '[["x","y","z"]]',
+        )
         for type in bad_types:
             post_params = dict(other_params + [("narrow", type)])
             result = self.client_get("/json/messages", post_params)
@@ -2366,7 +2370,7 @@ class GetOldMessagesTest(ZulipTestCase):
     def exercise_bad_narrow_operand(self, operator: str,
                                     operands: Sequence[Any],
                                     error_msg: str) -> None:
-        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]  # type: List[Tuple[str, Any]]
+        other_params: List[Tuple[str, Any]] = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
         for operand in operands:
             post_params = dict(other_params + [
                 ("narrow", ujson.dumps([[operator, operand]]))])
@@ -2379,7 +2383,7 @@ class GetOldMessagesTest(ZulipTestCase):
         returned.
         """
         self.login('hamlet')
-        bad_stream_content = (0, [], ["x", "y"])  # type: Tuple[int, List[None], List[str]]
+        bad_stream_content: Tuple[int, List[None], List[str]] = (0, [], ["x", "y"])
         self.exercise_bad_narrow_operand("stream", bad_stream_content,
                                          "Bad value for 'narrow'")
 
@@ -2389,7 +2393,7 @@ class GetOldMessagesTest(ZulipTestCase):
         error is returned.
         """
         self.login('hamlet')
-        bad_stream_content = (0, [], ["x", "y"])  # type: Tuple[int, List[None], List[str]]
+        bad_stream_content: Tuple[int, List[None], List[str]] = (0, [], ["x", "y"])
         self.exercise_bad_narrow_operand("pm-with", bad_stream_content,
                                          "Bad value for 'narrow'")
 
@@ -2940,11 +2944,11 @@ WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject IL
             dict(operator='sender', operand=cordelia.email),
             dict(operator='search', operand=othello.email),
         ]
-        result = self.get_and_check_messages(dict(
+        result: Dict[str, Any] = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
             anchor=next_message_id,
             num_after=10,
-        ))  # type: Dict[str, Any]
+        ))
         self.assertEqual(len(result['messages']), 0)
 
         narrow = [

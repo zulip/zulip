@@ -23,8 +23,8 @@ class UserHandler:
     '''
 
     def __init__(self) -> None:
-        self.id_to_user_map = dict()  # type: Dict[int, Dict[str, Any]]
-        self.name_to_mirror_user_map = dict()  # type: Dict[str, Dict[str, Any]]
+        self.id_to_user_map: Dict[int, Dict[str, Any]] = dict()
+        self.name_to_mirror_user_map: Dict[str, Dict[str, Any]] = dict()
         self.mirror_user_id = 1
 
     def add_user(self, user: Dict[str, Any]) -> None:

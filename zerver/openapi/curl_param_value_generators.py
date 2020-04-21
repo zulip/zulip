@@ -9,9 +9,9 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import update_user_presence, do_add_realm_filter, do_add_reaction
 
-GENERATOR_FUNCTIONS = dict()  # type: Dict[str, Callable[..., Dict[Any, Any]]]
-REGISTERED_GENERATOR_FUNCTIONS = set()  # type: Set[str]
-CALLED_GENERATOR_FUNCTIONS = set()  # type: Set[str]
+GENERATOR_FUNCTIONS: Dict[str, Callable[..., Dict[Any, Any]]] = dict()
+REGISTERED_GENERATOR_FUNCTIONS: Set[str] = set()
+CALLED_GENERATOR_FUNCTIONS: Set[str] = set()
 
 helpers = ZulipTestCase()
 
@@ -42,7 +42,7 @@ def patch_openapi_example_values(entry: str, params: List[Dict[str, Any]],
     if entry not in GENERATOR_FUNCTIONS:
         return params, request_body
     func = GENERATOR_FUNCTIONS[entry]
-    realm_example_values = func()  # type: Dict[str, Any]
+    realm_example_values: Dict[str, Any] = func()
 
     for param in params:
         param_name = param["name"]
