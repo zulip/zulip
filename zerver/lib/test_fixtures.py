@@ -222,21 +222,19 @@ def update_test_databases_if_required(use_force: bool=False,
 
     If use_force is specified, it will always do a full rebuild.
     """
-    generate_fixtures_command = ['tools/setup/generate-fixtures']
     test_template_db_status = TEST_DATABASE.template_status()
 
     if use_force or test_template_db_status == 'needs_rebuild':
-        generate_fixtures_command.append('--force')
-        subprocess.check_call(generate_fixtures_command)
+        run(['tools/rebuild-dev-database'])
         return
 
     if test_template_db_status == 'run_migrations':
         TEST_DATABASE.run_db_migrations()
-        subprocess.check_call(generate_fixtures_command)
+        run(['tools/setup/generate-fixtures'])
         return
 
     if rebuild_test_database:
-        subprocess.check_call(generate_fixtures_command)
+        run(['tools/setup/generate-fixtures'])
 
 def get_migration_status(**options: Any) -> str:
     verbosity = options.get('verbosity', 1)
