@@ -1830,18 +1830,7 @@ paths:
           type: boolean
           default: false
         example: true
-      - name: principals
-        in: query
-        description: |
-          A list of email addresses of the users that will be subscribed to the
-          streams specified in the `subscriptions` argument. If not provided, then
-          the requesting user/bot is subscribed.
-        schema:
-          type: array
-          items:
-            type: string
-          default: []
-        example: ['ZOE@zulip.com']
+      - $ref: '#/components/parameters/Principals'
       - name: authorization_errors_fatal
         in: query
         description: |
@@ -2039,17 +2028,7 @@ paths:
             type: string
         example: ['Verona', 'Denmark']
         required: true
-      - name: principals
-        in: query
-        description: |
-          A list of email addresses of the users that will be unsubscribed from
-          the streams specified in the `subscriptions` argument. If not provided,
-          then the requesting user/bot is unsubscribed.
-        schema:
-          type: array
-          items:
-            type: string
-        example: ['ZOE@zulip.com']
+      - $ref: '#/components/parameters/Principals'
       responses:
         '200':
           description: Success.
@@ -3834,3 +3813,16 @@ components:
         type: boolean
         default: false
       example: true
+    Principals:
+      name: principals
+      in: query
+      description: |
+        A list of email addresses of the users that will be subscribed/unsubscribed
+        to the streams specified in the `subscriptions` argument. If not provided, then
+        the requesting user/bot is subscribed.
+      schema:
+        type: array
+        items:
+          type: string
+        default: []
+      example: ['ZOE@zulip.com']
