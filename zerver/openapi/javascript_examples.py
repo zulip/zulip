@@ -1,5 +1,8 @@
 
-from typing import Dict, Any, Callable, Set
+from typing import Dict, Any, Callable, Set, List
+
+import json
+import subprocess
 
 from functools import wraps
 
@@ -25,3 +28,17 @@ def openapi_test_function(endpoint: str) -> Callable[[Callable[..., Any]], Calla
 
         return _record_calls_wrapper
     return wrapper
+
+def run_js_code(js_code: str) -> List[Dict[str, Any]]:
+    """Here, we run the JavaScript examples and return
+    a list of all the responses from the code example
+    as json."""
+
+    responses_str = subprocess.check_output(
+        args=['node'],
+        input=js_code.replace(
+            '.then(console.log)', '.then(JSON.stringify).then(console.log)'),
+        universal_newlines=True)
+    json_response_list = [json.loads(response) for response in responses_str.splitlines()]
+
+    return json_response_list
