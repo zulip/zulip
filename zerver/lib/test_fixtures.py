@@ -202,8 +202,7 @@ TEST_DATABASE = Database(
     settings='zproject.test_settings',
 )
 
-def update_test_databases_if_required(use_force: bool=False,
-                                      rebuild_test_database: bool=False) -> None:
+def update_test_databases_if_required(rebuild_test_database: bool=False) -> None:
     """Checks whether the zulip_test_template database template, is
     consistent with our database migrations; if not, it updates it
     in the fastest way possible:
@@ -219,12 +218,10 @@ def update_test_databases_if_required(use_force: bool=False,
     The `rebuild_test_database` option (used by our Casper tests) asks
     us to drop and re-cloning the zulip_test database from the
     template so those test suites can run with a fresh copy.
-
-    If use_force is specified, it will always do a full rebuild.
     """
     test_template_db_status = TEST_DATABASE.template_status()
 
-    if use_force or test_template_db_status == 'needs_rebuild':
+    if test_template_db_status == 'needs_rebuild':
         run(['tools/rebuild-dev-database'])
         return
 
