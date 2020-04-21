@@ -1112,18 +1112,7 @@ paths:
         `GET {{ api_url }}/v1/users`
       parameters:
       - $ref: '#/components/parameters/ClientGravatar'
-      - name: include_custom_profile_fields
-        in: query
-        description: |
-          Set to `true` if the client wants custom profile field data to be
-          included in the response.
-
-          **Changes**: New in Zulip 2.1.0.  Previous versions do no offer these
-          data via the API.
-        schema:
-          type: boolean
-          default: false
-        example: true
+      - $ref: '#/components/parameters/IncludeCustomProfileFields'
       responses:
         '200':
           description: Success.
@@ -1288,14 +1277,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/UserId'
       - $ref: '#/components/parameters/ClientGravatar'
-      - name: include_custom_profile_fields
-        in: query
-        description: |
-          The client should pass true if it wants to include custom profile field data.
-        schema:
-          type: boolean
-          default: false
-        example: true
+      - $ref: '#/components/parameters/IncludeCustomProfileFields'
       responses:
         '200':
           description: Success.
@@ -3839,3 +3821,16 @@ components:
       schema:
         type: string
       example: 'octopus'
+    IncludeCustomProfileFields:
+      name: include_custom_profile_fields
+      in: query
+      description: |
+        Set to `true` if the client wants custom profile field data to be
+        included in the response.
+
+        **Changes**: New in Zulip 2.1.0.  Previous versions do no offer these
+        data via the API.
+      schema:
+        type: boolean
+        default: false
+      example: true
