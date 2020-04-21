@@ -12,14 +12,14 @@ from typing import Dict
 import os
 import time
 
-RESULTS_DIR = "/home/zulip/mirror_status"  # type: str
+RESULTS_DIR: str = "/home/zulip/mirror_status"
 
-states = {
+states: Dict[str, int] = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-}  # type: Dict[str, int]
+}
 
 def report(state: str, output: str) -> None:
     print("%s\n%s" % (state, output))

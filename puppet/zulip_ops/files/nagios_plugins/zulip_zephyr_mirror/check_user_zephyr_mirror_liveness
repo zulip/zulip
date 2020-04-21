@@ -28,12 +28,12 @@ from zerver.models import UserActivity
 
 from typing import Any, Dict, Set, Optional
 
-states = {
+states: Dict[str, int] = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-}  # type: Dict[str, int]
+}
 
 def report(state: str, short_msg: str, too_old: Optional[Set[Any]] = None) -> None:
     too_old_data = ""

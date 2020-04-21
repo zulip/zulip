@@ -109,7 +109,7 @@ def create_user_docs() -> None:
         for line in open(fn):
             calls.append(ujson.loads(line))
 
-        pattern_dict = defaultdict(list)  # type: Dict[str, List[Call]]
+        pattern_dict: Dict[str, List[Call]] = defaultdict(list)
         for call in calls:
             if 'pattern' in call:
                 pattern = clean_up_pattern(call['pattern'])
@@ -124,7 +124,7 @@ def create_user_docs() -> None:
             ('json', 'legacy'),
         ]
 
-        groups = dict()  # type: Dict[str, Set[str]]
+        groups: Dict[str, Set[str]] = dict()
         for prefix, name in tups:
             groups[name] = {p for p in patterns if p.startswith(prefix)}
             patterns -= groups[name]

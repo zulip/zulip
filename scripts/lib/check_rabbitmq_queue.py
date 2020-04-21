@@ -40,28 +40,28 @@ states = {
     3: "UNKNOWN"
 }
 
-MAX_SECONDS_TO_CLEAR_FOR_BURSTS = defaultdict(
+MAX_SECONDS_TO_CLEAR_FOR_BURSTS: DefaultDict[str, int] = defaultdict(
     lambda: 120,
     digest_emails=600,
     slow_queries=600,
-)  # type: DefaultDict[str, int]
-MAX_SECONDS_TO_CLEAR_NORMAL = defaultdict(
+)
+MAX_SECONDS_TO_CLEAR_NORMAL: DefaultDict[str, int] = defaultdict(
     lambda: 30,
     digest_emails=1200,
     slow_queries=120,
     missedmessage_mobile_notifications=120,
-)  # type: DefaultDict[str, int]
-CRITICAL_SECONDS_TO_CLEAR_FOR_BURSTS = defaultdict(
+)
+CRITICAL_SECONDS_TO_CLEAR_FOR_BURSTS: DefaultDict[str, int] = defaultdict(
     lambda: 240,
     digest_emails=1200,
     slow_queries=1200,
-)  # type: DefaultDict[str, int]
-CRITICAL_SECONDS_TO_CLEAR_NORMAL = defaultdict(
+)
+CRITICAL_SECONDS_TO_CLEAR_NORMAL: DefaultDict[str, int] = defaultdict(
     lambda: 60,
     missedmessage_mobile_notifications=180,
     digest_emails=600,
     slow_queries=600,
-)  # type: DefaultDict[str, int]
+)
 
 def analyze_queue_stats(queue_name: str, stats: Dict[str, Any],
                         queue_count_rabbitmqctl: int) -> Dict[str, Any]:
@@ -183,7 +183,7 @@ def check_rabbitmq_queues() -> None:
     queue_stats_dir = subprocess.check_output([os.path.join(ZULIP_PATH, 'scripts/get-django-setting'),
                                                'QUEUE_STATS_DIR'],
                                               universal_newlines=True).strip()
-    queue_stats = dict()  # type: Dict[str, Dict[str, Any]]
+    queue_stats: Dict[str, Dict[str, Any]] = dict()
     queues_to_check = set(normal_queues).intersection(set(queues_with_consumers))
     for queue in queues_to_check:
         fn = queue + ".stats"

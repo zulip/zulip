@@ -44,7 +44,7 @@ ContributorsJSON = TypedDict('ContributorsJSON', {
 logger = logging.getLogger('zulip.fetch_contributors_json')
 
 def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]]]]:
-    r = requests.get(repo_link, verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))  # type: requests.Response
+    r: requests.Response = requests.get(repo_link, verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))
     return r.json() if r.status_code == 200 else None
 
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
@@ -77,8 +77,8 @@ def update_contributor_data_file() -> None:
         'zulip-android': 'https://api.github.com/repos/zulip/zulip-android/stats/contributors',
     }
 
-    data = dict(date=str(date.today()), contrib=[])  # type: ContributorsJSON
-    contribs_list = {}  # type: Dict[str, Dict[str, Union[str, int]]]
+    data: ContributorsJSON = dict(date=str(date.today()), contrib=[])
+    contribs_list: Dict[str, Dict[str, Union[str, int]]] = {}
     retry_attempts = 0
 
     while True:

@@ -52,7 +52,7 @@ def generate_secrets(development: bool = False) -> None:
         OUTPUT_SETTINGS_FILENAME = "/etc/zulip/zulip-secrets.conf"
     current_conf = get_old_conf(OUTPUT_SETTINGS_FILENAME)
 
-    lines = []  # type: List[str]
+    lines: List[str] = []
     if len(current_conf) == 0:
         lines = ['[secrets]\n']
 
