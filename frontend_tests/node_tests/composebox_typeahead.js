@@ -1526,4 +1526,14 @@ run_test('message people', () => {
 
     results = ct.get_person_suggestions('Ha', opts);
     assert.deepEqual(results, [harry, hamletcharacters]);
+
+    message_store.user_ids = () => [hamlet.user_id, harry.user_id, hal.user_id];
+
+    results = ct.get_person_suggestions('Ha', opts);
+    assert.deepEqual(results, [harry, hamletcharacters]);
+
+    people.deactivate(harry);
+    results = ct.get_person_suggestions('Ha', opts);
+    // harry is excluded since it has been deactivated.
+    assert.deepEqual(results, [hamletcharacters, hal]);
 });
