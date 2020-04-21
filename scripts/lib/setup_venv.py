@@ -270,6 +270,20 @@ def do_patch_activate_script(venv_path: str) -> None:
     is set to venv_path during the script's execution whenever it is sourced.
     """
     # venv_path should be what we want to have in VIRTUAL_ENV after patching
+    if 'zulip-py3-venv' in venv_path:
+        # For venv created from `conda`
+        # https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#macos-and-linux
+        run_as_root(["mkdir", "-p", f"{venv_path}/etc/conda/activate.d"])
+        run_as_root(["mkdir", "-p", f"{venv_path}/etc/conda/deactivate.d"])
+        run_as_root(["chmod", "a+rwx", f"{venv_path}/etc/conda/activate.d"])
+        run_as_root(["chmod", "a+rwx", f"{venv_path}/etc/conda/deactivate.d"])
+        with open(f"{venv_path}/etc/conda/activate.d/env_vars.sh", 'w') as f:
+            f.write('#!/bin/sh\nVIRTUAL_ENV="%s"\n' % (venv_path,))
+        with open(f"{venv_path}/etc/conda/deactivate.d/env_vars.sh", 'w') as f:
+            f.write('#!/bin/sh\nunset VIRTUAL_ENV')
+        return
+
+    # For venv created from `virtualenv`
     script_path = os.path.join(venv_path, "bin", "activate")
 
     with open(script_path) as f:
