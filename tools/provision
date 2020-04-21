@@ -22,6 +22,25 @@ LOG_PATH="../var/log/provision.log"
 
 echo "PROVISIONING STARTING." >> $LOG_PATH
 
+# Check for a supported OS release.
+if [ -f /etc/os-release ]; then
+    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$ID_LIKE")"
+    { read -r os_id; read -r os_id_like || true; } <<< "$os_info"
+fi
+
+# Install conda
+case " $os_id $os_id_like " in
+    *' debian '*)
+        sudo "$PARENT_PATH"/../scripts/setup/install-conda-debian
+        ;;
+    *' rhel '*)
+        sudo "$PARENT_PATH"/../scripts/setup/install-conda-rhel
+        ;;
+esac
+
+# Add conda to path
+source /opt/conda/etc/profile.d/conda.sh
+
 # PYTHONUNBUFFERED is important to ensure that tracebacks don't get
 # lost far above where they should be in the output.
 export PYTHONUNBUFFERED=1
