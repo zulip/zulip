@@ -91,3 +91,6 @@ zulip(config).then((client) => {
 
     for result in result_list:
         validate_against_openapi_schema(result, '/messages', 'post', '200')
+
+def test_messages() -> None:
+    send_message()
