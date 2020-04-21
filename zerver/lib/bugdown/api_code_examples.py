@@ -6,14 +6,14 @@ from django.conf import settings
 
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from typing import Any, Dict, Optional, List, Tuple
+from typing import Any, Dict, Optional, List, Tuple, Pattern
 import markdown
 
 import zerver.openapi.python_examples
 from zerver.openapi.openapi import get_openapi_fixture, openapi_spec
 
 MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
-CODE_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
+PYTHON_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
 
 PYTHON_CLIENT_CONFIG = """
 #!/usr/bin/env python3
@@ -59,11 +59,12 @@ def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str,
         return (language, options)
     return (language, {})
 
-def extract_python_code_example(source: List[str], snippet: List[str]) -> List[str]:
+def extract_code_example(source: List[str], snippet: List[str],
+                         example_regex: Pattern[str]) -> List[str]:
     start = -1
     end = -1
     for line in source:
-        match = CODE_EXAMPLE_REGEX.search(line)
+        match = example_regex.search(line)
         if match:
             if match.group(1) == 'start':
                 start = source.index(line)
@@ -75,10 +76,8 @@ def extract_python_code_example(source: List[str], snippet: List[str]) -> List[s
         return snippet
 
     snippet.extend(source[start + 1: end])
-    snippet.append('    print(result)')
-    snippet.append('\n')
     source = source[end + 1:]
-    return extract_python_code_example(source, snippet)
+    return extract_code_example(source, snippet, example_regex)
 
 def render_python_code_example(function: str, admin_config: Optional[bool]=False,
                                **kwargs: Any) -> List[str]:
@@ -90,7 +89,7 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
     else:
         config = PYTHON_CLIENT_CONFIG.splitlines()
 
-    snippet = extract_python_code_example(function_source_lines, [])
+    snippet = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
 
     code_example = []
     code_example.append('```python')
@@ -100,6 +99,8 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
         # Remove one level of indentation and strip newlines
         code_example.append(line[4:].rstrip())
 
+    code_example.append('    print(result)')
+    code_example.append('\n')
     code_example.append('```')
 
     return code_example
