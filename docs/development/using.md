@@ -32,7 +32,7 @@ the development environment][authentication-dev-server].
   database with different test data, are documented in-app at
   `https://localhost:9991/devtools`.
 * If you want to restore your development environment's database to a
-  pristine state, you can use `./tools/do-destroy-rebuild-database`.
+  pristine state, you can use `./tools/rebuild-dev-database`.
 
 ## Server
 

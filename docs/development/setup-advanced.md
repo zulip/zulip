@@ -242,9 +242,9 @@ else
 fi
 ./scripts/setup/configure-rabbitmq
 ./tools/setup/postgres-init-dev-db
-./tools/do-destroy-rebuild-database
+./tools/rebuild-dev-database
 ./tools/setup/postgres-init-test-db
-./tools/do-destroy-rebuild-test-database
+./tools/rebuild-test-database
 ./manage.py compilemessages
 ```
 
