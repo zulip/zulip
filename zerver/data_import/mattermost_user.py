@@ -9,6 +9,7 @@ class UserHandler:
     The class helps us do things like map ids
     to names for mentions.
     '''
+
     def __init__(self) -> None:
         self.id_to_user_map = dict()  # type: Dict[int, Dict[str, Any]]
 

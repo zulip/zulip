@@ -25,7 +25,7 @@ def configure_cssutils() -> None:
                                                           r'visible|painted|fill|stroke|all|inherit')
 
     profile.addProfiles([(Profiles.CSS_LEVEL_2, properties[Profiles.CSS_LEVEL_2],
-                         macros[Profiles.CSS_LEVEL_2])])
+                          macros[Profiles.CSS_LEVEL_2])])
 configure_cssutils()
 
 def inline_template(template_source_name: str) -> None:

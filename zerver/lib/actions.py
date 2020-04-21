@@ -1530,6 +1530,7 @@ class UserMessageLite:
     is optimized for the simple use case of inserting a bunch of
     rows into zerver_usermessage.
     '''
+
     def __init__(self, user_profile_id: int, message_id: int, flags: int) -> None:
         self.user_profile_id = user_profile_id
         self.message_id = message_id
@@ -4002,7 +4003,7 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
         UserMessage.objects.filter(user_profile=user_profile,
                                    message__id__gt=prev_pointer,
                                    message__id__lte=pointer).extra(where=[UserMessage.where_unread()]) \
-                           .update(flags=F('flags').bitor(UserMessage.flags.read))
+            .update(flags=F('flags').bitor(UserMessage.flags.read))
         do_clear_mobile_push_notifications_for_ids(user_profile, app_message_ids)
 
     event = dict(type='pointer', pointer=pointer)
@@ -4531,7 +4532,7 @@ def do_update_message(user_profile: UserProfile, message: Message,
     send_event(user_profile.realm, event, users_to_be_notified)
 
     if (len(changed_messages) > 0 and new_stream is not None and
-       stream_being_edited is not None):
+            stream_being_edited is not None):
         # Notify users that the topic was moved.
         notify_topic_moved_streams(user_profile, stream_being_edited, orig_topic_name,
                                    new_stream, topic_name)

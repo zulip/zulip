@@ -16,6 +16,7 @@ class StreamRecipientMap:
     Note that this class uses raw SQL, because we want to highly
     optimize page loads.
     '''
+
     def __init__(self) -> None:
         self.recip_to_stream = dict()  # type: Dict[int, int]
         self.stream_to_recip = dict()  # type: Dict[int, int]

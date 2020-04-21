@@ -151,6 +151,7 @@ class TextTestResult(runner.TextTestResult):
     This class has unpythonic function names because base class follows
     this style.
     """
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.failed_tests = []  # type: List[str]
@@ -192,6 +193,7 @@ class RemoteTestResult(django_runner.RemoteTestResult):
     The class follows the unpythonic style of function names of the
     base class.
     """
+
     def addInfo(self, test: TestCase, msg: str) -> None:
         self.events.append(('addInfo', self.test_index, msg))
 
@@ -598,6 +600,7 @@ class SubSuiteList(List[Tuple[Type[TestSuite], List[str]]]):
     This class allows us to avoid changing the main logic of
     ParallelTestSuite and still make it serializable.
     """
+
     def __init__(self, suites: List[TestSuite]) -> None:
         serialized_suites = [serialize_suite(s) for s in suites]
         super().__init__(serialized_suites)

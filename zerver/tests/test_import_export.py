@@ -689,6 +689,7 @@ class ImportExportTest(ZulipTestCase):
     """
     Tests for import_realm
     """
+
     def test_import_realm(self) -> None:
 
         original_realm = Realm.objects.get(string_id='zulip')

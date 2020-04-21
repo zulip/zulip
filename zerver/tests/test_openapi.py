@@ -41,6 +41,7 @@ class OpenAPIToolsTest(ZulipTestCase):
     These tools are mostly dedicated to fetching parts of the -already parsed-
     specification, and comparing them to objects returned by our REST API.
     """
+
     def test_get_openapi_fixture(self) -> None:
         actual = get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD,
                                      TEST_RESPONSE_BAD_REQ)
