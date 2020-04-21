@@ -38,7 +38,7 @@ if [ "$failed" -ne 0 ]; then
     echo "* Logs are here: zulip/var/log/provision.log"
     echo -e "$ENDC"
     exit "$failed"
-elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${TRAVIS}${SKIP_VENV_SHELL_WARNING}" ]; then
+elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${CIRCLECI}${SKIP_VENV_SHELL_WARNING}" ]; then
     echo -e "$WARNING"
     echo "WARNING: This shell does not have the Zulip Python 3 virtualenv activated."
     echo "Zulip commands will fail until you activate the virtualenv."
