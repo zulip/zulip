@@ -17,7 +17,11 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     md_engine = markdown.Markdown(extensions=[api_code_examples.makeExtension(
         api_url=realm.uri + "/api")])
 
-    for file_name in glob.glob("templates/zerver/api/*.md"):
+    # We run our curl tests in alphabetical order, since we depend
+    # on "add" tests coming before "remove" tests in some cases.  We
+    # should try to either avoid ordering dependencies or make them
+    # very explicit.
+    for file_name in sorted(glob.glob("templates/zerver/api/*.md")):
         documentation_lines = open(file_name).readlines()
         for line in documentation_lines:
             # A typical example from the markdown source looks like this:
