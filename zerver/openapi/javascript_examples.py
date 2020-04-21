@@ -95,8 +95,38 @@ zulip(config).then((client) => {
     for result in result_list:
         validate_against_openapi_schema(result, '/messages', 'post', '200')
 
+@openapi_test_function("/users:post")
+def create_user() -> None:
+
+    js_code = """
+const zulip = require('zulip-js');
+
+const config = {
+    zuliprc: '.zuliprc',
+};
+// {code_example|start}
+zulip(config).then((client) => {
+    // Create a user
+    const params = {
+        email: 'newbie@zulip.com',
+        password: 'temp',
+        full_name: 'New User',
+        short_name: 'newbie'
+    };
+    client.users.create(params).then(console.log);
+});
+// {code_example|end}
+"""
+    result_list = run_js_code(js_code)
+
+    for result in result_list:
+        validate_against_openapi_schema(result, '/users', 'post', '200')
+
 def test_messages() -> None:
     send_message()
+
+def test_users() -> None:
+    create_user()
 
 def test_js_bindings(client: Client) -> None:
 
@@ -112,6 +142,7 @@ def test_js_bindings(client: Client) -> None:
 
     try:
         test_messages()
+        test_users()
     finally:
         os.remove(".zuliprc")
 
