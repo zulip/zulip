@@ -354,7 +354,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the urls.
         needs to be mapped to list."""
 
         if sys.version_info < (3, 7):  # nocoverage  # python 3.5-3.6
-            if sys.version_info < (3, 6) and type(t) is type(Union):  # python 3.5 has special consideration for Union
+            if sys.version_info < (3, 6) and isinstance(t, type(Union)):  # python 3.5 has special consideration for Union
                 origin = Union
             else:
                 origin = getattr(t, "__origin__", None)
