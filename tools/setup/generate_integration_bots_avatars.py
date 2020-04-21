@@ -14,9 +14,6 @@ import django
 
 django.setup()
 
-import tempfile
-from typing import Optional
-
 import io
 import cairosvg
 from PIL import Image
@@ -24,14 +21,6 @@ from PIL import Image
 from zerver.lib.upload import resize_avatar, DEFAULT_AVATAR_SIZE
 from zerver.lib.integrations import Integration, WEBHOOK_INTEGRATIONS
 from zerver.lib.storage import static_path
-
-def create_png_from_svg(svg_path: str, destination_dir: Optional[str]=None) -> str:
-    png_name = os.path.splitext(os.path.basename(svg_path))[0] + '.png'
-    if destination_dir is None:
-        destination_dir = tempfile.gettempdir()
-    png_path = os.path.join(destination_dir, png_name)
-    cairosvg.svg2png(url=svg_path, write_to=png_path)
-    return png_path
 
 def create_square_image(png: bytes) -> bytes:
     img = Image.open(io.BytesIO(png))
