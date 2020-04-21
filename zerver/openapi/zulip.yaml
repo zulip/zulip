@@ -914,18 +914,7 @@ paths:
         `POST {{ api_url }}/v1/messages/{message_id}/reactions`
       parameters:
       - $ref: '#/components/parameters/MessageId'
-      - name: emoji_name
-        in: query
-        description: |
-          Name of the emoji you want to add as as a reaction.
-
-          To find an emoji's name, hover over a message to reveal
-          three icons on the right, then click the smiley face icon.
-          Images of available reaction emojis appear. Hover over the
-          emoji you want, and note that emoji's text name.
-        schema:
-          type: string
-        example: 'octopus'
+      - $ref: '#/components/parameters/EmojiName'
         required: true
       - name: emoji_code
         in: query
@@ -987,20 +976,7 @@ paths:
         `DELETE {{ api_url }}/v1/messages/{message_id}/reactions`
       parameters:
       - $ref: '#/components/parameters/MessageId'
-      - name: emoji_name
-        in: query
-        description: |
-          Name of the emoji you want to delete from a reaction.
-
-          To find an emoji's name, hover over a message to
-          reveal three icons on the right, then click the smiley face icon.
-          Images of available reaction emojis appear. Hover over the emoji
-          you want, and note that emoji's text name.
-
-          Ignored if emoji_code is also passed.
-        schema:
-          type: string
-        example: 'octopus'
+      - $ref: '#/components/parameters/EmojiName'
         required: false
       - name: emoji_code
         in: query
@@ -3850,3 +3826,16 @@ components:
         type: boolean
         default: false
       example: true
+    EmojiName:
+      name: emoji_name
+      in: query
+      description: |
+        Name of the emoji.
+
+        To find an emoji's name, hover over a message to reveal
+        three icons on the right, then click the smiley face icon.
+        Images of available reaction emojis appear. Hover over the
+        emoji you want, and note that emoji's text name.
+      schema:
+        type: string
+      example: 'octopus'
