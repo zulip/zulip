@@ -324,7 +324,11 @@ def do_setup_virtualenv(venv_path: str, requirements_file: str, python2: bool) -
     if not try_to_copy_venv(venv_path, new_packages):
         # Create new virtualenv.
         run_as_root(["mkdir", "-p", venv_path])
-        run_as_root(["virtualenv", "-p", "python2.7" if python2 else "python3", venv_path])
+        if python2:
+            run_as_root(["virtualenv", "-p", "python2.7", venv_path])
+        else:
+            run_as_root(["chmod", "-R", "a+rwX", venv_path])
+            run(["conda", "create", "-y", "--prefix", venv_path, "python=3.7"])
         run_as_root(["chown", "-R",
                      "{}:{}".format(os.getuid(), os.getgid()), venv_path])
         create_log_entry(get_logfile_name(venv_path), "", set(), new_packages)
