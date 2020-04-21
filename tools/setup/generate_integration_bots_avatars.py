@@ -14,7 +14,9 @@ import django
 
 django.setup()
 
+import argparse
 import io
+
 import cairosvg
 from PIL import Image
 
@@ -53,12 +55,27 @@ def create_integration_bot_avatar(logo_path: str) -> None:
     with open(bot_avatar_path, 'wb') as f:
         f.write(avatar)
 
-def generate_integration_bots_avatars() -> None:
+def generate_integration_bots_avatars(check_missing: bool=False) -> None:
+    missing = set()
     for webhook in WEBHOOK_INTEGRATIONS:
         logo_path = webhook.get_logo_path()
         if not logo_path:
             continue
-        create_integration_bot_avatar(static_path(logo_path))
+        if check_missing:
+            bot_avatar_path = static_path(webhook.DEFAULT_BOT_AVATAR_PATH.format(name=webhook.name))
+            if not os.path.isfile(bot_avatar_path):
+                missing.add(webhook.name)
+        else:
+            create_integration_bot_avatar(static_path(logo_path))
+
+    if missing:
+        print('Bot avatars are missing for these webhooks: {}.\n'
+              'Run ./tools/setup/generate_integration_bots_avatars.py '
+              'to generate them.'.format(', '.join(missing)))
+        sys.exit(1)
 
 if __name__ == '__main__':
-    generate_integration_bots_avatars()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--check-missing', action='store_true')
+    options = parser.parse_args()
+    generate_integration_bots_avatars(options.check_missing)
