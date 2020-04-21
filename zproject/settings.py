@@ -1079,6 +1079,6 @@ THUMBOR_KEY = get_secret('thumbor_key')
 
 TWO_FACTOR_PATCH_ADMIN = False
 
-CORS_URLS_REGEX = r'^/api/v1/.*$'
+CORS_URLS_REGEX = '^/api/v1/.*$'
 CORS_ORIGIN_ALLOW_ALL = True
 INSTALLED_APPS += ['corsheaders']
