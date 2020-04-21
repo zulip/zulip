@@ -328,7 +328,8 @@ def do_setup_virtualenv(venv_path: str, requirements_file: str, python2: bool) -
             run_as_root(["virtualenv", "-p", "python2.7", venv_path])
         else:
             run_as_root(["chmod", "-R", "a+rwX", venv_path])
-            run(["conda", "create", "-y", "--prefix", venv_path, "python=3.7"])
+            run(["conda", "config", "--append", "channels", "conda-forge"])
+            run(["conda", "create", "-y", "--prefix", venv_path, "python=3.7", "uwsgi"])
         run_as_root(["chown", "-R",
                      "{}:{}".format(os.getuid(), os.getgid()), venv_path])
         create_log_entry(get_logfile_name(venv_path), "", set(), new_packages)
