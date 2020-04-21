@@ -149,9 +149,12 @@ If you follow the processes described above, `tools/provision` and
 migrations and run migrations on (`./manage.py migrate`) or rebuild
 the relevant database automatically as appropriate.
 
-Developing migrations can result in manual fiddling that leads to a
-broken database state, however.  For those situations, we have
-`tools/do-destroy-rebuild-test-database` and
-`tools/do-destroy-rebuild-database` available to rebuild the databases
-used for `test-backend` and [manual testing](../development/using.md),
-respectively.
+While developing migrations, you may accidentally corrupt
+your databases while debugging your new code.
+You can always rebuild these databases from scratch.
+
+Use `tools/rebuild-test-database` to rebuild the database
+used for `test-backend` and other automated tests.
+
+Use `tools/rebuild-dev-database` to rebuild the database
+used in [manual testing](../development/using.md).

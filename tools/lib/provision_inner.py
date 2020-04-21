@@ -213,7 +213,7 @@ def main(options: argparse.Namespace) -> int:
         dev_template_db_status = DEV_DATABASE.template_status()
         if options.is_force or dev_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-dev-db"])
-            run(["tools/do-destroy-rebuild-database"])
+            run(["tools/rebuild-dev-database"])
         elif dev_template_db_status == 'run_migrations':
             DEV_DATABASE.run_db_migrations()
         elif dev_template_db_status == 'current':
@@ -222,7 +222,7 @@ def main(options: argparse.Namespace) -> int:
         test_template_db_status = TEST_DATABASE.template_status()
         if options.is_force or test_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-test-db"])
-            run(["tools/do-destroy-rebuild-test-database"])
+            run(["tools/rebuild-test-database"])
         elif test_template_db_status == 'run_migrations':
             TEST_DATABASE.run_db_migrations()
         elif test_template_db_status == 'current':
