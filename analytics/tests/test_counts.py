@@ -1003,12 +1003,12 @@ class TestDoIncrementLoggingStat(AnalyticsTestCase):
         self.current_property = 'test'
         self.assertTableState(RealmCount, ['value', 'subgroup', 'end_time'],
                               [[1, 'subgroup1', self.TIME_ZERO], [1, 'subgroup2', self.TIME_ZERO],
-                              [1, 'subgroup1', self.TIME_LAST_HOUR]])
+                               [1, 'subgroup1', self.TIME_LAST_HOUR]])
         # This should trigger the get part of get_or_create
         do_increment_logging_stat(self.default_realm, stat, 'subgroup1', self.TIME_ZERO)
         self.assertTableState(RealmCount, ['value', 'subgroup', 'end_time'],
                               [[2, 'subgroup1', self.TIME_ZERO], [1, 'subgroup2', self.TIME_ZERO],
-                              [1, 'subgroup1', self.TIME_LAST_HOUR]])
+                               [1, 'subgroup1', self.TIME_LAST_HOUR]])
 
     def test_increment(self) -> None:
         stat = LoggingCountStat('test', RealmCount, CountStat.DAY)

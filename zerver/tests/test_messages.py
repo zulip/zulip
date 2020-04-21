@@ -4036,6 +4036,7 @@ class MessageAccessTests(ZulipTestCase):
 
 class MessageHasKeywordsTest(ZulipTestCase):
     '''Test for keywords like has_link, has_image, has_attachment.'''
+
     def setup_dummy_attachments(self, user_profile: UserProfile) -> List[str]:
         sample_size = 10
         realm_id = user_profile.realm_id

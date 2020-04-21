@@ -425,6 +425,7 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
     is set in the request, then it has properly been set by NGINX.
     Therefore HTTP_X_FORWARDED_FOR's value is trusted.
     """
+
     def process_request(self, request: HttpRequest) -> None:
         try:
             real_ip = request.META['HTTP_X_FORWARDED_FOR']
@@ -465,6 +466,7 @@ class ZulipCommonMiddleware(CommonMiddleware):
     for non-API endpoints things like /login.  But doing that
     transition will require more careful testing.
     """
+
     def should_redirect_with_slash(self, request: HttpRequest) -> bool:
         if settings.RUNNING_INSIDE_TORNADO:
             return False

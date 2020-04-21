@@ -17,6 +17,7 @@ from zerver.tornado.views import get_events, cleanup_event_queue
 class MissedMessageNotificationsTest(ZulipTestCase):
     """Tests the logic for when missed-message notifications
     should be triggered, based on user settings"""
+
     def check_will_notify(self, *args: Any, **kwargs: Any) -> Tuple[str, str]:
         email_notice = None
         mobile_notice = None

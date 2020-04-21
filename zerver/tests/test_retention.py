@@ -327,7 +327,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         self.assertEqual(ArchivedAttachment.objects.count(), 3)
         self.assertEqual(
             list(ArchivedAttachment.objects.distinct('messages__id').values_list('messages__id',
-                 flat=True)),
+                                                                                 flat=True)),
             [msgs_ids['expired_message_id']]
         )
         self.assertEqual(Attachment.objects.count(), 3)

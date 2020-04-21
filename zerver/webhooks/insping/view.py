@@ -31,7 +31,7 @@ def api_insping_webhook(
     timestamp = data['request_start_time']
 
     time_formatted = time.strftime("%c", time.strptime(timestamp,
-                                   "%Y-%m-%dT%H:%M:%S.%f+00:00"))
+                                                       "%Y-%m-%dT%H:%M:%S.%f+00:00"))
 
     body = MESSAGE_TEMPLATE.format(
         state=state_name, url=url_tested,
