@@ -23,7 +23,7 @@ tools/provision --production-test-suite || {
 cp -a tools/ci/success-http-headers.txt ~/
 source tools/ci/activate-venv
 
-if ! env TRAVIS=1 ./tools/build-release-tarball test; then
+if ! ./tools/build-release-tarball test; then
     echo "Attempting to output failure logging data"
     cat /tmp/tmp.*/update-prod-static.log || true
     exit 1
