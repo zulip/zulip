@@ -190,3 +190,5 @@ django-cookies-samesite
 
 # For server-side enforcement of password strength
 zxcvbn
+
+django-cors-headers
