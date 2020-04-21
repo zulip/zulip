@@ -238,9 +238,6 @@ def main() -> None:
                         action="store_true",
                         default=False,
                         help="Show detailed output")
-    parser.add_argument('--generate-fixtures', action="store_true", default=False,
-                        dest="generate_fixtures",
-                        help=("Force a call to generate-fixtures."))
     parser.add_argument('--report-slow-tests', dest='report_slow_tests',
                         action="store_true",
                         default=False,
@@ -377,7 +374,7 @@ def main() -> None:
     # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
     django.setup()
 
-    update_test_databases_if_required(options.generate_fixtures)
+    update_test_databases_if_required()
 
     subprocess.check_call(['tools/webpack', '--test'])
 
