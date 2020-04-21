@@ -1415,6 +1415,11 @@ class GetProfileTest(ZulipTestCase):
         result = self.client_get('/json/users/{}?'.format(30))
         self.assert_json_error(result, "No such user")
 
+        bot = self.example_user("default_bot")
+        result = ujson.loads(self.client_get('/json/users/{}'.format(bot.id)).content)
+        self.assertEqual(result['user']['email'], bot.email)
+        self.assertTrue(result['user']['is_bot'])
+
     def test_api_get_empty_profile(self) -> None:
         """
         Ensure GET /users/me returns a max message id and returns successfully
