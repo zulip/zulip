@@ -797,6 +797,14 @@ exports.get_message_people = function () {
     return message_people;
 };
 
+exports.get_active_message_people = function () {
+    const message_people = exports.get_message_people();
+    const active_message_people = message_people.filter(function (item) {
+        return active_user_dict.has(item.user_id);
+    });
+    return active_message_people;
+};
+
 exports.get_people_for_search_bar = function (query) {
     const pred = exports.build_person_matcher(query);
 

@@ -1080,3 +1080,38 @@ run_test('get_visible_email', function () {
     email = people.get_visible_email(maria);
     assert.equal(email, maria.email);
 });
+
+run_test('get_active_message_people', function () {
+    const steven = {
+        email: 'steven@example.com',
+        user_id: 1,
+        full_name: 'Steven',
+    };
+
+    const maria = {
+        email: 'maria@example.com',
+        user_id: 2,
+        full_name: 'Maria',
+    };
+
+    const alice = {
+        email: 'alice@example.com',
+        user_id: 3,
+        full_name: 'Alice',
+    };
+
+    message_store.user_ids = () => {
+        return [1, 2, 3];
+    };
+
+    people.add(steven);
+    people.add(maria);
+    people.add(alice);
+
+    let active_message_people = people.get_active_message_people();
+    assert.deepEqual(active_message_people, [steven, maria, alice]);
+
+    people.deactivate(alice);
+    active_message_people = people.get_active_message_people();
+    assert.deepEqual(active_message_people, [steven, maria]);
+});

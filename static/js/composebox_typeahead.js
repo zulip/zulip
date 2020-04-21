@@ -494,7 +494,7 @@ exports.get_person_suggestions = function (query, opts) {
     const cutoff_length = exports.max_num_items;
 
     const filtered_message_persons = filter_persons(
-        people.get_message_people()
+        people.get_active_message_people()
     );
 
     let filtered_persons;
