@@ -46,7 +46,7 @@ TORNADO_PROCESSES = int(get_config('application_server', 'tornado_processes', '1
 output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
                                  universal_newlines=True)
 
-consumers = defaultdict(int)  # type: Dict[str, int]
+consumers: Dict[str, int] = defaultdict(int)
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 queues = set(normal_queues).union({

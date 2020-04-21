@@ -26,7 +26,7 @@ class HtmlTreeBranch:
         self.fn = fn
         self.line = tags[-1].token.line
 
-        self.words = set()  # type: Set[str]
+        self.words: Set[str] = set()
         for tag in tags:
             for word in tag.words:
                 self.words.add(word)
@@ -60,8 +60,8 @@ class Node:
     def __init__(self, token: Token, parent: "Optional[Node]") -> None:
         # FIXME parent parameter is not used!
         self.token = token
-        self.children = []  # type: List[Node]
-        self.parent = None  # type: Optional[Node]
+        self.children: List[Node] = []
+        self.parent: Optional[Node] = None
 
 
 class TagInfo:
@@ -87,8 +87,8 @@ class TagInfo:
 def get_tag_info(token: Token) -> TagInfo:
     s = token.s
     tag = token.tag
-    classes = []  # type: List[str]
-    ids = []  # type: List[str]
+    classes: List[str] = []
+    ids: List[str] = []
 
     searches = [
         (classes, ' class="(.*?)"'),
@@ -111,7 +111,7 @@ def split_for_id_and_class(element: str) -> List[str]:
     # attributes from HTML tags. This also takes care of template variables
     # in string during splitting process. For eg. 'red black {{ a|b|c }}'
     # is split as ['red', 'black', '{{ a|b|c }}']
-    outside_braces = True  # type: bool
+    outside_braces: bool = True
     lst = []
     s = ''
 
@@ -134,7 +134,7 @@ def split_for_id_and_class(element: str) -> List[str]:
 
 def html_branches(text: str, fn: Optional[str] = None) -> List[HtmlTreeBranch]:
     tree = html_tag_tree(text)
-    branches = []  # type: List[HtmlTreeBranch]
+    branches: List[HtmlTreeBranch] = []
 
     def walk(node: Node, tag_info_list: Optional[List[TagInfo]] = None) -> None:
         info = get_tag_info(node.token)
@@ -179,7 +179,7 @@ def html_tag_tree(text: str) -> Node:
 
 
 def build_id_dict(templates: List[str]) -> (Dict[str, List[str]]):
-    template_id_dict = defaultdict(list)  # type: (Dict[str, List[str]])
+    template_id_dict: (Dict[str, List[str]]) = defaultdict(list)
 
     for fn in templates:
         with open(fn) as f:

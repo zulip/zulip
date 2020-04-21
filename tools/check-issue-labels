@@ -57,7 +57,7 @@ def check_issue_labels() -> None:
                   "your api token. If you want to continue without using a token use --force.")
             sys.exit(1)
 
-    next_page_url = 'https://api.github.com/repos/zulip/zulip/issues'  # type: Optional[str]
+    next_page_url: Optional[str] = 'https://api.github.com/repos/zulip/zulip/issues'
     unlabeled_issue_urls = []
     while next_page_url:
         try:

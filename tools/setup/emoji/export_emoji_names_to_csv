@@ -21,7 +21,7 @@ ZULIP_PATH = os.path.dirname(TOOLS_DIR_PATH)
 # `emoji.json` file is same in all four emoji-datasource packages.
 EMOJI_DATA_PATH = os.path.join(ZULIP_PATH, 'node_modules', 'emoji-datasource-google', 'emoji.json')
 
-sorting_info = {}   # type: Dict[str, Any]
+sorting_info: Dict[str, Any] = {}
 column_names = [
     'Codepoint',
     'New sorting info',
@@ -47,7 +47,7 @@ name_entry_regex = re.compile(r"'(?P<emoji_code>[a-z0-9-]+)': "
 explanation_regex = re.compile(r"    # (?P<explanation_line>[^\r\n\t]+)")
 
 def prepare_sorting_info() -> None:
-    emoji_data = []     # type: List[Dict[str, Any]]
+    emoji_data: List[Dict[str, Any]] = []
     with open(EMOJI_DATA_PATH) as fp:
         emoji_data = ujson.load(fp)
 
@@ -90,7 +90,7 @@ def main() -> None:
     args = parser.parse_args()
     prepare_sorting_info()
     output_data = [column_names, ]
-    explanation_lines = []  # type: List[str]
+    explanation_lines: List[str] = []
     with open(args.input_file_path) as fp:
         for line in fp.readlines():
             match = name_entry_regex.search(line)

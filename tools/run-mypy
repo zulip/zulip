@@ -69,7 +69,7 @@ if not python_files and not pyi_files:
     print("There are no files to run mypy on.")
     sys.exit(0)
 
-mypy_args = []  # type: List[str]
+mypy_args: List[str] = []
 if args.quiet:
     mypy_args += ["--no-error-summary"]
 mypy_args += ["--"] + python_files + pyi_files

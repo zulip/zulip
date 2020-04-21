@@ -119,14 +119,14 @@ SORTED_CATEGORIES = [
     'Skin Tones',
 ]
 
-emoji_code_to_zulip_names = {}      # type: Dict[str, str]
-emoji_code_to_iamcal_names = {}     # type: Dict[str, str]
-emoji_code_to_gemoji_names = {}     # type: Dict[str, str]
-emoji_collection = {category: [] for category in SORTED_CATEGORIES}     # type: Dict[str, List[Dict[str, Any]]]
+emoji_code_to_zulip_names: Dict[str, str] = {}
+emoji_code_to_iamcal_names: Dict[str, str] = {}
+emoji_code_to_gemoji_names: Dict[str, str] = {}
+emoji_collection: Dict[str, List[Dict[str, Any]]] = {category: [] for category in SORTED_CATEGORIES}
 
 def generate_emoji_code_to_emoji_names_maps() -> None:
     # Prepare gemoji names map.
-    reverse_unified_reactions_map = {}  # type: Dict[str, List[str]]
+    reverse_unified_reactions_map: Dict[str, List[str]] = {}
     for name in UNIFIED_REACTIONS_MAP:
         emoji_code = UNIFIED_REACTIONS_MAP[name]
         if emoji_code in reverse_unified_reactions_map:

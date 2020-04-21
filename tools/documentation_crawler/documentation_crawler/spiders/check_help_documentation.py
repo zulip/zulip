@@ -20,8 +20,8 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.static_images = set()  # type: Set[str]
-        self.images_static_dir = get_images_dir(self.images_path)  # type: str
+        self.static_images: Set[str] = set()
+        self.images_static_dir: str = get_images_dir(self.images_path)
 
     def _is_external_url(self, url: str) -> bool:
         is_external = url.startswith('http') and self.start_urls[0] not in url
@@ -43,7 +43,7 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
 class HelpDocumentationSpider(UnusedImagesLinterSpider):
     name = "help_documentation_crawler"
     start_urls = ['http://localhost:9981/help']
-    deny_domains = []  # type: List[str]
+    deny_domains: List[str] = []
     deny = ['/privacy']
     images_path = "static/images/help"
 
@@ -51,7 +51,7 @@ class HelpDocumentationSpider(UnusedImagesLinterSpider):
 class APIDocumentationSpider(UnusedImagesLinterSpider):
     name = 'api_documentation_crawler'
     start_urls = ['http://localhost:9981/api']
-    deny_domains = []  # type: List[str]
+    deny_domains: List[str] = []
     images_path = "static/images/api"
 
 class PorticoDocumentationSpider(BaseDocumentationSpider):
@@ -79,4 +79,4 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
                   'http://localhost:9981/for/working-groups-and-communities',
                   'http://localhost:9981/for/mystery-hunt',
                   'http://localhost:9981/security']
-    deny_domains = []  # type: List[str]
+    deny_domains: List[str] = []

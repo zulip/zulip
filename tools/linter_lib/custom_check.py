@@ -51,7 +51,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/tests/test_narrow.py',
 }
 
-shebang_rules = [
+shebang_rules: List["Rule"] = [
     {'pattern': '^#!',
      'description': "zerver library code shouldn't have a shebang line.",
      'include_only': {'zerver/'}},
@@ -63,14 +63,14 @@ shebang_rules = [
      " for interpreters other than sh."},
     {'pattern': '^#!/usr/bin/env python$',
      'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}
-]  # type: List[Rule]
+]
 
-trailing_whitespace_rule = {
+trailing_whitespace_rule: "Rule" = {
     'pattern': r'\s+$',
     'strip': '\n',
     'description': 'Fix trailing whitespace'
-}  # type: Rule
-whitespace_rules = [
+}
+whitespace_rules: List["Rule"] = [
     # This linter should be first since bash_rules depends on it.
     trailing_whitespace_rule,
     {'pattern': 'http://zulip.readthedocs.io',
@@ -80,14 +80,14 @@ whitespace_rules = [
      'strip': '\n',
      'exclude': {'tools/ci/success-http-headers.txt'},
      'description': 'Fix tab-based whitespace'},
-]  # type: List[Rule]
-comma_whitespace_rule = [
+]
+comma_whitespace_rule: List["Rule"] = [
     {'pattern': ', {2,}[^#/ ]',
      'exclude': {'zerver/tests', 'frontend_tests/node_tests', 'corporate/tests'},
      'description': "Remove multiple whitespaces after ','",
      'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
      'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
-]  # type: List[Rule]
+]
 markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != r'\s+$']) + [
     # Two spaces trailing a line with other content is okay--it's a markdown line break.
     # This rule finds one space trailing a non-space, three or more trailing spaces, and
@@ -560,7 +560,7 @@ css_rules = RuleList(
     ],
 )
 
-prose_style_rules = [
+prose_style_rules: List["Rule"] = [
     {'pattern': r'[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs
      'exclude': {"docs/documentation/api.md"},
      'description': "javascript should be spelled JavaScript"},
@@ -576,8 +576,8 @@ prose_style_rules = [
     {'pattern': '[^-_p]botserver(?!rc)|bot server',
      'description': "Use Botserver instead of botserver or bot server."},
     *comma_whitespace_rule,
-]  # type: List[Rule]
-html_rules = whitespace_rules + prose_style_rules + [
+]
+html_rules: List["Rule"] = whitespace_rules + prose_style_rules + [
     {'pattern': 'subject|SUBJECT',
      'exclude': {'templates/zerver/email.html'},
      'exclude_pattern': 'email subject',
@@ -703,7 +703,7 @@ html_rules = whitespace_rules + prose_style_rules + [
      },
      'good_lines': ['#my-style {color: blue;}', 'style="display: none"', "style='display: none"],
      'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
-]  # type: List[Rule]
+]
 
 handlebars_rules = RuleList(
     langs=['hbs'],

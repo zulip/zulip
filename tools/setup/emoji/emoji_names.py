@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-EMOJI_NAME_MAPS = {
+EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # seems like best emoji for happy
     '1f600': {'canonical_name': 'grinning', 'aliases': ['happy']},
     '1f603': {'canonical_name': 'smiley', 'aliases': []},
@@ -1528,4 +1528,4 @@ EMOJI_NAME_MAPS = {
     '1f6a9': {'canonical_name': 'triangular_flag', 'aliases': []},
     # solidarity from iemoji
     '1f38c': {'canonical_name': 'crossed_flags', 'aliases': ['solidarity']},
-}   # type: Dict[str, Dict[str, Any]]
+}

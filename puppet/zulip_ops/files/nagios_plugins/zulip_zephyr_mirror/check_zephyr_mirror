@@ -15,12 +15,12 @@ import time
 
 RESULTS_FILE = "/var/lib/nagios_state/check-mirroring-results"
 
-states = {
+states: Dict[str, int] = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-}  # type: Dict[str, int]
+}
 
 def report(state: str, data: str, last_check: float) -> None:
     print("%s: Last test run completed at %s\n%s" % (

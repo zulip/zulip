@@ -84,7 +84,7 @@ if options.interface is None:
 elif options.interface == "":
     options.interface = None
 
-runserver_args = []  # type: List[str]
+runserver_args: List[str] = []
 base_port = 9991
 if options.test:
     base_port = 9981
@@ -199,9 +199,9 @@ def fetch_request(url: str, callback: Any, **kwargs: Any) -> "Generator[Callable
 
 class BaseHandler(web.RequestHandler):
     # target server ip
-    target_host = '127.0.0.1'  # type: str
+    target_host: str = '127.0.0.1'
     # target server port
-    target_port = None  # type: int
+    target_port: int
 
     def _add_request_headers(
         self, exclude_lower_headers_list: Optional[List[str]] = None
