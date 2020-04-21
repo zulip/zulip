@@ -96,7 +96,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
                 print(fn)
         return bad_ids_dict
 
-    bad_ids_list = []  # type: List[str]
+    bad_ids_list: List[str] = []
     archive_templates = list(filter(
         lambda fn: ('templates/zerver/archive' in fn),
         templates))

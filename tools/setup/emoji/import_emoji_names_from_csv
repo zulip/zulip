@@ -35,10 +35,10 @@ FILE_TEMPLATE = (
     "}   # type: Dict[str, Dict[str, Any]]\n"
 )
 
-emoji_names = set()     # type: Set[str]
+emoji_names: Set[str] = set()
 
 def load_data(data_file: str) -> List[List[str]]:
-    emoji_name_data = []    # type: List[List[str]]
+    emoji_name_data: List[List[str]] = []
     with open(data_file, newline='') as fp:
         data = csv.reader(fp)
         for row in data:
@@ -66,13 +66,13 @@ def prepare_explanation(explanation: str) -> str:
     if explanation == '':
         return ''
 
-    wrapper_config = {
+    wrapper_config: Dict[str, Any] = {
         'width': 80,
         'break_long_words': False,
         'break_on_hyphens': False,
         'initial_indent': '\n    # ',
         'subsequent_indent': '\n    # ',
-    }   # type: Dict[str, Any]
+    }
     wrapped_lines = textwrap.wrap(explanation.strip(), **wrapper_config)
     return ''.join(wrapped_lines)
 
