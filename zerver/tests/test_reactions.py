@@ -424,6 +424,7 @@ class ReactionEventTest(ZulipTestCase):
 class EmojiReactionBase(ZulipTestCase):
     """Reusable testing functions for emoji reactions tests.  Be careful when
     changing this: It's used in test_retention.py as well."""
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.reaction_type = 'realm_emoji'
         super().__init__(*args, **kwargs)

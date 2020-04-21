@@ -502,6 +502,7 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
 
 class BacktickPattern(markdown.inlinepatterns.Pattern):
     """ Return a `<code>` element containing the matching text. """
+
     def __init__(self, pattern: str) -> None:
         markdown.inlinepatterns.Pattern.__init__(self, pattern)
         self.ESCAPED_BSLASH = '%s%s%s' % (markdown.util.STX, ord('\\'), markdown.util.ETX)
@@ -1276,6 +1277,7 @@ def unicode_emoji_to_codepoint(unicode_emoji: str) -> str:
 
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):
     """ Translates emoticons like `:)` into emoji like `:smile:`. """
+
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         db_data = self.markdown.zulip_db_data
         if db_data is None or not db_data['translate_emoticons']:

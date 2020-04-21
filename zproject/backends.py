@@ -235,6 +235,7 @@ class ZulipAuthMixin:
     from memcached before checking the database (avoiding a database
     query in most cases).
     """
+
     def get_user(self, user_profile_id: int) -> Optional[UserProfile]:
         """Override the Django method for getting a UserProfile object from
         the user_profile_id,."""
@@ -380,6 +381,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     library.  It's not a lot of code, and searching around in that
     file makes the flow for LDAP authentication clear.
     """
+
     def __init__(self) -> None:
         # Used to initialize a fake LDAP directly for both manual
         # and automated testing in a development environment where
@@ -720,6 +722,7 @@ class ZulipLDAPUser(_LDAPUser):
     UserProfile. The realm attribute serves to uniquely identify the UserProfile
     in case the ldap user is registered to multiple realms.
     """
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.realm = kwargs['realm']  # type: Realm
         del kwargs['realm']
@@ -733,6 +736,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
     registration for organizations that use a different SSO solution
     for managing login (often via RemoteUserBackend).
     """
+
     def authenticate(self, request: Optional[HttpRequest]=None, *,
                      username: str, password: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
@@ -852,6 +856,7 @@ def query_ldap(email: str) -> List[str]:
 class DevAuthBackend(ZulipAuthMixin):
     """Allow logging in as any user without a password.  This is used for
     convenience when developing Zulip, and is disabled in production."""
+
     def authenticate(self, request: Optional[HttpRequest]=None, *,
                      dev_auth_username: str, realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:

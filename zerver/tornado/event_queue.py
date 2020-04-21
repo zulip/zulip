@@ -775,7 +775,6 @@ ClientInfo = TypedDict('ClientInfo', {
 
 def get_client_info_for_message_event(event_template: Mapping[str, Any],
                                       users: Iterable[Mapping[str, Any]]) -> Dict[str, ClientInfo]:
-
     '''
     Return client info for all the clients interested in a message.
     This basically includes clients for users who are recipients
