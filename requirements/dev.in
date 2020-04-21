@@ -60,3 +60,6 @@ pip-tools
 https://github.com/zulip/zulint/archive/aaed679f1ad38b230090eadd3870b7682500f60c.zip#egg=zulint==0.0.1
 
 -r mypy.in
+
+# allow in-browser http clients to access api endpoints
+django-cors-headers
