@@ -99,12 +99,6 @@ def get_display_recipient(recipient: 'Recipient') -> DisplayRecipientT:
         recipient.type_id
     )
 
-def flush_per_request_caches() -> None:
-    global per_request_display_recipient_cache
-    per_request_display_recipient_cache = {}
-    global per_request_realm_filters_cache
-    per_request_realm_filters_cache = {}
-
 def get_realm_emoji_cache_key(realm: 'Realm') -> str:
     return 'realm_emoji:%s' % (realm.id,)
 
@@ -719,6 +713,12 @@ def flush_realm_filter(sender: Any, **kwargs: Any) -> None:
 
 post_save.connect(flush_realm_filter, sender=RealmFilter)
 post_delete.connect(flush_realm_filter, sender=RealmFilter)
+
+def flush_per_request_caches() -> None:
+    global per_request_display_recipient_cache
+    per_request_display_recipient_cache = {}
+    global per_request_realm_filters_cache
+    per_request_realm_filters_cache = {}
 
 # The Recipient table is used to map Messages to the set of users who
 # received the message.  It is implemented as a set of triples (id,
