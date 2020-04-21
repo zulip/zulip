@@ -6,6 +6,9 @@ import subprocess
 
 from functools import wraps
 
+from zerver.openapi.openapi import validate_against_openapi_schema
+
+
 TEST_FUNCTIONS = dict()  # type: Dict[str, Callable[..., None]]
 REGISTERED_TEST_FUNCTIONS = set()  # type: Set[str]
 CALLED_TEST_FUNCTIONS = set()  # type: Set[str]
@@ -42,3 +45,49 @@ def run_js_code(js_code: str) -> List[Dict[str, Any]]:
     json_response_list = [json.loads(response) for response in responses_str.splitlines()]
 
     return json_response_list
+
+
+@openapi_test_function("/messages:post")
+def send_message() -> None:
+
+    js_code = """
+const zulip = require('zulip-js');
+
+// Pass the path to your zuliprc file here.
+const config = {
+    zuliprc: '.zuliprc',
+};
+// {code_example|start}
+// Send a stream message
+zulip(config).then((client) => {
+    // Send a message
+    const params = {
+        to: 'Denmark',
+        type: 'stream',
+        subject: 'Castle',
+        content: 'I come not, friends, to steal away your hearts.'
+    }
+
+    client.messages.send(params).then(console.log);
+});
+// {code_example|end}
+
+// {code_example|start}
+// Send a private message
+zulip(config).then((client) => {
+    // Send a private message
+    const user_id = 9;
+    const params = {
+        to: [user_id],
+        type: 'private',
+        content: 'With mirth and laughter let old wrinkles come.',
+    }
+
+    client.messages.send(params).then(console.log);
+});
+// {code_example|end}
+"""
+    result_list = run_js_code(js_code)
+
+    for result in result_list:
+        validate_against_openapi_schema(result, '/messages', 'post', '200')
