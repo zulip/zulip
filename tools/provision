@@ -59,11 +59,15 @@ if [ "$failed" -ne 0 ]; then
     exit "$failed"
 elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${CIRCLECI}${SKIP_VENV_SHELL_WARNING}" ]; then
     echo -e "$WARNING"
-    echo "WARNING: This shell does not have the Zulip Python 3 virtualenv activated."
+    echo "WARNING: This shell does not have the Zulip Python 3 conda venv activated."
     echo "Zulip commands will fail until you activate the virtualenv."
     echo
     echo "To update the shell, run:"
-    echo "    source /srv/zulip-py3-venv/bin/activate"
+    # TODO: Add to .zprofile
+    echo "    source /opt/conda/etc/profile.d/conda.sh"
+    # TODO: Give venv a shorter name using
+    # conda config --set env_prompt '({name})'
+    echo "    conda activate /srv/zulip-py3-venv"
     # shellcheck disable=SC2016
     echo 'or just close this shell and start a new one (with Vagrant, `vagrant ssh`).'
     echo -en "$ENDC"
