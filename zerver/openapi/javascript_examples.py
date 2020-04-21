@@ -2,12 +2,15 @@
 from typing import Dict, Any, Callable, Set, List
 
 import json
+import os
+import sys
 import subprocess
 
 from functools import wraps
 
 from zerver.openapi.openapi import validate_against_openapi_schema
 
+from zulip import Client
 
 TEST_FUNCTIONS = dict()  # type: Dict[str, Callable[..., None]]
 REGISTERED_TEST_FUNCTIONS = set()  # type: Set[str]
@@ -94,3 +97,26 @@ zulip(config).then((client) => {
 
 def test_messages() -> None:
     send_message()
+
+def test_js_bindings(client: Client) -> None:
+
+    zuliprc = open(".zuliprc", "w")
+    zuliprc.writelines(
+        ["[api]\n",
+         "email=" + client.email + "\n",
+         "key=" + client.api_key + "\n",
+         "site=" + client.base_url[:-5]]
+    )
+
+    zuliprc.close()
+
+    try:
+        test_messages()
+    finally:
+        os.remove(".zuliprc")
+
+    sys.stdout.flush()
+    if REGISTERED_TEST_FUNCTIONS != CALLED_TEST_FUNCTIONS:
+        print("Error!  Some @openapi_test_function tests were never called:")
+        print("  ", REGISTERED_TEST_FUNCTIONS - CALLED_TEST_FUNCTIONS)
+        sys.exit(1)
