@@ -49,6 +49,16 @@ const config = {
 
 """
 
+JS_CLIENT_ADMIN_CONFIG = """
+const zulip = require('zulip-js');
+
+// The user for this zuliprc file must be an organization administrator.
+const config = {
+    zuliprc: 'zuliprc-admin',
+};
+
+"""
+
 DEFAULT_AUTH_EMAIL = "BOT_EMAIL_ADDRESS"
 DEFAULT_AUTH_API_KEY = "BOT_API_KEY"
 DEFAULT_EXAMPLE = {
@@ -119,11 +129,15 @@ def render_python_code_example(function: str, admin_config: Optional[bool]=False
 
     return code_example
 
-def render_javascript_code_example(function: str, **kwargs: Any) -> List[str]:
+def render_javascript_code_example(function: str, admin_config: Optional[bool]=False,
+                                   **kwargs: Any) -> List[str]:
     method = zerver.openapi.javascript_examples.TEST_FUNCTIONS[function]
     function_source_lines = inspect.getsourcelines(method)[0]
 
-    config = JS_CLIENT_CONFIG.splitlines()
+    if admin_config:
+        config = JS_CLIENT_ADMIN_CONFIG.splitlines()
+    else:
+        config = JS_CLIENT_CONFIG.splitlines()
 
     snippet = extract_code_example(function_source_lines, [], JS_EXAMPLE_REGEX)
 
@@ -297,6 +311,8 @@ SUPPORTED_LANGUAGES: Dict[str, Any] = {
         'render': render_curl_example
     },
     'JavaScript': {
+        'client_config': JS_CLIENT_CONFIG,
+        'admin_config': JS_CLIENT_ADMIN_CONFIG,
         'render': render_javascript_code_example,
     }
 }
