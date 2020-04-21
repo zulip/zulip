@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run_as_root, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL, os_families, parse_os_release, \
-    overwrite_symlink
+    overwrite_symlink, run
 from scripts.lib.setup_venv import (
     get_venv_dependencies, THUMBOR_VENV_DEPENDENCIES,
     YUM_THUMBOR_VENV_DEPENDENCIES,
@@ -22,10 +22,7 @@ from scripts.lib.setup_venv import (
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 from tools.setup import setup_venvs
 
-from typing import List, TYPE_CHECKING
-if TYPE_CHECKING:
-    # typing_extensions might not be installed yet
-    from typing_extensions import NoReturn
+from typing import List
 
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 
@@ -313,7 +310,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     overwrite_symlink("/usr/share/myspell/en_US.aff", "/usr/pgsql-%s/share/tsearch_data/en_us.affix"
                       % (POSTGRES_VERSION,))
 
-def main(options: argparse.Namespace) -> "NoReturn":
+def main(options: argparse.Namespace) -> None:
 
     # yarn and management commands expect to be run from the root of the
     # project.
@@ -409,17 +406,10 @@ def main(options: argparse.Namespace) -> "NoReturn":
     # bad idea, and empirically it can cause Python to segfault on
     # certain cffi-related imports.  Instead, start a new Python
     # process inside the virtualenv.
-    activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
-    provision_inner = os.path.join(ZULIP_PATH, "tools", "lib", "provision_inner.py")
-    exec(open(activate_this).read(), dict(__file__=activate_this))
-    os.execvp(
-        provision_inner,
-        [
-            provision_inner,
-            *(["--force"] if options.is_force else []),
-            *(["--production-test-suite"] if options.is_production_test_suite else []),
-        ]
-    )
+    run(["conda", "run", "--prefix", "/srv/zulip-py3-venv", "python",
+         f"{ZULIP_PATH}/tools/lib/provision_inner.py"]
+        + (["--force"] if options.is_force else [])
+        + (["--production-test-suite"] if options.is_production_test_suite else []))
 
 if __name__ == "__main__":
     description = ("Provision script to install Zulip")
