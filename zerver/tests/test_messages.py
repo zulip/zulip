@@ -26,6 +26,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     extract_private_recipients,
     extract_stream_indicator,
+    gather_subscriptions_helper,
     get_active_presence_idle_user_ids,
     get_client,
     get_last_message_id,
@@ -5218,3 +5219,16 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
 
     def test_bulk_get_huddle_user_ids_empty_list(self) -> None:
         self.assertEqual(bulk_get_huddle_user_ids([]), {})
+
+class NoRecipientIDsTest(ZulipTestCase):
+    def test_no_recipient_ids(self) -> None:
+        user_profile = self.example_user('cordelia')
+
+        Subscription.objects.filter(user_profile=user_profile, recipient__type=Recipient.STREAM).delete()
+        subs = gather_subscriptions_helper(user_profile)
+
+        # Checks that gather_subscriptions_helper will not return anything
+        # since there will not be any recipients, without crashing.
+        #
+        # This covers a rare corner case.
+        self.assertEqual(len(subs[0]), 0)
