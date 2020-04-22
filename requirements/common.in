@@ -167,7 +167,7 @@ yamole
 
 # Needed for signing thumbnail requests so that they can be authenticated on the
 # other end.
-libthumbor==2.0.1
+libthumbor
 
 # Needed for string matching in AlertWordProcessor
 pyahocorasick
