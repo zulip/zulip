@@ -543,6 +543,8 @@ exports.save_inline_topic_edit = function (row) {
             loading.destroy_indicator(spinner);
         },
         error: function (xhr) {
+            const spinner = row.find(".topic_edit_spinner");
+            loading.destroy_indicator(spinner);
             if (msg_list === current_msg_list) {
                 message_id = rows.id_for_recipient_row(row);
                 const message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
