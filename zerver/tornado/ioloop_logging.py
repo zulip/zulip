@@ -16,7 +16,7 @@ orig_poll_impl = select.epoll
 logging_data = {}  # type: Dict[str, str]
 
 class InstrumentedPollIOLoop(PollIOLoop):
-    def initialize(self, **kwargs):  # type: ignore # TODO investigate likely buggy monkey patching here
+    def initialize(self, **kwargs):  # type: ignore[no-untyped-def] # TODO investigate likely buggy monkey patching here
         super().initialize(impl=InstrumentedPoll(), **kwargs)
 
 def instrument_tornado_ioloop() -> None:

@@ -77,7 +77,7 @@ def print_types_to(file_obj: IO[str]) -> Callable[[FuncT], FuncT]:
                                        get_type_str(ret_val))
             print(output, file=file_obj)
             return ret_val
-        return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
+        return wrapper  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
     return decorator
 
 def print_types(func: FuncT) -> FuncT:

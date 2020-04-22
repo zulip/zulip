@@ -2713,7 +2713,7 @@ class UserSignUpTest(InviteUserBase):
         do_set_realm_property(realm, 'emails_restricted_to_domains', True)
 
         request = HostRequestMock(host = realm.host)
-        request.session = {}  # type: ignore
+        request.session = {}  # type: ignore[attr-defined]
         email = 'user@acme.com'
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn("Your email address, {}, is not in one of the domains".format(email),
@@ -2726,7 +2726,7 @@ class UserSignUpTest(InviteUserBase):
         realm.save()
 
         request = HostRequestMock(host = realm.host)
-        request.session = {}  # type: ignore
+        request.session = {}  # type: ignore[attr-defined]
         email = 'abc@mailnator.com'
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn("Please use your real email address", form.errors['email'][0])
@@ -2737,7 +2737,7 @@ class UserSignUpTest(InviteUserBase):
         realm.save()
 
         request = HostRequestMock(host = realm.host)
-        request.session = {}  # type: ignore
+        request.session = {}  # type: ignore[attr-defined]
         email = 'iago+label@zulip.com'
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn("Email addresses containing + are not allowed in this organization.", form.errors['email'][0])
@@ -2747,7 +2747,7 @@ class UserSignUpTest(InviteUserBase):
         realm.invite_required = True
         realm.save()
         request = HostRequestMock(host = realm.host)
-        request.session = {}  # type: ignore
+        request.session = {}  # type: ignore[attr-defined]
         email = 'user@zulip.com'
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn("Please request an invite for {} from".format(email),
@@ -2755,7 +2755,7 @@ class UserSignUpTest(InviteUserBase):
 
     def test_failed_signup_due_to_nonexistent_realm(self) -> None:
         request = HostRequestMock(host = 'acme.' + settings.EXTERNAL_HOST)
-        request.session = {}  # type: ignore
+        request.session = {}  # type: ignore[attr-defined]
         email = 'user@acme.com'
         form = HomepageForm({'email': email}, realm=None)
         self.assertIn("organization you are trying to join using {} does "

@@ -28,7 +28,7 @@ def user_sessions(user_profile: UserProfile) -> List[Session]:
             if get_session_user(s) == user_profile.id]
 
 def delete_session(session: Session) -> None:
-    session_engine.SessionStore(session.session_key).delete()  # type: ignore # import_module
+    session_engine.SessionStore(session.session_key).delete()  # type: ignore[attr-defined] # import_module
 
 def delete_user_sessions(user_profile: UserProfile) -> None:
     for session in Session.objects.all():

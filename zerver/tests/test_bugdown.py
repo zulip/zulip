@@ -104,8 +104,8 @@ class FencedBlockPreprocessorTest(TestCase):
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore # mypy doesn't allow monkey-patching functions
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore # https://github.com/python/mypy/issues/708
+        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
 
         markdown = [
             '``` .py',
@@ -150,8 +150,8 @@ class FencedBlockPreprocessorTest(TestCase):
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore # mypy doesn't allow monkey-patching functions
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore # https://github.com/python/mypy/issues/708
+        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
 
         markdown = [
             '~~~ quote',
@@ -2045,8 +2045,8 @@ class BugdownErrorTests(ZulipTestCase):
         processor.run_content_validators = True
 
         # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore # mypy doesn't allow monkey-patching functions
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore # https://github.com/python/mypy/issues/708
+        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
 
         markdown = [
             '``` curl',
@@ -2063,8 +2063,8 @@ class BugdownErrorTests(ZulipTestCase):
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore # mypy doesn't allow monkey-patching functions
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore # https://github.com/python/mypy/issues/708
+        processor.format_code = lambda lang, code: lang + ':' + code  # type: ignore[assignment] # mypy doesn't allow monkey-patching functions
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'  # type: ignore[assignment] # https://github.com/python/mypy/issues/708
 
         markdown = [
             '``` curl',

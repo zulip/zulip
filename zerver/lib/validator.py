@@ -49,7 +49,7 @@ TypeStructure = TypeVar("TypeStructure")
 def set_type_structure(type_structure: TypeStructure) -> Callable[[FuncT], Any]:
     def _set_type_structure(func: FuncT) -> FuncT:
         if settings.LOG_API_EVENT_TYPES:
-            func.type_structure = type_structure  # type: ignore # monkey-patching
+            func.type_structure = type_structure  # type: ignore[attr-defined] # monkey-patching
         return func
     return _set_type_structure
 
@@ -166,7 +166,7 @@ def check_color(var_name: str, val: object) -> Optional[str]:
 
 def check_none_or(sub_validator: Validator) -> Validator:
     if settings.LOG_API_EVENT_TYPES:
-        type_structure = 'none_or_' + sub_validator.type_structure  # type: ignore # monkey-patching
+        type_structure = 'none_or_' + sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
     else:
         type_structure = None
 
@@ -181,11 +181,11 @@ def check_none_or(sub_validator: Validator) -> Validator:
 def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -> Validator:
     if settings.LOG_API_EVENT_TYPES:
         if sub_validator:
-            type_structure = [sub_validator.type_structure]  # type: ignore # monkey-patching
+            type_structure = [sub_validator.type_structure]  # type: ignore[attr-defined] # monkey-patching
         else:
-            type_structure = 'list'  # type: ignore # monkey-patching
+            type_structure = 'list'  # type: ignore[assignment] # monkey-patching
     else:
-        type_structure = None  # type: ignore # monkey-patching
+        type_structure = None  # type: ignore[assignment] # monkey-patching
 
     @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> Optional[str]:
@@ -226,7 +226,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
             if error:
                 return error
             if settings.LOG_API_EVENT_TYPES:
-                type_structure[k] = sub_validator.type_structure  # type: ignore # monkey-patching
+                type_structure[k] = sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         for k, sub_validator in optional_keys:
             if k in val:
@@ -235,7 +235,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                 if error:
                     return error
             if settings.LOG_API_EVENT_TYPES:
-                type_structure[k] = sub_validator.type_structure  # type: ignore # monkey-patching
+                type_structure[k] = sub_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         if value_validator:
             for key in val:
@@ -244,7 +244,7 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                 if error:
                     return error
             if settings.LOG_API_EVENT_TYPES:
-                type_structure['any'] = value_validator.type_structure  # type: ignore # monkey-patching
+                type_structure['any'] = value_validator.type_structure  # type: ignore[attr-defined] # monkey-patching
 
         if _allow_only_listed_keys:
             required_keys_set = {x[0] for x in required_keys}
@@ -271,9 +271,9 @@ def check_variable_type(allowed_type_funcs: Iterable[Validator]) -> Validator:
     """
 
     if settings.LOG_API_EVENT_TYPES:
-        type_structure = 'any("%s")' % ([x.type_structure for x in allowed_type_funcs],)  # type: ignore # monkey-patching
+        type_structure = 'any("%s")' % ([x.type_structure for x in allowed_type_funcs],)  # type: ignore[attr-defined] # monkey-patching
     else:
-        type_structure = None  # type: ignore # monkey-patching
+        type_structure = None  # type: ignore[assignment] # monkey-patching
 
     @set_type_structure(type_structure)
     def enumerated_type_check(var_name: str, val: object) -> Optional[str]:
