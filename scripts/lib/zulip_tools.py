@@ -43,7 +43,7 @@ def overwrite_symlink(src: str, dst: str) -> None:
     while True:
         tmp = tempfile.mktemp(
             prefix='.' + os.path.basename(dst) + '.',
-            dir=os.path.dirname(dst))  # type: ignore # https://github.com/python/typeshed/issues/3449
+            dir=os.path.dirname(dst))
         try:
             os.symlink(src, tmp)
         except FileExistsError:
