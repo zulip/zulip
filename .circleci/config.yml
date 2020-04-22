@@ -105,6 +105,20 @@ aliases:
      command: |
       mispipe ./tools/ci/production ts
 
+  - &check_xenial_provision_error
+    run:
+      name: check tools/provision error message on xenial
+      command: |
+        ! tools/provision > >(tee provision.out)
+        grep -Fqx 'CRITICAL:root:Unsupported platform: ubuntu 16.04' provision.out
+
+  - &check_xenial_upgrade_error
+    run:
+      name: check scripts/lib/upgrade-zulip-stage-2 error message on xenial
+      command: |
+        ! sudo scripts/lib/upgrade-zulip-stage-2 2> >(tee upgrade.err >&2)
+        grep -Fq 'upgrade-zulip-stage-2: Unsupported platform: ubuntu 16.04' upgrade.err
+
 jobs:
   "bionic-backend-frontend-python3.6":
     docker:
@@ -185,6 +199,18 @@ jobs:
         - *save_cache_package_json
         - *save_cache_requirements
 
+  "xenial-error-messages":
+    docker:
+      - image: gregprice/circleci:xenial-python-4.test
+
+    working_directory: ~/zulip
+
+    steps:
+      - checkout
+
+      - *check_xenial_provision_error
+      - *check_xenial_upgrade_error
+
 workflows:
   version: 2
   build:
@@ -192,3 +218,4 @@ workflows:
       - "bionic-backend-frontend-python3.6"
       # - "focal-backend-frontend-python3.8"
       - "bionic-production-python3.6"
+      - "xenial-error-messages"
