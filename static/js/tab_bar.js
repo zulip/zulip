@@ -90,7 +90,7 @@ exports.exit_search = function () {
         $("#search_query").val(search_string);
     } else {
         // for "searching narrows", we redirect
-        window.location.replace(filter.generate_redirect_url());
+        window.location.href = filter.generate_redirect_url();
     }
 };
 

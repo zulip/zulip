@@ -36,7 +36,7 @@ $(function () {
             // We got logged out somehow, perhaps from another window or a session timeout.
             // We could display an error message, but jumping right to the login page seems
             // smoother and conveys the same information.
-            window.location.replace(page_params.login_page);
+            window.location.href = page_params.login_page;
         }
     });
 
