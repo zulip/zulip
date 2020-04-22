@@ -139,6 +139,13 @@ jobs:
       - *save_cache_package_json
       - *save_cache_requirements
       - *run_backend_tests
+
+      - run:
+          name: test locked requirements
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            mispipe ./tools/test-locked-requirements ts
+
       - *run_frontend_tests
         # We only need to upload coverage reports on whichever platform
         # runs the frontend tests.
