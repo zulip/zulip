@@ -1646,8 +1646,10 @@ class S3Test(ZulipTestCase):
         data = result.json()
         url_only_url = data['url']
         self.assertEqual(b"zulip!", urllib.request.urlopen(url_only_url).read().strip())
-        # Verify the URLs are different.
-        self.assertEqual(url_only_url, redirect_url)
+
+        # Note: Depending on whether the calls happened in the same
+        # second (resulting in the same timestamp+signature),
+        # url_only_url may or may not equal redirect_url.
 
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
