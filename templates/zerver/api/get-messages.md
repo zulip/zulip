@@ -103,6 +103,20 @@ present in all Zulip API responses).
       displayed sorted by ID.
     * `is_me_message`: Whether the message is a [/me status message][status-messages]
     * `reactions`: Data on any reactions to the message.
+        * `emoji_code`: An encoded version of the emoji's unicode codepoint.
+        * `emoji_name`: Name of the emoji.
+        * `reaction_type`: If the reaction uses a [custom emoji](/help/add-custom-emoji),
+          `reaction_type` will be set to `realm_emoji`.
+        * `user_id`: The ID of the user who added the reaction.
+           **Changes**: New in Zulip 2.2. The `user` object is
+           deprecated and will be removed in the future.
+        * `user`: Dictionary with data on the user who added the reaction, including
+           the user ID as the `id` field.  **Note**: In the [events
+           API](/api/get-events-from-queue), this `user` dictionary
+           confusing had the user ID in a field called `user_id`
+           instead.  We recommend ignoring fields other than the user
+           ID.  **Deprecated** and to be removed in a future release
+           once core clients have migrated to use the `user_id` field.
     * `recipient_id`: A unique ID for the set of users receiving the
       message (either a stream or group of users).  Useful primarily
       for hashing.

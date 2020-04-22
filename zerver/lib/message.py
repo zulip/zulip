@@ -556,9 +556,17 @@ class ReactionDict:
         return {'emoji_name': row['emoji_name'],
                 'emoji_code': row['emoji_code'],
                 'reaction_type': row['reaction_type'],
+                # TODO: We plan to remove this redundant user dictionary once
+                # clients are updated to support accessing use user_id.  See
+                # https://github.com/zulip/zulip/pull/14711 for details.
+                #
+                # When we do that, we can likely update the `.values()` query to
+                # not fetch the extra user_profile__* fields from the database
+                # as a small performance optimization.
                 'user': {'email': row['user_profile__email'],
                          'id': row['user_profile__id'],
-                         'full_name': row['user_profile__full_name']}}
+                         'full_name': row['user_profile__full_name']},
+                'user_id': row['user_profile__id']}
 
 
 def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message, Optional[UserMessage]]:
