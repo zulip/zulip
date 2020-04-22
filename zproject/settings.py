@@ -14,7 +14,7 @@ from copy import deepcopy
 import os
 import time
 import sys
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
 
 from zerver.lib.db import TimeTrackingConnection
