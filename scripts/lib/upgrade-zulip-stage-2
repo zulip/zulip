@@ -22,13 +22,33 @@ os.environ["LANG"] = "en_US.UTF-8"
 os.environ["LANGUAGE"] = "en_US.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, su_to_zulip, assert_running_as_root
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, su_to_zulip, \
+    assert_running_as_root, parse_os_release
 
 assert_running_as_root()
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s",
                     level=logging.INFO)
+
+# Do not upgrade on unsupported OS versions.
+UNSUPPORTED_DISTROS = [
+    ('ubuntu', '14.04'),
+    ('ubuntu', '16.04'),
+    ('debian', '9'),
+]
+distro_info = parse_os_release()
+vendor = distro_info['ID']
+os_version = distro_info['VERSION_ID']
+
+if (vendor, os_version) in UNSUPPORTED_DISTROS:
+    # Link to documentation for how to correctly upgrade the OS.
+    logging.critical("Unsupported platform: {} {}".format(vendor, os_version))
+    logging.info("Sorry! The support for your OS has been discontinued.\n"
+                 "Please upgrade your OS to a supported release first.\n"
+                 "See https://zulip.readthedocs.io/en/latest/production/"
+                 "upgrade-or-modify.html#upgrading-the-operating-system")
+    sys.exit(1)
 
 # make sure we have appropriate file permissions
 os.umask(0o22)
