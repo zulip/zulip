@@ -190,6 +190,8 @@ $("#tab_list .stream").length = 0;
 compose.compute_show_video_chat_button = () => {};
 $("#below-compose-content .video_link").toggle = () => {};
 
+$(".narrow_description > a").hover = () => {};
+
 run_test('initialize_everything', () => {
     ui_init.initialize_everything();
 });

@@ -232,6 +232,10 @@ on a dark background, and don't change the dark labels dark either. */
         background: hsla(0, 0%, 100%, 0.5);
     }
 
+    #tab_bar #tab_list span:nth-last-child(2):hover + .search_closed {
+        color: hsl(0, 0%, 100%);
+    }
+
     #searchbox_legacy {
         #tab_bar #tab_list .sub_count,
         #tab_bar #tab_list .narrow_description {
