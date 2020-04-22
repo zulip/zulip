@@ -172,11 +172,15 @@ class NarrowBuilder:
         return method(query, operand, maybe_negate)
 
     def by_has(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
-        if operand not in ['attachment', 'image', 'link']:
-            raise BadNarrowOperator("unknown 'has' operand " + operand)
-        col_name = 'has_' + operand
-        cond = column(col_name)
-        return query.where(maybe_negate(cond))
+        if operand in ['attachment', 'image', 'link']:
+            col_name = 'has_' + operand
+            cond = column(col_name)
+            return query.where(maybe_negate(cond))
+        elif operand == 'reaction':
+            message_id = column('message_id')
+            Reaction = table('zerver_reaction')
+            return query.where(message_id.in_(select([message_id]).select_from(Reaction)))
+        raise BadNarrowOperator("unknown 'has' operand " + operand)
 
     def by_in(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if operand == 'home':
