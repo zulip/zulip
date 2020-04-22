@@ -155,7 +155,7 @@ class Database:
         # changes, we can safely assume we don't need to run
         # migrations without spending a few 100ms parsing all the
         # Python migration code.
-        if not self.is_digest_obsolete():
+        if not self.is_migration_digest_obsolete():
             return 'current'
 
         '''
@@ -167,7 +167,7 @@ class Database:
             AFTER the migrations actually succeeded, but the
             caller codepaths are kind of complicated here.
         '''
-        self.write_new_digest()
+        self.write_new_migration_digest()
 
         migration_op = self.what_to_do_with_migrations()
         if migration_op == 'scrap':
@@ -178,13 +178,13 @@ class Database:
 
         return 'current'
 
-    def is_digest_obsolete(self) -> bool:
+    def is_migration_digest_obsolete(self) -> bool:
         return is_digest_obsolete(
             self.migration_digest_file,
             migration_paths(),
         )
 
-    def write_new_digest(self) -> None:
+    def write_new_migration_digest(self) -> None:
         write_new_digest(
             self.migration_digest_file,
             migration_paths(),
