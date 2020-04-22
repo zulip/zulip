@@ -326,6 +326,11 @@ def api_gitlab_webhook(request: HttpRequest, user_profile: UserProfile,
         else:
             body = event_body_function(payload)
 
+        # Add a link to the project if a custom topic is set
+        if user_specified_topic:
+            project_url = f"[{get_repo_name(payload)}]({get_project_homepage(payload)})"
+            body = f"[{project_url}] {body}"
+
         topic = get_subject_based_on_event(event, payload)
         check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
