@@ -235,6 +235,19 @@ case " $os_id $os_id_like " in
         ;;
 esac
 
+# Install conda
+case " $os_id $os_id_like " in
+    *' debian '*)
+        sudo "$ZULIP_PATH"/scripts/setup/install-conda-debian
+        ;;
+    *' rhel '*)
+        sudo "$ZULIP_PATH"/scripts/setup/install-conda-rhel
+        ;;
+esac
+
+# Add conda to path
+source /opt/conda/etc/profile.d/conda.sh
+
 if [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/setup-certbot \
         --no-zulip-conf --method=standalone \
