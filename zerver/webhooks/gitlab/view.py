@@ -33,7 +33,7 @@ def get_push_event_body(payload: Dict[str, Any]) -> str:
 
 def get_normal_push_event_body(payload: Dict[str, Any]) -> str:
     compare_url = '{}/compare/{}...{}'.format(
-        get_repository_homepage(payload),
+        get_project_homepage(payload),
         payload['before'],
         payload['after']
     )
@@ -267,8 +267,8 @@ def get_user_name(payload: Dict[str, Any]) -> str:
 def get_issue_user_name(payload: Dict[str, Any]) -> str:
     return payload['user']['name']
 
-def get_repository_homepage(payload: Dict[str, Any]) -> str:
-    return payload['repository']['homepage']
+def get_project_homepage(payload: Dict[str, Any]) -> str:
+    return payload['project']['web_url']
 
 def get_branch_name(payload: Dict[str, Any]) -> str:
     return payload['ref'].replace('refs/heads/', '')
