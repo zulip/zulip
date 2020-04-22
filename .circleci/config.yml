@@ -163,7 +163,7 @@ jobs:
             path: ./var/xunit-test-results/casper/
 
 
-  "focal-backend-frontend-python3.8":
+  "focal-backend-python3.8":
       docker:
         # This is built from tools/circleci/images/focal/Dockerfile.
         # Focal ships with Python 3.8.2.
@@ -223,6 +223,6 @@ workflows:
   build:
     jobs:
       - "bionic-backend-frontend-python3.6"
-      # - "focal-backend-frontend-python3.8"
+      - "focal-backend-python3.8"
       - "bionic-production-python3.6"
       - "xenial-error-messages"
