@@ -12,7 +12,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_push_event_specified_topic(self) -> None:
         self.url = self.build_webhook_url("topic=Specific%20topic")
         expected_topic = "Specific topic"
-        expected_message = "Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 2 commits to branch tomek.\n\n* b ([66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n* c ([eb6ae1e](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9))"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 2 commits to branch tomek.\n\n* b ([66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n* c ([eb6ae1e](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9))"
         self.send_and_test_stream_message('push_hook', expected_topic, expected_message)
 
     def test_push_event_message(self) -> None:
@@ -108,7 +108,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_create_issue_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = "notifications"
-        expected_message = "Tomasz Kolek created [Issue #1 Issue title](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n~~~ quote\nIssue description\n~~~"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek created [Issue #1 Issue title](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n~~~ quote\nIssue description\n~~~"
 
         self.send_and_test_stream_message(
             'issue_hook__issue_created_without_assignee',
@@ -198,7 +198,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_update_issue_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = "notifications"
-        expected_message = "Tomasz Kolek updated [Issue #1 Issue title_new](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek updated [Issue #1 Issue title_new](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
 
         self.send_and_test_stream_message(
             'issue_hook__issue_updated',
@@ -262,7 +262,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_note_merge_request_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = "notifications"
-        expected_message = "Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1#note_14171860) on [MR #1 Tomek](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1):\n\n~~~ quote\nNice merge request!\n~~~"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1#note_14171860) on [MR #1 Tomek](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1):\n\n~~~ quote\nNice merge request!\n~~~"
 
         self.send_and_test_stream_message(
             'note_hook__merge_request_note',
@@ -290,7 +290,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_note_issue_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = "notifications"
-        expected_message = "Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) on [Issue #2 abc](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2):\n\n~~~ quote\nNice issue\n~~~"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) on [Issue #2 abc](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2):\n\n~~~ quote\nNice issue\n~~~"
 
         self.send_and_test_stream_message(
             'note_hook__issue_note',
@@ -309,7 +309,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_note_snippet_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = "notifications"
-        expected_message = "Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) on [Snippet #2 test](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2):\n\n~~~ quote\nNice snippet\n~~~"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) on [Snippet #2 test](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2):\n\n~~~ quote\nNice snippet\n~~~"
 
         self.send_and_test_stream_message(
             'note_hook__snippet_note',
@@ -328,7 +328,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_merge_request_created_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = "notifications"
-        expected_message = "Tomasz Kolek created [MR #2 NEW MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek created [MR #2 NEW MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
 
         self.send_and_test_stream_message(
             'merge_request_hook__merge_request_created_without_assignee',
@@ -355,7 +355,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_merge_request_closed_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = "notifications"
-        expected_message = "Tomasz Kolek closed [MR #2 NEW MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek closed [MR #2 NEW MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
 
         self.send_and_test_stream_message(
             'merge_request_hook__merge_request_closed',
