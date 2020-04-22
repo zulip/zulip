@@ -5,13 +5,18 @@ version=0.7.0
 tarball="shellcheck-v$version.linux.x86_64.tar.xz"
 sha256=39c501aaca6aae3f3c7fc125b3c3af779ddbe4e67e4ebdc44c2ae5cba76c847f
 
-if ! out="$(shellcheck --version 2>/dev/null)" || [[ "$out" != *"
+check_version () {
+    out="$(shellcheck --version 2>/dev/null)" && [[ "$out" = *"
 version: $version
-"* ]]; then
+"* ]]
+}
+
+if ! check_version; then
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
     wget -nv "https://storage.googleapis.com/shellcheck/$tarball"
     sha256sum -c <<< "$sha256 $tarball"
     tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /usr/local/bin "shellcheck-v$version/shellcheck"
+    check_version
 fi
