@@ -24,10 +24,8 @@ VENV_DEPENDENCIES = [
     "libmemcached-dev",
     "python3-dev",          # Needed to install typed-ast dependency of mypy
     "python3-pip",
-    "python-pip",
     "virtualenv",
     "python3-six",
-    "python-six",
     "libxml2-dev",          # Used for installing talon and python-xmlsec
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
