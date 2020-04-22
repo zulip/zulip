@@ -153,7 +153,7 @@ class Realm(models.Model):
     # See RealmDomain for the domains that apply for a given organization.
     emails_restricted_to_domains = models.BooleanField(default=False)  # type: bool
 
-    invite_required = models.BooleanField(default=True)  # type: bool
+    default_invite_required = models.BooleanField(default=True)  # type: bool
     invite_by_admins_only = models.BooleanField(default=False)  # type: bool
     _max_invites = models.IntegerField(null=True, db_column='max_invites')  # type: Optional[int]
     disallow_disposable_email_addresses = models.BooleanField(default=True)  # type: bool
@@ -345,7 +345,7 @@ class Realm(models.Model):
         zoom_user_id=str,
         zoom_api_key=str,
         zoom_api_secret=str,
-        invite_required=bool,
+        default_invite_required=bool,
         invite_by_admins_only=bool,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
@@ -546,6 +546,7 @@ class RealmDomain(models.Model):
     # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True)  # type: str
     allow_subdomains = models.BooleanField(default=False)
+    invite_required = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("realm", "domain")
@@ -572,8 +573,11 @@ class DisposableEmailError(Exception):
 class EmailContainsPlusError(Exception):
     pass
 
+class InviteRequiredForRealmDomainError(Exception):
+    pass
+
 def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
-    return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
+    return list(realm.realmdomain_set.values('domain', 'allow_subdomains', 'invite_required'))
 
 class RealmEmoji(models.Model):
     author = models.ForeignKey('UserProfile', blank=True, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]

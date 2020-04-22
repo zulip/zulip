@@ -142,7 +142,7 @@ function get_property_value(property_name) {
     }
 
     if (property_name === 'realm_user_invite_restriction') {
-        if (!page_params.realm_invite_required) {
+        if (!page_params.realm_default_invite_required) {
             return "no_invite_required";
         }
         if (page_params.realm_invite_by_admins_only) {
@@ -242,8 +242,6 @@ function set_msg_delete_limit_dropdown() {
 function set_org_join_restrictions_dropdown() {
     const value = get_property_value("realm_org_join_restrictions");
     $("#id_realm_org_join_restrictions").val(value);
-    change_element_block_display_property('allowed_domains_label',
-                                          value === 'only_selected_domain');
 }
 
 function set_message_content_in_email_notifications_visiblity() {
@@ -269,7 +267,7 @@ exports.populate_realm_domains = function (realm_domains) {
     if (domains.length === 0) {
         domains = i18n.t("None");
     }
-    $("#allowed_domains_label").text(i18n.t("Allowed domains: __domains__", {domains: domains}));
+    $("#configured_domains_label").text(i18n.t("Allowed/Configured domains: __domains__", {domains: domains}));
 
     const realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
@@ -459,7 +457,7 @@ exports.sync_realm_settings = function (property) {
         property = 'message_content_delete_limit_minutes';
     } else if (property === 'allow_message_deleting') {
         property = 'msg_delete_limit_setting';
-    } else if (property === 'invite_required' || property === 'invite_by_admins_only') {
+    } else if (property === 'default_invite_required' || property === 'invite_by_admins_only') {
         property = 'user_invite_restriction';
     }
     const element =  $('#id_realm_' + property);
@@ -861,13 +859,13 @@ exports.build_page = function () {
 
             const user_invite_restriction = $('#id_realm_user_invite_restriction').val();
             if (user_invite_restriction === 'no_invite_required') {
-                data.invite_required = false;
+                data.default_invite_required = false;
                 data.invite_by_admins_only = false;
             } else if (user_invite_restriction === 'by_admins_only') {
-                data.invite_required = true;
+                data.default_invite_required = true;
                 data.invite_by_admins_only = true;
             } else {
-                data.invite_required = true;
+                data.default_invite_required = true;
                 data.invite_by_admins_only = false;
             }
 
@@ -964,19 +962,6 @@ exports.build_page = function () {
         }
     });
 
-    $("#id_realm_org_join_restrictions").change(function (e) {
-        const org_join_restrictions = e.target.value;
-        const node = $("#allowed_domains_label").parent();
-        if (org_join_restrictions === 'only_selected_domain') {
-            node.show();
-            if (page_params.realm_domains.length === 0) {
-                overlays.open_modal('realm_domains_modal');
-            }
-        } else {
-            node.hide();
-        }
-    });
-
     $("#id_realm_org_join_restrictions").click(function (e) {
         // This prevents the disappearance of modal when there are
         // no allowed domains otherwise it gets closed due to
@@ -1013,9 +998,11 @@ exports.build_page = function () {
         const widget = $("#add-realm-domain-widget");
         const domain = widget.find(".new-realm-domain").val();
         const allow_subdomains = widget.find(".new-realm-domain-allow-subdomains").prop("checked");
+        const invite_required = widget.find(".new-realm-domain-invite-required").prop("checked");
         const data = {
             domain: JSON.stringify(domain),
             allow_subdomains: JSON.stringify(allow_subdomains),
+            invite_required: JSON.stringify(invite_required),
         };
 
         channel.post({
@@ -1024,6 +1011,7 @@ exports.build_page = function () {
             success: function () {
                 $("#add-realm-domain-widget .new-realm-domain").val("");
                 $("#add-realm-domain-widget .new-realm-domain-allow-subdomains").prop("checked", false);
+                $("#add-realm-domain-widget .new-realm-domain-invite-required").prop("checked", false);
                 ui_report.success(i18n.t("Added successfully!"), realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
@@ -1039,9 +1027,11 @@ exports.build_page = function () {
         const realm_domains_info = $(".realm_domains_info");
         const domain = $(this).parents("tr").find(".domain").text();
         const allow_subdomains = $(this).prop('checked');
+        const invite_required = $(this).parents("tr").find(".invite-required").prop('checked');
         const url = '/json/realm/domains/' + domain;
         const data = {
             allow_subdomains: JSON.stringify(allow_subdomains),
+            invite_required: JSON.stringify(invite_required),
         };
 
         channel.patch({
@@ -1053,6 +1043,38 @@ exports.build_page = function () {
                                              {domain: domain}), realm_domains_info);
                 } else {
                     ui_report.success(i18n.t("Update successful: Subdomains no longer allowed for __domain__",
+                                             {domain: domain}), realm_domains_info);
+                }
+                fade_status_element(realm_domains_info);
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
+                fade_status_element(realm_domains_info);
+            },
+        });
+    });
+
+    $("#realm_domains_table").on("change", ".invite-required", function (e) {
+        e.stopPropagation();
+        const realm_domains_info = $(".realm_domains_info");
+        const domain = $(this).parents("tr").find(".domain").text();
+        const allow_subdomains = $(this).parents("tr").find(".allow-subdomains").prop('checked');
+        const invite_required = $(this).prop('checked');
+        const url = '/json/realm/domains/' + domain;
+        const data = {
+            allow_subdomains: JSON.stringify(allow_subdomains),
+            invite_required: JSON.stringify(invite_required),
+        };
+
+        channel.patch({
+            url: url,
+            data: data,
+            success: function () {
+                if (invite_required) {
+                    ui_report.success(i18n.t("Update successful: Invitations required for __domain__",
+                                             {domain: domain}), realm_domains_info);
+                } else {
+                    ui_report.success(i18n.t("Update successful: Invitations not required for __domain__",
                                              {domain: domain}), realm_domains_info);
                 }
                 fade_status_element(realm_domains_info);

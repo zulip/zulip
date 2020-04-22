@@ -361,7 +361,7 @@ class TopicDeleteTest(ZulipTestCase):
 
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain: str) -> Realm:
-        realm = Realm.objects.create(string_id=domain, invite_required=False)
+        realm = Realm.objects.create(string_id=domain, default_invite_required=False)
         RealmDomain.objects.create(realm=realm, domain=domain)
         return realm
 

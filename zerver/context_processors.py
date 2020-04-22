@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from django.http import HttpRequest
 from django.conf import settings
 
-from zerver.models import UserProfile, get_realm, Realm
+from zerver.models import UserProfile, get_realm, Realm, RealmDomain
 from zproject.backends import (
     any_social_backend_enabled,
     get_external_method_dicts,
@@ -150,7 +150,8 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         realm_invite_required = False
     else:
         realm_description = get_realm_rendered_description(realm)
-        realm_invite_required = realm.invite_required
+        realm_invite_required = (realm.default_invite_required and
+                                 len(RealmDomain.objects.filter(realm=realm,invite_required=False)) == 0)
 
     context = {
         'realm_invite_required': realm_invite_required,

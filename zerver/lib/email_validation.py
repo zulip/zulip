@@ -14,6 +14,7 @@ from zerver.models import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
+    InviteRequiredForRealmDomainError,
     Realm,
     RealmDomain,
 )
@@ -23,13 +24,6 @@ def validate_disposable(email: str) -> None:
         raise DisposableEmailError
 
 def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
-    if not realm.emails_restricted_to_domains:
-        # Should we also do '+' check for non-resticted realms?
-        if realm.disallow_disposable_email_addresses:
-            return validate_disposable
-
-        # allow any email through
-        return lambda email: None
 
     '''
     RESTRICTIVE REALMS:
@@ -41,12 +35,20 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
     folks can validate multiple emails without
     multiple round trips to the database.
     '''
+    if not realm.emails_restricted_to_domains and \
+       realm.disallow_disposable_email_addresses:
+        return validate_disposable
 
     query = RealmDomain.objects.filter(realm=realm)
-    rows = list(query.values('allow_subdomains', 'domain'))
+    rows = list(query.values('allow_subdomains', 'domain', 'invite_required'))
 
     allowed_domains = {
         r['domain'] for r in rows
+    }
+
+    domains_with_invite_required = {
+        r['domain'] for r in rows
+        if r['invite_required']
     }
 
     allowed_subdomains = {
@@ -61,20 +63,35 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
         a small whitelist.
         '''
 
-        if '+' in email_to_username(email):
-            raise EmailContainsPlusError
-
         domain = email_to_domain(email)
+        if realm.default_invite_required and \
+           domain not in allowed_domains:
+            raise InviteRequiredForRealmDomainError
 
-        if domain in allowed_domains:
-            return
-
-        while len(domain) > 0:
-            subdomain, sep, domain = domain.partition('.')
-            if domain in allowed_subdomains:
+        if not realm.emails_restricted_to_domains:
+            # Should we also do '+' check for non-resticted realms?
+            if domain not in domains_with_invite_required:
                 return
 
-        raise DomainNotAllowedForRealmError
+            if domain in domains_with_invite_required:
+                raise InviteRequiredForRealmDomainError
+
+        else:
+            if '+' in email_to_username(email):
+                raise EmailContainsPlusError
+
+            if domain in domains_with_invite_required:
+                raise InviteRequiredForRealmDomainError
+
+            if domain in allowed_domains:
+                return
+
+            while len(domain) > 0:
+                subdomain, sep, domain = domain.partition('.')
+                if domain in allowed_subdomains:
+                    return
+
+            raise DomainNotAllowedForRealmError
 
     return validate
 

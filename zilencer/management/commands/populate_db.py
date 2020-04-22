@@ -204,17 +204,17 @@ class Command(BaseCommand):
                 email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 description="The Zulip development environment default organization."
                             "  It's great for testing!",
-                invite_required=False, org_type=Realm.CORPORATE)
+                default_invite_required=False, org_type=Realm.CORPORATE)
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
                 mit_realm = Realm.objects.create(
                     string_id="zephyr", name="MIT", emails_restricted_to_domains=True,
-                    invite_required=False, org_type=Realm.CORPORATE)
+                    default_invite_required=False, org_type=Realm.CORPORATE)
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
                 lear_realm = Realm.objects.create(
                     string_id="lear", name="Lear & Co.", emails_restricted_to_domains=False,
-                    invite_required=False, org_type=Realm.CORPORATE)
+                    default_invite_required=False, org_type=Realm.CORPORATE)
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).

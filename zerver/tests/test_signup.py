@@ -1641,7 +1641,7 @@ class MultiuseInviteTest(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm('zulip')
-        self.realm.invite_required = True
+        self.realm.default_invite_required = True
         self.realm.save()
 
     def generate_multiuse_invite_link(self, streams: List[Stream]=None,
@@ -1710,7 +1710,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.assert_in_response("Whoops. The confirmation link is malformed.", result)
 
     def test_invalid_multiuse_link_in_open_realm(self) -> None:
-        self.realm.invite_required = False
+        self.realm.default_invite_required = False
         self.realm.save()
 
         email = self.nonreg_email('newuser')
@@ -1923,7 +1923,7 @@ class RealmCreationTest(ZulipTestCase):
         # Check defaults
         self.assertEqual(realm.org_type, Realm.CORPORATE)
         self.assertEqual(realm.emails_restricted_to_domains, False)
-        self.assertEqual(realm.invite_required, True)
+        self.assertEqual(realm.default_invite_required, True)
 
         # Check welcome messages
         for stream_name, text, message_count in [
@@ -2709,7 +2709,7 @@ class UserSignUpTest(InviteUserBase):
 
     def test_failed_signup_due_to_restricted_domain(self) -> None:
         realm = get_realm('zulip')
-        do_set_realm_property(realm, 'invite_required', False)
+        do_set_realm_property(realm, 'default_invite_required', False)
         do_set_realm_property(realm, 'emails_restricted_to_domains', True)
 
         request = HostRequestMock(host = realm.host)
@@ -2744,7 +2744,7 @@ class UserSignUpTest(InviteUserBase):
 
     def test_failed_signup_due_to_invite_required(self) -> None:
         realm = get_realm('zulip')
-        realm.invite_required = True
+        realm.default_invite_required = True
         realm.save()
         request = HostRequestMock(host = realm.host)
         request.session = {}  # type: ignore[attr-defined]

@@ -521,7 +521,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         user2_email = 'test-og-bot@zulip.com'
         user3_email = 'other-user@uploadtest.example.com'
 
-        r1 = Realm.objects.create(string_id=test_subdomain, invite_required=False)
+        r1 = Realm.objects.create(string_id=test_subdomain, default_invite_required=False)
         RealmDomain.objects.create(realm=r1, domain=test_subdomain)
 
         user_1 = create_user(user1_email, test_subdomain)

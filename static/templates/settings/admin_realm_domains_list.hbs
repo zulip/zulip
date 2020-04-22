@@ -8,6 +8,13 @@
             <span></span>
         </label>
     </td>
+    <td>
+        <label class="checkbox">
+            <input type="checkbox" class="invite-required"
+              {{#if invite_required}} checked="checked" {{/if}} />
+            <span></span>
+        </label>
+    </td>
     <td><button class="button btn-danger small rounded delete_realm_domain">{{t "Remove" }}</button></td>
 </tr>
 {{/with}}

@@ -4999,7 +4999,7 @@ def do_invite_users(user_profile: UserProfile,
     check_invite_limit(user_profile.realm, len(invitee_emails))
 
     realm = user_profile.realm
-    if not realm.invite_required:
+    if not realm.default_invite_required:
         # Inhibit joining an open realm to send spam invitations.
         min_age = datetime.timedelta(days=settings.INVITES_MIN_USER_AGE_DAYS)
         if (user_profile.date_joined > timezone_now() - min_age
@@ -5260,21 +5260,26 @@ def get_emails_from_user_ids(user_ids: Sequence[int]) -> Dict[int, str]:
     # We may eventually use memcached to speed this up, but the DB is fast.
     return UserProfile.emails_from_ids(user_ids)
 
-def do_add_realm_domain(realm: Realm, domain: str, allow_subdomains: bool) -> (RealmDomain):
+def do_add_realm_domain(realm: Realm, domain: str, allow_subdomains: bool,
+                        invite_required: bool) -> (RealmDomain):
     realm_domain = RealmDomain.objects.create(realm=realm, domain=domain,
-                                              allow_subdomains=allow_subdomains)
+                                              allow_subdomains=allow_subdomains,
+                                              invite_required=invite_required)
     event = dict(type="realm_domains", op="add",
                  realm_domain=dict(domain=realm_domain.domain,
                                    allow_subdomains=realm_domain.allow_subdomains))
     send_event(realm, event, active_user_ids(realm.id))
     return realm_domain
 
-def do_change_realm_domain(realm_domain: RealmDomain, allow_subdomains: bool) -> None:
+def do_change_realm_domain(realm_domain: RealmDomain, allow_subdomains: bool,
+                           invite_required: bool) -> None:
     realm_domain.allow_subdomains = allow_subdomains
-    realm_domain.save(update_fields=['allow_subdomains'])
+    realm_domain.invite_required = invite_required
+    realm_domain.save(update_fields=['allow_subdomains', 'invite_required'])
     event = dict(type="realm_domains", op="change",
                  realm_domain=dict(domain=realm_domain.domain,
-                                   allow_subdomains=realm_domain.allow_subdomains))
+                                   allow_subdomains=realm_domain.allow_subdomains,
+                                   invite_required=realm_domain.invite_required))
     send_event(realm_domain.realm, event, active_user_ids(realm_domain.realm_id))
 
 def do_remove_realm_domain(realm_domain: RealmDomain) -> None:
