@@ -1,5 +1,3 @@
-
-zrequire('timerender');
 zrequire('muting');
 zrequire('people');
 zrequire('stream_data');
@@ -12,9 +10,6 @@ zrequire('settings_notifications');
 
 const FoldDict = zrequire('fold_dict').FoldDict;
 
-set_global('i18n', global.stub_i18n);
-set_global('XDate', zrequire('XDate', 'xdate'));
-set_global('page_params', {});
 set_global('narrow_state', {});
 set_global('current_msg_list', {});
 set_global('home_msg_list', {});
