@@ -32,6 +32,17 @@ VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 is_travis = 'TRAVIS' in os.environ
 is_circleci = 'CIRCLECI' in os.environ
 
+# Check that the python version is greater than the
+# minimum version we support.
+MIN_PY_SUPPORTED_RELEASE = (3, 6)
+if sys.version_info < MIN_PY_SUPPORTED_RELEASE:
+    print(FAIL + "Error: Unsupported python version {} found.".format(sys.version[:5]) + ENDC)
+    print("Atleast python version {}.{} is required to run provision.".format(
+        MIN_PY_SUPPORTED_RELEASE[0],
+        MIN_PY_SUPPORTED_RELEASE[1]
+    ))
+    sys.exit(1)
+
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print(FAIL + "Error: No Zulip git repository present!" + ENDC)
     print("To setup the Zulip development environment, you should clone the code")
