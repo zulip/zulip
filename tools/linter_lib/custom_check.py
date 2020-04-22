@@ -429,19 +429,8 @@ python_rules = RuleList(
          'bad_lines': ['if my_django_model.pk == 42']},
         {'pattern': r'^[ ]*# type: \(',
          'exclude': {
-             # These directories, especially scripts/ and puppet/,
-             # have tools that need to run before a Zulip environment
-             # is provisioned; in some of those, the `typing` module
-             # might not be available yet, so care is required.
-             'scripts/',
-             'tools/',
-             'puppet/',
-             # Zerver files that we should just clean.
-             'zerver/tests',
-             'zerver/openapi/python_examples.py',
-             'zerver/lib/request.py',
-             'zerver/views/streams.py',
-             # thumbor is (currently) python2 only
+             # these are (currently) python2 only
+             'puppet/zulip_ops/files/zulip-ec2-configure-interfaces',
              'zthumbor/',
          },
          'description': 'Comment-style function type annotation. Use Python3 style annotations instead.',
