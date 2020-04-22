@@ -426,6 +426,7 @@ pre {
 .rendered_markdown pre code {
     font-size: inherit;
     padding: 0;
+    white-space: inherit;
 }
 
 /* Ensure the horizontal scrollbar is visible on Mac */
