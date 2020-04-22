@@ -190,6 +190,7 @@ const event_fixtures = {
         op: 'add',
         message_id: 128,
         emoji_name: 'anguished_pig',
+        user_id: "1",
         user: {
             id: "1",
         },
@@ -200,6 +201,7 @@ const event_fixtures = {
         op: 'remove',
         message_id: 256,
         emoji_name: 'angery',
+        user_id: "1",
         user: {
             id: "1",
         },

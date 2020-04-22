@@ -846,6 +846,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('emoji_name', check_string),
             ('emoji_code', check_string),
             ('reaction_type', check_string),
+            ('user_id', check_int),
             ('user', check_dict_only([
                 ('email', check_string),
                 ('full_name', check_string),
@@ -871,6 +872,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('emoji_name', check_string),
             ('emoji_code', check_string),
             ('reaction_type', check_string),
+            ('user_id', check_int),
             ('user', check_dict_only([
                 ('email', check_string),
                 ('full_name', check_string),
@@ -897,6 +899,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('emoji_name', check_string),
             ('emoji_code', check_string),
             ('reaction_type', check_string),
+            ('user_id', check_int),
             ('user', check_dict_only([
                 ('email', check_string),
                 ('full_name', check_string),
@@ -951,6 +954,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('emoji_name', check_string),
             ('emoji_code', check_string),
             ('reaction_type', check_string),
+            ('user_id', check_int),
             ('user', check_dict_only([
                 ('email', check_string),
                 ('full_name', check_string),

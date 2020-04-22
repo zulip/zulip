@@ -558,7 +558,8 @@ class ReactionDict:
                 'reaction_type': row['reaction_type'],
                 'user': {'email': row['user_profile__email'],
                          'id': row['user_profile__id'],
-                         'full_name': row['user_profile__full_name']}}
+                         'full_name': row['user_profile__full_name']},
+                'user_id': row['user_profile__id']}
 
 
 def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message, Optional[UserMessage]]:
