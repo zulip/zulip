@@ -1517,7 +1517,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             self.strategy.request.POST = post_params
 
             # Call the auth_complete method of SocialAuthMixIn
-            result = super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
+            result = super().auth_complete(*args, **kwargs)
         except OneLogin_Saml2_Error as e:
             # This will be raised if SAMLResponse is missing.
             logging.info(str(e))
