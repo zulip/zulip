@@ -10,7 +10,7 @@ exports.set_up = function () {
         $row.remove();
     });
 
-    muting_ui.set_up_muted_topics_ui(muting.get_muted_topics());
+    muting_ui.set_up_muted_topics_ui();
 };
 
 window.settings_muting = exports;

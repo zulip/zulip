@@ -19,7 +19,8 @@ run_test('settings', () => {
 
     muting.add_muted_topic(frontend.stream_id, 'js', 1577836800);
     let set_up_ui_called = false;
-    muting_ui.set_up_muted_topics_ui = function (opts) {
+    muting_ui.set_up_muted_topics_ui = function () {
+        const opts = muting.get_muted_topics();
         assert.deepEqual(opts, [
             {
                 date_muted: 1577836800000,

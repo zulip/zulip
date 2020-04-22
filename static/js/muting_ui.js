@@ -20,6 +20,7 @@ exports.rerender = function () {
     if (current_msg_list !== home_msg_list) {
         home_msg_list.update_muting_and_rerender();
     }
+    exports.set_up_muted_topics_ui();
 };
 
 exports.persist_mute = function (stream_id, topic_name) {
@@ -67,8 +68,9 @@ exports.update_muted_topics = function (muted_topics) {
     unread_ui.update_unread_counts();
 };
 
-exports.set_up_muted_topics_ui = function (muted_topics) {
-    const muted_topics_table = $("#muted_topics_table").expectOne();
+exports.set_up_muted_topics_ui = function () {
+    const muted_topics = muting.get_muted_topics();
+    const muted_topics_table = $("#muted_topics_table");
     const $search_input = $("#muted_topics_search");
 
     list_render.create(muted_topics_table, muted_topics, {
@@ -85,7 +87,7 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
                 ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));
             },
         },
-        parent_container: $('#muted-topic-settings').expectOne(),
+        parent_container: $('#muted-topic-settings'),
     });
 };
 
