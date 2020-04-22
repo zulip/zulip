@@ -189,7 +189,7 @@ def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -
 
     @set_type_structure(type_structure)
     def f(var_name: str, val: object) -> Optional[str]:
-        if not isinstance(val, list):
+        if not (isinstance(val, list) or isinstance(val, tuple)):
             return _('%s is not a list') % (var_name,)
 
         if length is not None and length != len(val):

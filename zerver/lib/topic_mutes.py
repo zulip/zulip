@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple
 import datetime
 
 from zerver.lib.topic import (
@@ -20,7 +20,14 @@ from sqlalchemy.sql import (
 
 from django.utils.timezone import now as timezone_now
 
-def get_topic_mutes(user_profile: UserProfile) -> List[List[Union[str, float]]]:
+def get_topic_mutes(user_profile: UserProfile) -> List[Tuple[str, str, float]]:
+
+    def mutes_info(row: MutedTopic) -> Tuple[str, str, float]:
+        '''
+        mypy can't infer types of the elements inside a list comprehension.
+        '''
+        return row['stream__name'], row['topic_name'], datetime_to_timestamp(row['date_muted'])
+
     rows = MutedTopic.objects.filter(
         user_profile=user_profile,
     ).values(
@@ -28,10 +35,7 @@ def get_topic_mutes(user_profile: UserProfile) -> List[List[Union[str, float]]]:
         'topic_name',
         'date_muted'
     )
-    return [
-        [row['stream__name'], row['topic_name'], datetime_to_timestamp(row['date_muted'])]
-        for row in rows
-    ]
+    return [mutes_info(row) for row in rows]
 
 def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[str]],
                     date_muted: Optional[datetime.datetime]=None) -> None:
