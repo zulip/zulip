@@ -26,6 +26,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     extract_private_recipients,
     extract_stream_indicator,
+    gather_subscriptions_helper,
     get_active_presence_idle_user_ids,
     get_client,
     get_last_message_id,
@@ -93,8 +94,6 @@ from zerver.lib.soft_deactivation import (
     do_soft_deactivate_users,
     reactivate_user_if_soft_deactivated,
 )
-
-from zerver.lib.stream_recipient import StreamRecipientMap
 
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_TOPIC_NAME_LENGTH,
@@ -5223,11 +5222,15 @@ class NoRecipientIDsTest(ZulipTestCase):
         # and checks that having no recipient ids
         # returns nothing.
 
-        empty_stream_recipient = StreamRecipientMap()
-        empty_stream_recipient.populate_for_recipient_ids([])
+        user_profile = self.example_user('cordelia')
+        # self.login_user(user_profile)
 
-        # Checks that the dictionary mapping recipients to streams is empty
+        Subscription.objects.all().delete()
+
+        subs = gather_subscriptions_helper(user_profile)
+
+        # Checks that gather_subscriptions_helper will not return anything
         # since there will not be any recipients.
         # recip_to_stream will be empty because _process_query() will not have
         # run due to the return statement prior to the query execution.
-        self.assertEqual(empty_stream_recipient.recipient_to_stream_id_dict(), {})
+        self.assertEqual(len(subs[0]), 0)
