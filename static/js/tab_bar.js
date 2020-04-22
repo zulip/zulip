@@ -84,6 +84,10 @@ exports.exit_search = function () {
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
         exports.close_search_bar_and_open_narrow_description();
+
+        // reset searchbox text
+        const search_string = narrow_state.search_string();
+        $("#search_query").val(search_string);
     } else {
         // for "searching narrows", we redirect
         window.location.replace(filter.generate_redirect_url());
