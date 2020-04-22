@@ -54,9 +54,9 @@ if settings.ZILENCER_ENABLED:
         RemoteZulipServer
 else:
     from mock import Mock
-    RemoteInstallationCount = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
-    RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
-    RemoteRealmCount = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+    RemoteInstallationCount = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
+    RemoteZulipServer = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
+    RemoteRealmCount = Mock()  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1188
 
 MAX_TIME_FOR_FULL_ANALYTICS_GENERATION = timedelta(days=1, minutes=30)
 

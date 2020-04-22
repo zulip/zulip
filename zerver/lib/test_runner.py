@@ -157,16 +157,16 @@ class TextTestResult(runner.TextTestResult):
         self.failed_tests = []  # type: List[str]
 
     def addInfo(self, test: TestCase, msg: str) -> None:
-        self.stream.write(msg)  # type: ignore # https://github.com/python/typeshed/issues/3139
-        self.stream.flush()  # type: ignore # https://github.com/python/typeshed/issues/3139
+        self.stream.write(msg)  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+        self.stream.flush()  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
 
     def addInstrumentation(self, test: TestCase, data: Dict[str, Any]) -> None:
         append_instrumentation_data(data)
 
     def startTest(self, test: TestCase) -> None:
         TestResult.startTest(self, test)
-        self.stream.writeln("Running {}".format(full_test_name(test)))  # type: ignore # https://github.com/python/typeshed/issues/3139
-        self.stream.flush()  # type: ignore # https://github.com/python/typeshed/issues/3139
+        self.stream.writeln("Running {}".format(full_test_name(test)))  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+        self.stream.flush()  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
 
     def addSuccess(self, *args: Any, **kwargs: Any) -> None:
         TestResult.addSuccess(self, *args, **kwargs)
@@ -183,10 +183,10 @@ class TextTestResult(runner.TextTestResult):
 
     def addSkip(self, test: TestCase, reason: str) -> None:
         TestResult.addSkip(self, test, reason)
-        self.stream.writeln("** Skipping {}: {}".format(  # type: ignore # https://github.com/python/typeshed/issues/3139
+        self.stream.writeln("** Skipping {}: {}".format(  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
             full_test_name(test),
             reason))
-        self.stream.flush()  # type: ignore # https://github.com/python/typeshed/issues/3139
+        self.stream.flush()  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
 
 class RemoteTestResult(django_runner.RemoteTestResult):
     """
@@ -338,7 +338,7 @@ class TestSuite(unittest.TestSuite):
         """
         topLevel = False
         if getattr(result, '_testRunEntered', False) is False:
-            result._testRunEntered = topLevel = True  # type: ignore
+            result._testRunEntered = topLevel = True  # type: ignore[attr-defined]
 
         for test in self:
             # but this is correct. Taken from unittest.
@@ -348,10 +348,10 @@ class TestSuite(unittest.TestSuite):
             if isinstance(test, TestSuite):
                 test.run(result, debug=debug)
             else:
-                self._tearDownPreviousClass(test, result)  # type: ignore
-                self._handleModuleFixture(test, result)  # type: ignore
-                self._handleClassSetUp(test, result)  # type: ignore
-                result._previousTestClass = test.__class__  # type: ignore
+                self._tearDownPreviousClass(test, result)  # type: ignore[attr-defined]
+                self._handleModuleFixture(test, result)  # type: ignore[attr-defined]
+                self._handleClassSetUp(test, result)  # type: ignore[attr-defined]
+                result._previousTestClass = test.__class__  # type: ignore[attr-defined]
                 if (getattr(test.__class__, '_classSetupFailed', False) or
                         getattr(result, '_moduleSetUpFailed', False)):
                     continue
@@ -362,9 +362,9 @@ class TestSuite(unittest.TestSuite):
                     break
 
         if topLevel:
-            self._tearDownPreviousClass(None, result)  # type: ignore
-            self._handleModuleTearDown(result)  # type: ignore
-            result._testRunEntered = False  # type: ignore
+            self._tearDownPreviousClass(None, result)  # type: ignore[attr-defined]
+            self._handleModuleTearDown(result)  # type: ignore[attr-defined]
+            result._testRunEntered = False  # type: ignore[attr-defined]
         return result
 
 class TestLoader(loader.TestLoader):
@@ -380,7 +380,7 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
         # the whole idea here is to monkey-patch that so we can use
         # most of django_runner.ParallelTestSuite with our own suite
         # definitions.
-        self.subsuites = SubSuiteList(self.subsuites)  # type: ignore # Type of self.subsuites changes.
+        self.subsuites = SubSuiteList(self.subsuites)  # type: ignore[has-type] # Type of self.subsuites changes.
 
 def check_import_error(test_name: str) -> None:
     try:

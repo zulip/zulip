@@ -339,16 +339,16 @@ CacheItemT = TypeVar('CacheItemT')
 CompressedItemT = TypeVar('CompressedItemT')
 
 def default_extractor(obj: CompressedItemT) -> ItemT:
-    return obj  # type: ignore # Need a type assert that ItemT=CompressedItemT
+    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CompressedItemT
 
 def default_setter(obj: ItemT) -> CompressedItemT:
-    return obj  # type: ignore # Need a type assert that ItemT=CompressedItemT
+    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CompressedItemT
 
 def default_id_fetcher(obj: ItemT) -> ObjKT:
-    return obj.id  # type: ignore # Need ItemT/CompressedItemT typevars to be a Django protocol
+    return obj.id  # type: ignore[attr-defined] # Need ItemT/CompressedItemT typevars to be a Django protocol
 
 def default_cache_transformer(obj: ItemT) -> CacheItemT:
-    return obj  # type: ignore # Need a type assert that ItemT=CacheItemT
+    return obj  # type: ignore[return-value] # Need a type assert that ItemT=CacheItemT
 
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up

@@ -83,7 +83,7 @@ Possible explanations include:
 Each explanation has its own solution, but in every case the result
 should be solving the mypy warning in a way that makes the Zulip
 codebase better.  If you're having trouble, silence the warning with
-an `Any` or `# type: ignore` so you're not blocked waiting for help,
+an `Any` or `# type: ignore[code]` so you're not blocked waiting for help,
 add a `# TODO: ` comment so it doesn't get forgotten in code review,
 and ask for help in chat.zulip.org.
 

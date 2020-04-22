@@ -57,7 +57,7 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
 
         return view_func(request, *args, **kwargs)
 
-    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 @beanstalk_decoder
 @authenticated_rest_api_view(webhook_client_name="Beanstalk")
