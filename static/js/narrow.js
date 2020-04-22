@@ -311,7 +311,11 @@ exports.activate = function (raw_operators, opts) {
     }
 
     // Put the narrow operators in the search bar.
-    $('#search_query').val(Filter.unparse(operators));
+    // we append a space to make searching more convenient in some cases.
+    if (filter && !filter.is_search()) {
+        $('#search_query').val(Filter.unparse(operators) + " ");
+    }
+
     search.update_button_visibility();
 
     compose_actions.on_narrow(opts);
