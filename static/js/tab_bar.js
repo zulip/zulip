@@ -87,7 +87,12 @@ exports.exit_search = function () {
 
         // reset searchbox text
         const search_string = narrow_state.search_string();
-        $("#search_query").val(search_string);
+        // This does not need to be conditional like the corresponding
+        // function call in narrow.activate because search filters are
+        // not common narrows
+        if (search_string !== "") {
+            $("#search_query").val(search_string + " ");
+        }
     } else {
         // for "searching narrows", we redirect
         window.location.replace(filter.generate_redirect_url());
