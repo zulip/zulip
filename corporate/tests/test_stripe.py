@@ -919,8 +919,8 @@ class StripeTest(StripeTestCase):
 
         # Verify that we invoice them for the additional users
         from stripe import Invoice
-        Invoice.create = lambda **args: None  # type: ignore # cleaner than mocking
-        Invoice.finalize_invoice = lambda *args: None  # type: ignore # cleaner than mocking
+        Invoice.create = lambda **args: None  # type: ignore[assignment] # cleaner than mocking
+        Invoice.finalize_invoice = lambda *args: None  # type: ignore[assignment] # cleaner than mocking
         with patch("stripe.InvoiceItem.create") as mocked:
             invoice_plans_as_needed(self.next_month)
         mocked.assert_called_once()
@@ -1204,7 +1204,7 @@ class BillingHelpersTest(ZulipTestCase):
             [(False, CustomerPlan.MONTHLY, 87.15), (anchor, month_later, month_later, 102)]]
         with patch('corporate.lib.stripe.timezone_now', return_value=anchor):
             for input_, output in test_cases:
-                output_ = compute_plan_parameters(*input_)  # type: ignore # TODO
+                output_ = compute_plan_parameters(*input_)  # type: ignore[arg-type] # TODO
                 self.assertEqual(output_, output)
 
     def test_update_or_create_stripe_customer_logic(self) -> None:

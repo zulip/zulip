@@ -494,7 +494,7 @@ do not match the types declared in the implementation of {}.\n""".format(functio
                 # possible.
 
                 vtype = self.get_standardized_argument_type(function.__annotations__[vname])
-                vname = defval.post_var_name  # type: ignore # See zerver/lib/request.py
+                vname = defval.post_var_name  # type: ignore[attr-defined] # See zerver/lib/request.py
                 function_params.add((vname, vtype))
 
         diff = openapi_params - function_params

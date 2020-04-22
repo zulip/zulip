@@ -129,7 +129,7 @@ class AdminNotifyHandler(logging.Handler):
             report['log_lineno'] = record.lineno
 
             if hasattr(record, "request"):
-                add_request_metadata(report, record.request)  # type: ignore  # record.request is added dynamically
+                add_request_metadata(report, record.request)  # type: ignore[attr-defined]  # record.request is added dynamically
 
         except Exception:
             report['message'] = "Exception in preparing exception report!"

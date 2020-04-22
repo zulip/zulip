@@ -73,7 +73,7 @@ def session_cache_items(items_for_remote_cache: Dict[str, str],
         # will be no store.cache_key attribute, and in any case we
         # don't need to fill the cache, since it won't exist.
         return
-    store = session_engine.SessionStore(session_key=session.session_key)  # type: ignore # import_module
+    store = session_engine.SessionStore(session_key=session.session_key)  # type: ignore[attr-defined] # import_module
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
 def get_active_realm_ids() -> List[int]:

@@ -207,7 +207,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
     def test_marshaling(self) -> None:
         storage = StateHandler(self.bot_profile)
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
-        storage.put('some key', serializable_obj)  # type: ignore # Ignore for testing.
+        storage.put('some key', serializable_obj)  # type: ignore[arg-type] # Ignore for testing.
         self.assertEqual(storage.get('some key'), serializable_obj)
 
     def test_invalid_calls(self) -> None:
@@ -216,9 +216,9 @@ class TestServiceBotStateHandler(ZulipTestCase):
         storage.demarshal = lambda obj: obj
         serializable_obj = {'foo': 'bar', 'baz': [42, 'cux']}
         with self.assertRaisesMessage(StateError, "Value type is <class 'dict'>, but should be str."):
-            storage.put('some key', serializable_obj)  # type: ignore # We intend to test an invalid type.
+            storage.put('some key', serializable_obj)  # type: ignore[arg-type] # We intend to test an invalid type.
         with self.assertRaisesMessage(StateError, "Key type is <class 'dict'>, but should be str."):
-            storage.put(serializable_obj, 'some value')  # type: ignore # We intend to test an invalid type.
+            storage.put(serializable_obj, 'some value')  # type: ignore[arg-type] # We intend to test an invalid type.
 
     # Reduce maximal storage size for faster test string construction.
     @override_settings(USER_STATE_SIZE_LIMIT=100)
@@ -293,7 +293,7 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
         # Assert errors on invalid requests.
         params = {
-            'keys': ["This is a list, but should be a serialized string."]  # type: ignore # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
+            'keys': ["This is a list, but should be a serialized string."]  # type: ignore[dict-item] # Ignore 'incompatible type "str": "List[str]"; expected "str": "str"' for testing
         }
         result = self.client_get('/json/bot_storage', params)
         self.assert_json_error(result, 'Argument "keys" is not valid JSON.')

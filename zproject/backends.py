@@ -1251,7 +1251,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod):
         """
         try:
             # Call the auth_complete method of social_core.backends.oauth.BaseOAuth2
-            return super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
+            return super().auth_complete(*args, **kwargs)  # type: ignore[misc] # monkey-patching
         except AuthFailed as e:
             # When a user's social authentication fails (e.g. because
             # they did something funny with reloading in the middle of

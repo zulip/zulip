@@ -76,9 +76,9 @@ def stub_event_queue_user_events(event_queue_return: Any, user_events_return: An
 @contextmanager
 def simulated_queue_client(client: Callable[..., Any]) -> Iterator[None]:
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
-    queue_processors.SimpleQueueClient = client  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
+    queue_processors.SimpleQueueClient = client  # type: ignore[assignment, misc] # https://github.com/JukkaL/mypy/issues/1152
     yield
-    queue_processors.SimpleQueueClient = real_SimpleQueueClient  # type: ignore # https://github.com/JukkaL/mypy/issues/1152
+    queue_processors.SimpleQueueClient = real_SimpleQueueClient  # type: ignore[misc] # https://github.com/JukkaL/mypy/issues/1152
 
 @contextmanager
 def tornado_redirected_to_list(lst: List[Mapping[str, Any]]) -> Iterator[None]:
@@ -169,17 +169,17 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
     def cursor_execute(self: TimeTrackingCursor, sql: str,
                        params: Iterable[Any]=()) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)
-    TimeTrackingCursor.execute = cursor_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.execute = cursor_execute  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
 
     def cursor_executemany(self: TimeTrackingCursor, sql: str,
                            params: Iterable[Any]=()) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # nocoverage -- doesn't actually get used in tests
-    TimeTrackingCursor.executemany = cursor_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.executemany = cursor_executemany  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
 
     yield queries
 
-    TimeTrackingCursor.execute = old_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
-    TimeTrackingCursor.executemany = old_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.execute = old_execute  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
+    TimeTrackingCursor.executemany = old_executemany  # type: ignore[assignment] # https://github.com/JukkaL/mypy/issues/1167
 
 @contextmanager
 def stdout_suppressed() -> Iterator[IO[str]]:
@@ -252,7 +252,7 @@ def get_user_messages(user_profile: UserProfile) -> List[Message]:
 
 class DummyHandler:
     def __init__(self) -> None:
-        allocate_handler_id(self)  # type: ignore # this is a testing mock
+        allocate_handler_id(self)  # type: ignore[arg-type] # this is a testing mock
 
 class POSTRequestMock:
     method = "POST"

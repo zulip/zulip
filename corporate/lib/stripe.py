@@ -164,7 +164,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
                     'stripe connection error',
                     _("Something went wrong. Please wait a few seconds and try again."))
             raise BillingError('other stripe error', BillingError.CONTACT_SUPPORT)
-    return wrapped  # type: ignore # https://github.com/python/mypy/issues/1927
+    return wrapped  # type: ignore[return-value] # https://github.com/python/mypy/issues/1927
 
 @catch_stripe_errors
 def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
