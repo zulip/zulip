@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 
-source /srv/zulip-py3-venv/bin/activate
+source /opt/conda/etc/profile.d/conda.sh
+conda activate /srv/zulip-py3-venv
 echo "Using $VIRTUAL_ENV"
