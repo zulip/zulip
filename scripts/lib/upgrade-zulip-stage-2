@@ -125,9 +125,17 @@ elif args.from_git:
     # update-prod-static with the git upgrade process.  But it'll fail
     # safely; this seems like a worthwhile tradeoff to minimize downtime.
     logging.info("Building static assets...")
-    subprocess.check_call(["./tools/update-prod-static", "--authors-not-required", "--prev-deploy",
-                           os.path.join(DEPLOYMENTS_DIR, 'current')],
-                          preexec_fn=su_to_zulip)
+    try:
+        subprocess.check_call(["./tools/update-prod-static", "--authors-not-required", "--prev-deploy",
+                               os.path.join(DEPLOYMENTS_DIR, 'current')],
+                              preexec_fn=su_to_zulip)
+    except subprocess.CalledProcessError:
+        # Print proper error output in-case update-prod-static fails.
+        log_file_path = "/home/zulip/deployments/next/var/log/update-prod-static.log"
+        logging.error("Building static assets failed.")
+        logging.info("Complete error message can be found at " + log_file_path)
+        sys.exit(1)
+
     logging.info("Caching zulip git version...")
     subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 else:
