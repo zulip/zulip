@@ -2,7 +2,6 @@
 zrequire('timerender');
 zrequire('muting');
 zrequire('stream_data');
-set_global('i18n', global.stub_i18n);
 set_global('XDate', zrequire('XDate', 'xdate'));
 set_global('page_params', {});
 
