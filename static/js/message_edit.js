@@ -472,6 +472,8 @@ exports.end = function (row) {
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
     row.find(".message_edit").blur();
+    // Clear the message_edit_form to prevent an accumulations of unneeded forms in DOM
+    row.find(".message_edit_form").empty();
 };
 
 exports.save = function (row, from_topic_edited_only) {
