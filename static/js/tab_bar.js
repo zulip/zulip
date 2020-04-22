@@ -69,12 +69,44 @@ function build_tab_bar(filter) {
     } else {
         const tab_bar_data = make_tab_data(filter);
         display_tab_bar(tab_bar_data);
+
         $(".search_closed").on("click", function (e) {
             exports.open_search_bar_and_close_narrow_description();
             search.initiate_search();
             e.preventDefault();
             e.stopPropagation();
         });
+
+        $("#tab_list span:nth-last-child(2)").on("click", function (e) {
+            exports.open_search_bar_and_close_narrow_description();
+            search.initiate_search();
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        // Hacky way of protecting the behaviour of links via preventDefault
+        // and stopPropagation
+        $(".narrow_description > a").on("click", function (e) {
+            window.location.href = e.target.href;
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        const color = $(".search_closed").css("color");
+        const night_mode_color = $(".nightmode .closed_icon").css("color");
+
+        // make sure that hover plays nicely with whether search is being
+        // opened or not.
+        $(".narrow_description > a").hover(function () {
+            if (night_mode_color) {
+                $(".search_closed").css("color", night_mode_color);
+            } else {
+                $(".search_closed").css("color", color);
+            }
+        }, function () {
+            $(".search_closed").css("color", "");
+        });
+
         exports.close_search_bar_and_open_narrow_description();
     }
 }
