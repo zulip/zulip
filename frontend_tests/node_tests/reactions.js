@@ -74,15 +74,15 @@ people.add(cali);
 const message = {
     id: 1001,
     reactions: [
-        {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '263a'},
-        {emoji_name: 'smile', user: {id: 6}, reaction_type: 'unicode_emoji', emoji_code: '263a'},
-        {emoji_name: 'frown', user: {id: 7}, reaction_type: 'unicode_emoji', emoji_code: '1f641'},
-        {emoji_name: 'inactive_realm_emoji', user: {id: 5}, reaction_type: 'realm_emoji',
+        {emoji_name: 'smile', user_id: 5, reaction_type: 'unicode_emoji', emoji_code: '263a'},
+        {emoji_name: 'smile', user_id: 6, reaction_type: 'unicode_emoji', emoji_code: '263a'},
+        {emoji_name: 'frown', user_id: 7, reaction_type: 'unicode_emoji', emoji_code: '1f641'},
+        {emoji_name: 'inactive_realm_emoji', user_id: 5, reaction_type: 'realm_emoji',
          emoji_code: '992'},
 
         // add some bogus user_ids
-        {emoji_name: 'octopus', user: {id: 8888}, reaction_type: 'unicode_emoji', emoji_code: '1f419'},
-        {emoji_name: 'frown', user: {id: 9999}, reaction_type: 'unicode_emoji', emoji_code: '1f641'},
+        {emoji_name: 'octopus', user_id: 8888, reaction_type: 'unicode_emoji', emoji_code: '1f419'},
+        {emoji_name: 'frown', user_id: 9999, reaction_type: 'unicode_emoji', emoji_code: '1f641'},
     ],
 };
 
@@ -298,9 +298,7 @@ run_test('add_and_remove_reaction', () => {
         reaction_type: 'unicode_emoji',
         emoji_name: '8ball',
         emoji_code: '1f3b1',
-        user: {
-            user_id: alice.user_id,
-        },
+        user_id: alice.user_id,
     };
 
     const message_reactions = $.create('our-reactions');
@@ -355,9 +353,7 @@ run_test('add_and_remove_reaction', () => {
         reaction_type: 'unicode_emoji',
         emoji_name: '8ball',
         emoji_code: '1f3b1',
-        user: {
-            user_id: bob.user_id,
-        },
+        user_id: bob.user_id,
     };
 
     const count_element = $.create('count-element');
@@ -402,9 +398,7 @@ run_test('add_and_remove_reaction', () => {
         reaction_type: 'realm_emoji',
         emoji_name: 'realm_emoji',
         emoji_code: '991',
-        user: {
-            user_id: cali.user_id,
-        },
+        user_id: cali.user_id,
     };
 
     template_called = false;
@@ -430,9 +424,7 @@ run_test('add_and_remove_reaction', () => {
         reaction_type: 'realm_emoji',
         emoji_name: 'realm_emoji',
         emoji_code: '991',
-        user: {
-            user_id: alice.user_id,
-        },
+        user_id: alice.user_id,
     };
 
     message_reactions.find = function (selector) {
@@ -495,9 +487,7 @@ run_test('with_view_stubs', () => {
         reaction_type: 'unicode_emoji',
         emoji_name: '8ball',
         emoji_code: '1f3b1',
-        user: {
-            user_id: alice.user_id,
-        },
+        user_id: alice.user_id,
     };
 
     const bob_8ball_event = {
@@ -505,9 +495,7 @@ run_test('with_view_stubs', () => {
         reaction_type: 'unicode_emoji',
         emoji_name: '8ball',
         emoji_code: '1f3b1',
-        user: {
-            user_id: bob.user_id,
-        },
+        user_id: bob.user_id,
     };
 
     const cali_airplane_event = {
@@ -515,9 +503,7 @@ run_test('with_view_stubs', () => {
         reaction_type: 'unicode_emoji',
         emoji_name: 'airplane',
         emoji_code: '2708',
-        user: {
-            user_id: cali.user_id,
-        },
+        user_id: cali.user_id,
     };
 
     test_view_calls({
@@ -627,9 +613,7 @@ run_test('error_handling', () => {
         reaction_type: 'realm_emoji',
         emoji_name: 'realm_emoji',
         emoji_code: '991',
-        user: {
-            user_id: 99,
-        },
+        user_id: 99,
     };
 
     const original_func = reactions.current_user_has_reacted_to_emoji;
@@ -653,9 +637,7 @@ run_test('remove spurious user', () => {
         emoji_name: 'frown',
         emoji_code: '1f641',
         message_id: message.id,
-        user: {
-            user_id: alice.user_id,
-        },
+        user_id: alice.user_id,
     };
 
     reactions.remove_reaction(event);
@@ -676,9 +658,7 @@ run_test('remove last user', () => {
         emoji_name: 'frown',
         emoji_code: '1f641',
         message_id: message.id,
-        user: {
-            user_id: cali.user_id,
-        },
+        user_id: cali.user_id,
     };
     reactions.remove_reaction(event);
 
@@ -745,8 +725,7 @@ run_test('code coverage', () => {
     };
 
     reactions.remove_reaction({
-        message_id: 42,
-        user: {},
+        message_id: 42, // TODO: REACTIONS API
     });
 });
 
@@ -754,8 +733,8 @@ run_test('duplicates', () => {
     const dup_reaction_message = {
         id: 1001,
         reactions: [
-            {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '263a'},
-            {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '263a'},
+            {emoji_name: 'smile', user_id: 5, reaction_type: 'unicode_emoji', emoji_code: '263a'},
+            {emoji_name: 'smile', user_id: 5, reaction_type: 'unicode_emoji', emoji_code: '263a'},
         ],
     };
 

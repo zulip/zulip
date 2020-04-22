@@ -41,10 +41,7 @@ function get_message(message_id) {
 function create_reaction(message_id, reaction_info) {
     return {
         message_id: message_id,
-        user: {
-            user_id: page_params.user_id,
-            id: page_params.user_id,
-        },
+        user_id: page_params.user_id,
         local_id: exports.get_local_reaction_id(reaction_info),
         reaction_type: reaction_info.reaction_type,
         emoji_name: reaction_info.emoji_name,
@@ -218,7 +215,7 @@ exports.add_reaction = function (event) {
     exports.set_clean_reactions(message);
 
     const local_id = exports.get_local_reaction_id(event);
-    const user_id = event.user.user_id;
+    const user_id = event.user_id;
 
     const r = message.clean_reactions.get(local_id);
 
@@ -326,7 +323,7 @@ exports.remove_reaction = function (event) {
     const emoji_name = event.emoji_name;
     const emoji_code = event.emoji_code;
     const message_id = event.message_id;
-    const user_id = event.user.user_id;
+    const user_id = event.user_id;
     const message = message_store.get(message_id);
     const local_id = exports.get_local_reaction_id(event);
 
@@ -441,7 +438,7 @@ exports.set_clean_reactions = function (message) {
 
     for (const reaction of message.reactions) {
         const local_id = exports.get_local_reaction_id(reaction);
-        const user_id = reaction.user.id;
+        const user_id = reaction.user_id;
 
         if (!people.is_known_user_id(user_id)) {
             blueslip.warn('Unknown user_id ' + user_id +

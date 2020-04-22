@@ -1527,6 +1527,7 @@ class MessageDictTest(ZulipTestCase):
         msg_dict = MessageDict.build_dict_from_raw_db_row(row)
         self.assertEqual(msg_dict['reactions'][0]['emoji_name'],
                          reaction.emoji_name)
+        self.assertEqual(msg_dict['reactions'][0]['user_id'], sender.id)
         self.assertEqual(msg_dict['reactions'][0]['user']['id'],
                          sender.id)
         self.assertEqual(msg_dict['reactions'][0]['user']['email'],
