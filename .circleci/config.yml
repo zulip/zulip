@@ -71,21 +71,24 @@ aliases:
     run:
       name: run backend tests
       command: |
-        . /srv/zulip-py3-venv/bin/activate
+        source /opt/conda/etc/profile.d/conda.sh
+        conda activate /srv/zulip-py3-venv
         mispipe ./tools/ci/backend ts
 
   - &run_frontend_tests
     run:
       name: run frontend tests
       command: |
-        . /srv/zulip-py3-venv/bin/activate
+        source /opt/conda/etc/profile.d/conda.sh
+        conda activate /srv/zulip-py3-venv
         mispipe ./tools/ci/frontend ts
 
   - &upload_coverage_report
     run:
      name: upload coverage report
      command: |
-       . /srv/zulip-py3-venv/bin/activate
+       source /opt/conda/etc/profile.d/conda.sh
+       conda activate /srv/zulip-py3-venv
        pip install codecov && codecov \
          || echo "Error in uploading coverage reports to codecov.io."
 
