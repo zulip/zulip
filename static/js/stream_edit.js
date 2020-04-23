@@ -636,8 +636,14 @@ exports.initialize = function () {
     // checkmark in the subscriber list.
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         const sub = get_sub_for_target(e.target);
-        const stream_row = $(e.currentTarget).parent();
-        subs.sub_or_unsub(sub, e.currentTarget);
+        let stream_row;
+        if ($(e.currentTarget).is(":button")) {
+            stream_row = $("#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']");
+        } else {
+            stream_row = $(e.currentTarget).parent();
+        }
+        subs.sub_or_unsub(sub, stream_row);
+
         if (!sub.subscribed) {
             exports.open_edit_panel_for_row(stream_row);
         }
