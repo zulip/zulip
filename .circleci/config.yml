@@ -237,6 +237,7 @@ jobs:
           # Must be relative path from root
           paths:
             - zulip-server-test.tar.gz
+            - success-http-headers.txt
 
 workflows:
   version: 2

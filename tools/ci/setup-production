@@ -20,7 +20,6 @@ tools/provision --production-test-suite || {
     fi
 }
 
-cp -a tools/ci/success-http-headers.txt ~/
 source tools/ci/activate-venv
 
 if ! ./tools/build-release-tarball test; then
@@ -30,3 +29,4 @@ if ! ./tools/build-release-tarball test; then
 fi
 
 mv /tmp/tmp.*/zulip-server-test.tar.gz /tmp/
+cp -a tools/ci/success-http-headers.txt /tmp/success-http-headers.txt
