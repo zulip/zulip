@@ -28,7 +28,7 @@ if ! ./tools/build-release-tarball test; then
     cat /tmp/tmp.*/update-prod-static.log || true
     exit 1
 fi
-mv /tmp/tmp.*/zulip-server-test.tar.gz ./
+mv /tmp/tmp.*/zulip-server-test.tar.gz /tmp/
 
 # Shut down all services so that restarting postgres and rebuilding
 # the postgres database to match the prod installation setup will work.
