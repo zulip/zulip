@@ -103,6 +103,11 @@ aliases:
     run:
      name: install production
      command: |
+      sudo apt-get update
+      # Install moreutils so we can use `ts` and `mispipe` in the following.
+      sudo apt-get install -y moreutils
+
+      sudo service rabbitmq-server restart
       mispipe ./tools/ci/production ts
 
   - &check_xenial_provision_error
@@ -238,6 +243,27 @@ jobs:
           paths:
             - zulip-server-test.tar.gz
             - success-http-headers.txt
+
+  "bionic-production-install-python3.6":
+    docker:
+        # This is built from tools/circleci/images/bionic/Dockerfile .
+        # Bionic ships with Python 3.6.
+        - image: gregprice/circleci:bionic-python-1.test
+
+    working_directory: ~/zulip
+
+    steps:
+      # required to run production-helper script.
+      - checkout
+      # Contains the built tarball from bionic-production-build-python3.6 job
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: /tmp
+
+      - *create_cache_directories
+      - *do_bionic_hack
+      - *install_production
+      - *restore_cache_package_json
 
 workflows:
   version: 2
