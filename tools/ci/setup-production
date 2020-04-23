@@ -28,17 +28,5 @@ if ! ./tools/build-release-tarball test; then
     cat /tmp/tmp.*/update-prod-static.log || true
     exit 1
 fi
+
 mv /tmp/tmp.*/zulip-server-test.tar.gz /tmp/
-
-# Shut down all services so that restarting postgres and rebuilding
-# the postgres database to match the prod installation setup will work.
-sudo supervisorctl stop all
-
-# Drop any open connections to the development postgres installation.
-sudo "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" postgres zulip zulip_base
-
-# Remove and recreate the postgres database
-sudo pg_ctlcluster 10 main stop
-sudo pg_dropcluster 10 main
-sudo rm -rf /etc/postgresql/10/main /var/lib/postgresql/10/main
-sudo pg_createcluster 10 main
