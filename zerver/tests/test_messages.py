@@ -4219,6 +4219,13 @@ class MessageHasKeywordsTest(ZulipTestCase):
             self.assertFalse(m.called)
             m.reset_mock()
 
+    def test_has_reaction(self) -> None:
+        self.login('hamlet')
+        with queries_captured() as queries:
+            result = self.client_get(
+                '/json/messages?anchor=newest&num_before=1&num_after=1&narrow=%5B%7B"negated"%3Afalse%2C"operator"%3A"has"%2C"operand"%3A"reaction"%7D%5D&client_gravatar=true')
+        self.assert_json_success(result)
+
 class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:
         UserPresence.objects.all().delete()
