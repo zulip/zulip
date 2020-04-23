@@ -1,6 +1,10 @@
 <tr id="{{stream_id}}:{{topic}}">
     <td class="recent_unread_count">
+        {{#if unread_count}}
         {{unread_count}}
+        {{else}}
+        <i class="fa fa-check" aria-hidden="true"></i>
+        {{/if}}
     </td>
     <td class="recent_stream_name">
         <a href="{{stream_url}}">{{stream_name}}</a>
