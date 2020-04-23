@@ -3,7 +3,12 @@
 server {
     listen 80;
     listen [::]:80;
-    return 301 https://$host$request_uri;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
 }
 <% end -%>
 
