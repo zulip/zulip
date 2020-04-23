@@ -206,6 +206,38 @@ jobs:
       - *check_xenial_upgrade_error
       - *check_xenial_puppet
 
+  "bionic-production-build-python3.6":
+    docker:
+        # This is built from tools/circleci/images/bionic/Dockerfile .
+        # Bionic ships with Python 3.6.
+        - image: gregprice/circleci:bionic-python-1.test
+
+    working_directory: ~/zulip
+
+    steps:
+      - checkout
+
+      - *create_cache_directories
+      - *do_bionic_hack
+      - *restore_cache_package_json
+      - *restore_cache_requirements
+      - *setup_production
+      - *save_cache_package_json
+      - *save_cache_requirements
+
+      # Persist the built tarball to be used in downstream job
+      # for installation of production server.
+      # See https://circleci.com/docs/2.0/workflows/#using-workspaces-to-share-data-among-jobs
+      - persist_to_workspace:
+          # Must be an absolute path,
+          # or relative path from working_directory.
+          # This is a directory on the container which is
+          # taken to be the root directory of the workspace.
+          root: /tmp
+          # Must be relative path from root
+          paths:
+            - zulip-server-test.tar.gz
+
 workflows:
   version: 2
   build:
