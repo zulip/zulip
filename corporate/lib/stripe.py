@@ -500,7 +500,7 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
 
 # During realm deactivation we instantly downgrade the plan to Limited.
 # Extra users added in the final month are not charged.
-def downgrade_for_realm_deactivation(realm: Realm) -> None:
+def downgrade_now(realm: Realm) -> None:
     plan = get_current_plan_by_realm(realm)
     if plan is None:
         return
