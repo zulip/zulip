@@ -690,11 +690,6 @@ class RealmAPITest(ZulipTestCase):
         super().setUp()
         self.login('iago')
 
-    def set_up_db(self, attr: str, value: Any) -> None:
-        realm = get_realm('zulip')
-        setattr(realm, attr, value)
-        realm.save(update_fields=[attr])
-
     def update_with_api(self, name: str, value: int) -> Realm:
         result = self.client_patch('/json/realm', {name: ujson.dumps(value)})
         self.assert_json_success(result)
@@ -758,13 +753,11 @@ class RealmAPITest(ZulipTestCase):
             raise AssertionError('No test created for %s' % (name,))
 
         if name == 'video_chat_provider':
-            self.set_up_db(name, vals[0][name])
             realm = self.update_with_api_multiple_value(vals[1])
             self.assertEqual(getattr(realm, name), ujson.loads(vals[1][name]))
             realm = self.update_with_api_multiple_value(vals[0])
             self.assertEqual(getattr(realm, name), ujson.loads(vals[0][name]))
         else:
-            self.set_up_db(name, vals[0])
             realm = self.update_with_api(name, vals[1])
             self.assertEqual(getattr(realm, name), vals[1])
             realm = self.update_with_api(name, vals[0])
@@ -778,9 +771,6 @@ class RealmAPITest(ZulipTestCase):
 
     def test_update_realm_allow_message_editing(self) -> None:
         """Tests updating the realm property 'allow_message_editing'."""
-        self.set_up_db('allow_message_editing', False)
-        self.set_up_db('message_content_edit_limit_seconds', 0)
-        self.set_up_db('allow_community_topic_editing', False)
         realm = self.update_with_api('allow_message_editing', True)
         realm = self.update_with_api('message_content_edit_limit_seconds', 100)
         realm = self.update_with_api('allow_community_topic_editing', True)
@@ -802,9 +792,8 @@ class RealmAPITest(ZulipTestCase):
 
     def test_update_realm_allow_message_deleting(self) -> None:
         """Tests updating the realm property 'allow_message_deleting'."""
-        self.set_up_db('allow_message_deleting', True)
-        self.set_up_db('message_content_delete_limit_seconds', 0)
         realm = self.update_with_api('allow_message_deleting', False)
+        realm = self.update_with_api('message_content_delete_limit_seconds', 0)
         self.assertEqual(realm.allow_message_deleting, False)
         self.assertEqual(realm.message_content_delete_limit_seconds, 0)
         realm = self.update_with_api('allow_message_deleting', True)
