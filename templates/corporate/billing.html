@@ -28,14 +28,23 @@
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 <div class="tab-content">
                     <div class="tab-pane active" id="overview">
+                        {% if free_trial %}
+                        <p>Your current plan is <strong>{{ plan_name }} Free Trial</strong>.</p>
+                        {% else %}
                         <p>Your current plan is <strong>{{ plan_name }}</strong>.</p>
+                        {% endif %}
                         <p>You are using <strong>{{ licenses_used }} of {{ licenses }} licenses</strong>.</p>
                         <p>
                             {% if renewal_amount %}
-                            Your plan will renew on <strong>{{ renewal_date }}</strong> for
-                            <strong>${{ renewal_amount }}</strong>.
+                                {% if free_trial %}
+                                Your plan would be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
+                                <strong>${{ renewal_amount }}</strong>.
+                                {% else %}
+                                Your plan will renew on <strong>{{ renewal_date }}</strong> for
+                                <strong>${{ renewal_amount }}</strong>.
+                                {% endif %}
                             {% else %}
-                            Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
+                                Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
                             {% endif %}
                         </p>
                     </div>

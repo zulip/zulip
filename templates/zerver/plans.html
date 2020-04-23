@@ -87,11 +87,19 @@
                                     </a>
                                     {% elif realm_plan_type == 2 %}
                                     <a href="/upgrade" class="button green">
+                                        {% if free_trial_months %}
+                                        Start {{ free_trial_months }} month Free Trial
+                                        {% else %}
                                         Buy Standard
+                                        {% endif %}
                                     </a>
                                     {% else %}
                                     <a href="/upgrade" class="button green">
+                                        {% if free_trial_months %}
+                                        Start {{ free_trial_months }} month Free Trial
+                                        {% else %}
                                         Buy Standard
+                                        {% endif %}
                                     </a>
                                     {% endif %}
                                 </div>

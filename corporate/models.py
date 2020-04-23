@@ -52,6 +52,7 @@ class CustomerPlan(models.Model):
 
     ACTIVE = 1
     DOWNGRADE_AT_END_OF_CYCLE = 2
+    FREE_TRIAL = 3
     # "Live" plans should have a value < LIVE_STATUS_THRESHOLD.
     # There should be at most one live plan per customer.
     LIVE_STATUS_THRESHOLD = 10

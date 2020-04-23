@@ -364,6 +364,8 @@ ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 7
 # are available to all realms.
 BILLING_ENABLED = False
 
+FREE_TRIAL_MONTHS = None
+
 # Automatically catch-up soft deactivated users when running the
 # `soft-deactivate-users` cron. Turn this off if the server has 10Ks of
 # users, and you would like to save some disk space. Soft-deactivated

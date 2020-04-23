@@ -18,6 +18,12 @@
         <div class="page-content">
             <div class="main">
                 <h1>{% trans %}Upgrade to {{ plan }}{% endtrans %}</h1>
+                {% if free_trial_months %}
+                <div class="alert alert-info">
+                    Upgrade now to start your {{ free_trial_months }} month Free Trial of Zulip Standard.
+                </div>
+                {% endif %}
+
                 {% if error_message %}
                 <div class="alert alert-danger" id="upgrade-error-message-box">
                     {{ error_message }}
@@ -38,6 +44,12 @@
                                 <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
                                 <input type="hidden" name="salt" value="{{ salt }}">
                                 <input type="hidden" name="billing_modality" value="charge_automatically">
+                                {% if free_trial_months %}
+                                <p>
+                                    You won't be charged during the Free Trial. You can also downgrade back to Zulip Limited
+                                    during the Free Trial.
+                                </p>
+                                {% endif %}
                                 <div class="payment-schedule">
                                     <div id="autopay-error" class="alert alert-danger"></div>
                                     <h3>{{ _("Payment schedule") }}</h3>
@@ -82,21 +94,37 @@
 
                                 <div id="license-automatic-section">
                                     <p>
+                                        {% if free_trial_months %}
+                                        After the Free Trial, you&rsquo;ll be charged
+                                        <b>$<span id="charged_amount"></span></b> for <b>{{ seat_count }}</b>
+                                        users.
+                                        We'll automatically charge you for additional licenses as users
+                                        are added, and remove licenses not in use at the end of each billing
+                                        period.
+                                        {% else %}
                                         You&rsquo;ll initially be charged
                                         <b>$<span id="charged_amount"></span></b> for <b>{{ seat_count }}</b>
                                         users.<br>
                                         We'll automatically charge you for additional licenses as users
                                         are added, and remove licenses not in use at the end of each billing
                                         period.
+                                        {% endif %}
                                     </p>
                                     <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}">
                                 </div>
 
                                 <div id="license-manual-section">
+
                                     <p>
+                                        {% if free_trial_months %}
+                                        Enter the number of users you would like to pay for after the Free Trial.<br>
+                                        You'll need to manually add licenses to add or invite
+                                        additional users.
+                                        {% else %}
                                         Enter the number of users you would like to pay for.<br>
                                         You'll need to manually add licenses to add or invite
                                         additional users.
+                                        {% endif %}
                                     </p>
 
                                     <h4>Number of licenses (minimum {{ seat_count }})</h4>
@@ -147,9 +175,15 @@
                                     </label>
                                 </div>
                                 <p>
+                                    {% if free_trial_months %}
+                                    Enter the number of users you would like to pay for.<br>
+                                    We'll email you an invoice after the Free Trial.
+                                    Invoices can be paid by ACH transfer or credit card.
+                                    {% else %}
                                     Enter the number of users you would like to pay for.<br>
                                     We'll email you an invoice in 1-2 hours. Invoices can be paid by
                                     ACH transfer or credit card.
+                                    {% endif %}
                                 </p>
                                 <h4>Number of licenses (minimum {{ min_invoiced_licenses }})</h4>
                                 <input type="number" min="{{ min_invoiced_licenses }}" autocomplete="off"
