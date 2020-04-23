@@ -429,8 +429,7 @@ python_rules = RuleList(
          'bad_lines': ['if my_django_model.pk == 42']},
         {'pattern': r'^[ ]*# type: \(',
          'exclude': {
-             # these are (currently) python2 only
-             'puppet/zulip_ops/files/zulip-ec2-configure-interfaces',
+             # thumbor is (currently) python2 only
              'zthumbor/',
          },
          'description': 'Comment-style function type annotation. Use Python3 style annotations instead.',
