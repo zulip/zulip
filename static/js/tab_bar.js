@@ -38,6 +38,13 @@ function make_tab_data(filter) {
             tab_data.formatted_sub_count = '0';
             tab_data.rendered_narrow_description = "This stream does not exist or is private.";
         }
+        if (tab_data.rendered_narrow_description === "") {
+            if (page_params.is_admin) {
+                tab_data.rendered_narrow_description = "<a href=" + tab_data.stream_settings_link + ">(no description)</a>";
+            } else {
+                tab_data.rendered_narrow_description = "(no description)";
+            }
+        }
     }
     return tab_data;
 }
