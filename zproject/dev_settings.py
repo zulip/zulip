@@ -19,8 +19,12 @@ if external_host_env is None:
     user_id = os.getuid()
     user_name = pwd.getpwuid(user_id).pw_name
     if user_name == "zulipdev":
-        # For our droplets, we use the external hostname by default.
-        EXTERNAL_HOST = os.uname()[1].lower() + ":9991"
+        # For most of our droplets, we use the hostname (eg github_username.zulipdev.org) by default.
+        hostname = os.uname()[1].lower()
+        # Some of the droplets (eg droplets on 18.04) has the github_username as hostname.
+        if '.zulipdev.org' not in hostname:
+            hostname += '.zulipdev.org'
+        EXTERNAL_HOST = hostname + ":9991"
     else:
         # For local development environments, we use localhost by
         # default, via the "zulipdev.com" hostname.
