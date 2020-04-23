@@ -1,15 +1,21 @@
-<table>
-    {{!-- DO WE NEED HEADERS? (THEY DON'T LOOK BAD :) --}}
-    <tr>
-        <th>Unread</th>
-        <th>Stream</th>
-        <th>Topic</th>
-        <th>Actions</th>
-        <th>Active Users</th>
-        <th>Last message</th>
-    </tr>
-    {{!-- RECENT TOPICS LIST --}}
-    {{#each recent_topics}}
-    {{> recent}}
-    {{/each}}
-</table>
+<div class="modal-body" data-simplebar data-simplebar-auto-hide="true">
+    <div class="table-responsive">
+        <table class="recents_table table table-striped table-bordered table-responsive table-hover">
+            {{!-- DO WE NEED HEADERS? (THEY DON'T LOOK BAD :) --}}
+            <thead class="thead-dark">
+                <tr>
+                    <th>Unread</th>
+                    <th>Stream</th>
+                    <th>Topic</th>
+                    <th>Actions</th>
+                    <th>Active Users</th>
+                    <th>Last message</th>
+                </tr>
+            </thead>
+            {{!-- RECENT TOPICS LIST --}}
+            {{#each recent_topics}}
+            {{> recent}}
+            {{/each}}
+        </table>
+    </div>
+</div>

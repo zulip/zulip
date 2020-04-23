@@ -7,7 +7,7 @@
     width: 58%;
     overflow: hidden;
     max-width: 1200px;
-    max-height: 1000px;
+    max-height: 70vh;
     display: flex;
     flex-direction: column;
 
@@ -53,7 +53,6 @@
     }
 
     .recents-list {
-        margin: auto;
         overflow: auto;
 
         .recent_avatars {
