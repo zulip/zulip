@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Zulip'
-copyright = '2015-2018, The Zulip Team'
+copyright = '2015–2020, The Zulip Team'
 author = 'The Zulip Team'
 
 # The version info for the project you're documenting, acts as replacement for
