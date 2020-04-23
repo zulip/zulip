@@ -23,9 +23,15 @@ link_regex = re.compile(
     r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
     r'(?::\d+)?'  # optional port
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+# Use Chrome User-Agent, since some sites refuse to work on old browsers
+ZULIP_URL_PREVIEW_USER_AGENT = (
+    'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; ZulipURLPreview/{version}; '
+    '+{external_host}) Chrome/81.0.4044.113 Safari/537.36'
+).format(version=ZULIP_VERSION, external_host=settings.EXTERNAL_HOST)
+
 # FIXME: This header and timeout are not used by pyoembed, when trying to autodiscover!
-# Set a custom user agent, since some sites block us with the default requests header
-HEADERS = {'User-Agent': 'Zulip URL preview/%s' % (ZULIP_VERSION,)}
+HEADERS = {'User-Agent': ZULIP_URL_PREVIEW_USER_AGENT}
 TIMEOUT = 15
 
 
