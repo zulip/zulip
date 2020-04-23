@@ -752,41 +752,41 @@ exports.view_stream = function () {
     }
 };
 
-/* For the given row_object, remove the tick and replace by a spinner. */
-function display_subscribe_toggle_spinner(row_object) {
+/* For the given stream_row, remove the tick and replace by a spinner. */
+function display_subscribe_toggle_spinner(stream_row) {
     /* Prevent sending multiple requests by removing the button class. */
-    $(row_object).removeClass("sub_unsub_button");
+    $(stream_row).removeClass("sub_unsub_button");
 
     /* Hide the tick. */
-    const tick = $(row_object).find("svg");
+    const tick = $(stream_row).find("svg");
     tick.addClass("hide");
 
     /* Add a spinner to show the request is in process. */
-    const spinner = $(row_object).find(".sub_unsub_status").expectOne();
+    const spinner = $(stream_row).find(".sub_unsub_status").expectOne();
     spinner.show();
     loading.make_indicator(spinner);
 }
 
-/* For the given row_object, add the tick and delete the spinner. */
-function hide_subscribe_toggle_spinner(row_object) {
+/* For the given stream_row, add the tick and delete the spinner. */
+function hide_subscribe_toggle_spinner(stream_row) {
     /* Re-enable the button to handle requests. */
-    $(row_object).addClass("sub_unsub_button");
+    $(stream_row).addClass("sub_unsub_button");
 
     /* Show the tick. */
-    const tick = $(row_object).find("svg");
+    const tick = $(stream_row).find("svg");
     tick.removeClass("hide");
 
     /* Destroy the spinner. */
-    const spinner = $(row_object).find(".sub_unsub_status").expectOne();
+    const spinner = $(stream_row).find(".sub_unsub_status").expectOne();
     loading.destroy_indicator(spinner);
 }
 
-function ajaxSubscribe(stream, color, row_object) {
+function ajaxSubscribe(stream, color, stream_row) {
     // Subscribe yourself to a single stream.
     let true_stream_name;
 
-    if (row_object !== undefined) {
-        display_subscribe_toggle_spinner(row_object);
+    if (stream_row !== undefined) {
+        display_subscribe_toggle_spinner(stream_row);
     }
     return channel.post({
         url: "/json/users/me/subscriptions",
@@ -805,13 +805,13 @@ function ajaxSubscribe(stream, color, row_object) {
             }
             // The rest of the work is done via the subscribe event we will get
 
-            if (row_object !== undefined) {
-                hide_subscribe_toggle_spinner(row_object);
+            if (stream_row !== undefined) {
+                hide_subscribe_toggle_spinner(stream_row);
             }
         },
         error: function (xhr) {
-            if (row_object !== undefined) {
-                hide_subscribe_toggle_spinner(row_object);
+            if (stream_row !== undefined) {
+                hide_subscribe_toggle_spinner(stream_row);
             }
             ui_report.error(i18n.t("Error adding subscription"), xhr,
                             $(".stream_change_property_info"));
@@ -819,10 +819,10 @@ function ajaxSubscribe(stream, color, row_object) {
     });
 }
 
-function ajaxUnsubscribe(sub, row_object) {
+function ajaxUnsubscribe(sub, stream_row) {
     // TODO: use stream_id when backend supports it
-    if (row_object !== undefined) {
-        display_subscribe_toggle_spinner(row_object);
+    if (stream_row !== undefined) {
+        display_subscribe_toggle_spinner(stream_row);
     }
     return channel.del({
         url: "/json/users/me/subscriptions",
@@ -831,13 +831,13 @@ function ajaxUnsubscribe(sub, row_object) {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
 
-            if (row_object !== undefined) {
-                hide_subscribe_toggle_spinner(row_object);
+            if (stream_row !== undefined) {
+                hide_subscribe_toggle_spinner(stream_row);
             }
         },
         error: function (xhr) {
-            if (row_object !== undefined) {
-                hide_subscribe_toggle_spinner(row_object);
+            if (stream_row !== undefined) {
+                hide_subscribe_toggle_spinner(stream_row);
             }
             ui_report.error(i18n.t("Error removing subscription"), xhr,
                             $(".stream_change_property_info"));
@@ -867,11 +867,11 @@ exports.open_create_stream = function () {
 };
 
 
-exports.sub_or_unsub = function (sub, row_object) {
+exports.sub_or_unsub = function (sub, stream_row) {
     if (sub.subscribed) {
-        ajaxUnsubscribe(sub, row_object);
+        ajaxUnsubscribe(sub, stream_row);
     } else {
-        ajaxSubscribe(sub.name, sub.color, row_object);
+        ajaxSubscribe(sub.name, sub.color, stream_row);
     }
 };
 
