@@ -1,0 +1,24 @@
+{
+  "amount": 5172,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED0001",
+  "date": 1000000000,
+  "description": "Additional license (Jan 2, 2013 - Mar 2, 2013)",
+  "discountable": false,
+  "id": "ii_NORMALIZED00000000000002",
+  "invoice": null,
+  "livemode": false,
+  "metadata": {},
+  "object": "invoiceitem",
+  "period": {
+    "end": 1362193445,
+    "start": 1357095845
+  },
+  "plan": null,
+  "proration": false,
+  "quantity": 4,
+  "subscription": null,
+  "tax_rates": [],
+  "unit_amount": 1293,
+  "unit_amount_decimal": "1293"
+}

@@ -21,13 +21,15 @@ def apps_view(request: HttpRequest, _: str) -> HttpResponse:
 def plans_view(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
     realm_plan_type = 0
+    free_trial_months = settings.FREE_TRIAL_MONTHS
     if realm is not None:
         realm_plan_type = realm.plan_type
         if realm.plan_type == Realm.SELF_HOSTED and settings.PRODUCTION:
             return HttpResponseRedirect('https://zulipchat.com/plans')
         if not request.user.is_authenticated:
             return redirect_to_login(next="plans")
-    return render(request, "zerver/plans.html", context={"realm_plan_type": realm_plan_type})
+    return render(request, "zerver/plans.html",
+                  context={"realm_plan_type": realm_plan_type, 'free_trial_months': free_trial_months})
 
 def team_view(request: HttpRequest) -> HttpResponse:
     if not settings.ZILENCER_ENABLED:
