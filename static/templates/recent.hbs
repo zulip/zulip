@@ -14,15 +14,16 @@
     </td>
     <td class='recent_users'>
         <ul class="recent_avatars">
+            {{#if count_senders}}
             <li class="recent_avatars__item">
-                <span class="recent_avatars__others">+3</span>
+                <span class="recent_avatars__others">+{{count_senders}}</span>
             </li>
-            <li class="recent_avatars__item">
-                <img src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50" class="recent_avatars__img" />
+            {{/if}}
+            {{#each senders}}
+            <li class="recent_avatars__item" title="{{this.full_name}}">
+                <img src="{{this.avatar_url}}" class="recent_avatars__img" />
             </li>
-            <li class="recent_avatars__item">
-                <img src="https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1&s=50" class="recent_avatars__img" />
-            </li>
+            {{/each}}
         </ul>
     </td>
     <td class="recent_timestamp">

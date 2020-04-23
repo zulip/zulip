@@ -24,6 +24,9 @@ set_global('people', {
     is_my_user_id: people.is_my_user_id,
 });
 set_global('XDate', zrequire('XDate', 'xdate'));
+set_global('recent_senders', {
+    get_topic_recent_senders: () => { return [1, 2]; },
+});
 
 // Custom Data
 

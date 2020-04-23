@@ -2,6 +2,7 @@ const util = require("./util");
 const render_recent_topics_body = require('../templates/recent_topics_list.hbs');
 
 const topics = new Map(); // Key is stream-id:topic.
+const MAX_AVATAR = 3;  // Number of avatars to display
 
 exports.process_messages = function (messages) {
     messages.forEach(exports.process_message);
@@ -81,6 +82,18 @@ function format_values() {
             elem.last_msg.stream_id) || elem.last_msg.stream_name;
         const stream_id = parseInt(key.split(':')[0], 10);
         const topic = key.split(':')[1];
+
+        // Display in most recent sender first order
+        const all_senders = recent_senders.get_topic_recent_senders(
+            stream_id, topic);
+        const senders = all_senders.slice(-MAX_AVATAR);
+        const senders_info = [];
+        senders.forEach((id) => {
+            const sender = people.get_by_user_id(id);
+            sender.avatar_url = people.small_avatar_url_for_person(sender);
+            senders_info.push(sender);
+        });
+
         const time = new XDate(elem.last_msg.timestamp * 1000);
         const time_stamp = timerender.last_seen_status_from_date(time);
         topics_array.push({
@@ -91,6 +104,8 @@ function format_values() {
             timestamp: time_stamp,
             stream_url: hash_util.by_stream_uri(stream_id),
             topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
+            senders: senders_info,
+            count_senders: Math.max(0, all_senders.length - MAX_AVATAR),
         });
     });
     return topics_array;
