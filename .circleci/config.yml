@@ -193,30 +193,6 @@ jobs:
         - *save_cache_requirements
         - *run_backend_tests
 
-  "bionic-production-python3.6":
-      docker:
-        # This is built from tools/circleci/images/bionic/Dockerfile .
-        # Bionic ships with Python 3.6.
-        - image: gregprice/circleci:bionic-python-1.test
-
-      environment:
-        TEST_SUITE: production
-        BOTO_CONFIG: /nonexistent
-
-      working_directory: ~/zulip
-
-      steps:
-        - checkout
-
-        - *create_cache_directories
-        - *do_bionic_hack
-        - *restore_cache_package_json
-        - *restore_cache_requirements
-        - *setup_production
-        - *install_production
-        - *save_cache_package_json
-        - *save_cache_requirements
-
   "xenial-legacy":
     docker:
       - image: gregprice/circleci:xenial-python-4.test
@@ -236,5 +212,4 @@ workflows:
     jobs:
       - "bionic-backend-frontend-python3.6"
       - "focal-backend-python3.8"
-      - "bionic-production-python3.6"
       - "xenial-legacy"
