@@ -270,5 +270,9 @@ workflows:
   build:
     jobs:
       - "bionic-backend-frontend-python3.6"
+      - "bionic-production-build-python3.6"
       - "focal-backend-python3.8"
       - "xenial-legacy"
+      - "bionic-production-install-python3.6":
+            requires:
+                - "bionic-production-build-python3.6"
