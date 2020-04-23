@@ -187,8 +187,7 @@ def integration_doc(request: HttpRequest, integration_name: str=REQ()) -> HttpRe
 
     context['integration_name'] = integration.name
     context['integration_display_name'] = integration.display_name
-    if hasattr(integration, 'stream_name'):
-        context['recommended_stream_name'] = integration.stream_name
+    context['recommended_stream_name'] = integration.stream_name
     if isinstance(integration, WebhookIntegration):
         context['integration_url'] = integration.url[3:]
     if isinstance(integration, HubotIntegration):
