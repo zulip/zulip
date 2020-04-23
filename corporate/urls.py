@@ -22,7 +22,7 @@ v1_api_and_json_patterns = [
     url(r'^billing/upgrade$', rest_dispatch,
         {'POST': 'corporate.views.upgrade'}),
     url(r'^billing/plan/change$', rest_dispatch,
-        {'POST': 'corporate.views.change_plan_at_end_of_cycle'}),
+        {'POST': 'corporate.views.change_plan_status'}),
     url(r'^billing/sources/change', rest_dispatch,
         {'POST': 'corporate.views.replace_payment_source'}),
 ]

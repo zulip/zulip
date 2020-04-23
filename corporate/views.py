@@ -203,9 +203,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 
 @require_billing_access
 @has_request_variables
-def change_plan_at_end_of_cycle(request: HttpRequest, user: UserProfile,
-                                status: int=REQ("status", validator=check_int)) -> HttpResponse:
-    assert(status in [CustomerPlan.ACTIVE, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE])
+def change_plan_status(request: HttpRequest, user: UserProfile,
+                       status: int=REQ("status", validator=check_int)) -> HttpResponse:
     plan = get_current_plan_by_realm(user.realm)
     assert(plan is not None)  # for mypy
     do_change_plan_status(plan, status)
