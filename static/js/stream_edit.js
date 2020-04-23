@@ -529,6 +529,14 @@ exports.initialize = function () {
         const change_privacy_modal = render_subscription_stream_privacy_modal(template_data);
         $("#stream_privacy_modal").remove();
         $("#subscriptions_table").append(change_privacy_modal);
+        $("#stream_privacy_modal").on('hide', () => {
+            // Re-enable background mouse events when we close the modal
+            // via the "x" in the corner.  (The other modal-close code
+            // paths call `overlays.close_modal`, rather than using
+            // bootstrap's data-dismiss=modal feature, and this is done
+            // there).
+            overlays.enable_background_mouse_events();
+        });
         overlays.open_modal('stream_privacy_modal');
         e.preventDefault();
         e.stopPropagation();
@@ -538,17 +546,6 @@ exports.initialize = function () {
                                  change_stream_privacy);
 
     $("#subscriptions_table").on('click', '.close-privacy-modal', function (e) {
-        // Re-enable background mouse events when we close the modal
-        // via the "x" in the corner.  (The other modal-close code
-        // paths call `overlays.close_modal`, rather than using
-        // bootstrap's data-dismiss=modal feature, and this is done
-        // there).
-        //
-        // TODO: It would probably be better to just do this
-        // unconditionally inside the handler for the event sent by
-        // bootstrap on closing a modal.
-        overlays.enable_background_mouse_events();
-
         // This fixes a weird bug in which, subscription_settings hides
         // unexpectedly by clicking the cancel button in a modal on top of it.
         e.stopPropagation();
