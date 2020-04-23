@@ -61,4 +61,18 @@ exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
     return 0;
 };
 
+exports.get_topic_recent_senders = function (stream_id, topic) {
+    const topic_dict = topic_senders.get(stream_id);
+    let sender_message_ids = new Map();
+    if (topic_dict !== undefined) {
+        sender_message_ids = topic_dict.get(topic);
+    }
+    const sorted_senders = Array.from(sender_message_ids.entries()).sort(
+        (s1, s2) => { return s1[1] - s2[1]; }
+    );
+    const recent_senders = [];
+    sorted_senders.forEach((item) => { recent_senders.push(item[0]); });
+    return recent_senders;
+};
+
 window.recent_senders = exports;

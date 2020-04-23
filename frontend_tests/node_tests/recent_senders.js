@@ -113,4 +113,7 @@ run_test('process_message_for_senders', () => {
         true);
 
     assert.equal(rs.compare_by_recency({}, {}, next_id += 1, ''), 0);
+
+    assert.equal(rs.get_topic_recent_senders(stream1, topic1)[0], 2);
+    assert.equal(rs.get_topic_recent_senders(stream1, topic1)[1], 1);
 });
