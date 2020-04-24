@@ -3,7 +3,7 @@ import hashlib
 import json
 import shutil
 
-from typing import Optional, List, IO, Any
+from typing import Optional, List
 from scripts.lib.zulip_tools import subprocess_text_output, run
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -49,8 +49,6 @@ def generate_sha1sum_node_modules(
 
 def setup_node_modules(
     production: bool = DEFAULT_PRODUCTION,
-    stdout: Optional[IO[Any]] = None,
-    stderr: Optional[IO[Any]] = None,
     prefer_offline: bool = False,
 ) -> None:
     yarn_args = get_yarn_args(production=production)
@@ -64,9 +62,7 @@ def setup_node_modules(
     if not os.path.exists(success_stamp):
         do_yarn_install(target_path,
                         yarn_args,
-                        success_stamp,
-                        stdout=stdout,
-                        stderr=stderr)
+                        success_stamp)
 
     print("Using cached node modules from %s" % (cached_node_modules,))
     if os.path.islink('node_modules'):
@@ -78,9 +74,7 @@ def setup_node_modules(
 def do_yarn_install(
     target_path: str,
     yarn_args: List[str],
-    success_stamp: str,
-    stdout: Optional[IO[Any]] = None,
-    stderr: Optional[IO[Any]] = None,
+    success_stamp: str
 ) -> None:
     os.makedirs(target_path, exist_ok=True)
     shutil.copy('package.json', target_path)
@@ -93,9 +87,8 @@ def do_yarn_install(
     if os.path.exists("node_modules") and not os.path.exists(cached_node_modules):
         shutil.copytree("node_modules/", cached_node_modules, symlinks=True)
     if os.environ.get('CUSTOM_CA_CERTIFICATES'):
-        run([YARN_BIN, "config", "set", "cafile", os.environ['CUSTOM_CA_CERTIFICATES']],
-            stdout=stdout, stderr=stderr)
+        run([YARN_BIN, "config", "set", "cafile", os.environ['CUSTOM_CA_CERTIFICATES']])
     run([YARN_BIN, "install", "--non-interactive", "--frozen-lockfile"] + yarn_args,
-        cwd=target_path, stdout=stdout, stderr=stderr)
+        cwd=target_path)
     with open(success_stamp, 'w'):
         pass
