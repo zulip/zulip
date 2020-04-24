@@ -540,6 +540,13 @@ run_test('errors', () => {
         },
     });
     blueslip.reset();
+
+    container.html = () => {};
+    blueslip.expect('error', 'List item is not a string: 999');
+    list_render.create(container, list, {
+        modifier: () => 999,
+    });
+    blueslip.reset();
 });
 
 run_test('sort helpers', () => {
