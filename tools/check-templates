@@ -69,6 +69,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             'register',
             'footer',
             'charged_amount',
+            'change-plan-status',
             # Temporary while we have searchbox forked
             'search_exit',
             'search_query',

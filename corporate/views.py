@@ -185,6 +185,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 CustomerPlan.PLUS: 'Zulip Plus',
             }[plan.tier]
             free_trial = plan.status == CustomerPlan.FREE_TRIAL
+            downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
             licenses = last_ledger_entry.licenses
             licenses_used = get_latest_seat_count(user.realm)
             # Should do this in javascript, using the user's timezone
@@ -201,6 +202,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 'plan_name': plan_name,
                 'has_active_plan': True,
                 'free_trial': free_trial,
+                'downgrade_at_end_of_cycle': downgrade_at_end_of_cycle,
                 'licenses': licenses,
                 'licenses_used': licenses_used,
                 'renewal_date': renewal_date,
@@ -209,6 +211,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 'charge_automatically': charge_automatically,
                 'publishable_key': STRIPE_PUBLISHABLE_KEY,
                 'stripe_email': stripe_customer.email,
+                'CustomerPlan': CustomerPlan,
             })
 
     return render(request, 'corporate/billing.html', context=context)
