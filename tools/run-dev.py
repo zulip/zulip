@@ -4,7 +4,6 @@ import argparse
 import os
 import pwd
 import signal
-import socket
 import subprocess
 import sys
 import traceback
@@ -79,8 +78,6 @@ if options.interface is None:
         # host.  The same argument applies to the remote development
         # servers using username "zulipdev".
         options.interface = None
-        if user_name == "zulipdev":
-            os.environ.setdefault("EXTERNAL_HOST", socket.gethostname() + ":9991")
     else:
         # Otherwise, only listen to requests on localhost for security.
         options.interface = "127.0.0.1"
