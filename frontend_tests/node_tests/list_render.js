@@ -73,6 +73,18 @@ function make_scroll_container(container) {
     return scroll_container;
 }
 
+function make_sort_container() {
+    const sort_container = {};
+
+    sort_container.on = (ev, sel, f) => {
+        assert.equal(ev, 'click.list_widget_sort');
+        assert.equal(sel, '[data-sort]');
+        sort_container.f = f;
+    };
+
+    return sort_container;
+}
+
 function make_search_input() {
     const $element = {};
 
@@ -256,6 +268,7 @@ function sort_button(opts) {
         },
         siblings_deactivated: false,
         activated: false,
+        to_jquery: () => button,
     };
 
     return button;
@@ -292,6 +305,7 @@ run_test('filtering', () => {
 run_test('sorting', () => {
     const container = make_container();
     make_scroll_container(container);
+    const sort_container = make_sort_container();
 
     let cleared;
     container.html = (html) => {
@@ -308,6 +322,7 @@ run_test('sorting', () => {
 
     const opts = {
         name: 'my-list',
+        parent_container: sort_container,
         modifier: (item) => {
             return div(item.name) + div(item.salary);
         },
@@ -320,7 +335,7 @@ run_test('sorting', () => {
         return people.map(opts.modifier).join('');
     }
 
-    const widget = list_render.create(container, list, opts);
+    list_render.create(container, list, opts);
 
     let button_opts;
     let button;
@@ -335,7 +350,7 @@ run_test('sorting', () => {
 
     button = sort_button(button_opts);
 
-    list_render.handle_sort(button, widget);
+    sort_container.f.apply(button);
 
     assert(cleared);
     assert(button.siblings_deactivated);
@@ -356,7 +371,7 @@ run_test('sorting', () => {
     cleared = false;
     button.siblings_deactivated = false;
 
-    list_render.handle_sort(button, widget);
+    sort_container.f.apply(button);
 
     assert(cleared);
     assert(button.siblings_deactivated);
