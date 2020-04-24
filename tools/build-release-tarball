@@ -2,18 +2,15 @@
 set -eu
 
 usage() {
-    echo "Usage: $0 <ZULIP_VERSION> [--authors-not-required]" >&2
+    echo "Usage: $0 <ZULIP_VERSION>" >&2
     exit 1
 }
 
-args="$(getopt -o '' -l 'authors-not-required,help' -n "$0" -- "$@")"
+args="$(getopt -o '' -l 'help' -n "$0" -- "$@")"
 eval "set -- $args"
 
-authors_not_required=
 while true; do
     case "$1" in
-        --authors-not-required)
-            authors_not_required=--authors-not-required; shift;;
         --) shift; break;;
         *) usage;;
     esac
@@ -92,7 +89,7 @@ rabbitmq_password = 'not_used_here'
 initial_password_salt = 'not_used_here'
 EOF
 
-./tools/update-prod-static $authors_not_required
+./tools/update-prod-static
 
 # We don't need duplicate copies of emoji with hashed paths, and they would break bugdown
 find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -delete
