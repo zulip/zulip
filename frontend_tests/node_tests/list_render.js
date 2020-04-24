@@ -59,6 +59,8 @@ function make_scroll_container(container) {
         return 100;
     };
 
+    scroll_container.cleared = false;
+
     // Capture the scroll callback so we can call it in
     // our tests.
     scroll_container.on = (ev, f) => {
@@ -66,6 +68,11 @@ function make_scroll_container(container) {
         scroll_container.call_scroll = () => {
             f.call(scroll_container);
         };
+    };
+
+    scroll_container.off = (ev) => {
+        assert.equal(ev, 'scroll.list_widget_container');
+        scroll_container.cleared = true;
     };
 
     container.parent = () => scroll_container;
@@ -76,10 +83,17 @@ function make_scroll_container(container) {
 function make_sort_container() {
     const sort_container = {};
 
+    sort_container.cleared = false;
+
     sort_container.on = (ev, sel, f) => {
         assert.equal(ev, 'click.list_widget_sort');
         assert.equal(sel, '[data-sort]');
         sort_container.f = f;
+    };
+
+    sort_container.off = (ev) => {
+        assert.equal(ev, 'click.list_widget_sort');
+        sort_container.cleared = true;
     };
 
     return sort_container;
@@ -88,9 +102,16 @@ function make_sort_container() {
 function make_filter_element() {
     const element = {};
 
+    element.cleared = false;
+
     element.on = (ev, f) => {
         assert.equal(ev, 'input.list_widget_filter');
         element.f = f;
+    };
+
+    element.off = (ev) => {
+        assert.equal(ev, 'input.list_widget_filter');
+        element.cleared = true;
     };
 
     return element;
@@ -398,4 +419,37 @@ run_test('sorting', () => {
 
     expected_html = html_for([dave, cal, bob, alice]);
     assert.deepEqual(container.appended_data.html(), expected_html);
+});
+
+run_test('clear_event_handlers', () => {
+    const container = make_container();
+    const scroll_container = make_scroll_container(container);
+    const sort_container = make_sort_container();
+    const filter_element = make_filter_element();
+
+    // We don't care about actual data for this test.
+    const list = [];
+    container.html = () => {};
+
+    const opts = {
+        name: 'list-we-create-twice',
+        parent_container: sort_container,
+        modifier: () => {},
+        filter: {
+            element: filter_element,
+            predicate: () => true,
+        },
+    };
+
+    // Create it the first time.
+    list_render.create(container, list, opts);
+    assert.equal(sort_container.cleared, false);
+    assert.equal(scroll_container.cleared, false);
+    assert.equal(filter_element.cleared, false);
+
+    // The second time we'll clear the old events.
+    list_render.create(container, list, opts);
+    assert.equal(sort_container.cleared, true);
+    assert.equal(scroll_container.cleared, true);
+    assert.equal(filter_element.cleared, true);
 });
