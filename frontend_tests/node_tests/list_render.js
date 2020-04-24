@@ -192,7 +192,7 @@ run_test('filtering', () => {
         'fence',
         'grape',
     ];
-    let opts = {
+    const opts = {
         filter: {
             element: search_input,
             predicate: (item, value) => {
@@ -203,7 +203,7 @@ run_test('filtering', () => {
     };
 
     container.html = (html) => { assert.equal(html, ''); };
-    let widget = list_render.create(container, list, opts);
+    const widget = list_render.create(container, list, opts);
 
     let expected_html =
         '<div>apple</div>' +
@@ -240,15 +240,21 @@ run_test('filtering', () => {
         '<div>gary</div>' +
         '<div>giraffe</div>';
     assert.deepEqual(container.appended_data.html(), expected_html);
+});
+
+run_test('no filtering', () => {
+    const container = make_container();
+    make_scroll_container(container);
+    container.html = () => {};
 
     // Opts does not require a filter key.
-    opts = {
+    const opts = {
         modifier: (item) => div(item),
     };
-    widget = list_render.create(container, ['apple', 'banana'], opts);
+    const widget = list_render.create(container, ['apple', 'banana'], opts);
     widget.render();
 
-    expected_html =
+    const expected_html =
         '<div>apple</div>' +
         '<div>banana</div>';
     assert.deepEqual(container.appended_data.html(), expected_html);
