@@ -1,10 +1,10 @@
 {% if show_message_content %}
-    {% if group_pm %} Group PMs with {{ huddle_display_name }}
-    {% elif private_message %} PMs with {{ sender_str }}
+    {% if group_pm %} {% trans %}Group PMs with {{ huddle_display_name }}{% endtrans %}
+    {% elif private_message %} {% trans %}PMs with {{ sender_str }}{% endtrans %}
     {% elif stream_email_notify or mention %} #{{ stream_header }}
     {% endif %}
 {% else %}
-    New missed messages
+    {% trans %}New missed messages{% endtrans %}
 {% endif %}
 {% if realm_name_in_notifications %} [{{ realm_str }}]
 {% endif %}
