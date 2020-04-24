@@ -108,7 +108,7 @@ aliases:
       sudo apt-get install -y moreutils
 
       sudo service rabbitmq-server restart
-      mispipe ./tools/ci/production ts
+      mispipe /tmp/production ts
 
   - &check_xenial_provision_error
     run:
@@ -243,6 +243,8 @@ jobs:
           paths:
             - zulip-server-test.tar.gz
             - success-http-headers.txt
+            - production-helper
+            - production
 
   "bionic-production-install-python3.6":
     docker:
@@ -253,8 +255,6 @@ jobs:
     working_directory: ~/zulip
 
     steps:
-      # required to run production-helper script.
-      - checkout
       # Contains the built tarball from bionic-production-build-python3.6 job
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
