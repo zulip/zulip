@@ -29,13 +29,14 @@ from typing import Any, Dict, Optional
 import requests
 import ujson
 
+from tools.lib.test_script import prepare_puppeteer_run
 from zerver.models import UserProfile, Message, get_user_by_delivery_email, get_realm
-from zerver.lib.actions import do_create_user, notify_created_bot
+from zerver.lib.actions import (
+    do_create_user, notify_created_bot, bulk_add_subscriptions, do_change_avatar_fields)
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.actions import do_change_avatar_fields
 from zerver.lib.integrations import WebhookIntegration, INTEGRATIONS, split_fixture_path
 from zerver.lib.webhooks.common import get_fixture_http_headers
-from tools.lib.test_script import prepare_puppeteer_run
 from zerver.lib.storage import static_path
 
 def create_integration_bot(integration: WebhookIntegration) -> UserProfile:
@@ -64,6 +65,11 @@ def create_integration_bot(integration: WebhookIntegration) -> UserProfile:
                 do_change_avatar_fields(bot, UserProfile.AVATAR_FROM_USER)
 
     return bot
+
+def create_integration_stream(integration: WebhookIntegration, bot: UserProfile) -> None:
+    assert isinstance(bot.bot_owner, UserProfile)
+    stream, created = create_stream_if_needed(bot.bot_owner.realm, integration.stream_name)
+    bulk_add_subscriptions([stream], [bot, bot.bot_owner], from_stream_creation=created)
 
 def get_integration(integration_name: str) -> WebhookIntegration:
     integration = INTEGRATIONS[integration_name]
@@ -101,8 +107,9 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
     Message.objects.filter(sender=bot).delete()
 
     assert isinstance(bot.bot_owner, UserProfile)
-    url = "{}/{}?api_key={}&stream=devel".format(
-        bot.bot_owner.realm.uri, integration.url, bot.api_key
+    stream = integration.stream_name or 'devel'
+    url = "{}/{}?api_key={}&stream={}".format(
+        bot.bot_owner.realm.uri, integration.url, bot.api_key, stream
     )
     with open(fixture_path) as f:
         data = ujson.load(f)
@@ -143,5 +150,6 @@ prepare_puppeteer_run()
 integration_name, fixture_name = split_fixture_path(options.fixture)
 integration = get_integration(integration_name)
 bot = create_integration_bot(integration)
+create_integration_stream(integration, bot)
 send_bot_payload_message(bot, integration, options.fixture, options.custom_headers)
 capture_last_message_screenshot(bot, integration, fixture_name)
