@@ -275,30 +275,29 @@ function sort_button(opts) {
         };
     }
 
+    const classList = new Set();
+
     const button = {
         data: data,
         closest: lookup('.progressive-table-wrapper', {
             data: lookup('list-render', opts.list_name),
         }),
-        hasClass: (sel) => {
-            if (sel === 'active') {
-                return opts.active;
-            }
-            assert.equal(sel, 'descend');
-            return false;
+        addClass: (cls) => {
+            classList.add(cls);
+        },
+        hasClass: (cls) => {
+            return classList.has(cls);
+        },
+        removeClass: (cls) => {
+            classList.delete(cls);
         },
         siblings: lookup('.active', {
-            removeClass: (sel) => {
-                assert.equal(sel, 'active');
+            removeClass: (cls) => {
+                assert.equal(cls, 'active');
                 button.siblings_deactivated = true;
             },
         }),
-        addClass: (sel) => {
-            assert.equal(sel, 'active');
-            button.activated = true;
-        },
         siblings_deactivated: false,
-        activated: false,
         to_jquery: () => button,
     };
 
@@ -357,11 +356,12 @@ run_test('sorting', () => {
     const bob = { name: 'Bob', salary: 40 };
     const cal = { name: 'cal', salary: 30 };
     const dave = { name: 'dave', salary: 25 };
+    const ellen = { name: 'ellen', salary: 95 };
 
-    const list = [bob, dave, alice, cal];
+    const list = [bob, ellen, dave, alice, cal];
 
     const opts = {
-        name: 'my-list',
+        name: 'sorting-list',
         parent_container: sort_container,
         modifier: (item) => {
             return div(item.name) + div(item.salary);
@@ -395,8 +395,42 @@ run_test('sorting', () => {
     assert(cleared);
     assert(button.siblings_deactivated);
 
-    expected_html = html_for([alice, bob, cal, dave]);
+    expected_html = html_for([
+        alice,
+        bob,
+        cal,
+        dave,
+        ellen,
+    ]);
     assert.deepEqual(container.appended_data.html(), expected_html);
+
+    // Hit same button again to reverse the data.
+    cleared = false;
+    sort_container.f.apply(button);
+    assert(cleared);
+    expected_html = html_for([
+        ellen,
+        dave,
+        cal,
+        bob,
+        alice,
+    ]);
+    assert.deepEqual(container.appended_data.html(), expected_html);
+    assert(button.hasClass('descend'));
+
+    // And then hit a third time to go back to the forward sort.
+    cleared = false;
+    sort_container.f.apply(button);
+    assert(cleared);
+    expected_html = html_for([
+        alice,
+        bob,
+        cal,
+        dave,
+        ellen,
+    ]);
+    assert.deepEqual(container.appended_data.html(), expected_html);
+    assert(!button.hasClass('descend'));
 
     // Now try a numeric sort.
     button_opts = {
@@ -416,8 +450,28 @@ run_test('sorting', () => {
     assert(cleared);
     assert(button.siblings_deactivated);
 
-    expected_html = html_for([dave, cal, bob, alice]);
+    expected_html = html_for([
+        dave,
+        cal,
+        bob,
+        alice,
+        ellen,
+    ]);
     assert.deepEqual(container.appended_data.html(), expected_html);
+
+    // Hit same button again to reverse the numeric sort.
+    cleared = false;
+    sort_container.f.apply(button);
+    assert(cleared);
+    expected_html = html_for([
+        ellen,
+        alice,
+        bob,
+        cal,
+        dave,
+    ]);
+    assert.deepEqual(container.appended_data.html(), expected_html);
+    assert(button.hasClass('descend'));
 });
 
 run_test('clear_event_handlers', () => {
