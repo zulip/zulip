@@ -54,7 +54,7 @@ class Integration:
     def __init__(self, name: str, client_name: str, categories: List[str],
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
-                 stream_name: Optional[str]=None, legacy: Optional[bool]=False,
+                 stream_name: Optional[str]=None, legacy: bool=False,
                  config_options: List[Tuple[str, str, Validator]]=[]) -> None:
         self.name = name
         self.client_name = client_name
@@ -152,7 +152,7 @@ class WebhookIntegration(Integration):
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
                  function: Optional[str]=None, url: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
-                 stream_name: Optional[str]=None, legacy: Optional[bool]=None,
+                 stream_name: Optional[str]=None, legacy: bool=False,
                  config_options: List[Tuple[str, str, Validator]]=[]) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
