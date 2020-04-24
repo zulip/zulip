@@ -3,5 +3,5 @@
 set -e
 set -x
 
-ZULIP_PATH=$(mktemp -d)
+ZULIP_PATH=~/zulip
 tar -xf /tmp/zulip-server-test.tar.gz -C "$ZULIP_PATH" --strip-components=1
