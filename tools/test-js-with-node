@@ -67,7 +67,6 @@ EXEMPT_FILES = {
     'static/js/invite.js',
     'static/js/lightbox_canvas.js',
     'static/js/lightbox.js',
-    'static/js/list_render.js',
     'static/js/list_util.js',
     'static/js/loading.js',
     'static/js/local_message.js',

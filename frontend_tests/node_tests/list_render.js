@@ -630,3 +630,40 @@ run_test('sort helpers', () => {
     assert.equal(num_cmp(alice2, bob10), -1);
     assert.equal(num_cmp(alice10, bob2), 1);
 });
+
+run_test('replace_list_data w/filter update', () => {
+    const container = make_container();
+    make_scroll_container(container);
+    container.html = () => {};
+
+    const list = [1, 2, 3, 4];
+    let num_updates = 0;
+
+    list_render.create(container, list, {
+        name: 'replace-list',
+        modifier: (n) => '(' + n.toString() + ')',
+        filter: {
+            predicate: (n) => n % 2 === 0,
+            onupdate: () => {
+                num_updates += 1;
+            },
+        },
+    });
+
+    assert.equal(num_updates, 0);
+
+    assert.deepEqual(
+        container.appended_data.html(),
+        '(2)(4)'
+    );
+
+    const widget = list_render.get('replace-list');
+    widget.replace_list_data([5, 6, 7, 8]);
+
+    assert.equal(num_updates, 1);
+
+    assert.deepEqual(
+        container.appended_data.html(),
+        '(6)(8)'
+    );
+});
