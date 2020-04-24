@@ -541,3 +541,25 @@ run_test('errors', () => {
     });
     blueslip.reset();
 });
+
+run_test('sort helpers', () => {
+    /*
+        We mostly test our sorting helpers using the
+        actual widget, but this test gets us a bit
+        more line coverage.
+    */
+    const alice2 = {name: 'alice', id: 2};
+    const alice10 = {name: 'alice', id: 10};
+    const bob2 = {name: 'bob', id: 2};
+    const bob10 = {name: 'bob', id: 10};
+
+    const alpha_cmp = list_render.alphabetic_sort('name');
+    const num_cmp = list_render.numeric_sort('id');
+
+    assert.equal(alpha_cmp(alice2, alice10), 0);
+    assert.equal(alpha_cmp(alice2, bob2), -1);
+    assert.equal(alpha_cmp(bob2, alice10), 1);
+    assert.equal(num_cmp(alice2, bob2), 0);
+    assert.equal(num_cmp(alice2, bob10), -1);
+    assert.equal(num_cmp(alice10, bob2), 1);
+});

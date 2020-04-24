@@ -25,6 +25,34 @@ exports.filter = (value, list, opts) => {
     });
 };
 
+exports.alphabetic_sort = (prop) => {
+    return function (a, b) {
+        // The conversion to uppercase helps make the sorting case insensitive.
+        const str1 = a[prop].toUpperCase();
+        const str2 = b[prop].toUpperCase();
+
+        if (str1 === str2) {
+            return 0;
+        } else if (str1 > str2) {
+            return 1;
+        }
+
+        return -1;
+    };
+};
+
+exports.numeric_sort = (prop) => {
+    return function (a, b) {
+        if (parseFloat(a[prop]) > parseFloat(b[prop])) {
+            return 1;
+        } else if (parseFloat(a[prop]) === parseFloat(b[prop])) {
+            return 0;
+        }
+
+        return -1;
+    };
+};
+
 exports.valid_filter_opts = (opts) => {
     if (!opts.filter) {
         return true;
@@ -67,7 +95,10 @@ exports.create = function ($container, list, opts) {
     const meta = {
         sorting_function: null,
         sorting_functions: new Map(),
-        generic_sorting_functions: new Map(),
+        generic_sorting_functions: {
+            alphabetic: exports.alphabetic_sort,
+            numeric: exports.numeric_sort,
+        },
         offset: 0,
         list: list,
         filtered_list: list,
@@ -156,17 +187,11 @@ exports.create = function ($container, list, opts) {
         } else if (typeof sorting_function === "string") {
             if (typeof prop === "string") {
                 /* eslint-disable max-len */
-                meta.sorting_function = meta.generic_sorting_functions.get(sorting_function)(prop);
+                meta.sorting_function = meta.generic_sorting_functions[sorting_function](prop);
             } else {
                 meta.sorting_function = meta.sorting_functions.get(sorting_function);
             }
         }
-    };
-
-    // generic sorting functions are ones that will use a specified prop
-    // and perform a sort on it with the given sorting function.
-    widget.add_generic_sort_function = function (name, sorting_function) {
-        meta.generic_sorting_functions.set(name, sorting_function);
     };
 
     widget.set_up_event_handlers = function () {
@@ -234,35 +259,6 @@ exports.create = function ($container, list, opts) {
         meta.list = list;
         widget.hard_redraw();
     };
-
-    // add built-in generic sort functions.
-    widget.add_generic_sort_function("alphabetic", function (prop) {
-        return function (a, b) {
-            // The conversion to uppercase helps make the sorting case insensitive.
-            const str1 = a[prop].toUpperCase();
-            const str2 = b[prop].toUpperCase();
-
-            if (str1 === str2) {
-                return 0;
-            } else if (str1 > str2) {
-                return 1;
-            }
-
-            return -1;
-        };
-    });
-
-    widget.add_generic_sort_function("numeric", function (prop) {
-        return function (a, b) {
-            if (parseFloat(a[prop]) > parseFloat(b[prop])) {
-                return 1;
-            } else if (parseFloat(a[prop]) === parseFloat(b[prop])) {
-                return 0;
-            }
-
-            return -1;
-        };
-    });
 
     widget.set_up_event_handlers();
 
