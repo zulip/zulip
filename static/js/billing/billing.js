@@ -24,6 +24,11 @@ exports.initialize = function () {
         });
         e.preventDefault();
     });
+
+    $("#change-plan-status").on('click', function (e) {
+        helpers.create_ajax_request("/json/billing/plan/change", "planchange", undefined, ["status"]);
+        e.preventDefault();
+    });
 };
 
 window.billing = exports;

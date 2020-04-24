@@ -177,6 +177,7 @@
         display: none;
     }
 
+    #planchange-loading,
     #cardchange-loading,
     #invoice-loading,
     #autopay-loading {
@@ -186,6 +187,7 @@
     }
 
 
+    #planchange-success,
     #cardchange-success,
     #invoice-success,
     #autopay-success {
@@ -193,6 +195,7 @@
         display: none;
     }
 
+    #planchange-error,
     #cardchange-error,
     #invoice-error,
     #autopay-error {
@@ -221,12 +224,14 @@
         stroke: hsl(0, 0%, 100%);
     }
 
+    #planchange_loading_indicator,
     #cardchange_loading_indicator,
     #invoice_loading_indicator,
     #autopay_loading_indicator {
         margin: 10px auto;
     }
 
+    #planchange_loading_indicator_box_container,
     #cardchange_loading_indicator_box_container,
     #invoice_loading_indicator_box_container,
     #autopay_loading_indicator_box_container {
@@ -234,6 +239,7 @@
         left: 50%;
     }
 
+    #planchange_loading_indicator_box,
     #cardchange_loading_indicator_box,
     #invoice_loading_indicator_box,
     #autopay_loading_indicator_box {
@@ -244,6 +250,7 @@
         border-radius: 6px;
     }
 
+    #planchange_loading_indicator .loading_indicator_text,
     #cardchange_loading_indicator .loading_indicator_text,
     #invoice_loading_indicator .loading_indicator_text,
     #autopay_loading_indicator .loading_indicator_text {
