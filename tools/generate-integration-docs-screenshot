@@ -131,15 +131,14 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
         print('Triggered {} webhook'.format(integration.name))
         return True
 
-def capture_last_message_screenshot(bot: UserProfile, integration: WebhookIntegration,
-                                    fixture_name: str) -> None:
+def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
     message = Message.objects.filter(sender=bot).last()
     if message is None:
-        print('No message found for {} integration for {}'.format(integration.name, fixture_name))
+        print('No message found for {}'.format(bot.full_name))
         return
     message_id = str(message.id)
     screenshot_script = os.path.join(TOOLS_DIR, 'message-screenshot.js')
-    subprocess.check_call(['node', screenshot_script, integration.name, message_id])
+    subprocess.check_call(['node', screenshot_script, message_id, image_path])
 
 parser = argparse.ArgumentParser()
 parser.add_argument('fixture', type=webhook_json_fixture, help='Path to the fixture to use')
@@ -155,4 +154,5 @@ bot = create_integration_bot(integration)
 create_integration_stream(integration, bot)
 message_sent = send_bot_payload_message(bot, integration, options.fixture, options.custom_headers)
 if message_sent:
-    capture_last_message_screenshot(bot, integration, fixture_name)
+    image_path = static_path('images/integrations/{name}/001.png'.format(name=integration.name))
+    capture_last_message_screenshot(bot, image_path)
