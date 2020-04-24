@@ -38,3 +38,11 @@ set -x
 # NB: Everything here should be in `tools/test-all`.  If there's a
 # reason not to run it there, it should be there as a comment
 # explaining why.
+
+# This final check looks for untracked files that may have been
+# created by test-backend or provision.
+untracked="$(git ls-files --exclude-standard --others)"
+if [ -n "$untracked" ]; then
+    printf >&2 "Error: untracked files:\n%s\n" "$untracked"
+    exit 1
+fi
