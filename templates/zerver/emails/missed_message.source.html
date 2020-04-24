@@ -14,9 +14,9 @@
     {% else %}
     <div class="missed_message">
     {% if message_content_disabled_by_realm %}
-    This email does not include message content because your organization has disabled <a class="content_disabled_help_link" href="{{ realm_uri }}/help/hide-message-content-in-emails">message content appearing in email notifications</a>.
+    {% trans help_url=realm_uri + "/help/hide-message-content-in-emails" %}This email does not include message content because your organization has disabled <a class="content_disabled_help_link" href="{{ help_url }}">message content appearing in email notifications</a>.{% endtrans %}
     {% elif message_content_disabled_by_user %}
-    This email does not include message content because you have disabled <a class="content_disabled_help_link" href="{{ realm_uri }}/help/pm-mention-alert-notifications">message content appearing in email notifications</a>.
+    {% trans alert_notif_url=realm_uri + "/help/pm-mention-alert-notifications" %}This email does not include message content because you have disabled <a class="content_disabled_help_link" href="{{ alert_notif_url }}">message content appearing in email notifications</a>.{% endtrans %}
     {% endif %}
     </div>
     {% endif %}
@@ -26,19 +26,20 @@
 <div class="email-preferences">
     &mdash;<br>
     {% if mention %}
-    You are receiving this because you were mentioned in {{ realm_name }}.<br>
+    {% trans %}You are receiving this because you were mentioned in {{ realm_name }}.{% endtrans %}<br>
     {% elif stream_email_notify %}
-    You are receiving this because you have email notifications enabled for this stream.<br>
+    {% trans %}You are receiving this because you have email notifications enabled for this stream.{% endtrans %}<br>
     {% endif %}
     {% if reply_to_zulip %}
-    Reply to this email directly, <a href="{{ narrow_url }}">view it in Zulip</a>, or <a href="{{ realm_uri }}/#settings/notifications">manage email preferences</a>.
+    {% trans notif_url=realm_uri + "/#settings/notifications" %}Reply to this email directly, <a href="{{ narrow_url }}">view it in Zulip</a>, or <a href="{{ notif_url }}">manage email preferences</a>.{% endtrans %}
     {% elif not show_message_content %}
-    <a href="{{ narrow_url }}">View or reply in Zulip</a>, or <a href="{{ realm_uri }}/#settings/notifications">manage email preferences</a>.<br>
+    {% trans notif_url=realm_uri + "/#settings/notifications" %}<a href="{{ narrow_url }}">View or reply in Zulip</a>, or <a href="{{ notif_url }}">manage email preferences</a>.{% endtrans %} <br>
     {% else %}
-    <a href="{{ narrow_url }}">Reply in Zulip</a>, or <a href="{{ realm_uri }}/#settings/notifications">manage email preferences</a>.<br>
+    {% trans notif_url=realm_uri + "/#settings/notifications" %}<a href="{{ narrow_url }}">Reply in Zulip</a>, or <a href="{{ notif_url }}">manage email preferences</a>.{% endtrans %} <br>
     <br>
-    Do not reply to this email. This Zulip server is not
-    configured to accept incoming emails (<a href="https://zulip.readthedocs.io/en/latest/production/email-gateway.html">help</a>).
+    {% trans url="https://zulip.readthedocs.io/en/latest/production/email-gateway.html" %}
+    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href="{{ url }}">help</a>).
+    {% endtrans %}
 
     {% endif %}
 </div>
