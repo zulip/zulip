@@ -128,6 +128,7 @@ aliases:
         sudo mkdir /etc/zulip
         printf '[machine]\npuppet_classes = zulip::base, zulip::postgres_appdb_tuned\n' | sudo tee /etc/zulip/zulip.conf
         sudo scripts/zulip-puppet-apply -f
+        sudo python3 -m py_compile /usr/local/bin/pg_backup_and_purge /usr/local/bin/process_fts_updates
 
 jobs:
   "bionic-backend-frontend-python3.6":
