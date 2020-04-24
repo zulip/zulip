@@ -25,8 +25,6 @@ sanity_check.check_venv(__file__)
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
                     help='a previous deploy from which to reuse files if possible')
-parser.add_argument('--authors-not-required', action='store_true', default=False,
-                    help='Authors files need not be updated')
 args = parser.parse_args()
 prev_deploy = args.prev_deploy
 
