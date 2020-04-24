@@ -453,3 +453,13 @@ run_test('clear_event_handlers', () => {
     assert.equal(scroll_container.cleared, true);
     assert.equal(filter_element.cleared, true);
 });
+
+run_test('errors', () => {
+    // We don't care about actual data for this test.
+    const list = 'stub';
+    const container = 'stub';
+
+    blueslip.expect('error', 'Need opts to create widget.');
+    list_render.create(container, list);
+    blueslip.reset();
+});
