@@ -35,7 +35,12 @@ server {
     }
 
     # We don't need /api/v1/events/internal, because that doesn't go through the loadbalancer.
-    location ~ /json/events|/api/v1/events {
+    location /json/events {
+        proxy_pass https://staging;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
+
+    location /api/v1/events {
         proxy_pass https://staging;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
@@ -58,7 +63,12 @@ server {
         include /etc/nginx/zulip-include/proxy;
     }
 
-    location ~ /json/events|/api/v1/events {
+    location /json/events {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
+
+    location /api/v1/events {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
@@ -81,7 +91,12 @@ server {
         include /etc/nginx/zulip-include/proxy;
     }
 
-    location ~ /json/events|/api/v1/events {
+    location /json/events {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
+
+    location /api/v1/events {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
@@ -100,7 +115,12 @@ server {
         include /etc/nginx/zulip-include/proxy;
     }
 
-    location ~ /json/events|/api/v1/events {
+    location /json/events {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
+
+    location /api/v1/events {
         proxy_pass https://prod;
         include /etc/nginx/zulip-include/proxy_longpolling;
     }
