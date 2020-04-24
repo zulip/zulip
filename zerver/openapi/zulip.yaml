@@ -916,25 +916,7 @@ paths:
       - $ref: '#/components/parameters/MessageId'
       - $ref: '#/components/parameters/EmojiName'
         required: true
-      - name: emoji_code
-        in: query
-        description: |
-          An encoded version of the unicode codepoint.  For most
-          clients, you won't need this; it's used to handle a rare
-          corner case when upvoting a unicode emoji reaction added
-          previously by another user.
-
-          If the existing reaction was added when the Zulip
-          server was using a previous version of the emoji
-          data mapping from codepoints to human-readable
-          names, sending the `emoji_code` in the data for
-          the original reaction allows the Zulip server to
-          correctly consider your upvote as an upvote
-          rather than a reaction with a "diffenent" emoji.
-        schema:
-          type: string
-        example: '1f419'
-        required: false
+      - $ref: '#/components/parameters/EmojiCode'
       - $ref: '#/components/parameters/ReactionType'
       responses:
         '200':
@@ -963,21 +945,7 @@ paths:
       - $ref: '#/components/parameters/MessageId'
       - $ref: '#/components/parameters/EmojiName'
         required: false
-      - name: emoji_code
-        in: query
-        description: |
-          Alternative to emoji_name for expressing which emoji to remove. An
-          encoded version of the unicode codepoint for the emoji you'd like to
-          remove from the message.
-
-          Recommended over using `emoji_name` for Zulip apps
-          because this more robustly handles changes in the mapping
-          between user-facing names and aliases for emoji (which change from
-          time to time) and their unicode codepoints.
-        schema:
-          type: string
-        example: '1f419'
-        required: false
+      - $ref: '#/components/parameters/EmojiCode'
       - $ref: '#/components/parameters/ReactionType'
       responses:
         '200':
@@ -3812,4 +3780,23 @@ components:
       schema:
         type: string
       example: 'unicode_emoji'
+      required: false
+    EmojiCode:
+      name: emoji_code
+      in: query
+      description: |
+        An encoded version of the unicode codepoint.  For most
+        clients, you won't need this; it's used to handle a rare
+        corner case when upvoting a unicode emoji reaction added
+        previously by another user.
+        If the existing reaction was added when the Zulip
+        server was using a previous version of the emoji
+        data mapping from codepoints to human-readable
+        names, sending the `emoji_code` in the data for
+        the original reaction allows the Zulip server to
+        correctly consider your upvote as an upvote
+        rather than a reaction with a "diffenent" emoji.
+      schema:
+        type: string
+      example: '1f419'
       required: false
