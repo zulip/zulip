@@ -38,3 +38,12 @@ set -x
 # NB: Everything here should be in `tools/test-all`.  If there's a
 # reason not to run it there, it should be there as a comment
 # explaining why.
+
+# This test is run to check if some untracked files have been created after 
+# running all the checks.
+untracked="$(git ls-files --exclude-standard --others)"
+if [ -n "$untracked" ]; then
+  printf >&2 "Error: untracked files:\n%s\n" "$untracked"
+  exit 1
+fi
+
