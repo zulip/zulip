@@ -12,13 +12,20 @@ from typing import Set
 DEPLOY_ROOT = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
 LOCAL_UPLOADS_DIR = os.path.join(DEPLOY_ROOT, 'var/uploads')
 
+def is_dev_droplet() -> bool:
+    # We assume dev droplets are the only places where
+    # users use zulipdev as the user.
+    user_id = os.getuid()
+    user_name = pwd.getpwuid(user_id).pw_name
+    return user_name == 'zulipdev'
+
+IS_DEV_DROPLET = is_dev_droplet()
+
 FORWARD_ADDRESS_CONFIG_FILE = "var/forward_address.ini"
 # Check if test_settings.py set EXTERNAL_HOST.
 external_host_env = os.getenv('EXTERNAL_HOST')
 if external_host_env is None:
-    user_id = os.getuid()
-    user_name = pwd.getpwuid(user_id).pw_name
-    if user_name == "zulipdev":
+    if IS_DEV_DROPLET:
         # For most of our droplets, we use the hostname (eg github_username.zulipdev.org) by default.
         hostname = os.uname()[1].lower()
         # Some of the droplets (eg droplets on 18.04) has the github_username as hostname.
