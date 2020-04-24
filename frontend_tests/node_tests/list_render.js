@@ -480,6 +480,60 @@ run_test('sorting', () => {
     assert(button.hasClass('descend'));
 });
 
+run_test('custom sort', () => {
+    const container = make_container();
+    make_scroll_container(container);
+    container.html = () => {};
+
+    const n42 = {x: 6, y: 7};
+    const n43 = {x: 1, y: 43};
+    const n44 = {x: 4, y: 11};
+
+    const list = [n42, n43, n44];
+
+    function sort_by_x(a, b) {
+        return a.x - b.x;
+    }
+
+    function sort_by_product(a, b) {
+        return a.x * a.y - b.x * b.y;
+    }
+
+    list_render.create(container, list, {
+        name: 'custom-sort-list',
+        modifier: (n) => '(' + n.x  + ', ' + n.y + ')',
+        sort_fields: {
+            product: sort_by_product,
+            x_value: sort_by_x,
+        },
+        init_sort: sort_by_product,
+    });
+
+    assert.deepEqual(
+        container.appended_data.html(),
+        '(6, 7)(1, 43)(4, 11)'
+    );
+
+    const widget = list_render.get('custom-sort-list');
+
+    widget.sort('x_value');
+    assert.deepEqual(
+        container.appended_data.html(),
+        '(1, 43)(4, 11)(6, 7)'
+    );
+
+    // We can sort without registering the function, too.
+    function sort_by_y(a, b) {
+        return a.y - b.y;
+    }
+
+    widget.sort(sort_by_y);
+    assert.deepEqual(
+        container.appended_data.html(),
+        '(6, 7)(4, 11)(1, 43)'
+    );
+});
+
 run_test('clear_event_handlers', () => {
     const container = make_container();
     const scroll_container = make_scroll_container(container);
