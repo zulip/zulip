@@ -6,16 +6,16 @@ const host = "localhost:9991";
 const options = {};
 
 commander
-    .arguments('<integration> <message_id>')
-    .action((integration, messageId) => {
-        options.integration = integration;
+    .arguments('<message_id> <image_path>')
+    .action((messageId, imagePath) => {
         options.messageId = messageId;
-        console.log(`Capturing screenshot for ${integration} using message ${messageId}`);
+        options.imagePath = imagePath;
+        console.log(`Capturing screenshot for message ${messageId} to ${imagePath}`);
     })
     .parse(process.argv);
 
-if (options.integration === undefined) {
-    console.error('no integration specified!');
+if (options.messageId === undefined) {
+    console.error('no messageId specified!');
     process.exit(1);
 }
 
@@ -56,9 +56,9 @@ async function run() {
         clip.x -= 5;
         clip.width += 10;
         clip.height += 10;
-        const imageDir = path.join(__dirname, '..', 'static', 'images', 'integrations', options.integration);
+        const imagePath = options.imagePath;
+        const imageDir = path.dirname(imagePath);
         mkdirp.sync(imageDir);
-        const imagePath = path.join(imageDir, '001.png');
         await page.screenshot({ path: imagePath, clip: clip });
         console.log(`Screenshot captured to: \x1B[1;31m${imagePath}\n`);
     } catch (e) {
