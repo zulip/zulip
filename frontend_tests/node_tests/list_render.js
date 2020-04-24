@@ -23,39 +23,22 @@ set_global('$', (arg) => {
     };
 });
 
-function make_containers() {
-    // We build objects here that simulate jQuery containers.
-    // The main thing to do at first is simulate that our
-    // parent container is the nearest ancestor to our main
-    // container that has a max-height attribute, and then
-    // the parent container will have a scroll event attached to
-    // it.  This is a good time to read set_up_event_handlers
-    // in the real code.
-    const parent_container = {};
+// We build objects here that simulate jQuery containers.
+// The main thing to do at first is simulate that our
+// scroll container is the nearest ancestor to our main
+// container that has a max-height attribute, and then
+// the scroll container will have a scroll event attached to
+// it.  This is a good time to read set_up_event_handlers
+// in the real code.
+
+function make_container() {
     const container = {};
 
-    container.parent = () => parent_container;
     container.length = () => 1;
     container.is = () => false;
     container.css = (prop) => {
         assert.equal(prop, 'max-height');
         return 'none';
-    };
-
-    parent_container.is = () => false;
-    parent_container.length = () => 1;
-    parent_container.css = (prop) => {
-        assert.equal(prop, 'max-height');
-        return 100;
-    };
-
-    // Capture the scroll callback so we can call it in
-    // our tests.
-    parent_container.on = (sel, f) => {
-        assert.equal(sel, 'scroll.list_widget_container');
-        parent_container.call_scroll = () => {
-            f.call(parent_container);
-        };
     };
 
     // Make our append function just set a field we can
@@ -64,10 +47,30 @@ function make_containers() {
         container.appended_data = data;
     };
 
-    return {
-        container: container,
-        parent_container: parent_container,
+    return container;
+}
+
+function make_scroll_container(container) {
+    const scroll_container = {};
+    scroll_container.is = () => false;
+    scroll_container.length = () => 1;
+    scroll_container.css = (prop) => {
+        assert.equal(prop, 'max-height');
+        return 100;
     };
+
+    // Capture the scroll callback so we can call it in
+    // our tests.
+    scroll_container.on = (ev, f) => {
+        assert.equal(ev, 'scroll.list_widget_container');
+        scroll_container.call_scroll = () => {
+            f.call(scroll_container);
+        };
+    };
+
+    container.parent = () => scroll_container;
+
+    return scroll_container;
 }
 
 function make_search_input() {
@@ -95,7 +98,8 @@ function div(item) {
 }
 
 run_test('scrolling', () => {
-    const {container, parent_container} = make_containers();
+    const container = make_container();
+    const scroll_container = make_scroll_container(container);
 
     const items = [];
 
@@ -116,13 +120,13 @@ run_test('scrolling', () => {
     );
 
     // Set up our fake geometry so it forces a scroll action.
-    parent_container.scrollTop = 180;
-    parent_container.clientHeight = 100;
-    parent_container.scrollHeight = 260;
+    scroll_container.scrollTop = 180;
+    scroll_container.clientHeight = 100;
+    scroll_container.scrollHeight = 260;
 
     // Scrolling gets the next two elements from the list into
     // our widget.
-    parent_container.call_scroll();
+    scroll_container.call_scroll();
     assert.deepEqual(
         container.appended_data.html(),
         items.slice(80, 100).join('')
@@ -130,7 +134,8 @@ run_test('scrolling', () => {
 });
 
 run_test('filtering', () => {
-    const {container} = make_containers();
+    const container = make_container();
+    make_scroll_container(container);
 
     const search_input = make_search_input();
 
@@ -285,7 +290,8 @@ run_test('filtering', () => {
 });
 
 run_test('sorting', () => {
-    const {container} = make_containers();
+    const container = make_container();
+    make_scroll_container(container);
 
     let cleared;
     container.html = (html) => {
