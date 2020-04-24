@@ -102,7 +102,7 @@ def custom_headers(headers_json: str) -> Dict[str, str]:
             'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
 
 def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, fixture_path: str,
-                             extra_headers: Optional[Dict[str, str]]) -> None:
+                             extra_headers: Optional[Dict[str, str]]) -> bool:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(sender=bot).delete()
 
@@ -126,8 +126,10 @@ def send_bot_payload_message(bot: UserProfile, integration: WebhookIntegration, 
     if response.status_code != 200:
         print(response.json())
         print('Failed to trigger webhook')
-        sys.exit(1)
-    print('Triggered {} webhook'.format(integration.name))
+        return False
+    else:
+        print('Triggered {} webhook'.format(integration.name))
+        return True
 
 def capture_last_message_screenshot(bot: UserProfile, integration: WebhookIntegration,
                                     fixture_name: str) -> None:
@@ -151,5 +153,6 @@ integration_name, fixture_name = split_fixture_path(options.fixture)
 integration = get_integration(integration_name)
 bot = create_integration_bot(integration)
 create_integration_stream(integration, bot)
-send_bot_payload_message(bot, integration, options.fixture, options.custom_headers)
-capture_last_message_screenshot(bot, integration, fixture_name)
+message_sent = send_bot_payload_message(bot, integration, options.fixture, options.custom_headers)
+if message_sent:
+    capture_last_message_screenshot(bot, integration, fixture_name)
