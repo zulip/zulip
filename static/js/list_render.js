@@ -25,25 +25,27 @@ exports.filter = (value, list, opts) => {
     });
 };
 
-exports.validate_filter = (opts) => {
+exports.valid_filter_opts = (opts) => {
     if (!opts.filter) {
-        return;
+        return true;
     }
     if (opts.filter.predicate) {
         if (typeof opts.filter.predicate !== 'function') {
-            blueslip.error('Filter predicate function is missing.');
-            return;
+            blueslip.error('Filter predicate is not a function.');
+            return false;
         }
         if (opts.filter.filterer) {
             blueslip.error('Filterer and predicate are mutually exclusive.');
-            return;
+            return false;
         }
     } else {
         if (typeof opts.filter.filterer !== 'function') {
-            blueslip.error('Filter filterer function is missing.');
-            return;
+            blueslip.error('Filter filterer is not a function (or missing).');
+            return false;
         }
     }
+
+    return true;
 };
 
 // @params
@@ -73,7 +75,9 @@ exports.create = function ($container, list, opts) {
         filter_value: '',
     };
 
-    exports.validate_filter(opts);
+    if (!exports.valid_filter_opts(opts)) {
+        return;
+    }
 
     const widget = {};
 

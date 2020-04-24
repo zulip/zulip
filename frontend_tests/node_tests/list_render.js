@@ -245,7 +245,6 @@ run_test('filtering', () => {
     opts = {
         modifier: (item) => div(item),
     };
-    list_render.validate_filter(opts);
     widget = list_render.create(container, ['apple', 'banana'], opts);
     widget.render();
 
@@ -457,9 +456,34 @@ run_test('clear_event_handlers', () => {
 run_test('errors', () => {
     // We don't care about actual data for this test.
     const list = 'stub';
-    const container = 'stub';
+    const container = make_container();
+    make_scroll_container(container);
 
     blueslip.expect('error', 'Need opts to create widget.');
     list_render.create(container, list);
+    blueslip.reset();
+
+    blueslip.expect('error', 'Filter predicate is not a function.');
+    list_render.create(container, list, {
+        filter: {
+            predicate: 'wrong type',
+        },
+    });
+    blueslip.reset();
+
+    blueslip.expect('error', 'Filterer and predicate are mutually exclusive.');
+    list_render.create(container, list, {
+        filter: {
+            filterer: () => true,
+            predicate: () => true,
+        },
+    });
+    blueslip.reset();
+
+    blueslip.expect('error', 'Filter filterer is not a function (or missing).');
+    list_render.create(container, list, {
+        filter: {
+        },
+    });
     blueslip.reset();
 });
