@@ -55,7 +55,7 @@ class Integration:
                  logo: Optional[str]=None, secondary_line_text: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
                  stream_name: Optional[str]=None, legacy: bool=False,
-                 config_options: List[Tuple[str, str, Validator]]=[]) -> None:
+                 config_options: Optional[List[Tuple[str, str, Validator]]]=None) -> None:
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
@@ -65,6 +65,8 @@ class Integration:
         # Note: Currently only incoming webhook type bots use this list for
         # defining how the bot's BotConfigData should be. Embedded bots follow
         # a different approach.
+        if config_options is None:
+            config_options = []
         self.config_options = config_options
 
         for category in categories:
@@ -153,7 +155,7 @@ class WebhookIntegration(Integration):
                  function: Optional[str]=None, url: Optional[str]=None,
                  display_name: Optional[str]=None, doc: Optional[str]=None,
                  stream_name: Optional[str]=None, legacy: bool=False,
-                 config_options: List[Tuple[str, str, Validator]]=[]) -> None:
+                 config_options: Optional[List[Tuple[str, str, Validator]]]=None) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super().__init__(
