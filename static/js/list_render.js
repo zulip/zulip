@@ -51,6 +51,11 @@ exports.validate_filter = (opts) => {
 // list: The list of items to progressively append.
 // opts: An object of random preferences.
 exports.create = function ($container, list, opts) {
+    if (!opts) {
+        blueslip.error('Need opts to create widget.');
+        return;
+    }
+
     if (opts.name && DEFAULTS.instances.get(opts.name)) {
         // Clear event handlers for prior widget.
         const old_widget = DEFAULTS.instances.get(opts.name);
@@ -68,9 +73,6 @@ exports.create = function ($container, list, opts) {
         filter_value: '',
     };
 
-    if (!opts) {
-        return;
-    }
     exports.validate_filter(opts);
 
     const widget = {};
