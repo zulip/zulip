@@ -127,7 +127,7 @@ run_test('create_ajax_request', () => {
         assert.equal(state.form_input_section_show, 1);
     };
 
-    helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"});
+    helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"}, ["licenses"]);
 
 });
 

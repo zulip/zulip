@@ -1,12 +1,10 @@
-exports.create_ajax_request = function (url, form_name, stripe_token = null) {
+exports.create_ajax_request = function (url, form_name, stripe_token = null, numeric_inputs = []) {
     const form = $("#" + form_name + "-form");
     const form_loading_indicator = "#" + form_name + "_loading_indicator";
     const form_input_section = "#" + form_name + "-input-section";
     const form_success = "#" + form_name + "-success";
     const form_error = "#" + form_name + "-error";
     const form_loading = "#" + form_name + "-loading";
-
-    const numeric_inputs = ["licenses"];
 
     loading.make_indicator($(form_loading_indicator),
                            {text: 'Processing ...', abs_positioned: true});
