@@ -402,12 +402,14 @@ incremental==17.5.0 \
     --hash=sha256:7b751696aaf36eebfab537e458929e194460051ccad279c72b755a167eebd4b3 \
     # via twisted
 ipython-genutils==0.2.0 \
+    --hash=sha256:2e364a3d5759479cdb2d37cce6b9376ea504db2ff90252a2e5b7cc89cc9ff2d8 \
     --hash=sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8 \
+    --hash=sha256:aa4d33c06640f5352aca96e4b81afd8ab3b47337cc12089822d6f322ac772c81 \
     --hash=sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8 \
     # via traitlets
-ipython==7.9.0 \
-    --hash=sha256:dfd303b270b7b5232b3d08bd30ec6fd685d8a58cabd54055e3d69d8f029f7280 \
-    --hash=sha256:ed7ebe1cba899c1c3ccad6f7f1c2d2369464cc77dba8eebc65e2043e19cda995 \
+ipython==7.13.0 \
+    --hash=sha256:ca478e52ae1f88da0102360e57e528b92f3ae4316aabac80a2cd7f7ab2efb48a \
+    --hash=sha256:eb8d075de37f678424527b5ef6ea23f7b80240ca031c2dd6de5879d687a65333 \
     # via -r requirements/common.in
 isodate==0.6.0 \
     --hash=sha256:2e364a3d5759479cdb2d37cce6b9376ea504db2ff90252a2e5b7cc89cc9ff2d8 \
