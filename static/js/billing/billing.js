@@ -7,7 +7,7 @@ exports.initialize = function () {
         image: '/static/images/logo/zulip-icon-128x128.png',
         locale: 'auto',
         token: function (stripe_token) {
-            helpers.create_ajax_request("/json/billing/sources/change", "cardchange", stripe_token = stripe_token);
+            helpers.create_ajax_request("/json/billing/sources/change", "cardchange", stripe_token);
         },
     });
 
