@@ -15,6 +15,7 @@ Jinja2
 Markdown
 Pygments
 hyperlink
+jsx-lexer
 
 # Needed for manage.py
 # Upgrade blocked because ipython dropped Python 3.5 support.

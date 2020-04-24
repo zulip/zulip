@@ -294,6 +294,10 @@ jinja2==2.11.2 \
     --hash=sha256:89aab215427ef59c34ad58735269eb58b1a5808103067f7bb9d5836c651b3bb0 \
     --hash=sha256:f0a4641d3cf955324a89c04f3d94663aa4d638abe8f733ecd3582848e1c37035 \
     # via -r requirements/common.in
+jsx-lexer==0.0.8 \
+    --hash=sha256:1cb35102b78525aa3f587dc327f3208c0e1c76d5cdea64d4f9c3ced05d10c017 \
+    --hash=sha256:b879c7fafe974440a1dd9f9544dfb8629fa22078ada7f769c8fbb06149eac5d1 \
+    # via -r requirements/common.in
 libthumbor==2.0.1 \
     --hash=sha256:3c4e1a59c019d22f868d225315c06f97fad30fb5e78112d6a230b978e7d24e38 \
     --hash=sha256:ed4fe5f27f8f90e7285b7e6dce99c1b67d43a140bf370e989080b43d80ce25f0 \
@@ -470,7 +474,7 @@ pycparser==2.20 \
 pygments==2.6.1 \
     --hash=sha256:647344a061c249a3b74e230c739f434d7ea4d8b1d5f3721bc0f3558049b38f44 \
     --hash=sha256:ff7a40b4860b727ab48fad6360eb351cc1b33cbf9b15a0f689ca5353e9463324 \
-    # via -r requirements/common.in, ipython
+    # via -r requirements/common.in, ipython, jsx-lexer
 pyjwt==1.7.1 \
     --hash=sha256:5c6eca3c2940464d106b99ba83b00c6add741c9becaec087fb7ccdefea71350e \
     --hash=sha256:8d59a976fb773f3e6a39c85636357c4f0e242707394cadadd9814f5cbaa20e96 \
