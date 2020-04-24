@@ -85,6 +85,17 @@ function make_sort_container() {
     return sort_container;
 }
 
+function make_filter_element() {
+    const element = {};
+
+    element.on = (ev, f) => {
+        assert.equal(ev, 'input.list_widget_filter');
+        element.f = f;
+    };
+
+    return element;
+}
+
 function make_search_input() {
     const $element = {};
 
@@ -274,32 +285,41 @@ function sort_button(opts) {
     return button;
 }
 
-run_test('filtering', () => {
+run_test('wire up filter element', () => {
     const lst = [
-        'alexander',
         'alice',
-        'benedict',
         'JESSE',
+        'moses',
         'scott',
-        'Stephanie',
+        'Sean',
         'Xavier',
     ];
 
+    const container = make_container();
+    make_scroll_container(container);
+    const filter_element = make_filter_element();
+
+    // We don't care about what gets drawn initially.
+    container.html = () => {};
+
     const opts = {
         filter: {
-            predicate: (item, value) => {
-                return item.length === value;
+            filterer: (list, value) => {
+                return list.filter((item) => {
+                    return item.toLowerCase().includes(value);
+                });
             },
+            element: filter_element,
         },
+        modifier: (s) => '(' + s + ')',
     };
 
-    const custom_result = list_render.filter(5, lst, opts);
-    assert.deepEqual(custom_result, [
-        'alice',
-        'JESSE',
-        'scott',
-    ]);
-
+    list_render.create(container, lst, opts);
+    filter_element.f.apply({value: 'se'});
+    assert.equal(
+        container.appended_data.html(),
+        '(JESSE)(moses)(Sean)'
+    );
 });
 
 run_test('sorting', () => {
