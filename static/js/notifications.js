@@ -739,7 +739,7 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
-    $('#out-of-view-notification').on('click', '.out-of-view-notification-close', function (e) {
+    $('#out-of-view-notification').on('click', '.compose-notification-close', function (e) {
         exports.clear_compose_notifications();
         e.stopPropagation();
         e.preventDefault();
