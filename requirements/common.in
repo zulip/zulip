@@ -145,6 +145,9 @@ py3dns
 social-auth-app-django
 social-auth-core[azuread,saml]
 
+# For encrypting a login token to the desktop app
+cryptography
+
 # Needed for messages' rendered content parsing in push notifications.
 lxml
 
