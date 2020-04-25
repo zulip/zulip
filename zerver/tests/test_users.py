@@ -299,6 +299,29 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
         self.assert_json_error(result, 'Name too short!')
 
+    def test_not_allowed_format(self) -> None:
+        # Name of format "Alice|999" breaks in markdown
+        new_name = 'iago|72'
+        self.login('iago')
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
+        self.assert_json_error(result, 'Invalid format!')
+
+    def test_allowed_format_complex(self) -> None:
+        # Adding characters after r'|d+' doesn't break markdown
+        new_name = 'Hello- 12iago|72k'
+        self.login('iago')
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
+        self.assert_json_success(result)
+
+    def test_not_allowed_format_complex(self) -> None:
+        new_name = 'Hello- 12iago|72'
+        self.login('iago')
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
+        self.assert_json_error(result, 'Invalid format!')
+
     def test_admin_cannot_set_full_name_with_invalid_characters(self) -> None:
         new_name = 'Opheli*'
         self.login('iago')

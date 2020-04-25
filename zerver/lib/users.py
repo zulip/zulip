@@ -19,6 +19,7 @@ from zerver.models import UserProfile, Service, Realm, \
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
+import re
 def check_full_name(full_name_raw: str) -> str:
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
@@ -29,6 +30,8 @@ def check_full_name(full_name_raw: str) -> str:
         if (unicodedata.category(character)[0] == 'C' or
                 character in UserProfile.NAME_INVALID_CHARS):
             raise JsonableError(_("Invalid characters in name!"))
+    if re.search(r"\|\d+$", full_name_raw):
+        raise JsonableError(_("Invalid format!"))
     return full_name
 
 # NOTE: We don't try to absolutely prevent 2 bots from having the same
