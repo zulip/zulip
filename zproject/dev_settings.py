@@ -12,14 +12,9 @@ from typing import Set
 DEPLOY_ROOT = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
 LOCAL_UPLOADS_DIR = os.path.join(DEPLOY_ROOT, 'var/uploads')
 
-def is_dev_droplet() -> bool:
-    # We assume dev droplets are the only places where
-    # users use zulipdev as the user.
-    user_id = os.getuid()
-    user_name = pwd.getpwuid(user_id).pw_name
-    return user_name == 'zulipdev'
-
-IS_DEV_DROPLET = is_dev_droplet()
+# We assume dev droplets are the only places where
+# users use zulipdev as the user.
+IS_DEV_DROPLET = pwd.getpwuid(os.getuid()).pw_name == 'zulipdev'
 
 FORWARD_ADDRESS_CONFIG_FILE = "var/forward_address.ini"
 # Check if test_settings.py set EXTERNAL_HOST.
