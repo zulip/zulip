@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
+import re
 import unicodedata
 from collections import defaultdict
 
@@ -29,6 +30,12 @@ def check_full_name(full_name_raw: str) -> str:
         if (unicodedata.category(character)[0] == 'C' or
                 character in UserProfile.NAME_INVALID_CHARS):
             raise JsonableError(_("Invalid characters in name!"))
+    # Names ending with e.g. `|15` could be ambiguous for
+    # sloppily-written parsers of our markdown syntax for mentioning
+    # users with ambigious names, and likely have no real use, so we
+    # ban them.
+    if re.search(r"\|\d+$", full_name_raw):
+        raise JsonableError(_("Invalid format!"))
     return full_name
 
 # NOTE: We don't try to absolutely prevent 2 bots from having the same
