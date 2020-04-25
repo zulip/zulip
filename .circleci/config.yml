@@ -146,7 +146,7 @@ jobs:
     docker:
       # This is built from tools/circleci/images/bionic/Dockerfile .
       # Bionic ships with Python 3.6.
-      - image: gregprice/circleci:bionic-python-1.test
+      - image: amanagr/circleci:bionic-python-2.test
 
     working_directory: ~/zulip
 
@@ -221,7 +221,7 @@ jobs:
     docker:
         # This is built from tools/circleci/images/bionic/Dockerfile .
         # Bionic ships with Python 3.6.
-        - image: gregprice/circleci:bionic-python-1.test
+        - image: amanagr/circleci:bionic-python-2.test
 
     working_directory: ~/zulip
 
@@ -257,7 +257,7 @@ jobs:
     docker:
         # This is built from tools/circleci/images/bionic/Dockerfile .
         # Bionic ships with Python 3.6.
-        - image: gregprice/circleci:bionic-python-1.test
+        - image: amanagr/circleci:bionic-python-2.test
 
     working_directory: ~/zulip
 
