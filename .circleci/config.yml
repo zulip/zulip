@@ -262,8 +262,9 @@ jobs:
 
       - *create_cache_directories
       - *do_bionic_hack
-      - *install_production
       - *restore_cache_package_json
+      - *install_production
+      - *save_cache_package_json
 
 workflows:
   version: 2
