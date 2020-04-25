@@ -1,0 +1,27 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "desktop-login" %}
+
+{% block portico_content %}
+<div class="flex">
+    <div class="desktop-redirect-box">
+        <h1>{% trans %}Finish desktop login{% endtrans %}</h1>
+
+        <div class="white-box">
+            <p>{% trans %}Use your web browser to finish logging in, then come back here to paste in your login token.{% endtrans %}</p>
+
+            <form id="form" action="blob:">
+                <input id="token" placeholder="{% trans %}Paste token here{% endtrans %}" />
+                <button id="submit" disabled class="btn btn-primary">{% trans %}Finish{% endtrans %}</button>
+            </form>
+
+            <p id="bad-token" hidden>
+                {% trans %}Incorrect token.{% endtrans %}
+            </p>
+
+            <p id="done" hidden>
+                {% trans %}Token accepted.  Logging you in…{% endtrans %}
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

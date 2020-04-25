@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core import mail
@@ -606,24 +607,19 @@ class CheckPasswordStrengthTest(ZulipTestCase):
             self.assertTrue(check_password_strength('f657gdGGk9'))
 
 class DesktopFlowTestingLib(ZulipTestCase):
+    def verify_desktop_flow_app_page(self, response: HttpResponse) -> None:
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"<h1>Finish desktop login</h1>", response.content)
+
     def verify_desktop_flow_end_page(self, response: HttpResponse, email: str,
                                      desktop_flow_otp: str) -> None:
         self.assertEqual(response.status_code, 200)
 
         soup = BeautifulSoup(response.content, "html.parser")
-        links = [a['href'] for a in soup.find_all('a', href=True)]
-        self.assert_length(links, 2)
-        for url in links:
-            if url.startswith("zulip://"):
-                desktop_app_url = url
-            else:
-                browser_url = url
-        meta_refresh_content = soup.find('meta', {'http-equiv': lambda value: value == "Refresh"})['content']
-        auto_redirect_url = meta_refresh_content.split('; ')[1]
+        desktop_data = soup.find("input", value=True)["value"]
+        browser_url = soup.find("a", href=True)["href"]
 
-        self.assertEqual(auto_redirect_url, desktop_app_url)
-
-        decrypted_key = self.verify_desktop_app_url_and_return_key(desktop_app_url, email, desktop_flow_otp)
+        decrypted_key = self.verify_desktop_data_and_return_key(desktop_data, desktop_flow_otp)
         self.assertEqual(browser_url, 'http://zulip.testserver/accounts/login/subdomain/%s' % (decrypted_key,))
 
         result = self.client_get(browser_url)
@@ -632,16 +628,12 @@ class DesktopFlowTestingLib(ZulipTestCase):
         user_profile = get_user_by_delivery_email(email, realm)
         self.assert_logged_in_user_id(user_profile.id)
 
-    def verify_desktop_app_url_and_return_key(self, url: str, email: str, desktop_flow_otp: str) -> str:
-        parsed_url = urllib.parse.urlparse(url)
-        query_params = urllib.parse.parse_qs(parsed_url.query)
-        self.assertEqual(parsed_url.scheme, 'zulip')
-        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
-        self.assertEqual(query_params["email"], [email])
-
-        encrypted_key = query_params["otp_encrypted_login_key"][0]
-        decrypted_key = otp_decrypt_api_key(encrypted_key, desktop_flow_otp)
-        return decrypted_key
+    def verify_desktop_data_and_return_key(self, desktop_data: str, desktop_flow_otp: str) -> str:
+        key = bytes.fromhex(desktop_flow_otp)
+        data = bytes.fromhex(desktop_data)
+        iv = data[:12]
+        ciphertext = data[12:]
+        return AESGCM(key).decrypt(iv, ciphertext, b"").decode()
 
 class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     """This is a base class for testing social-auth backends. These
@@ -679,15 +671,18 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                                  **extra_data: Any) -> None:
         pass
 
-    def prepare_login_url_and_headers(self,
-                                      subdomain: Optional[str]=None,
-                                      mobile_flow_otp: Optional[str]=None,
-                                      desktop_flow_otp: Optional[str]=None,
-                                      is_signup: bool=False,
-                                      next: str='',
-                                      multiuse_object_key: str='',
-                                      alternative_start_url: Optional[str]=None
-                                      ) -> Tuple[str, Dict[str, Any]]:
+    def prepare_login_url_and_headers(
+        self,
+        subdomain: Optional[str]=None,
+        mobile_flow_otp: Optional[str]=None,
+        desktop_flow_otp: Optional[str]=None,
+        is_signup: bool=False,
+        next: str='',
+        multiuse_object_key: str='',
+        alternative_start_url: Optional[str]=None,
+        *,
+        user_agent: Optional[str]=None,
+    ) -> Tuple[str, Dict[str, Any]]:
         url = self.LOGIN_URL
         if alternative_start_url is not None:
             url = alternative_start_url
@@ -707,6 +702,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         params['multiuse_object_key'] = multiuse_object_key
         if len(params) > 0:
             url += "?%s" % (urllib.parse.urlencode(params),)
+        if user_agent is not None:
+            headers['HTTP_USER_AGENT'] = user_agent
 
         return url, headers
 
@@ -719,10 +716,12 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                          multiuse_object_key: str='',
                          expect_choose_email_screen: bool=False,
                          alternative_start_url: Optional[str]=None,
+                         user_agent: Optional[str]=None,
                          **extra_data: Any) -> HttpResponse:
         url, headers = self.prepare_login_url_and_headers(
             subdomain, mobile_flow_otp, desktop_flow_otp, is_signup, next,
-            multiuse_object_key, alternative_start_url
+            multiuse_object_key, alternative_start_url,
+            user_agent=user_agent,
         )
 
         result = self.client_get(url, **headers)
@@ -966,6 +965,14 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.assert_json_error(result, "Invalid OTP")
 
         # Now do it correctly
+        result = self.social_auth_test(
+            account_data_dict,
+            subdomain='zulip',
+            expect_choose_email_screen=False,
+            desktop_flow_otp=desktop_flow_otp,
+            user_agent="ZulipElectron/5.0.0",
+        )
+        self.verify_desktop_flow_app_page(result)
         result = self.social_auth_test(account_data_dict, subdomain='zulip',
                                        expect_choose_email_screen=False,
                                        desktop_flow_otp=desktop_flow_otp)
@@ -1363,9 +1370,16 @@ class SAMLAuthBackendTest(SocialAuthBase):
                          is_signup: bool=False,
                          next: str='',
                          multiuse_object_key: str='',
+                         user_agent: Optional[str]=None,
                          **extra_data: Any) -> HttpResponse:
         url, headers = self.prepare_login_url_and_headers(
-            subdomain, mobile_flow_otp, desktop_flow_otp, is_signup, next, multiuse_object_key
+            subdomain,
+            mobile_flow_otp,
+            desktop_flow_otp,
+            is_signup,
+            next,
+            multiuse_object_key,
+            user_agent=user_agent,
         )
 
         result = self.client_get(url, **headers)

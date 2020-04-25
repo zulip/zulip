@@ -1,3 +1,5 @@
+import os
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.forms import Form
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -260,7 +262,7 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
 def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
                         otp: str) -> HttpResponse:
     """
-    The desktop otp flow returns to the app (through a zulip:// redirect)
+    The desktop otp flow returns to the app (through the clipboard)
     a token that allows obtaining (through log_into_subdomain) a logged in session
     for the user account we authenticated in this flow.
     The token can only be used once and within ExternalAuthResult.LOGIN_KEY_EXPIRATION_SECONDS
@@ -269,10 +271,11 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile,
     """
     result = ExternalAuthResult(user_profile=user_profile)
     token = result.store_data()
-    response = create_response_for_otp_flow(token, otp, user_profile,
-                                            encrypted_key_field_name='otp_encrypted_login_key')
+    key = bytes.fromhex(otp)
+    iv = os.urandom(12)
+    desktop_data = (iv + AESGCM(key).encrypt(iv, token.encode(), b"")).hex()
     browser_url = user_profile.realm.uri + reverse('zerver.views.auth.log_into_subdomain', args=[token])
-    context = {'desktop_url': response['Location'],
+    context = {'desktop_data': desktop_data,
                'browser_url': browser_url,
                'realm_icon_url': realm_icon_url(user_profile.realm)}
     return render(request, 'zerver/desktop_redirect.html', context=context)
@@ -444,6 +447,10 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
 
 def start_social_login(request: HttpRequest, backend: str, extra_arg: Optional[str]=None
                        ) -> HttpResponse:
+    user_agent = parse_user_agent(request.META.get("HTTP_USER_AGENT", "Missing User-Agent"))
+    if user_agent["name"] == "ZulipElectron":
+        return render(request, "zerver/desktop_login.html")
+
     backend_url = reverse('social:begin', args=[backend])
     extra_url_params: Dict[str, str] = {}
     if backend == "saml":

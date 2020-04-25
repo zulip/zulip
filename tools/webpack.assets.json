@@ -101,6 +101,14 @@
         "./static/js/bundles/portico.js",
         "./static/js/portico/dev-login.js"
     ],
+    "desktop-login": [
+        "./static/js/bundles/portico.js",
+        "./static/js/portico/desktop-login.js"
+    ],
+    "desktop-redirect": [
+        "./static/js/bundles/portico.js",
+        "./static/js/portico/desktop-redirect.js"
+    ],
     "integrations-dev-panel": [
         "./static/js/bundles/portico.js",
         "./static/js/portico/integrations_dev_panel.js",
