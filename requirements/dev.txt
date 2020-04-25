@@ -230,7 +230,7 @@ cryptography==2.9 \
     --hash=sha256:d1bf5a1a0d60c7f9a78e448adcb99aa101f3f9588b16708044638881be15d6bc \
     --hash=sha256:ed1d0760c7e46436ec90834d6f10477ff09475c692ed1695329d324b2c5cd547 \
     --hash=sha256:ef9a55013676907df6c9d7dd943eb1770d014f68beaa7e73250fb43c759f4585 \
-    # via apns2, moto, pyopenssl, requests, scrapy, service-identity, social-auth-core, sshpubkeys
+    # via -r requirements/common.in, apns2, moto, pyopenssl, requests, scrapy, service-identity, social-auth-core, sshpubkeys
 cssselect2==0.3.0 \
     --hash=sha256:5c2716f06b5de93f701d5755a9666f2ee22cbcd8b4da8adddfc30095ffea3abc \
     --hash=sha256:97d7d4234f846f9996d838964d38e13b45541c18143bc55cf00e4bc1281ace76 \
