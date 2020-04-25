@@ -262,6 +262,7 @@ exports.notify_above_composebox = function (note, link_class, link_msg_id, link_
         link_text: link_text,
     }));
     exports.clear_compose_notifications();
+    exports.clear_draft_notifications();
     $('#out-of-view-notification').append(notification_html);
     $('#out-of-view-notification').show();
 };
@@ -709,6 +710,12 @@ exports.clear_compose_notifications = function () {
     $('#out-of-view-notification').hide();
 };
 
+exports.clear_draft_notifications = function () {
+    $('#compose-notifications').empty();
+    $('#compose-notifications').stop(true, true);
+    $('#compose-notifications').hide();
+};
+
 exports.reify_message_id = function (opts) {
     const old_id = opts.old_id;
     const new_id = opts.new_id;
@@ -744,6 +751,12 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
+
+    $('#compose-notifications').on('click', '.compose-notification-close', function (e) {
+        exports.clear_draft_notifications();
+        e.stopPropagation();
+        e.preventDefault();
+    });
 };
 
 exports.handle_global_notification_updates = function (notification_name, setting) {
@@ -765,4 +778,20 @@ exports.handle_global_notification_updates = function (notification_name, settin
     }
 };
 
+exports.notify_drafts = function () {
+    const draft_msg = i18n.t("Your message has been saved in drafts.");
+    const notification_html = $(render_compose_notification({
+        note: draft_msg,
+        link_class: "",
+        link_msg_id: null,
+        link_text: "",
+    }));
+
+    exports.clear_compose_notifications();
+    exports.clear_draft_notifications();
+    $('#compose-notifications').addClass("draft-notification");
+    $('#compose-notifications').append(notification_html);
+    $('#compose-notifications').show();
+    $('#compose-notifications').delay(1000).fadeOut();
+};
 window.notifications = exports;

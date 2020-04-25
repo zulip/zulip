@@ -141,6 +141,7 @@ exports.update_draft = function () {
         // just update the existing draft.
         draft_model.editDraft(draft_id, draft);
         draft_notify();
+        notifications.notify_drafts();
         return;
     }
 
@@ -149,6 +150,7 @@ exports.update_draft = function () {
     const new_draft_id = draft_model.addDraft(draft);
     $("#compose-textarea").data("draft-id", new_draft_id);
     draft_notify();
+    notifications.notify_drafts();
 };
 
 exports.delete_draft_after_send = function () {

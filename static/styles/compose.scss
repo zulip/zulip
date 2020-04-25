@@ -282,7 +282,8 @@ div[id^="message-edit-send-status"],
     filter: alpha(opacity=40);
 }
 
-#out-of-view-notification {
+#out-of-view-notification,
+.draft-notification {
     position: relative;
     margin-bottom: 6px;
 
@@ -301,6 +302,29 @@ div[id^="message-edit-send-status"],
         opacity: .2;
         filter: alpha(opacity=20);
     }
+}
+.draft-notification {
+    position: relative;
+    margin-bottom: 10px;
+    left: 5px;
+    padding-right: 50px;
+    padding-left: 50px;
+
+    .close {
+        position: absolute;
+        top: auto;
+        right: 0px;
+    }
+
+    .compose-notifications-content {
+        padding-top: 0px;
+    }
+}
+
+#compose-notifications {
+    position: relative;
+    bottom: 0px;
+    height: 25px;
 }
 
 .compose-notifications-content {
