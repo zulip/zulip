@@ -18,7 +18,6 @@ def build_for_prod_or_casper(quiet: bool) -> NoReturn:
                     '--env', 'production']
     if quiet:
         webpack_args += ['--display', 'errors-only']
-        print('Starting webpack compilation')
     os.execvp(webpack_args[0], webpack_args)
 
 def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check: bool) -> None:
