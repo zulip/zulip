@@ -218,6 +218,8 @@ function build_topic_popover(opts) {
     const is_muted = muting.is_topic_muted(sub.stream_id, topic_name);
     const can_mute_topic = !is_muted;
     const can_unmute_topic = is_muted;
+    const starred_ids = starred_messages.get_topic_starred_msg_ids(topic_name, sub.stream_id);
+    const has_starred = starred_ids.length > 0;
 
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,
@@ -227,6 +229,7 @@ function build_topic_popover(opts) {
         can_unmute_topic,
         is_realm_admin: sub.is_realm_admin,
         color: sub.color,
+        has_starred,
     });
 
     $(elt).popover({
@@ -404,19 +407,26 @@ exports.register_stream_handlers = function () {
         e.stopPropagation();
     });
 
-    // Unstar all messages
-    $("body").on("click", "#unstar_all_messages", (e) => {
+    // Unstar all messages, or all messages in a topic
+    $("body").on("click", "#unstar_all_messages, .sidebar-popover-unstar-all-in-topic", (e) => {
         exports.hide_starred_messages_popover();
         e.preventDefault();
         e.stopPropagation();
         $(".left-sidebar-modal-holder").empty();
-        $(".left-sidebar-modal-holder").html(render_unstar_messages_modal());
+        const topic_name = $(".sidebar-popover-unstar-all-in-topic").attr("data-topic-name");
+        const args = {
+            topic_name,
+        };
+        $(".left-sidebar-modal-holder").html(render_unstar_messages_modal(args));
+        exports.hide_topic_popover();
         $("#unstar-messages-modal").modal("show");
     });
 
     $("body").on("click", "#do_unstar_messages_button", (e) => {
         $("#unstar-messages-modal").modal("hide");
-        message_flags.unstar_all_messages();
+        const topic_name = $(".sidebar-popover-unstar-all-in-topic").attr("data-topic-name");
+        const stream_id = $(".sidebar-popover-unstar-all-in-topic").attr("data-stream-id");
+        message_flags.unstar_messages(topic_name, Number.parseInt(stream_id, 10));
         e.stopPropagation();
     });
 
