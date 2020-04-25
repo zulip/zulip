@@ -99,14 +99,20 @@ aliases:
 
         mispipe ./tools/ci/setup-production ts
 
-  - &install_production
+  - &production_extract_tarball
     run:
-     name: install production
+     name: production extract tarball
      command: |
       sudo apt-get update
       # Install moreutils so we can use `ts` and `mispipe` in the following.
       sudo apt-get install -y moreutils
 
+      mispipe /tmp/production-extract-tarball ts
+
+  - &install_production
+    run:
+     name: install production
+     command: |
       sudo service rabbitmq-server restart
       mispipe /tmp/production ts
 
@@ -245,6 +251,7 @@ jobs:
             - success-http-headers.txt
             - production-helper
             - production
+            - production-extract-tarball
 
   "bionic-production-install-python3.6":
     docker:
@@ -262,6 +269,7 @@ jobs:
 
       - *create_cache_directories
       - *do_bionic_hack
+      - *production_extract_tarball
       - *restore_cache_package_json
       - *install_production
       - *save_cache_package_json
