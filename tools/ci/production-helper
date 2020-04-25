@@ -5,8 +5,7 @@
 set -e
 set -x
 
-ZULIP_PATH=$(mktemp -d)
-tar -xf /tmp/zulip-server-test.tar.gz -C "$ZULIP_PATH" --strip-components=1
+ZULIP_PATH=~/zulip
 
 # Do an apt upgrade to start with an up-to-date machine
 APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold')
