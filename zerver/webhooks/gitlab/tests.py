@@ -546,3 +546,63 @@ class GitlabHookTests(WebhookTestCase):
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
+
+    def test_system_push_event_message(self) -> None:
+        expected_topic = "gitlab / master"
+        expected_message = "John Smith [pushed](http://test.example.com/gitlab/gitlab/compare/95790bf891e76fee5e1747ab589903a6a1f80f22...da1560886d4f094c3e6c9ef40349f7d38b5d27d7) 1 commit to branch master. Commits by Test User (1).\n\n* Add simple search to projects in public area ([c5feabd](https://test.example.com/gitlab/gitlab/-/commit/c5feabde2d8cd023215af4d2ceeb7a64839fc428))"
+        self.send_and_test_stream_message('system_hook__push_hook', expected_topic, expected_message)
+
+    def test_system_merge_request_created_without_assignee_event_message(self) -> None:
+        expected_topic = "my-awesome-project / MR #2 NEW MR"
+        expected_message = "Tomasz Kolek created [MR #2](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
+
+        self.send_and_test_stream_message(
+            'system_hook__merge_request_created_without_assignee',
+            expected_topic,
+            expected_message)
+
+    def test_system_merge_request_created_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic='notifications')
+        expected_topic = "notifications"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek created [MR #2 NEW MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
+
+        self.send_and_test_stream_message(
+            'system_hook__merge_request_created_without_assignee',
+            expected_topic,
+            expected_message)
+
+    def test_system_merge_request_created_with_assignee_event_message(self) -> None:
+        expected_topic = "my-awesome-project / MR #3 New Merge Request"
+        expected_message = "Tomasz Kolek created [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
+        self.send_and_test_stream_message(
+            'system_hook__merge_request_created_with_assignee',
+            expected_topic,
+            expected_message)
+
+    def test_system_merge_request_closed_event_message(self) -> None:
+        expected_topic = "my-awesome-project / MR #2 NEW MR"
+        expected_message = "Tomasz Kolek closed [MR #2](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
+
+        self.send_and_test_stream_message(
+            'system_hook__merge_request_closed',
+            expected_topic,
+            expected_message)
+
+    def test_system_merge_request_merged_event_message(self) -> None:
+        expected_topic = "my-awesome-project / MR #3 New Merge Request"
+        expected_message = "Tomasz Kolek merged [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)."
+
+        self.send_and_test_stream_message(
+            'system_hook__merge_request_merged',
+            expected_topic,
+            expected_message)
+
+    def test_system_merge_request_closed_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic='notifications')
+        expected_topic = "notifications"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek closed [MR #2 NEW MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
+
+        self.send_and_test_stream_message(
+            'system_hook__merge_request_closed',
+            expected_topic,
+            expected_message)
