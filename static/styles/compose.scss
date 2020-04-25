@@ -291,15 +291,6 @@ div[id^="message-edit-send-status"],
     border-radius: 4px;
 }
 
-.compose-notifications-content {
-    padding: 4px 22px 4px 22px;
-    text-align: center;
-}
-
-.composition-area {
-    position: relative;
-}
-
 #out-of-view-notification .close {
     position: absolute;
     right: 8px;
@@ -310,6 +301,15 @@ div[id^="message-edit-send-status"],
     text-shadow: 0 1px 0 hsl(0, 0%, 100%);
     opacity: .2;
     filter: alpha(opacity=20);
+}
+
+.compose-notifications-content {
+    padding: 4px 22px 4px 22px;
+    text-align: center;
+}
+
+.composition-area {
+    position: relative;
 }
 
 textarea.new_message_textarea {
