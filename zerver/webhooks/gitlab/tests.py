@@ -606,3 +606,12 @@ class GitlabHookTests(WebhookTestCase):
             'system_hook__merge_request_closed',
             expected_topic,
             expected_message)
+
+    def test_merge_request_unapproved_event_message(self) -> None:
+        expected_topic = "my-awesome-project / MR #1 Update the README with author ..."
+        expected_message = "Eeshan Garg unapproved [MR #1](https://gitlab.com/eeshangarg/my-awesome-project/merge_requests/1)."
+
+        self.send_and_test_stream_message(
+            'merge_request_hook__merge_request_unapproved',
+            expected_topic,
+            expected_message)
