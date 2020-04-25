@@ -31,20 +31,12 @@ def migrate_existing_attachment_data(apps: StateApps,
 
         entry.save()
 
-class Migration(migrations.Migration):
-
-    initial = True
-
-    dependencies = [
-        ('auth', '0001_initial'),
-    ]
-
-    if settings.POSTGRES_MISSING_DICTIONARIES:
-        fts_sql = """
+if settings.POSTGRES_MISSING_DICTIONARIES:
+    fts_sql = """
 CREATE TEXT SEARCH CONFIGURATION zulip.english_us_search (COPY=pg_catalog.english);
 """
-    else:
-        fts_sql = """
+else:
+    fts_sql = """
 CREATE TEXT SEARCH DICTIONARY english_us_hunspell
   (template = ispell, DictFile = en_us, AffFile = en_us, StopWords = zulip_english);
 CREATE TEXT SEARCH CONFIGURATION zulip.english_us_search (COPY=pg_catalog.english);
@@ -53,7 +45,7 @@ ALTER TEXT SEARCH CONFIGURATION zulip.english_us_search
   WITH english_us_hunspell, english_stem;
 """
 
-    fts_sql += """
+fts_sql += """
 
 CREATE FUNCTION escape_html(text) RETURNS text IMMUTABLE LANGUAGE 'sql' AS $$
   SELECT replace(replace(replace(replace(replace($1, '&', '&amp;'), '<', '&lt;'),
@@ -75,6 +67,15 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
   BEFORE INSERT OR UPDATE OF subject, rendered_content ON zerver_message
   FOR EACH ROW EXECUTE PROCEDURE append_to_fts_update_log();
 """
+
+class Migration(migrations.Migration):
+
+    initial = True
+
+    dependencies = [
+        ('auth', '0001_initial'),
+    ]
+
     operations = [
         migrations.CreateModel(
             name='UserProfile',
