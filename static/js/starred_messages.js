@@ -34,6 +34,14 @@ exports.get_starred_msg_ids = function () {
     return Array.from(exports.ids);
 };
 
+exports.get_topic_starred_msg_ids = function (topic_name, stream_id) {
+    return Array.from(exports.ids).filter(function (id) {
+        const message = message_store.get(id);
+        return message.stream_id === stream_id &&
+        message.topic.toLowerCase() === topic_name.toLowerCase();
+    });
+};
+
 exports.rerender_ui = function () {
     let count = exports.count();
 

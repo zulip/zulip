@@ -1,10 +1,18 @@
 <div id="unstar-messages-modal" class="modal new-style modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="unstar_messages_modal_label" aria-hidden="true">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        {{#if topic_name}}
+        <h3 id="unstar_messages_modal_label">{{t "Unstar all messages in this topic" }}</h3>
+        {{else}}
         <h3 id="unstar_messages_modal_label">{{t "Unstar all messages" }}</h3>
+        {{/if}}
     </div>
     <div class="modal-body">
+        {{#if topic_name}}
+        <p>{{t "Would you like to unstar all starred messages in this topic?  This action cannot be undone." }}</p>
+        {{else}}
         <p>{{t "Would you like to unstar all starred messages?  This action cannot be undone." }}</p>
+        {{/if}}
     </div>
     <div class="modal-footer">
         <button type="button" class="button rounded" data-dismiss="modal">{{t "Cancel" }}</button>

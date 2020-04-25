@@ -185,6 +185,8 @@ function build_topic_popover(opts) {
     const is_muted = muting.is_topic_muted(sub.stream_id, topic_name);
     const can_mute_topic = !is_muted;
     const can_unmute_topic = is_muted;
+    const starred_ids = starred_messages.get_topic_starred_msg_ids(topic_name, sub.stream_id);
+    const has_starred = starred_ids.length;
 
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,
@@ -192,6 +194,7 @@ function build_topic_popover(opts) {
         topic_name: topic_name,
         can_mute_topic: can_mute_topic,
         can_unmute_topic: can_unmute_topic,
+        has_starred: has_starred,
         is_admin: sub.is_admin,
     });
 
@@ -362,18 +365,25 @@ exports.register_stream_handlers = function () {
     });
 
     // Unstar all messages
-    $('body').on('click', '#unstar_all_messages', function (e) {
+    $('body').on('click', '#unstar_all_messages, .sidebar-popover-unstar', function (e) {
         exports.hide_starred_messages_popover();
         e.preventDefault();
         e.stopPropagation();
         $(".left-sidebar-modal-holder").empty();
-        $(".left-sidebar-modal-holder").html(render_unstar_messages_modal());
+        const topic_name = $(".sidebar-popover-unstar").attr("data-topic-name");
+        const args = {
+            topic_name: topic_name,
+        };
+        $(".left-sidebar-modal-holder").html(render_unstar_messages_modal(args));
+        exports.hide_topic_popover();
         $("#unstar-messages-modal").modal("show");
     });
 
     $('body').on('click', '#do_unstar_messages_button', function (e) {
         $("#unstar-messages-modal").modal("hide");
-        message_flags.unstar_all_messages();
+        const topic_name = $(".sidebar-popover-unstar").attr("data-topic-name");
+        const stream_id = $(".sidebar-popover-unstar").attr("data-stream-id");
+        message_flags.unstar_messages(topic_name, Number(stream_id));
         e.stopPropagation();
     });
 

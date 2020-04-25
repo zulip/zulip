@@ -24,6 +24,15 @@
         </a>
     </li>
     {{/if}}
+
+    {{#if has_starred}}
+    <li>
+        <a href="#" class="sidebar-popover-unstar" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-star" aria-hidden="true"></i>
+            {{#tr this}}Unstar messages in <b>__topic_name__</b>{{/tr}}
+        </a>
+    </li>
+    {{/if}}
     <li>
         <a class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-book" aria-hidden="true"></i>

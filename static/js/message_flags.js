@@ -109,8 +109,13 @@ exports.toggle_starred_and_update_server = function (message) {
     }
 };
 
-exports.unstar_all_messages = function () {
-    const starred_msg_ids = starred_messages.get_starred_msg_ids();
+exports.unstar_messages = function (topic_name, stream_id) {
+    let starred_msg_ids;
+    if (topic_name && stream_id) {
+        starred_msg_ids = starred_messages.get_topic_starred_msg_ids(topic_name, stream_id);
+    } else {
+        starred_msg_ids = starred_messages.get_starred_msg_ids();
+    }
     channel.post({
         url: '/json/messages/flags',
         idempotent: true,
