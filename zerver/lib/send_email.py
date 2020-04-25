@@ -273,13 +273,15 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     subject_path = "templates/%s.subject.txt" % (email_id,)
     os.makedirs(os.path.dirname(html_source_template_path), exist_ok=True)
 
+    plain_text_template = parsed_email_template.get_payload()
+
     # First, we render the markdown input file just like our
     # user-facing docs with render_markdown_path.
     with open(plain_text_template_path, "w") as f:
-        f.write(parsed_email_template.get_payload())
+        f.write(plain_text_template)
 
-    from zerver.templatetags.app_filters import render_markdown_path
-    rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
+    from markdown import markdown
+    rendered_input = markdown(plain_text_template)
 
     # And then extend it with our standard email headers.
     with open(html_source_template_path, "w") as f:
