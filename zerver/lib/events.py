@@ -228,6 +228,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
         state['can_create_streams'] = user_profile.can_create_streams()
         state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
+        state['can_add_custom_emoji'] = user_profile.can_add_custom_emoji()
         state['cross_realm_bots'] = list(get_cross_realm_dicts())
         state['is_admin'] = user_profile.is_realm_admin
         state['is_guest'] = user_profile.is_guest
@@ -542,7 +543,8 @@ def apply_event(state: Dict[str, Any],
                 state['realm_upload_quota'] = event['extra_data']['upload_quota']
 
             policy_permission_dict = {'create_stream_policy': 'can_create_streams',
-                                      'invite_to_stream_policy': 'can_subscribe_other_users'}
+                                      'invite_to_stream_policy': 'can_subscribe_other_users',
+                                      'add_custom_emoji_policy': 'can_add_custom_emoji'}
 
             # Tricky interaction: Whether we can create streams and can subscribe other users
             # can get changed here.

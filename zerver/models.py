@@ -170,7 +170,6 @@ class Realm(models.Model):
     message_content_allowed_in_email_notifications: bool = models.BooleanField(default=True)
 
     mandatory_topics: bool = models.BooleanField(default=False)
-    add_emoji_by_admins_only: bool = models.BooleanField(default=False)
     name_changes_disabled: bool = models.BooleanField(default=False)
     email_changes_disabled: bool = models.BooleanField(default=False)
     avatar_changes_disabled: bool = models.BooleanField(default=False)
@@ -191,6 +190,9 @@ class Realm(models.Model):
 
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy: int = models.PositiveSmallIntegerField(
+        default=POLICY_MEMBERS_ONLY)
+
+    add_custom_emoji_policy: int = models.PositiveSmallIntegerField(
         default=POLICY_MEMBERS_ONLY)
 
     USER_GROUP_EDIT_POLICY_MEMBERS = 1
@@ -336,7 +338,7 @@ class Realm(models.Model):
 
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
-        add_emoji_by_admins_only=bool,
+        add_custom_emoji_policy=int,
         allow_edit_history=bool,
         allow_message_deleting=bool,
         bot_creation_policy=int,
@@ -1164,7 +1166,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return False
 
     def has_permission(self, policy_name: str) -> bool:
-        if policy_name not in ['create_stream_policy', 'invite_to_stream_policy']:
+        if policy_name not in ['create_stream_policy', 'invite_to_stream_policy', 'add_custom_emoji_policy']:
             raise AssertionError("Invalid policy")
 
         if self.is_realm_admin:
@@ -1186,6 +1188,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission('invite_to_stream_policy')
+
+    def can_add_custom_emoji(self) -> bool:
+        return self.has_permission('add_custom_emoji_policy')
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)

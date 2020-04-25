@@ -1,9 +1,9 @@
-<div id="emoji-settings" data-name="emoji-settings" class="settings-section {{#if can_add_emojis}}can-edit{{/if}}">
+<div id="emoji-settings" data-name="emoji-settings" class="settings-section {{#if can_add_custom_emoji}}can-edit{{/if}}">
     <div class="emoji-settings-tip-container">
         {{> emoji_settings_tip}}
     </div>
     <p>{{#tr this}}Add extra emoji for members of the __realm_name__ organization.{{/tr}}</p>
-    <form class="form-horizontal admin-emoji-form {{#unless can_add_emojis}}hide{{/unless}}">
+    <form class="form-horizontal admin-emoji-form {{#unless can_add_custom_emoji}}hide{{/unless}}">
         <div class="add-new-emoji-box grey-box">
             <div class="new-emoji-form">
                 <div class="settings-section-title new-emoji-section-title no-padding">{{t "Add a new emoji" }}</div>

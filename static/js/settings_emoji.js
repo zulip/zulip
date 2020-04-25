@@ -1,24 +1,12 @@
 const render_admin_emoji_list = require('../templates/admin_emoji_list.hbs');
 const render_settings_emoji_settings_tip = require("../templates/settings/emoji_settings_tip.hbs");
+const settings_config = require("./settings_config");
 
 const meta = {
     loaded: false,
 };
 
-exports.can_add_emoji = function () {
-    if (page_params.is_guest) {
-        return false;
-    }
-
-    if (page_params.is_admin) {
-        return true;
-    }
-
-    // for normal users, we depend on the setting
-    return !page_params.realm_add_emoji_by_admins_only;
-};
-
-function can_admin_emoji(emoji) {
+function can_delete_emoji(emoji) {
     if (page_params.is_admin) {
         return true;
     }
@@ -26,7 +14,9 @@ function can_admin_emoji(emoji) {
         // If we don't have the author information then only admin is allowed to disable that emoji.
         return false;
     }
-    if (!page_params.realm_add_emoji_by_admins_only && people.is_current_user(emoji.author.email)) {
+    if (page_params.realm_add_custom_emoji_policy !==
+            settings_config.add_custom_emoji_policy_values.by_admins_only.code &&
+            people.is_current_user(emoji.author.email)) {
         return true;
     }
     return false;
@@ -34,10 +24,12 @@ function can_admin_emoji(emoji) {
 
 exports.update_custom_emoji_ui = function () {
     const rendered_tip = render_settings_emoji_settings_tip({
-        realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
+        realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
+        POLICY_ADMINS_ONLY: 2,
+        POLICY_FULL_MEMBERS_ONLY: 3,
     });
     $('#emoji-settings').find('.emoji-settings-tip-container').html(rendered_tip);
-    if (page_params.realm_add_emoji_by_admins_only && !page_params.is_admin) {
+    if (!page_params.can_add_custom_emoji) {
         $('.admin-emoji-form').hide();
         $('#emoji-settings').removeClass('can_edit');
     } else {
@@ -77,7 +69,7 @@ exports.populate_emoji = function (emoji_data) {
                         display_name: item.name.replace(/_/g, ' '),
                         source_url: item.source_url,
                         author: item.author || '',
-                        can_admin_emoji: can_admin_emoji(item),
+                        can_delete_emoji: can_delete_emoji(item),
                     },
                 });
             }

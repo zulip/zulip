@@ -83,7 +83,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'realm': {
         const realm_settings = {
-            add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
+            add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
             allow_edit_history: noop,
             allow_message_deleting: noop,
             allow_message_editing: noop,
@@ -127,7 +127,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         };
         if (event.op === 'update' && Object.prototype.hasOwnProperty.call(realm_settings, event.property)) {
             page_params['realm_' + event.property] = event.value;
-            realm_settings[event.property]();
             settings_org.sync_realm_settings(event.property);
             if (event.property === 'create_stream_policy') {
                 // TODO: Add waiting_period_threshold logic here.
@@ -137,7 +136,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 // TODO: Add waiting_period_threshold logic here.
                 page_params.can_invite_to_stream = page_params.is_admin ||
                     page_params.realm_invite_to_stream_policy === 1;
+            } else if (event.property === 'add_custom_emoji_policy') {
+                page_params.can_add_custom_emoji = page_params.is_admin ||
+                    page_params.realm_add_custom_emoji_policy === 1;
             }
+            realm_settings[event.property]();
 
             if (event.property === 'name' && window.electron_bridge !== undefined) {
                 window.electron_bridge.send_event('realm_name', event.value);

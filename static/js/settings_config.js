@@ -95,6 +95,8 @@ exports.create_stream_policy_values = {
 
 exports.invite_to_stream_policy_values = exports.create_stream_policy_values;
 
+exports.add_custom_emoji_policy_values = exports.create_stream_policy_values;
+
 exports.user_group_edit_policy_values = {
     by_admins_only: {
         order: 1,

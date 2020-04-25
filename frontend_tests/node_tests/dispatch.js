@@ -258,6 +258,13 @@ const event_fixtures = {
         value: 3,
     },
 
+    realm__update__add_custom_emoji_policy: {
+        type: 'realm',
+        op: 'update',
+        property: 'add_custom_emoji_policy',
+        value: 2,
+    },
+
     realm__update__disallow_disposable_email_addresses: {
         type: 'realm',
         op: 'update',
@@ -945,6 +952,9 @@ with_overrides(function (override) {
 
     event = event_fixtures.realm__update__bot_creation_policy;
     test_realm_integer(event, 'realm_bot_creation_policy');
+
+    event = event_fixtures.realm__update__add_custom_emoji_policy;
+    test_realm_integer(event, 'realm_add_custom_emoji_policy');
 
     event = event_fixtures.realm__update__invite_required;
     test_realm_boolean(event, 'realm_invite_required');

@@ -70,6 +70,8 @@ exports.get_organization_settings_options = () => {
         settings_config.user_group_edit_policy_values);
     options.private_message_policy_values = exports.get_sorted_options_list(
         settings_config.private_message_policy_values);
+    options.add_custom_emoji_policy_values = exports.get_sorted_options_list(
+        settings_config.add_custom_emoji_policy_values);
     return options;
 };
 
@@ -98,13 +100,6 @@ function get_property_value(property_name) {
             return "three_days";
         }
         return "custom_days";
-    }
-
-    if (property_name === 'realm_add_emoji_by_admins_only') {
-        if (page_params.realm_add_emoji_by_admins_only) {
-            return "by_admins_only";
-        }
-        return "by_anyone";
     }
 
     if (property_name === 'realm_msg_edit_limit_setting') {
@@ -182,7 +177,7 @@ const simple_dropdown_properties = ['realm_create_stream_policy',
                                     'realm_invite_to_stream_policy',
                                     'realm_user_group_edit_policy',
                                     'realm_private_message_policy',
-                                    'realm_add_emoji_by_admins_only',
+                                    'realm_add_custom_emoji_policy',
                                     'realm_user_invite_restriction'];
 
 function set_property_dropdown_value(property_name) {
@@ -720,14 +715,6 @@ exports.build_page = function () {
         } else if (subsection === 'other_settings') {
             const code_block_language_value = exports.default_code_language_widget.value();
             data.default_code_block_language = JSON.stringify(code_block_language_value);
-        } else if (subsection === 'other_permissions') {
-            const add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
-
-            if (add_emoji_permission === "by_admins_only") {
-                data.add_emoji_by_admins_only = true;
-            } else if (add_emoji_permission === "by_anyone") {
-                data.add_emoji_by_admins_only = false;
-            }
         } else if (subsection === 'org_join') {
             const org_join_restrictions = $('#id_realm_org_join_restrictions').val();
             if (org_join_restrictions === "only_selected_domain") {

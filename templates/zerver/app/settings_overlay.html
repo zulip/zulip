@@ -73,8 +73,13 @@
                     {% if is_guest %}
                         <i class="locked fa fa-lock" title="{{ _('Guest users cannot edit custom emoji.') }}"></i>
                     {% else %}
-                        {% if not is_admin and user_profile and user_profile.realm.add_emoji_by_admins_only %}
-                        <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                        {% if not is_admin and user_profile and not user_profile.can_add_custom_emoji() %}
+                            {% if user_profile.realm.add_custom_emoji_policy == user_profile.realm.POLICY_ADMINS_ONLY %}
+                            <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                            {% endif %}
+                            {% if user_profile.realm.add_custom_emoji_policy == user_profile.realm.POLICY_FULL_MEMBERS_ONLY %}
+                            <i class="locked fa fa-lock" title="{{ _('Only organization administrators and full members can edit these settings.') }}"></i>
+                            {% endif %}
                         {% endif %}
                     {% endif %}
                 </li>

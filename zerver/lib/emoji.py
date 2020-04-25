@@ -79,8 +79,11 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str]=None)
     # Realm administrators can always administer emoji
     if user_profile.is_realm_admin:
         return
-    if user_profile.realm.add_emoji_by_admins_only:
-        raise OrganizationAdministratorRequired()
+    if not user_profile.can_add_custom_emoji():
+        if user_profile.realm.add_custom_emoji_policy == Realm.POLICY_ADMINS_ONLY:
+            raise OrganizationAdministratorRequired()
+        if user_profile.realm.add_custom_emoji_policy == Realm.POLICY_FULL_MEMBERS_ONLY:
+            raise JsonableError(_("Your account is too new to add a custom emoji"))
 
     # Otherwise, normal users can add emoji
     if emoji_name is None:

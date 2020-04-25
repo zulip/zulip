@@ -503,6 +503,7 @@ class RealmTest(ZulipTestCase):
             digest_weekday=10,
             user_group_edit_policy=10,
             private_message_policy=10,
+            add_custom_emoji_policy=10,
         )
 
         # We need an admin user.
@@ -763,6 +764,9 @@ class RealmAPITest(ZulipTestCase):
             private_message_policy=[Realm.PRIVATE_MESSAGE_POLICY_UNLIMITED,
                                     Realm.PRIVATE_MESSAGE_POLICY_DISABLED],
             invite_to_stream_policy=[Realm.POLICY_ADMINS_ONLY,
+                                     Realm.POLICY_MEMBERS_ONLY,
+                                     Realm.POLICY_FULL_MEMBERS_ONLY],
+            add_custom_emoji_policy=[Realm.POLICY_ADMINS_ONLY,
                                      Realm.POLICY_MEMBERS_ONLY,
                                      Realm.POLICY_FULL_MEMBERS_ONLY],
             bot_creation_policy=[1, 2],
