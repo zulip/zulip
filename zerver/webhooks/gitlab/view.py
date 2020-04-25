@@ -387,12 +387,17 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
 
 def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[str]) -> Optional[str]:
     event = validate_extract_webhook_http_header(request, 'X_GITLAB_EVENT', 'GitLab')
+    if event == "System Hook":
+        # Convert the event name to a Gitlab event title
+        event_name = payload.get('event_name', payload.get('object_kind'))
+        event = event_name.split("__")[0].replace("_", " ").title()
+        event = f"{event} Hook"
     if event in ['Confidential Issue Hook', 'Issue Hook', 'Merge Request Hook', 'Wiki Page Hook']:
-        action = payload['object_attributes'].get('action')
-        event = "{} {}".format(event, action)
+        action = payload['object_attributes'].get('action', 'open')
+        event = f"{event} {action}"
     elif event in ['Confidential Note Hook', 'Note Hook']:
         action = payload['object_attributes'].get('noteable_type')
-        event = "{} {}".format(event, action)
+        event = f"{event} {action}"
     elif event == 'Push Hook':
         if branches is not None:
             branch = get_branch_name(payload)
