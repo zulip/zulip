@@ -21,7 +21,32 @@ exports.set_notification_api = function (n) {
     NotificationAPI = n;
 };
 
-if (window.Notification) {
+if (window.electron_bridge && window.electron_bridge.new_notification) {
+    class ElectronBridgeNotification extends EventTarget {
+        constructor(title, options) {
+            super();
+            Object.assign(
+                this,
+                window.electron_bridge.new_notification(title, options, (type, eventInit) =>
+                    this.dispatchEvent(new Event(type, eventInit))
+                )
+            );
+        }
+
+        static get permission() {
+            return Notification.permission;
+        }
+
+        static async requestPermission(callback) {
+            if (callback) {
+                callback(await Promise.resolve(Notification.permission));
+            }
+            return Notification.permission;
+        }
+    }
+
+    NotificationAPI = ElectronBridgeNotification;
+} else if (window.Notification) {
     NotificationAPI = window.Notification;
 }
 
