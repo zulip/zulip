@@ -29,6 +29,7 @@ from typing import Any, Dict, Optional
 import requests
 import ujson
 
+from scripts.lib.zulip_tools import BOLDRED, ENDC
 from tools.lib.test_script import prepare_puppeteer_run
 from zerver.models import UserProfile, Message, get_user_by_delivery_email, get_realm
 from zerver.lib.actions import (
@@ -143,6 +144,7 @@ def generate_screenshot_from_config(integration_name: str, screenshot_config: Sc
     message_sent = send_bot_payload_message(bot, integration, fixture_path, options.custom_headers)
     if message_sent:
         capture_last_message_screenshot(bot, image_path)
+        print(f'Screenshot captured to: {BOLDRED}{image_path}{ENDC}')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('integration', type=str, help='Name of the integration')

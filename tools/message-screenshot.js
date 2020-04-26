@@ -60,7 +60,6 @@ async function run() {
         const imageDir = path.dirname(imagePath);
         mkdirp.sync(imageDir);
         await page.screenshot({ path: imagePath, clip: clip });
-        console.log(`Screenshot captured to: \x1B[1;31m${imagePath}\n`);
     } catch (e) {
         console.log(e);
         process.exit(1);
