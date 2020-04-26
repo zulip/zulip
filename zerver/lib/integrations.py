@@ -197,6 +197,22 @@ def split_fixture_path(path: str) -> Tuple[str, str]:
     integration_name = os.path.split(os.path.dirname(path))[-1]
     return integration_name, fixture_name
 
+# FIXME: Change to namedtuple if we drop Python3.6: No default values support on namedtuples (or dataclass)
+class ScreenshotConfig:
+    def __init__(self, fixture_name: str, image_name: str='001.png', image_dir: Optional[str]=None):
+        self.fixture_name = fixture_name
+        self.image_name = image_name
+        self.image_dir = image_dir
+
+def get_fixture_and_image_paths(integration: WebhookIntegration,
+                                screenshot_config: ScreenshotConfig) -> Tuple[str, str]:
+    fixture_dir = os.path.join('zerver', 'webhooks', integration.name, 'fixtures')
+    fixture_path = os.path.join(fixture_dir, screenshot_config.fixture_name)
+    image_dir = screenshot_config.image_dir or integration.name
+    image_name = screenshot_config.image_name
+    image_path = os.path.join('static/images/integrations', image_dir, image_name)
+    return fixture_path, image_path
+
 class HubotIntegration(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
 
