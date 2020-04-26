@@ -444,7 +444,7 @@ python_rules = RuleList(
          'bad_lines': ['desc = models.CharField(null=True)  # type: Text',
                        'stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Stream'],
          },
-        {'pattern': r' = models[.](?!NullBoolean).*\)  # type: Optional',  # Optional tag, except NullBoolean(Field)
+        {'pattern': r' = models[.].*  # type: Optional',  # Optional tag
          'exclude_pattern': 'null=True',
          'include_only': {"zerver/models.py"},
          'description': 'Model variable annotated with Optional but variable does not have null=true.',
