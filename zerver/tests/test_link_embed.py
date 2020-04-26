@@ -726,7 +726,7 @@ class PreviewTestCase(ZulipTestCase):
             'message_realm_id': msg.sender.realm_id,
             'message_content': url}
 
-        mocked_data = {'title': 'Clearer Code at Scale - Static Types at Zulip and Dropbox'}
+        mocked_data = {'oembed': True, 'image': 'https://i.ytimg.com/vi/eSJTXC7Ixgg/hqdefault.jpg', 'type': 'video', 'html': '<iframe width="640" height="360" src="https://www.youtube.com/embed/eSJTXC7Ixgg?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>', 'title': 'Clearer Code at Scale - Static Types at Zulip and Dropbox | Greg Price @ PyBay 2018', 'description': None}
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with mock.patch('requests.get', mocked_response), self.assertLogs(level='INFO') as info_logs:
@@ -738,5 +738,5 @@ class PreviewTestCase(ZulipTestCase):
             )
 
         msg.refresh_from_db()
-        expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
+        expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox | Greg Price @ PyBay 2018</a></p>\n<div class="embed-video message_inline_image"><a data-id="&lt;iframe width=&quot;640&quot; height=&quot;360&quot; src=&quot;https://www.youtube.com/embed/eSJTXC7Ixgg?feature=oembed&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&quot; allowfullscreen&gt;&lt;/iframe&gt;" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" title="Clearer Code at Scale - Static Types at Zulip and Dropbox | Greg Price @ PyBay 2018"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
         self.assertEqual(expected_content, msg.rendered_content)

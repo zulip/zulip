@@ -436,6 +436,23 @@ HEAD_END_RE = re.compile('^/head[ >]')
 META_START_RE = re.compile('^meta[ >]')
 META_END_RE = re.compile('^/meta[ >]')
 
+def get_whitelisted_urls(urls: Set[str]) -> Set[str]:
+    """
+    Receives a set of URLs and returns the set of
+    whitelisted URLs out of it.
+    """
+    youtube_urls = set()
+    for url in urls:
+        if is_youtube_url(url):
+            youtube_urls.add(url)
+    return youtube_urls
+
+def is_youtube_url(url: str) -> bool:
+    parsed_url = urllib.parse.urlparse(url)
+    if parsed_url.netloc.endswith('youtube.com') or parsed_url.netloc == 'youtu.be':
+        return True
+    return False
+
 def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
     in_head = False
     # HTML will auto close meta tags, when we start the next tag add
@@ -756,40 +773,22 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return image_info
         return None
 
-    def youtube_id(self, url: str) -> Optional[str]:
-        if not self.md.image_preview_enabled:
-            return None
-        # Youtube video id extraction regular expression from https://pastebin.com/KyKAFv1s
-        # Slightly modified to support URLs of the forms
-        #   - youtu.be/<id>
-        #   - youtube.com/playlist?v=<id>&list=<list-id>
-        #   - youtube.com/watch_videos?video_ids=<id1>,<id2>,<id3>
-        # If it matches, match.group(2) is the video id.
-        schema_re = r'(?:https?://)'
-        host_re = r'(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)'
-        param_re = r'(?:(?:(?:v|embed)/)|' + \
-            r'(?:(?:(?:watch|playlist)(?:_popup|_videos)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v(?:ideo_ids)?=))'
-        id_re = r'([0-9A-Za-z_-]+)'
-        youtube_re = r'^({schema_re}?{host_re}{param_re}?)?{id_re}(?(1).+)?$'
-        youtube_re = youtube_re.format(schema_re=schema_re, host_re=host_re, id_re=id_re, param_re=param_re)
-        match = re.match(youtube_re, url)
-        # URLs of the form youtube.com/playlist?list=<list-id> are incorrectly matched
-        if match is None or match.group(2) == 'playlist':
-            return None
-        return match.group(2)
-
     def youtube_title(self, extracted_data: Dict[str, Any]) -> Optional[str]:
         title = extracted_data.get("title")
         if title is not None:
             return f"YouTube - {title}"
         return None
 
-    def youtube_image(self, url: str) -> Optional[str]:
-        yt_id = self.youtube_id(url)
-
-        if yt_id is not None:
-            return f"https://i.ytimg.com/vi/{yt_id}/default.jpg"
-        return None
+    def fix_youtube_thumbnail(self, extracted_data: Dict[str, Any]) -> None:
+        """
+        Changes the YouTube image URL from "i.ytimg.com/vi/<video_id>/*.jpg"
+        to "i.ytimg.com/vi/<video_id>/default.jpg".
+        """
+        parsed_image_url = urllib.parse.urlparse(extracted_data['image'])
+        image_url_path = parsed_image_url.path
+        image_url_path = re.sub(r'[^/]+$', 'default.jpg', image_url_path)
+        extracted_data['image'] = parsed_image_url.scheme + '://' + \
+            parsed_image_url.netloc + image_url_path
 
     def vimeo_id(self, url: str) -> Optional[str]:
         if not self.md.image_preview_enabled:
@@ -1071,18 +1070,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         div.set("class", "inline-preview-twitter")
         div.insert(0, twitter_data)
 
-    def handle_youtube_url_inlining(
-        self,
-        root: Element,
-        found_url: ResultWithFamily[Tuple[str, Optional[str]]],
-        yt_image: str,
-    ) -> None:
-        info = self.get_inlining_information(root, found_url)
-        (url, text) = found_url.result
-        yt_id = self.youtube_id(url)
-        self.add_a(info['parent'], yt_image, url, None, None, "youtube-video message_inline_image",
-                   yt_id, insertion_index=info['index'], already_thumbnailed=True)
-
     def find_proper_insertion_index(self, grandparent: Element, parent: Element,
                                     parent_index_in_grandparent: int) -> int:
         # If there are several inline images from same paragraph, ensure that
@@ -1204,20 +1191,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 rendered_tweet_count += 1
                 self.handle_tweet_inlining(root, found_url, twitter_data)
                 continue
-            youtube = self.youtube_image(url)
-            if youtube is not None:
-                self.handle_youtube_url_inlining(root, found_url, youtube)
-                # NOTE: We don't `continue` here, to allow replacing the URL with
-                # the title, if INLINE_URL_EMBED_PREVIEW feature is enabled.
-                # The entire preview would ideally be shown only if the feature
-                # is enabled, but URL previews are a beta feature and YouTube
-                # previews are pretty stable.
 
             db_data = self.md.zulip_db_data
             if db_data and db_data['sent_by_bot']:
                 continue
 
-            if not self.md.url_embed_preview_enabled:
+            # We'll preview the whitelisted URLs (if any) even if
+            # url_embed_preview_enabled is disabled.
+            whitelisted_url = get_whitelisted_urls({url})
+            if not (self.md.url_embed_preview_enabled or whitelisted_url):
                 continue
 
             try:
@@ -1227,11 +1209,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
 
             if extracted_data:
-                if youtube is not None:
-                    title = self.youtube_title(extracted_data)
-                    if title is not None:
-                        found_url.family.child.text = title
-                    continue
+                if is_youtube_url(url):
+                    # We use a fix sized thumbnail for every YouTube preview. So,
+                    # thumbnail resolution is always converted to `default.jpg`.
+                    self.fix_youtube_thumbnail(extracted_data)
+                    if self.markdown.url_embed_preview_enabled:
+                        # Show YouTube title instead of URL if preview is enabled.
+                        title = self.youtube_title(extracted_data)
+                        if title is not None:
+                            found_url.family.child.text = title
                 self.add_embed(root, url, extracted_data)
                 if self.vimeo_id(url):
                     title = self.vimeo_title(extracted_data)

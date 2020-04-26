@@ -447,37 +447,6 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(msg)
         self.assertEqual(converted, '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>')
 
-    def test_inline_youtube(self) -> None:
-        msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
-        converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
-
-        msg = 'http://www.youtube.com/watch?v=hx1mjT73xYE'
-        converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(converted, '<p><a href="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
-
-        msg = 'https://youtu.be/hx1mjT73xYE'
-        converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(converted, '<p><a href="https://youtu.be/hx1mjT73xYE">https://youtu.be/hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="https://youtu.be/hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
-
-        msg = 'https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo'
-        not_converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(not_converted, '<p><a href="https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo">https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo</a></p>')
-
-        msg = 'https://www.youtube.com/playlist?v=O5nskjZ_GoI&list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo'
-        converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(converted, '<p><a href="https://www.youtube.com/playlist?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo">https://www.youtube.com/playlist?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo</a></p>\n<div class="youtube-video message_inline_image"><a data-id="O5nskjZ_GoI" href="https://www.youtube.com/playlist?v=O5nskjZ_GoI&amp;list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo"><img src="https://i.ytimg.com/vi/O5nskjZ_GoI/default.jpg"></a></div>')
-
-        msg = 'http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw'
-        converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(converted, '<p><a href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw">http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw</a></p>\n<div class="youtube-video message_inline_image"><a data-id="nOJgD4fcZhI" href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"><img src="https://i.ytimg.com/vi/nOJgD4fcZhI/default.jpg"></a></div>')
-
     @override_settings(INLINE_URL_EMBED_PREVIEW=False)
     def test_inline_vimeo(self) -> None:
         msg = 'Check out the debate: https://vimeo.com/246979354'
@@ -719,24 +688,6 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(converted, '<p>Test: <a href="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=thumbnail"></a></div>')
-
-    def test_inline_youtube_preview(self) -> None:
-        # Test youtube urls in spoilers
-        msg = """\n```spoiler Check out this Pycon Video\nhttps://www.youtube.com/watch?v=0c46YHS3RY8\n```"""
-        converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(converted, '<div class="spoiler-block"><div class="spoiler-header">\n\n<p>Check out this Pycon Video</p>\n</div><div class="spoiler-content" aria-hidden="true">\n\n<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div></div></div>')
-
-        # Test youtube urls in normal messages.
-        msg = '[Youtube link](https://www.youtube.com/watch?v=0c46YHS3RY8)'
-        converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(converted, '<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">Youtube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div>')
-
-        msg = 'https://www.youtube.com/watch?v=0c46YHS3RY8\n\nSample text\n\nhttps://www.youtube.com/watch?v=lXFO2ULktEI'
-        converted = markdown_convert_wrapper(msg)
-
-        self.assertEqual(converted, '<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="https://i.ytimg.com/vi/0c46YHS3RY8/default.jpg"></a></div><p>Sample text</p>\n<p><a href="https://www.youtube.com/watch?v=lXFO2ULktEI">https://www.youtube.com/watch?v=lXFO2ULktEI</a></p>\n<div class="youtube-video message_inline_image"><a data-id="lXFO2ULktEI" href="https://www.youtube.com/watch?v=lXFO2ULktEI"><img src="https://i.ytimg.com/vi/lXFO2ULktEI/default.jpg"></a></div>')
 
     def test_twitter_id_extraction(self) -> None:
         self.assertEqual(get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
