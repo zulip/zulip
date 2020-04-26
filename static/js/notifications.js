@@ -271,7 +271,9 @@ if (window.electron_bridge !== undefined) {
     // is often referred to as inline reply feature. This is done so desktop app doesn't
     // have to depend on channel.post for setting crsf_token and narrow.by_topic
     // to narrow to the message being sent.
-    window.electron_bridge.send_notification_reply_message_supported = true;
+    if (window.electron_bridge.set_send_notification_reply_message_supported !== undefined) {
+        window.electron_bridge.set_send_notification_reply_message_supported(true);
+    }
     window.electron_bridge.on_event('send_notification_reply_message', function (message_id, reply) {
         const message = message_store.get(message_id);
         const data = {
