@@ -851,6 +851,10 @@ def do_deactivate_stream(stream: Stream, log: bool=True) -> None:
     if DefaultStream.objects.filter(realm_id=stream.realm_id, stream_id=stream.id).exists():
         do_remove_default_stream(stream)
 
+    default_stream_groups_for_stream = DefaultStreamGroup.objects.filter(streams__id=stream.id)
+    for group in default_stream_groups_for_stream:
+        do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
+
     # Remove the old stream information from remote cache.
     old_cache_key = get_stream_cache_key(old_name, stream.realm_id)
     cache_delete(old_cache_key)
