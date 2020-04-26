@@ -373,8 +373,7 @@ function process_notification(notification) {
         ];
     }
 
-    // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
-    if (notification.desktop_notify && /webkit/i.test(navigator.userAgent)) {
+    if (notification.desktop_notify) {
         const icon_url = people.small_avatar_url(message);
         notification_object = new NotificationAPI(title, {
             icon: icon_url,
@@ -396,28 +395,6 @@ function process_notification(notification) {
         notification_object.onclose = function () {
             notice_memory.delete(key);
         };
-    } else if (notification.desktop_notify && typeof Notification !== "undefined" && /mozilla/i.test(navigator.userAgent)) {
-        Notification.requestPermission(function (perm) {
-            if (perm === 'granted') {
-                notification_object = new Notification(title, {
-                    body: content,
-                    iconUrl: people.small_avatar_url(message),
-                    tag: message.id,
-                });
-                notification_object.onclick = function () {
-                    if (message.type === "test-notification") {
-                        return;
-                    }
-
-                    // We don't need to bring the browser window into focus explicitly
-                    // by calling `window.focus()` as well as don't need to clear the
-                    // notification since it is the default behavior in Firefox.
-                    narrow.by_topic(message.id, {trigger: 'notification'});
-                };
-            } else {
-                in_browser_notify(message, title, content, raw_operators, opts);
-            }
-        });
     } else {
         in_browser_notify(message, title, content, raw_operators, opts);
     }
