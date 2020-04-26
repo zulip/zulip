@@ -35,7 +35,8 @@ from zerver.lib.actions import (
     do_create_user, notify_created_bot, bulk_add_subscriptions, do_change_avatar_fields)
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.integrations import WebhookIntegration, INTEGRATIONS, split_fixture_path
+from zerver.lib.integrations import (
+    WebhookIntegration, INTEGRATIONS, split_fixture_path, ScreenshotConfig, get_fixture_and_image_paths)
 from zerver.lib.webhooks.common import get_fixture_http_headers
 from zerver.lib.storage import static_path
 
@@ -84,12 +85,6 @@ def get_requests_headers(integration_name: str, fixture_name: str) -> Dict[str, 
         return header.replace('_', '-')
 
     return {fix_name(k): v for k, v in headers.items()}
-
-def webhook_json_fixture(path: str) -> str:
-    path = os.path.abspath(path)
-    if not (os.path.exists(path) and path.endswith('.json') and 'webhooks' in path):
-        raise argparse.ArgumentTypeError('Not a valid webhook JSON fixture')
-    return path
 
 def custom_headers(headers_json: str) -> Dict[str, str]:
     if not headers_json:
@@ -140,19 +135,25 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
     screenshot_script = os.path.join(TOOLS_DIR, 'message-screenshot.js')
     subprocess.check_call(['node', screenshot_script, message_id, image_path])
 
+def generate_screenshot_from_config(integration_name: str, screenshot_config: ScreenshotConfig) -> None:
+    integration = get_integration(integration_name)
+    fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
+    bot = create_integration_bot(integration)
+    create_integration_stream(integration, bot)
+    message_sent = send_bot_payload_message(bot, integration, fixture_path, options.custom_headers)
+    if message_sent:
+        capture_last_message_screenshot(bot, image_path)
+
 parser = argparse.ArgumentParser()
-parser.add_argument('fixture', type=webhook_json_fixture, help='Path to the fixture to use')
+parser.add_argument('integration', type=str, help='Name of the integration')
+parser.add_argument('fixture', type=str, help='Name of the fixture file to use')
+parser.add_argument('--image-name', type=str, default='001.png', help='Name for the screenshot image')
+parser.add_argument('--image-dir', type=str, help='Directory name where to save the screenshot image')
 parser.add_argument('-H', '--custom-headers',
                     type=custom_headers,
                     help='Any additional headers to be sent with the request.')
-options = parser.parse_args()
 
+options = parser.parse_args()
 prepare_puppeteer_run()
-integration_name, fixture_name = split_fixture_path(options.fixture)
-integration = get_integration(integration_name)
-bot = create_integration_bot(integration)
-create_integration_stream(integration, bot)
-message_sent = send_bot_payload_message(bot, integration, options.fixture, options.custom_headers)
-if message_sent:
-    image_path = static_path('images/integrations/{name}/001.png'.format(name=integration.name))
-    capture_last_message_screenshot(bot, image_path)
+screenshot_config = ScreenshotConfig(options.fixture, options.image_name, options.image_dir)
+generate_screenshot_from_config(options.integration, screenshot_config)
