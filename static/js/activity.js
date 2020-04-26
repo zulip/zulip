@@ -272,11 +272,11 @@ exports.compute_active_status = function () {
     // * For the electron desktop app, we also know whether the
     //   user is active or idle elsewhere on their system.
     //
-    // The check for `idle_on_system === undefined` is feature
+    // The check for `get_idle_on_system === undefined` is feature
     // detection; older desktop app releases never set that property.
     if (window.electron_bridge !== undefined
-            && window.electron_bridge.idle_on_system !== undefined) {
-        if (window.electron_bridge.idle_on_system) {
+            && window.electron_bridge.get_idle_on_system !== undefined) {
+        if (window.electron_bridge.get_idle_on_system()) {
             return exports.IDLE;
         }
         return exports.ACTIVE;

@@ -868,14 +868,14 @@ run_test('electron_bridge', () => {
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
 
     window.electron_bridge = {
-        idle_on_system: true,
+        get_idle_on_system: () => true,
     };
     assert.equal(activity.compute_active_status(), activity.IDLE);
     activity.client_is_active = false;
     assert.equal(activity.compute_active_status(), activity.IDLE);
 
     window.electron_bridge = {
-        idle_on_system: false,
+        get_idle_on_system: () => false,
     };
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
     activity.client_is_active = true;
