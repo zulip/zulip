@@ -105,7 +105,8 @@ if 'host' in pg_args:
         pg_args['sslmode'] = 'verify-full'
     pg_args['connect_timeout'] = '600'
 else:
-    pg_args['user'] = 'zulip'
+    pg_args['user'] = 'zulip_test'
+    pg_args['dbname'] = 'zulip_test'
 
 conn = None
 
