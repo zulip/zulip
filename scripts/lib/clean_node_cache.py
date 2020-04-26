@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import subprocess
 import sys
 
 from typing import Set
@@ -14,14 +13,6 @@ from scripts.lib.zulip_tools import \
 
 ENV = get_environment()
 NODE_MODULES_CACHE_PATH = "/srv/zulip-npm-cache"
-if ENV == "travis":
-    NODE_MODULES_CACHE_PATH = os.path.join(os.environ["HOME"], "zulip-npm-cache")
-    try:
-        subprocess.check_output(["/home/travis/zulip-yarn/bin/yarn", '--version'])
-    except OSError:
-        print('yarn not found. Most probably we are running static-analysis and '
-              'hence yarn is not installed. Exiting without cleaning npm cache.')
-        sys.exit(0)
 
 def get_caches_in_use(threshold_days: int) -> Set[str]:
     setups_to_check = {ZULIP_PATH}
