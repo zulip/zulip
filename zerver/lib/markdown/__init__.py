@@ -1213,11 +1213,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     # We use a fix sized thumbnail for every YouTube preview. So,
                     # thumbnail resolution is always converted to `default.jpg`.
                     self.fix_youtube_thumbnail(extracted_data)
-                    if self.markdown.url_embed_preview_enabled:
-                        # Show YouTube title instead of URL if preview is enabled.
-                        title = self.youtube_title(extracted_data)
-                        if title is not None:
-                            found_url.family.child.text = title
+                    # Show YouTube title instead of URL.
+                    title = self.youtube_title(extracted_data)
+                    if title is not None:
+                        found_url.family.child.text = title
                 self.add_embed(root, url, extracted_data)
                 if self.vimeo_id(url):
                     title = self.vimeo_title(extracted_data)
