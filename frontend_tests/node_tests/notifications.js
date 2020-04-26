@@ -266,6 +266,8 @@ run_test('basic_notifications', () => {
             last_shown_message_id = this.tag;
         }
 
+        addEventListener() {}
+
         close() {
             last_closed_message_id = this.tag;
         }
