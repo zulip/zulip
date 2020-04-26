@@ -163,10 +163,12 @@ exports.initialize_kitchen_sink_stuff = function () {
             const imgW = elem.find("img")[0].width;
             const imgH = elem.find("img")[0].height;
             // Ensure height doesn't change on mouse enter
-            elem.css("height", imgH);
+            elem.css("height", `${imgH}px`);
             // variables to set play button position
-            elem.css("--margin-left", (imgW - 30) / 2)
-                .css("--margin-top", (imgH - 26) / 2);
+            const marginLeft = (imgW - 30) / 2;
+            const marginTop = (imgH - 26) / 2;
+            elem.css("--margin-left", `${marginLeft}px`)
+                .css("--margin-top", `${marginTop}px`);
             elem.data("entered-before", true);
         }
         elem.addClass("fa fa-play");
