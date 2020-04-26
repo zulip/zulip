@@ -25,13 +25,6 @@ if (window.Notification) {
     NotificationAPI = window.Notification;
 }
 
-function cancel_notification_object(notification_object) {
-    // We must remove the .onclose so that it does not trigger on .cancel
-    notification_object.onclose = function () {};
-    notification_object.onclick = function () {};
-    notification_object.close();
-}
-
 exports.get_notifications = function () {
     return notice_memory;
 };
@@ -49,7 +42,7 @@ exports.initialize = function () {
         window_has_focus = true;
 
         for (const notice_mem_entry of notice_memory.values()) {
-            cancel_notification_object(notice_mem_entry.obj);
+            notice_mem_entry.obj.close();
         }
         notice_memory.clear();
 
@@ -351,7 +344,7 @@ function process_notification(notification) {
         msg_count = notice_memory.get(key).msg_count + 1;
         title = msg_count + " messages from " + title;
         notification_object = notice_memory.get(key).obj;
-        cancel_notification_object(notification_object);
+        notification_object.close();
     }
 
     if (message.type === "private") {
@@ -435,7 +428,7 @@ exports.process_notification = process_notification;
 exports.close_notification = function (message) {
     for (const [key, notice_mem_entry] of notice_memory) {
         if (notice_mem_entry.message_id === message.id) {
-            cancel_notification_object(notice_mem_entry.obj);
+            notice_mem_entry.obj.close();
             notice_memory.delete(key);
         }
     }
