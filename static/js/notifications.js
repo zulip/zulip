@@ -91,12 +91,12 @@ function update_notification_sound_source() {
 }
 
 exports.permission_state = function () {
-    if (window.Notification === undefined) {
+    if (NotificationAPI === undefined) {
         // act like notifications are blocked if they do not have access to
         // the notification API.
         return "denied";
     }
-    return window.Notification.permission;
+    return NotificationAPI.permission;
 };
 
 let new_message_count = 0;
