@@ -866,7 +866,8 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         stream_push_notify = user_data.get('stream_push_notify', False)
         stream_email_notify = user_data.get('stream_email_notify', False)
         topic_follow_email_notify = user_data.get('topic_follow_email_notify', False)
-        wildcard_mention_notify = (user_data.get('wildcard_mention_notify', False) and
+        wildcard_mention_notify = ((user_data.get('topic_follow_wildcard_mention_notify', False) or
+                                    user_data.get('wildcard_mention_notify', False)) and
                                    'wildcard_mentioned' in flags and 'read' not in flags)
 
         # We first check if a message is potentially mentionable,
@@ -970,6 +971,8 @@ def process_message_update_event(event_template: Mapping[str, Any],
     stream_email_user_ids = set(event_template.get('stream_email_user_ids', []))
     wildcard_mention_user_ids = set(event_template.get('wildcard_mention_user_ids', []))
     topic_follow_email_user_ids = set(event_template.get('topic_follow_email_user_ids', []))
+    topic_follow_wildcard_mention_user_ids = \
+        set(event_template.get('topic_follow_wildcard_mention_user_ids', []))
     push_notify_user_ids = set(event_template.get('push_notify_user_ids', []))
 
     stream_name = event_template.get('stream_name')
@@ -983,7 +986,8 @@ def process_message_update_event(event_template: Mapping[str, Any],
                 user_event[key] = user_data[key]
         wildcard_mentioned = 'wildcard_mentioned' in user_event['flags']
         wildcard_mention_notify = wildcard_mentioned and (
-            user_profile_id in wildcard_mention_user_ids)
+            (user_profile_id in wildcard_mention_user_ids or
+             user_profile_id in topic_follow_wildcard_mention_user_ids))
 
         maybe_enqueue_notifications_for_message_update(
             user_profile_id=user_profile_id,

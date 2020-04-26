@@ -992,6 +992,7 @@ class RecipientInfoResult(TypedDict):
     stream_push_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
     topic_follow_email_user_ids: Set[int]
+    topic_follow_wildcard_mention_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
     long_term_idle_user_ids: Set[int]
     default_bot_user_ids: Set[int]
@@ -1006,6 +1007,7 @@ def get_recipient_info(recipient: Recipient,
     stream_email_user_ids: Set[int] = set()
     wildcard_mention_user_ids: Set[int] = set()
     topic_follow_email_user_ids: Set[int] = set()
+    topic_follow_wildcard_mention_user_ids: Set[int] = set()
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -1125,6 +1127,12 @@ def get_recipient_info(recipient: Recipient,
                 if should_send("wildcard_mentions_notify", row)
             }
 
+            topic_follow_wildcard_mention_user_ids = {
+                row['user_profile_id']
+                for row in follower_rows
+                if should_send('wildcard_mentions_notify', row, check_active=True)
+            }
+
     elif recipient.type == Recipient.HUDDLE:
         message_to_user_ids = get_huddle_user_ids(recipient)
 
@@ -1233,6 +1241,7 @@ def get_recipient_info(recipient: Recipient,
         stream_email_user_ids=stream_email_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         topic_follow_email_user_ids=topic_follow_email_user_ids,
+        topic_follow_wildcard_mention_user_ids=topic_follow_wildcard_mention_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
         default_bot_user_ids=default_bot_user_ids,
@@ -1415,8 +1424,11 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         # code block).
         if message['message'].mentions_wildcard:
             message['wildcard_mention_user_ids'] = info['wildcard_mention_user_ids']
+            message['topic_follow_wildcard_mention_user_ids'] = \
+                info['topic_follow_wildcard_mention_user_ids']
         else:
             message['wildcard_mention_user_ids'] = []
+            message['topic_follow_wildcard_mention_user_ids'] = []
 
         '''
         Once we have the actual list of mentioned ids from message
@@ -1530,6 +1542,8 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 stream_email_notify=(user_id in message['stream_email_user_ids']),
                 wildcard_mention_notify=(user_id in message['wildcard_mention_user_ids']),
                 topic_follow_email_notify=(user_id in message['topic_follow_email_user_ids']),
+                topic_follow_wildcard_mention_notify=(
+                    user_id in message['topic_follow_wildcard_mention_user_ids']),
             )
             for user_id in user_ids
         ]
@@ -4447,8 +4461,11 @@ def do_update_message(user_profile: UserProfile, message: Message,
         event['presence_idle_user_ids'] = filter_presence_idle_user_ids(info['active_user_ids'])
         if message.mentions_wildcard:
             event['wildcard_mention_user_ids'] = list(info['wildcard_mention_user_ids'])
+            event['topic_follow_wildcard_mention_user_ids'] = \
+                list(info['topic_follow_wildcard_mention_user_ids'])
         else:
             event['wildcard_mention_user_ids'] = []
+            event['topic_follow_wildcard_mention_user_ids'] = []
 
     if topic_name is not None or new_stream is not None:
         orig_topic_name = message.topic_name()

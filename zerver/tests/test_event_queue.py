@@ -363,8 +363,28 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         destroy_event_queue(client_descriptor.event_queue.id)
         change_subscription_properties(user_profile, stream, sub, {'is_muted': False})
 
-        # With wildcard_mentions_notify=False, we treat the user as not mentioned.
+        # Test the hook for a followed topic with wildcard_mentions_notify = False
+        # but the topic_follow_wildcard_mentions_notify = True as default.
+        client_descriptor = allocate_event_queue()
         user_profile.wildcard_mentions_notify = False
+        user_profile.save()
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark",
+                                          content="@**all** what's up?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_list = mock_enqueue.call_args_list[0][0]
+
+            self.assertEqual(args_list, (user_profile.id, msg_id, False, False, True,
+                                         False, False, False, "Denmark", False, True,
+                                         {'email_notified': True, 'push_notified': True}))
+        destroy_event_queue(client_descriptor.event_queue.id)
+
+        # With wildcard_mentions_notify=False and topic_follow_wildcard_mentions_notify=False,
+        # we treat the user as not mentioned.
+        user_profile.wildcard_mentions_notify = False
+        user_profile.enable_topic_follow_wildcard_mentions_notify = False
         user_profile.save()
         client_descriptor = allocate_event_queue()
         self.assertTrue(client_descriptor.event_queue.empty())
@@ -380,6 +400,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                                          {'email_notified': False, 'push_notified': False}))
         destroy_event_queue(client_descriptor.event_queue.id)
         user_profile.wildcard_mentions_notify = True
+        user_profile.enable_topic_follow_wildcard_mentions_notify = False
         user_profile.save()
 
         # If wildcard_mentions_notify=True for a stream and False for a user, we treat the user

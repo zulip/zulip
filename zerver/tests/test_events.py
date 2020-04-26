@@ -717,6 +717,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('stream_push_user_ids', check_list(check_int)),
             ('stream_email_user_ids', check_list(check_int)),
             ('topic_follow_email_user_ids', check_list(check_int)),
+            ('topic_follow_wildcard_mention_user_ids', check_list(check_int)),
             ('push_notify_user_ids', check_list(check_int)),
             ('orig_content', check_string),
             ('orig_rendered_content', check_string),

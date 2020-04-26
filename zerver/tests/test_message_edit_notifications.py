@@ -415,6 +415,18 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # actual content of these messages.)
         self.assertEqual(len(info['queue_messages']), 2)
 
+    def _make_cordelia_follow_topic(self) -> None:
+        # We only call this function after testing wildcard_mentions_notify
+        # and have to disable this to test for enable_topic_follow_wildcard_mentions_notify.
+        cordelia = self.example_user('cordelia')
+        cordelia.wildcard_mentions_notify = False
+        cordelia.save()
+
+        # After this message, Cordelia becomes a follower of this topic
+        # and thus can receive wildcard notifications for only this topic.
+        self.send_stream_message(cordelia, "Scotland",
+                                 content="what's up everyone?")
+
     def test_updates_with_wildcard_mention(self) -> None:
         cordelia = self.example_user('cordelia')
 
@@ -450,11 +462,28 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # She will get messages enqueued.
         self.assertEqual(len(info['queue_messages']), 2)
 
+        self._make_cordelia_follow_topic()
+        notification_message_data = self._send_and_update_message(
+            original_content, updated_content,
+            connected_to_zulip=True
+        )
+        message_id = notification_message_data['message_id']
+        info = notification_message_data['info']
+
+        expected_enqueue_kwargs['wildcard_mention_notify'] = True
+        expected_enqueue_kwargs['message_id'] = message_id
+        self.assertEqual(info['enqueue_kwargs'], expected_enqueue_kwargs)
+
     def test_updates_with_upgrade_wildcard_mention(self) -> None:
         # If there was a previous wildcard mention delivered to the
         # user (because wildcard_mention_notify=True), we don't notify
         original_content = 'Mention @**all**'
         updated_content = 'now we mention @**Cordelia Lear**'
+        self._send_and_update_message(original_content, updated_content,
+                                      expect_short_circuit=True,
+                                      connected_to_zulip=True)
+
+        self._make_cordelia_follow_topic()
         self._send_and_update_message(original_content, updated_content,
                                       expect_short_circuit=True,
                                       connected_to_zulip=True)
@@ -472,6 +501,14 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         original_content = 'Mention @**all**'
         updated_content = 'now we mention @**Cordelia Lear**'
+        self._send_and_update_message(original_content, updated_content,
+                                      expect_short_circuit=True,
+                                      connected_to_zulip=True)
+
+        self._make_cordelia_follow_topic()
+        cordelia.enable_topic_follow_wildcard_mentions_notify = False
+        cordelia.save()
+
         self._send_and_update_message(original_content, updated_content,
                                       expect_short_circuit=True,
                                       connected_to_zulip=True)
