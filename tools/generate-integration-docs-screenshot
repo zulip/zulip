@@ -39,7 +39,8 @@ from zerver.lib.actions import (
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.integrations import (
-    WebhookIntegration, INTEGRATIONS, split_fixture_path, ScreenshotConfig, get_fixture_and_image_paths)
+    WebhookIntegration, INTEGRATIONS, split_fixture_path, ScreenshotConfig, get_fixture_and_image_paths,
+    DOC_SCREENSHOT_CONFIG)
 from zerver.lib.webhooks.common import get_fixture_http_headers
 from zerver.lib.storage import static_path
 
@@ -181,16 +182,18 @@ def generate_screenshot_from_config(integration_name: str, screenshot_config: Sc
         print(f'Screenshot captured to: {BOLDRED}{image_path}{ENDC}')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('integration', type=str, help='Name of the integration')
-parser.add_argument('fixture', type=str, help='Name of the fixture file to use')
-parser.add_argument('--image-name', type=str, default='001.png', help='Name for the screenshot image')
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('--all', default=False, action='store_true')
+group.add_argument('--integration', type=str, help='Name of the integration')
+parser.add_argument('--fixture', type=str, help='Name of the fixture file to use')
+parser.add_argument('--image-name', type=str, help='Name for the screenshot image')
 parser.add_argument('--image-dir', type=str, help='Directory name where to save the screenshot image')
 parser.add_argument('--bot-name', type=str, help='Name to use for the bot')
 parser.add_argument('-A', '--use-basic-auth', action='store_true',
                     help='Add basic auth headers to the request')
 parser.add_argument('-Q', '--payload-as-query-param', action='store_true',
                     help='Send payload as query param instead of body')
-parser.add_argument('-P', '--payload-param-name', type=str, default='payload',
+parser.add_argument('-P', '--payload-param-name', type=str,
                     help='Param name to use for the payload')
 parser.add_argument('-H', '--custom-headers',
                     type=custom_headers,
@@ -198,8 +201,28 @@ parser.add_argument('-H', '--custom-headers',
 
 options = parser.parse_args()
 prepare_puppeteer_run()
-screenshot_config = ScreenshotConfig(
-    options.fixture, options.image_name, options.image_dir, options.bot_name,
-    options.payload_as_query_param, options.payload_param_name,
-    options.use_basic_auth, options.custom_headers)
-generate_screenshot_from_config(options.integration, screenshot_config)
+
+if options.all:
+    for key, value in vars(options).items():
+        if key != 'all' and value:
+            print('Generating screenshots for all integrations. Ignoring all command-line options')
+    for integration_name, screenshot_configs in DOC_SCREENSHOT_CONFIG.items():
+        for screenshot_config in screenshot_configs:
+            generate_screenshot_from_config(integration_name, screenshot_config)
+
+else:
+    if not options.fixture:
+        parser.error("Please specify the fixture filename")
+    config = dict(fixture_name=options.fixture, use_basic_auth=options.use_basic_auth,
+                  custom_headers=options.custom_headers,
+                  payload_as_query_param=options.payload_as_query_param)
+    if options.image_name:
+        config['image_name'] = options.image_name
+    if options.image_dir:
+        config['image_dir'] = options.image_dir
+    if options.bot_name:
+        config['bot_name'] = options.bot_name
+    if options.payload_param_name:
+        config['payload_param_name'] = options.payload_param_name
+    screenshot_config = ScreenshotConfig(**config)
+    generate_screenshot_from_config(options.integration, screenshot_config)
