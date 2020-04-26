@@ -944,7 +944,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     default_all_public_streams: bool = models.BooleanField(default=False)
 
     # UI vars
-    enter_sends: Optional[bool] = models.NullBooleanField(default=False)
+    enter_sends: Optional[bool] = models.BooleanField(null=True, default=False)
     left_side_userlist: bool = models.BooleanField(default=False)
 
     # display settings
@@ -1365,7 +1365,7 @@ class Stream(models.Model):
     # Foreign key to the Recipient object for STREAM type messages to this stream.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
-    invite_only: Optional[bool] = models.NullBooleanField(default=False)
+    invite_only: Optional[bool] = models.BooleanField(null=True, default=False)
     history_public_to_subscribers: bool = models.BooleanField(default=False)
 
     # Whether this stream's content should be published by the web-public archive features
@@ -2088,7 +2088,7 @@ class Subscription(models.Model):
     active: bool = models.BooleanField(default=True)
 
     # Whether this user had muted this stream.
-    is_muted: Optional[bool] = models.NullBooleanField(default=False)
+    is_muted: Optional[bool] = models.BooleanField(null=True, default=False)
 
     DEFAULT_STREAM_COLOR = "#c2c2c2"
     color: str = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
@@ -2097,11 +2097,11 @@ class Subscription(models.Model):
     # These fields are stream-level overrides for the user's default
     # configuration for notification, configured in UserProfile.  The
     # default, None, means we just inherit the user-level default.
-    desktop_notifications: Optional[bool] = models.NullBooleanField(default=None)
-    audible_notifications: Optional[bool] = models.NullBooleanField(default=None)
-    push_notifications: Optional[bool] = models.NullBooleanField(default=None)
-    email_notifications: Optional[bool] = models.NullBooleanField(default=None)
-    wildcard_mentions_notify: Optional[bool] = models.NullBooleanField(default=None)
+    desktop_notifications: Optional[bool] = models.BooleanField(null=True, default=None)
+    audible_notifications: Optional[bool] = models.BooleanField(null=True, default=None)
+    push_notifications: Optional[bool] = models.BooleanField(null=True, default=None)
+    email_notifications: Optional[bool] = models.BooleanField(null=True, default=None)
+    wildcard_mentions_notify: Optional[bool] = models.BooleanField(null=True, default=None)
 
     class Meta:
         unique_together = ("user_profile", "recipient")
