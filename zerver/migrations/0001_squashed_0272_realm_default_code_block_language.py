@@ -700,8 +700,10 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 'unique_together': {('realm', 'pattern')},
             },
         ),
+        # We need to create and then rename RealmDomain to ensure the
+        # sequence table has the right name.
         migrations.CreateModel(
-            name='RealmDomain',
+            name='RealmAlias',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('domain', models.CharField(db_index=True, max_length=80)),
@@ -711,6 +713,10 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             options={
                 'unique_together': {('realm', 'domain')},
             },
+        ),
+        migrations.RenameModel(
+            old_name='RealmAlias',
+            new_name='RealmDomain',
         ),
         migrations.CreateModel(
             name='Reaction',
@@ -793,7 +799,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             },
         ),
         migrations.CreateModel(
-            name='BotStorageData',
+            name='BotUserStateData',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('key', models.TextField(db_index=True)),
@@ -804,8 +810,12 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 'unique_together': {('bot_profile', 'key')},
             },
         ),
+        migrations.RenameModel(
+            old_name='BotUserStateData',
+            new_name='BotStorageData',
+        ),
         migrations.CreateModel(
-            name='BotConfigData',
+            name='BotUserConfigData',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('key', models.TextField(db_index=True)),
@@ -815,6 +825,10 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             options={
                 'unique_together': {('bot_profile', 'key')},
             },
+        ),
+        migrations.RenameModel(
+            old_name='BotUserConfigData',
+            new_name='BotConfigData',
         ),
         migrations.CreateModel(
             name='ArchivedUserMessage',
