@@ -15,40 +15,21 @@ let current_favicon;
 let previous_favicon;
 let flashing = false;
 
-let notifications_api;
+let NotificationAPI;
 
 exports.set_notification_api = function (n) {
-    notifications_api = n;
+    NotificationAPI = n;
 };
 
-if (window.webkitNotifications) {
-    notifications_api = window.webkitNotifications;
-} else if (window.Notification) {
-    // Build a shim to the new notification API
-    notifications_api = {
-        checkPermission: function checkPermission() {
-            if (window.Notification.permission === 'granted') {
-                return 0;
-            }
-            return 2;
-        },
-        requestPermission: window.Notification.requestPermission,
-        createNotification: function createNotification(icon, title, content, tag) {
-            const notification_object = new window.Notification(title, {icon: icon,
-                                                                        body: content,
-                                                                        tag: tag});
-            notification_object.show = function () {};
-            notification_object.cancel = function () { notification_object.close(); };
-            return notification_object;
-        },
-    };
+if (window.Notification) {
+    NotificationAPI = window.Notification;
 }
 
 function cancel_notification_object(notification_object) {
     // We must remove the .onclose so that it does not trigger on .cancel
     notification_object.onclose = function () {};
     notification_object.onclick = function () {};
-    notification_object.cancel();
+    notification_object.close();
 }
 
 exports.get_notifications = function () {
@@ -402,15 +383,18 @@ function process_notification(notification) {
     // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
     if (notification.desktop_notify && /webkit/i.test(navigator.userAgent)) {
         const icon_url = people.small_avatar_url(message);
-        notification_object =
-            notifications_api.createNotification(icon_url, title, content, message.id);
+        notification_object = new NotificationAPI(title, {
+            icon: icon_url,
+            body: content,
+            tag: message.id,
+        });
         notice_memory.set(key, {
             obj: notification_object,
             msg_count: msg_count,
             message_id: message.id,
         });
         notification_object.onclick = function () {
-            notification_object.cancel();
+            notification_object.close();
             if (message.type !== "test-notification") {
                 narrow.by_topic(message.id, {trigger: 'notification'});
             }
@@ -419,7 +403,6 @@ function process_notification(notification) {
         notification_object.onclose = function () {
             notice_memory.delete(key);
         };
-        notification_object.show();
     } else if (notification.desktop_notify && typeof Notification !== "undefined" && /mozilla/i.test(navigator.userAgent)) {
         Notification.requestPermission(function (perm) {
             if (perm === 'granted') {
@@ -575,15 +558,14 @@ exports.should_send_audible_notification = function (message) {
 };
 
 exports.granted_desktop_notifications_permission = function () {
-    return notifications_api &&
-            // 0 is PERMISSION_ALLOWED
-            notifications_api.checkPermission() === 0;
+    return NotificationAPI &&
+        NotificationAPI.permission === "granted";
 };
 
 
 exports.request_desktop_notifications_permission = function () {
-    if (notifications_api) {
-        return notifications_api.requestPermission();
+    if (NotificationAPI) {
+        return NotificationAPI.requestPermission();
     }
 };
 
