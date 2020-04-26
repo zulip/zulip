@@ -72,10 +72,6 @@ EMOJI_POS_INFO_TEMPLATE = """\
 # change directory
 os.chdir(EMOJI_SCRIPT_DIR_PATH)
 
-if 'TRAVIS' in os.environ:
-    # In Travis CI, we don't have root access
-    EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
-
 def main() -> None:
     if not os.access(EMOJI_CACHE_PATH, os.W_OK):
         # Note: In production, this block will fail, since we don't
