@@ -13,7 +13,7 @@ from zerver.forms import ToSForm
 from zerver.models import Message, Stream, UserProfile, \
     Realm, UserMessage, \
     PreregistrationUser, \
-    get_usermessage_by_message_id
+    get_latest_read_usermessage
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_tos_version, \
     realm_user_count
@@ -223,10 +223,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             register_ret['pointer'] = register_ret['max_message_id']
         furthest_read_time = None
     else:
-        latest_read = get_usermessage_by_message_id(user_profile, user_profile.pointer)
-        if latest_read is None:
-            # Don't completely fail if your saved pointer ID is invalid
-            logging.warning("User %s has invalid pointer %s" % (user_profile.id, user_profile.pointer))
+        latest_read = get_latest_read_usermessage(user_profile)
         furthest_read_time = sent_time_in_epoch_seconds(latest_read)
 
     # We pick a language for the user as follows:

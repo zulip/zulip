@@ -22,7 +22,7 @@ from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.models import (
     get_realm, get_stream, get_user, UserProfile,
     flush_per_request_caches, DefaultStream, Realm,
-    get_system_bot,
+    get_system_bot, UserMessage
 )
 from zerver.views.home import sent_time_in_epoch_seconds, compute_navbar_logo_url
 from corporate.models import Customer, CustomerPlan
@@ -458,9 +458,19 @@ class HomeTest(ZulipTestCase):
         user_profile.save()
 
         self.login_user(user_profile)
-        with patch('logging.warning') as mock:
-            result = self._get_home_page()
-        mock.assert_called_once_with('User %s has invalid pointer 999999' % (user_profile.id,))
+        result = self._get_home_page()
+        self._sanity_check(result)
+
+    def test_no_read_user_messages(self) -> None:
+        user_profile = self.example_user('hamlet')
+        user_profile.pointer = 1
+        user_profile.save()
+
+        # Mark all messages as unread
+        UserMessage.objects.filter(user_profile=user_profile).update(flags=~UserMessage.flags.read)
+
+        self.login_user(user_profile)
+        result = self._get_home_page()
         self._sanity_check(result)
 
     def test_topic_narrow(self) -> None:
