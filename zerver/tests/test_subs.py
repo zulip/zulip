@@ -456,6 +456,31 @@ class StreamAdminTest(ZulipTestCase):
         do_deactivate_stream(stream)
         self.assertEqual(0, DefaultStream.objects.filter(stream_id=stream.id).count())
 
+    def test_deactivate_stream_removes_stream_from_default_stream_groups(self) -> None:
+        realm = get_realm('zulip')
+        streams_to_keep = []
+        for stream_name in ["stream1", "stream2"]:
+            stream = ensure_stream(realm, stream_name)
+            streams_to_keep.append(stream)
+
+        streams_to_remove = []
+        stream = ensure_stream(realm, "stream3")
+        streams_to_remove.append(stream)
+
+        all_streams = streams_to_keep + streams_to_remove
+
+        def get_streams(group: DefaultStreamGroup) -> List[Stream]:
+            return list(group.streams.all().order_by('name'))
+
+        group_name = "group1"
+        description = "This is group1"
+        do_create_default_stream_group(realm, group_name, description, all_streams)
+        default_stream_groups = get_default_stream_groups(realm)
+        self.assertEqual(get_streams(default_stream_groups[0]), all_streams)
+
+        do_deactivate_stream(streams_to_remove[0])
+        self.assertEqual(get_streams(default_stream_groups[0]), streams_to_keep)
+
     def test_vacate_private_stream_removes_default_stream(self) -> None:
         stream = self.make_stream('new_stream', invite_only=True)
         self.subscribe(self.example_user("hamlet"), stream.name)
