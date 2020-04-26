@@ -16,7 +16,6 @@ from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
 
 from zerver.lib.bugdown import (
     version as bugdown_version,
-    url_embed_preview_enabled,
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.bot_config import (
@@ -1499,7 +1498,7 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             event['sender_queue_id'] = message['sender_queue_id']
         send_event(message['realm'], event, users)
 
-        if url_embed_preview_enabled(message['message']) and links_for_embed:
+        if links_for_embed:
             event_data = {
                 'message_id': message['message'].id,
                 'message_content': message['message'].content,
