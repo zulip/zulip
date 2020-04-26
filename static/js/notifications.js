@@ -331,7 +331,7 @@ function process_notification(notification) {
         content = message.sender_full_name + content.slice(3);
     }
 
-    if (message.type === "private") {
+    if (message.type === "private" || message.type === "test-notification") {
         if (page_params.pm_content_in_desktop_notifications !== undefined
             && !page_params.pm_content_in_desktop_notifications) {
             content = "New private message from " + message.sender_full_name;
@@ -411,7 +411,9 @@ function process_notification(notification) {
         });
         notification_object.onclick = function () {
             notification_object.cancel();
-            narrow.by_topic(message.id, {trigger: 'notification'});
+            if (message.type !== "test-notification") {
+                narrow.by_topic(message.id, {trigger: 'notification'});
+            }
             window.focus();
         };
         notification_object.onclose = function () {
@@ -427,6 +429,10 @@ function process_notification(notification) {
                     tag: message.id,
                 });
                 notification_object.onclick = function () {
+                    if (message.type === "test-notification") {
+                        return;
+                    }
+
                     // We don't need to bring the browser window into focus explicitly
                     // by calling `window.focus()` as well as don't need to clear the
                     // notification since it is the default behavior in Firefox.
@@ -491,6 +497,11 @@ exports.message_is_notifiable = function (message) {
 };
 
 exports.should_send_desktop_notification = function (message) {
+    // Always notify for testing notifications.
+    if (message.type === "test-notification") {
+        return true;
+    }
+
     // For streams, send if desktop notifications are enabled for all
     // message on this stream.
     if (message.type === "stream" &&
@@ -542,7 +553,7 @@ exports.should_send_audible_notification = function (message) {
 
     // And then we need to check if the message is a PM, mention,
     // wildcard mention with wildcard_mentions_notify, or alert.
-    if (message.type === "private") {
+    if (message.type === "private" || message.type === "test-notification") {
         return true;
     }
 
@@ -598,6 +609,18 @@ exports.received_messages = function (messages) {
             $("#notifications-area").find("audio")[0].play();
         }
     }
+};
+
+exports.send_test_notification = function (content) {
+    notifications.received_messages([{
+        id: Math.random(),
+        type: "test-notification",
+        sender_email: "notification-bot@zulip.com",
+        sender_full_name: "Notification Bot",
+        display_reply_to: "Notification Bot",
+        content,
+        unread: true,
+    }]);
 };
 
 function get_message_header(message) {
