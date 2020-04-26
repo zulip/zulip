@@ -103,6 +103,12 @@ exports.set_up = function () {
 
     update_desktop_icon_count_display();
 
+    $("#send_test_notification").click(() => {
+        notifications.send_test_notification(
+            i18n.t("This is what a Zulip notification looks like.")
+        );
+    });
+
     $("#play_notification_sound").click(function () {
         $("#notifications-area").find("audio")[0].play();
     });
