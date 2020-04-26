@@ -146,15 +146,45 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             queue_messages=queue_messages
         )
 
-    def test_updates_with_stream_mention(self) -> None:
+    def _send_and_update_message(self, original_content: str, updated_content: str,
+                                 enable_online_push_notifications: bool=False,
+                                 expect_short_circuit: bool=False,
+                                 connected_to_zulip: bool=False,
+                                 present_on_web: bool=False) -> Dict[str, Any]:
         message_id = self._login_and_send_original_stream_message(
-            content='no mention',
+            content=original_content,
+            enable_online_push_notifications=enable_online_push_notifications,
         )
 
-        info = self._get_queued_data_for_message_update(
+        if present_on_web:
+            self._make_cordelia_present_on_web()
+
+        if connected_to_zulip:
+            with self._cordelia_connected_to_zulip():
+                info = self._get_queued_data_for_message_update(
+                    message_id=message_id,
+                    content=updated_content,
+                    expect_short_circuit=expect_short_circuit,
+                )
+        else:
+            info = self._get_queued_data_for_message_update(
+                message_id=message_id,
+                content=updated_content,
+                expect_short_circuit=expect_short_circuit,
+            )
+
+        return dict(
             message_id=message_id,
-            content='now we mention @**Cordelia Lear**',
+            info=info
         )
+
+    def test_updates_with_stream_mention(self) -> None:
+        original_content = 'no mention'
+        updated_content = 'now we mention @**Cordelia Lear**'
+        notification_message_data = self._send_and_update_message(original_content, updated_content)
+
+        message_id = notification_message_data['message_id']
+        info = notification_message_data['info']
 
         cordelia = self.example_user('cordelia')
         expected_enqueue_kwargs = dict(
@@ -190,15 +220,10 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(email_event['trigger'], 'mentioned')
 
     def test_second_mention_is_ignored(self) -> None:
-        message_id = self._login_and_send_original_stream_message(
-            content='hello @**Cordelia Lear**'
-        )
-
-        self._get_queued_data_for_message_update(
-            message_id=message_id,
-            content='re-mention @**Cordelia Lear**',
-            expect_short_circuit=True,
-        )
+        original_content = 'hello @**Cordelia Lear**'
+        updated_content = 're-mention @**Cordelia Lear**'
+        self._send_and_update_message(original_content, updated_content,
+                                      expect_short_circuit=True)
 
     def _turn_on_stream_push_for_cordelia(self) -> None:
         '''
@@ -219,18 +244,13 @@ class EditMessageSideEffectsTest(ZulipTestCase):
     def test_updates_with_stream_push_notify(self) -> None:
         self._turn_on_stream_push_for_cordelia()
 
-        message_id = self._login_and_send_original_stream_message(
-            content='no mention'
-        )
-
         # Even though Cordelia configured this stream for pushes,
         # we short-ciruit the logic, assuming the original message
         # also did a push.
-        self._get_queued_data_for_message_update(
-            message_id=message_id,
-            content='nothing special about updated message',
-            expect_short_circuit=True,
-        )
+        original_content = 'no mention'
+        updated_content = 'nothing special about updated message'
+        self._send_and_update_message(original_content, updated_content,
+                                      expect_short_circuit=True)
 
     def _cordelia_connected_to_zulip(self) -> Any:
         '''
@@ -248,21 +268,16 @@ class EditMessageSideEffectsTest(ZulipTestCase):
     def test_stream_push_notify_for_sorta_present_user(self) -> None:
         self._turn_on_stream_push_for_cordelia()
 
-        message_id = self._login_and_send_original_stream_message(
-            content='no mention'
-        )
-
         # Simulate Cordelia still has an actively polling client, but
         # the lack of presence info should still mark her as offline.
         #
         # Despite Cordelia being offline, we still short circuit
         # offline notifications due to the her stream push setting.
-        with self._cordelia_connected_to_zulip():
-            self._get_queued_data_for_message_update(
-                message_id=message_id,
-                content='nothing special about updated message',
-                expect_short_circuit=True,
-            )
+        original_content = 'no mention'
+        updated_content = 'nothing special about updated message'
+        self._send_and_update_message(original_content, updated_content,
+                                      expect_short_circuit=True,
+                                      connected_to_zulip=True)
 
     def _make_cordelia_present_on_web(self) -> None:
         cordelia = self.example_user('cordelia')
@@ -277,38 +292,30 @@ class EditMessageSideEffectsTest(ZulipTestCase):
     def test_stream_push_notify_for_fully_present_user(self) -> None:
         self._turn_on_stream_push_for_cordelia()
 
-        message_id = self._login_and_send_original_stream_message(
-            content='no mention'
-        )
-
-        self._make_cordelia_present_on_web()
-
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
-        with self._cordelia_connected_to_zulip():
-            self._get_queued_data_for_message_update(
-                message_id=message_id,
-                content='nothing special about updated message',
-                expect_short_circuit=True,
-            )
+        original_content = 'no mention'
+        updated_content = 'nothing special about updated message'
+        self._send_and_update_message(original_content, updated_content,
+                                      expect_short_circuit=True,
+                                      connected_to_zulip=True,
+                                      present_on_web=True)
 
     def test_always_push_notify_for_fully_present_mentioned_user(self) -> None:
         cordelia = self.example_user('cordelia')
 
-        message_id = self._login_and_send_original_stream_message(
-            content='no mention',
-            enable_online_push_notifications=True,
-        )
-
-        self._make_cordelia_present_on_web()
-
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
-        with self._cordelia_connected_to_zulip():
-            info = self._get_queued_data_for_message_update(
-                message_id=message_id,
-                content='newly mention @**Cordelia Lear**',
-            )
+        original_content = 'no mention'
+        updated_content = 'newly mention @**Cordelia Lear**'
+        notification_message_data = self._send_and_update_message(
+            original_content, updated_content,
+            enable_online_push_notifications=True,
+            connected_to_zulip=True, present_on_web=True
+        )
+
+        message_id = notification_message_data['message_id']
+        info = notification_message_data['info']
 
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
@@ -333,20 +340,18 @@ class EditMessageSideEffectsTest(ZulipTestCase):
     def test_always_push_notify_for_fully_present_boring_user(self) -> None:
         cordelia = self.example_user('cordelia')
 
-        message_id = self._login_and_send_original_stream_message(
-            content='no mention',
-            enable_online_push_notifications=True,
-        )
-
-        self._make_cordelia_present_on_web()
-
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
-        with self._cordelia_connected_to_zulip():
-            info = self._get_queued_data_for_message_update(
-                message_id=message_id,
-                content='nothing special about updated message',
-            )
+        original_content = 'no mention'
+        updated_content = 'nothing special about updated message'
+        notification_message_data = self._send_and_update_message(
+            original_content, updated_content,
+            enable_online_push_notifications=True,
+            connected_to_zulip=True, present_on_web=True
+        )
+
+        message_id = notification_message_data['message_id']
+        info = notification_message_data['info']
 
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
@@ -374,18 +379,18 @@ class EditMessageSideEffectsTest(ZulipTestCase):
     def test_updates_with_stream_mention_of_sorta_present_user(self) -> None:
         cordelia = self.example_user('cordelia')
 
-        message_id = self._login_and_send_original_stream_message(
-            content='no mention'
-        )
-
         # We will simulate that the user still has a an active client,
         # but they don't have UserPresence rows, so we will still
         # send offline notifications.
-        with self._cordelia_connected_to_zulip():
-            info = self._get_queued_data_for_message_update(
-                message_id=message_id,
-                content='now we mention @**Cordelia Lear**',
-            )
+        original_content = 'no mention'
+        updated_content = 'now we mention @**Cordelia Lear**'
+        notification_message_data = self._send_and_update_message(
+            original_content, updated_content,
+            connected_to_zulip=True
+        )
+
+        message_id = notification_message_data['message_id']
+        info = notification_message_data['info']
 
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
@@ -409,18 +414,18 @@ class EditMessageSideEffectsTest(ZulipTestCase):
     def test_updates_with_wildcard_mention(self) -> None:
         cordelia = self.example_user('cordelia')
 
-        message_id = self._login_and_send_original_stream_message(
-            content='no mention'
-        )
-
         # We will simulate that the user still has a an active client,
         # but they don't have UserPresence rows, so we will still
         # send offline notifications.
-        with self._cordelia_connected_to_zulip():
-            info = self._get_queued_data_for_message_update(
-                message_id=message_id,
-                content='now we mention @**all**',
-            )
+        original_content = 'no mention'
+        updated_content = 'now we mention @**all**'
+        notification_message_data = self._send_and_update_message(
+            original_content, updated_content,
+            connected_to_zulip=True
+        )
+
+        message_id = notification_message_data['message_id']
+        info = notification_message_data['info']
 
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
@@ -441,18 +446,13 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(len(info['queue_messages']), 2)
 
     def test_updates_with_upgrade_wildcard_mention(self) -> None:
-        message_id = self._login_and_send_original_stream_message(
-            content='Mention @**all**'
-        )
-
         # If there was a previous wildcard mention delivered to the
         # user (because wildcard_mention_notify=True), we don't notify
-        with self._cordelia_connected_to_zulip():
-            self._get_queued_data_for_message_update(
-                message_id=message_id,
-                content='now we mention @**Cordelia Lear**',
-                expect_short_circuit=True,
-            )
+        original_content = 'Mention @**all**'
+        updated_content = 'now we mention @**Cordelia Lear**'
+        self._send_and_update_message(original_content, updated_content,
+                                      expect_short_circuit=True,
+                                      connected_to_zulip=True)
 
     def test_updates_with_upgrade_wildcard_mention_disabled(self) -> None:
         # If the user has disabled notifications for wildcard
@@ -465,33 +465,27 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia.wildcard_mentions_notify = False
         cordelia.save()
 
-        message_id = self._login_and_send_original_stream_message(
-            content='Mention @**all**'
-        )
-
-        with self._cordelia_connected_to_zulip():
-            self._get_queued_data_for_message_update(
-                message_id=message_id,
-                content='now we mention @**Cordelia Lear**',
-                expect_short_circuit=True,
-            )
+        original_content = 'Mention @**all**'
+        updated_content = 'now we mention @**Cordelia Lear**'
+        self._send_and_update_message(original_content, updated_content,
+                                      expect_short_circuit=True,
+                                      connected_to_zulip=True)
 
     def test_updates_with_stream_mention_of_fully_present_user(self) -> None:
         cordelia = self.example_user('cordelia')
 
-        message_id = self._login_and_send_original_stream_message(
-            content='no mention'
-        )
-
-        self._make_cordelia_present_on_web()
-
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
-        with self._cordelia_connected_to_zulip():
-            info = self._get_queued_data_for_message_update(
-                message_id=message_id,
-                content='now we mention @**Cordelia Lear**',
-            )
+        original_content = 'no mention'
+        updated_content = 'now we mention @**Cordelia Lear**'
+        notification_message_data = self._send_and_update_message(
+            original_content, updated_content,
+            connected_to_zulip=True,
+            present_on_web=True
+        )
+
+        message_id = notification_message_data['message_id']
+        info = notification_message_data['info']
 
         expected_enqueue_kwargs = dict(
             user_profile_id=cordelia.id,
