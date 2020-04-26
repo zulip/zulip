@@ -1667,6 +1667,7 @@ def notify_reaction_update(user_profile: UserProfile, message: Message,
                  'email': user_profile.email,
                  'full_name': user_profile.full_name}
 
+    # TODO: We plan to remove the user object once clients are updated to just use user_id, see https://github.com/zulip/zulip/pull/14711
     event: Dict[str, Any] = {
         'type': 'reaction',
         'op': op,

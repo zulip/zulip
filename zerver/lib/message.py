@@ -553,6 +553,7 @@ class MessageDict:
 class ReactionDict:
     @staticmethod
     def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
+        # TODO: We plan to remove the user object once clients are updated to just use user_id, see https://github.com/zulip/zulip/pull/14711
         return {'emoji_name': row['emoji_name'],
                 'emoji_code': row['emoji_code'],
                 'reaction_type': row['reaction_type'],
