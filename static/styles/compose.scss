@@ -25,14 +25,6 @@
             float: left;
         }
 
-        .alert-draft {
-            font-size: 14px;
-            color: hsl(170, 48%, 54%);
-            padding: 3px 12px;
-            font-weight: 400;
-            display: none;
-        }
-
         @media (max-width: 550px) {
             .compose_stream_button,
             .compose_private_button {

@@ -117,11 +117,6 @@ exports.restore_message = function (draft) {
     return compose_args;
 };
 
-function draft_notify() {
-    $(".alert-draft").css("display", "inline-block");
-    $(".alert-draft").delay(1000).fadeOut(500);
-}
-
 exports.update_draft = function () {
     const draft = exports.snapshot_message();
 
@@ -140,7 +135,6 @@ exports.update_draft = function () {
         // We don't save multiple drafts of the same message;
         // just update the existing draft.
         draft_model.editDraft(draft_id, draft);
-        draft_notify();
         notifications.notify_drafts();
         return;
     }
@@ -149,7 +143,6 @@ exports.update_draft = function () {
     // one.
     const new_draft_id = draft_model.addDraft(draft);
     $("#compose-textarea").data("draft-id", new_draft_id);
-    draft_notify();
     notifications.notify_drafts();
 };
 
