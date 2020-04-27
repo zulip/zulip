@@ -166,14 +166,6 @@ class PointerTest(ZulipTestCase):
             user_profile=self.example_user('hamlet'))
         self.assertFalse(user_message.flags.read)
 
-        # Now if we call get_messages with use_first_unread_anchor=True,
-        # we should not get the old unread message (because it's before the
-        # pointer), and instead should get the newly sent unread message
-        messages_response = self.get_messages_response(
-            anchor="first_unread", num_before=0, num_after=1)
-        self.assertEqual(messages_response['messages'][0]['id'], new_message_id)
-        self.assertEqual(messages_response['anchor'], new_message_id)
-
     def test_visible_messages_use_first_unread_anchor(self) -> None:
         self.login('hamlet')
         self.assertEqual(self.example_user('hamlet').pointer, -1)
