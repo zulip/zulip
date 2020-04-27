@@ -6,7 +6,7 @@ import ujson
 from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import migrations
-from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.utils.timezone import now as timezone_now
 
