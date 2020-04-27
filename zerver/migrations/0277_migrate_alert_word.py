@@ -11,10 +11,17 @@ def move_to_seperate_table(apps: StateApps, schema_editor: DatabaseSchemaEditor)
     AlertWord = apps.get_model('zerver', 'AlertWord')
 
     for user_profile in UserProfile.objects.all():
-
         list_of_words = ujson.loads(user_profile.alert_words)
+
+        # Remove duplicates with our case-insensitive model.
+        word_dict: Dict[str, str] = {}
+        for word in list_of_words:
+            word_dict[word.lower()] = word
+
         AlertWord.objects.bulk_create(
-            AlertWord(user_profile=user_profile, word=word, realm=user_profile.realm) for word in list_of_words)
+            AlertWord(user_profile=user_profile, word=word, realm=user_profile.realm)
+            for word in word_dict.values()
+        )
 
 def move_back_to_user_profile(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     AlertWord = apps.get_model('zerver', 'AlertWord')

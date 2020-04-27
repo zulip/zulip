@@ -56,6 +56,16 @@ class AlertWordTests(ZulipTestCase):
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list))
 
+        # Test the case-insensitivity of adding words
+        add_user_alert_words(user, set(["ALert", "ALERT"]))
+        words = user_alert_words(user)
+        self.assertEqual(set(words), set(self.interesting_alert_word_list))
+
+        # Test the case-insensitivity of removing words
+        remove_user_alert_words(user, set(["ALert"]))
+        words = user_alert_words(user)
+        self.assertEqual(set(words), set(self.interesting_alert_word_list) - {'alert'})
+
     def test_remove_word(self) -> None:
         """
         Removing alert words works via remove_user_alert_words, even
