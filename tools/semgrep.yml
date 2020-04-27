@@ -1,18 +1,20 @@
-# See https://github.com/returntocorp/semgrep/blob/develop/docs/config.md for semgrep rule format
+# See https://github.com/returntocorp/semgrep/blob/experimental/docs/config/advanced.md
 
 rules:
+####################### PYTHON RULES #######################
   - id: deprecated-render-usage
     pattern: django.shortcuts.render_to_response(...)
-    message: Use render() (from django.shortcuts) instead of render_to_response()
+    message: "Use render() (from django.shortcuts) instead of render_to_response()"
     languages: [python]
     severity: ERROR
+
   - id: useless-if-body
     patterns:
-        - pattern: |
-            if $X:
-                $S
-            else:
-                $S
-    message: "useless if statment; both blocks have the same body"
+      - pattern: |
+          if $X:
+              $S
+          else:
+              $S
+    message: "Useless if statment; both blocks have the same body"
     languages: [python]
     severity: ERROR
