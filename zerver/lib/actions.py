@@ -61,7 +61,6 @@ from zerver.lib.stream_subscription import (
     get_bulk_stream_subscriber_info,
     get_stream_subscriptions_for_user,
     get_stream_subscriptions_for_users,
-    get_subscribed_stream_ids_for_user,
     num_subscribers_for_stream_id,
 )
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -124,7 +123,7 @@ from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 
 from django.db import transaction, IntegrityError, connection
-from django.db.models import F, Q, Max, Sum
+from django.db.models import F, Max, Sum
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now as timezone_now
@@ -5328,42 +5327,66 @@ def do_get_streams(
 
     include_public = include_public and user_profile.can_access_public_streams()
     # Start out with all streams in the realm with subscribers
-    query = get_occupied_streams(user_profile.realm)
 
     if include_all_active:
+        query = get_occupied_streams(user_profile.realm)
         streams = Stream.get_client_data(query)
     else:
-        # We construct a query as the or (|) of the various sources
-        # this user requested streams from.
-        query_filter: Optional[Q] = None
+        filter_clauses: List[str] = []
 
-        def add_filter_option(option: Q) -> None:
-            nonlocal query_filter
-            if query_filter is None:
-                query_filter = option
-            else:
-                query_filter |= option
+        def exists_subscription(user_id: int) -> QuerySet:
+            return '''
+                EXISTS (
+                    SELECT *
+                    FROM zerver_subscription sub
+                    WHERE
+                        sub.recipient_id = zerver_stream.recipient_id
+                    AND sub.user_profile_id = {}
+                    AND sub.active = TRUE
+                )
+                '''.format(user_id)
 
         if include_subscribed:
-            subscribed_stream_ids = get_subscribed_stream_ids_for_user(user_profile)
-            recipient_check = Q(id__in=set(subscribed_stream_ids))
-            add_filter_option(recipient_check)
+            exists = exists_subscription(user_profile.id)
+            filter_clauses.append(exists)
+
         if include_public:
-            invite_only_check = Q(invite_only=False)
-            add_filter_option(invite_only_check)
+            is_public = '''
+                (zerver_stream.invite_only = FALSE)
+                AND
+                EXISTS (
+                    SELECT *
+                    FROM zerver_subscription sub
+                    JOIN
+                        zerver_userprofile up
+                    ON
+                        up.id = sub.user_profile_id
+                    WHERE
+                        sub.recipient_id = zerver_stream.recipient_id
+                    AND sub.active = TRUE
+                    AND up.is_active = TRUE
+                    AND up.realm_id = {}
+                )
+                '''.format(user_profile.realm_id)
+            filter_clauses.append(is_public)
+
         if include_owner_subscribed and user_profile.is_bot:
             bot_owner = user_profile.bot_owner
             assert bot_owner is not None
-            owner_stream_ids = get_subscribed_stream_ids_for_user(bot_owner)
-            owner_subscribed_check = Q(id__in=set(owner_stream_ids))
-            add_filter_option(owner_subscribed_check)
+            exists = exists_subscription(bot_owner.id)
+            filter_clauses.append(exists)
 
-        if query_filter is not None:
-            query = query.filter(query_filter)
-            streams = Stream.get_client_data(query)
-        else:
-            # Don't bother going to the database with no valid sources
-            streams = []
+        if not filter_clauses:
+            return []
+
+        def wrap(s: str) -> str:
+            return '(' + s + ')'
+
+        where_clause = ' OR '.join(wrap(c) for c in filter_clauses)
+
+        query = Stream.objects.filter(realm=user_profile.realm, deactivated=False)
+        query = query.extra(where=[where_clause])
+        streams = Stream.get_client_data(query)
 
     streams.sort(key=lambda elt: elt["name"])
 

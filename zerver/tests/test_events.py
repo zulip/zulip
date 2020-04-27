@@ -3628,7 +3628,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 31)
+        self.assert_length(queries, 30)
 
         expected_counts = dict(
             alert_words=0,
@@ -3651,7 +3651,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_user_groups=2,
             recent_private_conversations=1,
             starred_messages=1,
-            stream=2,
+            stream=1,
             stop_words=0,
             subscription=5,
             update_display_settings=0,
