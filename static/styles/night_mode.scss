@@ -26,6 +26,11 @@ body.night-mode {
 
     .compose-send-status-close {
         color: hsl(0, 0%, 100%);
+        opacity: 1.0;
+    }
+
+    .compose-send-status-close:hover {
+        opacity: .4;
     }
 
     .message_embed .data-container::after {
