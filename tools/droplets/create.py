@@ -106,6 +106,11 @@ def set_user_data(username: str, userkeys: List[Dict[str, Any]]) -> str:
         ssh_authorized_keys += "\n          - {}".format(key['key'])
     # print(ssh_authorized_keys)
 
+    # We pass the hostname as username.zulipdev.org to the DigitalOcean API.
+    # But some droplets (eg on 18.04) are created with with hostname set to just username.
+    # So we fix the hostname using cloud-init.
+    hostname_setup = "hostnamectl set-hostname {username}.zulipdev.org".format(username=username)
+
     setup_repo = """\
 cd /home/zulipdev/{1} && git remote add origin https://github.com/{0}/{1}.git && git fetch origin"""
 
@@ -116,18 +121,20 @@ cd /home/zulipdev/{1} && git remote add origin https://github.com/{0}/{1}.git &&
     #cloud-config
     users:
       - name: zulipdev
-        ssh_authorized_keys:{}
+        ssh_authorized_keys:{ssh_authorized_keys}
     runcmd:
-      - su -c '{}' zulipdev
+      - {hostname_setup}
+      - su -c '{server_repo_setup}' zulipdev
       - su -c 'git clean -f' zulipdev
-      - su -c '{}' zulipdev
+      - su -c '{python_api_repo_setup}' zulipdev
       - su -c 'git clean -f' zulipdev
       - su -c 'git config --global core.editor nano' zulipdev
       - su -c 'git config --global pull.rebase true' zulipdev
     power_state:
      mode: reboot
      condition: True
-    """.format(ssh_authorized_keys, server_repo_setup, python_api_repo_setup)
+    """.format(ssh_authorized_keys=ssh_authorized_keys, hostname_setup=hostname_setup,
+               server_repo_setup=server_repo_setup, python_api_repo_setup=python_api_repo_setup)
 
     print("...returning cloud-config data.")
     return cloudconf
