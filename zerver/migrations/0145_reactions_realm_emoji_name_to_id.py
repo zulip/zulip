@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import Any, Dict
 
 from django.db import migrations
-from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 

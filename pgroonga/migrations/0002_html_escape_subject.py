@@ -1,5 +1,5 @@
 from django.db import connection, migrations
-from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 from zerver.lib.migrate import do_batch_update
