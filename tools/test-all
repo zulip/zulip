@@ -34,6 +34,14 @@ function run {
     fi
 }
 
+printf '\n\e[33;1m'
+echo "Because test-all is very slow, we recommend running individual (sub)suites "
+echo "and relying on CI to run the complete test suite for a fast edit-test cycle.  See"
+echo "  https://zulip.readthedocs.io/en/latest/testing/testing.html#running-tests"
+echo "for details on how to run just the relevant subsets of our tests."
+printf '\e[0m'
+echo
+
 # prep
 run ./tools/check-provision $FORCEARG
 run ./tools/clean-repo
