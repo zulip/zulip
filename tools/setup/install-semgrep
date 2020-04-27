@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -e
+
+version=0.5.0-dev.2
+tarball=semgrep-v$version-ubuntu-16.04.tgz
+sha256=3959f79b15c900d29567b6cb846831eb7da4c0a10969ffc98a1c9364ea377545
+tarball_url=https://github.com/returntocorp/semgrep/releases/download/v$version/$tarball
+
+check_version () {
+    out="$(semgrep --version 2>/dev/null)" && [ "$out" = "$version" ]
+}
+
+if ! check_version; then
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    wget -nv "$tarball_url"
+    sha256sum -c <<< "$sha256  $tarball"
+    tar -xzf "$tarball" -C /usr/local/lib/
+    ln -sf /usr/local/lib/semgrep-files/semgrep /usr/local/bin/semgrep
+    ln -sf /usr/local/lib/semgrep-files/semgrep-core /usr/local/bin/semgrep-core
+fi
