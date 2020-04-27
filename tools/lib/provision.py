@@ -378,8 +378,8 @@ def main(options: argparse.Namespace) -> "NoReturn":
     # Install shellcheck.
     run_as_root(["tools/setup/install-shellcheck"])
 
-    # Install sgrep.
-    run_as_root(["tools/setup/install-sgrep"])
+    # Install semgrep.
+    run_as_root(["tools/setup/install-semgrep"])
 
     setup_venvs.main()
 
