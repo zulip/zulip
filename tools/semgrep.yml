@@ -1,4 +1,4 @@
-# See https://github.com/returntocorp/sgrep/blob/develop/docs/config.md for sgrep rule format
+# See https://github.com/returntocorp/semgrep/blob/develop/docs/config.md for semgrep rule format
 
 rules:
   - id: deprecated-render-usage
