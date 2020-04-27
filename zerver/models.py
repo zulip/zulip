@@ -25,7 +25,7 @@ from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from zerver.lib.timestamp import datetime_to_timestamp
-from django.db.models.signals import post_save, post_delete, post_init
+from django.db.models.signals import post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
 from zerver.lib.validator import check_int, \
@@ -2900,11 +2900,13 @@ class AlertWord(models.Model):
     class Meta:
         unique_together = ("user_profile", "word")
 
-def flush_alert_word(sender: Any, **kwargs: Any) -> None:
-    realm = kwargs['instance'].realm
+def flush_realm_alert_words(realm: Realm) -> None:
     cache_delete(realm_alert_words_cache_key(realm))
     cache_delete(realm_alert_words_automaton_cache_key(realm))
 
+def flush_alert_word(sender: Any, **kwargs: Any) -> None:
+    realm = kwargs['instance'].realm
+    flush_realm_alert_words(realm)
 
-post_init.connect(flush_alert_word, sender=AlertWord)
+post_save.connect(flush_alert_word, sender=AlertWord)
 post_delete.connect(flush_alert_word, sender=AlertWord)

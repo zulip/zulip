@@ -44,27 +44,37 @@ class AlertWordTests(ZulipTestCase):
         words = user_alert_words(user)
         self.assertEqual(words, [])
 
-    def test_add_word(self) -> None:
+    def test_basics(self) -> None:
         """
-        add_user_alert_words can add multiple alert words at once.
+        Verifies the basic behavior of modifying alert words.
+
+        Also verifies the cache-flushing behavior.
         """
         user = self.example_user('cordelia')
+        realm_alert_words = alert_words_in_realm(user.realm)
+        self.assert_length(realm_alert_words.get(user.id, []), 0)
 
         # Add several words, including multi-word and non-ascii words.
         add_user_alert_words(user, self.interesting_alert_word_list)
 
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list))
+        realm_alert_words = alert_words_in_realm(user.realm)
+        self.assert_length(realm_alert_words[user.id], 3)
 
         # Test the case-insensitivity of adding words
         add_user_alert_words(user, set(["ALert", "ALERT"]))
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list))
+        realm_alert_words = alert_words_in_realm(user.realm)
+        self.assert_length(realm_alert_words[user.id], 3)
 
         # Test the case-insensitivity of removing words
         remove_user_alert_words(user, set(["ALert"]))
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list) - {'alert'})
+        realm_alert_words = alert_words_in_realm(user.realm)
+        self.assert_length(realm_alert_words[user.id], 2)
 
     def test_remove_word(self) -> None:
         """

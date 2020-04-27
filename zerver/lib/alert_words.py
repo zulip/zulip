@@ -1,6 +1,6 @@
 from django.db import transaction
 
-from zerver.models import UserProfile, Realm, AlertWord
+from zerver.models import UserProfile, Realm, AlertWord, flush_realm_alert_words
 from zerver.lib.cache import cache_with_key, realm_alert_words_cache_key, \
     realm_alert_words_automaton_cache_key
 import ahocorasick
@@ -56,6 +56,8 @@ def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) ->
         AlertWord(user_profile=user_profile, word=word, realm=user_profile.realm)
         for word in word_dict.values()
     )
+    # Django bulk_create operations don't flush caches, so we need to do this ourselves.
+    flush_realm_alert_words(user_profile.realm)
 
     return user_alert_words(user_profile)
 
@@ -63,6 +65,7 @@ def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) ->
 def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[str]) -> List[str]:
     # TODO: Ideally, this would be a bulk query, but Django doesn't have a `__iexact`.
     # We can clean this up if/when Postgres has more native support for case-insensitive fields.
+    # If we turn this into a bulk operation, we will need to call flush_realm_alert_words() here.
     for delete_word in delete_words:
         AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).delete()
     return user_alert_words(user_profile)
