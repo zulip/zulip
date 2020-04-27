@@ -1,8 +1,11 @@
 from zerver.lib.alert_words import (
-    add_user_alert_words,
     alert_words_in_realm,
-    remove_user_alert_words,
     user_alert_words,
+)
+
+from zerver.lib.actions import (
+    do_add_alert_words,
+    do_remove_alert_words,
 )
 
 from zerver.lib.test_helpers import (
@@ -55,7 +58,7 @@ class AlertWordTests(ZulipTestCase):
         self.assert_length(realm_alert_words.get(user.id, []), 0)
 
         # Add several words, including multi-word and non-ascii words.
-        add_user_alert_words(user, self.interesting_alert_word_list)
+        do_add_alert_words(user, self.interesting_alert_word_list)
 
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list))
@@ -63,14 +66,14 @@ class AlertWordTests(ZulipTestCase):
         self.assert_length(realm_alert_words[user.id], 3)
 
         # Test the case-insensitivity of adding words
-        add_user_alert_words(user, set(["ALert", "ALERT"]))
+        do_add_alert_words(user, set(["ALert", "ALERT"]))
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list))
         realm_alert_words = alert_words_in_realm(user.realm)
         self.assert_length(realm_alert_words[user.id], 3)
 
         # Test the case-insensitivity of removing words
-        remove_user_alert_words(user, set(["ALert"]))
+        do_remove_alert_words(user, set(["ALert"]))
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list) - {'alert'})
         realm_alert_words = alert_words_in_realm(user.realm)
@@ -78,16 +81,16 @@ class AlertWordTests(ZulipTestCase):
 
     def test_remove_word(self) -> None:
         """
-        Removing alert words works via remove_user_alert_words, even
+        Removing alert words works via do_remove_alert_words, even
         for multi-word and non-ascii words.
         """
         user = self.example_user('cordelia')
 
         expected_remaining_alerts = set(self.interesting_alert_word_list)
-        add_user_alert_words(user, self.interesting_alert_word_list)
+        do_add_alert_words(user, self.interesting_alert_word_list)
 
         for alert_word in self.interesting_alert_word_list:
-            remove_user_alert_words(user, [alert_word])
+            do_remove_alert_words(user, [alert_word])
             expected_remaining_alerts.remove(alert_word)
             actual_remaining_alerts = user_alert_words(user)
             self.assertEqual(set(actual_remaining_alerts),
@@ -101,10 +104,10 @@ class AlertWordTests(ZulipTestCase):
         """
         user1 = self.example_user('cordelia')
 
-        add_user_alert_words(user1, self.interesting_alert_word_list)
+        do_add_alert_words(user1, self.interesting_alert_word_list)
 
         user2 = self.example_user('othello')
-        add_user_alert_words(user2, ['another'])
+        do_add_alert_words(user2, ['another'])
 
         realm_words = alert_words_in_realm(user2.realm)
         self.assertEqual(len(realm_words), 2)
@@ -122,7 +125,7 @@ class AlertWordTests(ZulipTestCase):
 
     def test_json_list_nonempty(self) -> None:
         hamlet = self.example_user('hamlet')
-        add_user_alert_words(hamlet, ['one', 'two', 'three'])
+        do_add_alert_words(hamlet, ['one', 'two', 'three'])
 
         self.login('hamlet')
         result = self.client_get('/json/users/me/alert_words')
