@@ -1137,13 +1137,19 @@ def get_incoming_message_ids(import_dir: Path,
             # messages from the same second, it's not the
             # end of the world, as it's likely those messages
             # arrived to the original server in somewhat
-            # arbitrary order.
+            # arbitrary order. date_sent in still the field in 
+            # the Message model so check both fields.
+            # model.objects.bulk_create will fail since pub_date
+            # will throw a key error in the dict **unzip 
 
             message_id = row['id']
 
             if sort_by_date:
-                date_sent = int(row['date_sent'])
-                tup = (date_sent, message_id)
+                if 'date_sent' in row:
+                    pub_date = int(row['date_sent'])
+                elif 'pub_date' in row:
+                    pub_date = int(row['pub_date'])
+                tup = (pub_date, message_id)
                 tups.append(tup)
             else:
                 message_ids.append(message_id)
